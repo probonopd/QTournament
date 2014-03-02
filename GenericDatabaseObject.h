@@ -8,6 +8,8 @@
 #ifndef GENERICDATABASEOBJECT_H
 #define	GENERICDATABASEOBJECT_H
 
+#include <QString>
+
 namespace QTournament
 {
 
@@ -16,8 +18,16 @@ namespace QTournament
     public:
         GenericDatabaseObject(const QString& _tabName, int _id);
 
-        bool operator==(const GenericDatabaseObject& other);
+        inline bool operator==(const GenericDatabaseObject& other) const
+        {
+          return ((other.tabName == tabName) && (other.id == id));
+        }
 
+        inline bool operator!=(const GenericDatabaseObject& other) const
+        {
+          return (!(this->operator == (other)));
+        }
+        
     private:
         QString tabName;
         int id;

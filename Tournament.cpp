@@ -20,7 +20,7 @@ namespace QTournament
 /**
  * Constructor for a new, empty tournament file
  * 
- * @param fName name of the file to create; the file may not exists
+ * @param fName name of the file to create; the file may not exist
  * @param cfg initial configuration settings for the application
  */
 Tournament::Tournament(const QString& fName, const TournamentSettings& cfg)
@@ -50,6 +50,13 @@ Tournament::Tournament(const QString& fName, const TournamentSettings& cfg)
     initManagers();
 }
 
+//----------------------------------------------------------------------------
+    
+/**
+ * Constructor for an existing tournament file
+ * 
+ * @param fName name of the file to create; the file may not exist
+ */
 Tournament::Tournament(const QString& fName)
 : db(TournamentDB(":memory:", true)),    // dummy initializer for satisfying the compiler
         tm(TeamMngr(db))
@@ -70,6 +77,8 @@ Tournament::Tournament(const QString& fName)
     initManagers();
 }
 
+//----------------------------------------------------------------------------
+    
 void Tournament::initManagers()
 {
     tm = TeamMngr(db);
