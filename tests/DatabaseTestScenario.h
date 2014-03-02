@@ -29,14 +29,14 @@ class DatabaseTestScenario : public BasicTestClass
 public:
 
 protected:
-  const QString DB_CONNECTION_NAME = "unittest";
-  const QString DB_USER = "unittest";
-  const QString DB_PASSWD = "unittest";
-  const QString MYSQL_HOST = "localhost";
-  const QString MYSQL_DB = "unittest";
-  const int MYSQL_PORT = 3306;
+  static const QString DB_CONNECTION_NAME;
+  static const QString DB_USER;
+  static const QString DB_PASSWD;
+  static const QString MYSQL_HOST;
+  static const QString MYSQL_DB;
+  static const int MYSQL_PORT;
 
-  const QString SQLITE_DB = "SqliteTestDB.db";
+  static const QString SQLITE_DB;
 
   QSqlDatabase getDbConn(dbOverlay::GenericDatabase::DB_ENGINE t);
   QSqlDatabase getDbConn();

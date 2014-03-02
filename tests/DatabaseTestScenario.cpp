@@ -17,6 +17,16 @@
 #include <QFile>
 #include <QtSql/QSqlError>
 
+// initialize some constants
+const QString DatabaseTestScenario::DB_CONNECTION_NAME = "unittest";
+const QString DatabaseTestScenario::DB_USER = "unittest";
+const QString DatabaseTestScenario::DB_PASSWD = "unittest";
+const QString DatabaseTestScenario::MYSQL_HOST = "localhost";
+const QString DatabaseTestScenario::MYSQL_DB = "unittest";
+const int DatabaseTestScenario::MYSQL_PORT = 3306;
+const QString DatabaseTestScenario::SQLITE_DB = "SqliteTestDB.db";
+
+
 QSqlDatabase DatabaseTestScenario::getDbConn(dbOverlay::GenericDatabase::DB_ENGINE t)
 {
   if (QSqlDatabase::contains(DB_CONNECTION_NAME))
