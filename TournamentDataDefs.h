@@ -12,6 +12,8 @@
 namespace QTournament
 {
 #define DB_VERSION 1
+    
+#define DB_NULL QVariant::Int
 
 #define TAB_CFG QString("Config")
 #define CFG_KEY_DB_VERSION QString("DatabaseVersion")
@@ -28,7 +30,7 @@ namespace QTournament
 #define TAB_PLAYER QString("Player")
 #define PL_FNAME QString("FirstName")
 #define PL_LNAME QString("LastName")
-//#define PL_ QString("")
+#define PL_TEAM_REF QString("TeamRefId")
 //#define PL_ QString("")
 //#define PL_ QString("")
 //#define PL_ QString("")
@@ -49,6 +51,10 @@ namespace QTournament
 //#define PL_ QString("")
 //#define PL_ QString("")
 
+#define TAB_TEAM QString("Team")
+#define TE_NAME QString("Name")
+//#define TE_ QString("")
+    
     class TournamentSettings {
     public:
         QString tournamentName;

@@ -12,6 +12,7 @@
 
 #include "TournamentDataDefs.h"
 #include "TournamentDB.h"
+#include "TeamMngr.h"
 
 namespace QTournament
 {
@@ -23,6 +24,8 @@ namespace QTournament
         Tournament(const QString& fName);
     private:
         TournamentDB db;
+        TeamMngr tm;
+        void initManagers();
 
     };
 }

@@ -24,7 +24,8 @@ namespace QTournament
  * @param cfg initial configuration settings for the application
  */
 Tournament::Tournament(const QString& fName, const TournamentSettings& cfg)
-: db(TournamentDB(":memory:", true))    // dummy initializer for satisfying the compiler
+: db(TournamentDB(":memory:", true)),    // dummy initializer for satisfying the compiler
+        tm(TeamMngr(db))
 {
     // Check whether the file exists
     QFile f(fName);
@@ -44,10 +45,14 @@ Tournament::Tournament(const QString& fName, const TournamentSettings& cfg)
     cfgTab.set(CFG_KEY_TNMT_NAME, cfg.tournamentName);
     cfgTab.set(CFG_KEY_TNMT_ORGA, cfg.organizingClub);
     cfgTab.set(CFG_KEY_USE_TEAMS, cfg.useTeams);
+    
+    // initialize the various managers / handlers
+    initManagers();
 }
 
 Tournament::Tournament(const QString& fName)
-: db(TournamentDB(":memory:", true))    // dummy initializer for satisfying the compiler
+: db(TournamentDB(":memory:", true)),    // dummy initializer for satisfying the compiler
+        tm(TeamMngr(db))
 {
     // Check whether the file exists
     QFile f(fName);
@@ -60,7 +65,14 @@ Tournament::Tournament(const QString& fName)
     
     // open an existing database
     db = TournamentDB(fName, false);
+    
+    // initialize the various managers / handlers
+    initManagers();
 }
 
+void Tournament::initManagers()
+{
+    tm = TeamMngr(db);
+}
 
 }

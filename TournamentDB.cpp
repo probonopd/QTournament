@@ -28,11 +28,21 @@ void TournamentDB::populateTables()
     // Generate the key-value-table with the tournament config
     dbOverlay::KeyValueTab::getTab(this, TAB_CFG);
     
+    // Generate the table holding the teams
+    cols.clear();
+    cols << TE_NAME + " VARCHAR(100)";
+    //cols << TE_ + " ";
+    //cols << TE_ + " ";
+    //cols << TE_ + " ";
+    //cols << TE_ + " ";
+    //cols << TE_ + " ";
+    //cols << TE_ + " ";
+    
     // Generate the table hosting the players
     cols.clear();
     cols << PL_FNAME + " VARCHAR(30)";
     cols << PL_LNAME + " VARCHAR(30)";
-    //cols << PL_ + " ";
+    cols << genForeignKeyClause(PL_TEAM_REF, TAB_TEAM);
     //cols << PL_ + " ";
     //cols << PL_ + " ";
     //cols << PL_ + " ";
