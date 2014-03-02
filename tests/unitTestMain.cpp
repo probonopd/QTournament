@@ -16,6 +16,7 @@
 #include <cppunit/ui/text/TestRunner.h>
 
 #include "tstGenericDBObject.h"
+#include "tstTournament.h"
 
 // comment / uncomment the following to execute just one suite
 //#define TEST_ALL_SUITES
@@ -23,8 +24,9 @@
 // Registers the fixture into the 'registry'
 #ifdef TEST_ALL_SUITES
   CPPUNIT_TEST_SUITE_REGISTRATION(tstGenericDBObject);
+  CPPUNIT_TEST_SUITE_REGISTRATION(tstTournament);
 #else
-  CPPUNIT_TEST_SUITE_REGISTRATION(tstGenericDBObject);
+  CPPUNIT_TEST_SUITE_REGISTRATION(tstTournament);
 #endif
 
 
