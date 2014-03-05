@@ -13,13 +13,11 @@
 #include <cppunit/TestFixture.h>
 #include <cppunit/extensions/HelperMacros.h>
 
-#include "BasicTestClass.h"
+#include "DatabaseTestScenario.h"
 
-class tstGenericDBObject : public BasicTestClass
+class tstGenericDBObject : public DatabaseTestScenario
 {
   CPPUNIT_TEST_SUITE( tstGenericDBObject );
-  CPPUNIT_TEST(testConstructor);
-  CPPUNIT_TEST(testComparison);
 //  CPPUNIT_TEST();
 //  CPPUNIT_TEST();
 //  CPPUNIT_TEST();
@@ -33,8 +31,6 @@ class tstGenericDBObject : public BasicTestClass
   CPPUNIT_TEST_SUITE_END();
   
 public:
-    void testConstructor();
-    void testComparison();
 };
 
 #endif	/* TSTGENERICDBOBJECT_H */

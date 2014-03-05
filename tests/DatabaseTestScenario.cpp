@@ -12,6 +12,9 @@
 
 #include "DatabaseTestScenario.h"
 #include "DbTab.h"
+#include "Tournament.h"
+#include "TournamentDataDefs.h"
+#include "TournamentDB.h"
 
 #include <QtSql/QSqlQuery>
 #include <QFile>
@@ -26,6 +29,8 @@ const QString DatabaseTestScenario::MYSQL_DB = "unittest";
 const int DatabaseTestScenario::MYSQL_PORT = 3306;
 const QString DatabaseTestScenario::SQLITE_DB = "SqliteTestDB.db";
 
+using namespace dbOverlay;
+using namespace QTournament;
 
 QSqlDatabase DatabaseTestScenario::getDbConn(dbOverlay::GenericDatabase::DB_ENGINE t)
 {
@@ -159,19 +164,18 @@ bool DatabaseTestScenario::sqliteFileExists()
 
 //----------------------------------------------------------------------------
 
-void DatabaseTestScenario::prepScenario01(dbOverlay::GenericDatabase::DB_ENGINE t)
+void DatabaseTestScenario::prepScenario01(bool useTeams)
 {
-  QSqlDatabase db;
+  TournamentSettings cfg;
+  cfg.organizingClub = "club";
+  cfg.tournamentName = "name";
+  cfg.useTeams = useTeams;
   
-  if (t == dbOverlay::GenericDatabase::MYSQL)
-  {
-    cleanupMysql();
-    db = getDbConn(t);
-  } else {
-    CPPUNIT_ASSERT(!sqliteFileExists());
-    db = getDbConn(t);
-    CPPUNIT_ASSERT(sqliteFileExists());
-  }
+  CPPUNIT_ASSERT(!sqliteFileExists());
+  Tournament t(getSqliteFileName(), cfg);
+  CPPUNIT_ASSERT(sqliteFileExists());
+  
+  t.close();
   
   // FIX: add scenario initialization code here!
 
@@ -220,6 +224,11 @@ void DatabaseTestScenario::execQueryAndDumpError(QSqlQuery& qry, const QString& 
 
 //----------------------------------------------------------------------------
 
+TournamentDB DatabaseTestScenario::getScenario01(bool useTeams)
+{
+  prepScenario01(useTeams);
+  return TournamentDB(getSqliteFileName(), false);
+}
 
 //----------------------------------------------------------------------------
     

@@ -9,16 +9,31 @@
 #define	TEAMMNGR_H
 
 #include "TournamentDB.h"
+#include "Team.h"
+#include "TournamentDataDefs.h"
+#include "TournamentErrorCodes.h"
+#include "DbTab.h"
+#include "GenericObjectManager.h"
+
+#include <QList>
+
+using namespace dbOverlay;
 
 namespace QTournament
 {
-class TeamMngr
-{
-public:
-    TeamMngr(const TournamentDB& _db);
-private:
-    TournamentDB db;
-};
+
+  class TeamMngr : public GenericObjectManager
+  {
+  public:
+    TeamMngr (const TournamentDB& _db);
+    ERR createNewTeam (const QString& teamName);
+    bool hasTeam (const QString& teamName);
+    Team getTeam(const QString& name);
+    QList<Team> getAllTeams();
+
+  private:
+    DbTab teamTab;
+  };
 }
 
 #endif	/* TEAMMNGR_H */

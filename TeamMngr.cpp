@@ -6,12 +6,129 @@
  */
 
 #include "TeamMngr.h"
+#include "TournamentErrorCodes.h"
+#include "TournamentDataDefs.h"
+#include <stdexcept>
+#include <qt/QtCore/qdebug.h>
+#include "HelperFunc.h"
+
+using namespace dbOverlay;
 
 namespace QTournament
 {
-TeamMngr::TeamMngr(const TournamentDB& _db)
-: db(_db)
-{
-}
+
+  TeamMngr::TeamMngr(const TournamentDB& _db)
+  : GenericObjectManager(_db), teamTab(db[TAB_TEAM])
+  {
+  }
+
+//----------------------------------------------------------------------------
+
+  ERR TeamMngr::createNewTeam(const QString& teamName)
+  {
+    if (!(cfg.getBool(CFG_KEY_USE_TEAMS)))
+    {
+      return NOT_USING_TEAMS;
+    }
+    
+    if (teamName.isEmpty())
+    {
+      return INVALID_NAME;
+    }
+    
+    if (hasTeam(teamName))
+    {
+      return NAME_EXISTS;
+    }
+    
+    // create a new table row
+    QVariantList qvl;
+    qvl << GENERIC_NAME_FIELD_NAME << teamName;
+    
+    teamTab.insertRow(qvl);
+    
+    return OK;
+  }
+
+//----------------------------------------------------------------------------
+
+  bool TeamMngr::hasTeam(const QString& teamName)
+  {
+    return (teamTab.getMatchCountForColumnValue(GENERIC_NAME_FIELD_NAME, teamName) > 0);
+  }
+
+//----------------------------------------------------------------------------
+
+  /**
+   * Returns a database object for a team identified by its name
+   *
+   * Note: the team must exist, otherwise this method throws an exception!
+   *
+   * @param name is the name of the team to look up
+   *
+   * @return a Team instance of that team
+   */
+  Team TeamMngr::getTeam(const QString& name)
+  {
+    if (!(hasTeam(name)))
+    {
+      throw std::invalid_argument("The team '" + QString2String(name) + "' does not exist");
+    }
+    
+    TabRow r = teamTab.getSingleRowByColumnValue(GENERIC_NAME_FIELD_NAME, name);
+    
+    return Team(r);
+  }
+
+//----------------------------------------------------------------------------
+
+  /**
+   * Returns a list of all teams
+   *
+   * @Return QList holding all Teams
+   */
+  QList<Team> TeamMngr::getAllTeams()
+  {
+    QList<Team> result;
+    
+    DbTab::CachingRowIterator it = teamTab.getAllRows();
+    while (!(it.isEnd()))
+    {
+      result << Team(*it);
+      ++it;
+    }
+    
+    return result;
+  }
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
 
 }

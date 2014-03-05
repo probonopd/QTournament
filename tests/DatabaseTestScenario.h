@@ -22,7 +22,7 @@
 
 #include "BasicTestClass.h"
 #include "GenericDatabase.h"
-#include "SampleDB.h"
+#include "TournamentDB.h"
 
 class DatabaseTestScenario : public BasicTestClass
 {
@@ -43,8 +43,8 @@ protected:
   void removeDbConn();
   void cleanupMysql();
   
-  void prepScenario01(dbOverlay::GenericDatabase::DB_ENGINE t);
-  //SampleDB getScenario01(dbOverlay::GenericDatabase::DB_ENGINE t);
+  void prepScenario01(bool useTeams = true);
+  QTournament::TournamentDB getScenario01(bool useTeams = true);
   
   void execQueryAndDumpError(QSqlQuery& qry, const QString& sqlStatement="");
 

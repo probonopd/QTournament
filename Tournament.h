@@ -12,22 +12,28 @@
 
 #include "TournamentDataDefs.h"
 #include "TournamentDB.h"
+#include "KeyValueTab.h"
 #include "TeamMngr.h"
+
+using namespace dbOverlay;
 
 namespace QTournament
 {
+  class Tournament
+  {
+  public:
+    Tournament (const QString& fName, const TournamentSettings& cfg);
+    Tournament (const QString& fName);
+    TeamMngr getTeamMngr ();
+    void close();
 
-    class Tournament
-    {
-    public:
-        Tournament(const QString& fName, const TournamentSettings& cfg);
-        Tournament(const QString& fName);
-    private:
-        TournamentDB db;
-        TeamMngr tm;
-        void initManagers();
+  private:
+    TournamentDB db;
+    TeamMngr tm;
+    void initManagers ();
 
-    };
+  };
+
 }
 
 #endif	/* TOURNAMENT_H */

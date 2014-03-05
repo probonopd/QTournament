@@ -9,30 +9,33 @@
 #define	GENERICDATABASEOBJECT_H
 
 #include <QString>
+#include "TabRow.h"
+#include "TournamentDB.h"
 
 namespace QTournament
 {
 
-    class GenericDatabaseObject
+  class GenericDatabaseObject
+  {
+  public:
+    GenericDatabaseObject (TournamentDB* _db, const QString& _tabName, int _id);
+    GenericDatabaseObject (dbOverlay::TabRow _row);
+    int getId ();
+
+    inline bool operator== (const GenericDatabaseObject& other) const
     {
-    public:
-        GenericDatabaseObject(const QString& _tabName, int _id);
+      return (other.row == row);
+    }
 
-        inline bool operator==(const GenericDatabaseObject& other) const
-        {
-          return ((other.tabName == tabName) && (other.id == id));
-        }
+    inline bool operator!= (const GenericDatabaseObject& other) const
+    {
+      return (!(this->operator == (other)));
+    }
 
-        inline bool operator!=(const GenericDatabaseObject& other) const
-        {
-          return (!(this->operator == (other)));
-        }
-        
-    private:
-        QString tabName;
-        int id;
+  protected:
+    dbOverlay::TabRow row;
 
-    };
+  };
 }
 
 #endif	/* GENERICDATABASEOBJECT_H */

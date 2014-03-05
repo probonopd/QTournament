@@ -13,7 +13,8 @@ namespace QTournament
     enum ERR {
         OK = 0,
         INVALID_NAME = -10000,
-        NAME_EXISTS
+        NAME_EXISTS,
+        NOT_USING_TEAMS
     };
 }
 

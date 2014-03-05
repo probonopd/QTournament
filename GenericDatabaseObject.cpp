@@ -8,39 +8,48 @@
 #include <stdexcept>
 
 #include "GenericDatabaseObject.h"
+#include "TournamentDB.h"
+#include "TabRow.h"
 
 namespace QTournament
 {
 
-GenericDatabaseObject::GenericDatabaseObject(const QString& _tabName, int _id)
-: tabName(_tabName), id(_id)
+  /**
+   * Constructor for a database object identified by table name and ID
+   *
+   * @param _tabName the name of the table the object refers to
+   * @param _id the ID of the object in the table
+   *
+   */
+GenericDatabaseObject::GenericDatabaseObject(TournamentDB* _db, const QString& _tabName, int _id)
+: row(dbOverlay::TabRow(_db, _tabName, _id))
 {
-    if (id < 1)
-    {
-        throw std::invalid_argument("GenericDatabaseObject ctor: invalid id");
-    }
-    
-    if (tabName.length() == 0)
-    {
-        throw std::invalid_argument("GenericDatabaseObject ctor: invalid, zero length table name");
-    }
 }
 
 //----------------------------------------------------------------------------
-    
+
+  GenericDatabaseObject::GenericDatabaseObject(dbOverlay::TabRow _row)
+  :row(_row)
+  {
+  }
+
 
 //----------------------------------------------------------------------------
-    
+
+  int GenericDatabaseObject::getId()
+  {
+    return row.getId();
+  }
 
 //----------------------------------------------------------------------------
-    
+
 
 //----------------------------------------------------------------------------
-    
+
 
 //----------------------------------------------------------------------------
-    
 
+    
 //----------------------------------------------------------------------------
     
 

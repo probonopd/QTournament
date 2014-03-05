@@ -30,13 +30,14 @@ void TournamentDB::populateTables()
     
     // Generate the table holding the teams
     cols.clear();
-    cols << TE_NAME + " VARCHAR(100)";
+    cols << GENERIC_NAME_FIELD_NAME + " VARCHAR(100)";
     //cols << TE_ + " ";
     //cols << TE_ + " ";
     //cols << TE_ + " ";
     //cols << TE_ + " ";
     //cols << TE_ + " ";
     //cols << TE_ + " ";
+    tableCreationHelper(TAB_TEAM, cols);
     
     // Generate the table hosting the players
     cols.clear();
@@ -52,6 +53,7 @@ void TournamentDB::populateTables()
     //cols << PL_ + " ";
     //cols << PL_ + " ";
     //cols << PL_ + " ";
+    tableCreationHelper(TAB_PLAYER, cols);
 }
 
 void TournamentDB::populateViews()
