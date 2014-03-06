@@ -22,14 +22,14 @@ namespace QTournament
    *
    */
 GenericDatabaseObject::GenericDatabaseObject(TournamentDB* _db, const QString& _tabName, int _id)
-: row(dbOverlay::TabRow(_db, _tabName, _id))
+: db(_db), row(dbOverlay::TabRow(_db, _tabName, _id))
 {
 }
 
 //----------------------------------------------------------------------------
 
-  GenericDatabaseObject::GenericDatabaseObject(dbOverlay::TabRow _row)
-  :row(_row)
+  GenericDatabaseObject::GenericDatabaseObject(TournamentDB* _db, dbOverlay::TabRow _row)
+  :db(_db), row(_row)
   {
   }
 

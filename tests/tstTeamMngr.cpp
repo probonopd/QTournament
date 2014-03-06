@@ -25,7 +25,7 @@ void tstTeamMngr::testCreateNewTeam()
   printStartMsg("tstTeamMngr::testCreateNewTeam");
   
   TournamentDB db = getScenario01(true);
-  TeamMngr tmngr(db);
+  TeamMngr tmngr(&db);
   
   // try empty or invalid name
   CPPUNIT_ASSERT(tmngr.createNewTeam("") == INVALID_NAME);
@@ -53,7 +53,7 @@ void tstTeamMngr::testCreateNewTeam2()
   
   // !! start a tournament that doesn't use teams !!
   TournamentDB db = getScenario01(false);
-  TeamMngr tmngr(db);
+  TeamMngr tmngr(&db);
   
   // try empty or invalid name
   CPPUNIT_ASSERT(tmngr.createNewTeam("") == NOT_USING_TEAMS);
@@ -74,7 +74,7 @@ void tstTeamMngr::testHasTeam()
   printStartMsg("tstTeamMngr::testHasTeam");
   
   TournamentDB db = getScenario01(true);
-  TeamMngr tmngr(db);
+  TeamMngr tmngr(&db);
   
   // try queries on empty table
   CPPUNIT_ASSERT(tmngr.hasTeam("") == false);
@@ -100,7 +100,7 @@ void tstTeamMngr::testGetTeam()
   printStartMsg("tstTeamMngr::testGetTeam");
   
   TournamentDB db = getScenario01(true);
-  TeamMngr tmngr(db);
+  TeamMngr tmngr(&db);
   
   // actually create a valid team
   CPPUNIT_ASSERT(tmngr.createNewTeam("t1") == OK);
@@ -124,7 +124,7 @@ void tstTeamMngr::testGetAllTeams()
   printStartMsg("tstTeamMngr::testGetAllTeams");
   
   TournamentDB db = getScenario01(true);
-  TeamMngr tmngr(db);
+  TeamMngr tmngr(&db);
   
   // run on empty table
   QList<Team> result = tmngr.getAllTeams();

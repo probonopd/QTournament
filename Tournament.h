@@ -24,12 +24,13 @@ namespace QTournament
   public:
     Tournament (const QString& fName, const TournamentSettings& cfg);
     Tournament (const QString& fName);
-    TeamMngr getTeamMngr ();
+    static TeamMngr* getTeamMngr();
     void close();
+    ~Tournament();
 
   private:
     TournamentDB db;
-    TeamMngr tm;
+    static TeamMngr* tm;
     void initManagers ();
 
   };

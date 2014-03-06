@@ -18,10 +18,10 @@ namespace QTournament
   class GenericObjectManager
   {
   public:
-    GenericObjectManager (const TournamentDB& _db);
+    GenericObjectManager (TournamentDB* _db);
 
   protected:
-    TournamentDB db;
+    TournamentDB* db;
     KeyValueTab cfg;
   };
 

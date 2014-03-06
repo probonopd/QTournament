@@ -18,6 +18,7 @@
 #include "tstGenericDBObject.h"
 #include "tstTournament.h"
 #include "tstTeamMngr.h"
+#include "tstTeam.h"
 
 // comment / uncomment the following to execute just one suite
 //#define TEST_ALL_SUITES
@@ -27,8 +28,9 @@
   CPPUNIT_TEST_SUITE_REGISTRATION(tstGenericDBObject);
   CPPUNIT_TEST_SUITE_REGISTRATION(tstTournament);
   CPPUNIT_TEST_SUITE_REGISTRATION(tstTeamMngr);
+  CPPUNIT_TEST_SUITE_REGISTRATION(tstTeam);
 #else
-  CPPUNIT_TEST_SUITE_REGISTRATION(tstTeamMngr);
+  CPPUNIT_TEST_SUITE_REGISTRATION(tstTeam);
 #endif
 
 

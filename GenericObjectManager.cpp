@@ -12,8 +12,8 @@ using namespace dbOverlay;
 namespace QTournament
 {
 
-  GenericObjectManager::GenericObjectManager(const TournamentDB& _db)
-  :db(_db), cfg(KeyValueTab::getTab(&db, TAB_CFG))
+  GenericObjectManager::GenericObjectManager(TournamentDB* _db)
+  :db(_db), cfg(KeyValueTab::getTab(db, TAB_CFG))
   {
 
   }

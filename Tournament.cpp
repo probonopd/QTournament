@@ -16,6 +16,7 @@ using namespace dbOverlay;
 
 namespace QTournament
 {
+  TeamMngr* Tournament::tm = NULL;
 
 /**
  * Constructor for a new, empty tournament file
@@ -24,8 +25,7 @@ namespace QTournament
  * @param cfg initial configuration settings for the application
  */
 Tournament::Tournament(const QString& fName, const TournamentSettings& cfg)
-: db(TournamentDB(":memory:", true)),    // dummy initializer for satisfying the compiler
-        tm(TeamMngr(db))
+: db(TournamentDB(":memory:", true))    // dummy initializer for satisfying the compiler
 {
     // Check whether the file exists
     QFile f(fName);
@@ -58,8 +58,7 @@ Tournament::Tournament(const QString& fName, const TournamentSettings& cfg)
  * @param fName name of the file to create; the file may not exist
  */
 Tournament::Tournament(const QString& fName)
-: db(TournamentDB(":memory:", true)),    // dummy initializer for satisfying the compiler
-        tm(TeamMngr(db))
+: db(TournamentDB(":memory:", true))    // dummy initializer for satisfying the compiler
 {
     // Check whether the file exists
     QFile f(fName);
@@ -81,7 +80,7 @@ Tournament::Tournament(const QString& fName)
 
 void Tournament::initManagers()
 {
-    tm = TeamMngr(db);
+    tm = new TeamMngr(&db);
 }
 
 //----------------------------------------------------------------------------
@@ -92,10 +91,19 @@ void Tournament::close()
 }
 
 //----------------------------------------------------------------------------
-    
+
+Tournament::~Tournament()
+{
+  delete tm;
+  tm = NULL;
+}
 
 //----------------------------------------------------------------------------
-    
+
+TeamMngr* Tournament::getTeamMngr()
+{
+  return tm;
+}
 
 //----------------------------------------------------------------------------
     

@@ -24,13 +24,15 @@ TournamentDB::TournamentDB(QString fName, bool createNew)
 void TournamentDB::populateTables()
 {
     QStringList cols;
+    QString nameTypeDef = " VARCHAR(" + QString::number(MAX_NAME_LEN) + ")";
+    QString nameFieldDef = GENERIC_NAME_FIELD_NAME + nameTypeDef;
     
     // Generate the key-value-table with the tournament config
     dbOverlay::KeyValueTab::getTab(this, TAB_CFG);
     
     // Generate the table holding the teams
     cols.clear();
-    cols << GENERIC_NAME_FIELD_NAME + " VARCHAR(100)";
+    cols << nameFieldDef;
     //cols << TE_ + " ";
     //cols << TE_ + " ";
     //cols << TE_ + " ";
@@ -41,8 +43,8 @@ void TournamentDB::populateTables()
     
     // Generate the table hosting the players
     cols.clear();
-    cols << PL_FNAME + " VARCHAR(30)";
-    cols << PL_LNAME + " VARCHAR(30)";
+    cols << PL_FNAME + nameTypeDef;
+    cols << PL_LNAME + nameTypeDef;;
     cols << genForeignKeyClause(PL_TEAM_REF, TAB_TEAM);
     //cols << PL_ + " ";
     //cols << PL_ + " ";

@@ -19,7 +19,7 @@ namespace QTournament
   {
   public:
     GenericDatabaseObject (TournamentDB* _db, const QString& _tabName, int _id);
-    GenericDatabaseObject (dbOverlay::TabRow _row);
+    GenericDatabaseObject (TournamentDB* _db, dbOverlay::TabRow _row);
     int getId ();
 
     inline bool operator== (const GenericDatabaseObject& other) const
@@ -33,6 +33,7 @@ namespace QTournament
     }
 
   protected:
+    TournamentDB* db;
     dbOverlay::TabRow row;
 
   };

@@ -17,21 +17,28 @@ using namespace dbOverlay;
 namespace QTournament
 {
 
-  TeamMngr::TeamMngr(const TournamentDB& _db)
-  : GenericObjectManager(_db), teamTab(db[TAB_TEAM])
+  TeamMngr::TeamMngr(TournamentDB* _db)
+  : GenericObjectManager(_db), teamTab((*db)[TAB_TEAM])
   {
   }
 
 //----------------------------------------------------------------------------
 
-  ERR TeamMngr::createNewTeam(const QString& teamName)
+  ERR TeamMngr::createNewTeam(const QString& tm)
   {
     if (!(cfg.getBool(CFG_KEY_USE_TEAMS)))
     {
       return NOT_USING_TEAMS;
     }
     
+    QString teamName = tm.trimmed();
+    
     if (teamName.isEmpty())
+    {
+      return INVALID_NAME;
+    }
+    
+    if (teamName.length() > MAX_NAME_LEN)
     {
       return INVALID_NAME;
     }
@@ -77,7 +84,7 @@ namespace QTournament
     
     TabRow r = teamTab.getSingleRowByColumnValue(GENERIC_NAME_FIELD_NAME, name);
     
-    return Team(r);
+    return Team(db, r);
   }
 
 //----------------------------------------------------------------------------
@@ -94,7 +101,7 @@ namespace QTournament
     DbTab::CachingRowIterator it = teamTab.getAllRows();
     while (!(it.isEnd()))
     {
-      result << Team(*it);
+      result << Team(db, *it);
       ++it;
     }
     

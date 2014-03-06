@@ -11,6 +11,7 @@
 #include "GenericDatabaseObject.h"
 #include "TournamentDB.h"
 #include "TabRow.h"
+#include "TournamentErrorCodes.h"
 
 namespace QTournament
 {
@@ -21,10 +22,11 @@ namespace QTournament
     
   public:
     QString getName();
+    ERR rename(const QString& newName);
 
   private:
     Team (TournamentDB* db, int rowId);
-    Team (dbOverlay::TabRow row);
+    Team (TournamentDB* db, dbOverlay::TabRow row);
   };
 
 }
