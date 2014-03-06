@@ -6,34 +6,90 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>600</height>
+    <width>938</width>
+    <height>760</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>QTournament</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QPushButton" name="pushButton">
-    <property name="geometry">
-     <rect>
-      <x>250</x>
-      <y>180</y>
-      <width>92</width>
-      <height>27</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>PushButton</string>
-    </property>
-   </widget>
+   <layout class="QVBoxLayout" name="verticalLayout_2">
+    <item>
+     <layout class="QVBoxLayout" name="verticalLayout">
+      <item>
+       <widget class="QTabWidget" name="mainTab">
+        <property name="currentIndex">
+         <number>0</number>
+        </property>
+        <widget class="QWidget" name="tabTeams">
+         <attribute name="title">
+          <string>Teams</string>
+         </attribute>
+         <layout class="QVBoxLayout" name="verticalLayout_5">
+          <item>
+           <layout class="QVBoxLayout" name="verticalLayout_4">
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout">
+              <item>
+               <widget class="QPushButton" name="pushButton">
+                <property name="text">
+                 <string>New...</string>
+                </property>
+                <property name="icon">
+                 <iconset resource="../tournament.qrc">
+                  <normaloff>:/icons/document-new-5.png</normaloff>:/icons/document-new-5.png</iconset>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="pushButton_2">
+                <property name="text">
+                 <string>Rename...</string>
+                </property>
+                <property name="icon">
+                 <iconset resource="../tournament.qrc">
+                  <normaloff>:/icons/edit-rename.png</normaloff>:/icons/edit-rename.png</iconset>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="pushButton_3">
+                <property name="text">
+                 <string>Delete...</string>
+                </property>
+                <property name="icon">
+                 <iconset resource="../tournament.qrc">
+                  <normaloff>:/icons/edit-delete-9.png</normaloff>:/icons/edit-delete-9.png</iconset>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <widget class="QColumnView" name="columnView"/>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QWidget" name="tabPlayers">
+         <attribute name="title">
+          <string>Players</string>
+         </attribute>
+        </widget>
+       </widget>
+      </item>
+     </layout>
+    </item>
+   </layout>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
+     <width>938</width>
      <height>25</height>
     </rect>
    </property>
@@ -72,6 +128,8 @@
    </property>
   </action>
  </widget>
- <resources/>
+ <resources>
+  <include location="../tournament.qrc"/>
+ </resources>
  <connections/>
 </ui>

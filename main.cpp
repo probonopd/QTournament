@@ -15,7 +15,7 @@
 int main(int argc, char *argv[])
 {
   // initialize resources, if needed
-  // Q_INIT_RESOURCE(resfile);
+  Q_INIT_RESOURCE(tournament);
 
   QApplication app(argc, argv);
   
