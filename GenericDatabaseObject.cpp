@@ -43,9 +43,25 @@ GenericDatabaseObject::GenericDatabaseObject(TournamentDB* _db, const QString& _
 
 //----------------------------------------------------------------------------
 
+  // THIS FUNCTION WILL FAIL IF THE DATABASE
+  // HAS NO "State" COLUMN OR IF THE VALUE IS
+  // NOT SET!!!
+  OBJ_STATE GenericDatabaseObject::getState()
+  {
+    int stateInt = row[GENERIC_STATE_FIELD_NAME].toInt();
+    
+    return static_cast<OBJ_STATE>(stateInt);
+  }
 
 //----------------------------------------------------------------------------
 
+  // THIS FUNCTION WILL FAIL IF THE DATABASE
+  // HAS NO "State" COLUMN
+  void GenericDatabaseObject::setState(OBJ_STATE newState)
+  {
+    int stateInt = static_cast<int>(newState);
+    row.update(GENERIC_STATE_FIELD_NAME, stateInt);
+  }
 
 //----------------------------------------------------------------------------
 

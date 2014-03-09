@@ -12,11 +12,37 @@
 #include "GenericDatabaseObject.h"
 #include "TournamentDB.h"
 #include "TournamentDataDefs.h"
+#include "DbTab.h"
 
 using namespace QTournament;
+using namespace dbOverlay;
 
 //----------------------------------------------------------------------------
-    
+
+void tstGenericDBObject::testStateSetGet()
+{
+  printStartMsg("tstGenericDBObject::testStateSetGet");
+  
+  // initialize a database
+  TournamentDB db = getScenario01(true);
+
+  // fake a player to get a "state" column to play with
+  db[TAB_PLAYER].insertRow();
+  
+  // construct a GenericDatabaseObject from this player
+  TabRow r = db[TAB_PLAYER][1];
+  GenericDatabaseObject gdo(&db, r);
+  
+  // set a state to initially fill the column
+  gdo.setState(PL_IDLE);
+  
+  // get and change the state
+  CPPUNIT_ASSERT(gdo.getState() == PL_IDLE);
+  gdo.setState(CAT_CONFIG);
+  CPPUNIT_ASSERT(gdo.getState() == CAT_CONFIG);
+  
+  printEndMsg();
+}
 
 //----------------------------------------------------------------------------
     

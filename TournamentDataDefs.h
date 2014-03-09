@@ -8,19 +8,22 @@
 #ifndef TOURNAMENTDATADEFS_H
 #define	TOURNAMENTDATADEFS_H
 
+#include <QString>
 
 namespace QTournament
 {
 #define DB_VERSION 1
-
+#define MIN_REQUIRED_DB_VERSION 1
 
 //----------------------------------------------------------------------------
 
 #define GENERIC_NAME_FIELD_NAME QString("Name")
+#define MAX_NAME_LEN 50
+  
+#define GENERIC_STATE_FIELD_NAME QString("ObjState")
 
 //----------------------------------------------------------------------------
     
-#define MAX_NAME_LEN 50
   
 //----------------------------------------------------------------------------
     
@@ -80,6 +83,60 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
     
+#define TAB_CATEGORY QString("Category")
+#define CAT_MATCH_TYPE QString("MatchType")
+#define CAT_SEX QString("Sex")
+#define CAT_SYS QString("System")
+#define CAT_ACCEPT_DRAW QString("AcceptDraw")
+//#define CAT_ QString("")
+//#define CAT_ QString("")
+//#define CAT_ QString("")
+//#define CAT_ QString("")
+//#define CAT_ QString("")
+//#define CAT_ QString("")
+//#define CAT_ QString("")
+//#define CAT_ QString("")
+//#define CAT_ QString("")
+//#define CAT_ QString("")
+//#define CAT_ QString("")
+//#define CAT_ QString("")
+//#define CAT_ QString("")
+//#define CAT_ QString("")
+  
+//----------------------------------------------------------------------------
+
+  enum OBJ_STATE {
+    PL_IDLE,
+    CAT_CONFIG
+  };
+  
+//----------------------------------------------------------------------------
+  
+  enum MATCH_TYPE {
+    SINGLES,
+    DOUBLES,
+    MIXED
+  };  
+  
+//----------------------------------------------------------------------------
+  enum SEX
+  {
+    M,
+    F,
+    DONT_CARE
+  };  
+  
+//----------------------------------------------------------------------------
+    
+  enum MATCH_SYSTEM {
+    SWISS_LADDER,
+    GROUPS_WITH_KO,
+    RANDOMIZE,
+    RANKING
+  };
+  
+//----------------------------------------------------------------------------
+    
     class TournamentSettings {
     public:
         QString tournamentName;
@@ -88,13 +145,13 @@ namespace QTournament
     };
 
 //----------------------------------------------------------------------------
-    
+
 
 //----------------------------------------------------------------------------
-    
+
 
 //----------------------------------------------------------------------------
-    
+
 
 //----------------------------------------------------------------------------
     

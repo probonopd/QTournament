@@ -30,7 +30,6 @@ namespace QTournament
     bool hasTeam (const QString& teamName);
     Team getTeam(const QString& name);
     QList<Team> getAllTeams();
-    ERR renameTeam(const Team& t, const QString& newName);
 
   private:
     DbTab teamTab;

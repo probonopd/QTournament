@@ -17,6 +17,7 @@ using namespace dbOverlay;
 namespace QTournament
 {
   TeamMngr* Tournament::tm = NULL;
+  CatMngr* Tournament::cm = NULL;
 
 /**
  * Constructor for a new, empty tournament file
@@ -81,6 +82,7 @@ Tournament::Tournament(const QString& fName)
 void Tournament::initManagers()
 {
     tm = new TeamMngr(&db);
+    cm = new CatMngr(&db);
 }
 
 //----------------------------------------------------------------------------
@@ -95,7 +97,10 @@ void Tournament::close()
 Tournament::~Tournament()
 {
   delete tm;
+  delete cm;
+  
   tm = NULL;
+  cm = NULL;
 }
 
 //----------------------------------------------------------------------------
@@ -106,7 +111,11 @@ TeamMngr* Tournament::getTeamMngr()
 }
 
 //----------------------------------------------------------------------------
-    
+
+CatMngr* Tournament::getCatMngr()
+{
+  return cm;
+}
 
 //----------------------------------------------------------------------------
     

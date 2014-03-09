@@ -31,6 +31,9 @@ namespace QTournament
     {
       return (!(this->operator == (other)));
     }
+    
+    OBJ_STATE getState();
+    void setState(OBJ_STATE newState);
 
   protected:
     TournamentDB* db;

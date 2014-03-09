@@ -1,12 +1,12 @@
 /* 
- * File:   tstGenericDBObject.h
+ * File:   tstTeamMngr.h
  * Author: volker
  *
  * Created on March 2, 2014, 3:46 PM
  */
 
-#ifndef TSTGENERICDBOBJECT_H
-#define	TSTGENERICDBOBJECT_H
+#ifndef TSTCATMNGR_H
+#define	TSTCATMNGR_H
 
 #include <cppunit/TestCase.h>
 #include <cppunit/TestSuite.h>
@@ -15,13 +15,13 @@
 
 #include "DatabaseTestScenario.h"
 
-class tstGenericDBObject : public DatabaseTestScenario
+class tstCatMngr : public DatabaseTestScenario
 {
-  CPPUNIT_TEST_SUITE( tstGenericDBObject );
-    CPPUNIT_TEST(testStateSetGet);
-//  CPPUNIT_TEST();
-//  CPPUNIT_TEST();
-//  CPPUNIT_TEST();
+  CPPUNIT_TEST_SUITE( tstCatMngr );
+    CPPUNIT_TEST(testCreateNewCategory);
+    CPPUNIT_TEST(testHasCategory);
+    CPPUNIT_TEST(testGetCategory);
+    CPPUNIT_TEST(testGetAllCategories);
 //  CPPUNIT_TEST();
 //  CPPUNIT_TEST();
 //  CPPUNIT_TEST();
@@ -31,7 +31,10 @@ class tstGenericDBObject : public DatabaseTestScenario
   CPPUNIT_TEST_SUITE_END();
   
 public:
-  void testStateSetGet();
+  void testCreateNewCategory();
+  void testHasCategory();
+  void testGetCategory();
+  void testGetAllCategories();
 };
 
 #endif	/* TSTGENERICDBOBJECT_H */
