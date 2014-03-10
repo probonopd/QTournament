@@ -110,6 +110,26 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
+  ERR TeamMngr::renameTeam(Team& t, const QString& nn)
+  {
+    QString newName = nn.trimmed();
+    
+    // Ensure the new name is valid
+    if ((newName.isEmpty()) || (newName.length() > MAX_NAME_LEN))
+    {
+      return INVALID_NAME;
+    }
+    
+    // make sure the new name doesn't exist yet
+    if (hasTeam(newName))
+    {
+      return NAME_EXISTS;
+    }
+    
+    t.row.update(GENERIC_NAME_FIELD_NAME, newName);
+    
+    return OK;
+  }
 
 //----------------------------------------------------------------------------
 
