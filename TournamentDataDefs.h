@@ -56,7 +56,7 @@ namespace QTournament
 #define PL_FNAME QString("FirstName")
 #define PL_LNAME QString("LastName")
 #define PL_TEAM_REF QString("TeamRefId")
-//#define PL_ QString("")
+#define PL_SEX QString("Sex")
 //#define PL_ QString("")
 //#define PL_ QString("")
 //#define PL_ QString("")
@@ -106,8 +106,8 @@ namespace QTournament
 //----------------------------------------------------------------------------
 
   enum OBJ_STATE {
-    PL_IDLE,
-    CAT_CONFIG
+    STAT_PL_IDLE,
+    STAT_CAT_CONFIG
   };
   
 //----------------------------------------------------------------------------

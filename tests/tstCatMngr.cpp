@@ -40,7 +40,7 @@ void tstCatMngr::testCreateNewCategory()
   
   // make sure the default values are set correctly
   Category c = cmngr.getCategory("c1");
-  CPPUNIT_ASSERT(c.getState() == CAT_CONFIG);
+  CPPUNIT_ASSERT(c.getState() == STAT_CAT_CONFIG);
   CPPUNIT_ASSERT(c.getMatchSystem() == GROUPS_WITH_KO);
   CPPUNIT_ASSERT(c.getMatchType() == SINGLES);
   CPPUNIT_ASSERT(c.getSex() == M);

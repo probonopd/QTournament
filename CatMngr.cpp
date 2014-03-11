@@ -50,7 +50,7 @@ namespace QTournament
     qvl << CAT_SYS << static_cast<int>(GROUPS_WITH_KO);
     qvl << CAT_MATCH_TYPE << static_cast<int>(SINGLES);
     qvl << CAT_SEX << static_cast<int>(M);
-    qvl << GENERIC_STATE_FIELD_NAME << static_cast<int>(CAT_CONFIG);
+    qvl << GENERIC_STATE_FIELD_NAME << static_cast<int>(STAT_CAT_CONFIG);
     catTab.insertRow(qvl);
     
     return OK;

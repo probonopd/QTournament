@@ -18,6 +18,7 @@ namespace QTournament
 {
   TeamMngr* Tournament::tm = NULL;
   CatMngr* Tournament::cm = NULL;
+  PlayerMngr* Tournament::pm = NULL;
 
 /**
  * Constructor for a new, empty tournament file
@@ -83,6 +84,7 @@ void Tournament::initManagers()
 {
     tm = new TeamMngr(&db);
     cm = new CatMngr(&db);
+    pm = new PlayerMngr(&db);
 }
 
 //----------------------------------------------------------------------------
@@ -118,7 +120,11 @@ CatMngr* Tournament::getCatMngr()
 }
 
 //----------------------------------------------------------------------------
-    
+
+PlayerMngr* Tournament::getPlayerMngr()
+{
+  return pm;
+}
 
 //----------------------------------------------------------------------------
     

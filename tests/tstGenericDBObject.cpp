@@ -34,12 +34,12 @@ void tstGenericDBObject::testStateSetGet()
   GenericDatabaseObject gdo(&db, r);
   
   // set a state to initially fill the column
-  gdo.setState(PL_IDLE);
+  gdo.setState(STAT_PL_IDLE);
   
   // get and change the state
-  CPPUNIT_ASSERT(gdo.getState() == PL_IDLE);
-  gdo.setState(CAT_CONFIG);
-  CPPUNIT_ASSERT(gdo.getState() == CAT_CONFIG);
+  CPPUNIT_ASSERT(gdo.getState() == STAT_PL_IDLE);
+  gdo.setState(STAT_CAT_CONFIG);
+  CPPUNIT_ASSERT(gdo.getState() == STAT_CAT_CONFIG);
   
   printEndMsg();
 }

@@ -14,7 +14,9 @@ namespace QTournament
         OK = 0,
         INVALID_NAME = -10000,
         NAME_EXISTS,
-        NOT_USING_TEAMS
+        NOT_USING_TEAMS,
+        INVALID_SEX,
+        INVALID_TEAM
     };
 }
 

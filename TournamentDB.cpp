@@ -47,6 +47,7 @@ void TournamentDB::populateTables()
     cols << PL_FNAME + nameTypeDef;
     cols << PL_LNAME + nameTypeDef;;
     cols << stateFieldDef;
+    cols << PL_SEX + " INTEGER";
     //cols << PL_ + " ";
     //cols << PL_ + " ";
     //cols << PL_ + " ";

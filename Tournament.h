@@ -15,6 +15,7 @@
 #include "KeyValueTab.h"
 #include "TeamMngr.h"
 #include "CatMngr.h"
+#include "PlayerMngr.h"
 
 using namespace dbOverlay;
 
@@ -27,6 +28,7 @@ namespace QTournament
     Tournament (const QString& fName);
     static TeamMngr* getTeamMngr();
     static CatMngr* getCatMngr();
+    static PlayerMngr* getPlayerMngr();
     void close();
     ~Tournament();
 
@@ -34,6 +36,7 @@ namespace QTournament
     TournamentDB db;
     static TeamMngr* tm;
     static CatMngr* cm;
+    static PlayerMngr* pm;
     void initManagers ();
 
   };

@@ -1,0 +1,36 @@
+/* 
+ * File:   Team.h
+ * Author: volker
+ *
+ * Created on March 2, 2014, 6:13 PM
+ */
+
+#ifndef PLAYER_H
+#define	PLAYER_H
+
+#include "GenericDatabaseObject.h"
+#include "TournamentDB.h"
+#include "TabRow.h"
+#include "TournamentErrorCodes.h"
+
+namespace QTournament
+{
+
+  class Player : public GenericDatabaseObject
+  {
+    friend class PlayerMngr;
+    
+  public:
+    QString getDisplayName(int maxLen = 0);
+    QString getFirstName();
+    QString getLastName();
+    ERR rename(const QString& newFirst, const QString& newLast);
+
+  private:
+    Player (TournamentDB* db, int rowId);
+    Player (TournamentDB* db, dbOverlay::TabRow row);
+  };
+
+}
+#endif	/* TEAM_H */
+
