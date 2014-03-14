@@ -232,6 +232,131 @@ TournamentDB DatabaseTestScenario::getScenario01(bool useTeams)
 
 //----------------------------------------------------------------------------
     
+void DatabaseTestScenario::prepScenario02(bool useTeams)
+{
+  prepScenario01(useTeams);
+  Tournament t(getSqliteFileName());
+  
+  // create a team some dummy players
+  CPPUNIT_ASSERT(Tournament::getTeamMngr()->createNewTeam("t1") == OK);
+  CPPUNIT_ASSERT(Tournament::getPlayerMngr()->createNewPlayer("f", "l1", M, "t1") == OK);
+  CPPUNIT_ASSERT(Tournament::getPlayerMngr()->createNewPlayer("f", "l2", F, "t1") == OK);
+  CPPUNIT_ASSERT(Tournament::getPlayerMngr()->createNewPlayer("f", "l3", M, "t1") == OK);
+  CPPUNIT_ASSERT(Tournament::getPlayerMngr()->createNewPlayer("f", "l4", F, "t1") == OK);
+  CPPUNIT_ASSERT(Tournament::getPlayerMngr()->createNewPlayer("f", "l5", M, "t1") == OK);
+  CPPUNIT_ASSERT(Tournament::getPlayerMngr()->createNewPlayer("f", "l6", F, "t1") == OK);
+  
+  // create one category of every kind
+  CatMngr* cmngr = Tournament::getCatMngr();
+  CPPUNIT_ASSERT(cmngr->createNewCategory("MS") == OK);
+  Category ms = cmngr->getCategory("MS");
+  CPPUNIT_ASSERT(ms.setMatchType(SINGLES) == OK);
+  CPPUNIT_ASSERT(ms.setSex(M) == OK);
+  
+  CPPUNIT_ASSERT(cmngr->createNewCategory("MD") == OK);
+  Category md = cmngr->getCategory("MD");
+  CPPUNIT_ASSERT(md.setMatchType(DOUBLES) == OK);
+  CPPUNIT_ASSERT(md.setSex(M) == OK);
+  
+  CPPUNIT_ASSERT(cmngr->createNewCategory("LS") == OK);
+  Category ls = cmngr->getCategory("LS");
+  CPPUNIT_ASSERT(ls.setMatchType(SINGLES) == OK);
+  CPPUNIT_ASSERT(ls.setSex(F) == OK);
+  
+  CPPUNIT_ASSERT(cmngr->createNewCategory("LD") == OK);
+  Category ld = cmngr->getCategory("LD");
+  CPPUNIT_ASSERT(ld.setMatchType(DOUBLES) == OK);
+  CPPUNIT_ASSERT(ld.setSex(F) == OK);
+  
+  CPPUNIT_ASSERT(cmngr->createNewCategory("MX") == OK);
+  Category mx = cmngr->getCategory("MX");
+  CPPUNIT_ASSERT(mx.setMatchType(MIXED) == OK);
+  CPPUNIT_ASSERT(mx.setSex(M) == OK);   // shouldn't matter at all
+}
+
+//----------------------------------------------------------------------------
+    
+TournamentDB DatabaseTestScenario::getScenario02(bool useTeams)
+{
+  prepScenario02(useTeams);
+  return TournamentDB(getSqliteFileName(), false);
+}
+
+
+//----------------------------------------------------------------------------
+    
+
+//----------------------------------------------------------------------------
+    
+
+//----------------------------------------------------------------------------
+    
+
+//----------------------------------------------------------------------------
+    
+
+//----------------------------------------------------------------------------
+    
+
+//----------------------------------------------------------------------------
+    
+
+//----------------------------------------------------------------------------
+    
+
+//----------------------------------------------------------------------------
+    
+
+//----------------------------------------------------------------------------
+    
+
+//----------------------------------------------------------------------------
+    
+
+//----------------------------------------------------------------------------
+    
+
+//----------------------------------------------------------------------------
+    
+
+//----------------------------------------------------------------------------
+    
+
+//----------------------------------------------------------------------------
+    
+
+//----------------------------------------------------------------------------
+    
+
+//----------------------------------------------------------------------------
+    
+
+//----------------------------------------------------------------------------
+    
+
+//----------------------------------------------------------------------------
+    
+
+//----------------------------------------------------------------------------
+    
+
+//----------------------------------------------------------------------------
+    
+
+//----------------------------------------------------------------------------
+    
+
+//----------------------------------------------------------------------------
+    
+
+//----------------------------------------------------------------------------
+    
+
+//----------------------------------------------------------------------------
+    
+
+//----------------------------------------------------------------------------
+    
 
 //----------------------------------------------------------------------------
     

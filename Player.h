@@ -21,10 +21,11 @@ namespace QTournament
     friend class PlayerMngr;
     
   public:
-    QString getDisplayName(int maxLen = 0);
-    QString getFirstName();
-    QString getLastName();
+    QString getDisplayName(int maxLen = 0) const;
+    QString getFirstName() const;
+    QString getLastName() const;
     ERR rename(const QString& newFirst, const QString& newLast);
+    SEX getSex() const;
 
   private:
     Player (TournamentDB* db, int rowId);

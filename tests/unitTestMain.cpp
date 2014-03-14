@@ -22,6 +22,7 @@
 #include "tstTeamMngr.h"
 #include "tstCatMngr.h"
 #include "tstPlayerMngr.h"
+#include "tstCategory.h"
 
 // comment / uncomment the following to execute just one suite
 //#define TEST_ALL_SUITES
@@ -34,8 +35,9 @@
   CPPUNIT_TEST_SUITE_REGISTRATION(tstTeam);
   CPPUNIT_TEST_SUITE_REGISTRATION(tstCatMngr);
   CPPUNIT_TEST_SUITE_REGISTRATION(tstPlayerMngr);
+  CPPUNIT_TEST_SUITE_REGISTRATION(tstCategory);
 #else
-  CPPUNIT_TEST_SUITE_REGISTRATION(tstPlayerMngr);
+  CPPUNIT_TEST_SUITE_REGISTRATION(tstCatMngr);
 #endif
 
 

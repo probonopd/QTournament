@@ -36,7 +36,7 @@ GenericDatabaseObject::GenericDatabaseObject(TournamentDB* _db, const QString& _
 
 //----------------------------------------------------------------------------
 
-  int GenericDatabaseObject::getId()
+  int GenericDatabaseObject::getId() const
   {
     return row.getId();
   }
@@ -46,7 +46,7 @@ GenericDatabaseObject::GenericDatabaseObject(TournamentDB* _db, const QString& _
   // THIS FUNCTION WILL FAIL IF THE DATABASE
   // HAS NO "State" COLUMN OR IF THE VALUE IS
   // NOT SET!!!
-  OBJ_STATE GenericDatabaseObject::getState()
+  OBJ_STATE GenericDatabaseObject::getState() const
   {
     int stateInt = row[GENERIC_STATE_FIELD_NAME].toInt();
     

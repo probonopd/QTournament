@@ -33,6 +33,8 @@ namespace QTournament
     ERR setMatchType(Category& c, MATCH_TYPE t);
     ERR setMatchSystem(Category& c, MATCH_SYSTEM s);
     ERR setSex(Category& c, SEX s);
+    ERR addPlayerToCategory(const Player& p, const Category& c);
+    ERR removePlayerFromCategory(const Player& p, const Category& c);
 
   private:
     DbTab catTab;

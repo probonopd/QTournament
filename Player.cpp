@@ -32,7 +32,7 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  QString Player::getDisplayName(int maxLen)
+  QString Player::getDisplayName(int maxLen) const
   {
     QString first = row[PL_FNAME].toString();
     QString last = row[PL_LNAME].toString();
@@ -81,20 +81,25 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  QString Player::getFirstName()
+  QString Player::getFirstName() const
   {
     return row[PL_FNAME].toString();
   }
 
 //----------------------------------------------------------------------------
 
-  QString Player::getLastName()
+  QString Player::getLastName() const
   {
     return row[PL_LNAME].toString();
   }
 
 //----------------------------------------------------------------------------
 
+  SEX Player::getSex() const
+  {
+    int sexInt = row[PL_SEX].toInt();
+    return static_cast<SEX>(sexInt);
+  }
 
 //----------------------------------------------------------------------------
 

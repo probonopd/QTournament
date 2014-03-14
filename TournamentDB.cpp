@@ -80,7 +80,11 @@ void TournamentDB::populateTables()
     //cols << CAT_ + " ";
     tableCreationHelper(TAB_CATEGORY, cols);
     
-    
+    // Generate the table holding the player-to-category mapping
+    cols.clear();
+    cols << genForeignKeyClause(P2C_PLAYER_REF, TAB_PLAYER);
+    cols << genForeignKeyClause(P2C_CAT_REF, TAB_CATEGORY);
+    tableCreationHelper(TAB_P2C, cols);
 }
 
 void TournamentDB::populateViews()

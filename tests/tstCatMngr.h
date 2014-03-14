@@ -22,8 +22,8 @@ class tstCatMngr : public DatabaseTestScenario
     CPPUNIT_TEST(testHasCategory);
     CPPUNIT_TEST(testGetCategory);
     CPPUNIT_TEST(testGetAllCategories);
-//  CPPUNIT_TEST();
-//  CPPUNIT_TEST();
+    CPPUNIT_TEST(testAddPlayerToCategory);
+    CPPUNIT_TEST(testRemovePlayerFromCategory);
 //  CPPUNIT_TEST();
 //  CPPUNIT_TEST();
 //  CPPUNIT_TEST();
@@ -35,6 +35,8 @@ public:
   void testHasCategory();
   void testGetCategory();
   void testGetAllCategories();
+  void testAddPlayerToCategory();
+  void testRemovePlayerFromCategory();
 };
 
 #endif	/* TSTGENERICDBOBJECT_H */

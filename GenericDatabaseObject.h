@@ -20,7 +20,7 @@ namespace QTournament
   public:
     GenericDatabaseObject (TournamentDB* _db, const QString& _tabName, int _id);
     GenericDatabaseObject (TournamentDB* _db, dbOverlay::TabRow _row);
-    int getId ();
+    int getId () const;
 
     inline bool operator== (const GenericDatabaseObject& other) const
     {
@@ -32,7 +32,7 @@ namespace QTournament
       return (!(this->operator == (other)));
     }
     
-    OBJ_STATE getState();
+    OBJ_STATE getState() const;
     void setState(OBJ_STATE newState);
 
   protected:

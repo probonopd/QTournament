@@ -10,6 +10,7 @@
 #include "TournamentDataDefs.h"
 #include <stdexcept>
 #include <qt/QtCore/qdebug.h>
+#include <qt/QtCore/qjsonarray.h>
 #include "HelperFunc.h"
 
 using namespace dbOverlay;
@@ -142,9 +143,57 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
+  ERR CatMngr::addPlayerToCategory(const Player& p, const Category& c)
+  {
+    if (!(c.canAddPlayers()))
+    {
+      return CATEGORY_CLOSED_FOR_MORE_PLAYERS;
+    }
+    
+    if (!(c.isPlayerSuitable(p)))
+    {
+      return PLAYER_NOT_SUITABLE;
+    }
+    
+    if (c.hasPlayer(p))
+    {
+      return PLAYER_ALREADY_IN_CATEGORY;
+    }
+    
+    // TODO: check that player is not permanently disabled
+    
+    // actually add the player
+    QVariantList qvl;
+    qvl << P2C_CAT_REF << c.getId();
+    qvl << P2C_PLAYER_REF << p.getId();
+    db->getTab(TAB_P2C).insertRow(qvl);
+    
+    return OK;
+  }
 
 //----------------------------------------------------------------------------
 
+  ERR CatMngr::removePlayerFromCategory(const Player& p, const Category& c)
+  {
+    if (!(c.canRemovePlayer(p)))
+    {
+      return PLAYER_NOT_REMOVABLE_FROM_CATEGORY;
+    }
+    
+    if (!(c.hasPlayer(p)))
+    {
+      return PLAYER_NOT_IN_CATEGORY;
+    }
+    // TODO: split player pairs, if necessary
+    
+    // actually delete the assignment
+    QVariantList qvl;
+    qvl << P2C_CAT_REF << c.getId();
+    qvl << P2C_PLAYER_REF << p.getId();
+    db->getTab(TAB_P2C).deleteRowsByColumnValue(qvl);
+    
+    return OK;
+  }
 
 //----------------------------------------------------------------------------
 

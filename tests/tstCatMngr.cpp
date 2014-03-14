@@ -14,6 +14,7 @@
 #include "TournamentDataDefs.h"
 #include "CatMngr.h"
 #include "TournamentErrorCodes.h"
+#include "Tournament.h"
 
 using namespace QTournament;
 using namespace dbOverlay;
@@ -132,6 +133,161 @@ void tstCatMngr::testGetAllCategories()
   
   printEndMsg();
 }
+
+//----------------------------------------------------------------------------
+    
+void tstCatMngr::testAddPlayerToCategory()
+{
+  printStartMsg("tstCatMngr::testAddPlayerToCategory");
+  
+  TournamentDB db = getScenario02(true);
+  Tournament t(getSqliteFileName());
+  
+  // create a team some dummy players
+  Player m1 = Tournament::getPlayerMngr()->getPlayer("f", "l1");
+  Player f1 = Tournament::getPlayerMngr()->getPlayer("f", "l2");
+  Player m2 = Tournament::getPlayerMngr()->getPlayer("f", "l3");
+  Player f2 = Tournament::getPlayerMngr()->getPlayer("f", "l4");
+  Player f3 = Tournament::getPlayerMngr()->getPlayer("f", "l6");
+  
+  // create one category of every sex
+  CatMngr* cmngr = Tournament::getCatMngr();
+  Category ms = cmngr->getCategory("MS");
+  Category ld = cmngr->getCategory("LD");
+  Category mx = cmngr->getCategory("MX");
+  
+  // add players to men's singles
+  CPPUNIT_ASSERT(cmngr->addPlayerToCategory(m1, ms) == OK);
+  CPPUNIT_ASSERT(ms.hasPlayer(m1));
+  CPPUNIT_ASSERT(cmngr->addPlayerToCategory(m1, ms) == PLAYER_ALREADY_IN_CATEGORY);
+  CPPUNIT_ASSERT(cmngr->addPlayerToCategory(f1, ms) == PLAYER_NOT_SUITABLE);
+  CPPUNIT_ASSERT(cmngr->addPlayerToCategory(m2, ms) == OK);
+  CPPUNIT_ASSERT(ms.hasPlayer(m2));
+  ms.setSex(DONT_CARE);   // relax checks
+  CPPUNIT_ASSERT(cmngr->addPlayerToCategory(f1, ms) == OK);
+  CPPUNIT_ASSERT(ms.hasPlayer(f1));
+  
+  // add players to ladies' doubles
+  CPPUNIT_ASSERT(cmngr->addPlayerToCategory(f1, ld) == OK);
+  CPPUNIT_ASSERT(ld.hasPlayer(f1));
+  CPPUNIT_ASSERT(cmngr->addPlayerToCategory(f1, ld) == PLAYER_ALREADY_IN_CATEGORY);
+  CPPUNIT_ASSERT(cmngr->addPlayerToCategory(m1, ld) == PLAYER_NOT_SUITABLE);
+  CPPUNIT_ASSERT(cmngr->addPlayerToCategory(f2, ld) == OK);
+  CPPUNIT_ASSERT(ld.hasPlayer(f2));
+  ld.setSex(DONT_CARE);   // relax checks
+  CPPUNIT_ASSERT(cmngr->addPlayerToCategory(m1, ld) == OK);
+  CPPUNIT_ASSERT(ld.hasPlayer(m1));
+  
+  // add players to mixed doubles
+  CPPUNIT_ASSERT(cmngr->addPlayerToCategory(f1, mx) == OK);
+  CPPUNIT_ASSERT(mx.hasPlayer(f1));
+  CPPUNIT_ASSERT(cmngr->addPlayerToCategory(f1, mx) == PLAYER_ALREADY_IN_CATEGORY);
+  CPPUNIT_ASSERT(cmngr->addPlayerToCategory(m1, mx) == OK);
+  CPPUNIT_ASSERT(mx.hasPlayer(m1));
+  CPPUNIT_ASSERT(cmngr->addPlayerToCategory(f2, mx) == OK);
+  CPPUNIT_ASSERT(mx.hasPlayer(f2));
+  mx.setSex(DONT_CARE);   // relax checks
+  CPPUNIT_ASSERT(cmngr->addPlayerToCategory(m2, mx) == OK);
+  CPPUNIT_ASSERT(mx.hasPlayer(m2));
+  CPPUNIT_ASSERT(cmngr->addPlayerToCategory(f3, mx) == OK);
+  CPPUNIT_ASSERT(mx.hasPlayer(f3));
+  
+  // TODO:
+  // Add state-dependent tests, e.g. adding players after category configuration
+
+  printEndMsg();
+}
+
+//----------------------------------------------------------------------------
+    
+void tstCatMngr::testRemovePlayerFromCategory()
+{
+  printStartMsg("tstCatMngr::testRemovePlayerFromCategory");
+  
+  TournamentDB db = getScenario02(true);
+  Tournament t(getSqliteFileName());
+  
+  // create a team some dummy players
+  Player m1 = Tournament::getPlayerMngr()->getPlayer("f", "l1");
+  Player f1 = Tournament::getPlayerMngr()->getPlayer("f", "l2");
+  Player f2 = Tournament::getPlayerMngr()->getPlayer("f", "l4");
+  Player f3 = Tournament::getPlayerMngr()->getPlayer("f", "l6");
+  
+  // create a category
+  CatMngr* cmngr = Tournament::getCatMngr();
+  Category ls = cmngr->getCategory("LS");
+  
+  // add players to men's singles
+  CPPUNIT_ASSERT(cmngr->addPlayerToCategory(f1, ls) == OK);
+  CPPUNIT_ASSERT(cmngr->addPlayerToCategory(f2, ls) == OK);
+  CPPUNIT_ASSERT(ls.hasPlayer(f1));
+  CPPUNIT_ASSERT(ls.hasPlayer(f2));
+  
+  // try to remove not-added players
+  CPPUNIT_ASSERT(cmngr->removePlayerFromCategory(f3, ls) == PLAYER_NOT_IN_CATEGORY);
+  CPPUNIT_ASSERT(cmngr->removePlayerFromCategory(m1, ls) == PLAYER_NOT_IN_CATEGORY);
+  CPPUNIT_ASSERT(ls.hasPlayer(f1));
+  CPPUNIT_ASSERT(ls.hasPlayer(f2));
+  
+  // actually remove player
+  CPPUNIT_ASSERT(cmngr->removePlayerFromCategory(f2, ls) == OK);
+  CPPUNIT_ASSERT(ls.hasPlayer(f1));
+  CPPUNIT_ASSERT(ls.hasPlayer(f2) == false);
+}
+
+//----------------------------------------------------------------------------
+    
+
+//----------------------------------------------------------------------------
+    
+
+//----------------------------------------------------------------------------
+    
+
+//----------------------------------------------------------------------------
+    
+
+//----------------------------------------------------------------------------
+    
+
+//----------------------------------------------------------------------------
+    
+
+//----------------------------------------------------------------------------
+    
+
+//----------------------------------------------------------------------------
+    
+
+//----------------------------------------------------------------------------
+    
+
+//----------------------------------------------------------------------------
+    
+
+//----------------------------------------------------------------------------
+    
+
+//----------------------------------------------------------------------------
+    
+
+//----------------------------------------------------------------------------
+    
+
+//----------------------------------------------------------------------------
+    
+
+//----------------------------------------------------------------------------
+    
+
+//----------------------------------------------------------------------------
+    
+
+//----------------------------------------------------------------------------
+    
+
+//----------------------------------------------------------------------------
+    
 
 //----------------------------------------------------------------------------
     

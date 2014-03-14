@@ -29,7 +29,7 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  QString Category::getName()
+  QString Category::getName() const
   {
     return row[GENERIC_NAME_FIELD_NAME].toString();
   }
@@ -60,7 +60,7 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  MATCH_SYSTEM Category::getMatchSystem()
+  MATCH_SYSTEM Category::getMatchSystem() const
   {
     int sysInt = row[CAT_SYS].toInt();
     
@@ -69,7 +69,7 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  MATCH_TYPE Category::getMatchType()
+  MATCH_TYPE Category::getMatchType() const
   {
     int typeInt = row[CAT_MATCH_TYPE].toInt();
     
@@ -78,7 +78,7 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  SEX Category::getSex()
+  SEX Category::getSex() const
   {
     int sexInt = row[CAT_SEX].toInt();
     
@@ -105,6 +105,87 @@ namespace QTournament
   {
     return Tournament::getCatMngr()->setSex(*this, s);
   }
+
+//----------------------------------------------------------------------------
+
+  bool Category::canAddPlayers() const
+  {
+    // For now, you can only add players to a category
+    // when it's still in configuration mode
+    return (getState() == STAT_CAT_CONFIG);
+    
+    // TODO: make more sophisticated tests depending e. g. on
+    // the match system. For instance, if we have random
+    // matches, players should be addable after every round
+  }
+
+//----------------------------------------------------------------------------
+
+  bool Category::isPlayerSuitable(const Player& p) const
+  {
+    // a "mixed" category can take any player
+    if (getMatchType() == MIXED)
+    {
+      return true;
+    }
+    
+    // ok, so we're either in singles or doubles. if the sex
+    // is set to DONT_CARE, then also any player will fit
+    if (getSex() == DONT_CARE)
+    {
+      return true;
+    }
+    
+    // in all other cases, the category's sex has to
+    // match the player's sex
+    return (p.getSex() == getSex());
+  }
+
+
+//----------------------------------------------------------------------------
+
+  ERR Category::addPlayer(const Player& p)
+  {
+    return Tournament::getCatMngr()->addPlayerToCategory(p, *this);
+  }
+
+//----------------------------------------------------------------------------
+
+  bool Category::hasPlayer(const Player& p) const
+  {
+    QVariantList qvl;
+    qvl << P2C_PLAYER_REF << p.getId();
+    qvl << P2C_CAT_REF << getId();
+    
+    return (db->getTab(TAB_P2C).getMatchCountForColumnValue(qvl) > 0);
+  }
+
+//----------------------------------------------------------------------------
+
+  bool Category::canRemovePlayer(const Player& p) const
+  {
+    // For now, you can only delete players from a category
+    // when it's still in configuration mode
+    return (getState() == STAT_CAT_CONFIG);
+    
+    // TODO: make more sophisticated tests depending e. g. on
+    // the match system. For instance, if we have random
+    // matches, players should be removable after every round
+    //
+    // Also, we should be able to remove players that we're not
+    // yet involved/scheduled for any matches.
+  }
+
+//----------------------------------------------------------------------------
+
+  ERR Category::removePlayer(const Player& p)
+  {
+    return Tournament::getCatMngr()->removePlayerFromCategory(p, *this);
+  }
+
+
+//----------------------------------------------------------------------------
+
 
 //----------------------------------------------------------------------------
 
