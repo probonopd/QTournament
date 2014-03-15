@@ -19,6 +19,10 @@ namespace QTournament
   {
   public:
     GenericObjectManager (TournamentDB* _db);
+    
+  protected:
+    void fixSeqNumberAfterInsert(const QString& tabName);
+    void fixSeqNumberAfterDelete(const QString& tabName, int deletedSeqNum);
 
   protected:
     TournamentDB* db;

@@ -79,6 +79,7 @@ namespace QTournament
     
     // create the new player row
     playerTab.insertRow(qvl);
+    fixSeqNumberAfterInsert(TAB_PLAYER);
     
     return OK;
   }

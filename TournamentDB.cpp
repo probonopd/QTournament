@@ -27,6 +27,7 @@ void TournamentDB::populateTables()
     QString nameTypeDef = " VARCHAR(" + QString::number(MAX_NAME_LEN) + ")";
     QString nameFieldDef = GENERIC_NAME_FIELD_NAME + nameTypeDef;
     QString stateFieldDef = GENERIC_STATE_FIELD_NAME + " INTEGER";
+    QString seqNumFieldDef = GENERIC_SEQNUM_FIELD_NAME + " INTEGER";
     
     // Generate the key-value-table with the tournament config
     dbOverlay::KeyValueTab::getTab(this, TAB_CFG);
@@ -34,6 +35,7 @@ void TournamentDB::populateTables()
     // Generate the table holding the teams
     cols.clear();
     cols << nameFieldDef;
+    cols << seqNumFieldDef;
     //cols << TE_ + " ";
     //cols << TE_ + " ";
     //cols << TE_ + " ";
@@ -48,6 +50,7 @@ void TournamentDB::populateTables()
     cols << PL_LNAME + nameTypeDef;;
     cols << stateFieldDef;
     cols << PL_SEX + " INTEGER";
+    cols << seqNumFieldDef;
     //cols << PL_ + " ";
     //cols << PL_ + " ";
     //cols << PL_ + " ";
@@ -68,6 +71,7 @@ void TournamentDB::populateTables()
     cols << CAT_SYS + " INTEGER";
     cols << CAT_ACCEPT_DRAW + " INTEGER";
     cols << stateFieldDef;
+    cols << seqNumFieldDef;
     //cols << CAT_ + " ";
     //cols << CAT_ + " ";
     //cols << CAT_ + " ";

@@ -53,6 +53,7 @@ namespace QTournament
     qvl << GENERIC_NAME_FIELD_NAME << teamName;
     
     teamTab.insertRow(qvl);
+    fixSeqNumberAfterInsert(TAB_TEAM);
     
     return OK;
   }

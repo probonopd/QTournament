@@ -53,6 +53,7 @@ namespace QTournament
     qvl << CAT_SEX << static_cast<int>(M);
     qvl << GENERIC_STATE_FIELD_NAME << static_cast<int>(STAT_CAT_CONFIG);
     catTab.insertRow(qvl);
+    fixSeqNumberAfterInsert(TAB_CATEGORY);
     
     return OK;
   }

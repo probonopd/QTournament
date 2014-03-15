@@ -21,6 +21,8 @@ namespace QTournament
 #define MAX_NAME_LEN 50
   
 #define GENERIC_STATE_FIELD_NAME QString("ObjState")
+  
+#define GENERIC_SEQNUM_FIELD_NAME QString("SequenceNumber")
 
 //----------------------------------------------------------------------------
     
