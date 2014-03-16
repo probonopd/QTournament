@@ -24,6 +24,7 @@
 #include <QtWidgets/QTabWidget>
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QWidget>
+#include "TeamListView.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -34,6 +35,8 @@ public:
     QAction *actionOpen;
     QAction *actionSettings;
     QAction *action_Quit;
+    QAction *actionEmpty;
+    QAction *actionScenario01;
     QWidget *centralwidget;
     QVBoxLayout *verticalLayout_2;
     QVBoxLayout *verticalLayout;
@@ -46,9 +49,11 @@ public:
     QPushButton *pushButton_2;
     QPushButton *pushButton_3;
     QColumnView *columnView;
+    TeamListView *listView;
     QWidget *tabPlayers;
     QMenuBar *menubar;
     QMenu *menuTournament;
+    QMenu *menuTesting;
     QStatusBar *statusbar;
 
     void setupUi(QMainWindow *MainFrame)
@@ -64,16 +69,23 @@ public:
         actionSettings->setObjectName(QStringLiteral("actionSettings"));
         action_Quit = new QAction(MainFrame);
         action_Quit->setObjectName(QStringLiteral("action_Quit"));
+        actionEmpty = new QAction(MainFrame);
+        actionEmpty->setObjectName(QStringLiteral("actionEmpty"));
+        actionScenario01 = new QAction(MainFrame);
+        actionScenario01->setObjectName(QStringLiteral("actionScenario01"));
         centralwidget = new QWidget(MainFrame);
         centralwidget->setObjectName(QStringLiteral("centralwidget"));
+        centralwidget->setEnabled(true);
         verticalLayout_2 = new QVBoxLayout(centralwidget);
         verticalLayout_2->setObjectName(QStringLiteral("verticalLayout_2"));
         verticalLayout = new QVBoxLayout();
         verticalLayout->setObjectName(QStringLiteral("verticalLayout"));
         mainTab = new QTabWidget(centralwidget);
         mainTab->setObjectName(QStringLiteral("mainTab"));
+        mainTab->setEnabled(true);
         tabTeams = new QWidget();
         tabTeams->setObjectName(QStringLiteral("tabTeams"));
+        tabTeams->setEnabled(true);
         verticalLayout_5 = new QVBoxLayout(tabTeams);
         verticalLayout_5->setObjectName(QStringLiteral("verticalLayout_5"));
         verticalLayout_4 = new QVBoxLayout();
@@ -112,6 +124,11 @@ public:
 
         verticalLayout_4->addWidget(columnView);
 
+        listView = new TeamListView(tabTeams);
+        listView->setObjectName(QStringLiteral("listView"));
+
+        verticalLayout_4->addWidget(listView);
+
 
         verticalLayout_5->addLayout(verticalLayout_4);
 
@@ -131,20 +148,30 @@ public:
         menubar->setGeometry(QRect(0, 0, 938, 25));
         menuTournament = new QMenu(menubar);
         menuTournament->setObjectName(QStringLiteral("menuTournament"));
+        menuTesting = new QMenu(menubar);
+        menuTesting->setObjectName(QStringLiteral("menuTesting"));
         MainFrame->setMenuBar(menubar);
         statusbar = new QStatusBar(MainFrame);
         statusbar->setObjectName(QStringLiteral("statusbar"));
         MainFrame->setStatusBar(statusbar);
 
         menubar->addAction(menuTournament->menuAction());
+        menubar->addAction(menuTesting->menuAction());
         menuTournament->addAction(actionNew);
         menuTournament->addAction(actionOpen);
         menuTournament->addSeparator();
         menuTournament->addAction(actionSettings);
         menuTournament->addSeparator();
         menuTournament->addAction(action_Quit);
+        menuTesting->addAction(actionEmpty);
+        menuTesting->addAction(actionScenario01);
 
         retranslateUi(MainFrame);
+        QObject::connect(action_Quit, SIGNAL(triggered()), MainFrame, SLOT(close()));
+        QObject::connect(actionNew, SIGNAL(triggered()), MainFrame, SLOT(newTournament()));
+        QObject::connect(actionOpen, SIGNAL(triggered()), MainFrame, SLOT(openTournament()));
+        QObject::connect(actionEmpty, SIGNAL(triggered()), MainFrame, SLOT(setupEmptyScenario()));
+        QObject::connect(actionScenario01, SIGNAL(triggered()), MainFrame, SLOT(setupScenario01()));
 
         mainTab->setCurrentIndex(0);
 
@@ -159,12 +186,15 @@ public:
         actionOpen->setText(QApplication::translate("MainFrame", "&Open", 0));
         actionSettings->setText(QApplication::translate("MainFrame", "&Settings...", 0));
         action_Quit->setText(QApplication::translate("MainFrame", "&Quit", 0));
+        actionEmpty->setText(QApplication::translate("MainFrame", "Empty", 0));
+        actionScenario01->setText(QApplication::translate("MainFrame", "Scenario01", 0));
         pushButton->setText(QApplication::translate("MainFrame", "New...", 0));
         pushButton_2->setText(QApplication::translate("MainFrame", "Rename...", 0));
         pushButton_3->setText(QApplication::translate("MainFrame", "Delete...", 0));
         mainTab->setTabText(mainTab->indexOf(tabTeams), QApplication::translate("MainFrame", "Teams", 0));
         mainTab->setTabText(mainTab->indexOf(tabPlayers), QApplication::translate("MainFrame", "Players", 0));
         menuTournament->setTitle(QApplication::translate("MainFrame", "Tournament", 0));
+        menuTesting->setTitle(QApplication::translate("MainFrame", "Testing", 0));
     } // retranslateUi
 
 };

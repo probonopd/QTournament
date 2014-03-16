@@ -14,15 +14,24 @@
    <string>QTournament</string>
   </property>
   <widget class="QWidget" name="centralwidget">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
    <layout class="QVBoxLayout" name="verticalLayout_2">
     <item>
      <layout class="QVBoxLayout" name="verticalLayout">
       <item>
        <widget class="QTabWidget" name="mainTab">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
         <property name="currentIndex">
          <number>0</number>
         </property>
         <widget class="QWidget" name="tabTeams">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
          <attribute name="title">
           <string>Teams</string>
          </attribute>
@@ -69,6 +78,9 @@
             <item>
              <widget class="QColumnView" name="columnView"/>
             </item>
+            <item>
+             <widget class="TeamListView" name="listView"/>
+            </item>
            </layout>
           </item>
          </layout>
@@ -104,7 +116,15 @@
     <addaction name="separator"/>
     <addaction name="action_Quit"/>
    </widget>
+   <widget class="QMenu" name="menuTesting">
+    <property name="title">
+     <string>Testing</string>
+    </property>
+    <addaction name="actionEmpty"/>
+    <addaction name="actionScenario01"/>
+   </widget>
    <addaction name="menuTournament"/>
+   <addaction name="menuTesting"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionNew">
@@ -127,9 +147,113 @@
     <string>&amp;Quit</string>
    </property>
   </action>
+  <action name="actionEmpty">
+   <property name="text">
+    <string>Empty</string>
+   </property>
+  </action>
+  <action name="actionScenario01">
+   <property name="text">
+    <string>Scenario01</string>
+   </property>
+  </action>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>TeamListView</class>
+   <extends>QListView</extends>
+   <header>TeamListView.h</header>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="../tournament.qrc"/>
  </resources>
- <connections/>
+ <connections>
+  <connection>
+   <sender>action_Quit</sender>
+   <signal>triggered()</signal>
+   <receiver>MainFrame</receiver>
+   <slot>close()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>468</x>
+     <y>379</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionNew</sender>
+   <signal>triggered()</signal>
+   <receiver>MainFrame</receiver>
+   <slot>newTournament()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>468</x>
+     <y>379</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionOpen</sender>
+   <signal>triggered()</signal>
+   <receiver>MainFrame</receiver>
+   <slot>openTournament()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>468</x>
+     <y>379</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionEmpty</sender>
+   <signal>triggered()</signal>
+   <receiver>MainFrame</receiver>
+   <slot>setupEmptyScenario()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>468</x>
+     <y>379</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionScenario01</sender>
+   <signal>triggered()</signal>
+   <receiver>MainFrame</receiver>
+   <slot>setupScenario01()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>468</x>
+     <y>379</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>newTournament()</slot>
+  <slot>openTournament()</slot>
+  <slot>setupEmptyScenario()</slot>
+  <slot>setupScenario01()</slot>
+ </slots>
 </ui>

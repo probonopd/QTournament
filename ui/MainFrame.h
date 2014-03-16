@@ -9,6 +9,9 @@
 #define	_MAINFRAME_H
 
 #include "ui_MainFrame.h"
+#include "Tournament.h"
+
+using namespace QTournament;
 
 class MainFrame : public QMainWindow
 {
@@ -16,8 +19,29 @@ class MainFrame : public QMainWindow
 public:
   MainFrame ();
   virtual ~MainFrame ();
+  
 private:
-  Ui::MainFrame widget;
+  Ui::MainFrame ui;
+  
+  void enableControls(bool doEnable = true);
+  void setupTestScenario(int scenarioID);
+  
+  Tournament* tnmt;
+  
+  QString testFileName;
+  
+  void closeCurrentTournament();
+  
+
+public slots:
+  void newTournament ();
+  void openTournament();
+  void setupEmptyScenario();
+  void setupScenario01();
+
+signals:
+  void tournamentClosed ();
+  void tournamentOpened (Tournament* tnmt);
 };
 
 #endif	/* _MAINFRAME_H */

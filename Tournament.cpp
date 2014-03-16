@@ -19,6 +19,7 @@ namespace QTournament
   TeamMngr* Tournament::tm = NULL;
   CatMngr* Tournament::cm = NULL;
   PlayerMngr* Tournament::pm = NULL;
+  TeamListModel* Tournament::tlm = NULL;
 
 /**
  * Constructor for a new, empty tournament file
@@ -50,6 +51,7 @@ Tournament::Tournament(const QString& fName, const TournamentSettings& cfg)
     
     // initialize the various managers / handlers
     initManagers();
+    initModels();
 }
 
 //----------------------------------------------------------------------------
@@ -74,8 +76,9 @@ Tournament::Tournament(const QString& fName)
     // open an existing database
     db = TournamentDB(fName, false);
     
-    // initialize the various managers / handlers
+    // initialize the various managers / handlers and models
     initManagers();
+    initModels();
 }
 
 //----------------------------------------------------------------------------
@@ -89,8 +92,26 @@ void Tournament::initManagers()
 
 //----------------------------------------------------------------------------
 
+void Tournament::initModels()
+{
+  tlm = new TeamListModel(&db);
+}
+
+//----------------------------------------------------------------------------
+
 void Tournament::close()
 {
+  delete tm;
+  delete cm;
+  delete pm;
+  
+  delete tlm;
+  
+  tm = NULL;
+  cm = NULL;
+  pm = NULL;
+  tlm = NULL;
+  
   db.close();
 }
 
@@ -98,11 +119,7 @@ void Tournament::close()
 
 Tournament::~Tournament()
 {
-  delete tm;
-  delete cm;
-  
-  tm = NULL;
-  cm = NULL;
+  close();
 }
 
 //----------------------------------------------------------------------------
@@ -127,7 +144,11 @@ PlayerMngr* Tournament::getPlayerMngr()
 }
 
 //----------------------------------------------------------------------------
-    
+
+TeamListModel* Tournament::getTeamListModel()
+{
+  return tlm;
+}
 
 //----------------------------------------------------------------------------
     
