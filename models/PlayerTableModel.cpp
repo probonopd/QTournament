@@ -31,7 +31,7 @@ int PlayerTableModel::rowCount(const QModelIndex& parent) const
 
 int PlayerTableModel::columnCount(const QModelIndex& parent) const
 {
-  return 1;  // only one column, for now (player's name)
+  return 3;  // three columns: player's name, sex and team
 }
 
 //----------------------------------------------------------------------------
@@ -49,9 +49,22 @@ QVariant PlayerTableModel::data(const QModelIndex& index, int role) const
     
     Player p = Tournament::getPlayerMngr()->getPlayerBySeqNum(index.row());
     
+    // first column: name
     if (index.column() == 0)
     {
       return p.getDisplayName();
+    }
+    
+    // second column: sex
+    if (index.column() == 1)
+    {
+      return ((p.getSex() == M) ? QString("♂") : QString("♀"));
+    }
+    
+    // third column: team name
+    if (index.column() == 2)
+    {
+      return p.getTeam().getName();
     }
     
     return QString("Not Implemented");
@@ -70,6 +83,14 @@ QVariant PlayerTableModel::headerData(int section, Qt::Orientation orientation, 
   {
     if (section == 0) {
       return tr("Name");
+    }
+    
+    if (section == 1) {
+      return "";
+    }
+    
+    if (section == 2) {
+      return tr("Team Name");
     }
     
     return QString("Not implemented");

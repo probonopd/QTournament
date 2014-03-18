@@ -12,6 +12,7 @@
 #include "TournamentDB.h"
 #include "TabRow.h"
 #include "TournamentErrorCodes.h"
+#include "Team.h"
 
 namespace QTournament
 {
@@ -26,6 +27,7 @@ namespace QTournament
     QString getLastName() const;
     ERR rename(const QString& newFirst, const QString& newLast);
     SEX getSex() const;
+    Team getTeam() const;
 
   private:
     Player (TournamentDB* db, int rowId);

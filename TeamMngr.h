@@ -35,6 +35,7 @@ namespace QTournament
     QList<Team> getAllTeams();
     ERR renameTeam (Team& t, const QString& nn);
     Team getTeamBySeqNum(int seqNum);
+    Team getTeamById(int id);
 
   private:
     DbTab teamTab;

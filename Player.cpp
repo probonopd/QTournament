@@ -103,6 +103,18 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
+  Team Player::getTeam() const
+  {
+    QVariant teamRef = row[PL_TEAM_REF];
+    
+    // if we don't use teams, throw an exception
+    if (teamRef.isNull())
+    {
+      throw std::runtime_error("Query for team of a player occurred; however, we're not using teams in this tournament!");
+    }
+    
+    return Tournament::getTeamMngr()->getTeamById(teamRef.toInt());
+  }
 
 //----------------------------------------------------------------------------
 

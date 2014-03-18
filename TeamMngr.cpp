@@ -160,6 +160,17 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
+  Team TeamMngr::getTeamById(int id)
+  {
+    try {
+      TabRow r = teamTab[id];
+      return Team(db, r);
+    }
+    catch (std::exception e)
+    {
+     throw std::invalid_argument("The team with ID " + QString2String(QString::number(id)) + " does not exist");
+    }
+  }
 
 //----------------------------------------------------------------------------
 
