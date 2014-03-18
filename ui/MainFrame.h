@@ -38,9 +38,10 @@ public slots:
   void openTournament();
   void setupEmptyScenario();
   void setupScenario01();
+  void onCreateTeamClicked();
+  //void onTeamListDoubleClick();
 
 signals:
-  void tournamentClosed ();
   void tournamentOpened (Tournament* tnmt);
 };
 

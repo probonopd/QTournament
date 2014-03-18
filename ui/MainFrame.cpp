@@ -8,6 +8,7 @@
 #include "MainFrame.h"
 
 #include "Tournament.h"
+#include "PlayerTableView.h"
 
 #include <QMessageBox>
 
@@ -23,8 +24,8 @@ MainFrame::MainFrame()
   testFileName = QDir().absoluteFilePath("tournamentTestFile.tdb");
   
   // connect my own signals and slots (not those handled by QtDesigner)
-  connect(this, &MainFrame::tournamentClosed, ui.listView, &TeamListView::onTournamentClosed);
-  connect(this, &MainFrame::tournamentOpened, ui.listView, &TeamListView::onTournamentOpened);
+  connect(this, &MainFrame::tournamentOpened, ui.teamList, &TeamListView::onTournamentOpened);
+  connect(this, &MainFrame::tournamentOpened, ui.playerView, &PlayerTableView::onTournamentOpened);
 }
 
 //----------------------------------------------------------------------------
@@ -62,7 +63,10 @@ void MainFrame::closeCurrentTournament()
   // close the tournament
   if (tnmt != NULL)
   {
+    // this emits a signal to inform everyone that the
+    // current tournament is about to die
     tnmt->close();
+    
     delete tnmt;
     tnmt = NULL;
   }
@@ -74,8 +78,6 @@ void MainFrame::closeCurrentTournament()
   }
   
   enableControls(false);
-  
-  emit tournamentClosed();
 }
 
 //----------------------------------------------------------------------------
@@ -108,6 +110,14 @@ void MainFrame::setupTestScenario(int scenarioID)
     TeamMngr* tmngr = Tournament::getTeamMngr();
     tmngr->createNewTeam("Team 1");
     tmngr->createNewTeam("Team 2");
+    
+    PlayerMngr* pmngr = Tournament::getPlayerMngr();
+    pmngr->createNewPlayer("First1", "Last1", M, "Team 1");
+    pmngr->createNewPlayer("First2", "Last2", F, "Team 1");
+    pmngr->createNewPlayer("First3", "Last3", M, "Team 1");
+    pmngr->createNewPlayer("First4", "Last4", F, "Team 1");
+    pmngr->createNewPlayer("First5", "Last5", M, "Team 2");
+    pmngr->createNewPlayer("First6", "Last6", F, "Team 2");
   }
   
   enableControls(true);
@@ -130,4 +140,114 @@ void MainFrame::setupScenario01()
 {
   setupTestScenario(1);
 }
+
+//----------------------------------------------------------------------------
+
+void MainFrame::onCreateTeamClicked()
+{
+  int cnt = 0;
+  
+  // try to create new teams using a
+  // canonical name until it finally succeeds
+  TeamMngr* tmngr = Tournament::getTeamMngr();
+  ERR e = NAME_EXISTS;
+  
+  while (e != OK)
+  {
+    QString teamName = tr("New Team ") + QString::number(cnt);
+    
+    e = tmngr->createNewTeam(teamName);
+    cnt++;
+  }
+}
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
 

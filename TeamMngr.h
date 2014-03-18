@@ -16,14 +16,17 @@
 #include "GenericObjectManager.h"
 
 #include <QList>
+#include <QObject>
 
 using namespace dbOverlay;
 
 namespace QTournament
 {
 
-  class TeamMngr : public GenericObjectManager
+  class TeamMngr : public QObject, GenericObjectManager
   {
+  Q_OBJECT
+  
   public:
     TeamMngr (TournamentDB* _db);
     ERR createNewTeam (const QString& teamName);
@@ -31,9 +34,13 @@ namespace QTournament
     Team getTeam(const QString& name);
     QList<Team> getAllTeams();
     ERR renameTeam (Team& t, const QString& nn);
+    Team getTeamBySeqNum(int seqNum);
 
   private:
     DbTab teamTab;
+    
+  signals:
+    void newTeamCreated(const Team& newTeam);
   };
 }
 

@@ -24,6 +24,7 @@
 #include <QtWidgets/QTabWidget>
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QWidget>
+#include "PlayerTableView.h"
 #include "TeamListView.h"
 
 QT_BEGIN_NAMESPACE
@@ -45,12 +46,16 @@ public:
     QVBoxLayout *verticalLayout_5;
     QVBoxLayout *verticalLayout_4;
     QHBoxLayout *horizontalLayout;
-    QPushButton *pushButton;
-    QPushButton *pushButton_2;
-    QPushButton *pushButton_3;
+    QPushButton *btnNewTeam;
     QColumnView *columnView;
-    TeamListView *listView;
+    TeamListView *teamList;
     QWidget *tabPlayers;
+    QVBoxLayout *verticalLayout_6;
+    QVBoxLayout *verticalLayout_3;
+    QHBoxLayout *horizontalLayout_2;
+    QPushButton *btnAddPlayer;
+    QPushButton *pushButton;
+    PlayerTableView *playerView;
     QMenuBar *menubar;
     QMenu *menuTournament;
     QMenu *menuTesting;
@@ -92,29 +97,13 @@ public:
         verticalLayout_4->setObjectName(QStringLiteral("verticalLayout_4"));
         horizontalLayout = new QHBoxLayout();
         horizontalLayout->setObjectName(QStringLiteral("horizontalLayout"));
-        pushButton = new QPushButton(tabTeams);
-        pushButton->setObjectName(QStringLiteral("pushButton"));
+        btnNewTeam = new QPushButton(tabTeams);
+        btnNewTeam->setObjectName(QStringLiteral("btnNewTeam"));
         QIcon icon;
         icon.addFile(QStringLiteral(":/icons/document-new-5.png"), QSize(), QIcon::Normal, QIcon::Off);
-        pushButton->setIcon(icon);
+        btnNewTeam->setIcon(icon);
 
-        horizontalLayout->addWidget(pushButton);
-
-        pushButton_2 = new QPushButton(tabTeams);
-        pushButton_2->setObjectName(QStringLiteral("pushButton_2"));
-        QIcon icon1;
-        icon1.addFile(QStringLiteral(":/icons/edit-rename.png"), QSize(), QIcon::Normal, QIcon::Off);
-        pushButton_2->setIcon(icon1);
-
-        horizontalLayout->addWidget(pushButton_2);
-
-        pushButton_3 = new QPushButton(tabTeams);
-        pushButton_3->setObjectName(QStringLiteral("pushButton_3"));
-        QIcon icon2;
-        icon2.addFile(QStringLiteral(":/icons/edit-delete-9.png"), QSize(), QIcon::Normal, QIcon::Off);
-        pushButton_3->setIcon(icon2);
-
-        horizontalLayout->addWidget(pushButton_3);
+        horizontalLayout->addWidget(btnNewTeam);
 
 
         verticalLayout_4->addLayout(horizontalLayout);
@@ -124,10 +113,10 @@ public:
 
         verticalLayout_4->addWidget(columnView);
 
-        listView = new TeamListView(tabTeams);
-        listView->setObjectName(QStringLiteral("listView"));
+        teamList = new TeamListView(tabTeams);
+        teamList->setObjectName(QStringLiteral("teamList"));
 
-        verticalLayout_4->addWidget(listView);
+        verticalLayout_4->addWidget(teamList);
 
 
         verticalLayout_5->addLayout(verticalLayout_4);
@@ -135,6 +124,34 @@ public:
         mainTab->addTab(tabTeams, QString());
         tabPlayers = new QWidget();
         tabPlayers->setObjectName(QStringLiteral("tabPlayers"));
+        verticalLayout_6 = new QVBoxLayout(tabPlayers);
+        verticalLayout_6->setObjectName(QStringLiteral("verticalLayout_6"));
+        verticalLayout_3 = new QVBoxLayout();
+        verticalLayout_3->setObjectName(QStringLiteral("verticalLayout_3"));
+        horizontalLayout_2 = new QHBoxLayout();
+        horizontalLayout_2->setObjectName(QStringLiteral("horizontalLayout_2"));
+        btnAddPlayer = new QPushButton(tabPlayers);
+        btnAddPlayer->setObjectName(QStringLiteral("btnAddPlayer"));
+        btnAddPlayer->setIcon(icon);
+
+        horizontalLayout_2->addWidget(btnAddPlayer);
+
+        pushButton = new QPushButton(tabPlayers);
+        pushButton->setObjectName(QStringLiteral("pushButton"));
+
+        horizontalLayout_2->addWidget(pushButton);
+
+
+        verticalLayout_3->addLayout(horizontalLayout_2);
+
+        playerView = new PlayerTableView(tabPlayers);
+        playerView->setObjectName(QStringLiteral("playerView"));
+
+        verticalLayout_3->addWidget(playerView);
+
+
+        verticalLayout_6->addLayout(verticalLayout_3);
+
         mainTab->addTab(tabPlayers, QString());
 
         verticalLayout->addWidget(mainTab);
@@ -172,8 +189,9 @@ public:
         QObject::connect(actionOpen, SIGNAL(triggered()), MainFrame, SLOT(openTournament()));
         QObject::connect(actionEmpty, SIGNAL(triggered()), MainFrame, SLOT(setupEmptyScenario()));
         QObject::connect(actionScenario01, SIGNAL(triggered()), MainFrame, SLOT(setupScenario01()));
+        QObject::connect(btnNewTeam, SIGNAL(clicked()), MainFrame, SLOT(onCreateTeamClicked()));
 
-        mainTab->setCurrentIndex(0);
+        mainTab->setCurrentIndex(1);
 
 
         QMetaObject::connectSlotsByName(MainFrame);
@@ -188,10 +206,10 @@ public:
         action_Quit->setText(QApplication::translate("MainFrame", "&Quit", 0));
         actionEmpty->setText(QApplication::translate("MainFrame", "Empty", 0));
         actionScenario01->setText(QApplication::translate("MainFrame", "Scenario01", 0));
-        pushButton->setText(QApplication::translate("MainFrame", "New...", 0));
-        pushButton_2->setText(QApplication::translate("MainFrame", "Rename...", 0));
-        pushButton_3->setText(QApplication::translate("MainFrame", "Delete...", 0));
+        btnNewTeam->setText(QApplication::translate("MainFrame", "Create new team", 0));
         mainTab->setTabText(mainTab->indexOf(tabTeams), QApplication::translate("MainFrame", "Teams", 0));
+        btnAddPlayer->setText(QApplication::translate("MainFrame", "Add Player", 0));
+        pushButton->setText(QApplication::translate("MainFrame", "PushButton", 0));
         mainTab->setTabText(mainTab->indexOf(tabPlayers), QApplication::translate("MainFrame", "Players", 0));
         menuTournament->setTitle(QApplication::translate("MainFrame", "Tournament", 0));
         menuTesting->setTitle(QApplication::translate("MainFrame", "Testing", 0));

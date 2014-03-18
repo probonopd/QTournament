@@ -52,8 +52,11 @@ namespace QTournament
     QVariantList qvl;
     qvl << GENERIC_NAME_FIELD_NAME << teamName;
     
-    teamTab.insertRow(qvl);
+    int newId = teamTab.insertRow(qvl);
     fixSeqNumberAfterInsert(TAB_TEAM);
+    
+    Team newTeam(db, newId);
+    emit newTeamCreated(newTeam);
     
     return OK;
   }
@@ -134,6 +137,26 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
+  /**
+   * Returns a database object for a team identified by its sequence number
+   *
+   * Note: the team must exist, otherwise this method throws an exception!
+   *
+   * @param seqNum is the sequence number of the team to look up
+   *
+   * @return a Team instance of that team
+   */
+  Team TeamMngr::getTeamBySeqNum(int seqNum)
+  {
+    try {
+      TabRow r = teamTab.getSingleRowByColumnValue(GENERIC_SEQNUM_FIELD_NAME, seqNum);
+      return Team(db, r);
+    }
+    catch (std::exception e)
+    {
+     throw std::invalid_argument("The team with sequence number " + QString2String(QString::number(seqNum)) + " does not exist");
+    }
+  }
 
 //----------------------------------------------------------------------------
 

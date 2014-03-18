@@ -9,6 +9,7 @@
 #define	TOURNAMENT_H
 
 #include <QString>
+#include <QObject>
 
 #include "TournamentDataDefs.h"
 #include "TournamentDB.h"
@@ -17,13 +18,16 @@
 #include "CatMngr.h"
 #include "PlayerMngr.h"
 #include "models/TeamListModel.h"
+#include "models/PlayerTableModel.h"
 
 using namespace dbOverlay;
 
 namespace QTournament
 {
-  class Tournament
+  class Tournament : public QObject
   {
+    Q_OBJECT
+    
   public:
     Tournament (const QString& fName, const TournamentSettings& cfg);
     Tournament (const QString& fName);
@@ -31,6 +35,7 @@ namespace QTournament
     static CatMngr* getCatMngr();
     static PlayerMngr* getPlayerMngr();
     static TeamListModel* getTeamListModel();
+    static PlayerTableModel* getPlayerTableModel();
     void close();
     ~Tournament();
 
@@ -40,8 +45,13 @@ namespace QTournament
     static CatMngr* cm;
     static PlayerMngr* pm;
     static TeamListModel* tlm;
+    static PlayerTableModel *ptm;
+    
     void initManagers ();
     void initModels();
+
+  signals:
+    void tournamentClosed();
 
   };
 

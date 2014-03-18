@@ -1,38 +1,46 @@
 /* 
- * File:   TeamListView.cpp
+ * File:   PlayerTableView.cpp
  * Author: volker
  * 
- * Created on March 15, 2014, 7:28 PM
+ * Created on March 17, 2014, 8:19 PM
  */
 
-#include <qt/QtWidgets/qwidget.h>
-#include <qt/QtWidgets/qmessagebox.h>
+#include "PlayerTableView.h"
 
-#include "TeamListView.h"
-#include "MainFrame.h"
-
-TeamListView::TeamListView(QWidget* parent)
-:QListView(parent)
+PlayerTableView::PlayerTableView(QWidget* parent)
+:QTableView(parent)
 {
-  // an empty model for clearing the list when
+  // an empty model for clearing the table when
   // no tournament is open
   emptyModel = new QStringListModel();
 }
 
 //----------------------------------------------------------------------------
     
-TeamListView::~TeamListView()
+PlayerTableView::~PlayerTableView()
 {
   delete emptyModel;
 }
 
 //----------------------------------------------------------------------------
     
-void TeamListView::onTournamentClosed()
+void PlayerTableView::onTournamentOpened(Tournament* _tnmt)
+{
+  tnmt = _tnmt;
+  setModel(Tournament::getPlayerTableModel());
+  setEnabled(true);
+  
+  // connect signals from the Tournament and TeamMngr with my slots
+  connect(tnmt, &Tournament::tournamentClosed, this, &PlayerTableView::onTournamentClosed);
+}
+
+//----------------------------------------------------------------------------
+    
+void PlayerTableView::onTournamentClosed()
 {
   // disconnect from all signals, because
   // the sending objects don't exist anymore
-  disconnect(tnmt, &Tournament::tournamentClosed, this, &TeamListView::onTournamentClosed);
+  disconnect(tnmt, &Tournament::tournamentClosed, this, &PlayerTableView::onTournamentClosed);
   
   // invalidate the tournament handle and deactivate the view
   tnmt = 0;
@@ -43,15 +51,6 @@ void TeamListView::onTournamentClosed()
 
 //----------------------------------------------------------------------------
     
-void TeamListView::onTournamentOpened(Tournament* _tnmt)
-{
-  tnmt = _tnmt;
-  setModel(Tournament::getTeamListModel());
-  setEnabled(true);
-  
-  // connect signals from the Tournament and TeamMngr with my slots
-  connect(tnmt, &Tournament::tournamentClosed, this, &TeamListView::onTournamentClosed);
-}
 
 //----------------------------------------------------------------------------
     
@@ -85,3 +84,10 @@ void TeamListView::onTournamentOpened(Tournament* _tnmt)
 
 //----------------------------------------------------------------------------
     
+
+//----------------------------------------------------------------------------
+    
+
+//----------------------------------------------------------------------------
+    
+

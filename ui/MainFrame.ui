@@ -26,7 +26,7 @@
          <bool>true</bool>
         </property>
         <property name="currentIndex">
-         <number>0</number>
+         <number>1</number>
         </property>
         <widget class="QWidget" name="tabTeams">
          <property name="enabled">
@@ -41,35 +41,13 @@
             <item>
              <layout class="QHBoxLayout" name="horizontalLayout">
               <item>
-               <widget class="QPushButton" name="pushButton">
+               <widget class="QPushButton" name="btnNewTeam">
                 <property name="text">
-                 <string>New...</string>
+                 <string>Create new team</string>
                 </property>
                 <property name="icon">
                  <iconset resource="../tournament.qrc">
                   <normaloff>:/icons/document-new-5.png</normaloff>:/icons/document-new-5.png</iconset>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QPushButton" name="pushButton_2">
-                <property name="text">
-                 <string>Rename...</string>
-                </property>
-                <property name="icon">
-                 <iconset resource="../tournament.qrc">
-                  <normaloff>:/icons/edit-rename.png</normaloff>:/icons/edit-rename.png</iconset>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QPushButton" name="pushButton_3">
-                <property name="text">
-                 <string>Delete...</string>
-                </property>
-                <property name="icon">
-                 <iconset resource="../tournament.qrc">
-                  <normaloff>:/icons/edit-delete-9.png</normaloff>:/icons/edit-delete-9.png</iconset>
                 </property>
                </widget>
               </item>
@@ -79,7 +57,7 @@
              <widget class="QColumnView" name="columnView"/>
             </item>
             <item>
-             <widget class="TeamListView" name="listView"/>
+             <widget class="TeamListView" name="teamList"/>
             </item>
            </layout>
           </item>
@@ -89,6 +67,37 @@
          <attribute name="title">
           <string>Players</string>
          </attribute>
+         <layout class="QVBoxLayout" name="verticalLayout_6">
+          <item>
+           <layout class="QVBoxLayout" name="verticalLayout_3">
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_2">
+              <item>
+               <widget class="QPushButton" name="btnAddPlayer">
+                <property name="text">
+                 <string>Add Player</string>
+                </property>
+                <property name="icon">
+                 <iconset resource="../tournament.qrc">
+                  <normaloff>:/icons/document-new-5.png</normaloff>:/icons/document-new-5.png</iconset>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="pushButton">
+                <property name="text">
+                 <string>PushButton</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <widget class="PlayerTableView" name="playerView"/>
+            </item>
+           </layout>
+          </item>
+         </layout>
         </widget>
        </widget>
       </item>
@@ -163,6 +172,11 @@
    <class>TeamListView</class>
    <extends>QListView</extends>
    <header>TeamListView.h</header>
+  </customwidget>
+  <customwidget>
+   <class>PlayerTableView</class>
+   <extends>QTableView</extends>
+   <header>PlayerTableView.h</header>
   </customwidget>
  </customwidgets>
  <resources>
@@ -249,11 +263,28 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>btnNewTeam</sender>
+   <signal>clicked()</signal>
+   <receiver>MainFrame</receiver>
+   <slot>onCreateTeamClicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>169</x>
+     <y>93</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>468</x>
+     <y>379</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>newTournament()</slot>
   <slot>openTournament()</slot>
   <slot>setupEmptyScenario()</slot>
   <slot>setupScenario01()</slot>
+  <slot>onCreateTeamClicked()</slot>
  </slots>
 </ui>

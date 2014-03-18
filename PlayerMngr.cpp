@@ -186,6 +186,27 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
+  /**
+   * Returns a database object for a player identified by its sequence number
+   *
+   * Note: the player must exist, otherwise this method throws an exception!
+   *
+   * @param seqNum is the sequence number of the player to look up
+   *
+   * @return a Player instance of that player
+   */
+  Player PlayerMngr::getPlayerBySeqNum(int seqNum)
+  {
+    try {
+      TabRow r = playerTab.getSingleRowByColumnValue(GENERIC_SEQNUM_FIELD_NAME, seqNum);
+      return Player(db, r);
+    }
+    catch (std::exception e)
+    {
+     throw std::invalid_argument("The player with sequence number " + QString2String(QString::number(seqNum)) + " does not exist");
+    }
+  }
+
 
 //----------------------------------------------------------------------------
 

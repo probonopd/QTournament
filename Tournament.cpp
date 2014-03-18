@@ -20,6 +20,7 @@ namespace QTournament
   CatMngr* Tournament::cm = NULL;
   PlayerMngr* Tournament::pm = NULL;
   TeamListModel* Tournament::tlm = NULL;
+  PlayerTableModel* Tournament::ptm = NULL;
 
 /**
  * Constructor for a new, empty tournament file
@@ -51,6 +52,10 @@ Tournament::Tournament(const QString& fName, const TournamentSettings& cfg)
     
     // initialize the various managers / handlers
     initManagers();
+    
+    // always initialize the managers before the models,
+    // because the models connect to signals emitted by the
+    // managers
     initModels();
 }
 
@@ -95,12 +100,19 @@ void Tournament::initManagers()
 void Tournament::initModels()
 {
   tlm = new TeamListModel(&db);
+  ptm = new PlayerTableModel(&db);
 }
 
 //----------------------------------------------------------------------------
 
 void Tournament::close()
 {
+  // announce that we're about to close
+  // IMPORTANT: the mamagers and models should
+  // stll be valid when emitting the signal,
+  // so that receivers can properly disconnect
+  emit tournamentClosed();
+    
   delete tm;
   delete cm;
   delete pm;
@@ -151,7 +163,11 @@ TeamListModel* Tournament::getTeamListModel()
 }
 
 //----------------------------------------------------------------------------
-    
+
+PlayerTableModel* Tournament::getPlayerTableModel()
+{
+  return ptm;
+}
 
 //----------------------------------------------------------------------------
     

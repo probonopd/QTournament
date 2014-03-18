@@ -5,7 +5,12 @@
  * Created on March 14, 2014, 9:04 PM
  */
 
+#include <Qt>
+#include <qt/QtWidgets/qmessagebox.h>
+
 #include "TeamListModel.h"
+#include "TeamMngr.h"
+#include "Tournament.h"
 
 using namespace dbOverlay;
 
@@ -15,6 +20,7 @@ namespace QTournament
   TeamListModel::TeamListModel(TournamentDB* _db)
   : QAbstractListModel(0), db(_db), teamTab(_db->getTab(TAB_TEAM))
   {
+    connect(Tournament::getTeamMngr(), &TeamMngr::newTeamCreated, this, &TeamListModel::onTeamCreated);
 
   }
 
@@ -51,12 +57,37 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
+  void TeamListModel::onTeamCreated(const Team& newTeam)
+  {
+    emit dataChanged(QModelIndex(), QModelIndex());
+  }
 
 //----------------------------------------------------------------------------
 
+  Qt::ItemFlags TeamListModel::flags(const QModelIndex& index) const
+  {
+    if (!index.isValid()) {
+      return Qt::ItemIsEnabled;
+    }
+
+    return QAbstractItemModel::flags(index) | Qt::ItemIsEditable;
+  }
 
 //----------------------------------------------------------------------------
 
+  bool TeamListModel::setData(const QModelIndex& index, const QVariant& value, int role)
+  {
+    if (!(index.isValid()) || (role != Qt::EditRole))
+    {
+      return false;
+    }
+    
+    Team t = Tournament::getTeamMngr()->getTeamBySeqNum(index.row());
+    
+    ERR e = t.rename(value.toString());
+    
+    return (e == OK);
+  }
 
 //----------------------------------------------------------------------------
 
