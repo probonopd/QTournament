@@ -78,8 +78,11 @@ namespace QTournament
     }
     
     // create the new player row
-    playerTab.insertRow(qvl);
+    int newId = playerTab.insertRow(qvl);
     fixSeqNumberAfterInsert(TAB_PLAYER);
+    
+    Player newPlayer = Player(db, newId);
+    emit newPlayerCreated(newPlayer);
     
     return OK;
   }

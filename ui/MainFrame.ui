@@ -279,6 +279,38 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>btnAddPlayer</sender>
+   <signal>clicked()</signal>
+   <receiver>MainFrame</receiver>
+   <slot>onCreatePlayerClicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>244</x>
+     <y>93</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>468</x>
+     <y>379</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>playerView</sender>
+   <signal>doubleClicked(QModelIndex)</signal>
+   <receiver>MainFrame</receiver>
+   <slot>onPlayerDoubleClicked(QModelIndex)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>468</x>
+     <y>416</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>468</x>
+     <y>379</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>newTournament()</slot>
@@ -286,5 +318,7 @@
   <slot>setupEmptyScenario()</slot>
   <slot>setupScenario01()</slot>
   <slot>onCreateTeamClicked()</slot>
+  <slot>onCreatePlayerClicked()</slot>
+  <slot>onPlayerDoubleClicked(QModelIndex)</slot>
  </slots>
 </ui>

@@ -19,8 +19,8 @@
 
 QT_BEGIN_MOC_NAMESPACE
 struct qt_meta_stringdata_MainFrame_t {
-    QByteArrayData data[10];
-    char stringdata[130];
+    QByteArrayData data[13];
+    char stringdata[180];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -38,12 +38,16 @@ QT_MOC_LITERAL(5, 45, 13),
 QT_MOC_LITERAL(6, 59, 14),
 QT_MOC_LITERAL(7, 74, 18),
 QT_MOC_LITERAL(8, 93, 15),
-QT_MOC_LITERAL(9, 109, 19)
+QT_MOC_LITERAL(9, 109, 19),
+QT_MOC_LITERAL(10, 129, 21),
+QT_MOC_LITERAL(11, 151, 21),
+QT_MOC_LITERAL(12, 173, 5)
     },
     "MainFrame\0tournamentOpened\0\0Tournament*\0"
     "tnmt\0newTournament\0openTournament\0"
     "setupEmptyScenario\0setupScenario01\0"
-    "onCreateTeamClicked\0"
+    "onCreateTeamClicked\0onCreatePlayerClicked\0"
+    "onPlayerDoubleClicked\0index\0"
 };
 #undef QT_MOC_LITERAL
 
@@ -53,7 +57,7 @@ static const uint qt_meta_data_MainFrame[] = {
        7,       // revision
        0,       // classname
        0,    0, // classinfo
-       6,   14, // methods
+       8,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -61,14 +65,16 @@ static const uint qt_meta_data_MainFrame[] = {
        1,       // signalCount
 
  // signals: name, argc, parameters, tag, flags
-       1,    1,   44,    2, 0x06,
+       1,    1,   54,    2, 0x06,
 
  // slots: name, argc, parameters, tag, flags
-       5,    0,   47,    2, 0x0a,
-       6,    0,   48,    2, 0x0a,
-       7,    0,   49,    2, 0x0a,
-       8,    0,   50,    2, 0x0a,
-       9,    0,   51,    2, 0x0a,
+       5,    0,   57,    2, 0x0a,
+       6,    0,   58,    2, 0x0a,
+       7,    0,   59,    2, 0x0a,
+       8,    0,   60,    2, 0x0a,
+       9,    0,   61,    2, 0x0a,
+      10,    0,   62,    2, 0x0a,
+      11,    1,   63,    2, 0x0a,
 
  // signals: parameters
     QMetaType::Void, 0x80000000 | 3,    4,
@@ -79,6 +85,8 @@ static const uint qt_meta_data_MainFrame[] = {
     QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void,
+    QMetaType::Void,
+    QMetaType::Void, QMetaType::QModelIndex,   12,
 
        0        // eod
 };
@@ -94,6 +102,8 @@ void MainFrame::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, v
         case 3: _t->setupEmptyScenario(); break;
         case 4: _t->setupScenario01(); break;
         case 5: _t->onCreateTeamClicked(); break;
+        case 6: _t->onCreatePlayerClicked(); break;
+        case 7: _t->onPlayerDoubleClicked((*reinterpret_cast< const QModelIndex(*)>(_a[1]))); break;
         default: ;
         }
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
@@ -144,13 +154,13 @@ int MainFrame::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 6)
+        if (_id < 8)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 6;
+        _id -= 8;
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 6)
+        if (_id < 8)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 6;
+        _id -= 8;
     }
     return _id;
 }

@@ -190,6 +190,8 @@ public:
         QObject::connect(actionEmpty, SIGNAL(triggered()), MainFrame, SLOT(setupEmptyScenario()));
         QObject::connect(actionScenario01, SIGNAL(triggered()), MainFrame, SLOT(setupScenario01()));
         QObject::connect(btnNewTeam, SIGNAL(clicked()), MainFrame, SLOT(onCreateTeamClicked()));
+        QObject::connect(btnAddPlayer, SIGNAL(clicked()), MainFrame, SLOT(onCreatePlayerClicked()));
+        QObject::connect(playerView, SIGNAL(doubleClicked(QModelIndex)), MainFrame, SLOT(onPlayerDoubleClicked(QModelIndex)));
 
         mainTab->setCurrentIndex(1);
 

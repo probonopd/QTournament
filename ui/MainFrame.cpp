@@ -9,6 +9,7 @@
 
 #include "Tournament.h"
 #include "PlayerTableView.h"
+#include "dlgEditPlayer.h"
 
 #include <QMessageBox>
 
@@ -163,10 +164,58 @@ void MainFrame::onCreateTeamClicked()
 
 //----------------------------------------------------------------------------
 
+void MainFrame::onCreatePlayerClicked()
+{
+  DlgEditPlayer dlg;
+  
+  dlg.setModal(true);
+  int result = dlg.exec();
+  
+  if (result != QDialog::Accepted)
+  {
+    return;
+  }
+  
+  // we can be sure that all selected data in the dialog
+  // is valid. That has been checked before the dialog
+  // returns with "Accept". So we can directly step
+  // into the creation of the new player
+  ERR e = Tournament::getPlayerTableModel()->createNewPlayer(
+                                                       dlg.getFirstName(),
+                                                       dlg.getLastName(),
+                                                       dlg.getSex(),
+                                                       dlg.getTeam().getName()
+                                                       );
+  
+  if (e != OK)
+  {
+    QString msg = tr("Something went wrong when inserting the player. This shouldn't happen.");
+    msg += tr("For the records: error code = ") + QString::number(static_cast<int>(e));
+    QMessageBox::warning(this, tr("WTF??"), msg);
+  }
+}
 
 //----------------------------------------------------------------------------
 
-
+void MainFrame::onPlayerDoubleClicked(const QModelIndex& index)
+{
+  if (!(index.isValid()))
+  {
+    return;
+  }
+  
+  Player selectedPlayer = Tournament::getPlayerMngr()->getPlayerBySeqNum(index.row());
+  
+  DlgEditPlayer dlg(&selectedPlayer);
+  
+  dlg.setModal(true);
+  int result = dlg.exec();
+  
+  if (result != QDialog::Accepted)
+  {
+    return;
+  }
+}
 //----------------------------------------------------------------------------
 
 

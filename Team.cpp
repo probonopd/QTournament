@@ -29,7 +29,7 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  QString Team::getName()
+  QString Team::getName() const
   {
     return row[GENERIC_NAME_FIELD_NAME].toString();
   }

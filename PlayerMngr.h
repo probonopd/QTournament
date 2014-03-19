@@ -39,6 +39,9 @@ namespace QTournament
 
   private:
     DbTab playerTab;
+    
+  signals:
+    void newPlayerCreated(const Player& newPlayer);
   };
 }
 

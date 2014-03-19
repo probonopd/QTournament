@@ -40,6 +40,8 @@ public slots:
   void setupScenario01();
   void onCreateTeamClicked();
   //void onTeamListDoubleClick();
+  void onCreatePlayerClicked();
+  void onPlayerDoubleClicked(const QModelIndex& index);
 
 signals:
   void tournamentOpened (Tournament* tnmt);
