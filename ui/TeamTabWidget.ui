@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>TeamTabWidget</class>
+ <widget class="QWidget" name="TeamTabWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1000</width>
+    <height>636</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string/>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout_3">
+   <item>
+    <layout class="QVBoxLayout" name="verticalLayout_4">
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <item>
+        <widget class="QPushButton" name="btnNewTeam">
+         <property name="text">
+          <string>Create new team</string>
+         </property>
+         <property name="icon">
+          <iconset resource="../tournament.qrc">
+           <normaloff>:/icons/document-new-5.png</normaloff>:/icons/document-new-5.png</iconset>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <widget class="QColumnView" name="columnView"/>
+     </item>
+     <item>
+      <widget class="TeamListView" name="teamList"/>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>TeamListView</class>
+   <extends>QListView</extends>
+   <header>TeamListView.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="../tournament.qrc"/>
+ </resources>
+ <connections>
+  <connection>
+   <sender>btnNewTeam</sender>
+   <signal>clicked()</signal>
+   <receiver>TeamTabWidget</receiver>
+   <slot>onCreateTeamClicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>499</x>
+     <y>27</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>499</x>
+     <y>317</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>onCreateTeamClicked()</slot>
+ </slots>
+</ui>

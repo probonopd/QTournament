@@ -19,6 +19,7 @@ class MainFrame : public QMainWindow
 public:
   MainFrame ();
   virtual ~MainFrame ();
+  static MainFrame* getMainFramePointer();
   
 private:
   Ui::MainFrame ui;
@@ -32,13 +33,14 @@ private:
   
   void closeCurrentTournament();
   
+  static MainFrame* mainFramePointer;
+  
 
 public slots:
   void newTournament ();
   void openTournament();
   void setupEmptyScenario();
   void setupScenario01();
-  void onCreateTeamClicked();
   //void onTeamListDoubleClick();
   void onCreatePlayerClicked();
   void onPlayerDoubleClicked(const QModelIndex& index);

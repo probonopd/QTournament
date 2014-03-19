@@ -13,7 +13,6 @@
 #include <QtWidgets/QAction>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QButtonGroup>
-#include <QtWidgets/QColumnView>
 #include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QMainWindow>
@@ -25,7 +24,7 @@
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QWidget>
 #include "PlayerTableView.h"
-#include "TeamListView.h"
+#include "TeamTabWidget.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -44,11 +43,7 @@ public:
     QTabWidget *mainTab;
     QWidget *tabTeams;
     QVBoxLayout *verticalLayout_5;
-    QVBoxLayout *verticalLayout_4;
-    QHBoxLayout *horizontalLayout;
-    QPushButton *btnNewTeam;
-    QColumnView *columnView;
-    TeamListView *teamList;
+    TeamTabWidget *widget;
     QWidget *tabPlayers;
     QVBoxLayout *verticalLayout_6;
     QVBoxLayout *verticalLayout_3;
@@ -65,7 +60,7 @@ public:
     {
         if (MainFrame->objectName().isEmpty())
             MainFrame->setObjectName(QStringLiteral("MainFrame"));
-        MainFrame->resize(938, 760);
+        MainFrame->resize(1017, 760);
         actionNew = new QAction(MainFrame);
         actionNew->setObjectName(QStringLiteral("actionNew"));
         actionOpen = new QAction(MainFrame);
@@ -93,33 +88,10 @@ public:
         tabTeams->setEnabled(true);
         verticalLayout_5 = new QVBoxLayout(tabTeams);
         verticalLayout_5->setObjectName(QStringLiteral("verticalLayout_5"));
-        verticalLayout_4 = new QVBoxLayout();
-        verticalLayout_4->setObjectName(QStringLiteral("verticalLayout_4"));
-        horizontalLayout = new QHBoxLayout();
-        horizontalLayout->setObjectName(QStringLiteral("horizontalLayout"));
-        btnNewTeam = new QPushButton(tabTeams);
-        btnNewTeam->setObjectName(QStringLiteral("btnNewTeam"));
-        QIcon icon;
-        icon.addFile(QStringLiteral(":/icons/document-new-5.png"), QSize(), QIcon::Normal, QIcon::Off);
-        btnNewTeam->setIcon(icon);
+        widget = new TeamTabWidget(tabTeams);
+        widget->setObjectName(QStringLiteral("widget"));
 
-        horizontalLayout->addWidget(btnNewTeam);
-
-
-        verticalLayout_4->addLayout(horizontalLayout);
-
-        columnView = new QColumnView(tabTeams);
-        columnView->setObjectName(QStringLiteral("columnView"));
-
-        verticalLayout_4->addWidget(columnView);
-
-        teamList = new TeamListView(tabTeams);
-        teamList->setObjectName(QStringLiteral("teamList"));
-
-        verticalLayout_4->addWidget(teamList);
-
-
-        verticalLayout_5->addLayout(verticalLayout_4);
+        verticalLayout_5->addWidget(widget);
 
         mainTab->addTab(tabTeams, QString());
         tabPlayers = new QWidget();
@@ -132,6 +104,8 @@ public:
         horizontalLayout_2->setObjectName(QStringLiteral("horizontalLayout_2"));
         btnAddPlayer = new QPushButton(tabPlayers);
         btnAddPlayer->setObjectName(QStringLiteral("btnAddPlayer"));
+        QIcon icon;
+        icon.addFile(QStringLiteral(":/icons/document-new-5.png"), QSize(), QIcon::Normal, QIcon::Off);
         btnAddPlayer->setIcon(icon);
 
         horizontalLayout_2->addWidget(btnAddPlayer);
@@ -162,7 +136,7 @@ public:
         MainFrame->setCentralWidget(centralwidget);
         menubar = new QMenuBar(MainFrame);
         menubar->setObjectName(QStringLiteral("menubar"));
-        menubar->setGeometry(QRect(0, 0, 938, 25));
+        menubar->setGeometry(QRect(0, 0, 1017, 25));
         menuTournament = new QMenu(menubar);
         menuTournament->setObjectName(QStringLiteral("menuTournament"));
         menuTesting = new QMenu(menubar);
@@ -189,11 +163,10 @@ public:
         QObject::connect(actionOpen, SIGNAL(triggered()), MainFrame, SLOT(openTournament()));
         QObject::connect(actionEmpty, SIGNAL(triggered()), MainFrame, SLOT(setupEmptyScenario()));
         QObject::connect(actionScenario01, SIGNAL(triggered()), MainFrame, SLOT(setupScenario01()));
-        QObject::connect(btnNewTeam, SIGNAL(clicked()), MainFrame, SLOT(onCreateTeamClicked()));
         QObject::connect(btnAddPlayer, SIGNAL(clicked()), MainFrame, SLOT(onCreatePlayerClicked()));
         QObject::connect(playerView, SIGNAL(doubleClicked(QModelIndex)), MainFrame, SLOT(onPlayerDoubleClicked(QModelIndex)));
 
-        mainTab->setCurrentIndex(1);
+        mainTab->setCurrentIndex(0);
 
 
         QMetaObject::connectSlotsByName(MainFrame);
@@ -208,7 +181,6 @@ public:
         action_Quit->setText(QApplication::translate("MainFrame", "&Quit", 0));
         actionEmpty->setText(QApplication::translate("MainFrame", "Empty", 0));
         actionScenario01->setText(QApplication::translate("MainFrame", "Scenario01", 0));
-        btnNewTeam->setText(QApplication::translate("MainFrame", "Create new team", 0));
         mainTab->setTabText(mainTab->indexOf(tabTeams), QApplication::translate("MainFrame", "Teams", 0));
         btnAddPlayer->setText(QApplication::translate("MainFrame", "Add Player", 0));
         pushButton->setText(QApplication::translate("MainFrame", "PushButton", 0));

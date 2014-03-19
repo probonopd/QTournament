@@ -17,6 +17,8 @@ TeamListView::TeamListView(QWidget* parent)
   // an empty model for clearing the list when
   // no tournament is open
   emptyModel = new QStringListModel();
+  
+  connect(MainFrame::getMainFramePointer(), &MainFrame::tournamentOpened, this, &TeamListView::onTournamentOpened);
 }
 
 //----------------------------------------------------------------------------

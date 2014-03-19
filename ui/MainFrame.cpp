@@ -12,11 +12,24 @@
 #include "dlgEditPlayer.h"
 
 #include <QMessageBox>
+#include <stdexcept>
 
 using namespace QTournament;
 
+//----------------------------------------------------------------------------
+
+MainFrame* MainFrame::mainFramePointer = NULL;
+
+//----------------------------------------------------------------------------
+
 MainFrame::MainFrame()
 {
+  if (MainFrame::mainFramePointer != NULL)
+  {
+    throw std::runtime_error("Only one MainFrame instance is allowed!!");
+  }
+  MainFrame::mainFramePointer = this;
+  
   tnmt = NULL;
   
   ui.setupUi(this);
@@ -25,7 +38,6 @@ MainFrame::MainFrame()
   testFileName = QDir().absoluteFilePath("tournamentTestFile.tdb");
   
   // connect my own signals and slots (not those handled by QtDesigner)
-  connect(this, &MainFrame::tournamentOpened, ui.teamList, &TeamListView::onTournamentOpened);
   connect(this, &MainFrame::tournamentOpened, ui.playerView, &PlayerTableView::onTournamentOpened);
 }
 
@@ -144,23 +156,6 @@ void MainFrame::setupScenario01()
 
 //----------------------------------------------------------------------------
 
-void MainFrame::onCreateTeamClicked()
-{
-  int cnt = 0;
-  
-  // try to create new teams using a
-  // canonical name until it finally succeeds
-  TeamMngr* tmngr = Tournament::getTeamMngr();
-  ERR e = NAME_EXISTS;
-  
-  while (e != OK)
-  {
-    QString teamName = tr("New Team ") + QString::number(cnt);
-    
-    e = tmngr->createNewTeam(teamName);
-    cnt++;
-  }
-}
 
 //----------------------------------------------------------------------------
 
@@ -218,6 +213,10 @@ void MainFrame::onPlayerDoubleClicked(const QModelIndex& index)
 }
 //----------------------------------------------------------------------------
 
+MainFrame* MainFrame::getMainFramePointer()
+{
+  return mainFramePointer;
+}
 
 //----------------------------------------------------------------------------
 
