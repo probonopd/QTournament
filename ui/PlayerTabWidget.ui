@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>PlayerTabWidget</class>
+ <widget class="QWidget" name="PlayerTabWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>703</width>
+    <height>495</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>PlayerTabWidget</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <layout class="QVBoxLayout" name="verticalLayout_3">
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <item>
+        <widget class="QPushButton" name="btnAddPlayer">
+         <property name="text">
+          <string>Add Player</string>
+         </property>
+         <property name="icon">
+          <iconset resource="../tournament.qrc">
+           <normaloff>:/icons/document-new-5.png</normaloff>:/icons/document-new-5.png</iconset>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pushButton">
+         <property name="text">
+          <string>PushButton</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <widget class="PlayerTableView" name="playerView"/>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>PlayerTableView</class>
+   <extends>QTableView</extends>
+   <header>PlayerTableView.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="../tournament.qrc"/>
+ </resources>
+ <connections>
+  <connection>
+   <sender>btnAddPlayer</sender>
+   <signal>clicked()</signal>
+   <receiver>PlayerTabWidget</receiver>
+   <slot>onCreatePlayerClicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>179</x>
+     <y>27</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>351</x>
+     <y>247</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>playerView</sender>
+   <signal>doubleClicked(QModelIndex)</signal>
+   <receiver>PlayerTabWidget</receiver>
+   <slot>onPlayerDoubleClicked(QModelIndex)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>351</x>
+     <y>268</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>351</x>
+     <y>247</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>onPlayerDoubleClicked(QModelIndex)</slot>
+  <slot>onCreatePlayerClicked()</slot>
+ </slots>
+</ui>

@@ -6,6 +6,7 @@
  */
 
 #include "PlayerTableView.h"
+#include "MainFrame.h"
 
 PlayerTableView::PlayerTableView(QWidget* parent)
 :QTableView(parent)
@@ -13,6 +14,8 @@ PlayerTableView::PlayerTableView(QWidget* parent)
   // an empty model for clearing the table when
   // no tournament is open
   emptyModel = new QStringListModel();
+  
+  connect(MainFrame::getMainFramePointer(), &MainFrame::tournamentOpened, this, &PlayerTableView::onTournamentOpened);
 }
 
 //----------------------------------------------------------------------------

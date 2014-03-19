@@ -26,7 +26,7 @@
          <bool>true</bool>
         </property>
         <property name="currentIndex">
-         <number>0</number>
+         <number>1</number>
         </property>
         <widget class="QWidget" name="tabTeams">
          <property name="enabled">
@@ -47,33 +47,7 @@
          </attribute>
          <layout class="QVBoxLayout" name="verticalLayout_6">
           <item>
-           <layout class="QVBoxLayout" name="verticalLayout_3">
-            <item>
-             <layout class="QHBoxLayout" name="horizontalLayout_2">
-              <item>
-               <widget class="QPushButton" name="btnAddPlayer">
-                <property name="text">
-                 <string>Add Player</string>
-                </property>
-                <property name="icon">
-                 <iconset resource="../tournament.qrc">
-                  <normaloff>:/icons/document-new-5.png</normaloff>:/icons/document-new-5.png</iconset>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QPushButton" name="pushButton">
-                <property name="text">
-                 <string>PushButton</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-            <item>
-             <widget class="PlayerTableView" name="playerView"/>
-            </item>
-           </layout>
+           <widget class="PlayerTabWidget" name="widget_2" native="true"/>
           </item>
          </layout>
         </widget>
@@ -147,14 +121,15 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>PlayerTableView</class>
-   <extends>QTableView</extends>
-   <header>PlayerTableView.h</header>
-  </customwidget>
-  <customwidget>
    <class>TeamTabWidget</class>
    <extends>QWidget</extends>
    <header>TeamTabWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>PlayerTabWidget</class>
+   <extends>QWidget</extends>
+   <header>PlayerTabWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
@@ -242,46 +217,11 @@
     </hint>
    </hints>
   </connection>
-  <connection>
-   <sender>btnAddPlayer</sender>
-   <signal>clicked()</signal>
-   <receiver>MainFrame</receiver>
-   <slot>onCreatePlayerClicked()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>244</x>
-     <y>93</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>468</x>
-     <y>379</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>playerView</sender>
-   <signal>doubleClicked(QModelIndex)</signal>
-   <receiver>MainFrame</receiver>
-   <slot>onPlayerDoubleClicked(QModelIndex)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>468</x>
-     <y>416</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>468</x>
-     <y>379</y>
-    </hint>
-   </hints>
-  </connection>
  </connections>
  <slots>
   <slot>newTournament()</slot>
   <slot>openTournament()</slot>
   <slot>setupEmptyScenario()</slot>
   <slot>setupScenario01()</slot>
-  <slot>onCreateTeamClicked()</slot>
-  <slot>onCreatePlayerClicked()</slot>
-  <slot>onPlayerDoubleClicked(QModelIndex)</slot>
  </slots>
 </ui>
