@@ -23,7 +23,7 @@ class tstTeamMngr : public DatabaseTestScenario
     CPPUNIT_TEST(testHasTeam);
     CPPUNIT_TEST(testGetTeam);
     CPPUNIT_TEST(testGetAllTeams);
-//  CPPUNIT_TEST();
+    CPPUNIT_TEST(testChangeTeamAssignment);
 //  CPPUNIT_TEST();
 //  CPPUNIT_TEST();
 //  CPPUNIT_TEST();
@@ -37,6 +37,7 @@ public:
   void testHasTeam();
   void testGetTeam();
   void testGetAllTeams();
+  void testChangeTeamAssignment();
 };
 
 #endif	/* TSTGENERICDBOBJECT_H */

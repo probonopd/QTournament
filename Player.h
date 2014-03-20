@@ -20,6 +20,7 @@ namespace QTournament
   class Player : public GenericDatabaseObject
   {
     friend class PlayerMngr;
+    friend class TeamMngr;
     
   public:
     QString getDisplayName(int maxLen = 0) const;

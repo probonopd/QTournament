@@ -10,6 +10,7 @@
 
 #include "TournamentDB.h"
 #include "Team.h"
+#include "Player.h"
 #include "TournamentDataDefs.h"
 #include "TournamentErrorCodes.h"
 #include "DbTab.h"
@@ -35,6 +36,7 @@ namespace QTournament
     ERR renameTeam (Team& t, const QString& nn);
     Team getTeamBySeqNum (int seqNum);
     Team getTeamById (int id);
+    ERR changeTeamAssigment(const Player& p, const Team& newTeam);
 
   private:
     DbTab teamTab;
@@ -43,6 +45,7 @@ signals:
     void beginCreateTeam ();
     void endCreateTeam (int newTeamSeqNum);
     void teamRenamed(int teamSeqNum);
+    void teamAssignmentChanged(const Player& affectedPlayer, const Team& oldTeam, const Team& newTeam);
 
   };
 }

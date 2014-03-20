@@ -11,6 +11,7 @@
 #include <stdexcept>
 #include <qt/QtCore/qdebug.h>
 #include "HelperFunc.h"
+#include "Player.h"
 
 using namespace dbOverlay;
 
@@ -174,6 +175,26 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
+  ERR TeamMngr::changeTeamAssigment(const Player& p, const Team& newTeam)
+  {
+    if (!(cfg.getBool(CFG_KEY_USE_TEAMS)))
+    {
+      return NOT_USING_TEAMS;
+    }
+    
+    Team oldTeam = p.getTeam();
+    
+    if (oldTeam.getId() == newTeam.getId())
+    {
+      return OK;  // no database access necessary
+    }
+    
+    TabRow r = p.row;
+    r.update(PL_TEAM_REF, newTeam.getId());
+    emit teamAssignmentChanged(p, oldTeam, newTeam);
+    
+    return OK;
+  }
 
 //----------------------------------------------------------------------------
 

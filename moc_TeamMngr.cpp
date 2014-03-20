@@ -19,8 +19,8 @@
 
 QT_BEGIN_MOC_NAMESPACE
 struct qt_meta_stringdata_QTournament__TeamMngr_t {
-    QByteArrayData data[7];
-    char stringdata[91];
+    QByteArrayData data[13];
+    char stringdata[156];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -35,11 +35,19 @@ QT_MOC_LITERAL(2, 38, 0),
 QT_MOC_LITERAL(3, 39, 13),
 QT_MOC_LITERAL(4, 53, 13),
 QT_MOC_LITERAL(5, 67, 11),
-QT_MOC_LITERAL(6, 79, 10)
+QT_MOC_LITERAL(6, 79, 10),
+QT_MOC_LITERAL(7, 90, 21),
+QT_MOC_LITERAL(8, 112, 6),
+QT_MOC_LITERAL(9, 119, 14),
+QT_MOC_LITERAL(10, 134, 4),
+QT_MOC_LITERAL(11, 139, 7),
+QT_MOC_LITERAL(12, 147, 7)
     },
     "QTournament::TeamMngr\0beginCreateTeam\0"
     "\0endCreateTeam\0newTeamSeqNum\0teamRenamed\0"
-    "teamSeqNum\0"
+    "teamSeqNum\0teamAssignmentChanged\0"
+    "Player\0affectedPlayer\0Team\0oldTeam\0"
+    "newTeam\0"
 };
 #undef QT_MOC_LITERAL
 
@@ -49,22 +57,24 @@ static const uint qt_meta_data_QTournament__TeamMngr[] = {
        7,       // revision
        0,       // classname
        0,    0, // classinfo
-       3,   14, // methods
+       4,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
        0,       // flags
-       3,       // signalCount
+       4,       // signalCount
 
  // signals: name, argc, parameters, tag, flags
-       1,    0,   29,    2, 0x06,
-       3,    1,   30,    2, 0x06,
-       5,    1,   33,    2, 0x06,
+       1,    0,   34,    2, 0x06,
+       3,    1,   35,    2, 0x06,
+       5,    1,   38,    2, 0x06,
+       7,    3,   41,    2, 0x06,
 
  // signals: parameters
     QMetaType::Void,
     QMetaType::Void, QMetaType::Int,    4,
     QMetaType::Void, QMetaType::Int,    6,
+    QMetaType::Void, 0x80000000 | 8, 0x80000000 | 10, 0x80000000 | 10,    9,   11,   12,
 
        0        // eod
 };
@@ -77,6 +87,7 @@ void QTournament::TeamMngr::qt_static_metacall(QObject *_o, QMetaObject::Call _c
         case 0: _t->beginCreateTeam(); break;
         case 1: _t->endCreateTeam((*reinterpret_cast< int(*)>(_a[1]))); break;
         case 2: _t->teamRenamed((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 3: _t->teamAssignmentChanged((*reinterpret_cast< const Player(*)>(_a[1])),(*reinterpret_cast< const Team(*)>(_a[2])),(*reinterpret_cast< const Team(*)>(_a[3]))); break;
         default: ;
         }
     } else if (_c == QMetaObject::IndexOfMethod) {
@@ -98,6 +109,12 @@ void QTournament::TeamMngr::qt_static_metacall(QObject *_o, QMetaObject::Call _c
             typedef void (TeamMngr::*_t)(int );
             if (*reinterpret_cast<_t *>(func) == static_cast<_t>(&TeamMngr::teamRenamed)) {
                 *result = 2;
+            }
+        }
+        {
+            typedef void (TeamMngr::*_t)(const Player & , const Team & , const Team & );
+            if (*reinterpret_cast<_t *>(func) == static_cast<_t>(&TeamMngr::teamAssignmentChanged)) {
+                *result = 3;
             }
         }
     }
@@ -130,13 +147,13 @@ int QTournament::TeamMngr::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 3)
+        if (_id < 4)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 3;
+        _id -= 4;
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 3)
+        if (_id < 4)
             *reinterpret_cast<int*>(_a[0]) = -1;
-        _id -= 3;
+        _id -= 4;
     }
     return _id;
 }
@@ -159,5 +176,12 @@ void QTournament::TeamMngr::teamRenamed(int _t1)
 {
     void *_a[] = { 0, const_cast<void*>(reinterpret_cast<const void*>(&_t1)) };
     QMetaObject::activate(this, &staticMetaObject, 2, _a);
+}
+
+// SIGNAL 3
+void QTournament::TeamMngr::teamAssignmentChanged(const Player & _t1, const Team & _t2, const Team & _t3)
+{
+    void *_a[] = { 0, const_cast<void*>(reinterpret_cast<const void*>(&_t1)), const_cast<void*>(reinterpret_cast<const void*>(&_t2)), const_cast<void*>(reinterpret_cast<const void*>(&_t3)) };
+    QMetaObject::activate(this, &staticMetaObject, 3, _a);
 }
 QT_END_MOC_NAMESPACE
