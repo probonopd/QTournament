@@ -29,14 +29,12 @@ void TeamTabWidget::onCreateTeamClicked()
   
   // try to create new teams using a
   // canonical name until it finally succeeds
-  TeamMngr* tmngr = Tournament::getTeamMngr();
   ERR e = NAME_EXISTS;
-  
   while (e != OK)
   {
     QString teamName = tr("New Team ") + QString::number(cnt);
     
-    e = tmngr->createNewTeam(teamName);
+    e = Tournament::getTeamListModel()->createNewTeam(teamName);
     cnt++;
   }
 }

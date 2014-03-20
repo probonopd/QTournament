@@ -30,6 +30,8 @@ namespace QTournament
                          int role = Qt::DisplayRole) const;
     Qt::ItemFlags flags(const QModelIndex &index) const;
     bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole);
+    
+    ERR createNewTeam (const QString& teamName);
 
   private:
     TournamentDB* db;

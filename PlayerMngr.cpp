@@ -82,7 +82,6 @@ namespace QTournament
     fixSeqNumberAfterInsert(TAB_PLAYER);
     
     Player newPlayer = Player(db, newId);
-    emit newPlayerCreated(newPlayer);
     
     return OK;
   }

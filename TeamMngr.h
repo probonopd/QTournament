@@ -16,7 +16,6 @@
 #include "GenericObjectManager.h"
 
 #include <QList>
-#include <QObject>
 
 using namespace dbOverlay;
 
@@ -25,7 +24,6 @@ namespace QTournament
 
   class TeamMngr : public QObject, GenericObjectManager
   {
-  Q_OBJECT
   
   public:
     TeamMngr (TournamentDB* _db);
@@ -40,8 +38,6 @@ namespace QTournament
   private:
     DbTab teamTab;
     
-  signals:
-    void newTeamCreated(const Team& newTeam);
   };
 }
 

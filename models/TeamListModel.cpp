@@ -20,8 +20,6 @@ namespace QTournament
   TeamListModel::TeamListModel(TournamentDB* _db)
   : QAbstractListModel(0), db(_db), teamTab(_db->getTab(TAB_TEAM))
   {
-    connect(Tournament::getTeamMngr(), &TeamMngr::newTeamCreated, this, &TeamListModel::onTeamCreated);
-
   }
 
 //----------------------------------------------------------------------------
@@ -91,6 +89,16 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
+  ERR TeamListModel::createNewTeam(const QString& teamName)
+  {
+    TeamMngr* tmngr = Tournament::getTeamMngr();
+    
+    beginInsertRows(QModelIndex(), teamTab.length(), teamTab.length());
+    ERR result = tmngr->createNewTeam(teamName);
+    endInsertRows();
+    
+    return result;
+  }
 
 //----------------------------------------------------------------------------
 

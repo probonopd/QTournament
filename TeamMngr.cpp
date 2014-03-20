@@ -56,7 +56,6 @@ namespace QTournament
     fixSeqNumberAfterInsert(TAB_TEAM);
     
     Team newTeam(db, newId);
-    emit newTeamCreated(newTeam);
     
     return OK;
   }
