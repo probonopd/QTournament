@@ -6,6 +6,7 @@
  */
 
 #include <qt/QtWidgets/qmessagebox.h>
+#include <qt4/QtGui/qwidget.h>
 
 #include "Tournament.h"
 
@@ -122,6 +123,11 @@ void DlgEditPlayer::initFromPlayerData()
   SEX sex = selectedPlayer->getSex();
   ui.rbMale->setChecked(sex == M);
   ui.rbFemale->setChecked(sex == F);
+  
+  // disable the radio buttons, because we don't
+  // support changing a player's sex right now
+  ui.rbMale->setEnabled(false);
+  ui.rbFemale->setEnabled(false);
   
   // select the correct team
   // Note: we rely on a properly initialized team list here

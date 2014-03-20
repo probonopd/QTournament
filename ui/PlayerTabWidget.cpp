@@ -75,6 +75,19 @@ void PlayerTabWidget::onPlayerDoubleClicked(const QModelIndex& index)
   {
     return;
   }
+  
+  // apply the changes, if any
+  if (dlg.hasNameChange())
+  {
+    ERR e = selectedPlayer.rename(dlg.getFirstName(), dlg.getLastName());
+
+    if (e != OK)
+    {
+      QString msg = tr("Something went wrong when renaming the player. This shouldn't happen.");
+      msg += tr("For the records: error code = ") + QString::number(static_cast<int> (e));
+      QMessageBox::warning(this, tr("WTF??"), msg);
+    }
+  }
 }
 
 //----------------------------------------------------------------------------
