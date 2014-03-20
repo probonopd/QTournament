@@ -38,13 +38,15 @@ void tstTournament::testConstructor()
   CPPUNIT_ASSERT(kvt.getInt(CFG_KEY_DB_VERSION) == DB_VERSION);
   
   // try to create a new file although it's already existing
-  CPPUNIT_ASSERT_THROW(t = Tournament(tFileName, cfg), std::invalid_argument);
+  Tournament* pTnmt;
+  CPPUNIT_ASSERT_THROW(pTnmt = new Tournament(tFileName, cfg), std::invalid_argument);
   
   // open a file that's not existing
-  CPPUNIT_ASSERT_THROW(t = Tournament("sd,fnsdf"), std::invalid_argument);
+  CPPUNIT_ASSERT_THROW(pTnmt = new Tournament("sd,fnsdf"), std::invalid_argument);
   
   // open an existing file
-  t = Tournament(tFileName);
+  pTnmt = new Tournament(tFileName);
+  delete pTnmt;
   
   printEndMsg();
 }
