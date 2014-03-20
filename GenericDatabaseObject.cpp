@@ -65,6 +65,12 @@ GenericDatabaseObject::GenericDatabaseObject(TournamentDB* _db, const QString& _
 
 //----------------------------------------------------------------------------
 
+  // THIS FUNCTION WILL FAIL IF THE DATABASE
+  // HAS NO "SeqNum" COLUMN OR IF THE COLUMN IS NULL
+  int GenericDatabaseObject::getSeqNum() const
+  {
+    return row[GENERIC_SEQNUM_FIELD_NAME].toInt();
+  }
     
 //----------------------------------------------------------------------------
     

@@ -20,6 +20,9 @@ namespace QTournament
   TeamListModel::TeamListModel(TournamentDB* _db)
   : QAbstractListModel(0), db(_db), teamTab(_db->getTab(TAB_TEAM))
   {
+    connect(Tournament::getTeamMngr(), &TeamMngr::beginCreateTeam, this, &TeamListModel::onBeginCreateTeam);
+    connect(Tournament::getTeamMngr(), &TeamMngr::endCreateTeam, this, &TeamListModel::onEndCreateTeam);
+    connect(Tournament::getTeamMngr(), &TeamMngr::teamRenamed, this, &TeamListModel::onTeamRenamed);
   }
 
 //----------------------------------------------------------------------------
@@ -55,9 +58,16 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  void TeamListModel::onTeamCreated(const Team& newTeam)
+  void TeamListModel::onBeginCreateTeam()
   {
-    emit dataChanged(QModelIndex(), QModelIndex());
+    beginInsertRows(QModelIndex(), teamTab.length(), teamTab.length());
+  }
+
+//----------------------------------------------------------------------------
+
+  void TeamListModel::onEndCreateTeam(int newTeamSeqNum)
+  {
+    endInsertRows();
   }
 
 //----------------------------------------------------------------------------
@@ -89,17 +99,11 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  ERR TeamListModel::createNewTeam(const QString& teamName)
+  void TeamListModel::onTeamRenamed(int teamSeqNum)
   {
-    TeamMngr* tmngr = Tournament::getTeamMngr();
-    
-    beginInsertRows(QModelIndex(), teamTab.length(), teamTab.length());
-    ERR result = tmngr->createNewTeam(teamName);
-    endInsertRows();
-    
-    return result;
+    QModelIndex index = QAbstractItemModel::createIndex(teamSeqNum, 0);
+    emit dataChanged(index, index);
   }
-
 //----------------------------------------------------------------------------
 
 

@@ -31,14 +31,14 @@ namespace QTournament
     Qt::ItemFlags flags(const QModelIndex &index) const;
     bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole);
     
-    ERR createNewTeam (const QString& teamName);
-
   private:
     TournamentDB* db;
     dbOverlay::DbTab teamTab;
     
   public slots:
-    void onTeamCreated(const Team& newTeam);
+    void onBeginCreateTeam();
+    void onEndCreateTeam(int newTeamSeqNum);
+    void onTeamRenamed(int teamSeqNum);
   };
 
 }

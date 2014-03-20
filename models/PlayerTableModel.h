@@ -36,6 +36,7 @@ public:
     
 public slots:
   void onPlayerCreated(const Player& newPlayer);
+  void onTeamRenamed(int teamSeqNum);
 
 };
 

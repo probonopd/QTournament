@@ -34,6 +34,7 @@ namespace QTournament
     
     OBJ_STATE getState() const;
     void setState(OBJ_STATE newState);
+    int getSeqNum() const;
 
   protected:
     TournamentDB* db;

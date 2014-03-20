@@ -18,7 +18,7 @@ PlayerTableModel::PlayerTableModel(TournamentDB* _db)
 :QAbstractTableModel(0), db(_db), playerTab(_db->getTab(TAB_PLAYER)),
         teamTab(_db->getTab(TAB_TEAM)), catTab((_db->getTab(TAB_CATEGORY)))
 {
-    //connect(Tournament::getPlayerMngr(), &PlayerMngr::newPlayerCreated, this, &PlayerTableModel::onPlayerCreated);
+  connect(Tournament::getTeamMngr(), &TeamMngr::teamRenamed, this, &PlayerTableModel::onTeamRenamed);
 }
 
 //----------------------------------------------------------------------------
@@ -122,6 +122,14 @@ ERR PlayerTableModel::createNewPlayer(const QString& firstName, const QString& l
 
 //----------------------------------------------------------------------------
 
+void PlayerTableModel::onTeamRenamed(int teamSeqNum)
+{
+  // for now, simply update the whole "team" column, even if only
+  // one team name has changed
+  QModelIndex top = QAbstractItemModel::createIndex(0, 2);
+  QModelIndex bottom = QAbstractItemModel::createIndex(rowCount() - 1, 2);
+  emit dataChanged(top, bottom);
+}
 
 //----------------------------------------------------------------------------
 

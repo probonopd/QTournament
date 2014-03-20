@@ -24,20 +24,26 @@ namespace QTournament
 
   class TeamMngr : public QObject, GenericObjectManager
   {
+    Q_OBJECT
   
   public:
     TeamMngr (TournamentDB* _db);
     ERR createNewTeam (const QString& teamName);
     bool hasTeam (const QString& teamName);
-    Team getTeam(const QString& name);
-    QList<Team> getAllTeams();
+    Team getTeam (const QString& name);
+    QList<Team> getAllTeams ();
     ERR renameTeam (Team& t, const QString& nn);
-    Team getTeamBySeqNum(int seqNum);
-    Team getTeamById(int id);
+    Team getTeamBySeqNum (int seqNum);
+    Team getTeamById (int id);
 
   private:
     DbTab teamTab;
-    
+
+signals:
+    void beginCreateTeam ();
+    void endCreateTeam (int newTeamSeqNum);
+    void teamRenamed(int teamSeqNum);
+
   };
 }
 

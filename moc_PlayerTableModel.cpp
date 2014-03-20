@@ -19,8 +19,8 @@
 
 QT_BEGIN_MOC_NAMESPACE
 struct qt_meta_stringdata_PlayerTableModel_t {
-    QByteArrayData data[5];
-    char stringdata[52];
+    QByteArrayData data[7];
+    char stringdata[77];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -33,10 +33,13 @@ QT_MOC_LITERAL(0, 0, 16),
 QT_MOC_LITERAL(1, 17, 15),
 QT_MOC_LITERAL(2, 33, 0),
 QT_MOC_LITERAL(3, 34, 6),
-QT_MOC_LITERAL(4, 41, 9)
+QT_MOC_LITERAL(4, 41, 9),
+QT_MOC_LITERAL(5, 51, 13),
+QT_MOC_LITERAL(6, 65, 10)
     },
     "PlayerTableModel\0onPlayerCreated\0\0"
-    "Player\0newPlayer\0"
+    "Player\0newPlayer\0onTeamRenamed\0"
+    "teamSeqNum\0"
 };
 #undef QT_MOC_LITERAL
 
@@ -46,7 +49,7 @@ static const uint qt_meta_data_PlayerTableModel[] = {
        7,       // revision
        0,       // classname
        0,    0, // classinfo
-       1,   14, // methods
+       2,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -54,10 +57,12 @@ static const uint qt_meta_data_PlayerTableModel[] = {
        0,       // signalCount
 
  // slots: name, argc, parameters, tag, flags
-       1,    1,   19,    2, 0x0a,
+       1,    1,   24,    2, 0x0a,
+       5,    1,   27,    2, 0x0a,
 
  // slots: parameters
     QMetaType::Void, 0x80000000 | 3,    4,
+    QMetaType::Void, QMetaType::Int,    6,
 
        0        // eod
 };
@@ -68,6 +73,7 @@ void PlayerTableModel::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int
         PlayerTableModel *_t = static_cast<PlayerTableModel *>(_o);
         switch (_id) {
         case 0: _t->onPlayerCreated((*reinterpret_cast< const Player(*)>(_a[1]))); break;
+        case 1: _t->onTeamRenamed((*reinterpret_cast< int(*)>(_a[1]))); break;
         default: ;
         }
     }
@@ -98,13 +104,13 @@ int PlayerTableModel::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 1)
+        if (_id < 2)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 1;
+        _id -= 2;
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 1)
+        if (_id < 2)
             *reinterpret_cast<int*>(_a[0]) = -1;
-        _id -= 1;
+        _id -= 2;
     }
     return _id;
 }

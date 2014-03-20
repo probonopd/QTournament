@@ -52,10 +52,10 @@ namespace QTournament
     QVariantList qvl;
     qvl << GENERIC_NAME_FIELD_NAME << teamName;
     
+    emit beginCreateTeam();
     int newId = teamTab.insertRow(qvl);
     fixSeqNumberAfterInsert(TAB_TEAM);
-    
-    Team newTeam(db, newId);
+    emit endCreateTeam(newId);
     
     return OK;
   }
@@ -130,6 +130,7 @@ namespace QTournament
     }
     
     t.row.update(GENERIC_NAME_FIELD_NAME, newName);
+    emit teamRenamed(t.getSeqNum());
     
     return OK;
   }
