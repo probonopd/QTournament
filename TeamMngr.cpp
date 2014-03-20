@@ -53,9 +53,9 @@ namespace QTournament
     qvl << GENERIC_NAME_FIELD_NAME << teamName;
     
     emit beginCreateTeam();
-    int newId = teamTab.insertRow(qvl);
+    teamTab.insertRow(qvl);
     fixSeqNumberAfterInsert(TAB_TEAM);
-    emit endCreateTeam(newId);
+    emit endCreateTeam(teamTab.length() - 1);  // the new sequence number is always the greatest
     
     return OK;
   }

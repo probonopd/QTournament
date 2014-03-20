@@ -40,7 +40,7 @@ void PlayerTabWidget::onCreatePlayerClicked()
   // is valid. That has been checked before the dialog
   // returns with "Accept". So we can directly step
   // into the creation of the new player
-  ERR e = Tournament::getPlayerTableModel()->createNewPlayer(
+  ERR e = Tournament::getPlayerMngr()->createNewPlayer(
                                                        dlg.getFirstName(),
                                                        dlg.getLastName(),
                                                        dlg.getSex(),

@@ -19,6 +19,9 @@ PlayerTableModel::PlayerTableModel(TournamentDB* _db)
         teamTab(_db->getTab(TAB_TEAM)), catTab((_db->getTab(TAB_CATEGORY)))
 {
   connect(Tournament::getTeamMngr(), &TeamMngr::teamRenamed, this, &PlayerTableModel::onTeamRenamed);
+  connect(Tournament::getPlayerMngr(), &PlayerMngr::beginCreatePlayer, this, &PlayerTableModel::onBeginCreatePlayer);
+  connect(Tournament::getPlayerMngr(), &PlayerMngr::endCreatePlayer, this, &PlayerTableModel::onEndCreatePlayer);
+  connect(Tournament::getPlayerMngr(), &PlayerMngr::playerRenamed, this, &PlayerTableModel::onPlayerRenamed);
 }
 
 //----------------------------------------------------------------------------
@@ -102,23 +105,19 @@ QVariant PlayerTableModel::headerData(int section, Qt::Orientation orientation, 
 
 //----------------------------------------------------------------------------
 
-void PlayerTableModel::onPlayerCreated(const Player& newPlayer)
+void PlayerTableModel::onBeginCreatePlayer()
 {
-  emit dataChanged(QModelIndex(), QModelIndex());
+    beginInsertRows(QModelIndex(), playerTab.length(), playerTab.length());
 }
 
 //----------------------------------------------------------------------------
 
-ERR PlayerTableModel::createNewPlayer(const QString& firstName, const QString& lastName, SEX sex, const QString& teamName)
+void PlayerTableModel::onEndCreatePlayer(int newPlayerSeqNum)
 {
-  PlayerMngr* pmngr = Tournament::getPlayerMngr();
-  
-  beginInsertRows(QModelIndex(), playerTab.length(), playerTab.length());
-  ERR result = pmngr->createNewPlayer(firstName, lastName, sex, teamName);
-  endInsertRows();
-  
-  return result;
+  emit endInsertRows();
 }
+
+//----------------------------------------------------------------------------
 
 //----------------------------------------------------------------------------
 
@@ -133,6 +132,12 @@ void PlayerTableModel::onTeamRenamed(int teamSeqNum)
 
 //----------------------------------------------------------------------------
 
+void PlayerTableModel::onPlayerRenamed(int playerSeqNum)
+{
+  QModelIndex top = QAbstractItemModel::createIndex(playerSeqNum, 0);
+  QModelIndex bottom = QAbstractItemModel::createIndex(playerSeqNum, 1);
+  emit dataChanged(top, bottom);  
+}
 
 //----------------------------------------------------------------------------
 

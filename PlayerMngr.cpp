@@ -78,10 +78,10 @@ namespace QTournament
     }
     
     // create the new player row
-    int newId = playerTab.insertRow(qvl);
+    emit beginCreatePlayer();
+    playerTab.insertRow(qvl);
     fixSeqNumberAfterInsert(TAB_PLAYER);
-    
-    Player newPlayer = Player(db, newId);
+    emit endCreatePlayer(playerTab.length() - 1); // the new sequence number is always the greatest
     
     return OK;
   }
@@ -182,6 +182,7 @@ namespace QTournament
     qvl << PL_FNAME << newFirst;
     qvl << PL_LNAME << newLast;
     p.row.update(qvl);
+    emit playerRenamed(p.getSeqNum());
     
     return OK;
   }
