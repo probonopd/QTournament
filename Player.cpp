@@ -118,6 +118,21 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
+  QList<Category> Player::getAssignedCategories()
+  {
+    QList<Category> result;
+    DbTab::CachingRowIterator it = db->getTab(TAB_P2C).getRowsByColumnValue(P2C_PLAYER_REF, getId());
+    
+    CatMngr* cmngr = Tournament::getCatMngr();
+    while (!(it.isEnd()))
+    {
+      int catId = (*it)[P2C_CAT_REF].toInt();
+      result.append(cmngr->getCategoryById(catId));
+      ++it;
+    }
+    
+    return result;
+  }
 
 //----------------------------------------------------------------------------
 

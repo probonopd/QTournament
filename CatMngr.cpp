@@ -12,6 +12,8 @@
 #include <qt/QtCore/qdebug.h>
 #include <qt/QtCore/qjsonarray.h>
 #include "HelperFunc.h"
+#include "Category.h"
+#include "Player.h"
 
 using namespace dbOverlay;
 
@@ -198,6 +200,17 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
+  Category CatMngr::getCategoryById(int id)
+  {
+    try {
+      TabRow r = catTab[id];
+      return Category(db, r);
+    }
+    catch (std::exception e)
+    {
+     throw std::invalid_argument("The category with ID " + QString2String(QString::number(id)) + " does not exist");
+    }
+  }
 
 //----------------------------------------------------------------------------
 

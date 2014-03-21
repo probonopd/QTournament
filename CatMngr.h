@@ -28,6 +28,7 @@ namespace QTournament
     ERR createNewCategory (const QString& catName);
     bool hasCategory (const QString& catName);
     Category getCategory(const QString& name);
+    Category getCategoryById(int id);
     QList<Category> getAllCategories();
     ERR renameCategory(const Category& c, const QString& newName);
     ERR setMatchType(Category& c, MATCH_TYPE t);

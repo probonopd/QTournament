@@ -13,9 +13,13 @@
 #include "TabRow.h"
 #include "TournamentErrorCodes.h"
 #include "Team.h"
+//#include "Category.h"
+
+#include <QList>
 
 namespace QTournament
 {
+  class Category;
 
   class Player : public GenericDatabaseObject
   {
@@ -29,6 +33,7 @@ namespace QTournament
     ERR rename(const QString& newFirst, const QString& newLast);
     SEX getSex() const;
     Team getTeam() const;
+    QList<Category> getAssignedCategories();
 
   private:
     Player (TournamentDB* db, int rowId);
