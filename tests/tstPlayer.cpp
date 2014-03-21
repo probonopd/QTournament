@@ -19,7 +19,7 @@ using namespace dbOverlay;
 
 //----------------------------------------------------------------------------
 
-void tstPlayer::testGetAssignedTeams()
+void tstPlayer::testGetAssignedCategories()
 {
   printStartMsg("tstPlayer::testGetAssignedTeams");
   

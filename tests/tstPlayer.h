@@ -18,7 +18,7 @@
 class tstPlayer : public DatabaseTestScenario
 {
   CPPUNIT_TEST_SUITE( tstPlayer );
-    CPPUNIT_TEST(testGetAssignedTeams);
+    CPPUNIT_TEST(testGetAssignedCategories);
 //  CPPUNIT_TEST();
 //  CPPUNIT_TEST();
 //  CPPUNIT_TEST();
@@ -34,7 +34,7 @@ class tstPlayer : public DatabaseTestScenario
   CPPUNIT_TEST_SUITE_END();
   
 public:
-  void testGetAssignedTeams();
+  void testGetAssignedCategories();
 };
 
 #endif	/* TSTGENERICDBOBJECT_H */
