@@ -152,6 +152,20 @@ void PlayerTabWidget::onPlayerDoubleClicked(const QModelIndex& index)
     }
     ++it;
   }
+  
+  // Team changes
+  TeamMngr* tmngr = Tournament::getTeamMngr();
+  Team newTeam = dlg.getTeam();
+  if (newTeam != selectedPlayer.getTeam())
+  {
+    ERR e = tmngr->changeTeamAssigment(selectedPlayer, newTeam);
+
+    if (e != OK) {
+      QString msg = tr("Something went wrong when changing the player's team assignment. This shouldn't happen.");
+      msg += tr("For the records: error code = ") + QString::number(static_cast<int> (e));
+      QMessageBox::warning(this, tr("WTF??"), msg);
+    }
+  }
 }
 
 //----------------------------------------------------------------------------
