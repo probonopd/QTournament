@@ -7,6 +7,7 @@
 
 #include <qt/QtWidgets/qmessagebox.h>
 #include <qt4/QtGui/qwidget.h>
+#include <qt4/QtCore/qnamespace.h>
 
 #include "Tournament.h"
 
@@ -16,6 +17,7 @@ DlgEditPlayer::DlgEditPlayer(Player* _selectedPlayer)
 {
   ui.setupUi(this);
   selectedPlayer = (_selectedPlayer != NULL) ? _selectedPlayer : NULL;
+  _hasNameChange = true;
   
   initTeamList();
   
@@ -78,15 +80,15 @@ void DlgEditPlayer::done(int result)
   }
   
   // make sure the player name is unique
-  bool hasNameChange = true;
+  _hasNameChange = true;
   if (selectedPlayer)
   {
     if ((selectedPlayer->getFirstName() == newFirst) && (selectedPlayer->getLastName() == newLast))
     {
-      hasNameChange = false; // no name change
+      _hasNameChange = false; // no name change
     }
   }
-  if (hasNameChange)   // this "if" triggers only for newly inserted players or for existing players with a name change
+  if (_hasNameChange)   // this "if" triggers only for newly inserted players or for existing players with a name change
   {
     if (Tournament::getPlayerMngr()->hasPlayer(newFirst, newLast))
     {
@@ -133,6 +135,10 @@ void DlgEditPlayer::initFromPlayerData()
   // Note: we rely on a properly initialized team list here
   Team t = selectedPlayer->getTeam();
   ui.cbTeams->setCurrentText(t.getName());
+  
+  // initialize the list of applicable categories
+  QHash<Category,CAT_ADD_STATE> catStatus = Tournament::getCatMngr()->getAllCategoryAddStates(*selectedPlayer);
+  updateCatList(catStatus);
 }
 
 //----------------------------------------------------------------------------
@@ -194,12 +200,75 @@ Team DlgEditPlayer::getTeam()
 
 //----------------------------------------------------------------------------
 
+void DlgEditPlayer::onSexSelectionChanged()
+{
+  // we assume that the change of a player
+  // can't be changed after creation.
+  //
+  // Read: we'll only reach this slot if we're dealing
+  // with a new player. So it's the sex, not the player
+  // itself that determines the can-add-state
+  //
+  QHash<Category,CAT_ADD_STATE> catStatus = Tournament::getCatMngr()->getAllCategoryAddStates(getSex());
+  
+  updateCatList(catStatus);
+}
 
 //----------------------------------------------------------------------------
 
+void DlgEditPlayer::updateCatList(QHash<Category,CAT_ADD_STATE> catStatus)
+{
+  ui.catList->clear();
+  QHash<Category,CAT_ADD_STATE>::const_iterator it;
+  
+  for (it = catStatus.begin(); it != catStatus.end(); ++it)
+  {
+    CAT_ADD_STATE stat = (*it);
+    QListWidgetItem* item = new QListWidgetItem(it.key().getName());
+    item->setData(Qt::UserRole, it.key().getId());
+    
+    if (stat == CAN_JOIN)
+    {
+      item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
+      item->setCheckState(Qt::Unchecked);
+    }
+    if (stat == WRONG_SEX)
+    {
+      delete item;
+      continue;
+    }
+    if (stat == ALREADY_MEMBER)
+    {
+      item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
+      item->setCheckState(Qt::Checked);
+    }
+    if (stat == CAT_CLOSED)
+    {
+      item->setFlags(item->flags() & !Qt::ItemIsEditable & !Qt::ItemIsSelectable);
+      item->setForeground(Qt::gray);
+    }
+    
+    ui.catList->addItem(item);
+  }
+}
 
 //----------------------------------------------------------------------------
 
+QHash<Category,bool> DlgEditPlayer::getCategoryCheckState()
+{
+  QHash<Category,bool> result;
+  CatMngr* cmngr = Tournament::getCatMngr();
+  
+  for (int i=0; i < ui.catList->count(); i++)
+  {
+    QListWidgetItem* item = ui.catList->item(i);
+    int catId = item->data(Qt::UserRole).toInt();
+    Category cat = cmngr->getCategoryById(catId);
+    result[cat] = (item->checkState() == Qt::Checked);
+  }
+  
+  return result;
+}
 
 //----------------------------------------------------------------------------
 

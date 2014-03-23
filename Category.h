@@ -31,16 +31,23 @@ namespace QTournament
     SEX getSex() const;
     ERR setSex(SEX s);
     bool canAddPlayers() const;
-    bool isPlayerSuitable(const Player& p) const;
     bool hasPlayer(const Player& p) const;
     ERR addPlayer(const Player& p);
     bool canRemovePlayer(const Player& p) const;
     ERR removePlayer(const Player& p);
-
+    CAT_ADD_STATE getAddState(const SEX s) const;
+    CAT_ADD_STATE getAddState(const Player& p) const;
+    
   private:
     Category (TournamentDB* db, int rowId);
     Category (TournamentDB* db, dbOverlay::TabRow row);
   };
+
+  // we need this to have a category object in a QHash
+  inline uint qHash(const Category& c)
+  {
+    return c.getId(); // bad style: implicit conversion from int to uint...
+  }
 
 }
 #endif	/* TEAM_H */

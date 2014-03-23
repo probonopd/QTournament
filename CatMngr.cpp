@@ -153,14 +153,14 @@ namespace QTournament
       return CATEGORY_CLOSED_FOR_MORE_PLAYERS;
     }
     
-    if (!(c.isPlayerSuitable(p)))
-    {
-      return PLAYER_NOT_SUITABLE;
-    }
-    
     if (c.hasPlayer(p))
     {
       return PLAYER_ALREADY_IN_CATEGORY;
+    }
+    
+    if (c.getAddState(p) != CAN_JOIN)
+    {
+      return PLAYER_NOT_SUITABLE;
     }
     
     // TODO: check that player is not permanently disabled
@@ -214,9 +214,35 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
+  QHash<Category, CAT_ADD_STATE> CatMngr::getAllCategoryAddStates(SEX s)
+  {
+    QList<Category> allCat = getAllCategories();
+    QHash<Category, CAT_ADD_STATE> result;
+    
+    QList<Category>::const_iterator it;
+    for (it = allCat.begin(); it != allCat.constEnd(); ++it)
+    {
+      result[(*it)] = (*it).getAddState(s);
+    }
+    
+    return result;
+  }
 
 //----------------------------------------------------------------------------
 
+  QHash<Category, CAT_ADD_STATE> CatMngr::getAllCategoryAddStates(const Player& p)
+  {
+    QList<Category> allCat = getAllCategories();
+    QHash<Category, CAT_ADD_STATE> result;
+    
+    QList<Category>::const_iterator it;
+    for (it = allCat.begin(); it != allCat.constEnd(); ++it)
+    {
+      result[(*it)] = (*it).getAddState(p);
+    }
+    
+    return result;
+  }
 
 //----------------------------------------------------------------------------
 

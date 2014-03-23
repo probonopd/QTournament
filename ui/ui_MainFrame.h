@@ -54,6 +54,7 @@ public:
     {
         if (MainFrame->objectName().isEmpty())
             MainFrame->setObjectName(QStringLiteral("MainFrame"));
+        MainFrame->setWindowModality(Qt::ApplicationModal);
         MainFrame->resize(1017, 760);
         actionNew = new QAction(MainFrame);
         actionNew->setObjectName(QStringLiteral("actionNew"));

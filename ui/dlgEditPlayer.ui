@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>612</width>
-    <height>395</height>
+    <height>520</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -146,10 +146,15 @@
       </widget>
      </item>
      <item>
-      <widget class="QGroupBox" name="groupBox">
+      <widget class="QGroupBox" name="grpCategories">
        <property name="title">
         <string>Categories</string>
        </property>
+       <layout class="QHBoxLayout" name="horizontalLayout_3">
+        <item>
+         <widget class="QListWidget" name="catList"/>
+        </item>
+       </layout>
       </widget>
      </item>
      <item>
@@ -200,5 +205,40 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>rbMale</sender>
+   <signal>clicked()</signal>
+   <receiver>dlgEditPlayer</receiver>
+   <slot>onSexSelectionChanged()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>539</x>
+     <y>85</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>305</x>
+     <y>259</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>rbFemale</sender>
+   <signal>clicked()</signal>
+   <receiver>dlgEditPlayer</receiver>
+   <slot>onSexSelectionChanged()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>539</x>
+     <y>151</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>305</x>
+     <y>259</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
+ <slots>
+  <slot>onSexSelectionChanged()</slot>
+ </slots>
 </ui>

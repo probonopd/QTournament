@@ -25,6 +25,7 @@ public:
   bool hasNameChange();
   SEX getSex();
   Team getTeam();
+  QHash<Category, bool> getCategoryCheckState();
   
 private:
   Ui::dlgEditPlayer ui;
@@ -32,9 +33,13 @@ private:
   void initFromPlayerData();
   void initTeamList();
   bool _hasNameChange;
+  void updateCatList(QHash<Category, CAT_ADD_STATE> catStatus);
 
 public slots:
   virtual void done (int result);
+  
+private slots:
+  void onSexSelectionChanged();
 };
 
 #endif	/* _DLGEDITPLAYER_H */

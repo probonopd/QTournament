@@ -15,6 +15,7 @@
 #include "Category.h"
 
 #include <QList>
+#include <QHash>
 
 using namespace dbOverlay;
 
@@ -36,6 +37,8 @@ namespace QTournament
     ERR setSex(Category& c, SEX s);
     ERR addPlayerToCategory(const Player& p, const Category& c);
     ERR removePlayerFromCategory(const Player& p, const Category& c);
+    QHash<Category, CAT_ADD_STATE> getAllCategoryAddStates(SEX s);
+    QHash<Category, CAT_ADD_STATE> getAllCategoryAddStates(const Player& p);
 
   private:
     DbTab catTab;

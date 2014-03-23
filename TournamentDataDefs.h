@@ -167,6 +167,12 @@ namespace QTournament
   
 //----------------------------------------------------------------------------
 
+  enum CAT_ADD_STATE {
+    WRONG_SEX,         // Player may not join because the sex doesn't fit
+    CAN_JOIN,          // Player can join the category now and participate in matches
+    CAT_CLOSED,        // Player WOULD fit, but the category doesn't accept any more players
+    ALREADY_MEMBER     // Player is already assigned to this category
+  };
   
 //----------------------------------------------------------------------------
 

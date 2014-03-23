@@ -121,26 +121,42 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  bool Category::isPlayerSuitable(const Player& p) const
+  CAT_ADD_STATE Category::getAddState(const SEX s) const
   {
+    if (!(canAddPlayers()))
+    {
+      return CAT_CLOSED;
+    }
+    
     // a "mixed" category can take any player
     if (getMatchType() == MIXED)
     {
-      return true;
+      return CAN_JOIN;
     }
     
     // ok, so we're either in singles or doubles. if the sex
     // is set to DONT_CARE, then also any player will fit
     if (getSex() == DONT_CARE)
     {
-      return true;
+      return CAN_JOIN;
     }
     
     // in all other cases, the category's sex has to
     // match the player's sex
-    return (p.getSex() == getSex());
+    return (s == getSex()) ? CAN_JOIN : WRONG_SEX;
   }
 
+//----------------------------------------------------------------------------
+
+  CAT_ADD_STATE Category::getAddState(const Player& p) const
+  {
+    if (hasPlayer(p))
+    {
+      return ALREADY_MEMBER;
+    }
+    
+    return getAddState(p.getSex());
+  }
 
 //----------------------------------------------------------------------------
 

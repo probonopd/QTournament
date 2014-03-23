@@ -18,7 +18,7 @@
 class tstCategory : public DatabaseTestScenario
 {
   CPPUNIT_TEST_SUITE( tstCategory );
-    CPPUNIT_TEST(testIsPlayerSuitable);
+    CPPUNIT_TEST(testGetAddState);
     CPPUNIT_TEST(testHasPlayer);
 //  CPPUNIT_TEST();
 //  CPPUNIT_TEST();
@@ -28,7 +28,7 @@ class tstCategory : public DatabaseTestScenario
   CPPUNIT_TEST_SUITE_END();
   
 public:
-  void testIsPlayerSuitable();
+  void testGetAddState();
   void testHasPlayer();
 };
 

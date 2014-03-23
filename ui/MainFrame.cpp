@@ -11,6 +11,7 @@
 
 #include <QMessageBox>
 #include <stdexcept>
+#include <qt4/QtCore/qnamespace.h>
 
 using namespace QTournament;
 
@@ -31,6 +32,7 @@ MainFrame::MainFrame()
   tnmt = NULL;
   
   ui.setupUi(this);
+  showMaximized();
   enableControls(false);
   
   testFileName = QDir().absoluteFilePath("tournamentTestFile.tdb");
@@ -126,6 +128,33 @@ void MainFrame::setupTestScenario(int scenarioID)
     pmngr->createNewPlayer("First4", "Last4", F, "Team 1");
     pmngr->createNewPlayer("First5", "Last5", M, "Team 2");
     pmngr->createNewPlayer("First6", "Last6", F, "Team 2");
+
+    // create one category of every kind
+    CatMngr* cmngr = Tournament::getCatMngr();
+    cmngr->createNewCategory("MS");
+    Category ms = cmngr->getCategory("MS");
+    ms.setMatchType(SINGLES);
+    ms.setSex(M);
+
+    cmngr->createNewCategory("MD");
+    Category md = cmngr->getCategory("MD");
+    md.setMatchType(DOUBLES);
+    md.setSex(M);
+
+    cmngr->createNewCategory("LS");
+    Category ls = cmngr->getCategory("LS");
+    ls.setMatchType(SINGLES);
+    ls.setSex(F);
+
+    cmngr->createNewCategory("LD");
+    Category ld = cmngr->getCategory("LD");
+    ld.setMatchType(DOUBLES);
+    ld.setSex(F);
+
+    cmngr->createNewCategory("MX");
+    Category mx = cmngr->getCategory("MX");
+    mx.setMatchType(MIXED);
+    mx.setSex(M); // shouldn't matter at all
   }
   
   enableControls(true);
