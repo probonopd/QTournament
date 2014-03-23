@@ -35,7 +35,7 @@ int PlayerTableModel::rowCount(const QModelIndex& parent) const
 
 int PlayerTableModel::columnCount(const QModelIndex& parent) const
 {
-  return 3;  // three columns: player's name, sex and team
+  return 4;  // four columns: player's name, sex, team and assigned categories
 }
 
 //----------------------------------------------------------------------------
@@ -71,6 +71,24 @@ QVariant PlayerTableModel::data(const QModelIndex& index, int role) const
       return p.getTeam().getName();
     }
     
+    // fourth column: assigned categories
+    if (index.column() == 3)
+    {
+      QString result = "";
+      QList<Category> assignedCats = p.getAssignedCategories();
+      for (int i=0; i < assignedCats.count(); i++)
+      {
+	result += assignedCats.at(i).getName() + ", ";
+      }
+      
+      if (assignedCats.count() > 0)
+      {
+	result = result.left(result.length() - 2);
+      }
+      
+      return result;
+    }
+    
     return QString("Not Implemented");
 }
 
@@ -88,13 +106,17 @@ QVariant PlayerTableModel::headerData(int section, Qt::Orientation orientation, 
     if (section == 0) {
       return tr("Name");
     }
-    
+
     if (section == 1) {
       return "";
     }
-    
+
     if (section == 2) {
       return tr("Team Name");
+    }
+    
+    if (section == 3) {
+      return tr("Categories");
     }
     
     return QString("Not implemented");
