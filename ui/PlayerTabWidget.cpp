@@ -104,7 +104,11 @@ void PlayerTabWidget::onPlayerDoubleClicked(const QModelIndex& index)
     return;
   }
   
+  //
   // apply the changes, if any
+  //
+  
+  // name changes
   if (dlg.hasNameChange())
   {
     ERR e = selectedPlayer.rename(dlg.getFirstName(), dlg.getLastName());
@@ -115,6 +119,38 @@ void PlayerTabWidget::onPlayerDoubleClicked(const QModelIndex& index)
       msg += tr("For the records: error code = ") + QString::number(static_cast<int> (e));
       QMessageBox::warning(this, tr("WTF??"), msg);
     }
+  }
+  
+  // category changes
+  CatMngr* cmngr = Tournament::getCatMngr();
+  
+  QHash<Category, bool> catSelection = dlg.getCategoryCheckState();
+  QHash<Category, bool>::const_iterator it = catSelection.constBegin();
+  while (it != catSelection.constEnd()) {
+    Category cat = it.key();
+    bool isAlreadyInCat = cat.hasPlayer(selectedPlayer);
+    bool isCatSelected = it.value();
+    
+    if (isAlreadyInCat && !isCatSelected) {    // remove player from category
+      ERR e = cmngr->removePlayerFromCategory(selectedPlayer, cat);
+      
+      if (e != OK) {
+	QString msg = tr("Something went wrong when removing the player from a category. This shouldn't happen.");
+	msg += tr("For the records: error code = ") + QString::number(static_cast<int> (e));
+	QMessageBox::warning(this, tr("WTF??"), msg);
+      }
+    }
+    
+    if (!isAlreadyInCat && isCatSelected) {    // add player to category
+      ERR e = cmngr->addPlayerToCategory(selectedPlayer, cat);
+      
+      if (e != OK) {
+	QString msg = tr("Something went wrong when adding the player to a category. This shouldn't happen.");
+	msg += tr("For the records: error code = ") + QString::number(static_cast<int> (e));
+	QMessageBox::warning(this, tr("WTF??"), msg);
+      }
+    }
+    ++it;
   }
 }
 

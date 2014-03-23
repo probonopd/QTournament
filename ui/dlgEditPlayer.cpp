@@ -241,6 +241,14 @@ void DlgEditPlayer::updateCatList(QHash<Category,CAT_ADD_STATE> catStatus)
     {
       item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
       item->setCheckState(Qt::Checked);
+      
+      // do we edit an existing player and could this player possibly be
+      // removed from the category?
+      // If not, deactivate the item
+      if ((selectedPlayer != NULL) && (!(it.key().canRemovePlayer(*selectedPlayer)))) {
+	item->setFlags(item->flags() & !Qt::ItemIsEditable & !Qt::ItemIsSelectable);
+	item->setForeground(Qt::gray);
+      }
     }
     if (stat == CAT_CLOSED)
     {
@@ -272,7 +280,7 @@ QHash<Category,bool> DlgEditPlayer::getCategoryCheckState()
 
 //----------------------------------------------------------------------------
 
-
+  
 //----------------------------------------------------------------------------
 
 

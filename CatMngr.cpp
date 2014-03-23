@@ -187,7 +187,12 @@ namespace QTournament
     {
       return PLAYER_NOT_IN_CATEGORY;
     }
+    
     // TODO: split player pairs, if necessary
+    //
+    // And: unless we play with random partners, the double partner
+    // has to be removed from the category as well if we're beyond
+    // "Category Configuration" state
     
     // actually delete the assignment
     QVariantList qvl;
