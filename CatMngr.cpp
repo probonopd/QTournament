@@ -54,6 +54,9 @@ namespace QTournament
     qvl << CAT_MATCH_TYPE << static_cast<int>(SINGLES);
     qvl << CAT_SEX << static_cast<int>(M);
     qvl << GENERIC_STATE_FIELD_NAME << static_cast<int>(STAT_CAT_CONFIG);
+    qvl << CAT_WIN_SCORE << 2;
+    qvl << CAT_DRAW_SCORE << 1;
+    
     catTab.insertRow(qvl);
     fixSeqNumberAfterInsert(TAB_CATEGORY);
     
@@ -219,6 +222,20 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
+  Category CatMngr::getCategoryBySeqNum(int seqNum)
+  {
+    try {
+      TabRow r = catTab.getSingleRowByColumnValue(GENERIC_SEQNUM_FIELD_NAME, seqNum);
+      return Category(db, r);
+    }
+    catch (std::exception e)
+    {
+     throw std::invalid_argument("The category with sequence number " + QString2String(QString::number(seqNum)) + " does not exist");
+    }
+  }
+
+//----------------------------------------------------------------------------
+
   QHash<Category, CAT_ADD_STATE> CatMngr::getAllCategoryAddStates(SEX s)
   {
     QList<Category> allCat = getAllCategories();
@@ -248,6 +265,142 @@ namespace QTournament
     
     return result;
   }
+
+//----------------------------------------------------------------------------
+
+  bool CatMngr::setCatParameter(Category& c, CAT_PARAMETER p, const QVariant& v)
+  {
+    if (p == ALLOW_DRAW)
+    {
+      return setCatParam_AllowDraw(c, v);
+    }
+    if (p == DRAW_SCORE)
+    {
+      return setCatParam_Score(c, v.toInt(), true);
+    }
+    if (p == WIN_SCORE)
+    {
+      return setCatParam_Score(c, v.toInt(), false);
+    }
+    
+    return false;
+  }
+
+//----------------------------------------------------------------------------
+
+  bool CatMngr::setCatParam_AllowDraw(Category& c, const QVariant& v)
+  {
+    if (c.getState() != STAT_CAT_CONFIG)
+    {
+      return false;
+    }
+    
+    bool allowDraw = v.toBool();
+    bool oldState = c.getParameter(ALLOW_DRAW).toBool();
+
+    if (allowDraw == oldState)
+    {
+      return true; // no change necessary;
+    }
+
+    // ensure consistent scoring before accepting draw
+    if (allowDraw)
+    {
+      int winScore = c.getParameter_int(WIN_SCORE);
+      int drawScore = c.getParameter_int(DRAW_SCORE);
+
+      if (drawScore < 1)
+      {
+	drawScore = 1;
+	c.row.update(CAT_DRAW_SCORE, 1);
+      }
+      if (winScore <= drawScore)
+      {
+	winScore = drawScore + 1;
+	c.row.update(CAT_WIN_SCORE, winScore);
+      }
+    }
+
+    // set the new status
+    c.row.update(CAT_ACCEPT_DRAW, allowDraw);
+    return true;
+  }
+
+//----------------------------------------------------------------------------
+
+  bool CatMngr::setCatParam_Score(Category& c, int newScore, bool isDraw)
+  {
+    if (c.getState() != STAT_CAT_CONFIG)
+    {
+      return false;
+    }
+    
+    int winScore = c.getParameter_int(WIN_SCORE);
+    int drawScore = c.getParameter_int(DRAW_SCORE);
+    bool allowDraw = c.getParameter_bool(ALLOW_DRAW);
+    
+    // only scores above 0 make sense
+    if (newScore < 1)
+    {
+      return false;
+    }
+    
+    // can't update draw score if draw is not enabled
+    if (!allowDraw && isDraw)
+    {
+      return false;
+    }
+    
+    if (isDraw)
+    {
+      if (newScore >= winScore)
+      {
+	return false;
+      }
+      
+      c.row.update(CAT_DRAW_SCORE, newScore);
+      return true;
+    }
+
+    // if we're here, we're updating the win score
+    if (allowDraw && (newScore <= drawScore))
+    {
+      return false;
+    }
+
+    c.row.update(CAT_WIN_SCORE, newScore);
+    return true;
+  }
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
 
 //----------------------------------------------------------------------------
 

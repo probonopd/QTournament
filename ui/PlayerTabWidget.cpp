@@ -10,8 +10,8 @@
 #include "PlayerTabWidget.h"
 #include "dlgEditPlayer.h"
 
-PlayerTabWidget::PlayerTabWidget(QWidget* parent)
-:QWidget(parent)
+PlayerTabWidget::PlayerTabWidget()
+:QWidget()
 {
   ui.setupUi(this);
 }

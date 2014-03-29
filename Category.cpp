@@ -202,15 +202,56 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
+  QVariant Category::getParameter(CAT_PARAMETER p) const
+  {
+    switch (p) {
+      
+    case ALLOW_DRAW:
+      return row[CAT_ACCEPT_DRAW];
+      
+    case WIN_SCORE:
+      return row[CAT_WIN_SCORE];
+      
+    case DRAW_SCORE:
+      return row[CAT_DRAW_SCORE];
+    /*
+    case :
+      return row[];
+      
+    case :
+      return row[];
+      
+    case :
+      return row[];
+      
+    case :
+      return row[];
+    */ 
+    default:
+      return QVariant();
+    }
+  }
 
 //----------------------------------------------------------------------------
 
+  bool Category::setParameter(CAT_PARAMETER p, const QVariant& v)
+  {
+    return Tournament::getCatMngr()->setCatParameter(*this, p, v);
+  }
 
 //----------------------------------------------------------------------------
 
+  int Category::getParameter_int(CAT_PARAMETER p) const
+  {
+    return getParameter(p).toInt();
+  }
 
 //----------------------------------------------------------------------------
 
+  bool Category::getParameter_bool(CAT_PARAMETER p) const
+  {
+    return getParameter(p).toBool();
+  }
 
 //----------------------------------------------------------------------------
 

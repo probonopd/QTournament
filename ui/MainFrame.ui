@@ -29,30 +29,27 @@
          <bool>true</bool>
         </property>
         <property name="currentIndex">
-         <number>1</number>
+         <number>2</number>
         </property>
-        <widget class="QWidget" name="tabTeams">
+        <widget class="TeamTabWidget" name="tabTeams">
          <property name="enabled">
           <bool>true</bool>
          </property>
          <attribute name="title">
           <string>Teams</string>
          </attribute>
-         <layout class="QVBoxLayout" name="verticalLayout_5">
-          <item>
-           <widget class="TeamTabWidget" name="widget" native="true"/>
-          </item>
-         </layout>
+         <layout class="QVBoxLayout" name="verticalLayout_5"/>
         </widget>
-        <widget class="QWidget" name="tabPlayers">
+        <widget class="PlayerTabWidget" name="tabPlayers">
          <attribute name="title">
           <string>Players</string>
          </attribute>
-         <layout class="QVBoxLayout" name="verticalLayout_6">
-          <item>
-           <widget class="PlayerTabWidget" name="widget_2" native="true"/>
-          </item>
-         </layout>
+         <layout class="QVBoxLayout" name="verticalLayout_6"/>
+        </widget>
+        <widget class="CatTabWidget" name="tabCategories">
+         <attribute name="title">
+          <string>Page</string>
+         </attribute>
         </widget>
        </widget>
       </item>
@@ -133,6 +130,12 @@
    <class>PlayerTabWidget</class>
    <extends>QWidget</extends>
    <header>PlayerTabWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>CatTabWidget</class>
+   <extends>QWidget</extends>
+   <header>CatTabWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

@@ -30,6 +30,7 @@ namespace QTournament
     bool hasCategory (const QString& catName);
     Category getCategory(const QString& name);
     Category getCategoryById(int id);
+    Category getCategoryBySeqNum(int seqNum);
     QList<Category> getAllCategories();
     ERR renameCategory(const Category& c, const QString& newName);
     ERR setMatchType(Category& c, MATCH_TYPE t);
@@ -39,9 +40,13 @@ namespace QTournament
     ERR removePlayerFromCategory(const Player& p, const Category& c);
     QHash<Category, CAT_ADD_STATE> getAllCategoryAddStates(SEX s);
     QHash<Category, CAT_ADD_STATE> getAllCategoryAddStates(const Player& p);
+    bool setCatParameter( Category& c, CAT_PARAMETER p, const QVariant& v);
 
   private:
     DbTab catTab;
+    
+    bool setCatParam_AllowDraw( Category& c, const QVariant& v);
+    bool setCatParam_Score( Category& c, int newScore, bool isDraw);
   };
 }
 

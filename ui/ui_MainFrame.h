@@ -21,6 +21,7 @@
 #include <QtWidgets/QTabWidget>
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QWidget>
+#include "CatTabWidget.h"
 #include "PlayerTabWidget.h"
 #include "TeamTabWidget.h"
 
@@ -39,12 +40,11 @@ public:
     QVBoxLayout *verticalLayout_2;
     QVBoxLayout *verticalLayout;
     QTabWidget *mainTab;
-    QWidget *tabTeams;
+    TeamTabWidget *tabTeams;
     QVBoxLayout *verticalLayout_5;
-    TeamTabWidget *widget;
-    QWidget *tabPlayers;
+    PlayerTabWidget *tabPlayers;
     QVBoxLayout *verticalLayout_6;
-    PlayerTabWidget *widget_2;
+    CatTabWidget *tabCategories;
     QMenuBar *menubar;
     QMenu *menuTournament;
     QMenu *menuTesting;
@@ -78,27 +78,20 @@ public:
         mainTab = new QTabWidget(centralwidget);
         mainTab->setObjectName(QStringLiteral("mainTab"));
         mainTab->setEnabled(true);
-        tabTeams = new QWidget();
+        tabTeams = new TeamTabWidget();
         tabTeams->setObjectName(QStringLiteral("tabTeams"));
         tabTeams->setEnabled(true);
         verticalLayout_5 = new QVBoxLayout(tabTeams);
         verticalLayout_5->setObjectName(QStringLiteral("verticalLayout_5"));
-        widget = new TeamTabWidget(tabTeams);
-        widget->setObjectName(QStringLiteral("widget"));
-
-        verticalLayout_5->addWidget(widget);
-
         mainTab->addTab(tabTeams, QString());
-        tabPlayers = new QWidget();
+        tabPlayers = new PlayerTabWidget();
         tabPlayers->setObjectName(QStringLiteral("tabPlayers"));
         verticalLayout_6 = new QVBoxLayout(tabPlayers);
         verticalLayout_6->setObjectName(QStringLiteral("verticalLayout_6"));
-        widget_2 = new PlayerTabWidget(tabPlayers);
-        widget_2->setObjectName(QStringLiteral("widget_2"));
-
-        verticalLayout_6->addWidget(widget_2);
-
         mainTab->addTab(tabPlayers, QString());
+        tabCategories = new CatTabWidget();
+        tabCategories->setObjectName(QStringLiteral("tabCategories"));
+        mainTab->addTab(tabCategories, QString());
 
         verticalLayout->addWidget(mainTab);
 
@@ -136,7 +129,7 @@ public:
         QObject::connect(actionEmpty, SIGNAL(triggered()), MainFrame, SLOT(setupEmptyScenario()));
         QObject::connect(actionScenario01, SIGNAL(triggered()), MainFrame, SLOT(setupScenario01()));
 
-        mainTab->setCurrentIndex(1);
+        mainTab->setCurrentIndex(2);
 
 
         QMetaObject::connectSlotsByName(MainFrame);
@@ -153,6 +146,7 @@ public:
         actionScenario01->setText(QApplication::translate("MainFrame", "Scenario01", 0));
         mainTab->setTabText(mainTab->indexOf(tabTeams), QApplication::translate("MainFrame", "Teams", 0));
         mainTab->setTabText(mainTab->indexOf(tabPlayers), QApplication::translate("MainFrame", "Players", 0));
+        mainTab->setTabText(mainTab->indexOf(tabCategories), QApplication::translate("MainFrame", "Page", 0));
         menuTournament->setTitle(QApplication::translate("MainFrame", "Tournament", 0));
         menuTesting->setTitle(QApplication::translate("MainFrame", "Testing", 0));
     } // retranslateUi

@@ -90,7 +90,8 @@ namespace QTournament
 #define CAT_SEX QString("Sex")
 #define CAT_SYS QString("System")
 #define CAT_ACCEPT_DRAW QString("AcceptDraw")
-//#define CAT_ QString("")
+#define CAT_WIN_SCORE QString("WinScore")
+#define CAT_DRAW_SCORE QString("DrawScore")
 //#define CAT_ QString("")
 //#define CAT_ QString("")
 //#define CAT_ QString("")
@@ -164,6 +165,12 @@ namespace QTournament
   
 //----------------------------------------------------------------------------
 
+  enum CAT_PARAMETER {
+    ALLOW_DRAW,
+    WIN_SCORE,
+    DRAW_SCORE
+    
+  };
   
 //----------------------------------------------------------------------------
 

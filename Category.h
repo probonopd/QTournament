@@ -37,6 +37,10 @@ namespace QTournament
     ERR removePlayer(const Player& p);
     CAT_ADD_STATE getAddState(const SEX s) const;
     CAT_ADD_STATE getAddState(const Player& p) const;
+    QVariant getParameter(CAT_PARAMETER) const;
+    int getParameter_int(CAT_PARAMETER) const;
+    bool getParameter_bool(CAT_PARAMETER) const;
+    bool setParameter(CAT_PARAMETER p, const QVariant& v);
     
   private:
     Category (TournamentDB* db, int rowId);

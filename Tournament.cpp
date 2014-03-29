@@ -21,6 +21,7 @@ namespace QTournament
   PlayerMngr* Tournament::pm = NULL;
   TeamListModel* Tournament::tlm = NULL;
   PlayerTableModel* Tournament::ptm = NULL;
+  CategoryTableModel* Tournament::ctm = NULL;
 
 /**
  * Constructor for a new, empty tournament file
@@ -81,8 +82,12 @@ Tournament::Tournament(const QString& fName)
     // open an existing database
     db = TournamentDB(fName, false);
     
-    // initialize the various managers / handlers and models
+    // initialize the various managers / handlers
     initManagers();
+    
+    // always initialize the managers before the models,
+    // because the models connect to signals emitted by the
+    // managers
     initModels();
 }
 
@@ -101,6 +106,7 @@ void Tournament::initModels()
 {
   tlm = new TeamListModel(&db);
   ptm = new PlayerTableModel(&db);
+  ctm = new CategoryTableModel(&db);
 }
 
 //----------------------------------------------------------------------------
@@ -170,7 +176,11 @@ PlayerTableModel* Tournament::getPlayerTableModel()
 }
 
 //----------------------------------------------------------------------------
-    
+
+CategoryTableModel* Tournament::getCategoryTableModel()
+{
+  return ctm;
+}
 
 //----------------------------------------------------------------------------
     

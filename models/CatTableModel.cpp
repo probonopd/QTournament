@@ -1,46 +1,88 @@
-/*
- * File:   PlayerTabWidget.cpp
+/* 
+ * File:   PlayerTableModel.cpp
  * Author: volker
- *
- * Created on March 19, 2014, 6:20 PM
+ * 
+ * Created on March 17, 2014, 7:51 PM
  */
 
-#include "TeamTabWidget.h"
+#include "CatTableModel.h"
 
-#include "MainFrame.h"
+#include "Category.h"
+#include "Tournament.h"
 
-TeamTabWidget::TeamTabWidget()
-:QWidget()
-{
-  ui.setupUi(this);
-}
+using namespace QTournament;
+using namespace dbOverlay;
 
-//----------------------------------------------------------------------------
-
-TeamTabWidget::~TeamTabWidget()
+CategoryTableModel::CategoryTableModel(TournamentDB* _db)
+:QAbstractTableModel(0), db(_db), catTab((_db->getTab(TAB_CATEGORY)))
 {
 }
 
 //----------------------------------------------------------------------------
 
-void TeamTabWidget::onCreateTeamClicked()
+int CategoryTableModel::rowCount(const QModelIndex& parent) const
 {
-  int cnt = 0;
-  
-  // try to create new teams using a
-  // canonical name until it finally succeeds
-  ERR e = NAME_EXISTS;
-  while (e != OK)
-  {
-    QString teamName = tr("New Team ") + QString::number(cnt);
+  return catTab.length();
+}
+
+//----------------------------------------------------------------------------
+
+int CategoryTableModel::columnCount(const QModelIndex& parent) const
+{
+  return 1;  // one column: category's
+}
+
+//----------------------------------------------------------------------------
+
+QVariant CategoryTableModel::data(const QModelIndex& index, int role) const
+{
+    if (!index.isValid())
+      return QVariant();
+
+    if (index.row() >= catTab.length())
+      return QVariant();
+
+    if (role != Qt::DisplayRole)
+      return QVariant();
     
-    e = Tournament::getTeamMngr()->createNewTeam(teamName);
-    cnt++;
-  }
+    Category c = Tournament::getCatMngr()->getCategoryBySeqNum(index.row());
+    
+    // first column: name
+    if (index.column() == 0)
+    {
+      return c.getName();
+    }
+        
+    return QString("Not Implemented");
 }
 
 //----------------------------------------------------------------------------
 
+QVariant CategoryTableModel::headerData(int section, Qt::Orientation orientation, int role) const
+{
+  if (role != Qt::DisplayRole)
+  {
+    return QVariant();
+  }
+  
+  if (orientation == Qt::Horizontal)
+  {
+    if (section == 0) {
+      return tr("Name");
+    }
+    
+    return QString("Not implemented");
+  }
+  
+  return QString::number(section + 1);
+}
+
+//----------------------------------------------------------------------------
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
 
 //----------------------------------------------------------------------------
 
@@ -80,36 +122,4 @@ void TeamTabWidget::onCreateTeamClicked()
 
 //----------------------------------------------------------------------------
 
-
-//----------------------------------------------------------------------------
-
-
-//----------------------------------------------------------------------------
-
-
-//----------------------------------------------------------------------------
-
-
-//----------------------------------------------------------------------------
-
-
-//----------------------------------------------------------------------------
-
-
-//----------------------------------------------------------------------------
-
-
-//----------------------------------------------------------------------------
-
-
-//----------------------------------------------------------------------------
-
-
-//----------------------------------------------------------------------------
-
-
-//----------------------------------------------------------------------------
-
-
-//----------------------------------------------------------------------------
 

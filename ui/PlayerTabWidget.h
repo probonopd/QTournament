@@ -16,7 +16,7 @@ class PlayerTabWidget : public QWidget
 {
   Q_OBJECT
 public:
-  PlayerTabWidget(QWidget* parent);
+  PlayerTabWidget();
   virtual ~PlayerTabWidget ();
   
 private:

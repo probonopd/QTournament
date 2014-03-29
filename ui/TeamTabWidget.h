@@ -17,7 +17,7 @@ class TeamTabWidget : public QWidget
 {
   Q_OBJECT
 public:
-  TeamTabWidget (QWidget* parent);
+  TeamTabWidget ();
   virtual ~TeamTabWidget ();
 private:
   Ui::TeamTabWidget ui;
