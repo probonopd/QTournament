@@ -267,7 +267,6 @@ public:
         horizontalLayout_5->setContentsMargins(9, 9, 9, 9);
         lwUnpaired = new QListWidget(gbPairs);
         lwUnpaired->setObjectName(QStringLiteral("lwUnpaired"));
-        lwUnpaired->setSelectionMode(QAbstractItemView::MultiSelection);
 
         horizontalLayout_5->addWidget(lwUnpaired);
 
@@ -320,7 +319,6 @@ public:
 
         lwPaired = new QListWidget(gbPairs);
         lwPaired->setObjectName(QStringLiteral("lwPaired"));
-        lwPaired->setSelectionMode(QAbstractItemView::MultiSelection);
 
         horizontalLayout_5->addWidget(lwPaired);
 
@@ -332,8 +330,6 @@ public:
         QObject::connect(cbDraw, SIGNAL(toggled(bool)), CatTabWidget, SLOT(onCbDrawChanged(bool)));
         QObject::connect(sbDrawScore, SIGNAL(valueChanged(int)), CatTabWidget, SLOT(onDrawScoreChanged(int)));
         QObject::connect(sbWinScore, SIGNAL(valueChanged(int)), CatTabWidget, SLOT(onWinScoreChanged(int)));
-        QObject::connect(btnPair, SIGNAL(clicked()), CatTabWidget, SLOT(onBtnPairClicked()));
-        QObject::connect(btnSplit, SIGNAL(clicked()), CatTabWidget, SLOT(onBtnSplitClicked()));
 
         QMetaObject::connectSlotsByName(CatTabWidget);
     } // setupUi

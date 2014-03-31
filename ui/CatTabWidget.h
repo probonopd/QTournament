@@ -19,6 +19,9 @@ public:
 private:
   Ui::CatTabWidget ui;
   void updateControls();
+  void updatePairs();
+  int unpairedPlayerId1;
+  int unpairedPlayerId2;
 
 public slots:
   void onCatModelChanged();
@@ -26,6 +29,10 @@ public slots:
   void onCbDrawChanged(bool newState);
   void onDrawScoreChanged(int newVal);
   void onWinScoreChanged(int newVal);
+  void onUnpairedPlayersSelectionChanged();
+  void onBtnPairClicked();
+  void onPairedPlayersSelectionChanged();
+  void onBtnSplitClicked();
 } ;
 
 #endif	/* _CATTABWIDGET_H */

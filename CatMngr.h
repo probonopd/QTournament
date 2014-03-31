@@ -13,6 +13,7 @@
 #include "DbTab.h"
 #include "GenericObjectManager.h"
 #include "Category.h"
+#include "PlayerPair.h"
 
 #include <QList>
 #include <QHash>
@@ -22,8 +23,10 @@ using namespace dbOverlay;
 namespace QTournament
 {
 
-  class CatMngr : public GenericObjectManager
+  class CatMngr : public QObject, GenericObjectManager
   {
+    Q_OBJECT
+    
   public:
     CatMngr (TournamentDB* _db);
     ERR createNewCategory (const QString& catName);
@@ -41,6 +44,15 @@ namespace QTournament
     QHash<Category, CAT_ADD_STATE> getAllCategoryAddStates(SEX s);
     QHash<Category, CAT_ADD_STATE> getAllCategoryAddStates(const Player& p);
     bool setCatParameter( Category& c, CAT_PARAMETER p, const QVariant& v);
+    ERR pairPlayers(const Category c, const Player& p1, const Player& p2);
+    ERR splitPlayers(const Category c, const Player& p1, const Player& p2);
+    ERR splitPlayers(const Category c, int pairId);
+
+  signals:
+    void playersPaired(const Category c, const Player& p1, const Player& p2);
+    void playersSplit(const Category c, const Player& p1, const Player& p2);
+    void playerAddedToCategory(const Player& p, const Category& c);
+    void playerRemovedFromCategory(const Player& p, const Category& c);
 
   private:
     DbTab catTab;

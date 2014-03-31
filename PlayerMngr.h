@@ -37,6 +37,8 @@ namespace QTournament
     QList<Player> getAllPlayers();
     ERR renamePlayer (Player& p, const QString& newFirst, const QString& newLast);
     Player getPlayerBySeqNum(int seqNum);
+    bool hasPlayer(int id);
+    Player getPlayer(int id);
 
   private:
     DbTab playerTab;

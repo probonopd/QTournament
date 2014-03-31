@@ -94,7 +94,7 @@ void MainFrame::closeCurrentTournament()
 
 void MainFrame::setupTestScenario(int scenarioID)
 {
-  if ((scenarioID < 0) || (scenarioID > 1))
+  if ((scenarioID < 0) || (scenarioID > 2))
   {
     QMessageBox::critical(this, "Setup Test Scenario", "The scenario ID " + QString::number(scenarioID) + " is invalid!");
   }
@@ -115,13 +115,15 @@ void MainFrame::setupTestScenario(int scenarioID)
   }
   
   // a scenario with just a few teams already existing
-  if (scenarioID == 1)
+  TeamMngr* tmngr = Tournament::getTeamMngr();
+  PlayerMngr* pmngr = Tournament::getPlayerMngr();
+  CatMngr* cmngr = Tournament::getCatMngr();
+  
+  if ((scenarioID > 0) && (scenarioID < 99))
   {
-    TeamMngr* tmngr = Tournament::getTeamMngr();
     tmngr->createNewTeam("Team 1");
     tmngr->createNewTeam("Team 2");
     
-    PlayerMngr* pmngr = Tournament::getPlayerMngr();
     pmngr->createNewPlayer("First1", "Last1", M, "Team 1");
     pmngr->createNewPlayer("First2", "Last2", F, "Team 1");
     pmngr->createNewPlayer("First3", "Last3", M, "Team 1");
@@ -130,7 +132,6 @@ void MainFrame::setupTestScenario(int scenarioID)
     pmngr->createNewPlayer("First6", "Last6", F, "Team 2");
 
     // create one category of every kind
-    CatMngr* cmngr = Tournament::getCatMngr();
     cmngr->createNewCategory("MS");
     Category ms = cmngr->getCategory("MS");
     ms.setMatchType(SINGLES);
@@ -157,6 +158,34 @@ void MainFrame::setupTestScenario(int scenarioID)
     mx.setSex(M); // shouldn't matter at all
   }
   
+  if ((scenarioID > 1) && (scenarioID < 99))
+  {
+    Category md = cmngr->getCategory("MD");
+    Category ms = cmngr->getCategory("MS");
+    Category mx = cmngr->getCategory("MX");
+    
+    Player m1 = pmngr->getPlayer(1);
+    Player m2 = pmngr->getPlayer(3);
+    Player m3 = pmngr->getPlayer(5);
+    Player l1 = pmngr->getPlayer(2);
+    Player l2 = pmngr->getPlayer(4);
+    Player l3 = pmngr->getPlayer(6);
+    
+    cmngr->addPlayerToCategory(m1, md);
+    cmngr->addPlayerToCategory(m2, md);
+    
+    cmngr->addPlayerToCategory(m1, ms);
+    cmngr->addPlayerToCategory(m2, ms);
+    cmngr->addPlayerToCategory(m3, ms);
+    
+    cmngr->addPlayerToCategory(m1, mx);
+    cmngr->addPlayerToCategory(m2, mx);
+    cmngr->addPlayerToCategory(m3, mx);
+    cmngr->addPlayerToCategory(l1, mx);
+    cmngr->addPlayerToCategory(l2, mx);
+    cmngr->addPlayerToCategory(l3, mx);
+  }
+
   enableControls(true);
   
   emit tournamentOpened(tnmt);
@@ -180,6 +209,10 @@ void MainFrame::setupScenario01()
 
 //----------------------------------------------------------------------------
 
+void MainFrame::setupScenario02()
+{
+  setupTestScenario(2);
+}
 
 //----------------------------------------------------------------------------
 

@@ -20,8 +20,8 @@ class tstCategory : public DatabaseTestScenario
   CPPUNIT_TEST_SUITE( tstCategory );
     CPPUNIT_TEST(testGetAddState);
     CPPUNIT_TEST(testHasPlayer);
-//  CPPUNIT_TEST();
-//  CPPUNIT_TEST();
+    CPPUNIT_TEST(testCanPair);
+    CPPUNIT_TEST(testCanSplit);
 //  CPPUNIT_TEST();
 //  CPPUNIT_TEST();
 //  CPPUNIT_TEST();
@@ -30,6 +30,8 @@ class tstCategory : public DatabaseTestScenario
 public:
   void testGetAddState();
   void testHasPlayer();
+  void testCanPair();
+  void testCanSplit();
 };
 
 #endif	/* TSTGENERICDBOBJECT_H */

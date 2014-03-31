@@ -114,13 +114,109 @@ void tstCategory::testHasPlayer()
   CPPUNIT_ASSERT(ms.hasPlayer(f1) == false);
   CPPUNIT_ASSERT(ms.hasPlayer(m2) == false);
   CPPUNIT_ASSERT(ms.hasPlayer(f2) == false);
+  
+  printEndMsg();
 }
 
 //----------------------------------------------------------------------------
-    
+
+void tstCategory::testCanPair()
+{
+  printStartMsg("tstCategory::testCanPair");
+  
+  TournamentDB db = getScenario03(true);
+  Tournament t(getSqliteFileName());
+  
+  // create a team some dummy players
+  Player m1 = Tournament::getPlayerMngr()->getPlayer("f", "l1");
+  Player f1 = Tournament::getPlayerMngr()->getPlayer("f", "l2");
+  Player m2 = Tournament::getPlayerMngr()->getPlayer("f", "l3");
+  Player f2 = Tournament::getPlayerMngr()->getPlayer("f", "l4");
+  Player m3 = Tournament::getPlayerMngr()->getPlayer("f", "l5");
+  
+  // create a category
+  CatMngr* cmngr = Tournament::getCatMngr();
+  Category md = cmngr->getCategory("MD");
+  Category ms = cmngr->getCategory("MS");
+  Category mx = cmngr->getCategory("MX");
+  
+  // try to pair players in a non-pairable category
+  CPPUNIT_ASSERT(ms.canPairPlayers(m1, m2) == NO_CATEGORY_FOR_PAIRING);
+  
+  // try to pair with a player not in the category
+  CPPUNIT_ASSERT(md.canPairPlayers(m1, m3) == PLAYER_NOT_IN_CATEGORY);
+  CPPUNIT_ASSERT(md.canPairPlayers(m3, m1) == PLAYER_NOT_IN_CATEGORY);
+  
+  // try identical players
+  CPPUNIT_ASSERT(md.canPairPlayers(m1, m1) == PLAYERS_IDENTICAL);
+  
+  // try to pair same-sex players in mixed categories
+  CPPUNIT_ASSERT(mx.canPairPlayers(m1, m2) == INVALID_SEX);
+  CPPUNIT_ASSERT(mx.canPairPlayers(f1, f2) == INVALID_SEX);
+  
+  // try to pair same-sex players in mixed categories
+  // after setting it to "Don't care"
+  cmngr->setSex(mx, DONT_CARE);
+  CPPUNIT_ASSERT(mx.canPairPlayers(m1, m2) == OK);
+  CPPUNIT_ASSERT(mx.canPairPlayers(f1, f2) == OK);
+  
+  // try to pair valid players
+  CPPUNIT_ASSERT(md.canPairPlayers(m1, m2) == OK);
+  
+  // make sure existing pairs can't be paired again
+  CPPUNIT_ASSERT(cmngr->pairPlayers(md, m1,m2) == OK);
+  CPPUNIT_ASSERT(md.canPairPlayers(m1, m2) == PLAYER_ALREADY_PAIRED);
+  CPPUNIT_ASSERT(cmngr->addPlayerToCategory(m3, md) == OK);
+  CPPUNIT_ASSERT(md.canPairPlayers(m1, m3) == PLAYER_ALREADY_PAIRED);
+  CPPUNIT_ASSERT(md.canPairPlayers(m3, m1) == PLAYER_ALREADY_PAIRED);
+  CPPUNIT_ASSERT(md.canPairPlayers(m2, m3) == PLAYER_ALREADY_PAIRED);
+  CPPUNIT_ASSERT(md.canPairPlayers(m3, m2) == PLAYER_ALREADY_PAIRED);
+  
+  printEndMsg();
+}
 
 //----------------------------------------------------------------------------
-    
+
+void tstCategory::testCanSplit()
+{
+  printStartMsg("tstCategory::testCanPair");
+  
+  TournamentDB db = getScenario03(true);
+  Tournament t(getSqliteFileName());
+  
+  // create a team some dummy players
+  Player m1 = Tournament::getPlayerMngr()->getPlayer("f", "l1");
+  Player f1 = Tournament::getPlayerMngr()->getPlayer("f", "l2");
+  Player m2 = Tournament::getPlayerMngr()->getPlayer("f", "l3");
+  Player f2 = Tournament::getPlayerMngr()->getPlayer("f", "l4");
+  Player m3 = Tournament::getPlayerMngr()->getPlayer("f", "l5");
+  
+  // create a category
+  CatMngr* cmngr = Tournament::getCatMngr();
+  Category md = cmngr->getCategory("MD");
+  Category ms = cmngr->getCategory("MS");
+  Category mx = cmngr->getCategory("MX");
+  mx.setSex(DONT_CARE);
+  
+  // create a valid player pair and an identical pair in another
+  // category
+  CPPUNIT_ASSERT(cmngr->pairPlayers(md, m1,m2) == OK);
+  
+  // try to split non-paired players
+  CPPUNIT_ASSERT(cmngr->splitPlayers(md, m1, m3) == PLAYERS_NOT_A_PAIR);
+  CPPUNIT_ASSERT(cmngr->splitPlayers(md, m3, m1) == PLAYERS_NOT_A_PAIR);
+  
+  // try to split identical players
+  CPPUNIT_ASSERT(cmngr->splitPlayers(md, m1, m1) == PLAYERS_NOT_A_PAIR);
+  
+  // valid request
+  CPPUNIT_ASSERT(cmngr->splitPlayers(md, m1, m2) == OK);
+
+  // similar request, but for another category  
+  CPPUNIT_ASSERT(cmngr->splitPlayers(mx, m1, m2) == PLAYERS_NOT_A_PAIR);
+  
+  printEndMsg();
+}
 
 //----------------------------------------------------------------------------
     

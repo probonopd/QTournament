@@ -12,6 +12,7 @@
 #include "TournamentDB.h"
 #include "TabRow.h"
 #include "Player.h"
+#include "PlayerPair.h"
 #include "TournamentErrorCodes.h"
 
 namespace QTournament
@@ -41,7 +42,12 @@ namespace QTournament
     int getParameter_int(CAT_PARAMETER) const;
     bool getParameter_bool(CAT_PARAMETER) const;
     bool setParameter(CAT_PARAMETER p, const QVariant& v);
-    
+    QList<PlayerPair> getPlayerPairs();
+    QList<Player> getAllPlayersInCategory();
+    bool isPaired(const Player& p) const;
+    ERR canPairPlayers(const Player& p1, const Player& p2) const;
+    ERR canSplitPlayers(const Player& p1, const Player& p2) const;
+
   private:
     Category (TournamentDB* db, int rowId);
     Category (TournamentDB* db, dbOverlay::TabRow row);

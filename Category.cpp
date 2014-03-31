@@ -255,6 +255,209 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
+  QList<PlayerPair> Category::getPlayerPairs()
+  {
+    QList<PlayerPair> result;
+    PlayerMngr* pmngr = Tournament::getPlayerMngr();
+    
+    // get all players assigned to this category
+    QList<Player> singlePlayers = getAllPlayersInCategory();
+    
+    // filter out the players that are paired
+    DbTab::CachingRowIterator it = db->getTab(TAB_PAIRS).getRowsByColumnValue(PAIRS_CAT_REF, getId());
+    while (!(it.isEnd()))
+    {
+      int id1 = (*it)[PAIRS_PLAYER1_REF].toInt();
+      int id2 = (*it)[PAIRS_PLAYER2_REF].toInt();
+      Player p1 = pmngr->getPlayer(id1);
+      Player p2 = pmngr->getPlayer(id2);
+      
+      result.append(PlayerPair(p1, p2, (*it).getId()));
+      singlePlayers.removeAll(p1);
+      singlePlayers.removeAll(p2);
+      
+      ++it;
+    }
+    
+    // create special entries for un-paired players
+    for (int i=0; i < singlePlayers.count(); i++)
+    {
+      result.append(PlayerPair(singlePlayers.at(i)));
+    }
+    
+    return result;
+  }
+
+//----------------------------------------------------------------------------
+
+  QList<Player> Category::getAllPlayersInCategory()
+  {
+    QList<Player> result;
+    PlayerMngr* pmngr = Tournament::getPlayerMngr();
+    
+    DbTab::CachingRowIterator it = db->getTab(TAB_P2C).getRowsByColumnValue(P2C_CAT_REF, getId());
+    while (!(it.isEnd()))
+    {
+      result.append(pmngr->getPlayer((*it)[P2C_PLAYER_REF].toInt()));
+      ++it;
+    }
+    
+    return result;
+  }
+
+//----------------------------------------------------------------------------
+
+  bool Category::isPaired(const Player& p) const
+  {
+    if (!(hasPlayer(p)))
+    {
+      return false;
+    }
+    
+    // manually construct a where-clause for an OR-query
+    QString whereClause = "(" + PAIRS_PLAYER1_REF + " = ? OR " + PAIRS_PLAYER2_REF + " = ?) ";
+    whereClause += "AND (" + PAIRS_CAT_REF + " = ?)";
+    QVariantList qvl;
+    qvl << p.getId();
+    qvl << p.getId();
+    qvl << getId();
+    
+    // see if we have a row that matches the query
+    DbTab pairTab = db->getTab(TAB_PAIRS);
+    return (pairTab.getMatchCountForWhereClause(whereClause, qvl) != 0);
+  }
+
+//----------------------------------------------------------------------------
+
+  ERR Category::canPairPlayers(const Player& p1, const Player& p2) const
+  {
+    // we can only create pairs while being in config mode
+    if (getState() != STAT_CAT_CONFIG)
+    {
+      return CATEGORY_NOT_CONFIGURALE_ANYMORE;
+    }
+    
+    // in singles, we don't need pairs. The same is true if we're using
+    // the match system "random matches with random partners".
+    MATCH_TYPE mt = getMatchType();
+    if (mt == SINGLES)
+    {
+      return NO_CATEGORY_FOR_PAIRING;
+    }
+    // TODO: check for "random" with "random partners"
+    
+    
+    // make sure that both players are actually listed in this category
+    if ((!(hasPlayer(p1))) || (!(hasPlayer(p2))))
+    {
+      return PLAYER_NOT_IN_CATEGORY;
+    }
+    
+    // make sure that both players are not yet paired in this category
+    if ((isPaired(p1)) || (isPaired(p2)))
+    {
+      return PLAYER_ALREADY_PAIRED;
+    }
+    
+    // make sure that the players are not identical
+    if (p1 == p2)
+    {
+      return PLAYERS_IDENTICAL;
+    }
+    
+    // if this is a mixed category, make sure the sex is right
+    if ((mt == MIXED) && (getSex() != DONT_CARE))
+    {
+      if (p1.getSex() == p2.getSex())
+      {
+	return INVALID_SEX;
+      }
+    }
+    
+    return OK;
+  }
+
+//----------------------------------------------------------------------------
+
+  ERR Category::canSplitPlayers(const Player& p1, const Player& p2) const
+  {
+    // we can only split pairs while being in config mode
+    if (getState() != STAT_CAT_CONFIG)
+    {
+      return CATEGORY_NOT_CONFIGURALE_ANYMORE;
+    }
+    
+    // check if the two players are paired for this category
+    QVariantList qvl;
+    qvl << PAIRS_CAT_REF << getId();
+    qvl << PAIRS_PLAYER1_REF << p1.getId();
+    qvl << PAIRS_PLAYER2_REF << p2.getId();
+    DbTab pairsTab = db->getTab(TAB_PAIRS);
+    if (pairsTab.getMatchCountForColumnValue(qvl) != 0)
+    {
+      return OK;
+    }
+    
+    // swap player 1 and player 2 and make a new query
+    qvl.clear();
+    qvl << PAIRS_CAT_REF << getId();
+    qvl << PAIRS_PLAYER1_REF << p2.getId();
+    qvl << PAIRS_PLAYER2_REF << p1.getId();
+    if (pairsTab.getMatchCountForColumnValue(qvl) != 0)
+    {
+      return OK;
+    }
+    
+    return PLAYERS_NOT_A_PAIR;
+  }
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
 
 //----------------------------------------------------------------------------
 

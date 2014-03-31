@@ -213,9 +213,27 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
+  bool PlayerMngr::hasPlayer(int id)
+  {
+    try
+    {
+      TabRow r = playerTab[id];
+      return true;
+    }
+    catch (std::exception e)
+    {
+      
+    }
+    return false;
+  }
 
 //----------------------------------------------------------------------------
 
+  Player PlayerMngr::getPlayer(int id)
+  {
+    // this public function essentially short-circuits the private player()-constructor... Hmmm...
+    return Player(db, id);
+  }
 
 //----------------------------------------------------------------------------
 

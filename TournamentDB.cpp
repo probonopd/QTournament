@@ -89,6 +89,13 @@ void TournamentDB::populateTables()
     cols << genForeignKeyClause(P2C_PLAYER_REF, TAB_PLAYER);
     cols << genForeignKeyClause(P2C_CAT_REF, TAB_CATEGORY);
     tableCreationHelper(TAB_P2C, cols);
+    
+    // Generate the table holding the player pairs
+    cols.clear();
+    cols << genForeignKeyClause(PAIRS_PLAYER1_REF, TAB_PLAYER);
+    cols << genForeignKeyClause(PAIRS_PLAYER2_REF, TAB_PLAYER);
+    cols << genForeignKeyClause(PAIRS_CAT_REF, TAB_CATEGORY);
+    tableCreationHelper(TAB_PAIRS, cols);
 }
 
 void TournamentDB::populateViews()

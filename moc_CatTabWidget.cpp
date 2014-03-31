@@ -19,8 +19,8 @@
 
 QT_BEGIN_MOC_NAMESPACE
 struct qt_meta_stringdata_CatTabWidget_t {
-    QByteArrayData data[10];
-    char stringdata[139];
+    QByteArrayData data[14];
+    char stringdata[240];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -38,12 +38,19 @@ QT_MOC_LITERAL(5, 69, 15),
 QT_MOC_LITERAL(6, 85, 8),
 QT_MOC_LITERAL(7, 94, 18),
 QT_MOC_LITERAL(8, 113, 6),
-QT_MOC_LITERAL(9, 120, 17)
+QT_MOC_LITERAL(9, 120, 17),
+QT_MOC_LITERAL(10, 138, 33),
+QT_MOC_LITERAL(11, 172, 16),
+QT_MOC_LITERAL(12, 189, 31),
+QT_MOC_LITERAL(13, 221, 17)
     },
     "CatTabWidget\0onCatModelChanged\0\0"
     "onTabSelectionChanged\0QItemSelection\0"
     "onCbDrawChanged\0newState\0onDrawScoreChanged\0"
     "newVal\0onWinScoreChanged\0"
+    "onUnpairedPlayersSelectionChanged\0"
+    "onBtnPairClicked\0onPairedPlayersSelectionChanged\0"
+    "onBtnSplitClicked\0"
 };
 #undef QT_MOC_LITERAL
 
@@ -53,7 +60,7 @@ static const uint qt_meta_data_CatTabWidget[] = {
        7,       // revision
        0,       // classname
        0,    0, // classinfo
-       5,   14, // methods
+       9,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -61,11 +68,15 @@ static const uint qt_meta_data_CatTabWidget[] = {
        0,       // signalCount
 
  // slots: name, argc, parameters, tag, flags
-       1,    0,   39,    2, 0x0a,
-       3,    2,   40,    2, 0x0a,
-       5,    1,   45,    2, 0x0a,
-       7,    1,   48,    2, 0x0a,
-       9,    1,   51,    2, 0x0a,
+       1,    0,   59,    2, 0x0a,
+       3,    2,   60,    2, 0x0a,
+       5,    1,   65,    2, 0x0a,
+       7,    1,   68,    2, 0x0a,
+       9,    1,   71,    2, 0x0a,
+      10,    0,   74,    2, 0x0a,
+      11,    0,   75,    2, 0x0a,
+      12,    0,   76,    2, 0x0a,
+      13,    0,   77,    2, 0x0a,
 
  // slots: parameters
     QMetaType::Void,
@@ -73,6 +84,10 @@ static const uint qt_meta_data_CatTabWidget[] = {
     QMetaType::Void, QMetaType::Bool,    6,
     QMetaType::Void, QMetaType::Int,    8,
     QMetaType::Void, QMetaType::Int,    8,
+    QMetaType::Void,
+    QMetaType::Void,
+    QMetaType::Void,
+    QMetaType::Void,
 
        0        // eod
 };
@@ -87,6 +102,10 @@ void CatTabWidget::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id
         case 2: _t->onCbDrawChanged((*reinterpret_cast< bool(*)>(_a[1]))); break;
         case 3: _t->onDrawScoreChanged((*reinterpret_cast< int(*)>(_a[1]))); break;
         case 4: _t->onWinScoreChanged((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 5: _t->onUnpairedPlayersSelectionChanged(); break;
+        case 6: _t->onBtnPairClicked(); break;
+        case 7: _t->onPairedPlayersSelectionChanged(); break;
+        case 8: _t->onBtnSplitClicked(); break;
         default: ;
         }
     }
@@ -117,13 +136,13 @@ int CatTabWidget::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 5)
+        if (_id < 9)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 5;
+        _id -= 9;
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 5)
+        if (_id < 9)
             *reinterpret_cast<int*>(_a[0]) = -1;
-        _id -= 5;
+        _id -= 9;
     }
     return _id;
 }

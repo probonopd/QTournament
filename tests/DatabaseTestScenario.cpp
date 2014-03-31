@@ -284,10 +284,45 @@ TournamentDB DatabaseTestScenario::getScenario02(bool useTeams)
 
 
 //----------------------------------------------------------------------------
-    
+void DatabaseTestScenario::prepScenario03(bool useTeams)
+{
+  prepScenario02(useTeams);
+  Tournament t(getSqliteFileName());
+  CatMngr* cmngr = Tournament::getCatMngr();
+
+  // get some objects to play with
+  Player m1 = Tournament::getPlayerMngr()->getPlayer("f", "l1");
+  Player f1 = Tournament::getPlayerMngr()->getPlayer("f", "l2");
+  Player m2 = Tournament::getPlayerMngr()->getPlayer("f", "l3");
+  Player f2 = Tournament::getPlayerMngr()->getPlayer("f", "l4");
+  Player m3 = Tournament::getPlayerMngr()->getPlayer("f", "l5");
+  Player f3 = Tournament::getPlayerMngr()->getPlayer("f", "l6");
+  Category md = cmngr->getCategory("MD");
+  Category mx = cmngr->getCategory("MX");
+  Category ms = cmngr->getCategory("MS");
+
+  // assign players to categories
+  CPPUNIT_ASSERT(cmngr->addPlayerToCategory(m1, md) == OK);
+  CPPUNIT_ASSERT(cmngr->addPlayerToCategory(m2, md) == OK);
+  
+  CPPUNIT_ASSERT(cmngr->addPlayerToCategory(m1, ms) == OK);
+  CPPUNIT_ASSERT(cmngr->addPlayerToCategory(m2, ms) == OK);
+  
+  CPPUNIT_ASSERT(cmngr->addPlayerToCategory(m1, mx) == OK);
+  CPPUNIT_ASSERT(cmngr->addPlayerToCategory(m2, mx) == OK);
+  CPPUNIT_ASSERT(cmngr->addPlayerToCategory(m3, mx) == OK);
+  CPPUNIT_ASSERT(cmngr->addPlayerToCategory(f1, mx) == OK);
+  CPPUNIT_ASSERT(cmngr->addPlayerToCategory(f2, mx) == OK);
+  CPPUNIT_ASSERT(cmngr->addPlayerToCategory(f3, mx) == OK);
+}    
 
 //----------------------------------------------------------------------------
-    
+
+TournamentDB DatabaseTestScenario::getScenario03(bool useTeams)
+{
+  prepScenario03(useTeams);
+  return TournamentDB(getSqliteFileName(), false);
+}
 
 //----------------------------------------------------------------------------
     

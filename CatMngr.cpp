@@ -14,6 +14,7 @@
 #include "HelperFunc.h"
 #include "Category.h"
 #include "Player.h"
+#include "Tournament.h"
 
 using namespace dbOverlay;
 
@@ -174,6 +175,8 @@ namespace QTournament
     qvl << P2C_PLAYER_REF << p.getId();
     db->getTab(TAB_P2C).insertRow(qvl);
     
+    emit playerAddedToCategory(p, c);
+    
     return OK;
   }
 
@@ -202,6 +205,8 @@ namespace QTournament
     qvl << P2C_CAT_REF << c.getId();
     qvl << P2C_PLAYER_REF << p.getId();
     db->getTab(TAB_P2C).deleteRowsByColumnValue(qvl);
+    
+    emit playerRemovedFromCategory(p, c);
     
     return OK;
   }
@@ -374,12 +379,80 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
+  ERR CatMngr::pairPlayers(const Category c, const Player& p1, const Player& p2)
+  {
+    // all pre-conditions for pairing two players are checked
+    // in the category. If this check is positive, we can start
+    // right away with creating the pair in the database
+    ERR e = c.canPairPlayers(p1, p2);
+    if (e != OK)
+    {
+      return e;
+    }
+    
+    // create the pair
+    QVariantList qvl;
+    qvl << PAIRS_CAT_REF << c.getId();
+    qvl << PAIRS_PLAYER1_REF << p1.getId();
+    qvl << PAIRS_PLAYER2_REF << p2.getId();
+    db->getTab(TAB_PAIRS).insertRow(qvl);
+    
+    emit playersPaired(c, p1, p2);
+    
+    return OK;
+  }
 
 //----------------------------------------------------------------------------
 
+  ERR CatMngr::splitPlayers(const Category c, const Player& p1, const Player& p2)
+  {
+    // all pre-conditions for splitting two players are checked
+    // in the category. If this check is positive, we can start
+    // right away with deleting the pair from the database
+    ERR e = c.canSplitPlayers(p1, p2);
+    if (e != OK)
+    {
+      return e;
+    }
+    
+    // delete all combinations of p1/p2 pairs from the database
+    QVariantList qvl;
+    qvl << PAIRS_CAT_REF << c.getId();
+    qvl << PAIRS_PLAYER1_REF << p1.getId();
+    qvl << PAIRS_PLAYER2_REF << p2.getId();
+    DbTab pairsTab = db->getTab(TAB_PAIRS);
+    pairsTab.deleteRowsByColumnValue(qvl);
+    qvl.clear();
+    qvl << PAIRS_CAT_REF << c.getId();
+    qvl << PAIRS_PLAYER1_REF << p2.getId();
+    qvl << PAIRS_PLAYER2_REF << p1.getId();
+    pairsTab.deleteRowsByColumnValue(qvl);
+    
+    emit playersSplit(c, p1, p2);
+    
+    return OK;
+  }
+
 
 //----------------------------------------------------------------------------
 
+  ERR CatMngr::splitPlayers(const Category c, int pairId)
+  {
+    DbTab pairsTab = db->getTab(TAB_PAIRS);
+    PlayerMngr* pmngr = Tournament::getPlayerMngr();
+    try
+    {
+      TabRow r = pairsTab[pairId];
+      Player p1 = pmngr->getPlayer(r[PAIRS_PLAYER1_REF].toInt());
+      Player p2 = pmngr->getPlayer(r[PAIRS_PLAYER2_REF].toInt());
+      return splitPlayers(c, p1, p2);
+    }
+    catch (exception e)
+    {
+      
+    }
+    return INVALID_ID;
+  }
 
 //----------------------------------------------------------------------------
 

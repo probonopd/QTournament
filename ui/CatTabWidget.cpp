@@ -16,6 +16,10 @@ CatTabWidget::CatTabWidget()
   
   // connect to the view's signal that tells us that the model has changed
   connect(ui.catTableView, &CategoryTableView::catModelChanged, this, &CatTabWidget::onCatModelChanged);
+  
+  // connect the selection change signal of the two list widgets
+  connect(ui.lwUnpaired, &QListWidget::itemSelectionChanged, this, &CatTabWidget::onUnpairedPlayersSelectionChanged);
+  connect(ui.lwPaired, &QListWidget::itemSelectionChanged, this, &CatTabWidget::onPairedPlayersSelectionChanged);
 
   // hide unused settings groups
   ui.gbGroups->hide();
@@ -50,6 +54,7 @@ void CatTabWidget::onCatModelChanged()
 
 void CatTabWidget::onTabSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected)
 {
+  updatePairs();
   updateControls();
 }
 
@@ -129,6 +134,14 @@ void CatTabWidget::updateControls()
     ui.sbWinScore->setMaximum(99);
     ui.sbDrawScore->hide();
   }
+  
+  // group box for configuring player pairs
+  if (mt == SINGLES)
+  {
+    ui.gbPairs->setEnabled(false);
+  } else {
+    ui.gbPairs->setEnabled(true);    
+  }
 }
 
 //----------------------------------------------------------------------------
@@ -159,19 +172,213 @@ void CatTabWidget::onDrawScoreChanged(int newVal)
 }
 
 //----------------------------------------------------------------------------
+
+/**
+ * Updates the list widgets with the player pairs. Should only be called
+ * when the selected category changes.
+ * 
+ * This method disables the pairing buttons.
+ */
+void CatTabWidget::updatePairs()
+{
+  // remove all entries
+  ui.lwUnpaired->clear();
+  ui.lwPaired->clear();
+  unpairedPlayerId1 = -1;
+  unpairedPlayerId2 = -1;
+  ui.btnPair->setEnabled(false);
+  ui.btnSplit->setEnabled(false);
+  
+  // if no model is loaded or no category is selected, simply returns
+  bool isActive = !(ui.catTableView->isEmptyModel());
+  if (isActive)
+  {
+    QModelIndexList indexes = ui.catTableView->selectionModel()->selection().indexes();
+    isActive = (indexes.count() > 0);
+  }
+  if (!isActive)
+  {
+    return;
+  }
+  
+  // get the pair data from the selected category
+  Category selCat = ui.catTableView->getSelectedCategory();
+  QList<PlayerPair> pairList = selCat.getPlayerPairs();
+  
+  for (int i=0; i < pairList.count(); i++)
+  {
+    PlayerPair pp = pairList.at(i);
+    QListWidgetItem* item = new QListWidgetItem(pp.getDisplayName());
     
+    if (pp.hasPlayer2())
+    {
+      item->setData(Qt::UserRole, pp.getPairId());
+      ui.lwPaired->addItem(item);
+    } else {
+      item->setData(Qt::UserRole, pp.getPlayer1().getId());
+      ui.lwUnpaired->addItem(item);
+    }
+  }
+}
+
+//----------------------------------------------------------------------------
+
+void CatTabWidget::onUnpairedPlayersSelectionChanged()
+{
+  QList<QListWidgetItem *> selPlayers = ui.lwUnpaired->selectedItems();
+  
+  if (selPlayers.count() == 0)
+  {
+    unpairedPlayerId1 = -1;
+    unpairedPlayerId2 = -1;
+  }
+  
+  if (selPlayers.count() == 1)
+  {
+    unpairedPlayerId1 = selPlayers.at(0)->data(Qt::UserRole).toInt();
+    unpairedPlayerId2 = -1;
+  }
+  
+  if (selPlayers.count() == 2)
+  {
+    int id1 = selPlayers.at(0)->data(Qt::UserRole).toInt();
+    int id2 = selPlayers.at(1)->data(Qt::UserRole).toInt();
+    
+    unpairedPlayerId2 = (id1 == unpairedPlayerId1) ? id2 : id1;
+  }
+  
+  if (selPlayers.count() == 3)
+  {
+    int id1 = selPlayers.at(0)->data(Qt::UserRole).toInt();
+    int id2 = selPlayers.at(1)->data(Qt::UserRole).toInt();
+    int id3 = selPlayers.at(2)->data(Qt::UserRole).toInt();
+    
+    // remove the oldest selection, which is the entry in in
+    // unpairedPlayerId1
+    int idToBeDeselected = unpairedPlayerId1;
+    
+    // shift the stored selection by one
+    unpairedPlayerId1 = unpairedPlayerId2;
+    
+    // find out which selected item is the newest one
+    if ((id1 != idToBeDeselected) && (id1 != unpairedPlayerId1))
+    {
+      unpairedPlayerId2 = id1;
+    }
+    else if ((id2 != idToBeDeselected) && (id2 != unpairedPlayerId1))
+    {
+      unpairedPlayerId2 = id2;
+    }
+    else {
+      unpairedPlayerId2 = id3;
+    }
+    
+    // find which item is to be deselected
+    if (idToBeDeselected == id1)
+    {
+      selPlayers.at(0)->setSelected(false);
+    }
+    else if (idToBeDeselected == id2)
+    {
+      selPlayers.at(1)->setSelected(false);
+    }
+    else
+    {
+      selPlayers.at(2)->setSelected(false);
+    }
+  }
+  
+  // fall-back: deselect all
+  if (selPlayers.count() > 3)
+  {
+    for (int i=0; i < selPlayers.count(); i++ )
+    {
+      selPlayers.at(i)->setSelected(false);
+    }
+    unpairedPlayerId1 = -1;
+    unpairedPlayerId2 = -1;
+  }
+  
+  // update the "pair" button, if necessary
+  bool canPair = false;
+  if ((unpairedPlayerId1 > 0) && (unpairedPlayerId2 > 0))
+  {
+    Player p1 = Tournament::getPlayerMngr()->getPlayer(unpairedPlayerId1);
+    Player p2 = Tournament::getPlayerMngr()->getPlayer(unpairedPlayerId2);
+    
+    Category c = ui.catTableView->getSelectedCategory();
+    canPair = (c.canPairPlayers(p1, p2) == OK);
+  }
+  ui.btnPair->setEnabled(canPair);
+}
+
+//----------------------------------------------------------------------------
+
+void CatTabWidget::onBtnPairClicked()
+{
+  QList<QListWidgetItem *> selPlayers = ui.lwUnpaired->selectedItems();
+  
+  //
+  // I'll repeat a few of the checks here, in case the "selection-changed" handler
+  // has not been called and the current selection is invalid for pairing
+  //
+  if (selPlayers.count() != 2)
+  {
+    QMessageBox::warning(this, tr("Need exactly two selected players for pairing!"), tr("Pairing impossible"));
+    updatePairs();
+    return;
+  }
+  
+  int id1 = selPlayers.at(0)->data(Qt::UserRole).toInt();
+  int id2 = selPlayers.at(1)->data(Qt::UserRole).toInt();
+  Category c = ui.catTableView->getSelectedCategory();
+  Player p1 = Tournament::getPlayerMngr()->getPlayer(id1);
+  Player p2 = Tournament::getPlayerMngr()->getPlayer(id2);
+  if (c.canPairPlayers(p1, p2) != OK)
+  {
+    QMessageBox::warning(this, tr("These two players can't be paired for this category!"), tr("Pairing impossible"));
+    updatePairs();
+    return;
+  }
+  
+  ERR e = Tournament::getCatMngr()->pairPlayers(c, p1, p2);
+  if (e != OK)
+  {
+    QMessageBox::warning(this, tr("Something went wrong during pairing. This shouldn't happen. For the records: Error code = ") + e, tr("Pairing impossible"));
+  }
+  
+  updatePairs();
+}
 
 //----------------------------------------------------------------------------
     
+void CatTabWidget::onPairedPlayersSelectionChanged()
+{
+  QList<QListWidgetItem *> selPairs = ui.lwPaired->selectedItems();
+  
+  ui.btnSplit->setEnabled(selPairs.count() != 0);
+}
 
 //----------------------------------------------------------------------------
-    
 
-//----------------------------------------------------------------------------
-    
-
-//----------------------------------------------------------------------------
-    
+void CatTabWidget::onBtnSplitClicked()
+{
+  QList<QListWidgetItem *> selPairs = ui.lwPaired->selectedItems();
+  Category c = ui.catTableView->getSelectedCategory();
+  CatMngr* cmngr = Tournament::getCatMngr();
+  
+  for (int i=0; i < selPairs.count(); i++)
+  {
+    int pairId = selPairs.at(i)->data(Qt::UserRole).toInt();
+    ERR e = cmngr->splitPlayers(c, pairId);
+    if (e != OK)
+    {
+      QMessageBox::warning(this, tr("Something went wrong during splitting. This shouldn't happen. For the records: Error code = ") + e, tr("Splitting impossible"));
+    }
+  }
+  
+  updatePairs();
+}
 
 //----------------------------------------------------------------------------
     

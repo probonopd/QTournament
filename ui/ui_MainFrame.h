@@ -36,6 +36,7 @@ public:
     QAction *action_Quit;
     QAction *actionEmpty;
     QAction *actionScenario01;
+    QAction *actionScenario02;
     QWidget *centralwidget;
     QVBoxLayout *verticalLayout_2;
     QVBoxLayout *verticalLayout;
@@ -68,6 +69,8 @@ public:
         actionEmpty->setObjectName(QStringLiteral("actionEmpty"));
         actionScenario01 = new QAction(MainFrame);
         actionScenario01->setObjectName(QStringLiteral("actionScenario01"));
+        actionScenario02 = new QAction(MainFrame);
+        actionScenario02->setObjectName(QStringLiteral("actionScenario02"));
         centralwidget = new QWidget(MainFrame);
         centralwidget->setObjectName(QStringLiteral("centralwidget"));
         centralwidget->setEnabled(true);
@@ -121,6 +124,7 @@ public:
         menuTournament->addAction(action_Quit);
         menuTesting->addAction(actionEmpty);
         menuTesting->addAction(actionScenario01);
+        menuTesting->addAction(actionScenario02);
 
         retranslateUi(MainFrame);
         QObject::connect(action_Quit, SIGNAL(triggered()), MainFrame, SLOT(close()));
@@ -128,6 +132,7 @@ public:
         QObject::connect(actionOpen, SIGNAL(triggered()), MainFrame, SLOT(openTournament()));
         QObject::connect(actionEmpty, SIGNAL(triggered()), MainFrame, SLOT(setupEmptyScenario()));
         QObject::connect(actionScenario01, SIGNAL(triggered()), MainFrame, SLOT(setupScenario01()));
+        QObject::connect(actionScenario02, SIGNAL(triggered()), MainFrame, SLOT(setupScenario02()));
 
         mainTab->setCurrentIndex(2);
 
@@ -144,6 +149,7 @@ public:
         action_Quit->setText(QApplication::translate("MainFrame", "&Quit", 0));
         actionEmpty->setText(QApplication::translate("MainFrame", "Empty", 0));
         actionScenario01->setText(QApplication::translate("MainFrame", "Scenario01", 0));
+        actionScenario02->setText(QApplication::translate("MainFrame", "Scenario02", 0));
         mainTab->setTabText(mainTab->indexOf(tabTeams), QApplication::translate("MainFrame", "Teams", 0));
         mainTab->setTabText(mainTab->indexOf(tabPlayers), QApplication::translate("MainFrame", "Players", 0));
         mainTab->setTabText(mainTab->indexOf(tabCategories), QApplication::translate("MainFrame", "Page", 0));

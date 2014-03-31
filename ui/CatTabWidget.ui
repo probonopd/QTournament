@@ -235,7 +235,7 @@ for each round</string>
     </widget>
    </item>
    <item>
-    <widget class="QGroupBox" name="horizontalGroupBox">
+    <widget class="QGroupBox" name="gbPairs">
      <property name="title">
       <string>Player Pairs</string>
      </property>
@@ -253,7 +253,11 @@ for each round</string>
        <number>9</number>
       </property>
       <item>
-       <widget class="QListWidget" name="listWidget_2"/>
+       <widget class="QListWidget" name="lwUnpaired">
+        <property name="selectionMode">
+         <enum>QAbstractItemView::MultiSelection</enum>
+        </property>
+       </widget>
       </item>
       <item>
        <widget class="QGroupBox" name="verticalGroupBox_2">
@@ -330,7 +334,11 @@ for each round</string>
        </widget>
       </item>
       <item>
-       <widget class="QListWidget" name="listWidget"/>
+       <widget class="QListWidget" name="lwPaired">
+        <property name="selectionMode">
+         <enum>QAbstractItemView::MultiSelection</enum>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>
@@ -394,11 +402,45 @@ for each round</string>
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>btnPair</sender>
+   <signal>clicked()</signal>
+   <receiver>CatTabWidget</receiver>
+   <slot>onBtnPairClicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>439</x>
+     <y>583</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>431</x>
+     <y>428</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>btnSplit</sender>
+   <signal>clicked()</signal>
+   <receiver>CatTabWidget</receiver>
+   <slot>onBtnSplitClicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>439</x>
+     <y>616</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>431</x>
+     <y>428</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>onCbDrawChanged(bool)</slot>
   <slot>onDrawScoreChanged(int)</slot>
   <slot>onWinScoreChanged(int)</slot>
+  <slot>onBtnPairClicked()</slot>
+  <slot>onBtnSplitClicked()</slot>
  </slots>
  <buttongroups>
   <buttongroup name="buttonGroup"/>
