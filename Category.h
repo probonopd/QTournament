@@ -47,6 +47,7 @@ namespace QTournament
     bool isPaired(const Player& p) const;
     ERR canPairPlayers(const Player& p1, const Player& p2) const;
     ERR canSplitPlayers(const Player& p1, const Player& p2) const;
+    Player getPartner(const Player& p) const;
 
   private:
     Category (TournamentDB* db, int rowId);

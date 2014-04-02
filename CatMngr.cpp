@@ -194,8 +194,16 @@ namespace QTournament
       return PLAYER_NOT_IN_CATEGORY;
     }
     
-    // TODO: split player pairs, if necessary
-    //
+    if (c.isPaired(p))
+    {
+      Player partner = c.getPartner(p);
+      ERR e = splitPlayers(c, p, partner);
+      if (e != OK)
+      {
+	return e;
+      }
+    }
+    
     // And: unless we play with random partners, the double partner
     // has to be removed from the category as well if we're beyond
     // "Category Configuration" state

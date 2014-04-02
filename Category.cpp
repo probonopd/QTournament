@@ -12,6 +12,8 @@
 #include "CatMngr.h"
 #include "Tournament.h"
 
+#include <stdexcept>
+
 namespace QTournament
 {
 
@@ -182,14 +184,26 @@ namespace QTournament
   {
     // For now, you can only delete players from a category
     // when it's still in configuration mode
-    return (getState() == STAT_CAT_CONFIG);
+    if (getState() != STAT_CAT_CONFIG) return false;
+    
+    // check whether the player is paired with another player
+    if (isPaired(p))
+    {
+      Player partner = getPartner(p);
+      if (canSplitPlayers(p, partner) != OK)
+      {
+	return false;
+      }
+    }
     
     // TODO: make more sophisticated tests depending e. g. on
     // the match system. For instance, if we have random
     // matches, players should be removable after every round
     //
-    // Also, we should be able to remove players that we're not
+    // Also, we should be able to remove only players that were not
     // yet involved/scheduled for any matches.
+    
+    return true;
   }
 
 //----------------------------------------------------------------------------
@@ -413,6 +427,34 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
+  Player Category::getPartner(const Player& p) const
+  {
+    if (!(hasPlayer(p)))
+    {
+      throw std::invalid_argument("Player not in category");
+    }
+    
+    // manually construct a where-clause for an OR-query
+    QString whereClause = "(" + PAIRS_PLAYER1_REF + " = ? OR " + PAIRS_PLAYER2_REF + " = ?) ";
+    whereClause += "AND (" + PAIRS_CAT_REF + " = ?)";
+    QVariantList qvl;
+    qvl << p.getId();
+    qvl << p.getId();
+    qvl << getId();
+    
+    // see if we have a row that matches the query
+    int partnerId = -1;
+    DbTab pairTab = db->getTab(TAB_PAIRS);
+    try
+    {
+      TabRow r = pairTab.getSingleRowByWhereClause(whereClause, qvl);
+      partnerId = (r[PAIRS_PLAYER1_REF].toInt() == p.getId()) ? r[PAIRS_PLAYER2_REF].toInt() : r[PAIRS_PLAYER1_REF].toInt();
+    } catch (exception e) {
+      throw std::invalid_argument("Player doesn't have a partner");
+    }
+    
+    return Tournament::getPlayerMngr()->getPlayer(partnerId);
+  }
 
 //----------------------------------------------------------------------------
 
