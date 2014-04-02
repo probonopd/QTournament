@@ -381,7 +381,36 @@ void CatTabWidget::onBtnSplitClicked()
 }
 
 //----------------------------------------------------------------------------
-    
+
+void CatTabWidget::onMatchTypeButtonClicked(int btn)
+{
+  Category selCat = ui.catTableView->getSelectedCategory();
+  
+  MATCH_TYPE oldType = selCat.getMatchType();
+  
+  MATCH_TYPE newType = SINGLES;
+  if (ui.rbDoubles->isChecked()) newType = DOUBLES;
+  if (ui.rbMixed->isChecked()) newType = MIXED;
+  
+  // do we actually have a change?
+  if (oldType == newType)
+  {
+    return;  // nope, no action required
+  }
+  
+  // change the type
+  ERR e = selCat.setMatchType(newType);
+  if (e != OK)
+  {
+    QMessageBox::warning(this, tr("Error"), tr("Could change match type. Error number = ") + e);
+  }
+  
+  // in case the change wasn't successful, restore the old, correct type;
+  // furthermore, the pairs could have changed. So basically we need to
+  // reset the whole widget
+  updatePairs();
+  updateControls();
+}
 
 //----------------------------------------------------------------------------
     

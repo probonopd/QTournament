@@ -33,6 +33,7 @@ public slots:
   void onBtnPairClicked();
   void onPairedPlayersSelectionChanged();
   void onBtnSplitClicked();
+  void onMatchTypeButtonClicked(int btn);
 } ;
 
 #endif	/* _CATTABWIDGET_H */

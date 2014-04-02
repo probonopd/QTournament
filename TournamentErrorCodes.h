@@ -27,7 +27,8 @@ namespace QTournament
         CATEGORY_NOT_CONFIGURALE_ANYMORE,
         PLAYERS_NOT_A_PAIR,
         PLAYERS_IDENTICAL,
-        INVALID_ID
+        INVALID_ID,
+        INVALID_RECONFIG
     };
 }
 

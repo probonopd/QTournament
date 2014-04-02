@@ -72,7 +72,7 @@
                   <string>Singles</string>
                  </property>
                  <attribute name="buttonGroup">
-                  <string notr="true">buttonGroup</string>
+                  <string notr="true">rbgMatchType</string>
                  </attribute>
                 </widget>
                </item>
@@ -82,7 +82,7 @@
                   <string>Doubles</string>
                  </property>
                  <attribute name="buttonGroup">
-                  <string notr="true">buttonGroup</string>
+                  <string notr="true">rbgMatchType</string>
                  </attribute>
                 </widget>
                </item>
@@ -92,7 +92,7 @@
                   <string>Mixed</string>
                  </property>
                  <attribute name="buttonGroup">
-                  <string notr="true">buttonGroup</string>
+                  <string notr="true">rbgMatchType</string>
                  </attribute>
                 </widget>
                </item>
@@ -119,7 +119,7 @@
                   <string>Men</string>
                  </property>
                  <attribute name="buttonGroup">
-                  <string notr="true">buttonGroup_2</string>
+                  <string notr="true">rbgSex</string>
                  </attribute>
                 </widget>
                </item>
@@ -129,7 +129,7 @@
                   <string>Ladies</string>
                  </property>
                  <attribute name="buttonGroup">
-                  <string notr="true">buttonGroup_2</string>
+                  <string notr="true">rbgSex</string>
                  </attribute>
                 </widget>
                </item>
@@ -434,6 +434,22 @@ for each round</string>
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>rbgMatchType</sender>
+   <signal>buttonClicked(int)</signal>
+   <receiver>CatTabWidget</receiver>
+   <slot>onMatchTypeButtonClicked(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>431</x>
+     <y>428</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>onCbDrawChanged(bool)</slot>
@@ -441,9 +457,10 @@ for each round</string>
   <slot>onWinScoreChanged(int)</slot>
   <slot>onBtnPairClicked()</slot>
   <slot>onBtnSplitClicked()</slot>
+  <slot>onMatchTypeButtonClicked(int)</slot>
  </slots>
  <buttongroups>
-  <buttongroup name="buttonGroup"/>
-  <buttongroup name="buttonGroup_2"/>
+  <buttongroup name="rbgMatchType"/>
+  <buttongroup name="rbgSex"/>
  </buttongroups>
 </ui>

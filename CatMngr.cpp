@@ -130,9 +130,60 @@ namespace QTournament
 
   ERR CatMngr::setMatchType(Category& c, MATCH_TYPE t)
   {
-    // TODO: implement checks, updates to other tables etc
+    // we can only change the match type while being in config mode
+    if (c.getState() != STAT_CAT_CONFIG)
+    {
+      return CATEGORY_NOT_CONFIGURALE_ANYMORE;
+    }
+    
+    // temporarily store all existing player pairs
+    QList<PlayerPair> pairList = c.getPlayerPairs();
+    
+    // check if we split all pairs
+    QList<PlayerPair>::const_iterator it = pairList.constBegin();
+    bool canSplit = true;
+    for (it = pairList.constBegin(); it != pairList.constEnd(); ++it)
+    {
+      PlayerPair pp = *it;
+      
+      if (!(pp.hasPlayer2())) continue;
+      
+      if (c.canSplitPlayers(pp.getPlayer1(), pp.getPlayer2()) != OK)
+      {
+	canSplit = false;
+      }
+    }
+    if (!canSplit)
+    {
+      return INVALID_RECONFIG;  // if only one pair can't be split, refuse to change the match type
+    }
+    
+    // actually split all pairs
+    for (it = pairList.constBegin(); it != pairList.constEnd(); ++it)
+    {
+      PlayerPair pp = *it;
+      
+      if (!(pp.hasPlayer2())) continue;
+      
+      splitPlayers(c, pp.getPlayer1(), pp.getPlayer2());
+    }
+    
+    // change the match type
     int typeInt = static_cast<int>(t);
     c.row.update(CAT_MATCH_TYPE, typeInt);
+    
+    // try to recreate as many pairs as possible
+    for (it = pairList.constBegin(); it != pairList.constEnd(); ++it)
+    {
+      PlayerPair pp = *it;
+      
+      if (!(pp.hasPlayer2())) continue;
+      
+      pairPlayers(c, pp.getPlayer1(), pp.getPlayer2());
+    }
+    
+    // IMPORTANT:
+    // THIS OPERATION CHANGED THE PAIR-IDs OF ALL PAIRS!
     
     return OK;
   }

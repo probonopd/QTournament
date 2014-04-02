@@ -388,6 +388,16 @@ namespace QTournament
       }
     }
     
+    // if this is a doubles category, make sure the sex is right
+    if ((mt == DOUBLES) && (getSex() != DONT_CARE))
+    {
+      SEX catSex = getSex();
+      if ((p1.getSex() != catSex) || (p2.getSex() != catSex))
+      {
+	return INVALID_SEX;
+      }
+    }
+    
     return OK;
   }
 

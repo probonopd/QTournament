@@ -82,8 +82,8 @@ public:
     QPushButton *btnRandomizeAll;
     QCheckBox *cbAvoidSameTeam;
     QListWidget *lwPaired;
-    QButtonGroup *buttonGroup;
-    QButtonGroup *buttonGroup_2;
+    QButtonGroup *rbgMatchType;
+    QButtonGroup *rbgSex;
 
     void setupUi(QDialog *CatTabWidget)
     {
@@ -142,21 +142,21 @@ public:
         verticalLayout_4->addWidget(label_2);
 
         rbSingles = new QRadioButton(gbGeneric);
-        buttonGroup = new QButtonGroup(CatTabWidget);
-        buttonGroup->setObjectName(QStringLiteral("buttonGroup"));
-        buttonGroup->addButton(rbSingles);
+        rbgMatchType = new QButtonGroup(CatTabWidget);
+        rbgMatchType->setObjectName(QStringLiteral("rbgMatchType"));
+        rbgMatchType->addButton(rbSingles);
         rbSingles->setObjectName(QStringLiteral("rbSingles"));
 
         verticalLayout_4->addWidget(rbSingles);
 
         rbDoubles = new QRadioButton(gbGeneric);
-        buttonGroup->addButton(rbDoubles);
+        rbgMatchType->addButton(rbDoubles);
         rbDoubles->setObjectName(QStringLiteral("rbDoubles"));
 
         verticalLayout_4->addWidget(rbDoubles);
 
         rbMixed = new QRadioButton(gbGeneric);
-        buttonGroup->addButton(rbMixed);
+        rbgMatchType->addButton(rbMixed);
         rbMixed->setObjectName(QStringLiteral("rbMixed"));
 
         verticalLayout_4->addWidget(rbMixed);
@@ -174,15 +174,15 @@ public:
         verticalLayout_3->addWidget(label);
 
         rbMen = new QRadioButton(gbGeneric);
-        buttonGroup_2 = new QButtonGroup(CatTabWidget);
-        buttonGroup_2->setObjectName(QStringLiteral("buttonGroup_2"));
-        buttonGroup_2->addButton(rbMen);
+        rbgSex = new QButtonGroup(CatTabWidget);
+        rbgSex->setObjectName(QStringLiteral("rbgSex"));
+        rbgSex->addButton(rbMen);
         rbMen->setObjectName(QStringLiteral("rbMen"));
 
         verticalLayout_3->addWidget(rbMen);
 
         rbLadies = new QRadioButton(gbGeneric);
-        buttonGroup_2->addButton(rbLadies);
+        rbgSex->addButton(rbLadies);
         rbLadies->setObjectName(QStringLiteral("rbLadies"));
 
         verticalLayout_3->addWidget(rbLadies);
@@ -334,6 +334,7 @@ public:
         QObject::connect(sbWinScore, SIGNAL(valueChanged(int)), CatTabWidget, SLOT(onWinScoreChanged(int)));
         QObject::connect(btnPair, SIGNAL(clicked()), CatTabWidget, SLOT(onBtnPairClicked()));
         QObject::connect(btnSplit, SIGNAL(clicked()), CatTabWidget, SLOT(onBtnSplitClicked()));
+        QObject::connect(rbgMatchType, SIGNAL(buttonClicked(int)), CatTabWidget, SLOT(onMatchTypeButtonClicked(int)));
 
         QMetaObject::connectSlotsByName(CatTabWidget);
     } // setupUi
