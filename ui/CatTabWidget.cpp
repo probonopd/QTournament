@@ -99,7 +99,7 @@ void CatTabWidget::updateControls()
   // disable radio buttons for male / female for mixed categories
   ui.rbMen->setEnabled(mt != MIXED);
   ui.rbLadies->setEnabled(mt != MIXED);
-  if ((mt == MIXED) || (sex == DONT_CARE))
+  if (mt == MIXED)
   {
     ui.rbMen->hide();
     ui.rbLadies->hide();
@@ -111,7 +111,7 @@ void CatTabWidget::updateControls()
   // update the applicable sex
   ui.rbMen->setChecked((sex == M) && (mt != MIXED));
   ui.rbLadies->setChecked((sex == F) && (mt != MIXED));
-  ui.rbDontCare->setChecked(sex == DONT_CARE);
+  ui.cbDontCare->setChecked(sex == DONT_CARE);
   
   // the "accept draw" checkbox
   bool allowDraw = selectedCat.getParameter(ALLOW_DRAW).toBool();
@@ -413,10 +413,82 @@ void CatTabWidget::onMatchTypeButtonClicked(int btn)
 }
 
 //----------------------------------------------------------------------------
-    
+
+void CatTabWidget::onSexClicked(int btn)
+{
+  // the new sex must be either M or F
+  SEX newSex = M;
+  if (ui.rbLadies->isChecked()) newSex = F;
+  
+  // in any case, we can de-select the "don't care" box
+  ui.cbDontCare->setChecked(false);
+  
+  // actually change the sex
+  Category selCat = ui.catTableView->getSelectedCategory();
+  ERR e = selCat.setSex(newSex);
+  if (e != OK)
+  {
+    QMessageBox::warning(this, tr("Error"), tr("Could change sex. Error number = ") + e);
+  }
+  
+  // in case the change wasn't successful, restore the old, correct type;
+  // furthermore, the pairs could have changed. So basically we need to
+  // reset the whole widget
+  updatePairs();
+  updateControls();
+}
 
 //----------------------------------------------------------------------------
+
+void CatTabWidget::onDontCareClicked()
+{
+  bool newState = ui.cbDontCare->isChecked();
+  Category selCat = ui.catTableView->getSelectedCategory();
+  
+  // unless we are in a mixed category, "don't care" can only be deactivated
+  // by selecting a specific sex
+  if (!newState && (selCat.getMatchType() != MIXED))
+  {
+    QString msg = tr("Please deactivate 'Don't care' by selecting a specific sex!");
+    QMessageBox::information(this, tr("Change category sex"), msg);
     
+    // re-check the checkbox
+    ui.cbDontCare->setChecked(true);
+    
+    return;
+  }
+  
+  SEX newSex = DONT_CARE;
+  
+  // if we are in a mixed category, allow simple de-activation of "Don't care"
+  if (!newState && (selCat.getMatchType() == MIXED))
+  {
+    // set a dummy default value that is not "Don't care"
+    newSex = M;
+  }
+  
+  // un-check "Men" and "Ladies" if "Don't care" was activated
+  if (newState)
+  {
+    ui.rbgSex->setExclusive(false);
+    ui.rbMen->setChecked(false);
+    ui.rbLadies->setChecked(false);
+    ui.rbgSex->setExclusive(true);
+  }
+  
+  // set the new value
+  ERR e = selCat.setSex(newSex);
+  if (e != OK)
+  {
+    QMessageBox::warning(this, tr("Error"), tr("Could change sex. Error number = ") + e);
+  }
+  
+  // in case the change wasn't successful, restore the old, correct type;
+  // furthermore, the pairs could have changed. So basically we need to
+  // reset the whole widget
+  updatePairs();
+  updateControls();
+}
 
 //----------------------------------------------------------------------------
     

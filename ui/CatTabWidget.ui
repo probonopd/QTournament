@@ -134,7 +134,7 @@
                 </widget>
                </item>
                <item>
-                <widget class="QCheckBox" name="rbDontCare">
+                <widget class="QCheckBox" name="cbDontCare">
                  <property name="text">
                   <string>Don't Care</string>
                  </property>
@@ -450,6 +450,38 @@ for each round</string>
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>rbgSex</sender>
+   <signal>buttonClicked(int)</signal>
+   <receiver>CatTabWidget</receiver>
+   <slot>onSexClicked(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>786</x>
+     <y>128</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>431</x>
+     <y>428</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cbDontCare</sender>
+   <signal>clicked()</signal>
+   <receiver>CatTabWidget</receiver>
+   <slot>onDontCareClicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>786</x>
+     <y>184</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>431</x>
+     <y>428</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>onCbDrawChanged(bool)</slot>
@@ -458,6 +490,8 @@ for each round</string>
   <slot>onBtnPairClicked()</slot>
   <slot>onBtnSplitClicked()</slot>
   <slot>onMatchTypeButtonClicked(int)</slot>
+  <slot>onSexClicked(int)</slot>
+  <slot>onDontCareClicked()</slot>
  </slots>
  <buttongroups>
   <buttongroup name="rbgMatchType"/>

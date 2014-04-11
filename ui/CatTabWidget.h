@@ -34,6 +34,8 @@ public slots:
   void onPairedPlayersSelectionChanged();
   void onBtnSplitClicked();
   void onMatchTypeButtonClicked(int btn);
+  void onSexClicked(int btn);
+  void onDontCareClicked();
 } ;
 
 #endif	/* _CATTABWIDGET_H */

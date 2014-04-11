@@ -11,6 +11,7 @@
 #include <stdexcept>
 #include <qt/QtCore/qdebug.h>
 #include <qt/QtCore/qjsonarray.h>
+#include <qt4/QtCore/qlist.h>
 #include "HelperFunc.h"
 #include "Category.h"
 #include "Player.h"
@@ -168,6 +169,14 @@ namespace QTournament
       splitPlayers(c, pp.getPlayer1(), pp.getPlayer2());
     }
     
+    // if we come from mixed, we force the sex type "Don't care" to avoid
+    // that too many players will be removed (unwanted) from the category
+    MATCH_TYPE oldType = c.getMatchType();
+    if (oldType == MIXED)
+    {
+      setSex(c, DONT_CARE);   // no error checking here, setting "don't care" should always work because it's least restrictive
+    }
+    
     // change the match type
     int typeInt = static_cast<int>(t);
     c.row.update(CAT_MATCH_TYPE, typeInt);
@@ -192,7 +201,80 @@ namespace QTournament
 
   ERR CatMngr::setSex(Category& c, SEX s)
   {
-    // TODO: implement checks, updates to other tables etc
+    // we can only change the sex while being in config mode
+    if (c.getState() != STAT_CAT_CONFIG)
+    {
+      return CATEGORY_NOT_CONFIGURALE_ANYMORE;
+    }
+    
+    // unless we switch to "don't care", we have to make sure that
+    // we can remove the wrong players
+    if ((s != DONT_CARE) && (c.getMatchType() != MIXED))
+    {
+      QList<Player> allPlayers = c.getAllPlayersInCategory();
+      QList<Player>::const_iterator it;
+      for (it = allPlayers.constBegin(); it != allPlayers.constEnd(); ++it)
+      {
+	// skip players with matching sex
+	if ((*it).getSex() == s) continue;
+	
+	// for all other players, check if we can remove them
+	if (!(c.canRemovePlayer(*it)))
+	{
+	  return INVALID_RECONFIG;
+	}
+      }
+      
+      // okay, we can be sure that all "unwanted" players can be removed.
+      // do it.
+      for (it = allPlayers.constBegin(); it != allPlayers.constEnd(); ++it)
+      {
+	// skip players with matching sex
+	if ((*it).getSex() == s) continue;
+	
+	// for all other players, check if we can remove them
+	c.removePlayer(*it);
+      }
+    }
+    
+    // if we de-active "don't care" in a mixed category, we have to split
+    // all non-compliant pairs. The players itself can remain in the category
+    if ((s != DONT_CARE) && (c.getMatchType() == MIXED)) {
+      QList<PlayerPair> allPairs = c.getPlayerPairs();
+      
+      QList<PlayerPair>::const_iterator it;
+      for (it = allPairs.constBegin(); it != allPairs.constEnd(); ++it) {
+	PlayerPair pp = *it;
+	
+	// Skip unpaired players
+	if (!(pp.hasPlayer2())) continue;
+	
+	// Skip true mixed pairs
+	if (pp.getPlayer1().getSex() != pp.getPlayer2().getSex()) continue;
+
+	// check if we can split "false" mixed pairs (= same sex pairs)
+	if (c.canSplitPlayers(pp.getPlayer1(), pp.getPlayer2()) != OK) {
+	  return INVALID_RECONFIG;
+	}
+      }
+      
+      // now we can be sure that all unwanted pairs can be split
+      CatMngr* cmngr = Tournament::getCatMngr();
+      for (it = allPairs.constBegin(); it != allPairs.constEnd(); ++it) {
+	PlayerPair pp = *it;
+	
+	// Skip unpaired players
+	if (!(pp.hasPlayer2())) continue;
+	
+	// Skip true mixed pairs
+	if (pp.getPlayer1().getSex() != pp.getPlayer2().getSex()) continue;
+
+	// check if we can split "false" mixed pairs (= same sex pairs)
+	cmngr->splitPlayers(c, pp.getPairId());
+      }
+    }
+    
+    // execute the actual change
     int sexInt = static_cast<int>(s);
     c.row.update(CAT_SEX, sexInt);
     
