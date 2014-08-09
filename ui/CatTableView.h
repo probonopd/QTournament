@@ -27,6 +27,7 @@ public:
 public slots:
   void onTournamentClosed();
   void onTournamentOpened(Tournament* tnmt);
+  void onCategoryDoubleClicked(const QModelIndex& index);
   
 private:
   Tournament* tnmt;

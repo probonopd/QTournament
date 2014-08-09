@@ -35,7 +35,7 @@ namespace QTournament
     Category getCategoryById(int id);
     Category getCategoryBySeqNum(int seqNum);
     QList<Category> getAllCategories();
-    ERR renameCategory(const Category& c, const QString& newName);
+    ERR renameCategory(Category& c, const QString& newName);
     ERR setMatchType(Category& c, MATCH_TYPE t);
     ERR setMatchSystem(Category& c, MATCH_SYSTEM s);
     ERR setSex(Category& c, SEX s);

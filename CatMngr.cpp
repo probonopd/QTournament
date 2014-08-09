@@ -599,6 +599,26 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
+  ERR CatMngr::renameCategory(Category& c, const QString& nn)
+  {
+    QString newName = nn.trimmed();
+    
+    // Ensure the new name is valid
+    if ((newName.isEmpty()) || (newName.length() > MAX_NAME_LEN))
+    {
+      return INVALID_NAME;
+    }
+    
+    // make sure the new name doesn't exist yet
+    if (hasCategory(newName))
+    {
+      return NAME_EXISTS;
+    }
+    
+    c.row.update(GENERIC_NAME_FIELD_NAME, newName);
+    
+    return OK;
+  }
 
 //----------------------------------------------------------------------------
 

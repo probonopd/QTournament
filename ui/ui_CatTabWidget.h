@@ -82,8 +82,8 @@ public:
     QPushButton *btnRandomizeAll;
     QCheckBox *cbAvoidSameTeam;
     QListWidget *lwPaired;
-    QButtonGroup *rbgMatchType;
     QButtonGroup *rbgSex;
+    QButtonGroup *rbgMatchType;
 
     void setupUi(QDialog *CatTabWidget)
     {
@@ -338,6 +338,7 @@ public:
         QObject::connect(rbgSex, SIGNAL(buttonClicked(int)), CatTabWidget, SLOT(onSexClicked(int)));
         QObject::connect(cbDontCare, SIGNAL(clicked()), CatTabWidget, SLOT(onDontCareClicked()));
         QObject::connect(btnAddCategory, SIGNAL(clicked()), CatTabWidget, SLOT(onBtnAddCatClicked()));
+        QObject::connect(catTableView, SIGNAL(doubleClicked(QModelIndex)), catTableView, SLOT(onCategoryDoubleClicked(QModelIndex)));
 
         QMetaObject::connectSlotsByName(CatTabWidget);
     } // setupUi
