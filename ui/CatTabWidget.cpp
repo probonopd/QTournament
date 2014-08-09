@@ -109,9 +109,19 @@ void CatTabWidget::updateControls()
     ui.rbLadies->show();
   }
   
-  // update the applicable sex
-  ui.rbMen->setChecked((sex == M) && (mt != MIXED));
-  ui.rbLadies->setChecked((sex == F) && (mt != MIXED));
+  // update the applicable sex; this requires an extra hack if the sex is
+  // set to "don't care", because in this case, both radio buttons in a
+  // radio button group have to be deactivated
+  if (sex == DONT_CARE)
+  {
+    ui.rbgSex->setExclusive(false);
+    ui.rbMen->setChecked(false);
+    ui.rbLadies->setChecked(false);
+    ui.rbgSex->setExclusive(true);
+  } else {
+    ui.rbMen->setChecked((sex == M) && (mt != MIXED));
+    ui.rbLadies->setChecked((sex == F) && (mt != MIXED));
+  }
   ui.cbDontCare->setChecked(sex == DONT_CARE);
   
   // the "accept draw" checkbox
