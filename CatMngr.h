@@ -53,6 +53,8 @@ namespace QTournament
     void playersSplit(const Category c, const Player& p1, const Player& p2);
     void playerAddedToCategory(const Player& p, const Category& c);
     void playerRemovedFromCategory(const Player& p, const Category& c);
+    void beginCreateCategory();
+    void endCreateCategory(int newCatSeqNum);
 
   private:
     DbTab catTab;

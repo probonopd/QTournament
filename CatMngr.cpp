@@ -59,8 +59,10 @@ namespace QTournament
     qvl << CAT_WIN_SCORE << 2;
     qvl << CAT_DRAW_SCORE << 1;
     
+    emit beginCreateCategory();
     catTab.insertRow(qvl);
     fixSeqNumberAfterInsert(TAB_CATEGORY);
+    emit endCreateCategory(catTab.length() - 1); // the new sequence number is always the greatest
     
     return OK;
   }
