@@ -48,7 +48,6 @@ void CatTabWidget::onCatModelChanged()
 	  SLOT(onTabSelectionChanged(const QItemSelection&, const QItemSelection&)));
 
   updateControls();
-  updatePairs();
 }
 
 //----------------------------------------------------------------------------
