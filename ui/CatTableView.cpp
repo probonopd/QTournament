@@ -7,7 +7,11 @@
 
 #include "CatTableView.h"
 #include "MainFrame.h"
+#include "Category.h"
 #include <stdexcept>
+#include <QInputDialog>
+#include <QString>
+#include <qt/QtWidgets/qmessagebox.h>
 
 CategoryTableView::CategoryTableView(QWidget* parent)
 :QTableView(parent)
@@ -85,7 +89,60 @@ Category CategoryTableView::getSelectedCategory()
 }
 
 //----------------------------------------------------------------------------
-    
+
+void CategoryTableView::onCategoryDoubleClicked(const QModelIndex& index)
+{
+  if (!(index.isValid()))
+  {
+    return;
+  }
+  
+  Category selectedCat = Tournament::getCatMngr()->getCategoryBySeqNum(index.row());
+  
+  QString oldName = selectedCat.getName();
+  
+  bool isOk = false;
+  while (!isOk)
+  {
+    QString newName = QInputDialog::getText(this, tr("Rename category"), tr("Enter new category name:"),
+	    QLineEdit::Normal, oldName, &isOk);
+
+    if (!isOk)
+    {
+      return;  // the user hit cancel
+    }
+
+    if (newName.isEmpty())
+    {
+      QMessageBox::critical(this, tr("Rename category"), tr("The new name may not be empty!"));
+      isOk = false;
+      continue;
+    }
+
+    if (oldName == newName)
+    {
+      return;
+    }
+
+    // okay, we have a valid name. try to rename the category
+    newName = newName.trimmed();
+    ERR e = Tournament::getCatMngr()->renameCategory(selectedCat, newName);
+
+    if (e == INVALID_NAME)
+    {
+      QMessageBox::critical(this, tr("Rename category"), tr("The name you entered is invalid (e.g., too long)"));
+      isOk = false;
+      continue;
+    }
+
+    if (e == NAME_EXISTS)
+    {
+      QMessageBox::critical(this, tr("Rename category"), tr("A category of this name already exists"));
+      isOk = false;
+      continue;
+    }
+  }
+}
 
 //----------------------------------------------------------------------------
     

@@ -32,6 +32,8 @@ public:
     dbOverlay::DbTab catTab;
     
 public slots:
+    void onBeginCreateCategory();
+    void onEndCreateCategory(int newCatSeqNum);
 
 };
 

@@ -350,6 +350,9 @@ for each round</string>
    <class>CategoryTableView</class>
    <extends>QTableView</extends>
    <header>CatTableView.h</header>
+   <slots>
+    <slot>onCategoryDoubleClicked(QModelIndex)</slot>
+   </slots>
   </customwidget>
  </customwidgets>
  <resources/>
@@ -457,8 +460,8 @@ for each round</string>
    <slot>onSexClicked(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>786</x>
-     <y>128</y>
+     <x>-1</x>
+     <y>-1</y>
     </hint>
     <hint type="destinationlabel">
      <x>431</x>
@@ -482,6 +485,38 @@ for each round</string>
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>btnAddCategory</sender>
+   <signal>clicked()</signal>
+   <receiver>CatTabWidget</receiver>
+   <slot>onBtnAddCatClicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>321</x>
+     <y>49</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>431</x>
+     <y>428</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>catTableView</sender>
+   <signal>doubleClicked(QModelIndex)</signal>
+   <receiver>catTableView</receiver>
+   <slot>onCategoryDoubleClicked(QModelIndex)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>321</x>
+     <y>285</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>321</x>
+     <y>285</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>onCbDrawChanged(bool)</slot>
@@ -492,9 +527,10 @@ for each round</string>
   <slot>onMatchTypeButtonClicked(int)</slot>
   <slot>onSexClicked(int)</slot>
   <slot>onDontCareClicked()</slot>
+  <slot>onBtnAddCatClicked()</slot>
  </slots>
  <buttongroups>
-  <buttongroup name="rbgMatchType"/>
   <buttongroup name="rbgSex"/>
+  <buttongroup name="rbgMatchType"/>
  </buttongroups>
 </ui>

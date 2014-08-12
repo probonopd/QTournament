@@ -59,8 +59,10 @@ namespace QTournament
     qvl << CAT_WIN_SCORE << 2;
     qvl << CAT_DRAW_SCORE << 1;
     
+    emit beginCreateCategory();
     catTab.insertRow(qvl);
     fixSeqNumberAfterInsert(TAB_CATEGORY);
+    emit endCreateCategory(catTab.length() - 1); // the new sequence number is always the greatest
     
     return OK;
   }
@@ -597,6 +599,26 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
+  ERR CatMngr::renameCategory(Category& c, const QString& nn)
+  {
+    QString newName = nn.trimmed();
+    
+    // Ensure the new name is valid
+    if ((newName.isEmpty()) || (newName.length() > MAX_NAME_LEN))
+    {
+      return INVALID_NAME;
+    }
+    
+    // make sure the new name doesn't exist yet
+    if (hasCategory(newName))
+    {
+      return NAME_EXISTS;
+    }
+    
+    c.row.update(GENERIC_NAME_FIELD_NAME, newName);
+    
+    return OK;
+  }
 
 //----------------------------------------------------------------------------
 

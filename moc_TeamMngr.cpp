@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'TeamMngr.h'
 **
-** Created by: The Qt Meta Object Compiler version 67 (Qt 5.2.1)
+** Created by: The Qt Meta Object Compiler version 67 (Qt 5.3.1)
 **
 ** WARNING! All changes made in this file will be lost!
 *****************************************************************************/
@@ -12,7 +12,7 @@
 #if !defined(Q_MOC_OUTPUT_REVISION)
 #error "The header file 'TeamMngr.h' doesn't include <QObject>."
 #elif Q_MOC_OUTPUT_REVISION != 67
-#error "This file was generated using the moc from 5.2.1. It"
+#error "This file was generated using the moc from 5.3.1. It"
 #error "cannot be used with the include files from this version of Qt."
 #error "(The moc has changed too much.)"
 #endif
@@ -20,12 +20,12 @@
 QT_BEGIN_MOC_NAMESPACE
 struct qt_meta_stringdata_QTournament__TeamMngr_t {
     QByteArrayData data[13];
-    char stringdata[156];
+    char stringdata[155];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
-    offsetof(qt_meta_stringdata_QTournament__TeamMngr_t, stringdata) + ofs \
-        - idx * sizeof(QByteArrayData) \
+    qptrdiff(offsetof(qt_meta_stringdata_QTournament__TeamMngr_t, stringdata) + ofs \
+        - idx * sizeof(QByteArrayData)) \
     )
 static const qt_meta_stringdata_QTournament__TeamMngr_t qt_meta_stringdata_QTournament__TeamMngr = {
     {
@@ -47,7 +47,7 @@ QT_MOC_LITERAL(12, 147, 7)
     "\0endCreateTeam\0newTeamSeqNum\0teamRenamed\0"
     "teamSeqNum\0teamAssignmentChanged\0"
     "Player\0affectedPlayer\0Team\0oldTeam\0"
-    "newTeam\0"
+    "newTeam"
 };
 #undef QT_MOC_LITERAL
 
@@ -65,10 +65,10 @@ static const uint qt_meta_data_QTournament__TeamMngr[] = {
        4,       // signalCount
 
  // signals: name, argc, parameters, tag, flags
-       1,    0,   34,    2, 0x06,
-       3,    1,   35,    2, 0x06,
-       5,    1,   38,    2, 0x06,
-       7,    3,   41,    2, 0x06,
+       1,    0,   34,    2, 0x06 /* Public */,
+       3,    1,   35,    2, 0x06 /* Public */,
+       5,    1,   38,    2, 0x06 /* Public */,
+       7,    3,   41,    2, 0x06 /* Public */,
 
  // signals: parameters
     QMetaType::Void,
