@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'TeamListModel.h'
 **
-** Created by: The Qt Meta Object Compiler version 67 (Qt 5.2.1)
+** Created by: The Qt Meta Object Compiler version 67 (Qt 5.3.1)
 **
 ** WARNING! All changes made in this file will be lost!
 *****************************************************************************/
@@ -12,7 +12,7 @@
 #if !defined(Q_MOC_OUTPUT_REVISION)
 #error "The header file 'TeamListModel.h' doesn't include <QObject>."
 #elif Q_MOC_OUTPUT_REVISION != 67
-#error "This file was generated using the moc from 5.2.1. It"
+#error "This file was generated using the moc from 5.3.1. It"
 #error "cannot be used with the include files from this version of Qt."
 #error "(The moc has changed too much.)"
 #endif
@@ -20,12 +20,12 @@
 QT_BEGIN_MOC_NAMESPACE
 struct qt_meta_stringdata_QTournament__TeamListModel_t {
     QByteArrayData data[7];
-    char stringdata[102];
+    char stringdata[101];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
-    offsetof(qt_meta_stringdata_QTournament__TeamListModel_t, stringdata) + ofs \
-        - idx * sizeof(QByteArrayData) \
+    qptrdiff(offsetof(qt_meta_stringdata_QTournament__TeamListModel_t, stringdata) + ofs \
+        - idx * sizeof(QByteArrayData)) \
     )
 static const qt_meta_stringdata_QTournament__TeamListModel_t qt_meta_stringdata_QTournament__TeamListModel = {
     {
@@ -39,7 +39,7 @@ QT_MOC_LITERAL(6, 90, 10)
     },
     "QTournament::TeamListModel\0onBeginCreateTeam\0"
     "\0onEndCreateTeam\0newTeamSeqNum\0"
-    "onTeamRenamed\0teamSeqNum\0"
+    "onTeamRenamed\0teamSeqNum"
 };
 #undef QT_MOC_LITERAL
 
@@ -57,9 +57,9 @@ static const uint qt_meta_data_QTournament__TeamListModel[] = {
        0,       // signalCount
 
  // slots: name, argc, parameters, tag, flags
-       1,    0,   29,    2, 0x0a,
-       3,    1,   30,    2, 0x0a,
-       5,    1,   33,    2, 0x0a,
+       1,    0,   29,    2, 0x0a /* Public */,
+       3,    1,   30,    2, 0x0a /* Public */,
+       5,    1,   33,    2, 0x0a /* Public */,
 
  // slots: parameters
     QMetaType::Void,
