@@ -10,7 +10,7 @@
 #include "TournamentErrorCodes.h"
 #include "TournamentDataDefs.h"
 #include <stdexcept>
-#include <qt/QtCore/qdebug.h>
+#include <QtCore/qdebug.h>
 #include "HelperFunc.h"
 #include "TeamMngr.h"
 #include "Tournament.h"

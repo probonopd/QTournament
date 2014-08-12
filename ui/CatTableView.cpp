@@ -11,7 +11,7 @@
 #include <stdexcept>
 #include <QInputDialog>
 #include <QString>
-#include <qt/QtWidgets/qmessagebox.h>
+#include <QtWidgets/qmessagebox.h>
 
 CategoryTableView::CategoryTableView(QWidget* parent)
 :QTableView(parent)

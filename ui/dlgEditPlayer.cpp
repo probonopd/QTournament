@@ -5,9 +5,9 @@
  * Created on March 18, 2014, 8:00 PM
  */
 
-#include <qt/QtWidgets/qmessagebox.h>
-#include <qt4/QtGui/qwidget.h>
-#include <qt4/QtCore/qnamespace.h>
+#include <QtWidgets/qmessagebox.h>
+//#include <QtGui/qwidget.h>
+#include <QtCore/qnamespace.h>
 
 #include "Tournament.h"
 

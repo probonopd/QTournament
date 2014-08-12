@@ -5,7 +5,7 @@
  * Created on March 2, 2014, 7:36 PM
  */
 
-#include <qt/QtCore/qmetatype.h>
+#include <QtCore/qmetatype.h>
 
 #include "GenericObjectManager.h"
 

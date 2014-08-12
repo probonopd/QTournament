@@ -5,8 +5,8 @@
  * Created on March 15, 2014, 7:28 PM
  */
 
-#include <qt/QtWidgets/qwidget.h>
-#include <qt/QtWidgets/qmessagebox.h>
+#include <QtWidgets/qwidget.h>
+#include <QtWidgets/qmessagebox.h>
 
 #include "TeamListView.h"
 #include "MainFrame.h"

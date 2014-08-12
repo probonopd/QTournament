@@ -5,8 +5,8 @@
  * Created on March 24, 2014, 7:13 PM
  */
 
-#include <qt/QtWidgets/qmessagebox.h>
-#include <qt4/QtCore/qnamespace.h>
+#include <QtWidgets/qmessagebox.h>
+#include <QtCore/qnamespace.h>
 
 #include "CatTabWidget.h"
 

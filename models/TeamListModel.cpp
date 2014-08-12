@@ -6,7 +6,7 @@
  */
 
 #include <Qt>
-#include <qt/QtWidgets/qmessagebox.h>
+#include <QtWidgets/qmessagebox.h>
 
 #include "TeamListModel.h"
 #include "TeamMngr.h"

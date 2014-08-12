@@ -21,6 +21,7 @@
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QLineEdit>
+#include <QtWidgets/QListWidget>
 #include <QtWidgets/QRadioButton>
 #include <QtWidgets/QVBoxLayout>
 
@@ -45,14 +46,16 @@ public:
     QVBoxLayout *verticalLayout_3;
     QRadioButton *rbMale;
     QRadioButton *rbFemale;
-    QGroupBox *groupBox;
+    QGroupBox *grpCategories;
+    QHBoxLayout *horizontalLayout_3;
+    QListWidget *catList;
     QDialogButtonBox *buttonBox;
 
     void setupUi(QDialog *dlgEditPlayer)
     {
         if (dlgEditPlayer->objectName().isEmpty())
             dlgEditPlayer->setObjectName(QStringLiteral("dlgEditPlayer"));
-        dlgEditPlayer->resize(612, 395);
+        dlgEditPlayer->resize(612, 520);
         verticalLayout_2 = new QVBoxLayout(dlgEditPlayer);
         verticalLayout_2->setObjectName(QStringLiteral("verticalLayout_2"));
         verticalLayout = new QVBoxLayout();
@@ -152,10 +155,17 @@ public:
 
         verticalLayout->addWidget(groupBox_2);
 
-        groupBox = new QGroupBox(dlgEditPlayer);
-        groupBox->setObjectName(QStringLiteral("groupBox"));
+        grpCategories = new QGroupBox(dlgEditPlayer);
+        grpCategories->setObjectName(QStringLiteral("grpCategories"));
+        horizontalLayout_3 = new QHBoxLayout(grpCategories);
+        horizontalLayout_3->setObjectName(QStringLiteral("horizontalLayout_3"));
+        catList = new QListWidget(grpCategories);
+        catList->setObjectName(QStringLiteral("catList"));
 
-        verticalLayout->addWidget(groupBox);
+        horizontalLayout_3->addWidget(catList);
+
+
+        verticalLayout->addWidget(grpCategories);
 
         buttonBox = new QDialogButtonBox(dlgEditPlayer);
         buttonBox->setObjectName(QStringLiteral("buttonBox"));
@@ -171,6 +181,8 @@ public:
         retranslateUi(dlgEditPlayer);
         QObject::connect(buttonBox, SIGNAL(accepted()), dlgEditPlayer, SLOT(accept()));
         QObject::connect(buttonBox, SIGNAL(rejected()), dlgEditPlayer, SLOT(reject()));
+        QObject::connect(rbMale, SIGNAL(clicked()), dlgEditPlayer, SLOT(onSexSelectionChanged()));
+        QObject::connect(rbFemale, SIGNAL(clicked()), dlgEditPlayer, SLOT(onSexSelectionChanged()));
 
         QMetaObject::connectSlotsByName(dlgEditPlayer);
     } // setupUi
@@ -184,7 +196,7 @@ public:
         label_3->setText(QApplication::translate("dlgEditPlayer", "Team:", 0));
         rbMale->setText(QApplication::translate("dlgEditPlayer", "Male", 0));
         rbFemale->setText(QApplication::translate("dlgEditPlayer", "Female", 0));
-        groupBox->setTitle(QApplication::translate("dlgEditPlayer", "Categories", 0));
+        grpCategories->setTitle(QApplication::translate("dlgEditPlayer", "Categories", 0));
     } // retranslateUi
 
 };

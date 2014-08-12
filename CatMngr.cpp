@@ -9,9 +9,9 @@
 #include "TournamentErrorCodes.h"
 #include "TournamentDataDefs.h"
 #include <stdexcept>
-#include <qt/QtCore/qdebug.h>
-#include <qt/QtCore/qjsonarray.h>
-#include <qt4/QtCore/qlist.h>
+#include <QtCore/qdebug.h>
+#include <QtCore/qjsonarray.h>
+#include <QList>
 #include "HelperFunc.h"
 #include "Category.h"
 #include "Player.h"

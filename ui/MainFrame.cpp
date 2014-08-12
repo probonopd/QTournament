@@ -11,7 +11,7 @@
 
 #include <QMessageBox>
 #include <stdexcept>
-#include <qt4/QtCore/qnamespace.h>
+#include <QtCore/qnamespace.h>
 
 using namespace QTournament;
 
