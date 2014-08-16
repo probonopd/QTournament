@@ -8,6 +8,8 @@
 #ifndef GROUPDEF_H
 #define	GROUPDEF_H
 
+#include <QList>
+
 namespace QTournament
 {
 
@@ -24,15 +26,35 @@ namespace QTournament
     
     void copy(const GroupDef& orig);
     
-    int getGroupSize();
-    int getNumGroups();
+    int getGroupSize() const;
+    int getNumGroups() const;
     
-    int getNumMatches();
+    int getNumMatches() const;
+    
+    inline bool operator== (const GroupDef& other) const
+    {
+      return ((other.size == size) && (other.numOfGroups == numOfGroups));
+    }
+    
+    inline bool operator!= (const GroupDef& other) const
+    {
+      return (!(this->operator == (other)));
+    }
     
   private:
     int size;
     int numOfGroups;
   } ;
+  
+  class GroupDefList : public QList<GroupDef>
+  {
+  public:
+    GroupDefList() : QList<GroupDef>(){};
+    
+    int getTotalGroupCount() const;
+    int getTotalMatchCount() const;
+    int getTotalPlayerCount() const;
+  };
 }
 #endif	/* GROUPDEF_H */
 

@@ -19,9 +19,10 @@ class tstKOConfig : public BasicTestClass
 {
   CPPUNIT_TEST_SUITE( tstKOConfig );
     CPPUNIT_TEST(testConstructors);
-    //CPPUNIT_TEST(testSetters);
+    CPPUNIT_TEST(testNumGroups);
     CPPUNIT_TEST(testNumMatches);
-//  CPPUNIT_TEST();
+    CPPUNIT_TEST(testToString);
+    CPPUNIT_TEST(testFromString);
 //  CPPUNIT_TEST();
 //  CPPUNIT_TEST();
 //  CPPUNIT_TEST();
@@ -35,8 +36,10 @@ class tstKOConfig : public BasicTestClass
   
 public:
   void testConstructors();
-  //void testSetters();
+  void testNumGroups();
   void testNumMatches();
+  void testToString();
+  void testFromString();
 };
 
 #endif	/* TSTGENERICDBOBJECT_H */

@@ -77,7 +77,7 @@ namespace QTournament {
 
 //----------------------------------------------------------------------------
 
-  int GroupDef::getGroupSize()
+  int GroupDef::getGroupSize() const
   {
     if (size < 0)
     {
@@ -89,7 +89,7 @@ namespace QTournament {
 
 //----------------------------------------------------------------------------
 
-  int GroupDef::getNumGroups()
+  int GroupDef::getNumGroups() const
   {
     if (size < 0)
     {
@@ -101,7 +101,7 @@ namespace QTournament {
 
 //----------------------------------------------------------------------------
 
-  int GroupDef::getNumMatches()
+  int GroupDef::getNumMatches() const
   {
     if (size < 0)
     {
@@ -128,12 +128,45 @@ namespace QTournament {
 
 //----------------------------------------------------------------------------
 
+  int GroupDefList::getTotalGroupCount() const
+  {
+    int result = 0;
+    
+    for (int i=0; i < count(); i++)
+    {
+      result += at(i).getNumGroups();
+    }
+    
+    return result;
+  }
 
 //----------------------------------------------------------------------------
 
+  int GroupDefList::getTotalMatchCount() const
+  {
+    int result = 0;
+    
+    for (int i=0; i < count(); i++)
+    {
+      result += at(i).getNumMatches();
+    }
+    
+    return result;
+  }
 
 //----------------------------------------------------------------------------
 
+  int GroupDefList::getTotalPlayerCount() const
+  {
+    int result = 0;
+    
+    for (int i=0; i < count(); i++)
+    {
+      result += at(i).getGroupSize();
+    }
+    
+    return result;
+  }
 
 //----------------------------------------------------------------------------
 

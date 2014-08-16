@@ -11,31 +11,36 @@
 #include "TournamentDataDefs.h"
 #include "GroupDef.h"
 #include <QString>
-#include <QList>
 
 namespace QTournament
 {
 
+  //typedef QList<GroupDef> GroupDefList;
+  
   class KO_Config
   {
   public:
-    KO_Config(KO_START _startLevel, bool _secondSurvives, QList<GroupDef> grps);
+    KO_Config(KO_START _startLevel, bool _secondSurvives, GroupDefList grps = GroupDefList());
     KO_Config(QString iniString);
     KO_Config(const KO_Config& orig);
     virtual ~KO_Config();
     
-    bool isValid();
+    bool isValid(int opponentCount = -1);
     int getNumMatches();
     QString toString();
     KO_START getStartLevel();
     bool getSecondSurvives();
-    int getNumGroups();
+    int getNumGroupDefs();
     GroupDef getGroupDef(int i);
+    int getNumReqGroups();
+    
+    void setStartLevel(KO_START newLvl);
+    void setSecondSurvives(bool newSurvive);
     
   private:
     KO_START startLvl;
     bool secondSurvives;
-    QList<GroupDef> grpDefs;
+    GroupDefList grpDefs;
   } ;
 }
 

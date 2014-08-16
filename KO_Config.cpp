@@ -14,7 +14,7 @@
 
 namespace QTournament {
 
-  KO_Config::KO_Config(KO_START _startLevel, bool _secondSurvives, QList<GroupDef> grps)
+  KO_Config::KO_Config(KO_START _startLevel, bool _secondSurvives, GroupDefList grps)
   {
     startLvl = _startLevel;
     secondSurvives = _secondSurvives;
@@ -46,30 +46,18 @@ namespace QTournament {
 
 //----------------------------------------------------------------------------
 
-  bool KO_Config::isValid()
+  bool KO_Config::isValid(int opponentCount)
   {
-    // calculate the number of required groups,
-    // based on the start configuration of the KO rounds
-    int reqGroups = 16;
-    if (startLvl == SEMI)
-    {
-      reqGroups = 4;
-    }
-    else if (startLvl == QUARTER)
-    {
-      reqGroups = 8;
-    }
-    
-    // if also the second-placed player of each group
-    // qualifies for the KO rounds, we only need half
-    // as many groups
-    if (secondSurvives)
-    {
-      reqGroups = reqGroups / 2;
-    }
-    
     // compare the required number with the actual number of groups
-    return reqGroups == grpDefs.count();
+    bool isValid =  (getNumReqGroups() == grpDefs.getTotalGroupCount());
+    
+    // if provided by the caller, also check the number of players
+    if (opponentCount > 0)
+    {
+      bool isValid = isValid && (opponentCount == grpDefs.getTotalPlayerCount());
+    }
+    
+    return isValid;
   }
 
 //----------------------------------------------------------------------------
@@ -81,17 +69,14 @@ namespace QTournament {
     if (startLvl == QUARTER) n += 2 + 4; // semi-finals plus four quarter finals
     if (startLvl == L16) n += 2 + 4 + 8; // ... plus eight matches of the last 16
     
-    for (int i=0; i<grpDefs.count(); i++)
-    {
-      n += grpDefs[i].getNumMatches();
-    }
+    n += grpDefs.getTotalMatchCount();
     
     return n;
   }
 
 //----------------------------------------------------------------------------
 
-  int KO_Config::getNumGroups()
+  int KO_Config::getNumGroupDefs()
   {
     return grpDefs.count();
   }
@@ -209,17 +194,57 @@ namespace QTournament {
       }
       
       grpDefs.append(GroupDef(grpSize, numGroups));
+      
+      i += 2;
+    }
+
+    // the last field (after the closing ';') must always be empty
+    if (!(fields.last().trimmed().isEmpty()))
+    {
+      throw std::invalid_argument("Initialization string is invalid (additional data at the end)!");
     }
   }
 
 //----------------------------------------------------------------------------
 
+  void KO_Config::setStartLevel(KO_START newLvl)
+  {
+    startLvl = newLvl;
+  }
 
 //----------------------------------------------------------------------------
 
+  void KO_Config::setSecondSurvives(bool newSurvive)
+  {
+    secondSurvives = newSurvive;
+  }
 
 //----------------------------------------------------------------------------
 
+  int KO_Config::getNumReqGroups()
+  {
+    // calculate the number of required groups,
+    // based on the start configuration of the KO rounds
+    int reqGroups = 16;
+    if (startLvl == SEMI)
+    {
+      reqGroups = 4;
+    }
+    else if (startLvl == QUARTER)
+    {
+      reqGroups = 8;
+    }
+    
+    // if also the second-placed player of each group
+    // qualifies for the KO rounds, we only need half
+    // as many groups
+    if (secondSurvives)
+    {
+      reqGroups = reqGroups / 2;
+    }
+    
+    return reqGroups;
+  }
 
 //----------------------------------------------------------------------------
 
