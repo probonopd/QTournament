@@ -23,6 +23,7 @@ public:
   virtual ~CategoryTableView ();
   bool isEmptyModel();
   Category getSelectedCategory();
+  bool hasCategorySelected();
   
 public slots:
   void onTournamentClosed();

@@ -28,6 +28,7 @@
 #include <QtWidgets/QSpinBox>
 #include <QtWidgets/QVBoxLayout>
 #include "CatTableView.h"
+#include "GroupConfigWidget.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -59,15 +60,15 @@ public:
     QCheckBox *cbDraw;
     QSpinBox *sbWinScore;
     QSpinBox *sbDrawScore;
+    QGroupBox *gbGroups;
+    QHBoxLayout *horizontalLayout_3;
+    GroupConfigWidget *widget;
     QGroupBox *gbSwiss;
     QVBoxLayout *verticalLayout_5;
     QLabel *label_4;
     QGroupBox *gbRandom;
     QVBoxLayout *verticalLayout_9;
     QCheckBox *cbRandPairs;
-    QGroupBox *gbGroups;
-    QHBoxLayout *horizontalLayout_3;
-    QLabel *label_3;
     QGroupBox *gbPairs;
     QHBoxLayout *horizontalLayout_5;
     QListWidget *lwUnpaired;
@@ -82,8 +83,8 @@ public:
     QPushButton *btnRandomizeAll;
     QCheckBox *cbAvoidSameTeam;
     QListWidget *lwPaired;
-    QButtonGroup *rbgSex;
     QButtonGroup *rbgMatchType;
+    QButtonGroup *rbgSex;
 
     void setupUi(QDialog *CatTabWidget)
     {
@@ -218,6 +219,21 @@ public:
 
         verticalLayout_7->addWidget(gbGeneric);
 
+
+        horizontalLayout->addLayout(verticalLayout_7);
+
+        gbGroups = new QGroupBox(groupBox);
+        gbGroups->setObjectName(QStringLiteral("gbGroups"));
+        horizontalLayout_3 = new QHBoxLayout(gbGroups);
+        horizontalLayout_3->setObjectName(QStringLiteral("horizontalLayout_3"));
+        widget = new GroupConfigWidget(gbGroups);
+        widget->setObjectName(QStringLiteral("widget"));
+
+        horizontalLayout_3->addWidget(widget);
+
+
+        horizontalLayout->addWidget(gbGroups);
+
         gbSwiss = new QGroupBox(groupBox);
         gbSwiss->setObjectName(QStringLiteral("gbSwiss"));
         verticalLayout_5 = new QVBoxLayout(gbSwiss);
@@ -228,7 +244,7 @@ public:
         verticalLayout_5->addWidget(label_4);
 
 
-        verticalLayout_7->addWidget(gbSwiss);
+        horizontalLayout->addWidget(gbSwiss);
 
         gbRandom = new QGroupBox(groupBox);
         gbRandom->setObjectName(QStringLiteral("gbRandom"));
@@ -240,22 +256,7 @@ public:
         verticalLayout_9->addWidget(cbRandPairs);
 
 
-        verticalLayout_7->addWidget(gbRandom);
-
-        gbGroups = new QGroupBox(groupBox);
-        gbGroups->setObjectName(QStringLiteral("gbGroups"));
-        horizontalLayout_3 = new QHBoxLayout(gbGroups);
-        horizontalLayout_3->setObjectName(QStringLiteral("horizontalLayout_3"));
-        label_3 = new QLabel(gbGroups);
-        label_3->setObjectName(QStringLiteral("label_3"));
-
-        horizontalLayout_3->addWidget(label_3);
-
-
-        verticalLayout_7->addWidget(gbGroups);
-
-
-        horizontalLayout->addLayout(verticalLayout_7);
+        horizontalLayout->addWidget(gbRandom);
 
 
         verticalLayout->addWidget(groupBox);
@@ -339,6 +340,7 @@ public:
         QObject::connect(cbDontCare, SIGNAL(clicked()), CatTabWidget, SLOT(onDontCareClicked()));
         QObject::connect(btnAddCategory, SIGNAL(clicked()), CatTabWidget, SLOT(onBtnAddCatClicked()));
         QObject::connect(catTableView, SIGNAL(doubleClicked(QModelIndex)), catTableView, SLOT(onCategoryDoubleClicked(QModelIndex)));
+        QObject::connect(cbMatchSystem, SIGNAL(currentIndexChanged(int)), CatTabWidget, SLOT(onMatchSystemChanged(int)));
 
         QMetaObject::connectSlotsByName(CatTabWidget);
     } // setupUi
@@ -362,13 +364,12 @@ public:
         sbWinScore->setPrefix(QApplication::translate("CatTabWidget", "Winner Score: ", 0));
         sbDrawScore->setSuffix(QString());
         sbDrawScore->setPrefix(QApplication::translate("CatTabWidget", "Draw Score: ", 0));
+        gbGroups->setTitle(QApplication::translate("CatTabWidget", "Settings for Group Matches", 0));
         gbSwiss->setTitle(QApplication::translate("CatTabWidget", "Settings for Swiss Ladder", 0));
         label_4->setText(QApplication::translate("CatTabWidget", "TextLabel", 0));
         gbRandom->setTitle(QApplication::translate("CatTabWidget", "Settings for Random Matches", 0));
         cbRandPairs->setText(QApplication::translate("CatTabWidget", "New, random partners\n"
 "for each round", 0));
-        gbGroups->setTitle(QApplication::translate("CatTabWidget", "Settings for Group Matches", 0));
-        label_3->setText(QApplication::translate("CatTabWidget", "TextLabel", 0));
         gbPairs->setTitle(QApplication::translate("CatTabWidget", "Player Pairs", 0));
         btnPair->setText(QApplication::translate("CatTabWidget", "Pair --->", 0));
         btnSplit->setText(QApplication::translate("CatTabWidget", "<--- Split", 0));

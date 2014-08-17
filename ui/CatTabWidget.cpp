@@ -9,6 +9,7 @@
 #include <QtCore/qnamespace.h>
 
 #include "CatTabWidget.h"
+#include "TournamentDataDefs.h"
 
 CatTabWidget::CatTabWidget()
 {
@@ -63,14 +64,7 @@ void CatTabWidget::onTabSelectionChanged(const QItemSelection& selected, const Q
 
 void CatTabWidget::updateControls()
 {
-  bool isActive = !(ui.catTableView->isEmptyModel());
-  if (isActive)
-  {
-    QModelIndexList indexes = ui.catTableView->selectionModel()->selection().indexes();
-    isActive = (indexes.count() > 0);
-  }
-  
-  if (!isActive)
+  if (!(ui.catTableView->hasCategorySelected()))
   {
     ui.gbGeneric->setEnabled(false);
     ui.gbGroups->hide();
@@ -79,10 +73,11 @@ void CatTabWidget::updateControls()
     return;
   }
   
+  Category selectedCat = ui.catTableView->getSelectedCategory();
+  
   //
   // if made it to this point, we can be sure to have a valid category selected
   //
-  Category selectedCat = ui.catTableView->getSelectedCategory();
   SEX sex = selectedCat.getSex();
   MATCH_TYPE mt = selectedCat.getMatchType();
 
@@ -91,6 +86,33 @@ void CatTabWidget::updateControls()
   // update the list box showing the match system
   int matchSysId = static_cast<int>(selectedCat.getMatchSystem());
   ui.cbMatchSystem->setCurrentIndex(ui.cbMatchSystem->findData(matchSysId, Qt::UserRole));
+  
+  // activate the applicable group with the special settings
+  MATCH_SYSTEM ms = selectedCat.getMatchSystem();
+  if (ms == GROUPS_WITH_KO)
+  {
+    ui.gbGroups->show();
+    ui.gbSwiss->hide();
+    ui.gbRandom->hide();
+  }
+  else if (ms == SWISS_LADDER)
+  {
+    ui.gbGroups->hide();
+    ui.gbSwiss->show();
+    ui.gbRandom->hide();
+  }
+  else if (ms == RANDOMIZE)
+  {
+    ui.gbGroups->hide();
+    ui.gbSwiss->hide();
+    ui.gbRandom->show();
+  }
+  else
+  {
+    ui.gbGroups->hide();
+    ui.gbSwiss->hide();
+    ui.gbRandom->hide();
+  }
   
   // update the match type
   ui.rbSingles->setChecked(mt == SINGLES);
@@ -520,7 +542,19 @@ void CatTabWidget::onBtnAddCatClicked()
 }
 
 //----------------------------------------------------------------------------
-    
+
+void CatTabWidget::onMatchSystemChanged(int newIndex)
+{
+  // get the new match system
+  int msId = ui.cbMatchSystem->itemData(newIndex, Qt::UserRole).toInt();
+  MATCH_SYSTEM ms = static_cast<MATCH_SYSTEM>(msId);
+  
+  if (!(ui.catTableView->hasCategorySelected())) return;
+  
+  Category selectedCat = ui.catTableView->getSelectedCategory();
+  Tournament::getCatMngr()->setMatchSystem(selectedCat, ms);
+  updateControls();
+}
 
 //----------------------------------------------------------------------------
     

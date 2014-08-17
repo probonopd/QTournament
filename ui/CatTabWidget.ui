@@ -180,56 +180,52 @@
           </layout>
          </widget>
         </item>
-        <item>
-         <widget class="QGroupBox" name="gbSwiss">
-          <property name="title">
-           <string>Settings for Swiss Ladder</string>
-          </property>
-          <layout class="QVBoxLayout" name="verticalLayout_5">
-           <item>
-            <widget class="QLabel" name="label_4">
-             <property name="text">
-              <string>TextLabel</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-        </item>
-        <item>
-         <widget class="QGroupBox" name="gbRandom">
-          <property name="title">
-           <string>Settings for Random Matches</string>
-          </property>
-          <layout class="QVBoxLayout" name="verticalLayout_9">
-           <item>
-            <widget class="QCheckBox" name="cbRandPairs">
-             <property name="text">
-              <string>New, random partners
-for each round</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-        </item>
-        <item>
-         <widget class="QGroupBox" name="gbGroups">
-          <property name="title">
-           <string>Settings for Group Matches</string>
-          </property>
-          <layout class="QHBoxLayout" name="horizontalLayout_3">
-           <item>
-            <widget class="QLabel" name="label_3">
-             <property name="text">
-              <string>TextLabel</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-        </item>
        </layout>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="gbGroups">
+        <property name="title">
+         <string>Settings for Group Matches</string>
+        </property>
+        <layout class="QHBoxLayout" name="horizontalLayout_3">
+         <item>
+          <widget class="GroupConfigWidget" name="widget" native="true"/>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="gbSwiss">
+        <property name="title">
+         <string>Settings for Swiss Ladder</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_5">
+         <item>
+          <widget class="QLabel" name="label_4">
+           <property name="text">
+            <string>TextLabel</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="gbRandom">
+        <property name="title">
+         <string>Settings for Random Matches</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_9">
+         <item>
+          <widget class="QCheckBox" name="cbRandPairs">
+           <property name="text">
+            <string>New, random partners
+for each round</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
       </item>
      </layout>
     </widget>
@@ -353,6 +349,12 @@ for each round</string>
    <slots>
     <slot>onCategoryDoubleClicked(QModelIndex)</slot>
    </slots>
+  </customwidget>
+  <customwidget>
+   <class>GroupConfigWidget</class>
+   <extends>QWidget</extends>
+   <header>GroupConfigWidget.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources/>
@@ -517,6 +519,22 @@ for each round</string>
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>cbMatchSystem</sender>
+   <signal>currentIndexChanged(int)</signal>
+   <receiver>CatTabWidget</receiver>
+   <slot>onMatchSystemChanged(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>230</x>
+     <y>73</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>431</x>
+     <y>428</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>onCbDrawChanged(bool)</slot>
@@ -528,9 +546,10 @@ for each round</string>
   <slot>onSexClicked(int)</slot>
   <slot>onDontCareClicked()</slot>
   <slot>onBtnAddCatClicked()</slot>
+  <slot>onMatchSystemChanged(int)</slot>
  </slots>
  <buttongroups>
-  <buttongroup name="rbgSex"/>
   <buttongroup name="rbgMatchType"/>
+  <buttongroup name="rbgSex"/>
  </buttongroups>
 </ui>

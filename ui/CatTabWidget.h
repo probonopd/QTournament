@@ -37,6 +37,7 @@ public slots:
   void onSexClicked(int btn);
   void onDontCareClicked();
   void onBtnAddCatClicked();
+  void onMatchSystemChanged(int newId);
 } ;
 
 #endif	/* _CATTABWIDGET_H */

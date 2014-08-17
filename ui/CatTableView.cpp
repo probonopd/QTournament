@@ -69,23 +69,46 @@ void CategoryTableView::onTournamentClosed()
 
 bool CategoryTableView::isEmptyModel()
 {
-  return (model()->rowCount() == 0);
+  if (model())
+  {
+    return (model()->rowCount() == 0);
+  }
+  return true;
+}
+
+//----------------------------------------------------------------------------
+
+bool CategoryTableView::hasCategorySelected()
+{
+  if (isEmptyModel())
+  {
+    //throw std::invalid_argument("No model/tournament loaded");
+    return false;
+  }
+  
+  QModelIndexList indexes = selectionModel()->selection().indexes();
+  if (indexes.count() == 0)
+  {
+    //throw std::invalid_argument("No category selected");
+    return false;
+  }
+
+  return true;  
 }
 
 //----------------------------------------------------------------------------
 
 Category CategoryTableView::getSelectedCategory()
 {
-  QModelIndexList indexes = selectionModel()->selection().indexes();
-  if (indexes.count() == 0)
+  if (!(hasCategorySelected()))
   {
     throw std::invalid_argument("No category selected");
   }
   
+  QModelIndexList indexes = selectionModel()->selection().indexes();
   int selectedSeqNum = indexes.at(0).row();
   
   return Tournament::getCatMngr()->getCategoryBySeqNum(selectedSeqNum);
-  
 }
 
 //----------------------------------------------------------------------------
