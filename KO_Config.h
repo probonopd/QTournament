@@ -25,14 +25,15 @@ namespace QTournament
     KO_Config(const KO_Config& orig);
     virtual ~KO_Config();
     
-    bool isValid(int opponentCount = -1);
-    int getNumMatches();
-    QString toString();
-    KO_START getStartLevel();
-    bool getSecondSurvives();
-    int getNumGroupDefs();
-    GroupDef getGroupDef(int i);
-    int getNumReqGroups();
+    bool isValid(int opponentCount = -1) const;
+    int getNumMatches() const;
+    QString toString() const;
+    KO_START getStartLevel() const;
+    bool getSecondSurvives() const;
+    int getNumGroupDefs() const;
+    GroupDef getGroupDef(int i) const;
+    int getNumReqGroups() const;
+    GroupDefList getGroupDefList() const;
     
     void setStartLevel(KO_START newLvl);
     void setSecondSurvives(bool newSurvive);

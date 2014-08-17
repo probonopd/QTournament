@@ -14,6 +14,7 @@
 #include "Player.h"
 #include "PlayerPair.h"
 #include "TournamentErrorCodes.h"
+#include "KO_Config.h"
 
 namespace QTournament
 {
@@ -41,6 +42,7 @@ namespace QTournament
     QVariant getParameter(CAT_PARAMETER) const;
     int getParameter_int(CAT_PARAMETER) const;
     bool getParameter_bool(CAT_PARAMETER) const;
+    QString getParameter_string(CAT_PARAMETER) const;
     bool setParameter(CAT_PARAMETER p, const QVariant& v);
     QList<PlayerPair> getPlayerPairs();
     QList<Player> getAllPlayersInCategory();

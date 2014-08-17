@@ -6,6 +6,7 @@
  */
 
 #include "GroupDef.h"
+#include "TournamentDataDefs.h"
 
 #include <stdexcept>
 
@@ -62,6 +63,7 @@ namespace QTournament {
   bool GroupDef::setGroupSize(int newGroupSize)
   {
     if (newGroupSize < 3) return false;
+    if (newGroupSize > MAX_GROUP_SIZE) return false;
     size = newGroupSize;
     return true;
   }
@@ -71,6 +73,7 @@ namespace QTournament {
   bool GroupDef::setNumGroups(int newNumGroups)
   {
     if (newNumGroups < 0) return false;
+    if (newNumGroups > MAX_GROUP_COUNT) return false;
     numOfGroups = newNumGroups;
     return true;
   }
@@ -162,7 +165,7 @@ namespace QTournament {
     
     for (int i=0; i < count(); i++)
     {
-      result += at(i).getGroupSize();
+      result += at(i).getGroupSize() * at(i).getNumGroups();
     }
     
     return result;

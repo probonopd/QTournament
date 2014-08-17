@@ -62,7 +62,7 @@ public:
     QSpinBox *sbDrawScore;
     QGroupBox *gbGroups;
     QHBoxLayout *horizontalLayout_3;
-    GroupConfigWidget *widget;
+    GroupConfigWidget *grpCfgWidget;
     QGroupBox *gbSwiss;
     QVBoxLayout *verticalLayout_5;
     QLabel *label_4;
@@ -83,14 +83,14 @@ public:
     QPushButton *btnRandomizeAll;
     QCheckBox *cbAvoidSameTeam;
     QListWidget *lwPaired;
-    QButtonGroup *rbgMatchType;
     QButtonGroup *rbgSex;
+    QButtonGroup *rbgMatchType;
 
     void setupUi(QDialog *CatTabWidget)
     {
         if (CatTabWidget->objectName().isEmpty())
             CatTabWidget->setObjectName(QStringLiteral("CatTabWidget"));
-        CatTabWidget->resize(864, 858);
+        CatTabWidget->resize(1009, 858);
         verticalLayout = new QVBoxLayout(CatTabWidget);
         verticalLayout->setObjectName(QStringLiteral("verticalLayout"));
         groupBox = new QGroupBox(CatTabWidget);
@@ -226,10 +226,10 @@ public:
         gbGroups->setObjectName(QStringLiteral("gbGroups"));
         horizontalLayout_3 = new QHBoxLayout(gbGroups);
         horizontalLayout_3->setObjectName(QStringLiteral("horizontalLayout_3"));
-        widget = new GroupConfigWidget(gbGroups);
-        widget->setObjectName(QStringLiteral("widget"));
+        grpCfgWidget = new GroupConfigWidget(gbGroups);
+        grpCfgWidget->setObjectName(QStringLiteral("grpCfgWidget"));
 
-        horizontalLayout_3->addWidget(widget);
+        horizontalLayout_3->addWidget(grpCfgWidget);
 
 
         horizontalLayout->addWidget(gbGroups);

@@ -25,7 +25,9 @@ namespace QTournament
 #define GENERIC_SEQNUM_FIELD_NAME QString("SequenceNumber")
 
 //----------------------------------------------------------------------------
-    
+
+#define MAX_GROUP_SIZE 50
+#define MAX_GROUP_COUNT 50
   
 //----------------------------------------------------------------------------
     
@@ -92,7 +94,7 @@ namespace QTournament
 #define CAT_ACCEPT_DRAW QString("AcceptDraw")
 #define CAT_WIN_SCORE QString("WinScore")
 #define CAT_DRAW_SCORE QString("DrawScore")
-//#define CAT_ QString("")
+#define CAT_GROUP_CONFIG QString("GroupConfig")
 //#define CAT_ QString("")
 //#define CAT_ QString("")
 //#define CAT_ QString("")
@@ -172,7 +174,8 @@ namespace QTournament
   enum CAT_PARAMETER {
     ALLOW_DRAW,
     WIN_SCORE,
-    DRAW_SCORE
+    DRAW_SCORE,
+    GROUP_CONFIG
     
   };
   

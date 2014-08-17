@@ -74,7 +74,7 @@ void TournamentDB::populateTables()
     cols << seqNumFieldDef;
     cols << CAT_WIN_SCORE + " INTEGER";
     cols << CAT_DRAW_SCORE + " INTEGER";
-    //cols << CAT_ + " ";
+    cols << CAT_GROUP_CONFIG + " VARCHAR(50)";
     //cols << CAT_ + " ";
     //cols << CAT_ + " ";
     //cols << CAT_ + " ";

@@ -36,33 +36,33 @@ public:
     QHBoxLayout *horizontalLayout;
     QVBoxLayout *verticalLayout_3;
     QLabel *label;
-    QComboBox *comboBox;
-    QCheckBox *checkBox;
+    QComboBox *cbKOStart;
+    QCheckBox *cbSecondSurvives;
     QFrame *line;
     QHBoxLayout *horizontalLayout_7;
     QLabel *label_2;
     QLabel *label_10;
     QHBoxLayout *horizontalLayout_2;
-    QSpinBox *spinBox;
-    QSpinBox *spinBox_2;
+    QSpinBox *spGroupCount1;
+    QSpinBox *spGroupSize1;
     QHBoxLayout *horizontalLayout_4;
-    QSpinBox *spinBox_4;
-    QSpinBox *spinBox_3;
+    QSpinBox *spGroupCount2;
+    QSpinBox *spGroupSize2;
     QHBoxLayout *horizontalLayout_5;
-    QSpinBox *spinBox_6;
-    QSpinBox *spinBox_5;
+    QSpinBox *spGroupCount3;
+    QSpinBox *spGroupSize3;
     QGridLayout *gridLayout;
-    QLabel *label_5;
+    QLabel *laTotalGroups;
     QLabel *label_7;
-    QLabel *label_4;
+    QLabel *laReqGroupCount;
     QLabel *label_3;
     QLabel *label_6;
-    QLabel *label_8;
+    QLabel *laTotalPlayers;
     QLabel *label_9;
-    QLabel *label_11;
+    QLabel *laReqPlayerCount;
     QHBoxLayout *horizontalLayout_6;
-    QPushButton *pushButton;
-    QLabel *label_12;
+    QPushButton *btnAutoConf;
+    QLabel *laValidity;
     QSpacerItem *verticalSpacer;
 
     void setupUi(QWidget *GroupConfigWidget)
@@ -83,17 +83,17 @@ public:
 
         verticalLayout_3->addWidget(label);
 
-        comboBox = new QComboBox(GroupConfigWidget);
-        comboBox->setObjectName(QStringLiteral("comboBox"));
-        comboBox->setEditable(false);
-        comboBox->setFrame(false);
+        cbKOStart = new QComboBox(GroupConfigWidget);
+        cbKOStart->setObjectName(QStringLiteral("cbKOStart"));
+        cbKOStart->setEditable(false);
+        cbKOStart->setFrame(false);
 
-        verticalLayout_3->addWidget(comboBox);
+        verticalLayout_3->addWidget(cbKOStart);
 
-        checkBox = new QCheckBox(GroupConfigWidget);
-        checkBox->setObjectName(QStringLiteral("checkBox"));
+        cbSecondSurvives = new QCheckBox(GroupConfigWidget);
+        cbSecondSurvives->setObjectName(QStringLiteral("cbSecondSurvives"));
 
-        verticalLayout_3->addWidget(checkBox, 0, Qt::AlignVCenter);
+        verticalLayout_3->addWidget(cbSecondSurvives, 0, Qt::AlignVCenter);
 
 
         horizontalLayout->addLayout(verticalLayout_3);
@@ -127,65 +127,65 @@ public:
 
         horizontalLayout_2 = new QHBoxLayout();
         horizontalLayout_2->setObjectName(QStringLiteral("horizontalLayout_2"));
-        spinBox = new QSpinBox(GroupConfigWidget);
-        spinBox->setObjectName(QStringLiteral("spinBox"));
+        spGroupCount1 = new QSpinBox(GroupConfigWidget);
+        spGroupCount1->setObjectName(QStringLiteral("spGroupCount1"));
 
-        horizontalLayout_2->addWidget(spinBox);
+        horizontalLayout_2->addWidget(spGroupCount1);
 
-        spinBox_2 = new QSpinBox(GroupConfigWidget);
-        spinBox_2->setObjectName(QStringLiteral("spinBox_2"));
+        spGroupSize1 = new QSpinBox(GroupConfigWidget);
+        spGroupSize1->setObjectName(QStringLiteral("spGroupSize1"));
 
-        horizontalLayout_2->addWidget(spinBox_2);
+        horizontalLayout_2->addWidget(spGroupSize1);
 
 
         verticalLayout->addLayout(horizontalLayout_2);
 
         horizontalLayout_4 = new QHBoxLayout();
         horizontalLayout_4->setObjectName(QStringLiteral("horizontalLayout_4"));
-        spinBox_4 = new QSpinBox(GroupConfigWidget);
-        spinBox_4->setObjectName(QStringLiteral("spinBox_4"));
+        spGroupCount2 = new QSpinBox(GroupConfigWidget);
+        spGroupCount2->setObjectName(QStringLiteral("spGroupCount2"));
 
-        horizontalLayout_4->addWidget(spinBox_4);
+        horizontalLayout_4->addWidget(spGroupCount2);
 
-        spinBox_3 = new QSpinBox(GroupConfigWidget);
-        spinBox_3->setObjectName(QStringLiteral("spinBox_3"));
+        spGroupSize2 = new QSpinBox(GroupConfigWidget);
+        spGroupSize2->setObjectName(QStringLiteral("spGroupSize2"));
 
-        horizontalLayout_4->addWidget(spinBox_3);
+        horizontalLayout_4->addWidget(spGroupSize2);
 
 
         verticalLayout->addLayout(horizontalLayout_4);
 
         horizontalLayout_5 = new QHBoxLayout();
         horizontalLayout_5->setObjectName(QStringLiteral("horizontalLayout_5"));
-        spinBox_6 = new QSpinBox(GroupConfigWidget);
-        spinBox_6->setObjectName(QStringLiteral("spinBox_6"));
+        spGroupCount3 = new QSpinBox(GroupConfigWidget);
+        spGroupCount3->setObjectName(QStringLiteral("spGroupCount3"));
 
-        horizontalLayout_5->addWidget(spinBox_6);
+        horizontalLayout_5->addWidget(spGroupCount3);
 
-        spinBox_5 = new QSpinBox(GroupConfigWidget);
-        spinBox_5->setObjectName(QStringLiteral("spinBox_5"));
+        spGroupSize3 = new QSpinBox(GroupConfigWidget);
+        spGroupSize3->setObjectName(QStringLiteral("spGroupSize3"));
 
-        horizontalLayout_5->addWidget(spinBox_5);
+        horizontalLayout_5->addWidget(spGroupSize3);
 
 
         verticalLayout->addLayout(horizontalLayout_5);
 
         gridLayout = new QGridLayout();
         gridLayout->setObjectName(QStringLiteral("gridLayout"));
-        label_5 = new QLabel(GroupConfigWidget);
-        label_5->setObjectName(QStringLiteral("label_5"));
+        laTotalGroups = new QLabel(GroupConfigWidget);
+        laTotalGroups->setObjectName(QStringLiteral("laTotalGroups"));
 
-        gridLayout->addWidget(label_5, 0, 1, 1, 1);
+        gridLayout->addWidget(laTotalGroups, 0, 1, 1, 1);
 
         label_7 = new QLabel(GroupConfigWidget);
         label_7->setObjectName(QStringLiteral("label_7"));
 
         gridLayout->addWidget(label_7, 0, 2, 1, 1);
 
-        label_4 = new QLabel(GroupConfigWidget);
-        label_4->setObjectName(QStringLiteral("label_4"));
+        laReqGroupCount = new QLabel(GroupConfigWidget);
+        laReqGroupCount->setObjectName(QStringLiteral("laReqGroupCount"));
 
-        gridLayout->addWidget(label_4, 3, 1, 1, 1);
+        gridLayout->addWidget(laReqGroupCount, 3, 1, 1, 1);
 
         label_3 = new QLabel(GroupConfigWidget);
         label_3->setObjectName(QStringLiteral("label_3"));
@@ -197,39 +197,39 @@ public:
 
         gridLayout->addWidget(label_6, 0, 0, 1, 1);
 
-        label_8 = new QLabel(GroupConfigWidget);
-        label_8->setObjectName(QStringLiteral("label_8"));
+        laTotalPlayers = new QLabel(GroupConfigWidget);
+        laTotalPlayers->setObjectName(QStringLiteral("laTotalPlayers"));
 
-        gridLayout->addWidget(label_8, 0, 3, 1, 1);
+        gridLayout->addWidget(laTotalPlayers, 0, 3, 1, 1);
 
         label_9 = new QLabel(GroupConfigWidget);
         label_9->setObjectName(QStringLiteral("label_9"));
 
         gridLayout->addWidget(label_9, 3, 2, 1, 1);
 
-        label_11 = new QLabel(GroupConfigWidget);
-        label_11->setObjectName(QStringLiteral("label_11"));
+        laReqPlayerCount = new QLabel(GroupConfigWidget);
+        laReqPlayerCount->setObjectName(QStringLiteral("laReqPlayerCount"));
 
-        gridLayout->addWidget(label_11, 3, 3, 1, 1);
+        gridLayout->addWidget(laReqPlayerCount, 3, 3, 1, 1);
 
 
         verticalLayout->addLayout(gridLayout);
 
         horizontalLayout_6 = new QHBoxLayout();
         horizontalLayout_6->setObjectName(QStringLiteral("horizontalLayout_6"));
-        pushButton = new QPushButton(GroupConfigWidget);
-        pushButton->setObjectName(QStringLiteral("pushButton"));
+        btnAutoConf = new QPushButton(GroupConfigWidget);
+        btnAutoConf->setObjectName(QStringLiteral("btnAutoConf"));
 
-        horizontalLayout_6->addWidget(pushButton);
+        horizontalLayout_6->addWidget(btnAutoConf);
 
 
         verticalLayout->addLayout(horizontalLayout_6);
 
-        label_12 = new QLabel(GroupConfigWidget);
-        label_12->setObjectName(QStringLiteral("label_12"));
-        label_12->setAlignment(Qt::AlignCenter);
+        laValidity = new QLabel(GroupConfigWidget);
+        laValidity->setObjectName(QStringLiteral("laValidity"));
+        laValidity->setAlignment(Qt::AlignCenter);
 
-        verticalLayout->addWidget(label_12);
+        verticalLayout->addWidget(laValidity);
 
         verticalSpacer = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
 
@@ -240,8 +240,16 @@ public:
 
 
         retranslateUi(GroupConfigWidget);
+        QObject::connect(cbKOStart, SIGNAL(currentIndexChanged(int)), GroupConfigWidget, SLOT(onStartLevelChanged(int)));
+        QObject::connect(cbSecondSurvives, SIGNAL(clicked()), GroupConfigWidget, SLOT(onSecondSurvivesChanged()));
+        QObject::connect(spGroupCount1, SIGNAL(valueChanged(int)), GroupConfigWidget, SLOT(onSpinBoxGroupCount1Changed(int)));
+        QObject::connect(spGroupCount2, SIGNAL(valueChanged(int)), GroupConfigWidget, SLOT(onSpinBoxGroupCount2Changed(int)));
+        QObject::connect(spGroupCount3, SIGNAL(valueChanged(int)), GroupConfigWidget, SLOT(onSpinBoxGroupCount3Changed(int)));
+        QObject::connect(spGroupSize1, SIGNAL(valueChanged(int)), GroupConfigWidget, SLOT(onSpinBoxGroupSize1Changed(int)));
+        QObject::connect(spGroupSize3, SIGNAL(valueChanged(int)), GroupConfigWidget, SLOT(onSpinBoxGroupSize3Changed(int)));
+        QObject::connect(spGroupSize2, SIGNAL(valueChanged(int)), GroupConfigWidget, SLOT(onSpinBoxGroupSize2Changed(int)));
 
-        comboBox->setCurrentIndex(1);
+        cbKOStart->setCurrentIndex(1);
 
 
         QMetaObject::connectSlotsByName(GroupConfigWidget);
@@ -251,25 +259,25 @@ public:
     {
         GroupConfigWidget->setWindowTitle(QApplication::translate("GroupConfigWidget", "GroupConfigWidget", 0));
         label->setText(QApplication::translate("GroupConfigWidget", "KO rounds start with", 0));
-        comboBox->clear();
-        comboBox->insertItems(0, QStringList()
+        cbKOStart->clear();
+        cbKOStart->insertItems(0, QStringList()
          << QApplication::translate("GroupConfigWidget", "Semi Finals", 0)
          << QApplication::translate("GroupConfigWidget", "Quarter Finals", 0)
          << QApplication::translate("GroupConfigWidget", "Round of 16", 0)
         );
-        checkBox->setText(QApplication::translate("GroupConfigWidget", "Second in group qualifies", 0));
+        cbSecondSurvives->setText(QApplication::translate("GroupConfigWidget", "Second in group qualifies", 0));
         label_2->setText(QApplication::translate("GroupConfigWidget", "Groups", 0));
         label_10->setText(QApplication::translate("GroupConfigWidget", "Group size", 0));
-        label_5->setText(QApplication::translate("GroupConfigWidget", "0", 0));
+        laTotalGroups->setText(QApplication::translate("GroupConfigWidget", "0", 0));
         label_7->setText(QApplication::translate("GroupConfigWidget", "Sum:", 0));
-        label_4->setText(QApplication::translate("GroupConfigWidget", "0", 0));
+        laReqGroupCount->setText(QApplication::translate("GroupConfigWidget", "0", 0));
         label_3->setText(QApplication::translate("GroupConfigWidget", "Required:", 0));
         label_6->setText(QApplication::translate("GroupConfigWidget", "Sum:", 0));
-        label_8->setText(QApplication::translate("GroupConfigWidget", "0", 0));
+        laTotalPlayers->setText(QApplication::translate("GroupConfigWidget", "0", 0));
         label_9->setText(QApplication::translate("GroupConfigWidget", "Required:", 0));
-        label_11->setText(QApplication::translate("GroupConfigWidget", "0", 0));
-        pushButton->setText(QApplication::translate("GroupConfigWidget", "Auto Group Config", 0));
-        label_12->setText(QApplication::translate("GroupConfigWidget", "TextLabel", 0));
+        laReqPlayerCount->setText(QApplication::translate("GroupConfigWidget", "0", 0));
+        btnAutoConf->setText(QApplication::translate("GroupConfigWidget", "Auto Group Config", 0));
+        laValidity->setText(QApplication::translate("GroupConfigWidget", "TextLabel", 0));
     } // retranslateUi
 
 };

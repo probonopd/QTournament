@@ -211,10 +211,10 @@ namespace QTournament
       
     case DRAW_SCORE:
       return row[CAT_DRAW_SCORE];
-    /*
-    case :
-      return row[];
-      
+    
+    case GROUP_CONFIG:
+      return row[CAT_GROUP_CONFIG];
+    /*  
     case :
       return row[];
       
@@ -248,6 +248,13 @@ namespace QTournament
   bool Category::getParameter_bool(CAT_PARAMETER p) const
   {
     return getParameter(p).toBool();
+  }
+  
+//----------------------------------------------------------------------------
+
+  QString Category::getParameter_string(CAT_PARAMETER p) const
+  {
+    return getParameter(p).toString();
   }
 
 //----------------------------------------------------------------------------

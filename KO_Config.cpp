@@ -46,7 +46,7 @@ namespace QTournament {
 
 //----------------------------------------------------------------------------
 
-  bool KO_Config::isValid(int opponentCount)
+  bool KO_Config::isValid(int opponentCount) const
   {
     // compare the required number with the actual number of groups
     bool isValid =  (getNumReqGroups() == grpDefs.getTotalGroupCount());
@@ -62,7 +62,7 @@ namespace QTournament {
 
 //----------------------------------------------------------------------------
 
-  int KO_Config::getNumMatches()
+  int KO_Config::getNumMatches() const
   {
     int n = 2;  // Final plus match for third place
     if (startLvl == SEMI) n += 2;   // two semi-finals
@@ -76,21 +76,21 @@ namespace QTournament {
 
 //----------------------------------------------------------------------------
 
-  int KO_Config::getNumGroupDefs()
+  int KO_Config::getNumGroupDefs() const
   {
     return grpDefs.count();
   }
 
 //----------------------------------------------------------------------------
 
-  bool KO_Config::getSecondSurvives()
+  bool KO_Config::getSecondSurvives() const
   {
     return secondSurvives;
   }
 
 //----------------------------------------------------------------------------
 
-  GroupDef KO_Config::getGroupDef(int i)
+  GroupDef KO_Config::getGroupDef(int i) const
   {
     if ((i < 0) || (i >= grpDefs.count()))
     {
@@ -102,14 +102,14 @@ namespace QTournament {
 
 //----------------------------------------------------------------------------
 
-  KO_START KO_Config::getStartLevel()
+  KO_START KO_Config::getStartLevel() const
   {
     return startLvl;
   }
 
 //----------------------------------------------------------------------------
 
-  QString KO_Config::toString()
+  QString KO_Config::toString() const
   {
     QString result = "L16";
     
@@ -221,7 +221,7 @@ namespace QTournament {
 
 //----------------------------------------------------------------------------
 
-  int KO_Config::getNumReqGroups()
+  int KO_Config::getNumReqGroups() const
   {
     // calculate the number of required groups,
     // based on the start configuration of the KO rounds
@@ -248,6 +248,10 @@ namespace QTournament {
 
 //----------------------------------------------------------------------------
 
+  GroupDefList KO_Config::getGroupDefList() const
+  {
+    return grpDefs;
+  }
 
 //----------------------------------------------------------------------------
 

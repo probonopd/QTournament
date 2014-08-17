@@ -5,7 +5,7 @@
  * Created on March 24, 2014, 7:13 PM
  */
 
-#include <QtWidgets/qmessagebox.h>
+#include <QMessageBox>
 #include <QtCore/qnamespace.h>
 
 #include "CatTabWidget.h"
@@ -21,6 +21,9 @@ CatTabWidget::CatTabWidget()
   // connect the selection change signal of the two list widgets
   connect(ui.lwUnpaired, &QListWidget::itemSelectionChanged, this, &CatTabWidget::onUnpairedPlayersSelectionChanged);
   connect(ui.lwPaired, &QListWidget::itemSelectionChanged, this, &CatTabWidget::onPairedPlayersSelectionChanged);
+  
+  // connect to the change signal of the group config widget
+  connect(ui.grpCfgWidget, &GroupConfigWidget::groupConfigChanged, this, &CatTabWidget::onGroupConfigChanged);
 
   // hide unused settings groups
   ui.gbGroups->hide();
@@ -46,7 +49,7 @@ void CatTabWidget::onCatModelChanged()
   // react on selection changes in the category table
   connect(ui.catTableView->selectionModel(),
 	  SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
-	  SLOT(onTabSelectionChanged(const QItemSelection&, const QItemSelection&)));
+	  SLOT(onCatSelectionChanged(const QItemSelection&, const QItemSelection&)));
 
   updateControls();
   updatePairs();
@@ -54,7 +57,7 @@ void CatTabWidget::onCatModelChanged()
 
 //----------------------------------------------------------------------------
 
-void CatTabWidget::onTabSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected)
+void CatTabWidget::onCatSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected)
 {
   updatePairs();
   updateControls();
@@ -94,6 +97,11 @@ void CatTabWidget::updateControls()
     ui.gbGroups->show();
     ui.gbSwiss->hide();
     ui.gbRandom->hide();
+    
+    // read the current group settings from the database and
+    // copy them to the widget
+    KO_Config cfg = KO_Config(selectedCat.getParameter_string(GROUP_CONFIG));
+    ui.grpCfgWidget->applyConfig(cfg);
   }
   else if (ms == SWISS_LADDER)
   {
@@ -555,6 +563,34 @@ void CatTabWidget::onMatchSystemChanged(int newIndex)
   Tournament::getCatMngr()->setMatchSystem(selectedCat, ms);
   updateControls();
 }
+
+//----------------------------------------------------------------------------
+
+void CatTabWidget::onGroupConfigChanged(const KO_Config& newCfg)
+{
+  if (!(ui.catTableView->hasCategorySelected())) return;
+  
+  Category selectedCat = ui.catTableView->getSelectedCategory();
+  selectedCat.setParameter(GROUP_CONFIG, newCfg.toString());
+}
+
+//----------------------------------------------------------------------------
+    
+
+//----------------------------------------------------------------------------
+    
+
+//----------------------------------------------------------------------------
+    
+
+//----------------------------------------------------------------------------
+    
+
+//----------------------------------------------------------------------------
+    
+
+//----------------------------------------------------------------------------
+    
 
 //----------------------------------------------------------------------------
     

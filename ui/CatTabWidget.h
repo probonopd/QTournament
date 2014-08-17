@@ -25,7 +25,7 @@ private:
 
 public slots:
   void onCatModelChanged();
-  void onTabSelectionChanged(const QItemSelection &, const QItemSelection &);
+  void onCatSelectionChanged(const QItemSelection &, const QItemSelection &);
   void onCbDrawChanged(bool newState);
   void onDrawScoreChanged(int newVal);
   void onWinScoreChanged(int newVal);
@@ -38,6 +38,7 @@ public slots:
   void onDontCareClicked();
   void onBtnAddCatClicked();
   void onMatchSystemChanged(int newId);
+  void onGroupConfigChanged(const KO_Config& newCfg);
 } ;
 
 #endif	/* _CATTABWIDGET_H */

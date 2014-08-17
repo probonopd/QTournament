@@ -16,6 +16,7 @@
 #include "Category.h"
 #include "Player.h"
 #include "Tournament.h"
+#include "KO_Config.h"
 
 using namespace dbOverlay;
 
@@ -58,6 +59,7 @@ namespace QTournament
     qvl << GENERIC_STATE_FIELD_NAME << static_cast<int>(STAT_CAT_CONFIG);
     qvl << CAT_WIN_SCORE << 2;
     qvl << CAT_DRAW_SCORE << 1;
+    qvl << CAT_GROUP_CONFIG << KO_Config(QUARTER, false).toString();
     
     emit beginCreateCategory();
     catTab.insertRow(qvl);
@@ -429,6 +431,11 @@ namespace QTournament
     if (p == WIN_SCORE)
     {
       return setCatParam_Score(c, v.toInt(), false);
+    }
+    if (p == GROUP_CONFIG)
+    {
+      c.row.update(CAT_GROUP_CONFIG, v.toString());
+      return true;
     }
     
     return false;

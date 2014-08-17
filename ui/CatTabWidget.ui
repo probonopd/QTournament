@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>864</width>
+    <width>1009</width>
     <height>858</height>
    </rect>
   </property>
@@ -189,7 +189,7 @@
         </property>
         <layout class="QHBoxLayout" name="horizontalLayout_3">
          <item>
-          <widget class="GroupConfigWidget" name="widget" native="true"/>
+          <widget class="GroupConfigWidget" name="grpCfgWidget" native="true"/>
          </item>
         </layout>
        </widget>
@@ -549,7 +549,7 @@ for each round</string>
   <slot>onMatchSystemChanged(int)</slot>
  </slots>
  <buttongroups>
-  <buttongroup name="rbgMatchType"/>
   <buttongroup name="rbgSex"/>
+  <buttongroup name="rbgMatchType"/>
  </buttongroups>
 </ui>

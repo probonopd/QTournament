@@ -28,7 +28,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QComboBox" name="comboBox">
+          <widget class="QComboBox" name="cbKOStart">
            <property name="editable">
             <bool>false</bool>
            </property>
@@ -56,7 +56,7 @@
           </widget>
          </item>
          <item alignment="Qt::AlignVCenter">
-          <widget class="QCheckBox" name="checkBox">
+          <widget class="QCheckBox" name="cbSecondSurvives">
            <property name="text">
             <string>Second in group qualifies</string>
            </property>
@@ -100,37 +100,37 @@
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_2">
        <item>
-        <widget class="QSpinBox" name="spinBox"/>
+        <widget class="QSpinBox" name="spGroupCount1"/>
        </item>
        <item>
-        <widget class="QSpinBox" name="spinBox_2"/>
+        <widget class="QSpinBox" name="spGroupSize1"/>
        </item>
       </layout>
      </item>
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_4">
        <item>
-        <widget class="QSpinBox" name="spinBox_4"/>
+        <widget class="QSpinBox" name="spGroupCount2"/>
        </item>
        <item>
-        <widget class="QSpinBox" name="spinBox_3"/>
+        <widget class="QSpinBox" name="spGroupSize2"/>
        </item>
       </layout>
      </item>
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_5">
        <item>
-        <widget class="QSpinBox" name="spinBox_6"/>
+        <widget class="QSpinBox" name="spGroupCount3"/>
        </item>
        <item>
-        <widget class="QSpinBox" name="spinBox_5"/>
+        <widget class="QSpinBox" name="spGroupSize3"/>
        </item>
       </layout>
      </item>
      <item>
       <layout class="QGridLayout" name="gridLayout">
        <item row="0" column="1">
-        <widget class="QLabel" name="label_5">
+        <widget class="QLabel" name="laTotalGroups">
          <property name="text">
           <string>0</string>
          </property>
@@ -144,7 +144,7 @@
         </widget>
        </item>
        <item row="3" column="1">
-        <widget class="QLabel" name="label_4">
+        <widget class="QLabel" name="laReqGroupCount">
          <property name="text">
           <string>0</string>
          </property>
@@ -165,7 +165,7 @@
         </widget>
        </item>
        <item row="0" column="3">
-        <widget class="QLabel" name="label_8">
+        <widget class="QLabel" name="laTotalPlayers">
          <property name="text">
           <string>0</string>
          </property>
@@ -179,7 +179,7 @@
         </widget>
        </item>
        <item row="3" column="3">
-        <widget class="QLabel" name="label_11">
+        <widget class="QLabel" name="laReqPlayerCount">
          <property name="text">
           <string>0</string>
          </property>
@@ -190,7 +190,7 @@
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_6">
        <item>
-        <widget class="QPushButton" name="pushButton">
+        <widget class="QPushButton" name="btnAutoConf">
          <property name="text">
           <string>Auto Group Config</string>
          </property>
@@ -199,7 +199,7 @@
       </layout>
      </item>
      <item>
-      <widget class="QLabel" name="label_12">
+      <widget class="QLabel" name="laValidity">
        <property name="text">
         <string>TextLabel</string>
        </property>
@@ -226,5 +226,144 @@
   </layout>
  </widget>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>cbKOStart</sender>
+   <signal>currentIndexChanged(int)</signal>
+   <receiver>GroupConfigWidget</receiver>
+   <slot>onStartLevelChanged(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>127</x>
+     <y>48</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>127</x>
+     <y>215</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cbSecondSurvives</sender>
+   <signal>clicked()</signal>
+   <receiver>GroupConfigWidget</receiver>
+   <slot>onSecondSurvivesChanged()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>127</x>
+     <y>78</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>127</x>
+     <y>215</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>spGroupCount1</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>GroupConfigWidget</receiver>
+   <slot>onSpinBoxGroupCount1Changed(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>67</x>
+     <y>146</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>127</x>
+     <y>215</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>spGroupCount2</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>GroupConfigWidget</receiver>
+   <slot>onSpinBoxGroupCount2Changed(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>67</x>
+     <y>181</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>127</x>
+     <y>215</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>spGroupCount3</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>GroupConfigWidget</receiver>
+   <slot>onSpinBoxGroupCount3Changed(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>67</x>
+     <y>216</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>127</x>
+     <y>215</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>spGroupSize1</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>GroupConfigWidget</receiver>
+   <slot>onSpinBoxGroupSize1Changed(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>187</x>
+     <y>146</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>127</x>
+     <y>215</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>spGroupSize3</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>GroupConfigWidget</receiver>
+   <slot>onSpinBoxGroupSize3Changed(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>187</x>
+     <y>216</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>127</x>
+     <y>215</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>spGroupSize2</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>GroupConfigWidget</receiver>
+   <slot>onSpinBoxGroupSize2Changed(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>187</x>
+     <y>181</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>127</x>
+     <y>215</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>onStartLevelChanged(int)</slot>
+  <slot>onSecondSurvivesChanged()</slot>
+  <slot>onSpinBoxGroupCount1Changed(int)</slot>
+  <slot>onSpinBoxGroupCount2Changed(int)</slot>
+  <slot>onSpinBoxGroupCount3Changed(int)</slot>
+  <slot>onSpinBoxGroupSize1Changed(int)</slot>
+  <slot>onSpinBoxGroupSize2Changed(int)</slot>
+  <slot>onSpinBoxGroupSize3Changed(int)</slot>
+ </slots>
 </ui>
