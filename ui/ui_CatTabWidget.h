@@ -72,7 +72,7 @@ public:
     QGroupBox *gbPairs;
     QHBoxLayout *horizontalLayout_5;
     QListWidget *lwUnpaired;
-    QGroupBox *verticalGroupBox_2;
+    QGroupBox *gbPairButtons;
     QVBoxLayout *verticalLayout_8;
     QPushButton *btnPair;
     QPushButton *btnSplit;
@@ -111,6 +111,7 @@ public:
 
         catTableView = new CategoryTableView(groupBox);
         catTableView->setObjectName(QStringLiteral("catTableView"));
+        catTableView->setSelectionMode(QAbstractItemView::SingleSelection);
 
         verticalLayout_6->addWidget(catTableView);
 
@@ -272,16 +273,16 @@ public:
 
         horizontalLayout_5->addWidget(lwUnpaired);
 
-        verticalGroupBox_2 = new QGroupBox(gbPairs);
-        verticalGroupBox_2->setObjectName(QStringLiteral("verticalGroupBox_2"));
-        verticalLayout_8 = new QVBoxLayout(verticalGroupBox_2);
+        gbPairButtons = new QGroupBox(gbPairs);
+        gbPairButtons->setObjectName(QStringLiteral("gbPairButtons"));
+        verticalLayout_8 = new QVBoxLayout(gbPairButtons);
         verticalLayout_8->setObjectName(QStringLiteral("verticalLayout_8"));
-        btnPair = new QPushButton(verticalGroupBox_2);
+        btnPair = new QPushButton(gbPairButtons);
         btnPair->setObjectName(QStringLiteral("btnPair"));
 
         verticalLayout_8->addWidget(btnPair);
 
-        btnSplit = new QPushButton(verticalGroupBox_2);
+        btnSplit = new QPushButton(gbPairButtons);
         btnSplit->setObjectName(QStringLiteral("btnSplit"));
 
         verticalLayout_8->addWidget(btnSplit);
@@ -290,7 +291,7 @@ public:
 
         verticalLayout_8->addItem(verticalSpacer);
 
-        line = new QFrame(verticalGroupBox_2);
+        line = new QFrame(gbPairButtons);
         line->setObjectName(QStringLiteral("line"));
         line->setFrameShape(QFrame::HLine);
         line->setFrameShadow(QFrame::Sunken);
@@ -301,23 +302,23 @@ public:
 
         verticalLayout_8->addItem(verticalSpacer_2);
 
-        btnRandomizeRemaining = new QPushButton(verticalGroupBox_2);
+        btnRandomizeRemaining = new QPushButton(gbPairButtons);
         btnRandomizeRemaining->setObjectName(QStringLiteral("btnRandomizeRemaining"));
 
         verticalLayout_8->addWidget(btnRandomizeRemaining);
 
-        btnRandomizeAll = new QPushButton(verticalGroupBox_2);
+        btnRandomizeAll = new QPushButton(gbPairButtons);
         btnRandomizeAll->setObjectName(QStringLiteral("btnRandomizeAll"));
 
         verticalLayout_8->addWidget(btnRandomizeAll);
 
-        cbAvoidSameTeam = new QCheckBox(verticalGroupBox_2);
+        cbAvoidSameTeam = new QCheckBox(gbPairButtons);
         cbAvoidSameTeam->setObjectName(QStringLiteral("cbAvoidSameTeam"));
 
         verticalLayout_8->addWidget(cbAvoidSameTeam);
 
 
-        horizontalLayout_5->addWidget(verticalGroupBox_2);
+        horizontalLayout_5->addWidget(gbPairButtons);
 
         lwPaired = new QListWidget(gbPairs);
         lwPaired->setObjectName(QStringLiteral("lwPaired"));
@@ -370,7 +371,7 @@ public:
         gbRandom->setTitle(QApplication::translate("CatTabWidget", "Settings for Random Matches", 0));
         cbRandPairs->setText(QApplication::translate("CatTabWidget", "New, random partners\n"
 "for each round", 0));
-        gbPairs->setTitle(QApplication::translate("CatTabWidget", "Player Pairs", 0));
+        gbPairs->setTitle(QApplication::translate("CatTabWidget", "Players / Pairs", 0));
         btnPair->setText(QApplication::translate("CatTabWidget", "Pair --->", 0));
         btnSplit->setText(QApplication::translate("CatTabWidget", "<--- Split", 0));
         btnRandomizeRemaining->setText(QApplication::translate("CatTabWidget", "Random --->", 0));

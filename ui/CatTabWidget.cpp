@@ -184,9 +184,11 @@ void CatTabWidget::updateControls()
   // group box for configuring player pairs
   if (mt == SINGLES)
   {
-    ui.gbPairs->setEnabled(false);
+    ui.gbPairButtons->setEnabled(false);
+    ui.lwPaired->setEnabled(false);
   } else {
-    ui.gbPairs->setEnabled(true);    
+    ui.gbPairButtons->setEnabled(true);
+    ui.lwPaired->setEnabled(true);
   }
 }
 

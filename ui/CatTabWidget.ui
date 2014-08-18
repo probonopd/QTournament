@@ -34,7 +34,11 @@
          </layout>
         </item>
         <item>
-         <widget class="CategoryTableView" name="catTableView"/>
+         <widget class="CategoryTableView" name="catTableView">
+          <property name="selectionMode">
+           <enum>QAbstractItemView::SingleSelection</enum>
+          </property>
+         </widget>
         </item>
        </layout>
       </item>
@@ -233,7 +237,7 @@ for each round</string>
    <item>
     <widget class="QGroupBox" name="gbPairs">
      <property name="title">
-      <string>Player Pairs</string>
+      <string>Players / Pairs</string>
      </property>
      <layout class="QHBoxLayout" name="horizontalLayout_5">
       <property name="leftMargin">
@@ -256,7 +260,7 @@ for each round</string>
        </widget>
       </item>
       <item>
-       <widget class="QGroupBox" name="verticalGroupBox_2">
+       <widget class="QGroupBox" name="gbPairButtons">
         <layout class="QVBoxLayout" name="verticalLayout_8">
          <item>
           <widget class="QPushButton" name="btnPair">
