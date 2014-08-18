@@ -42,6 +42,7 @@ public slots:
   void setupEmptyScenario();
   void setupScenario01();
   void setupScenario02();
+  void setupScenario03();
 
 signals:
   void tournamentOpened (Tournament* tnmt);

@@ -94,7 +94,7 @@ void MainFrame::closeCurrentTournament()
 
 void MainFrame::setupTestScenario(int scenarioID)
 {
-  if ((scenarioID < 0) || (scenarioID > 2))
+  if ((scenarioID < 0) || (scenarioID > 3))
   {
     QMessageBox::critical(this, "Setup Test Scenario", "The scenario ID " + QString::number(scenarioID) + " is invalid!");
   }
@@ -185,6 +185,22 @@ void MainFrame::setupTestScenario(int scenarioID)
     cmngr->addPlayerToCategory(l2, mx);
     cmngr->addPlayerToCategory(l3, mx);
   }
+  
+  // a scenario with a lot of participants, including a group of
+  // forty players in one category
+  if (scenarioID == 3)
+  {
+    tmngr->createNewTeam("Massive");
+    Category ls = cmngr->getCategory("LS");
+    
+    for (int i=0; i < 250; i++)
+    {
+      QString lastName = "Massive" + QString::number(i);
+      pmngr->createNewPlayer("Lady", lastName, F, "Massive");
+      Player p = pmngr->getPlayer(i + 7);   // the first six IDs are already used by previous ini-functions above
+      if (i < 40) ls.addPlayer(p);
+    }
+  }
 
   enableControls(true);
   
@@ -215,6 +231,11 @@ void MainFrame::setupScenario02()
 }
 
 //----------------------------------------------------------------------------
+
+void MainFrame::setupScenario03()
+{
+  setupTestScenario(3);
+}
 
 //----------------------------------------------------------------------------
 

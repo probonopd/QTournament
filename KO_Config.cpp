@@ -49,15 +49,23 @@ namespace QTournament {
   bool KO_Config::isValid(int opponentCount) const
   {
     // compare the required number with the actual number of groups
-    bool isValid =  (getNumReqGroups() == grpDefs.getTotalGroupCount());
+    // we must have more than the next lower "KO-Level" requires and not more
+    // than the this KO-Level
+    int reqGroupCount = getNumReqGroups();
+    int prevLevelGroupCount = reqGroupCount / 2;
+    int actualGroupCount = grpDefs.getTotalGroupCount();
+    if ((actualGroupCount > reqGroupCount) || (actualGroupCount <= prevLevelGroupCount))
+    {
+      return false;
+    }
     
     // if provided by the caller, also check the number of players
     if (opponentCount > 0)
     {
-      bool isValid = isValid && (opponentCount == grpDefs.getTotalPlayerCount());
+      return (opponentCount == grpDefs.getTotalPlayerCount());
     }
     
-    return isValid;
+    return true;
   }
 
 //----------------------------------------------------------------------------
