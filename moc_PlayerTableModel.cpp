@@ -19,8 +19,8 @@
 
 QT_BEGIN_MOC_NAMESPACE
 struct qt_meta_stringdata_PlayerTableModel_t {
-    QByteArrayData data[9];
-    char stringdata[126];
+    QByteArrayData data[10];
+    char stringdata[122];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -35,13 +35,14 @@ QT_MOC_LITERAL(2, 37, 0),
 QT_MOC_LITERAL(3, 38, 17),
 QT_MOC_LITERAL(4, 56, 15),
 QT_MOC_LITERAL(5, 72, 15),
-QT_MOC_LITERAL(6, 88, 12),
-QT_MOC_LITERAL(7, 101, 13),
-QT_MOC_LITERAL(8, 115, 10)
+QT_MOC_LITERAL(6, 88, 6),
+QT_MOC_LITERAL(7, 95, 1),
+QT_MOC_LITERAL(8, 97, 13),
+QT_MOC_LITERAL(9, 111, 10)
     },
     "PlayerTableModel\0onBeginCreatePlayer\0"
     "\0onEndCreatePlayer\0newPlayerSeqNum\0"
-    "onPlayerRenamed\0playerSeqNum\0onTeamRenamed\0"
+    "onPlayerRenamed\0Player\0p\0onTeamRenamed\0"
     "teamSeqNum"
 };
 #undef QT_MOC_LITERAL
@@ -63,13 +64,13 @@ static const uint qt_meta_data_PlayerTableModel[] = {
        1,    0,   34,    2, 0x0a /* Public */,
        3,    1,   35,    2, 0x0a /* Public */,
        5,    1,   38,    2, 0x0a /* Public */,
-       7,    1,   41,    2, 0x0a /* Public */,
+       8,    1,   41,    2, 0x0a /* Public */,
 
  // slots: parameters
     QMetaType::Void,
     QMetaType::Void, QMetaType::Int,    4,
-    QMetaType::Void, QMetaType::Int,    6,
-    QMetaType::Void, QMetaType::Int,    8,
+    QMetaType::Void, 0x80000000 | 6,    7,
+    QMetaType::Void, QMetaType::Int,    9,
 
        0        // eod
 };
@@ -81,7 +82,7 @@ void PlayerTableModel::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int
         switch (_id) {
         case 0: _t->onBeginCreatePlayer(); break;
         case 1: _t->onEndCreatePlayer((*reinterpret_cast< int(*)>(_a[1]))); break;
-        case 2: _t->onPlayerRenamed((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 2: _t->onPlayerRenamed((*reinterpret_cast< const Player(*)>(_a[1]))); break;
         case 3: _t->onTeamRenamed((*reinterpret_cast< int(*)>(_a[1]))); break;
         default: ;
         }

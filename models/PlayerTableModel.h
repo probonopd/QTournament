@@ -36,7 +36,7 @@ public:
 public slots:
   void onBeginCreatePlayer();
   void onEndCreatePlayer(int newPlayerSeqNum);
-  void onPlayerRenamed(int playerSeqNum);
+  void onPlayerRenamed(const Player& p);
   void onTeamRenamed(int teamSeqNum);
 
 };

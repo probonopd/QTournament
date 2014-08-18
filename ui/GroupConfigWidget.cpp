@@ -129,13 +129,13 @@ void GroupConfigWidget::updateLabels()
   // update the text label with the actual and required counters
   GroupDefList gdl = cfg.getGroupDefList();
   ui.laReqGroupCount->setText(QString::number(cfg.getNumReqGroups()));
-  ui.laReqPlayerCount->setText("!! FIX !!");
+  ui.laReqPlayerCount->setText(QString::number(reqPlayers));
   ui.laTotalGroups->setText(QString::number(gdl.getTotalGroupCount()));
   ui.laTotalPlayers->setText(QString::number(gdl.getTotalPlayerCount()));
   
   // update the validity statement
   QString msg = tr("The configuration is ");
-  if (cfg.isValid())
+  if (cfg.isValid(reqPlayers))
   {
     msg += tr("VALID");
   } else {
@@ -310,7 +310,14 @@ void GroupConfigWidget::onSpinBoxGroupSize3Changed(int newVal)
 }
 
 //----------------------------------------------------------------------------
-    
+
+void GroupConfigWidget::setRequiredPlayersCount(int cnt)
+{
+  if (cnt < 0) return;
+  
+  reqPlayers = cnt;
+  updateLabels();
+}
 
 //----------------------------------------------------------------------------
     

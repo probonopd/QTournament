@@ -23,6 +23,7 @@ public:
   virtual ~GroupConfigWidget();
   KO_Config getConfig();
   void applyConfig(const KO_Config& cfg);
+  void setRequiredPlayersCount(int cnt);
 
 signals:
   void groupConfigChanged(const KO_Config& newCfg);
@@ -46,7 +47,7 @@ private:
   int oldGroupSize1;
   int oldGroupSize2;
   int oldGroupSize3;
-  
+  int reqPlayers;
 } ;
 
 #endif	/* _GROUPCONFIGWIDGET_H */

@@ -39,6 +39,9 @@ public slots:
   void onBtnAddCatClicked();
   void onMatchSystemChanged(int newId);
   void onGroupConfigChanged(const KO_Config& newCfg);
+  void onPlayerAddedToCategory(const Player& p, const Category& c);
+  void onPlayerRemovedFromCategory(const Player& p, const Category& c);
+  void onPlayerRenamed(const Player& p);
 } ;
 
 #endif	/* _CATTABWIDGET_H */

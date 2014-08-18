@@ -46,7 +46,7 @@ namespace QTournament
   signals:
     void beginCreatePlayer ();
     void endCreatePlayer (int newPlayerSeqNum);
-    void playerRenamed (int playerSeqNum);
+    void playerRenamed (const Player& p);
   };
 }
 

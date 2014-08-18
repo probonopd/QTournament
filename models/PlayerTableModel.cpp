@@ -154,10 +154,11 @@ void PlayerTableModel::onTeamRenamed(int teamSeqNum)
 
 //----------------------------------------------------------------------------
 
-void PlayerTableModel::onPlayerRenamed(int playerSeqNum)
+void PlayerTableModel::onPlayerRenamed(const Player& p)
 {
-  QModelIndex top = QAbstractItemModel::createIndex(playerSeqNum, 0);
-  QModelIndex bottom = QAbstractItemModel::createIndex(playerSeqNum, 1);
+  int seqNum = p.getSeqNum();
+  QModelIndex top = QAbstractItemModel::createIndex(seqNum, 0);
+  QModelIndex bottom = QAbstractItemModel::createIndex(seqNum, 1);
   emit dataChanged(top, bottom);  
 }
 

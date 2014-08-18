@@ -182,7 +182,8 @@ namespace QTournament
     qvl << PL_FNAME << newFirst;
     qvl << PL_LNAME << newLast;
     p.row.update(qvl);
-    emit playerRenamed(p.getSeqNum());
+    
+    emit playerRenamed(p);
     
     return OK;
   }

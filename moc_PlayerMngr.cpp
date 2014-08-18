@@ -19,8 +19,8 @@
 
 QT_BEGIN_MOC_NAMESPACE
 struct qt_meta_stringdata_QTournament__PlayerMngr_t {
-    QByteArrayData data[7];
-    char stringdata[102];
+    QByteArrayData data[8];
+    char stringdata[98];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -35,11 +35,12 @@ QT_MOC_LITERAL(2, 42, 0),
 QT_MOC_LITERAL(3, 43, 15),
 QT_MOC_LITERAL(4, 59, 15),
 QT_MOC_LITERAL(5, 75, 13),
-QT_MOC_LITERAL(6, 89, 12)
+QT_MOC_LITERAL(6, 89, 6),
+QT_MOC_LITERAL(7, 96, 1)
     },
     "QTournament::PlayerMngr\0beginCreatePlayer\0"
     "\0endCreatePlayer\0newPlayerSeqNum\0"
-    "playerRenamed\0playerSeqNum"
+    "playerRenamed\0Player\0p"
 };
 #undef QT_MOC_LITERAL
 
@@ -64,7 +65,7 @@ static const uint qt_meta_data_QTournament__PlayerMngr[] = {
  // signals: parameters
     QMetaType::Void,
     QMetaType::Void, QMetaType::Int,    4,
-    QMetaType::Void, QMetaType::Int,    6,
+    QMetaType::Void, 0x80000000 | 6,    7,
 
        0        // eod
 };
@@ -76,7 +77,7 @@ void QTournament::PlayerMngr::qt_static_metacall(QObject *_o, QMetaObject::Call 
         switch (_id) {
         case 0: _t->beginCreatePlayer(); break;
         case 1: _t->endCreatePlayer((*reinterpret_cast< int(*)>(_a[1]))); break;
-        case 2: _t->playerRenamed((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 2: _t->playerRenamed((*reinterpret_cast< const Player(*)>(_a[1]))); break;
         default: ;
         }
     } else if (_c == QMetaObject::IndexOfMethod) {
@@ -95,7 +96,7 @@ void QTournament::PlayerMngr::qt_static_metacall(QObject *_o, QMetaObject::Call 
             }
         }
         {
-            typedef void (PlayerMngr::*_t)(int );
+            typedef void (PlayerMngr::*_t)(const Player & );
             if (*reinterpret_cast<_t *>(func) == static_cast<_t>(&PlayerMngr::playerRenamed)) {
                 *result = 2;
             }
@@ -155,7 +156,7 @@ void QTournament::PlayerMngr::endCreatePlayer(int _t1)
 }
 
 // SIGNAL 2
-void QTournament::PlayerMngr::playerRenamed(int _t1)
+void QTournament::PlayerMngr::playerRenamed(const Player & _t1)
 {
     void *_a[] = { 0, const_cast<void*>(reinterpret_cast<const void*>(&_t1)) };
     QMetaObject::activate(this, &staticMetaObject, 2, _a);

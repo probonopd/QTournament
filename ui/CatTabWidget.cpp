@@ -24,7 +24,7 @@ CatTabWidget::CatTabWidget()
   
   // connect to the change signal of the group config widget
   connect(ui.grpCfgWidget, &GroupConfigWidget::groupConfigChanged, this, &CatTabWidget::onGroupConfigChanged);
-
+  
   // hide unused settings groups
   ui.gbGroups->hide();
   ui.gbSwiss->hide();
@@ -50,6 +50,11 @@ void CatTabWidget::onCatModelChanged()
   connect(ui.catTableView->selectionModel(),
 	  SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
 	  SLOT(onCatSelectionChanged(const QItemSelection&, const QItemSelection&)));
+  
+  // get information about changed player names or category assignments
+  connect(Tournament::getCatMngr(), &CatMngr::playerAddedToCategory, this, &CatTabWidget::onPlayerAddedToCategory);
+  connect(Tournament::getCatMngr(), &CatMngr::playerRemovedFromCategory, this, &CatTabWidget::onPlayerRemovedFromCategory);
+  connect(Tournament::getPlayerMngr(), &PlayerMngr::playerRenamed, this, &CatTabWidget::onPlayerRenamed);
 
   updateControls();
   updatePairs();
@@ -231,16 +236,7 @@ void CatTabWidget::updatePairs()
   ui.btnSplit->setEnabled(false);
   
   // if no model is loaded or no category is selected, simply returns
-  bool isActive = !(ui.catTableView->isEmptyModel());
-  if (isActive)
-  {
-    QModelIndexList indexes = ui.catTableView->selectionModel()->selection().indexes();
-    isActive = (indexes.count() > 0);
-  }
-  if (!isActive)
-  {
-    return;
-  }
+  if (!(ui.catTableView->hasCategorySelected())) return;
   
   // get the pair data from the selected category
   Category selCat = ui.catTableView->getSelectedCategory();
@@ -259,6 +255,14 @@ void CatTabWidget::updatePairs()
       item->setData(Qt::UserRole, pp.getPlayer1().getId());
       ui.lwUnpaired->addItem(item);
     }
+  }
+  
+  // update the "required players" label in the GroupConfigWidget
+  if (selCat.getMatchType() == SINGLES)
+  {
+    ui.grpCfgWidget->setRequiredPlayersCount(ui.lwUnpaired->count());
+  } else {
+    ui.grpCfgWidget->setRequiredPlayersCount(ui.lwPaired->count());
   }
 }
 
@@ -575,14 +579,37 @@ void CatTabWidget::onGroupConfigChanged(const KO_Config& newCfg)
 }
 
 //----------------------------------------------------------------------------
-    
+
+void CatTabWidget::onPlayerAddedToCategory(const Player& p, const Category& c)
+{
+  if (!(ui.catTableView->hasCategorySelected())) return;
+  
+  Category selectedCat = ui.catTableView->getSelectedCategory();
+  if (selectedCat != c) return;
+  
+  updateControls();
+  updatePairs();
+}
 
 //----------------------------------------------------------------------------
     
+void CatTabWidget::onPlayerRemovedFromCategory(const Player& p, const Category& c)
+{
+  if (!(ui.catTableView->hasCategorySelected())) return;
+  
+  Category selectedCat = ui.catTableView->getSelectedCategory();
+  if (selectedCat != c) return;
+  
+  updateControls();
+  updatePairs();
+}
 
 //----------------------------------------------------------------------------
     
-
+void CatTabWidget::onPlayerRenamed(const Player& p)
+{
+  updatePairs();
+}
 //----------------------------------------------------------------------------
     
 
