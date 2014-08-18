@@ -233,6 +233,7 @@ namespace QTournament
 //----------------------------------------------------------------------------
 
   enum KO_START {
+    FINAL,
     SEMI,
     QUARTER,
     L16

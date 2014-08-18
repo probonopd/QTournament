@@ -33,11 +33,16 @@
             <bool>false</bool>
            </property>
            <property name="currentIndex">
-            <number>1</number>
+            <number>2</number>
            </property>
            <property name="frame">
             <bool>false</bool>
            </property>
+           <item>
+            <property name="text">
+             <string>Final</string>
+            </property>
+           </item>
            <item>
             <property name="text">
              <string>Semi Finals</string>

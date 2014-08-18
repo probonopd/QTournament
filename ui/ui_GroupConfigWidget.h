@@ -249,7 +249,7 @@ public:
         QObject::connect(spGroupSize3, SIGNAL(valueChanged(int)), GroupConfigWidget, SLOT(onSpinBoxGroupSize3Changed(int)));
         QObject::connect(spGroupSize2, SIGNAL(valueChanged(int)), GroupConfigWidget, SLOT(onSpinBoxGroupSize2Changed(int)));
 
-        cbKOStart->setCurrentIndex(1);
+        cbKOStart->setCurrentIndex(2);
 
 
         QMetaObject::connectSlotsByName(GroupConfigWidget);
@@ -261,6 +261,7 @@ public:
         label->setText(QApplication::translate("GroupConfigWidget", "KO rounds start with", 0));
         cbKOStart->clear();
         cbKOStart->insertItems(0, QStringList()
+         << QApplication::translate("GroupConfigWidget", "Final", 0)
          << QApplication::translate("GroupConfigWidget", "Semi Finals", 0)
          << QApplication::translate("GroupConfigWidget", "Quarter Finals", 0)
          << QApplication::translate("GroupConfigWidget", "Round of 16", 0)

@@ -66,17 +66,21 @@ void GroupConfigWidget::applyConfig(const KO_Config& cfg)
 {
   // Set the combobox with the start level
   KO_START lvl = cfg.getStartLevel();
-  if (lvl == SEMI)
+  if (lvl == FINAL)
   {
     ui.cbKOStart->setCurrentIndex(0);
   }
-  else if (lvl == QUARTER)
+  else if (lvl == SEMI)
   {
     ui.cbKOStart->setCurrentIndex(1);
   }
-  else if (lvl == L16)
+  else if (lvl == QUARTER)
   {
     ui.cbKOStart->setCurrentIndex(2);
+  }
+  else if (lvl == L16)
+  {
+    ui.cbKOStart->setCurrentIndex(3);
   }
   else
   {
@@ -85,6 +89,10 @@ void GroupConfigWidget::applyConfig(const KO_Config& cfg)
   
   // the check box for the "second player survives" choices
   ui.cbSecondSurvives->setChecked(cfg.getSecondSurvives());
+  
+  // if we proceed directly with the finals, we actually don't have a
+  // choice if the group second's should survive or not
+  ui.cbSecondSurvives->setEnabled(lvl != FINAL);
   
   // update the spin boxes for the group count / size values
   int nGroupDefs = cfg.getNumGroupDefs();
@@ -149,10 +157,11 @@ void GroupConfigWidget::updateLabels()
 KO_Config GroupConfigWidget::getConfig()
 {
   int lvl = ui.cbKOStart->currentIndex();
-  KO_START koLvl = SEMI;
-  if (lvl == 1) koLvl = QUARTER;
-  else if (lvl == 2) koLvl = L16;
-  else if (lvl > 2)
+  KO_START koLvl = FINAL;
+  if (lvl == 1) koLvl = SEMI;
+  else if (lvl == 2) koLvl = QUARTER;
+  else if (lvl == 3) koLvl = L16;
+  else if (lvl > 3)
   {
     throw std::invalid_argument("Illegal dropbox index!");
   }
@@ -180,8 +189,12 @@ KO_Config GroupConfigWidget::getConfig()
 
 void GroupConfigWidget::onStartLevelChanged(int newIndex)
 {
-  updateLabels();
-  emit groupConfigChanged(getConfig());
+  // fake a complete update of the widget, because if we switch to/from
+  // FINALS as the start level, we have to activate / deactivate some
+  // widgets
+  KO_Config cfg = getConfig();
+  applyConfig(cfg);
+  emit groupConfigChanged(cfg);
 }
 
 //----------------------------------------------------------------------------

@@ -23,6 +23,10 @@ namespace QTournament {
     {
       grpDefs.append(grps.at(n));
     }
+    
+    // If we dive directly into the finals, then we always need the second
+    // of each group for the match for 3rd place
+    if (startLvl == FINAL) secondSurvives = true;
   }
 
 //----------------------------------------------------------------------------
@@ -123,6 +127,7 @@ namespace QTournament {
     
     if (startLvl == SEMI) result = "S";
     else if (startLvl == QUARTER) result = "Q";
+    else if (startLvl == FINAL) result = "F";
     
     result += ";";
     
@@ -169,6 +174,7 @@ namespace QTournament {
     if (lvl == "L16") startLvl = L16;
     else if (lvl == "Q") startLvl = QUARTER;
     else if (lvl == "S") startLvl = SEMI;
+    else if (lvl == "F") startLvl = FINAL;
     else
     {
       throw std::invalid_argument("Initialization string is invalid (wrong start level)!");
@@ -225,6 +231,7 @@ namespace QTournament {
   void KO_Config::setSecondSurvives(bool newSurvive)
   {
     secondSurvives = newSurvive;
+    if (startLvl == FINAL) secondSurvives = true;
   }
 
 //----------------------------------------------------------------------------
@@ -234,6 +241,10 @@ namespace QTournament {
     // calculate the number of required groups,
     // based on the start configuration of the KO rounds
     int reqGroups = 16;
+    if (startLvl == FINAL)
+    {
+      reqGroups = 2;
+    }
     if (startLvl == SEMI)
     {
       reqGroups = 4;
@@ -246,7 +257,7 @@ namespace QTournament {
     // if also the second-placed player of each group
     // qualifies for the KO rounds, we only need half
     // as many groups
-    if (secondSurvives)
+    if ((secondSurvives) && (startLvl != FINAL))
     {
       reqGroups = reqGroups / 2;
     }
