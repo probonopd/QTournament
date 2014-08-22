@@ -27,6 +27,7 @@
 #include "tstGroupDef.h"
 #include "tstKOConfig.h"
 #include "tstKOConfig.h"
+#include "tstMatchMngr.h"
 
 // comment / uncomment the following to execute just one suite
 //#define TEST_ALL_SUITES
@@ -43,8 +44,9 @@
   CPPUNIT_TEST_SUITE_REGISTRATION(tstPlayer);
   CPPUNIT_TEST_SUITE_REGISTRATION(tstGroupDef);
   CPPUNIT_TEST_SUITE_REGISTRATION(tstKOConfig);
+  CPPUNIT_TEST_SUITE_REGISTRATION(tstMatchMngr);
 #else
-  CPPUNIT_TEST_SUITE_REGISTRATION(tstKOConfig);
+  CPPUNIT_TEST_SUITE_REGISTRATION(tstMatchMngr);
 #endif
 
 

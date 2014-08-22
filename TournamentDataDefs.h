@@ -123,9 +123,51 @@ namespace QTournament
   
 //----------------------------------------------------------------------------
 
+#define TAB_MATCH QString("Match")
+#define MA_GRP_REF  QString("MatchGroupRefId")
+#define MA_NUM  QString("Number")
+//#define MA_  QString("")
+//#define MA_  QString("")
+//#define MA_  QString("")
+//#define MA_  QString("")
+//#define MA_  QString("")
+//#define MA_  QString("")
+//#define MA_  QString("")
+//#define MA_  QString("")
+//#define MA_  QString("")
+//#define MA_  QString("")
+//#define MA_  QString("")
+//#define MA_  QString("")
+//#define MA_  QString("")
+//#define MA_  QString("")
+//#define MA_  QString("")
   
 //----------------------------------------------------------------------------
 
+#define TAB_MATCH_GROUP QString("MatchGroup")
+#define MG_CAT_REF  QString("CategoryRefId")
+#define MG_ROUND  QString("Round")
+#define MG_GRP_NUM  QString("RoundRobinGroupNumber")
+//#define MG_  QString("")
+//#define MG_  QString("")
+//#define MG_  QString("")
+//#define MG_  QString("")
+//#define MG_  QString("")
+//#define MG_  QString("")
+//#define MG_  QString("")
+//#define MG_  QString("")
+//#define MG_  QString("")
+//#define MG_  QString("")
+//#define MG_  QString("")
+//#define MG_  QString("")
+//#define MG_  QString("")
+//#define MG_  QString("")
+//#define MG_  QString("")
+//#define MG_  QString("")
+//#define MG_  QString("")
+//#define MG_  QString("")
+//#define MG_  QString("")
+//#define MG_  QString("")
   
 //----------------------------------------------------------------------------
 
@@ -241,6 +283,14 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
+// Special group numbers for MatchGroup objects
+// Positive numbers indicate the number of the round robin group within a category,
+// Negative numbers have a special meaning for MatchGroups of non-round-robin matches
+#define GROUP_NUM__FINAL -1
+#define GROUP_NUM__SEMIFINAL -2
+#define GROUP_NUM__QUARTERFINAL -4
+#define GROUP_NUM__L16 -8
+#define GROUP_NUM__ITERATION -100  // just a normal round in Swiss Ladder, Random Matches, ...
     
 //----------------------------------------------------------------------------
 

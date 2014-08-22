@@ -28,7 +28,11 @@ namespace QTournament
         PLAYERS_NOT_A_PAIR,
         PLAYERS_IDENTICAL,
         INVALID_ID,
-        INVALID_RECONFIG
+        INVALID_RECONFIG,
+        INVALID_ROUND,
+        INVALID_GROUP_NUM,
+        MATCH_GROUP_EXISTS,
+        NO_SUCH_MATCH_GROUP
     };
 }
 

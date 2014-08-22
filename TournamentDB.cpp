@@ -96,6 +96,19 @@ void TournamentDB::populateTables()
     cols << genForeignKeyClause(PAIRS_PLAYER2_REF, TAB_PLAYER);
     cols << genForeignKeyClause(PAIRS_CAT_REF, TAB_CATEGORY);
     tableCreationHelper(TAB_PAIRS, cols);
+    
+    // Generate a table for the match groups
+    cols.clear();
+    cols << genForeignKeyClause(MG_CAT_REF, TAB_CATEGORY);
+    cols << MG_ROUND + " INTEGER";
+    cols << MG_GRP_NUM + " INTEGER";
+    tableCreationHelper(TAB_MATCH_GROUP, cols);
+    
+    // Generate a table for matches
+    cols.clear();
+    cols << genForeignKeyClause(MA_GRP_REF, TAB_MATCH_GROUP);
+    cols << MA_NUM + " INTEGER";
+    tableCreationHelper(TAB_MATCH, cols);
 }
 
 void TournamentDB::populateViews()

@@ -22,6 +22,7 @@ namespace QTournament
   TeamListModel* Tournament::tlm = NULL;
   PlayerTableModel* Tournament::ptm = NULL;
   CategoryTableModel* Tournament::ctm = NULL;
+  MatchMngr* Tournament::mm = NULL;
 
 /**
  * Constructor for a new, empty tournament file
@@ -98,6 +99,7 @@ void Tournament::initManagers()
     tm = new TeamMngr(&db);
     cm = new CatMngr(&db);
     pm = new PlayerMngr(&db);
+    mm = new MatchMngr(&db);
 }
 
 //----------------------------------------------------------------------------
@@ -184,6 +186,10 @@ CategoryTableModel* Tournament::getCategoryTableModel()
 
 //----------------------------------------------------------------------------
     
+MatchMngr* Tournament::getMatchMngr()
+{
+  return mm;
+}
 
 //----------------------------------------------------------------------------
     

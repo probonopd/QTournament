@@ -20,6 +20,7 @@
 #include "models/TeamListModel.h"
 #include "models/PlayerTableModel.h"
 #include "models/CatTableModel.h"
+#include "MatchMngr.h"
 
 using namespace dbOverlay;
 
@@ -38,6 +39,7 @@ namespace QTournament
     static TeamListModel* getTeamListModel();
     static PlayerTableModel* getPlayerTableModel();
     static CategoryTableModel* getCategoryTableModel();
+    static MatchMngr* getMatchMngr();
     void close();
     ~Tournament();
 
@@ -49,6 +51,7 @@ namespace QTournament
     static TeamListModel* tlm;
     static PlayerTableModel *ptm;
     static CategoryTableModel *ctm;
+    static MatchMngr* mm;
     
     void initManagers ();
     void initModels();
