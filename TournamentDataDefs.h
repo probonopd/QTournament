@@ -87,6 +87,11 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
     
+#define TAB_COURT QString("Court")
+//#define CO_ QString("")
+
+//----------------------------------------------------------------------------
+    
 #define TAB_CATEGORY QString("Category")
 #define CAT_MATCH_TYPE QString("MatchType")
 #define CAT_SEX QString("Sex")
@@ -126,10 +131,14 @@ namespace QTournament
 #define TAB_MATCH QString("Match")
 #define MA_GRP_REF  QString("MatchGroupRefId")
 #define MA_NUM  QString("Number")
-//#define MA_  QString("")
-//#define MA_  QString("")
-//#define MA_  QString("")
-//#define MA_  QString("")
+#define MA_PAIR1_REF  QString("PlayerPair1RefId")
+#define MA_PAIR2_REF  QString("PlayerPair2RefId")
+#define MA_ACTUAL_PLAYER1A_REF  QString("ActualPlayer1aRefId")
+#define MA_ACTUAL_PLAYER1B_REF  QString("ActualPlayer1bRefId")
+#define MA_ACTUAL_PLAYER2A_REF  QString("ActualPlayer2aRefId")
+#define MA_ACTUAL_PLAYER2B_REF  QString("ActualPlayer2bRefId")
+#define MA_RESULT  QString("Result")
+#define MA_COURT_REF  QString("CourtRefId")
 //#define MA_  QString("")
 //#define MA_  QString("")
 //#define MA_  QString("")

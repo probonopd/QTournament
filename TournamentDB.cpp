@@ -32,6 +32,12 @@ void TournamentDB::populateTables()
     // Generate the key-value-table with the tournament config
     dbOverlay::KeyValueTab::getTab(this, TAB_CFG);
     
+    // Generate the table for the courts
+    cols.clear();
+    cols << nameFieldDef;
+    cols << seqNumFieldDef;
+    tableCreationHelper(TAB_COURT, cols);
+    
     // Generate the table holding the teams
     cols.clear();
     cols << nameFieldDef;
@@ -102,12 +108,23 @@ void TournamentDB::populateTables()
     cols << genForeignKeyClause(MG_CAT_REF, TAB_CATEGORY);
     cols << MG_ROUND + " INTEGER";
     cols << MG_GRP_NUM + " INTEGER";
+    cols << seqNumFieldDef;
     tableCreationHelper(TAB_MATCH_GROUP, cols);
     
     // Generate a table for matches
     cols.clear();
     cols << genForeignKeyClause(MA_GRP_REF, TAB_MATCH_GROUP);
     cols << MA_NUM + " INTEGER";
+    cols << stateFieldDef;
+    cols << seqNumFieldDef;
+    cols << genForeignKeyClause(MA_PAIR1_REF, TAB_PAIRS);
+    cols << genForeignKeyClause(MA_PAIR2_REF, TAB_PAIRS);
+    cols << genForeignKeyClause(MA_ACTUAL_PLAYER1A_REF, TAB_PLAYER);
+    cols << genForeignKeyClause(MA_ACTUAL_PLAYER1B_REF, TAB_PLAYER);
+    cols << genForeignKeyClause(MA_ACTUAL_PLAYER2A_REF, TAB_PLAYER);
+    cols << genForeignKeyClause(MA_ACTUAL_PLAYER2B_REF, TAB_PLAYER);
+    cols << MA_RESULT + " VARCHAR(50)";
+    cols << genForeignKeyClause(MA_COURT_REF, TAB_COURT);
     tableCreationHelper(TAB_MATCH, cols);
 }
 
