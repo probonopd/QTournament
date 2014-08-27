@@ -22,6 +22,7 @@ namespace QTournament
   class Category : public GenericDatabaseObject
   {
     friend class CatMngr;
+    friend class RoundRobinCategory;
     
   public:
     QString getName() const;
@@ -44,12 +45,24 @@ namespace QTournament
     bool getParameter_bool(CAT_PARAMETER) const;
     QString getParameter_string(CAT_PARAMETER) const;
     bool setParameter(CAT_PARAMETER p, const QVariant& v);
-    QList<PlayerPair> getPlayerPairs();
-    QList<Player> getAllPlayersInCategory();
+    QList<PlayerPair> getPlayerPairs() const;
+    QList<Player> getAllPlayersInCategory() const;
     bool isPaired(const Player& p) const;
     ERR canPairPlayers(const Player& p1, const Player& p2) const;
     ERR canSplitPlayers(const Player& p1, const Player& p2) const;
     Player getPartner(const Player& p) const;
+    bool hasUnpairedPlayers() const;
+    Category* convertToSpecializedObject();
+
+    
+    virtual ~Category() {};
+    
+    //
+    // The following methods MUST be overwritten by derived classes for a specific match system
+    //
+    virtual ERR canFreezeConfig() { throw std::runtime_error("Unimplemented Method: canFreezeConfig"); };
+    virtual bool needsInitialRanking() { throw std::runtime_error("Unimplemented Method: needsInitialRanking"); };
+    virtual bool needsGroupInitialization() { throw std::runtime_error("Unimplemented Method: needsGroupInitialization"); };
 
   private:
     Category (TournamentDB* db, int rowId);

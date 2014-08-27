@@ -41,6 +41,7 @@ public:
     QVBoxLayout *verticalLayout_6;
     QHBoxLayout *horizontalLayout_4;
     QPushButton *btnAddCategory;
+    QPushButton *btnRunCategory;
     CategoryTableView *catTableView;
     QVBoxLayout *verticalLayout_7;
     QGroupBox *gbGeneric;
@@ -105,6 +106,11 @@ public:
         btnAddCategory->setObjectName(QStringLiteral("btnAddCategory"));
 
         horizontalLayout_4->addWidget(btnAddCategory);
+
+        btnRunCategory = new QPushButton(groupBox);
+        btnRunCategory->setObjectName(QStringLiteral("btnRunCategory"));
+
+        horizontalLayout_4->addWidget(btnRunCategory);
 
 
         verticalLayout_6->addLayout(horizontalLayout_4);
@@ -342,6 +348,7 @@ public:
         QObject::connect(btnAddCategory, SIGNAL(clicked()), CatTabWidget, SLOT(onBtnAddCatClicked()));
         QObject::connect(catTableView, SIGNAL(doubleClicked(QModelIndex)), catTableView, SLOT(onCategoryDoubleClicked(QModelIndex)));
         QObject::connect(cbMatchSystem, SIGNAL(currentIndexChanged(int)), CatTabWidget, SLOT(onMatchSystemChanged(int)));
+        QObject::connect(btnRunCategory, SIGNAL(clicked()), CatTabWidget, SLOT(onBtnRunCatClicked()));
 
         QMetaObject::connectSlotsByName(CatTabWidget);
     } // setupUi
@@ -351,6 +358,7 @@ public:
         CatTabWidget->setWindowTitle(QApplication::translate("CatTabWidget", "CatTabWidget", 0));
         groupBox->setTitle(QApplication::translate("CatTabWidget", "Category Selection", 0));
         btnAddCategory->setText(QApplication::translate("CatTabWidget", "Add Category", 0));
+        btnRunCategory->setText(QApplication::translate("CatTabWidget", "Run", 0));
         gbGeneric->setTitle(QApplication::translate("CatTabWidget", "Generic Settings", 0));
         label_2->setText(QApplication::translate("CatTabWidget", "Type:", 0));
         rbSingles->setText(QApplication::translate("CatTabWidget", "Singles", 0));

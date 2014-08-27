@@ -31,6 +31,13 @@
             </property>
            </widget>
           </item>
+          <item>
+           <widget class="QPushButton" name="btnRunCategory">
+            <property name="text">
+             <string>Run</string>
+            </property>
+           </widget>
+          </item>
          </layout>
         </item>
         <item>
@@ -539,6 +546,22 @@ for each round</string>
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>btnRunCategory</sender>
+   <signal>clicked()</signal>
+   <receiver>CatTabWidget</receiver>
+   <slot>onBtnRunCatClicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>170</x>
+     <y>49</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>504</x>
+     <y>428</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>onCbDrawChanged(bool)</slot>
@@ -551,6 +574,7 @@ for each round</string>
   <slot>onDontCareClicked()</slot>
   <slot>onBtnAddCatClicked()</slot>
   <slot>onMatchSystemChanged(int)</slot>
+  <slot>onBtnRunCatClicked()</slot>
  </slots>
  <buttongroups>
   <buttongroup name="rbgSex"/>

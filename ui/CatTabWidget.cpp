@@ -613,7 +613,42 @@ void CatTabWidget::onPlayerRenamed(const Player& p)
   updatePairs();
 }
 //----------------------------------------------------------------------------
-    
+
+void CatTabWidget::onBtnRunCatClicked()
+{
+  if (!(ui.catTableView->hasCategorySelected())) return;
+  
+  Category* selectedCat = ui.catTableView->getSelectedCategory().convertToSpecializedObject();
+  
+  ERR e = selectedCat->canFreezeConfig();
+  if (e == CONFIG_ALREADY_FROZEN)
+  {
+    QMessageBox::critical(this, tr("Run Category"),
+	    tr("This category has already been started (STAT = Frozen)"));
+  }
+  else if (e == UNPAIRED_PLAYERS)
+  {
+    QMessageBox::critical(this, tr("Run Category"),
+	    tr("This category has unpaired players!\nPlease pair all players before starting the matches."));
+  }
+  else if (e == INVALID_KO_CONFIG)
+  {
+    QMessageBox::critical(this, tr("Run Category"),
+	    tr("The setup for the round robin phase and the KO rounds are invalid!"));
+  } else if (e != OK)
+  {
+    QMessageBox::critical(this, tr("Run Category"),
+	    tr("Uncaptured error. Category has no valid configuration and can't be started"));
+  }
+  
+  if (e != OK)
+  {
+    delete selectedCat;
+    return;
+  }
+  
+  delete selectedCat;
+}
 
 //----------------------------------------------------------------------------
     

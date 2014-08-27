@@ -11,6 +11,7 @@
 #include "TournamentErrorCodes.h"
 #include "CatMngr.h"
 #include "Tournament.h"
+#include "RoundRobinCategory.h"
 
 #include <stdexcept>
 
@@ -259,7 +260,7 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  QList<PlayerPair> Category::getPlayerPairs()
+  QList<PlayerPair> Category::getPlayerPairs() const
   {
     QList<PlayerPair> result;
     PlayerMngr* pmngr = Tournament::getPlayerMngr();
@@ -294,7 +295,7 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  QList<Player> Category::getAllPlayersInCategory()
+  QList<Player> Category::getAllPlayersInCategory() const
   {
     QList<Player> result;
     PlayerMngr* pmngr = Tournament::getPlayerMngr();
@@ -458,9 +459,35 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
+  bool Category::hasUnpairedPlayers() const
+  {
+    QList<PlayerPair> pp = getPlayerPairs();
+    for (int i=0; i < pp.count(); i++)
+    {
+      if (!(pp.at(i).hasPlayer2())) return true;
+    }
+    
+    return false;
+  }
 
 //----------------------------------------------------------------------------
 
+  Category* Category::convertToSpecializedObject()
+  {
+    // return an instance of a suitable, specialized category-child
+    MATCH_SYSTEM sys = getMatchSystem();
+
+    if (sys == GROUPS_WITH_KO) {
+      return new RoundRobinCategory(db, row);
+    }
+
+    // THIS IS JUST A HOT FIX UNTIL WE HAVE
+    // SPECIALIZED CLASSED FOR ALL MATCH SYSTEMS!!!
+    //
+    // Returning an object of the base class instead of the derived class
+    // will end up in exceptions and abnormal program termination
+    return new Category(db, row);
+  }
 
 //----------------------------------------------------------------------------
 

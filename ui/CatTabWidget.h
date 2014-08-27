@@ -37,6 +37,7 @@ public slots:
   void onSexClicked(int btn);
   void onDontCareClicked();
   void onBtnAddCatClicked();
+  void onBtnRunCatClicked();
   void onMatchSystemChanged(int newId);
   void onGroupConfigChanged(const KO_Config& newCfg);
   void onPlayerAddedToCategory(const Player& p, const Category& c);

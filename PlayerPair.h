@@ -18,7 +18,7 @@ namespace QTournament
   public:
     PlayerPair(const Player& p1, const Player& p2, int _pairId);
     PlayerPair(const Player& p1);
-    bool hasPlayer2();
+    bool hasPlayer2() const;
     Player getPlayer1();
     Player getPlayer2();
     QString getDisplayName(int maxLen = 0);

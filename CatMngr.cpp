@@ -363,7 +363,7 @@ namespace QTournament
     try {
       TabRow r = catTab[id];
       return Category(db, r);
-    }
+      }
     catch (std::exception e)
     {
      throw std::invalid_argument("The category with ID " + QString2String(QString::number(id)) + " does not exist");

@@ -32,7 +32,10 @@ namespace QTournament
         INVALID_ROUND,
         INVALID_GROUP_NUM,
         MATCH_GROUP_EXISTS,
-        NO_SUCH_MATCH_GROUP
+        NO_SUCH_MATCH_GROUP,
+        CONFIG_ALREADY_FROZEN,
+        UNPAIRED_PLAYERS,
+        INVALID_KO_CONFIG
     };
 }
 

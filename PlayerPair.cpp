@@ -50,7 +50,7 @@ namespace QTournament {
 
 //----------------------------------------------------------------------------
 
-  bool PlayerPair::hasPlayer2()
+  bool PlayerPair::hasPlayer2() const
   {
     return (id2 > 0);
   }
