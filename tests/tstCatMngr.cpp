@@ -233,10 +233,82 @@ void tstCatMngr::testRemovePlayerFromCategory()
   CPPUNIT_ASSERT(cmngr->removePlayerFromCategory(f2, ls) == OK);
   CPPUNIT_ASSERT(ls.hasPlayer(f1));
   CPPUNIT_ASSERT(ls.hasPlayer(f2) == false);
+  
+  printEndMsg();
 }
 
 //----------------------------------------------------------------------------
-    
+
+void tstCatMngr::testFreezeCategory()
+{
+  printStartMsg("tstCatMngr::testRemovePlayerFromCategory");
+  
+  TournamentDB db = getScenario02(true);
+  Tournament t(getSqliteFileName());
+  
+  // get a team and a category and assign 40 brand new players to it
+  CatMngr* cmngr = Tournament::getCatMngr();
+  PlayerMngr* pmngr = Tournament::getPlayerMngr();
+  Category ms = cmngr->getCategory("MS");
+  for (int i=0; i < 40; i++)
+  {
+    QString fn = "FirstName";
+    QString ln = "LastName" + QString::number(i);
+    CPPUNIT_ASSERT(pmngr->createNewPlayer(fn, ln, M, "t1") == OK);
+    Player p = pmngr->getPlayer(fn, ln);
+    CPPUNIT_ASSERT(cmngr->addPlayerToCategory(p, ms) == OK);
+  }
+
+  // set a valid match system and a valid configuration
+  CPPUNIT_ASSERT(ms.setMatchSystem(GROUPS_WITH_KO) == OK);
+  CPPUNIT_ASSERT(ms.setMatchType(SINGLES) == OK);
+  GroupDef gd = GroupDef(4, 10); // 10 groups of four players each
+  GroupDefList gdl;
+  gdl.append(gd);
+  KO_Config cfg = KO_Config(L16, false, gdl);
+  CPPUNIT_ASSERT(cfg.isValid(40));
+  CPPUNIT_ASSERT(ms.setParameter(GROUP_CONFIG, cfg.toString()) == true);
+  
+  // make sure the group can be frozen
+  Category* specialObj = ms.convertToSpecializedObject();
+  CPPUNIT_ASSERT(specialObj->canFreezeConfig() == OK);
+  delete specialObj;
+  
+  // some db consistency checks before executing the actual "method under test"
+  DbTab pairTab = db[TAB_PAIRS];
+  CPPUNIT_ASSERT(pairTab.length() == 0);
+  QList<PlayerPair> ppList = ms.getPlayerPairs();
+  CPPUNIT_ASSERT(ppList.count() == 40);
+  for (int i=0; i<39; i++)
+  {
+    PlayerPair pp = ppList.at(i);
+    CPPUNIT_ASSERT(pp.getPairId() == -1);
+    CPPUNIT_ASSERT(pp.getPlayer1().getId() > 0);
+    CPPUNIT_ASSERT(pp.hasPlayer2() == false);
+  }
+  
+  CPPUNIT_ASSERT(ms.getState() == STAT_CAT_CONFIG);
+  
+  // do the freeze
+  CPPUNIT_ASSERT(cmngr->freezeConfig(ms) == OK);
+
+  // some db consistency checks after executing the actual "method under test"
+  CPPUNIT_ASSERT(pairTab.length() == 40);
+  ppList = ms.getPlayerPairs();
+  CPPUNIT_ASSERT(ppList.count() == 40);
+  for (int i=0; i<39; i++)
+  {
+    PlayerPair pp = ppList.at(i);
+    CPPUNIT_ASSERT(pp.getPairId() > 0);
+    CPPUNIT_ASSERT(pp.getPlayer1().getId() > 0);
+    CPPUNIT_ASSERT(pp.hasPlayer2() == false);
+  }
+  
+  // check the actual state transition
+  CPPUNIT_ASSERT(ms.getState() == STAT_CAT_FROZEN);
+  
+  printEndMsg();
+}
 
 //----------------------------------------------------------------------------
     

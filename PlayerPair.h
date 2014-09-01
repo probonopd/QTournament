@@ -17,6 +17,7 @@ namespace QTournament
   {
   public:
     PlayerPair(const Player& p1, const Player& p2, int _pairId);
+    PlayerPair(const Player& p1, int _pairId);
     PlayerPair(const Player& p1);
     bool hasPlayer2() const;
     Player getPlayer1();

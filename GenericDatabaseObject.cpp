@@ -57,7 +57,7 @@ GenericDatabaseObject::GenericDatabaseObject(TournamentDB* _db, const QString& _
 
   // THIS FUNCTION WILL FAIL IF THE DATABASE
   // HAS NO "State" COLUMN
-  void GenericDatabaseObject::setState(OBJ_STATE newState)
+  void GenericDatabaseObject::setState(OBJ_STATE newState) const
   {
     int stateInt = static_cast<int>(newState);
     row.update(GENERIC_STATE_FIELD_NAME, stateInt);

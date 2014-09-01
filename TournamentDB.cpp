@@ -101,6 +101,7 @@ void TournamentDB::populateTables()
     cols << genForeignKeyClause(PAIRS_PLAYER1_REF, TAB_PLAYER);
     cols << genForeignKeyClause(PAIRS_PLAYER2_REF, TAB_PLAYER);
     cols << genForeignKeyClause(PAIRS_CAT_REF, TAB_CATEGORY);
+    cols << PAIRS_GRP_NUM + " INTEGER";
     tableCreationHelper(TAB_PAIRS, cols);
     
     // Generate a table for the match groups

@@ -47,6 +47,7 @@ namespace QTournament
     ERR pairPlayers(const Category c, const Player& p1, const Player& p2);
     ERR splitPlayers(const Category c, const Player& p1, const Player& p2);
     ERR splitPlayers(const Category c, int pairId);
+    ERR freezeConfig(const Category& c);
 
   signals:
     void playersPaired(const Category c, const Player& p1, const Player& p2);
@@ -55,6 +56,7 @@ namespace QTournament
     void playerRemovedFromCategory(const Player& p, const Category& c);
     void beginCreateCategory();
     void endCreateCategory(int newCatSeqNum);
+    void categoryStatusChanged(const Category& c, const OBJ_STATE fromState, const OBJ_STATE toState);
 
   private:
     DbTab catTab;

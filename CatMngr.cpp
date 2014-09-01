@@ -144,7 +144,7 @@ namespace QTournament
     // temporarily store all existing player pairs
     QList<PlayerPair> pairList = c.getPlayerPairs();
     
-    // check if we split all pairs
+    // check if we can split all pairs
     QList<PlayerPair>::const_iterator it = pairList.constBegin();
     bool canSplit = true;
     for (it = pairList.constBegin(); it != pairList.constEnd(); ++it)
@@ -545,6 +545,8 @@ namespace QTournament
     qvl << PAIRS_CAT_REF << c.getId();
     qvl << PAIRS_PLAYER1_REF << p1.getId();
     qvl << PAIRS_PLAYER2_REF << p2.getId();
+    qvl << PAIRS_GRP_NUM << GRP_NUM__NOT_ASSIGNED;   // Default value: no group
+
     db->getTab(TAB_PAIRS).insertRow(qvl);
     
     emit playersPaired(c, p1, p2);
@@ -628,6 +630,78 @@ namespace QTournament
   }
 
 //----------------------------------------------------------------------------
+
+  ERR CatMngr::freezeConfig(const Category& c)
+  {
+    // make sure that we can actually freeze the config
+    Category* specialObj = c.convertToSpecializedObject();
+    ERR e = specialObj->canFreezeConfig();
+    delete specialObj;
+    if (e != OK) return e;
+    
+    // Okax, we're good to go
+    //
+    // The only task when freezing the config is to convert single players
+    // to "pairs without a partner" and to set the new state
+    
+    
+    // We can safely convert all remaining "single players" to "pairs". We
+    // never make it to this point if the remaining single players are "bad"
+    // (e.g. in regular doubles). This is ensured by the call above to "canFreezeConfig()"
+    
+    /*
+     * IMPORTANT:
+     * 
+     * The application assumes that no "pairs without a partner" exist in the
+     * database as long as the category is in STAT_CAT_CONFIG.
+     * 
+     * This assertion has to be met!
+     * 
+     * Another assertion:
+     * A category can switch back from STAT_CAT_FROZEN to STAT_CAT_CONFIG by
+     * just removing all "pairs without a partner" from the database. This means
+     * in particular that no links / references to PairIDs may be established
+     * while in STAT_CAT_FROZEN.
+     * 
+     * Links and refs to PairIDs shall be handled in memory only. Only when we transition
+     * from STAT_CAT_FROZEN to STAT_CAT_IDLE the references shall be written to the
+     * database in one large, "atomic" commit.
+     * 
+     * Rational:
+     * While in STAT_CAT_FROZEN we can do GUI activities for e. g. initial ranking
+     * or group assignments. For this, we need PairIDs. So we switch to
+     * STAT_CAT_FROZEN during the GUI activities. If the activities are canceled by
+     * the user, we switch back to config mode. If the activities are confirmed /
+     * committed by the user, we write the results to the DB and make an
+     * non-revertable switch to STAT_CAT_IDLE.
+     */
+    
+    QList<PlayerPair> ppList = c.getPlayerPairs();
+    int catId = c.getId();
+    for (int i=0; i < ppList.count(); i++)
+    {
+      PlayerPair pp = ppList.at(i);
+      if (!(pp.hasPlayer2()))
+      {
+	int playerId = pp.getPlayer1().getId();
+	
+	QVariantList qvl;
+	qvl << PAIRS_CAT_REF << catId;
+	qvl << PAIRS_GRP_NUM << GRP_NUM__NOT_ASSIGNED;
+	qvl << PAIRS_PLAYER1_REF << playerId;
+	// leave out PAIRS_PLAYER2_REF to assign a NULL value
+	
+	db->getTab(TAB_PAIRS).insertRow(qvl);
+      }
+    }
+    
+    // update the category state
+    OBJ_STATE oldState = c.getState();  // this MUST be STAT_CAT_CONFIG, ensured by canFreezeConfig
+    c.setState(STAT_CAT_FROZEN);
+    emit categoryStatusChanged(c, oldState, STAT_CAT_FROZEN);
+    
+    return OK;
+  }
 
 
 //----------------------------------------------------------------------------

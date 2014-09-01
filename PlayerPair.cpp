@@ -32,6 +32,15 @@ namespace QTournament {
 
 //----------------------------------------------------------------------------
 
+  PlayerPair::PlayerPair(const Player& p1, int _pairId)
+  {
+    id1 = p1.getId();
+    id2 = -1;
+    pairId = _pairId;
+  }
+
+//----------------------------------------------------------------------------
+
   void PlayerPair::sortPlayers()
   {
     // if we have two players, sort the man first

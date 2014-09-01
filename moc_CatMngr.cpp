@@ -19,8 +19,8 @@
 
 QT_BEGIN_MOC_NAMESPACE
 struct qt_meta_stringdata_QTournament__CatMngr_t {
-    QByteArrayData data[15];
-    char stringdata[174];
+    QByteArrayData data[19];
+    char stringdata[224];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -43,13 +43,19 @@ QT_MOC_LITERAL(10, 95, 1),
 QT_MOC_LITERAL(11, 97, 25),
 QT_MOC_LITERAL(12, 123, 19),
 QT_MOC_LITERAL(13, 143, 17),
-QT_MOC_LITERAL(14, 161, 12)
+QT_MOC_LITERAL(14, 161, 12),
+QT_MOC_LITERAL(15, 174, 21),
+QT_MOC_LITERAL(16, 196, 9),
+QT_MOC_LITERAL(17, 206, 9),
+QT_MOC_LITERAL(18, 216, 7)
     },
     "QTournament::CatMngr\0playersPaired\0\0"
     "Category\0c\0Player\0p1\0p2\0playersSplit\0"
     "playerAddedToCategory\0p\0"
     "playerRemovedFromCategory\0beginCreateCategory\0"
-    "endCreateCategory\0newCatSeqNum"
+    "endCreateCategory\0newCatSeqNum\0"
+    "categoryStatusChanged\0OBJ_STATE\0"
+    "fromState\0toState"
 };
 #undef QT_MOC_LITERAL
 
@@ -59,20 +65,21 @@ static const uint qt_meta_data_QTournament__CatMngr[] = {
        7,       // revision
        0,       // classname
        0,    0, // classinfo
-       6,   14, // methods
+       7,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
        0,       // flags
-       6,       // signalCount
+       7,       // signalCount
 
  // signals: name, argc, parameters, tag, flags
-       1,    3,   44,    2, 0x06 /* Public */,
-       8,    3,   51,    2, 0x06 /* Public */,
-       9,    2,   58,    2, 0x06 /* Public */,
-      11,    2,   63,    2, 0x06 /* Public */,
-      12,    0,   68,    2, 0x06 /* Public */,
-      13,    1,   69,    2, 0x06 /* Public */,
+       1,    3,   49,    2, 0x06 /* Public */,
+       8,    3,   56,    2, 0x06 /* Public */,
+       9,    2,   63,    2, 0x06 /* Public */,
+      11,    2,   68,    2, 0x06 /* Public */,
+      12,    0,   73,    2, 0x06 /* Public */,
+      13,    1,   74,    2, 0x06 /* Public */,
+      15,    3,   77,    2, 0x06 /* Public */,
 
  // signals: parameters
     QMetaType::Void, 0x80000000 | 3, 0x80000000 | 5, 0x80000000 | 5,    4,    6,    7,
@@ -81,6 +88,7 @@ static const uint qt_meta_data_QTournament__CatMngr[] = {
     QMetaType::Void, 0x80000000 | 5, 0x80000000 | 3,   10,    4,
     QMetaType::Void,
     QMetaType::Void, QMetaType::Int,   14,
+    QMetaType::Void, 0x80000000 | 3, 0x80000000 | 16, 0x80000000 | 16,    4,   17,   18,
 
        0        // eod
 };
@@ -96,6 +104,7 @@ void QTournament::CatMngr::qt_static_metacall(QObject *_o, QMetaObject::Call _c,
         case 3: _t->playerRemovedFromCategory((*reinterpret_cast< const Player(*)>(_a[1])),(*reinterpret_cast< const Category(*)>(_a[2]))); break;
         case 4: _t->beginCreateCategory(); break;
         case 5: _t->endCreateCategory((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 6: _t->categoryStatusChanged((*reinterpret_cast< const Category(*)>(_a[1])),(*reinterpret_cast< const OBJ_STATE(*)>(_a[2])),(*reinterpret_cast< const OBJ_STATE(*)>(_a[3]))); break;
         default: ;
         }
     } else if (_c == QMetaObject::IndexOfMethod) {
@@ -137,6 +146,12 @@ void QTournament::CatMngr::qt_static_metacall(QObject *_o, QMetaObject::Call _c,
                 *result = 5;
             }
         }
+        {
+            typedef void (CatMngr::*_t)(const Category & , const OBJ_STATE , const OBJ_STATE );
+            if (*reinterpret_cast<_t *>(func) == static_cast<_t>(&CatMngr::categoryStatusChanged)) {
+                *result = 6;
+            }
+        }
     }
 }
 
@@ -167,13 +182,13 @@ int QTournament::CatMngr::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 6)
+        if (_id < 7)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 6;
+        _id -= 7;
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 6)
+        if (_id < 7)
             *reinterpret_cast<int*>(_a[0]) = -1;
-        _id -= 6;
+        _id -= 7;
     }
     return _id;
 }
@@ -217,5 +232,12 @@ void QTournament::CatMngr::endCreateCategory(int _t1)
 {
     void *_a[] = { 0, const_cast<void*>(reinterpret_cast<const void*>(&_t1)) };
     QMetaObject::activate(this, &staticMetaObject, 5, _a);
+}
+
+// SIGNAL 6
+void QTournament::CatMngr::categoryStatusChanged(const Category & _t1, const OBJ_STATE _t2, const OBJ_STATE _t3)
+{
+    void *_a[] = { 0, const_cast<void*>(reinterpret_cast<const void*>(&_t1)), const_cast<void*>(reinterpret_cast<const void*>(&_t2)), const_cast<void*>(reinterpret_cast<const void*>(&_t3)) };
+    QMetaObject::activate(this, &staticMetaObject, 6, _a);
 }
 QT_END_MOC_NAMESPACE

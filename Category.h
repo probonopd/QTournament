@@ -52,7 +52,7 @@ namespace QTournament
     ERR canSplitPlayers(const Player& p1, const Player& p2) const;
     Player getPartner(const Player& p) const;
     bool hasUnpairedPlayers() const;
-    Category* convertToSpecializedObject();
+    Category* convertToSpecializedObject() const;
 
     
     virtual ~Category() {};

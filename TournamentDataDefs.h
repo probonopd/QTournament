@@ -125,6 +125,7 @@ namespace QTournament
 #define PAIRS_PLAYER1_REF QString("Player1RefId")
 #define PAIRS_PLAYER2_REF QString("Player2RefId")
 #define PAIRS_CAT_REF QString("CategoryRefId")
+#define PAIRS_GRP_NUM QString("GroupNumber")
   
 //----------------------------------------------------------------------------
 
@@ -243,7 +244,11 @@ namespace QTournament
 
   enum OBJ_STATE {
     STAT_PL_IDLE,
-    STAT_CAT_CONFIG
+    STAT_CAT_CONFIG,
+    STAT_CAT_FROZEN,  // intermediate state in which the category can be configured for the first round
+    STAT_CAT_IDLE,
+    STAT_CAT_PLAYING,
+    STAT_CAT_FINALIZED
   };
   
 //----------------------------------------------------------------------------
@@ -300,6 +305,10 @@ namespace QTournament
 #define GROUP_NUM__QUARTERFINAL -4
 #define GROUP_NUM__L16 -8
 #define GROUP_NUM__ITERATION -100  // just a normal round in Swiss Ladder, Random Matches, ...
+  
+// A special group number indicating that the player is
+// not in any group at all
+#define GRP_NUM__NOT_ASSIGNED -1
     
 //----------------------------------------------------------------------------
 

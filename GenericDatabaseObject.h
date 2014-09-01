@@ -33,7 +33,7 @@ namespace QTournament
     }
     
     OBJ_STATE getState() const;
-    void setState(OBJ_STATE newState);
+    void setState(OBJ_STATE newState) const;
     int getSeqNum() const;
 
   protected:

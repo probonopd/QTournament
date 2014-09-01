@@ -40,14 +40,14 @@ void tstGroupDef::testConstructors()
   CPPUNIT_ASSERT_THROW(GroupDef(3, -1), std::invalid_argument);
   
   // test the copy constructor
-  g = GroupDef(8, 88);
+  g = GroupDef(4, 44);
   GroupDef gCopy = GroupDef(g);
-  g.setGroupSize(7);  // modify original
-  g.setNumGroups(77); // modify original
-  CPPUNIT_ASSERT(g.getGroupSize() == 7);  // test original
-  CPPUNIT_ASSERT(g.getNumGroups() == 77);  // test original
-  CPPUNIT_ASSERT(gCopy.getGroupSize() == 8);  // test copy
-  CPPUNIT_ASSERT(gCopy.getNumGroups() == 88);  // test copy
+  g.setGroupSize(3);  // modify original
+  g.setNumGroups(33); // modify original
+  CPPUNIT_ASSERT(g.getGroupSize() == 3);  // test original
+  CPPUNIT_ASSERT(g.getNumGroups() == 33);  // test original
+  CPPUNIT_ASSERT(gCopy.getGroupSize() == 4);  // test copy
+  CPPUNIT_ASSERT(gCopy.getNumGroups() == 44);  // test copy
   
   printEndMsg();
 }
