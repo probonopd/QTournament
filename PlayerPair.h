@@ -20,9 +20,9 @@ namespace QTournament
     PlayerPair(const Player& p1, int _pairId);
     PlayerPair(const Player& p1);
     bool hasPlayer2() const;
-    Player getPlayer1();
-    Player getPlayer2();
-    QString getDisplayName(int maxLen = 0);
+    Player getPlayer1() const;
+    Player getPlayer2() const;
+    QString getDisplayName(int maxLen = 0) const;
     int getPairId();
 
   private:
@@ -31,6 +31,8 @@ namespace QTournament
     int pairId;
     void sortPlayers();
   } ;
+  
+  typedef QList<PlayerPair> PlayerPairList;
 
 }
 #endif	/* PLAYERPAIR_H */

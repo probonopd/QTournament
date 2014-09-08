@@ -22,6 +22,7 @@
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QWidget>
 #include "CatTabWidget.h"
+#include "GroupAssignmentListWidget.h"
 #include "PlayerTabWidget.h"
 #include "TeamTabWidget.h"
 
@@ -47,6 +48,7 @@ public:
     PlayerTabWidget *tabPlayers;
     QVBoxLayout *verticalLayout_6;
     CatTabWidget *tabCategories;
+    GroupAssignmentListWidget *tab;
     QMenuBar *menubar;
     QMenu *menuTournament;
     QMenu *menuTesting;
@@ -98,6 +100,9 @@ public:
         tabCategories = new CatTabWidget();
         tabCategories->setObjectName(QStringLiteral("tabCategories"));
         mainTab->addTab(tabCategories, QString());
+        tab = new GroupAssignmentListWidget();
+        tab->setObjectName(QStringLiteral("tab"));
+        mainTab->addTab(tab, QString());
 
         verticalLayout->addWidget(mainTab);
 
@@ -158,7 +163,8 @@ public:
         actionScenario03->setText(QApplication::translate("MainFrame", "Scenario03", 0));
         mainTab->setTabText(mainTab->indexOf(tabTeams), QApplication::translate("MainFrame", "Teams", 0));
         mainTab->setTabText(mainTab->indexOf(tabPlayers), QApplication::translate("MainFrame", "Players", 0));
-        mainTab->setTabText(mainTab->indexOf(tabCategories), QApplication::translate("MainFrame", "Page", 0));
+        mainTab->setTabText(mainTab->indexOf(tabCategories), QApplication::translate("MainFrame", "Categories", 0));
+        mainTab->setTabText(mainTab->indexOf(tab), QApplication::translate("MainFrame", "Tmp", 0));
         menuTournament->setTitle(QApplication::translate("MainFrame", "Tournament", 0));
         menuTesting->setTitle(QApplication::translate("MainFrame", "Testing", 0));
     } // retranslateUi

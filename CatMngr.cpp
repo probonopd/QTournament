@@ -142,10 +142,10 @@ namespace QTournament
     }
     
     // temporarily store all existing player pairs
-    QList<PlayerPair> pairList = c.getPlayerPairs();
+    PlayerPairList pairList = c.getPlayerPairs();
     
     // check if we can split all pairs
-    QList<PlayerPair>::const_iterator it = pairList.constBegin();
+    PlayerPairList::const_iterator it = pairList.constBegin();
     bool canSplit = true;
     for (it = pairList.constBegin(); it != pairList.constEnd(); ++it)
     {
@@ -244,9 +244,9 @@ namespace QTournament
     // if we de-active "don't care" in a mixed category, we have to split
     // all non-compliant pairs. The players itself can remain in the category
     if ((s != DONT_CARE) && (c.getMatchType() == MIXED)) {
-      QList<PlayerPair> allPairs = c.getPlayerPairs();
+      PlayerPairList allPairs = c.getPlayerPairs();
       
-      QList<PlayerPair>::const_iterator it;
+      PlayerPairList::const_iterator it;
       for (it = allPairs.constBegin(); it != allPairs.constEnd(); ++it) {
 	PlayerPair pp = *it;
 	
@@ -676,7 +676,7 @@ namespace QTournament
      * non-revertable switch to STAT_CAT_IDLE.
      */
     
-    QList<PlayerPair> ppList = c.getPlayerPairs();
+    PlayerPairList ppList = c.getPlayerPairs();
     int catId = c.getId();
     for (int i=0; i < ppList.count(); i++)
     {
@@ -705,6 +705,48 @@ namespace QTournament
 
 
 //----------------------------------------------------------------------------
+  
+  ERR CatMngr::unfreezeConfig(const Category& c)
+  {
+    OBJ_STATE oldState = c.getState();
+    
+    if (oldState == STAT_CAT_CONFIG)
+    {
+      return CATEGORY_NOT_YET_FROZEN;
+    }
+    
+    if (oldState != STAT_CAT_FROZEN)
+    {
+      return CATEGORY_UNFREEZEABLE;
+    }
+    
+    // remove all player pairs without a partner from the official pair list
+    // See also the constraints in freezeConfig()
+    PlayerPairList ppList = c.getPlayerPairs();
+    int catId = c.getId();
+    DbTab ppTab = db->getTab(TAB_PAIRS);
+    for (int i=0; i < ppList.count(); i++)
+    {
+      PlayerPair pp = ppList.at(i);
+      if (pp.hasPlayer2()) continue;  // this is a "real" pair and should survive
+      
+      // okay, we just encountered a player pair for removal
+      int ppId = pp.getPairId();
+      if (ppId < 1)
+      {
+	// We should never get here
+	throw std::runtime_error("Inconsistent player pair data!");
+      }
+      
+      // the actual removal
+      ppTab.deleteRowsByColumnValue("id", ppId);
+    }
+    // update the category state
+    c.setState(STAT_CAT_CONFIG);
+    emit categoryStatusChanged(c, STAT_CAT_FROZEN, STAT_CAT_CONFIG);
+    
+    return OK;
+  }
 
 
 //----------------------------------------------------------------------------

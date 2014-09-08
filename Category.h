@@ -45,7 +45,7 @@ namespace QTournament
     bool getParameter_bool(CAT_PARAMETER) const;
     QString getParameter_string(CAT_PARAMETER) const;
     bool setParameter(CAT_PARAMETER p, const QVariant& v);
-    QList<PlayerPair> getPlayerPairs() const;
+    PlayerPairList getPlayerPairs() const;
     QList<Player> getAllPlayersInCategory() const;
     bool isPaired(const Player& p) const;
     ERR canPairPlayers(const Player& p1, const Player& p2) const;

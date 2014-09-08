@@ -35,7 +35,9 @@ namespace QTournament
         NO_SUCH_MATCH_GROUP,
         CONFIG_ALREADY_FROZEN,
         UNPAIRED_PLAYERS,
-        INVALID_KO_CONFIG
+        INVALID_KO_CONFIG,
+        CATEGORY_NOT_YET_FROZEN,
+        CATEGORY_UNFREEZEABLE
     };
 }
 

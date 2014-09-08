@@ -45,7 +45,7 @@ namespace QTournament
     }
     
     // make sure we have a valid group configuration
-    QList<PlayerPair> pp = getPlayerPairs();
+    PlayerPairList pp = getPlayerPairs();
     KO_Config cfg = KO_Config(getParameter_string(GROUP_CONFIG));
     if (!(cfg.isValid(pp.count())))
     {

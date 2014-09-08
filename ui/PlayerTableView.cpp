@@ -16,6 +16,12 @@ PlayerTableView::PlayerTableView(QWidget* parent)
   emptyModel = new QStringListModel();
   
   connect(MainFrame::getMainFramePointer(), &MainFrame::tournamentOpened, this, &PlayerTableView::onTournamentOpened);
+  
+  // define a delegate for drawing the player items
+  itemDelegate = new PlayerItemDelegate(this);
+  setItemDelegate(itemDelegate);
+  
+  
 }
 
 //----------------------------------------------------------------------------
@@ -23,6 +29,7 @@ PlayerTableView::PlayerTableView(QWidget* parent)
 PlayerTableView::~PlayerTableView()
 {
   delete emptyModel;
+  delete itemDelegate;
 }
 
 //----------------------------------------------------------------------------
@@ -35,6 +42,10 @@ void PlayerTableView::onTournamentOpened(Tournament* _tnmt)
   
   // connect signals from the Tournament and TeamMngr with my slots
   connect(tnmt, &Tournament::tournamentClosed, this, &PlayerTableView::onTournamentClosed);
+  
+  // resize columns and rows to content once (we do not want permanent automatic resizing)
+  horizontalHeader()->resizeSections(QHeaderView::ResizeToContents);
+  verticalHeader()->resizeSections(QHeaderView::ResizeToContents);
 }
 
 //----------------------------------------------------------------------------

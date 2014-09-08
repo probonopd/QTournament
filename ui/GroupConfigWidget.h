@@ -40,14 +40,21 @@ public slots:
   
 private:
   Ui::GroupConfigWidget ui;
+  void onSpinBoxGroupCountChanged(int spinBoxIndex, int newVal);
+  void onSpinBoxGroupSizeChanged(int spinBoxIndex, int newVal);
+  int getSpinBoxIndexForGroupSize(int grpSize);
+  int getNextUnusedSpinBoxIndex();
   
   void applyDefaultConfig();
   void updateLabels();
   
-  int oldGroupSize1;
-  int oldGroupSize2;
-  int oldGroupSize3;
+  int oldGroupSize[3];
   int reqPlayers;
+  bool rangeControlEnabled;
+  bool pointersInitialized;
+  
+  QSpinBox* spGroupSize[3];
+  QSpinBox* spGroupCount[3];
 } ;
 
 #endif	/* _GROUPCONFIGWIDGET_H */

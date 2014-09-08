@@ -274,6 +274,18 @@ namespace QTournament {
 
 //----------------------------------------------------------------------------
 
+  int KO_Config::getNumGroups() const
+  {
+    int result = 0;
+    for (int i=0; i < grpDefs.count(); i++)
+    {
+      GroupDef g = grpDefs.at(i);
+      
+      result += g.getNumGroups();
+    }
+    
+    return result;
+  }
 
 //----------------------------------------------------------------------------
 

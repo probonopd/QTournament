@@ -30,7 +30,8 @@ namespace QTournament
 #define MAX_GROUP_COUNT 50
   
 //----------------------------------------------------------------------------
-    
+
+#define MAX_RANDOMIZATION_ROUNDS 100    // for group assignments, player pairs, etc.
 
 //----------------------------------------------------------------------------
     

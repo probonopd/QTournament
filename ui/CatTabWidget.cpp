@@ -10,6 +10,7 @@
 
 #include "CatTabWidget.h"
 #include "TournamentDataDefs.h"
+#include "dlgGroupAssignment.h"
 
 CatTabWidget::CatTabWidget()
 {
@@ -242,7 +243,7 @@ void CatTabWidget::updatePairs()
   
   // get the pair data from the selected category
   Category selCat = ui.catTableView->getSelectedCategory();
-  QList<PlayerPair> pairList = selCat.getPlayerPairs();
+  PlayerPairList pairList = selCat.getPlayerPairs();
   
   for (int i=0; i < pairList.count(); i++)
   {
@@ -624,7 +625,7 @@ void CatTabWidget::onBtnRunCatClicked()
   if (e == CONFIG_ALREADY_FROZEN)
   {
     QMessageBox::critical(this, tr("Run Category"),
-	    tr("This category has already been started (STAT = Frozen)"));
+	    tr("This category has already been started (STAT != Config)"));
   }
   else if (e == UNPAIRED_PLAYERS)
   {
@@ -647,6 +648,43 @@ void CatTabWidget::onBtnRunCatClicked()
     return;
   }
   
+  e = Tournament::getCatMngr()->freezeConfig(*selectedCat);
+  if (e != OK)   // after the checks above, this should never be true
+  {
+    QMessageBox::critical(this, tr("Run Category"),
+	    tr("Uncaptured error. Category has no valid configuration and can't be started"));
+  }
+  
+  /**
+   * Now the category is in status FROZEN.
+   * 
+   * Execute all GUI activities necessary for actually running the category
+   * but DO NOT MODIFY THE DATABASE until everything is confirmed by the user
+   * 
+   */
+  
+  // show the dialog for the initial group assignments, if necessary
+  if (selectedCat->needsGroupInitialization())
+  {
+    dlgGroupAssignment dlg(selectedCat);
+    dlg.setModal(true);
+    int result = dlg.exec();
+
+    if (result != QDialog::Accepted)
+    {
+      // undo all database changes
+      e = Tournament::getCatMngr()->unfreezeConfig(*selectedCat);
+      if (e != OK) // this should never be true
+      {
+	QMessageBox::critical(this, tr("Run Category"),
+		tr("Uncaptured error. Category has no valid configuration and can't be started.\nExpect data corruption for this category."));
+      }
+      
+      // clean-up and return
+      delete selectedCat;
+      return;
+    }
+  }
   delete selectedCat;
 }
 

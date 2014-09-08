@@ -9,6 +9,7 @@
 #define	PLAYERTABLEVIEW_H
 
 #include "Tournament.h"
+#include "delegates/PlayerItemDelegate.h"
 
 #include <QTableView>
 
@@ -29,6 +30,7 @@ public slots:
 private:
   Tournament* tnmt;
   QStringListModel* emptyModel;
+  PlayerItemDelegate* itemDelegate;
 
 };
 

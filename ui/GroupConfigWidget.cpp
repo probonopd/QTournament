@@ -11,8 +11,20 @@
 #include <QtWidgets/qmessagebox.h>
 
 GroupConfigWidget::GroupConfigWidget()
+: pointersInitialized(false)
 {
   ui.setupUi(this);
+  
+  // copy spin box pointers to an array for easier access
+  spGroupSize[0] = ui.spGroupSize1;
+  spGroupSize[1] = ui.spGroupSize2;
+  spGroupSize[2] = ui.spGroupSize3;
+  spGroupCount[0] = ui.spGroupCount1;
+  spGroupCount[1] = ui.spGroupCount2;
+  spGroupCount[2] = ui.spGroupCount3;
+  pointersInitialized = true;
+  
+  rangeControlEnabled = true;
 }
 
 //----------------------------------------------------------------------------
@@ -23,31 +35,33 @@ GroupConfigWidget::~GroupConfigWidget()
 
 //----------------------------------------------------------------------------
     
-GroupConfigWidget::GroupConfigWidget(QWidget* parent) : QWidget(parent)
+GroupConfigWidget::GroupConfigWidget(QWidget* parent) : QWidget(parent), pointersInitialized(false)
 {
   ui.setupUi(this);
   
-  // apply min / max values to the group size spin boxes
-  ui.spGroupSize1->setMinimum(3);
-  ui.spGroupSize2->setMinimum(3);
-  ui.spGroupSize3->setMinimum(3);
-  ui.spGroupSize1->setMaximum(MAX_GROUP_SIZE);
-  ui.spGroupSize2->setMaximum(MAX_GROUP_SIZE);
-  ui.spGroupSize3->setMaximum(MAX_GROUP_SIZE);
-  ui.spGroupSize1->setValue(3);
-  ui.spGroupSize2->setValue(4);
-  ui.spGroupSize3->setValue(5);
-  oldGroupSize1 = 3;
-  oldGroupSize2 = 4;
-  oldGroupSize3 = 5;
+  // copy spin box pointers to an array for easier access
+  spGroupSize[0] = ui.spGroupSize1;
+  spGroupSize[1] = ui.spGroupSize2;
+  spGroupSize[2] = ui.spGroupSize3;
+  spGroupCount[0] = ui.spGroupCount1;
+  spGroupCount[1] = ui.spGroupCount2;
+  spGroupCount[2] = ui.spGroupCount3;
+  pointersInitialized = true;
   
+  // apply min / max values to the group size spin boxes and
   // set min values for the group count spin boxes
-  ui.spGroupCount1->setMinimum(0);
-  ui.spGroupCount2->setMinimum(0);
-  ui.spGroupCount3->setMinimum(0);
-  ui.spGroupCount1->setMaximum(MAX_GROUP_COUNT);
-  ui.spGroupCount2->setMaximum(MAX_GROUP_COUNT);
-  ui.spGroupCount3->setMaximum(MAX_GROUP_COUNT);
+  for (int i=0; i<3; i++)
+  {
+    spGroupSize[i]->setMinimum(3);
+    spGroupSize[i]->setMaximum(MAX_GROUP_SIZE);
+    spGroupSize[i]->setValue(i+3);
+    oldGroupSize[i] = i+3;
+    
+    spGroupCount[i]->setMinimum(0);
+    spGroupCount[i]->setMaximum(MAX_GROUP_COUNT);
+  }
+    
+  rangeControlEnabled = true;
   
   applyDefaultConfig();
 }
@@ -95,34 +109,30 @@ void GroupConfigWidget::applyConfig(const KO_Config& cfg)
   ui.cbSecondSurvives->setEnabled(lvl != FINAL);
   
   // update the spin boxes for the group count / size values
+
+  rangeControlEnabled = false;   // temporarily disable range control to prevent the range control logic from overwriting values
+  for (int i=0; i<3; i++) spGroupCount[i]->setValue(0); // clear all old group counts
+
   int nGroupDefs = cfg.getNumGroupDefs();
-  if (nGroupDefs >= 1)
+  int iMax = std::min(3, nGroupDefs);
+
+  // loop over all group definitions and set spin boxes accordingly
+  for (int i=0; i<iMax; i++)
   {
-    GroupDef g = cfg.getGroupDef(0);
-    ui.spGroupCount1->setValue(g.getNumGroups());
-    ui.spGroupSize1->setValue(g.getGroupSize());
-    oldGroupSize1 = g.getGroupSize();
-  } else {
-    ui.spGroupCount1->setValue(0);
+    GroupDef g = cfg.getGroupDef(i);
+    int spinBoxIndex = getSpinBoxIndexForGroupSize(g.getGroupSize());
+    if (spinBoxIndex == -1) spinBoxIndex = getNextUnusedSpinBoxIndex();
+    if (spinBoxIndex == -1)  // theoretically, this should never occur
+    {
+      throw std::runtime_error("Invalid group configuration encountered!");
+    }
+    spGroupCount[spinBoxIndex]->setValue(g.getNumGroups());
+    spGroupSize[spinBoxIndex]->setValue(g.getGroupSize());
+    oldGroupSize[spinBoxIndex] = g.getGroupSize();
   }
-  if (nGroupDefs >= 2)
-  {
-    GroupDef g = cfg.getGroupDef(1);
-    ui.spGroupCount2->setValue(g.getNumGroups());
-    ui.spGroupSize2->setValue(g.getGroupSize());
-    oldGroupSize2 = g.getGroupSize();
-  } else {
-    ui.spGroupCount2->setValue(0);
-  }
-  if (nGroupDefs >= 3)
-  {
-    GroupDef g = cfg.getGroupDef(2);
-    ui.spGroupCount3->setValue(g.getNumGroups());
-    ui.spGroupSize3->setValue(g.getGroupSize());
-    oldGroupSize3 = g.getGroupSize();
-  } else {
-    ui.spGroupCount3->setValue(0);
-  }
+  
+  // re-enable range control for the spin boxes
+  rangeControlEnabled = true;
   
   updateLabels();
   
@@ -169,17 +179,12 @@ KO_Config GroupConfigWidget::getConfig()
   bool secondSurvives = ui.cbSecondSurvives->isChecked();
   
   GroupDefList gdl;
-  if (ui.spGroupCount1->value() > 0)
+  for (int i=0; i<3; i++)
   {
-    gdl.append(GroupDef(ui.spGroupSize1->value(), ui.spGroupCount1->value()));
-  }
-  if (ui.spGroupCount2->value() > 0)
-  {
-    gdl.append(GroupDef(ui.spGroupSize2->value(), ui.spGroupCount2->value()));
-  }
-  if (ui.spGroupCount3->value() > 0)
-  {
-    gdl.append(GroupDef(ui.spGroupSize3->value(), ui.spGroupCount3->value()));
+    if (spGroupCount[i]->value() > 0)
+    {
+      gdl.append(GroupDef(spGroupSize[i]->value(), spGroupCount[i]->value()));
+    }
   }
   
   return KO_Config(koLvl, secondSurvives, gdl);
@@ -189,6 +194,8 @@ KO_Config GroupConfigWidget::getConfig()
 
 void GroupConfigWidget::onStartLevelChanged(int newIndex)
 {
+  if (!pointersInitialized) return;
+  
   // fake a complete update of the widget, because if we switch to/from
   // FINALS as the start level, we have to activate / deactivate some
   // widgets
@@ -209,117 +216,42 @@ void GroupConfigWidget::onSecondSurvivesChanged()
 
 void GroupConfigWidget::onSpinBoxGroupCount1Changed(int newVal)
 {
-  QSpinBox* sb = ui.spGroupCount1;
-  
-  if (newVal < 0) sb->setValue(0);
-  updateLabels();
-  emit groupConfigChanged(getConfig());
+  onSpinBoxGroupCountChanged(0, newVal);
 }
 
 //----------------------------------------------------------------------------
 
 void GroupConfigWidget::onSpinBoxGroupCount2Changed(int newVal)
 {
-  QSpinBox* sb = ui.spGroupCount2;
-  
-  if (newVal < 0) sb->setValue(0);
-  updateLabels();
-  emit groupConfigChanged(getConfig());
+  onSpinBoxGroupCountChanged(1, newVal);
 }
 
 //----------------------------------------------------------------------------
 
 void GroupConfigWidget::onSpinBoxGroupCount3Changed(int newVal)
 {
-  QSpinBox* sb = ui.spGroupCount3;
-  
-  if (newVal < 0) sb->setValue(0);
-  updateLabels();
-  emit groupConfigChanged(getConfig());
+  onSpinBoxGroupCountChanged(2, newVal);
 }
 
 //----------------------------------------------------------------------------
     
 void GroupConfigWidget::onSpinBoxGroupSize1Changed(int newVal)
 {
-  QSpinBox* sb = ui.spGroupSize1;
-  
-  // avoid the same group size in two or more group defs
-  bool hasIncreased = (newVal > oldGroupSize1);  
-  while ((newVal == ui.spGroupSize2->value()) || (newVal == ui.spGroupSize3->value()))
-  {
-    if (hasIncreased) newVal++;
-    else newVal--;
-  }
-  
-  // avoid too small or too large values
-  if ((newVal < 3) || (newVal > MAX_GROUP_SIZE))
-  {
-    sb->setValue(oldGroupSize1);
-    return;
-  }
-  
-  oldGroupSize1 = newVal;
-  sb->setValue(newVal);
-  
-  updateLabels();
-  emit groupConfigChanged(getConfig());
+  onSpinBoxGroupSizeChanged(0, newVal);
 }
 
 //----------------------------------------------------------------------------
     
 void GroupConfigWidget::onSpinBoxGroupSize2Changed(int newVal)
 {
-  QSpinBox* sb = ui.spGroupSize2;
-  
-  // avoid the same group size in two or more group defs
-  bool hasIncreased = (newVal > oldGroupSize2);  
-  while ((newVal == ui.spGroupSize1->value()) || (newVal == ui.spGroupSize3->value()))
-  {
-    if (hasIncreased) newVal++;
-    else newVal--;
-  }
-  
-  // avoid too small or too large values
-  if ((newVal < 3) || (newVal > MAX_GROUP_SIZE))
-  {
-    sb->setValue(oldGroupSize2);
-    return;
-  }
-  
-  oldGroupSize2 = newVal;
-  sb->setValue(newVal);
-  
-  updateLabels();
-  emit groupConfigChanged(getConfig());
+  onSpinBoxGroupSizeChanged(1, newVal);
 }
 
 //----------------------------------------------------------------------------
     
 void GroupConfigWidget::onSpinBoxGroupSize3Changed(int newVal)
 {
-  QSpinBox* sb = ui.spGroupSize3;
-  
-  // avoid the same group size in two or more group defs
-  bool hasIncreased = (newVal > oldGroupSize3);  
-  while ((newVal == ui.spGroupSize2->value()) || (newVal == ui.spGroupSize1->value()))
-  {
-    if (hasIncreased) newVal++;
-    else newVal--;
-  }
-  
-  // avoid too small or too large values
-  if ((newVal < 3) || (newVal > MAX_GROUP_SIZE))
-  {
-    sb->setValue(oldGroupSize3);
-    return;
-  }
-  
-  oldGroupSize3 = newVal;
-  sb->setValue(newVal);
-  
-  updateLabels();
-  emit groupConfigChanged(getConfig());
+  onSpinBoxGroupSizeChanged(2, newVal);
 }
 
 //----------------------------------------------------------------------------
@@ -333,16 +265,82 @@ void GroupConfigWidget::setRequiredPlayersCount(int cnt)
 }
 
 //----------------------------------------------------------------------------
-    
+
+void GroupConfigWidget::onSpinBoxGroupCountChanged(int spinBoxIndex, int newVal)
+{
+  if (!rangeControlEnabled) return;
+  
+  QSpinBox* sb = spGroupCount[spinBoxIndex];
+  
+  if (newVal < 0) sb->setValue(0);
+  if (newVal > MAX_GROUP_COUNT) sb->setValue(MAX_GROUP_COUNT);
+  updateLabels();
+  emit groupConfigChanged(getConfig());
+}
 
 //----------------------------------------------------------------------------
+
+void GroupConfigWidget::onSpinBoxGroupSizeChanged(int spinBoxIndex, int newVal)
+{
+  if (!rangeControlEnabled) return;
+  
+  QSpinBox* sb = spGroupSize[spinBoxIndex];
+  
+  // avoid the same group size in two or more group defs
+  bool hasIncreased = (newVal > oldGroupSize[spinBoxIndex]);
+  bool conflictFound = true;
+  while (conflictFound)
+  {
+    conflictFound = false;
+    for (int i=0; i<3; i++)
+    {
+      if ((i != spinBoxIndex) && (spGroupSize[i]->value() == newVal)) conflictFound = true;
+    }
     
+    if (conflictFound)
+    {
+      if (hasIncreased) newVal++;
+      else newVal--;
+    }
+  }
+  
+  // avoid too small or too large values
+  if ((newVal < 3) || (newVal > MAX_GROUP_SIZE))
+  {
+    sb->setValue(oldGroupSize[spinBoxIndex]);
+    return;
+  }
+  
+  oldGroupSize[spinBoxIndex] = newVal;
+  sb->setValue(newVal);
+  
+  updateLabels();
+  emit groupConfigChanged(getConfig());
+}
 
 //----------------------------------------------------------------------------
-    
+
+int GroupConfigWidget::getSpinBoxIndexForGroupSize(int grpSize)
+{
+  for (int i=0; i<3; i++)
+  {
+    if (spGroupSize[i]->value() == grpSize) return i;
+  }
+  
+  return -1;
+}
 
 //----------------------------------------------------------------------------
-    
+
+int GroupConfigWidget::getNextUnusedSpinBoxIndex()
+{
+  for (int i=0; i<3; i++)
+  {
+    if (spGroupCount[i]->value() == 0) return i;
+  }
+  
+  return -1;
+}
 
 //----------------------------------------------------------------------------
     

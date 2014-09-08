@@ -34,6 +34,7 @@ namespace QTournament
     GroupDef getGroupDef(int i) const;
     int getNumReqGroups() const;
     GroupDefList getGroupDefList() const;
+    int getNumGroups() const;
     
     void setStartLevel(KO_START newLvl);
     void setSecondSurvives(bool newSurvive);

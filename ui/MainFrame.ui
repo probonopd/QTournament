@@ -48,7 +48,12 @@
         </widget>
         <widget class="CatTabWidget" name="tabCategories">
          <attribute name="title">
-          <string>Page</string>
+          <string>Categories</string>
+         </attribute>
+        </widget>
+        <widget class="GroupAssignmentListWidget" name="tab">
+         <attribute name="title">
+          <string>Tmp</string>
          </attribute>
         </widget>
        </widget>
@@ -148,6 +153,12 @@
    <class>CatTabWidget</class>
    <extends>QWidget</extends>
    <header>CatTabWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>GroupAssignmentListWidget</class>
+   <extends>QWidget</extends>
+   <header>GroupAssignmentListWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

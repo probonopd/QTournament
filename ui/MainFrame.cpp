@@ -200,6 +200,13 @@ void MainFrame::setupTestScenario(int scenarioID)
       Player p = pmngr->getPlayer(i + 7);   // the first six IDs are already used by previous ini-functions above
       if (i < 40) ls.addPlayer(p);
     }
+    
+    // create and set a valid group configuration for LS
+    GroupDef d = GroupDef(5, 8);
+    GroupDefList gdl;
+    gdl.append(d);
+    KO_Config cfg(QUARTER, false, gdl);
+    ls.setParameter(GROUP_CONFIG, cfg.toString());
   }
 
   enableControls(true);

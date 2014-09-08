@@ -260,7 +260,7 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  QList<PlayerPair> Category::getPlayerPairs() const
+  PlayerPairList Category::getPlayerPairs() const
   {
     QList<PlayerPair> result;
     PlayerMngr* pmngr = Tournament::getPlayerMngr();
@@ -467,7 +467,7 @@ namespace QTournament
 
   bool Category::hasUnpairedPlayers() const
   {
-    QList<PlayerPair> pp = getPlayerPairs();
+    PlayerPairList pp = getPlayerPairs();
     for (int i=0; i < pp.count(); i++)
     {
       if (!(pp.at(i).hasPlayer2())) return true;
