@@ -16,6 +16,7 @@
 
 #include "Tournament.h"
 #include "PlayerPair.h"
+#include "delegates/PairItemDelegate.h"
 
 #define MIN_PLAYER_LIST_WIDTH 200
 
@@ -40,6 +41,7 @@ private:
   Ui::GroupAssignmentListWidget ui;
   QListWidget* lwGroup[MAX_GROUP_COUNT];
   QLabel* laGroup[MAX_GROUP_COUNT];
+  PairItemDelegate* delegate[MAX_GROUP_COUNT];
   bool isInitialized;
   int getColCountForGroupCount(int grpCount);
   QQueue<QListWidget*> selectionQueue;

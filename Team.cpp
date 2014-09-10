@@ -29,9 +29,31 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  QString Team::getName() const
+  QString Team::getName(int maxLen) const
   {
-    return row[GENERIC_NAME_FIELD_NAME].toString();
+    QString fullName = row[GENERIC_NAME_FIELD_NAME].toString();
+    
+    if (maxLen < 1)
+    {
+      return fullName;
+    }
+    
+    if (maxLen == 1)
+    {
+      return fullName.left(1);
+    }
+    
+    if (maxLen == 2)
+    {
+      return fullName.left(1) + ".";
+    }
+    
+    if ((maxLen > 2) && (maxLen < fullName.length()))
+    {
+      return fullName.left(maxLen - 1) + ".";
+    }
+    
+    return fullName;
   }
 
 //----------------------------------------------------------------------------

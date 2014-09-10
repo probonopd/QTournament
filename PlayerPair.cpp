@@ -118,7 +118,36 @@ namespace QTournament {
   }
 
 //----------------------------------------------------------------------------
-
+  
+  QString PlayerPair::getDisplayName_Team(int maxLen) const
+  {
+    if (maxLen < 0)
+    {
+      maxLen = 0;
+    }
+    
+    if ((maxLen > 0) && (maxLen < 9))
+    {
+      throw std::invalid_argument("Max len for display name too short!");
+    }
+    
+    if (hasPlayer2())
+    {
+      // reserve space for " / " if we have two players
+      maxLen = (maxLen == 0) ? 0 : maxLen - 3;
+      
+      // and cut the max len in half
+      if ((maxLen % 2) != 0)
+      {
+	maxLen -= 1;
+      }
+      maxLen = maxLen / 2;
+      
+      return getPlayer1().getTeam().getName(maxLen) + " / " + getPlayer2().getTeam().getName(maxLen);
+    }
+    
+    return getPlayer1().getTeam().getName(maxLen);
+  }
 
 //----------------------------------------------------------------------------
 

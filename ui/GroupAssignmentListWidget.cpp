@@ -75,6 +75,10 @@ void GroupAssignmentListWidget::setup(QList<PlayerPairList> ppListList)
       lwi->setData(Qt::DisplayRole, ppList.at(cnt).getDisplayName());
     }
     
+    // assign a delegate to the list widget for drawing the entries
+    delegate[i] = new PairItemDelegate();
+    lw->setItemDelegate(delegate[i]);
+    
     // connect the row-selection-changed-signal
     QObject::connect(lw, SIGNAL(itemSelectionChanged()), this, SLOT(onRowSelectionChanged()));
   }
@@ -111,6 +115,7 @@ void GroupAssignmentListWidget::teardown()
     if (lwGroup[i] == 0) continue;  // unused entry
     delete lwGroup[i];  // this should be redundant to the "delete child" above but it works. Weird.
     delete laGroup[i];  // this should be redundant to the "delete child" above but it works. Weird.
+    delete delegate[i];
     lwGroup[i] = 0;
     laGroup[i] = 0;
   }

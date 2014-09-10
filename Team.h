@@ -21,7 +21,7 @@ namespace QTournament
     friend class TeamMngr;
     
   public:
-    QString getName() const;
+    QString getName(int maxLen=0) const;
     ERR rename(const QString& newName);
 
   private:
