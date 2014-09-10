@@ -31,6 +31,7 @@ public slots:
 
 private slots:
   void onBtnRandomizeClicked();
+  void onBtnSwapClicked();
   
 } ;
 

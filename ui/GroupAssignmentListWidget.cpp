@@ -25,7 +25,7 @@ GroupAssignmentListWidget::GroupAssignmentListWidget(QWidget* parent)
   // prepare the scroll area for a resizable widget
   ui.scrollAreaWidgetContents->setLayout(ui.grid);
   ui.scrollArea->setWidgetResizable(true);
-  //ui.scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+  
 }
 
 //----------------------------------------------------------------------------
@@ -70,9 +70,24 @@ void GroupAssignmentListWidget::setup(QList<PlayerPairList> ppListList)
     PlayerPairList ppList = ppListList.at(i);
     for (int cnt=0; cnt < ppList.count(); cnt++)
     {
-      lw->addItem(ppList.at(cnt).getDisplayName());
+      QListWidgetItem* lwi = new QListWidgetItem(lw);
+      lwi->setData(Qt::UserRole, ppList.at(cnt).getPairId());
+      lwi->setData(Qt::DisplayRole, ppList.at(cnt).getDisplayName());
     }
+    
+    // connect the row-selection-changed-signal
+    QObject::connect(lw, SIGNAL(itemSelectionChanged()), this, SLOT(onRowSelectionChanged()));
   }
+  
+  // Initialize the selection
+  // There are always at least two groups with at least one entry each.
+  // So it's safe to select the first entries of the first two groups
+  inhibitItemChangedSig = true;
+  lwGroup[0]->setCurrentRow(0);
+  lwGroup[1]->setCurrentRow(0);
+  selectionQueue.enqueue(lwGroup[0]);
+  selectionQueue.enqueue(lwGroup[1]);
+  inhibitItemChangedSig = false;
   
   isInitialized = true;
 }
@@ -99,6 +114,9 @@ void GroupAssignmentListWidget::teardown()
     lwGroup[i] = 0;
     laGroup[i] = 0;
   }
+  
+  // clear all selection info
+  selectionQueue.clear();
   
   isInitialized = false;
 }
@@ -139,13 +157,71 @@ int GroupAssignmentListWidget::getColCountForGroupCount(int grpCount)
 }
 
 //----------------------------------------------------------------------------
-    
+
+void GroupAssignmentListWidget::onRowSelectionChanged()
+{
+  // Avoid "recursive" calls to this slot by the selection modifications issued below
+  if (inhibitItemChangedSig) return;
+  
+  if (!isInitialized) return;
+  
+  // determine which list box sent the signal
+  QListWidget* senderWidget = (QListWidget*) QObject::sender();
+  
+  // if the selection change happened in one of the already selected 
+  // list widgets, do nothing
+  if ((senderWidget == selectionQueue.first()) || (senderWidget == selectionQueue.last())) return;
+  
+  // get the widget with the oldest selection and remove the selection
+  QListWidget* oldestSelectionList = selectionQueue.dequeue();
+  inhibitItemChangedSig = true;  // block "recursive" calls to this slot triggered by the next calls
+  oldestSelectionList->clearSelection();
+  inhibitItemChangedSig = false;  // re-enable this slot
+  
+  // enqueue the new widget
+  selectionQueue.enqueue(senderWidget);
+  }
 
 //----------------------------------------------------------------------------
+
+PlayerPairList GroupAssignmentListWidget::getSelectedPlayerPairs()
+{
+  PlayerPairList result;
+  
+  if (isInitialized)
+  {
+    // we blindly assume that there is at least one item selected. Must be. ;)
+    int id1 = selectionQueue.first()->selectedItems()[0]->data(Qt::UserRole).toInt();
+    int id2 = selectionQueue.last()->selectedItems()[0]->data(Qt::UserRole).toInt();
     
+    result.append(Tournament::getPlayerMngr()->getPlayerPair(id1));
+    result.append(Tournament::getPlayerMngr()->getPlayerPair(id2));
+  }
+  
+  return result;
+}
 
 //----------------------------------------------------------------------------
-    
+
+void GroupAssignmentListWidget::swapSelectedPlayers()
+{
+  if (!isInitialized) return;
+  
+  QListWidgetItem* firstItem = selectionQueue.first()->selectedItems()[0];
+  QListWidgetItem* secondItem = selectionQueue.last()->selectedItems()[0];
+  
+  // temp. store the contents of the first item
+  int tmpPairId = firstItem->data(Qt::UserRole).toInt();
+  QString tmpName = firstItem->data(Qt::DisplayRole).toString();
+  
+  // overwrite the contents of the first item with the data of the second item
+  firstItem->setData(Qt::UserRole, secondItem->data(Qt::UserRole));
+  firstItem->setData(Qt::DisplayRole, secondItem->data(Qt::DisplayRole));
+  
+  // overwrite the second item with the temp. data of the first
+  secondItem->setData(Qt::UserRole, tmpPairId);
+  secondItem->setData(Qt::DisplayRole, tmpName);
+}
 
 //----------------------------------------------------------------------------
     

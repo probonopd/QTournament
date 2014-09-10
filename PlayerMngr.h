@@ -11,6 +11,7 @@
 #include "TournamentDB.h"
 #include "Team.h"
 #include "Player.h"
+#include "PlayerPair.h"
 #include "TournamentDataDefs.h"
 #include "TournamentErrorCodes.h"
 #include "DbTab.h"
@@ -39,6 +40,7 @@ namespace QTournament
     Player getPlayerBySeqNum(int seqNum);
     bool hasPlayer(int id);
     Player getPlayer(int id);
+    PlayerPair getPlayerPair(int id);
 
   private:
     DbTab playerTab;

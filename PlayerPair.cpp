@@ -112,7 +112,7 @@ namespace QTournament {
 
 //----------------------------------------------------------------------------
 
-  int PlayerPair::getPairId()
+  int PlayerPair::getPairId() const
   {
     return pairId;
   }

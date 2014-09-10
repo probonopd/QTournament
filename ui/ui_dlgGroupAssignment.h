@@ -99,6 +99,7 @@ public:
         QObject::connect(buttonBox, SIGNAL(accepted()), dlgGroupAssignment, SLOT(accept()));
         QObject::connect(buttonBox, SIGNAL(rejected()), dlgGroupAssignment, SLOT(reject()));
         QObject::connect(btnRandomize, SIGNAL(clicked()), dlgGroupAssignment, SLOT(onBtnRandomizeClicked()));
+        QObject::connect(btnSwap, SIGNAL(clicked()), dlgGroupAssignment, SLOT(onBtnSwapClicked()));
 
         QMetaObject::connectSlotsByName(dlgGroupAssignment);
     } // setupUi

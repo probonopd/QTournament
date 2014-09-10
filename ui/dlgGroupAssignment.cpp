@@ -8,6 +8,7 @@
 #include "dlgGroupAssignment.h"
 
 #include <QDateTime>
+#include <qt/QtWidgets/qmessagebox.h>
 
 dlgGroupAssignment::dlgGroupAssignment(Category* _cat)
 :cfg(KO_Config(QUARTER, false))    // dummy, just for formal initialization
@@ -78,6 +79,10 @@ void dlgGroupAssignment::onBtnRandomizeClicked()
 
 //----------------------------------------------------------------------------
 
+void dlgGroupAssignment::onBtnSwapClicked()
+{
+  ui.grpWidget->swapSelectedPlayers();
+}
 
 //----------------------------------------------------------------------------
 

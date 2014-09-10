@@ -12,6 +12,7 @@
 
 #include <QListWidget>
 #include <QLabel>
+#include <QQueue>
 
 #include "Tournament.h"
 #include "PlayerPair.h"
@@ -29,6 +30,11 @@ public:
   
   void setup(QList<PlayerPairList> ppListList);
   void teardown();
+  PlayerPairList getSelectedPlayerPairs();
+  void swapSelectedPlayers();
+  
+public slots:
+  void onRowSelectionChanged();
   
 private:
   Ui::GroupAssignmentListWidget ui;
@@ -36,6 +42,8 @@ private:
   QLabel* laGroup[MAX_GROUP_COUNT];
   bool isInitialized;
   int getColCountForGroupCount(int grpCount);
+  QQueue<QListWidget*> selectionQueue;
+  bool inhibitItemChangedSig;
 } ;
 
 #endif	/* _GROUPASSIGNMENTLISTWIDGET_H */

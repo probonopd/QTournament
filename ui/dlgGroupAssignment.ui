@@ -154,8 +154,25 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>btnSwap</sender>
+   <signal>clicked()</signal>
+   <receiver>dlgGroupAssignment</receiver>
+   <slot>onBtnSwapClicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>916</x>
+     <y>148</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>613</x>
+     <y>287</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>onBtnRandomizeClicked()</slot>
+  <slot>onBtnSwapClicked()</slot>
  </slots>
 </ui>

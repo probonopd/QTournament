@@ -238,6 +238,24 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
+  PlayerPair PlayerMngr::getPlayerPair(int id)
+  {
+    TabRow r = (*db)[TAB_PAIRS][id];
+    
+    Player p1(db, r[PAIRS_PLAYER1_REF].toInt());
+    
+    QVariant _id2 = r[PAIRS_PLAYER2_REF];
+    if (_id2.isNull())
+    {
+      // we have a "pair-without-partner"
+      return PlayerPair(p1, id);
+    }
+    
+    // we do have a second player
+    Player p2(db, _id2.toInt());
+    
+    return PlayerPair(p1, p2, id);
+  }
 
 //----------------------------------------------------------------------------
 

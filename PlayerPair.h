@@ -23,7 +23,7 @@ namespace QTournament
     Player getPlayer1() const;
     Player getPlayer2() const;
     QString getDisplayName(int maxLen = 0) const;
-    int getPairId();
+    int getPairId() const;
 
   private:
     int id1;
