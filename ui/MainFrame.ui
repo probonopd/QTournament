@@ -140,25 +140,25 @@
   <customwidget>
    <class>TeamTabWidget</class>
    <extends>QWidget</extends>
-   <header>TeamTabWidget.h</header>
+   <header>ui/TeamTabWidget.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>PlayerTabWidget</class>
    <extends>QWidget</extends>
-   <header>PlayerTabWidget.h</header>
+   <header>ui/PlayerTabWidget.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>CatTabWidget</class>
    <extends>QWidget</extends>
-   <header>CatTabWidget.h</header>
+   <header>ui/CatTabWidget.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>GroupAssignmentListWidget</class>
    <extends>QWidget</extends>
-   <header>GroupAssignmentListWidget.h</header>
+   <header>ui/GroupAssignmentListWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

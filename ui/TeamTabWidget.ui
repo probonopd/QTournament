@@ -45,7 +45,7 @@
   <customwidget>
    <class>TeamListView</class>
    <extends>QListView</extends>
-   <header>TeamListView.h</header>
+   <header>ui/TeamListView.h</header>
   </customwidget>
  </customwidgets>
  <resources>

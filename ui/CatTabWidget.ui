@@ -356,7 +356,7 @@ for each round</string>
   <customwidget>
    <class>CategoryTableView</class>
    <extends>QTableView</extends>
-   <header>CatTableView.h</header>
+   <header>ui/CatTableView.h</header>
    <slots>
     <slot>onCategoryDoubleClicked(QModelIndex)</slot>
    </slots>
@@ -364,7 +364,7 @@ for each round</string>
   <customwidget>
    <class>GroupConfigWidget</class>
    <extends>QWidget</extends>
-   <header>GroupConfigWidget.h</header>
+   <header>ui/GroupConfigWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

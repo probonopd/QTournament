@@ -49,7 +49,7 @@
   <customwidget>
    <class>PlayerTableView</class>
    <extends>QTableView</extends>
-   <header>PlayerTableView.h</header>
+   <header>ui/PlayerTableView.h</header>
   </customwidget>
  </customwidgets>
  <resources>
