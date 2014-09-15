@@ -10,7 +10,7 @@
 #include "KO_Config.h"
 #include "TournamentDataDefs.h"
 #include <QString>
-#include <qt/QtCore/qstringlist.h>
+#include <QStringList>
 
 namespace QTournament {
 

@@ -7,7 +7,7 @@
 
 #include <QLabel>
 #include <QScrollBar>
-#include <qt/QtWidgets/qmessagebox.h>
+#include <QMessageBox>
 
 #include "GroupAssignmentListWidget.h"
 

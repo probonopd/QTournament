@@ -8,7 +8,7 @@
 #include "dlgGroupAssignment.h"
 
 #include <QDateTime>
-#include <qt/QtWidgets/qmessagebox.h>
+#include <QMessageBox>
 
 dlgGroupAssignment::dlgGroupAssignment(Category* _cat)
 :cfg(KO_Config(QUARTER, false))    // dummy, just for formal initialization
