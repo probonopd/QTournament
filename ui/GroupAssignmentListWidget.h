@@ -12,6 +12,7 @@
 
 #include <QListWidget>
 #include <QLabel>
+#include <QList>
 #include <QQueue>
 
 #include "Tournament.h"
@@ -33,7 +34,8 @@ public:
   void teardown();
   PlayerPairList getSelectedPlayerPairs();
   void swapSelectedPlayers();
-  
+  QList<PlayerPairList> getGroupAssignments();
+
 public slots:
   void onRowSelectionChanged();
   

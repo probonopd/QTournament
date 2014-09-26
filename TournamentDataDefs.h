@@ -122,11 +122,12 @@ namespace QTournament
   
 //----------------------------------------------------------------------------
 
-#define TAB_PAIRS QString("PlayerPairs")
+#define TAB_PAIRS QString("PlayerPair")
 #define PAIRS_PLAYER1_REF QString("Player1RefId")
 #define PAIRS_PLAYER2_REF QString("Player2RefId")
 #define PAIRS_CAT_REF QString("CategoryRefId")
 #define PAIRS_GRP_NUM QString("GroupNumber")
+#define PAIRS_INITIAL_RANK QString("InitialRank")
   
 //----------------------------------------------------------------------------
 

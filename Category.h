@@ -53,6 +53,8 @@ namespace QTournament
     Player getPartner(const Player& p) const;
     bool hasUnpairedPlayers() const;
     Category* convertToSpecializedObject() const;
+    ERR canApplyGroupAssignment(QList<PlayerPairList> grpCfg);
+    ERR canApplyInitialRanking(PlayerPairList seed);
 
     
     virtual ~Category() {};

@@ -86,6 +86,10 @@ void dlgGroupAssignment::onBtnSwapClicked()
 
 //----------------------------------------------------------------------------
 
+QList<PlayerPairList> dlgGroupAssignment::getGroupAssignments()
+{
+  return ui.grpWidget->getGroupAssignments();
+}
 
 //----------------------------------------------------------------------------
 

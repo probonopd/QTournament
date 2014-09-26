@@ -229,7 +229,32 @@ void GroupAssignmentListWidget::swapSelectedPlayers()
 }
 
 //----------------------------------------------------------------------------
-    
+
+QList<PlayerPairList> GroupAssignmentListWidget::getGroupAssignments()
+{
+  QList<PlayerPairList> result;
+  if (!isInitialized) return result;
+
+  PlayerMngr* pmngr = Tournament::getPlayerMngr();
+  for (int i=0; i < MAX_GROUP_COUNT; i++)
+  {
+    if (lwGroup[i] == 0) continue;
+
+    QListWidget* lw = lwGroup[i];
+    PlayerPairList ppList;
+
+    for (int cnt; cnt < lw->count(); cnt++)
+    {
+      QListWidgetItem* it = lw->item(cnt);
+      int ppId = it->data(Qt::UserRole).toInt();
+      ppList.append(pmngr->getPlayerPair(ppId));
+    }
+
+    result.append(ppList);
+  }
+
+  return result;
+}
 
 //----------------------------------------------------------------------------
     

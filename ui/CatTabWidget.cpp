@@ -664,6 +664,7 @@ void CatTabWidget::onBtnRunCatClicked()
    */
   
   // show the dialog for the initial group assignments, if necessary
+  QList<PlayerPairList> ppListList;
   if (selectedCat->needsGroupInitialization())
   {
     dlgGroupAssignment dlg(selectedCat);
@@ -672,24 +673,143 @@ void CatTabWidget::onBtnRunCatClicked()
 
     if (result != QDialog::Accepted)
     {
-      // undo all database changes
-      e = Tournament::getCatMngr()->unfreezeConfig(*selectedCat);
-      if (e != OK) // this should never be true
-      {
-	QMessageBox::critical(this, tr("Run Category"),
-		tr("Uncaptured error. Category has no valid configuration and can't be started.\nExpect data corruption for this category."));
-      }
-      
-      // clean-up and return
-      delete selectedCat;
+      unfreezeAndCleanup(selectedCat);
+      return;
+    }
+
+    ppListList = dlg.getGroupAssignments();
+    if (ppListList.count() == 0)
+    {
+      QMessageBox::warning(this, tr("Run Category"), tr("Can't read group assignments.\nOperation cancelled."));
+      unfreezeAndCleanup(selectedCat);
       return;
     }
   }
+
+  // check if we need a seeded ranking, e.g. for single / double elimination rounds
+  PlayerPairList initialRanking;
+  if (selectedCat->needsInitialRanking())
+  {
+    QString msg = tr("This category needs a seeded ranking. That's not yet implemeted");
+    msg += tr("\nOperation cancelled.");
+    QMessageBox::warning(this, tr("Run Category"), msg);
+    unfreezeAndCleanup(selectedCat);
+    return;
+  }
+
+  /*
+   * If we made it to this point, the user accepted all configuration details
+   * for the selected category.
+   *
+   * Let's do a final check before we actually apply the settings and write to
+   * the database.
+   */
+  if (ppListList.count() != 0)
+  {
+    ERR e = selectedCat->canApplyGroupAssignment(ppListList);
+    if (e != OK)
+    {
+      QString msg = tr("Something is wrong with the group assignment. This shouldn't happen.\nFault:");
+      if (e == CATEGORY_NOT_YET_FROZEN)
+      {
+        msg += tr("Category state not valid for group assignments (STAT != FROZEN)");
+      }
+      else if (e == CATEGORY_NEEDS_NO_GROUP_ASSIGNMENTS)
+      {
+        msg += tr("This category needs no group assignments");
+      }
+      else if (e == INVALID_KO_CONFIG)
+      {
+        msg += tr("The configuration of the groups and the KO rounds is invalid.");
+      }
+      else if (e == INVALID_GROUP_NUM)
+      {
+        msg += tr("The number of assigned groups doesn't match the number of required groups.");
+      }
+      else if (e == INVALID_PLAYER_COUNT)
+      {
+        msg += tr("The number of assigned players doesn't match the number of players in the category.");
+      }
+      else if (e == PLAYER_ALREADY_IN_CATEGORY)
+      {
+        msg += tr("There are invalid players in the group assignments.");
+      }
+      else
+      {
+        msg += tr("Don't now...");
+      }
+      QMessageBox::warning(this, tr("Run Category"), msg);
+
+      unfreezeAndCleanup(selectedCat);
+      return;
+    }
+  }
+
+  if (initialRanking.count() != 0)
+  {
+    ERR e = selectedCat->canApplyInitialRanking(initialRanking);
+    if (e != OK)
+    {
+      QString msg = tr("Something is wrong with the initial ranking. This shouldn't happen.\nFault:");
+      if (e == CATEGORY_NOT_YET_FROZEN)
+      {
+        msg += tr("Category state not valid for setting the initial ranking (STAT != FROZEN)");
+      }
+      else if (e == CATEGORY_NEEDS_NO_SEEDING)
+      {
+        msg += tr("This category needs no initial ranking.");
+      }
+      else if (e == INVALID_PLAYER_COUNT)
+      {
+        msg += tr("The number of player in the initial ranking doesn't match the number of players in the category.");
+      }
+      else if (e == PLAYER_ALREADY_IN_CATEGORY)
+      {
+        msg += tr("There are invalid players in the initial ranking.");
+      }
+      else
+      {
+        msg += tr("Don't now...");
+      }
+      QMessageBox::warning(this, tr("Run Category"), msg);
+
+      unfreezeAndCleanup(selectedCat);
+      return;
+    }
+  }
+
+  /*
+   * If we made it to this point, it is safe to apply the settings and write to
+   * the database.
+   */
+
+
   delete selectedCat;
 }
 
 //----------------------------------------------------------------------------
-    
+
+/*
+ * NOTE: this method deletes the object that the parameter points to!
+ * Do not use the provided pointer anymore after calling this function!
+ */
+bool CatTabWidget::unfreezeAndCleanup(Category *selectedCat)
+{
+  if (selectedCat == 0) return false;
+  if (selectedCat->getState() != STAT_CAT_FROZEN) return false;
+
+  // undo all database changes that happened during freezing
+  ERR e = Tournament::getCatMngr()->unfreezeConfig(*selectedCat);
+  if (e != OK) // this should never be true
+  {
+    QMessageBox::critical(this, tr("Run Category"),
+            tr("Uncaptured error. Category has no valid configuration and can't be started.\nExpect data corruption for this category."));
+  }
+
+  // clean-up and return
+  delete selectedCat;
+  return (e == OK);
+}
 
 //----------------------------------------------------------------------------
     

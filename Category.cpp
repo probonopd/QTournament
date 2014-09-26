@@ -497,9 +497,102 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
+  ERR Category::canApplyGroupAssignment(QList<PlayerPairList> grpCfg)
+  {
+    if (getState() != STAT_CAT_FROZEN) return CATEGORY_NOT_YET_FROZEN;
+
+    Category* specializedCat = convertToSpecializedObject();
+    if (!(specializedCat->needsGroupInitialization()))
+    {
+      delete specializedCat;
+      return CATEGORY_NEEDS_NO_GROUP_ASSIGNMENTS;
+    }
+
+    delete specializedCat;
+
+    KO_Config cfg = KO_Config(getParameter(GROUP_CONFIG).toString());
+    if (!(cfg.isValid())) return INVALID_KO_CONFIG;
+
+    // check if the grpCfg matches the KO_Config
+    if (grpCfg.count() != cfg.getNumGroups()) return INVALID_GROUP_NUM;
+    int pairsInGrpCfg = 0;
+    for (int i=0; i<grpCfg.count(); i++)
+    {
+      pairsInGrpCfg += grpCfg.at(i).count();
+    }
+    int pairsInCategory = getPlayerPairs().count();
+    if (pairsInCategory != pairsInGrpCfg) return INVALID_PLAYER_COUNT;
+
+    // make sure we only have player pairs that actually belong to this category
+    PlayerPairList allPairs = getPlayerPairs();
+    for (int i=0; i<grpCfg.count(); i++)
+    {
+      PlayerPairList thisGroup = grpCfg.at(i);
+
+      for (int cnt=0; cnt < thisGroup.count(); cnt++)
+      {
+        int ppId = thisGroup.at(cnt).getPairId();
+
+        bool isValid = false;
+        for (int n=0; n < allPairs.count(); n++)
+        {
+          if (allPairs.at(n).getPairId() == ppId)
+          {
+            isValid = true;
+            allPairs.removeAt(n);  // reduce the number of checks for the next loop
+            break;
+          }
+        }
+
+        if (!isValid) return PLAYER_NOT_IN_CATEGORY;
+      }
+    }
+
+    // okay, we're good to go!
+    return OK;
+  }
 
   //----------------------------------------------------------------------------
 
+  ERR Category::canApplyInitialRanking(PlayerPairList seed)
+  {
+    if (getState() != STAT_CAT_FROZEN) return CATEGORY_NOT_YET_FROZEN;
+
+    Category* specializedCat = convertToSpecializedObject();
+    if (!(specializedCat->needsInitialRanking()))
+    {
+      delete specializedCat;
+      return CATEGORY_NEEDS_NO_SEEDING;
+    }
+
+    delete specializedCat;
+
+    int pairsInCategory = getPlayerPairs().count();
+    if (pairsInCategory != seed.count()) return INVALID_PLAYER_COUNT;
+
+    // make sure we only have player pairs that actually belong to this category
+    PlayerPairList allPairs = getPlayerPairs();
+    for (int i=0; i<seed.count(); i++)
+    {
+      int ppId = seed.at(i).getPairId();
+
+      bool isValid = false;
+      for (int n=0; n < allPairs.count(); n++)
+      {
+        if (allPairs.at(n).getPairId() == ppId)
+        {
+          isValid = true;
+          allPairs.removeAt(n);  // reduce the number of checks for the next loop
+          break;
+        }
+      }
+
+      if (!isValid) return PLAYER_NOT_IN_CATEGORY;
+    }
+
+    // okay, we're good to go!
+    return OK;
+  }
 
   //----------------------------------------------------------------------------
 
