@@ -8,6 +8,8 @@
 #ifndef CATEGORY_H
 #define	CATEGORY_H
 
+#include <memory>
+
 #include "GenericDatabaseObject.h"
 #include "TournamentDB.h"
 #include "TabRow.h"
@@ -52,7 +54,7 @@ namespace QTournament
     ERR canSplitPlayers(const Player& p1, const Player& p2) const;
     Player getPartner(const Player& p) const;
     bool hasUnpairedPlayers() const;
-    Category* convertToSpecializedObject() const;
+    unique_ptr<Category> convertToSpecializedObject() const;
     ERR canApplyGroupAssignment(QList<PlayerPairList> grpCfg);
     ERR canApplyInitialRanking(PlayerPairList seed);
 
@@ -65,10 +67,13 @@ namespace QTournament
     virtual ERR canFreezeConfig() { throw std::runtime_error("Unimplemented Method: canFreezeConfig"); };
     virtual bool needsInitialRanking() { throw std::runtime_error("Unimplemented Method: needsInitialRanking"); };
     virtual bool needsGroupInitialization() { throw std::runtime_error("Unimplemented Method: needsGroupInitialization"); };
+    virtual ERR prepareFirstRound(QList<PlayerPairList> grpCfg, PlayerPairList seed) { throw std::runtime_error("Unimplemented Method: prepareFirstRound"); };
 
   private:
     Category (TournamentDB* db, int rowId);
     Category (TournamentDB* db, dbOverlay::TabRow row);
+    ERR applyGroupAssignment(QList<PlayerPairList> grpCfg);
+    ERR applyInitialRanking(PlayerPairList seed);
   };
 
   // we need this to have a category object in a QHash

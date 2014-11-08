@@ -17,7 +17,7 @@ GroupAssignmentListWidget::GroupAssignmentListWidget(QWidget* parent)
   ui.setupUi(this);
 
   // clear all list widget pointers
-  for (int i=0; i < MAX_GROUP_COUNT; i++) lwGroup[i] = 0;
+  for (int i=0; i < MAX_GROUP_COUNT; i++) lwGroup[i] = nullptr;
   
   // set a flag that we are not yet fully initialized
   isInitialized = false;
@@ -112,12 +112,12 @@ void GroupAssignmentListWidget::teardown()
   // reset the pointer arrays
   for (int i=0; i < MAX_GROUP_COUNT; i++)
   {
-    if (lwGroup[i] == 0) continue;  // unused entry
+    if (lwGroup[i] == nullptr) continue;  // unused entry
     delete lwGroup[i];  // this should be redundant to the "delete child" above but it works. Weird.
     delete laGroup[i];  // this should be redundant to the "delete child" above but it works. Weird.
     delete delegate[i];
-    lwGroup[i] = 0;
-    laGroup[i] = 0;
+    lwGroup[i] = nullptr;
+    laGroup[i] = nullptr;
   }
   
   // clear all selection info
@@ -238,12 +238,12 @@ QList<PlayerPairList> GroupAssignmentListWidget::getGroupAssignments()
   PlayerMngr* pmngr = Tournament::getPlayerMngr();
   for (int i=0; i < MAX_GROUP_COUNT; i++)
   {
-    if (lwGroup[i] == 0) continue;
+    if (lwGroup[i] == nullptr) continue;
 
     QListWidget* lw = lwGroup[i];
     PlayerPairList ppList;
 
-    for (int cnt; cnt < lw->count(); cnt++)
+    for (int cnt=0; cnt < lw->count(); cnt++)
     {
       QListWidgetItem* it = lw->item(cnt);
       int ppId = it->data(Qt::UserRole).toInt();

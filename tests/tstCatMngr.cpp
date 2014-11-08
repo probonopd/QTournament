@@ -270,9 +270,8 @@ void tstCatMngr::testFreezeCategory()
   CPPUNIT_ASSERT(ms.setParameter(GROUP_CONFIG, cfg.toString()) == true);
   
   // make sure the group can be frozen
-  Category* specialObj = ms.convertToSpecializedObject();
+  unique_ptr<Category> specialObj = ms.convertToSpecializedObject();
   CPPUNIT_ASSERT(specialObj->canFreezeConfig() == OK);
-  delete specialObj;
   
   // some db consistency checks before executing the actual "method under test"
   DbTab pairTab = db[TAB_PAIRS];

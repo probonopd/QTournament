@@ -22,7 +22,7 @@ private:
   void updatePairs();
   int unpairedPlayerId1;
   int unpairedPlayerId2;
-  bool unfreezeAndCleanup(Category* selectedCat);
+  bool unfreezeAndCleanup(unique_ptr<Category> selectedCat);
 
 public slots:
   void onCatModelChanged();

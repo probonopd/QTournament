@@ -71,6 +71,14 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
+  ERR RoundRobinCategory::prepareFirstRound(QList<PlayerPairList> grpCfg, PlayerPairList seed)
+  {
+    // let's see if we can apply the group configuration
+    ERR e = applyGroupAssignment(grpCfg);
+    if (e != OK) return e;
+
+
+  }
 
 //----------------------------------------------------------------------------
 

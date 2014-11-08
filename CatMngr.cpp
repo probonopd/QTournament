@@ -634,9 +634,8 @@ namespace QTournament
   ERR CatMngr::freezeConfig(const Category& c)
   {
     // make sure that we can actually freeze the config
-    Category* specialObj = c.convertToSpecializedObject();
+    unique_ptr<Category> specialObj = c.convertToSpecializedObject();
     ERR e = specialObj->canFreezeConfig();
-    delete specialObj;
     if (e != OK) return e;
     
     // Okax, we're good to go

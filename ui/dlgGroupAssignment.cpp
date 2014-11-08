@@ -10,12 +10,11 @@
 #include <QDateTime>
 #include <QMessageBox>
 
-dlgGroupAssignment::dlgGroupAssignment(Category* _cat)
-:cfg(KO_Config(QUARTER, false))    // dummy, just for formal initialization
+dlgGroupAssignment::dlgGroupAssignment(Category& _cat)
+:cfg(KO_Config(QUARTER, false)), cat{_cat}    // dummy, just for formal initialization
 {
   ui.setupUi(this);
-  cat = _cat;
-  cfg = KO_Config(cat->getParameter(GROUP_CONFIG).toString());
+  cfg = KO_Config(cat.getParameter(GROUP_CONFIG).toString());
   
   // fill all group lists initially with random assignments
   onBtnRandomizeClicked();
@@ -31,7 +30,7 @@ dlgGroupAssignment::~dlgGroupAssignment()
 
 QList<PlayerPairList> dlgGroupAssignment::getRandomizedPlayerPairListList()
 {
-  PlayerPairList ppList = cat->getPlayerPairs();
+  PlayerPairList ppList = cat.getPlayerPairs();
   
   QList<PlayerPairList> result;
   

@@ -478,13 +478,13 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  Category* Category::convertToSpecializedObject() const
+  unique_ptr<Category> Category::convertToSpecializedObject() const
   {
     // return an instance of a suitable, specialized category-child
     MATCH_SYSTEM sys = getMatchSystem();
 
     if (sys == GROUPS_WITH_KO) {
-      return new RoundRobinCategory(db, row);
+      return unique_ptr<Category>(new RoundRobinCategory(db, row));
     }
 
     // THIS IS JUST A HOT FIX UNTIL WE HAVE
@@ -492,7 +492,7 @@ namespace QTournament
     //
     // Returning an object of the base class instead of the derived class
     // will end up in exceptions and abnormal program termination
-    return new Category(db, row);
+    return unique_ptr<Category>(new Category(db, row));
   }
 
   //----------------------------------------------------------------------------
@@ -501,14 +501,11 @@ namespace QTournament
   {
     if (getState() != STAT_CAT_FROZEN) return CATEGORY_NOT_YET_FROZEN;
 
-    Category* specializedCat = convertToSpecializedObject();
+    unique_ptr<Category> specializedCat = convertToSpecializedObject();
     if (!(specializedCat->needsGroupInitialization()))
     {
-      delete specializedCat;
       return CATEGORY_NEEDS_NO_GROUP_ASSIGNMENTS;
     }
-
-    delete specializedCat;
 
     KO_Config cfg = KO_Config(getParameter(GROUP_CONFIG).toString());
     if (!(cfg.isValid())) return INVALID_KO_CONFIG;
@@ -558,14 +555,11 @@ namespace QTournament
   {
     if (getState() != STAT_CAT_FROZEN) return CATEGORY_NOT_YET_FROZEN;
 
-    Category* specializedCat = convertToSpecializedObject();
+    unique_ptr<Category> specializedCat = convertToSpecializedObject();
     if (!(specializedCat->needsInitialRanking()))
     {
-      delete specializedCat;
       return CATEGORY_NEEDS_NO_SEEDING;
     }
-
-    delete specializedCat;
 
     int pairsInCategory = getPlayerPairs().count();
     if (pairsInCategory != seed.count()) return INVALID_PLAYER_COUNT;
@@ -596,9 +590,48 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
+  ERR Category::applyGroupAssignment(QList<PlayerPairList> grpCfg)
+  {
+    ERR e = canApplyGroupAssignment(grpCfg);
+    if (e != OK) return e;
+    
+    // The previous call checked for all possible errors or
+    // misconfigurations. So we can safely write directly to the database
+    DbTab pairTab = (*db)[TAB_PAIRS];
+    int grpNum = 0;
+    for (PlayerPairList ppl : grpCfg)
+    {
+      ++grpNum;   // we start counting groups with "1"
+      for (PlayerPair pp : ppl)
+      {
+        int ppId = pp.getPairId();
+        TabRow r = pairTab[ppId];
+        r.update(PAIRS_GRP_NUM, grpNum);
+      }
+    }
+    
+    return OK;
+  }
 
   //----------------------------------------------------------------------------
 
+  ERR Category::applyInitialRanking(PlayerPairList seed)
+  {
+    ERR e = canApplyInitialRanking(seed);
+    if (e != OK) return e;
+    
+    // The previous call checked for all possible errors or
+    // misconfigurations. So we can safely write directly to the database
+    DbTab pairTab = (*db)[TAB_PAIRS];
+    for (int rank = 0; rank < seed.count(); ++rank)
+    {
+      int ppId = seed.at(rank).getPairId();
+      TabRow r = pairTab[ppId];
+      r.update(PAIRS_INITIAL_RANK, rank+1);   // we start counting ranks at "1"
+    }
+    
+    return OK;
+  }
 
   //----------------------------------------------------------------------------
 

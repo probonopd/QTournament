@@ -17,13 +17,13 @@ class dlgGroupAssignment : public QDialog
 {
   Q_OBJECT
 public:
-  dlgGroupAssignment(Category* _cat);
+  dlgGroupAssignment(Category& _cat);
   virtual ~dlgGroupAssignment();
   QList<PlayerPairList> getGroupAssignments();
 
 private:
   Ui::dlgGroupAssignment ui;
-  Category* cat;
+  Category& cat;
   KO_Config cfg;
   
   QList<PlayerPairList> getRandomizedPlayerPairListList();

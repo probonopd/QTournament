@@ -619,7 +619,7 @@ void CatTabWidget::onBtnRunCatClicked()
 {
   if (!(ui.catTableView->hasCategorySelected())) return;
   
-  Category* selectedCat = ui.catTableView->getSelectedCategory().convertToSpecializedObject();
+  unique_ptr<Category> selectedCat = ui.catTableView->getSelectedCategory().convertToSpecializedObject();
   
   ERR e = selectedCat->canFreezeConfig();
   if (e == CONFIG_ALREADY_FROZEN)
@@ -642,11 +642,7 @@ void CatTabWidget::onBtnRunCatClicked()
 	    tr("Uncaptured error. Category has no valid configuration and can't be started"));
   }
   
-  if (e != OK)
-  {
-    delete selectedCat;
-    return;
-  }
+  if (e != OK) return;
   
   e = Tournament::getCatMngr()->freezeConfig(*selectedCat);
   if (e != OK)   // after the checks above, this should never be true
@@ -667,13 +663,13 @@ void CatTabWidget::onBtnRunCatClicked()
   QList<PlayerPairList> ppListList;
   if (selectedCat->needsGroupInitialization())
   {
-    dlgGroupAssignment dlg(selectedCat);
+    dlgGroupAssignment dlg(*selectedCat);
     dlg.setModal(true);
     int result = dlg.exec();
 
     if (result != QDialog::Accepted)
     {
-      unfreezeAndCleanup(selectedCat);
+      unfreezeAndCleanup(std::move(selectedCat));
       return;
     }
 
@@ -681,7 +677,7 @@ void CatTabWidget::onBtnRunCatClicked()
     if (ppListList.count() == 0)
     {
       QMessageBox::warning(this, tr("Run Category"), tr("Can't read group assignments.\nOperation cancelled."));
-      unfreezeAndCleanup(selectedCat);
+      unfreezeAndCleanup(std::move(selectedCat));
       return;
     }
   }
@@ -693,7 +689,7 @@ void CatTabWidget::onBtnRunCatClicked()
     QString msg = tr("This category needs a seeded ranking. That's not yet implemeted");
     msg += tr("\nOperation cancelled.");
     QMessageBox::warning(this, tr("Run Category"), msg);
-    unfreezeAndCleanup(selectedCat);
+    unfreezeAndCleanup(std::move(selectedCat));
     return;
   }
 
@@ -740,7 +736,7 @@ void CatTabWidget::onBtnRunCatClicked()
       }
       QMessageBox::warning(this, tr("Run Category"), msg);
 
-      unfreezeAndCleanup(selectedCat);
+      unfreezeAndCleanup(std::move(selectedCat));
       return;
     }
   }
@@ -773,7 +769,7 @@ void CatTabWidget::onBtnRunCatClicked()
       }
       QMessageBox::warning(this, tr("Run Category"), msg);
 
-      unfreezeAndCleanup(selectedCat);
+      unfreezeAndCleanup(std::move(selectedCat));
       return;
     }
   }
@@ -782,9 +778,9 @@ void CatTabWidget::onBtnRunCatClicked()
    * If we made it to this point, it is safe to apply the settings and write to
    * the database.
    */
+  e = selectedCat->prepareFirstRound(ppListList, initialRanking);
+  
 
-
-  delete selectedCat;
 }
 
 //----------------------------------------------------------------------------
@@ -793,7 +789,7 @@ void CatTabWidget::onBtnRunCatClicked()
  * NOTE: this method deletes the object that the parameter points to!
  * Do not use the provided pointer anymore after calling this function!
  */
-bool CatTabWidget::unfreezeAndCleanup(Category *selectedCat)
+bool CatTabWidget::unfreezeAndCleanup(unique_ptr<Category> selectedCat)
 {
   if (selectedCat == 0) return false;
   if (selectedCat->getState() != STAT_CAT_FROZEN) return false;
@@ -807,8 +803,7 @@ bool CatTabWidget::unfreezeAndCleanup(Category *selectedCat)
   }
 
   // clean-up and return
-  delete selectedCat;
-  return (e == OK);
+  return OK;
 }
 
 //----------------------------------------------------------------------------

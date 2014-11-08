@@ -1,3 +1,7 @@
 /dist/
 /build/
 /nbproject
+*.o
+moc_*.cpp
+ui_*.h
+qrc_*
