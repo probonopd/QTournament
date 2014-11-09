@@ -25,15 +25,14 @@ link_directories("../DatabaseOverlayLib")
 # Enable support for C++ 11
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
-add_executable(QTournament
+set(QTournament_Sources
     tournament.qrc
     Category.cpp 
     CatMngr.cpp 
     GenericDatabaseObject.cpp 
     GenericObjectManager.cpp
     GroupDef.cpp 
-    KO_Config.cpp 
-    main.cpp 
+    KO_Config.cpp  
     MatchGroup.cpp 
     MatchMngr.cpp 
     Player.cpp 
@@ -61,10 +60,30 @@ add_executable(QTournament
     models/PlayerTableModel.cpp
     models/TeamListModel.cpp)
 
+set(QTournament_Tests
+    tests/BasicTestClass.cpp
+    tests/tstGenericDBObject.cpp
+    tests/tstPlayer.cpp
+    tests/tstTournament.cpp
+    tests/DatabaseTestScenario.cpp
+    tests/tstGroupDef.cpp
+    tests/tstPlayerMngr.cpp
+    tests/tstCategory.cpp
+    tests/tstKOConfig.cpp
+    tests/tstTeam.cpp
+    tests/tstCatMngr.cpp
+    tests/tstMatchMngr.cpp
+    tests/tstTeamMngr.cpp)
+    
+add_executable(QTournament main.cpp ${QTournament_Sources})
+
+add_executable(QTournament_Tests tests/unitTestMain.cpp ${QTournament_Sources} ${QTournament_Tests})
 
 qt5_use_modules(QTournament Widgets Sql)
+qt5_use_modules(QTournament_Tests Widgets Sql)
 
 # Use the Widgets module from Qt 5.
 #target_link_libraries(helloworld Qt5::Widgets)
 target_link_libraries(QTournament DatabaseOverlayLib)
+target_link_libraries(QTournament_Tests DatabaseOverlayLib cppunit)
 
