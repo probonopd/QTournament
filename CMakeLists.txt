@@ -43,6 +43,11 @@ set(QTournament_Sources
     TeamMngr.cpp 
     Tournament.cpp 
     TournamentDB.cpp 
+    models/CatTableModel.cpp 
+    models/PlayerTableModel.cpp
+    models/TeamListModel.cpp)
+
+set(QTournament_Sources_UI
     ui/CatTableView.cpp 
     ui/CatTabWidget.cpp 
     ui/dlgEditPlayer.cpp 
@@ -55,10 +60,7 @@ set(QTournament_Sources
     ui/TeamListView.cpp 
     ui/TeamTabWidget.cpp 
     ui/delegates/PairItemDelegate.cpp 
-    ui/delegates/PlayerItemDelegate.cpp 
-    models/CatTableModel.cpp 
-    models/PlayerTableModel.cpp
-    models/TeamListModel.cpp)
+    ui/delegates/PlayerItemDelegate.cpp)
 
 set(QTournament_Tests
     tests/BasicTestClass.cpp
@@ -75,9 +77,9 @@ set(QTournament_Tests
     tests/tstMatchMngr.cpp
     tests/tstTeamMngr.cpp)
     
-add_executable(QTournament main.cpp ${QTournament_Sources})
+add_executable(QTournament main.cpp ${QTournament_Sources} ${QTournament_Sources_UI})
 
-add_executable(QTournament_Tests tests/unitTestMain.cpp ${QTournament_Sources} ${QTournament_Tests})
+add_executable(QTournament_Tests EXCLUDE_FROM_ALL tests/unitTestMain.cpp ${QTournament_Sources} ${QTournament_Tests})
 
 qt5_use_modules(QTournament Widgets Sql)
 qt5_use_modules(QTournament_Tests Widgets Sql)
