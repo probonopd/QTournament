@@ -250,7 +250,18 @@ namespace QTournament
     STAT_CAT_FROZEN,  // intermediate state in which the category can be configured for the first round
     STAT_CAT_IDLE,
     STAT_CAT_PLAYING,
-    STAT_CAT_FINALIZED
+    STAT_CAT_FINALIZED,
+    STAT_MG_CONFIG,   // Match group has been created, matches can still be added or removed
+    STAT_MG_FROZEN,   // No more adding or removing of matches; match group CANNOT be scheduled because earlier rounds/groups have to be scheduled first
+    STAT_MG_IDLE,     // No more adding or removing of matches; match group can be scheduled and waits for being scheduled
+    STAT_MG_SCHEDULED, // Match numbers have been assigned
+    STAT_MA_INCOMPLETE,   // Match is not yet fully defined (e.g., player names or match number are missing)
+    STAT_MA_FUZZY,        // Player names are defined by symbolic values (e.g., winner of match XYZ)
+    STAT_MA_READY,        // Opponents are fully defined and all players are idle; match can be called
+    STAT_MA_BUSY,         // Opponents are fully defined but some players are buys; match cannot be called
+    STAT_MA_RUNNING,      // The match is currently running
+    STAT_MA_FINISHED,     // The match is finished and the result has been entered
+    STAT_MA_POSTPONED     // The match is postponed and cannot be called
   };
   
 //----------------------------------------------------------------------------
@@ -308,7 +319,7 @@ namespace QTournament
 #define GROUP_NUM__L16 -8
 #define GROUP_NUM__ITERATION -100  // just a normal round in Swiss Ladder, Random Matches, ...
   
-// A special group number indicating that the player is
+// A special group number indicating that the match is
 // not in any group at all
 #define GRP_NUM__NOT_ASSIGNED -1
     

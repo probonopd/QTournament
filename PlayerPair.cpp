@@ -6,6 +6,7 @@
  */
 
 #include <stdexcept>
+#include <assert.h>
 
 #include "PlayerPair.h"
 #include "PlayerMngr.h"
@@ -151,12 +152,59 @@ namespace QTournament {
 
 //----------------------------------------------------------------------------
 
+  // this serves only as a hot fix until this class will be re-factored to inherit GenericDatabaseObject
+  unique_ptr<Category> PlayerPair::getCategory(TournamentDB* db) const
+  {
+    assert(db != nullptr);
+
+    if (pairId <= 0) return nullptr;
+
+    TabRow pairRow = (db->getTab(TAB_PAIRS))[pairId];
+    Category cat = Tournament::getCatMngr()->getCategoryById(pairRow[PAIRS_CAT_REF].toInt());
+
+    return unique_ptr<Category>(new Category(cat));
+  }
 
 //----------------------------------------------------------------------------
 
+  // this serves only as a hot fix until this class will be re-factored to inherit GenericDatabaseObject
+  //
+  // for debugging and unit testing only
+  bool PlayerPair::isConsistent(TournamentDB *db) const
+  {
+    assert(db != nullptr);
+
+    if (pairId > 0)
+    {
+      TabRow pairRow = (db->getTab(TAB_PAIRS))[pairId];
+      if (pairRow[PAIRS_PLAYER1_REF].toInt() != id1) return false;
+
+      QVariant p2Id = pairRow[PAIRS_PLAYER2_REF];
+      if (p2Id.isNull() && (id2 > 0)) return false;
+      if (!(p2Id.isNull()))
+      {
+        if (id2 != p2Id.toInt()) return false;
+      }
+    }
+
+    return true;
+  }
 
 //----------------------------------------------------------------------------
 
+  // this serves only as a hot fix until this class will be re-factored to inherit GenericDatabaseObject
+  int PlayerPair::getPairsGroupNum(TournamentDB *db) const
+  {
+    assert(db != nullptr);
+
+    if (pairId <= 0)
+    {
+      throw runtime_error("Queried PlayerPair does not yet exist in the database");
+    }
+
+    TabRow pairRow = (db->getTab(TAB_PAIRS))[pairId];
+    return pairRow[PAIRS_GRP_NUM].toInt();
+  }
 
 //----------------------------------------------------------------------------
 

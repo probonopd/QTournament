@@ -28,9 +28,10 @@
 #include "tstKOConfig.h"
 #include "tstKOConfig.h"
 #include "tstMatchMngr.h"
+#include "tstMatch.h"
 
 // comment / uncomment the following to execute just one suite
-//#define TEST_ALL_SUITES
+#define TEST_ALL_SUITES
 
 // Registers the fixture into the 'registry'
 #ifdef TEST_ALL_SUITES
@@ -45,8 +46,9 @@
   CPPUNIT_TEST_SUITE_REGISTRATION(tstGroupDef);
   CPPUNIT_TEST_SUITE_REGISTRATION(tstKOConfig);
   CPPUNIT_TEST_SUITE_REGISTRATION(tstMatchMngr);
+  CPPUNIT_TEST_SUITE_REGISTRATION(tstMatch);
 #else
-  CPPUNIT_TEST_SUITE_REGISTRATION(tstCatMngr);
+  CPPUNIT_TEST_SUITE_REGISTRATION(tstMatchMngr);
 #endif
 
 

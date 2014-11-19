@@ -8,12 +8,14 @@
 #ifndef MATCHMNGR_H
 #define	MATCHMNGR_H
 
+#include <memory>
 #include "TournamentDataDefs.h"
 #include "TournamentErrorCodes.h"
 #include "DbTab.h"
 #include "GenericObjectManager.h"
 #include "Category.h"
 #include "MatchGroup.h"
+#include "Match.h"
 
 #include <QList>
 #include <QString>
@@ -30,11 +32,15 @@ namespace QTournament
     Q_OBJECT
   public:
     MatchMngr(TournamentDB* _db);
-    ERR createMatchGroup(const Category& cat, const int round, const int grpNum, MatchGroup** newGroup);
-    MatchGroupList getMatchGroupsForCat(const Category& cat, int round=-1);
+    unique_ptr<MatchGroup> createMatchGroup(const Category& cat, const int round, const int grpNum, ERR* err);
+    MatchGroupList getMatchGroupsForCat(const Category& cat, int round=-1) const;
     MatchGroupList getAllMatchGroups();
-    ERR getMatchGroup(const Category& cat, const int round, const int grpNum, MatchGroup** grp);
-    bool hasMatchGroup(const Category& cat, const int round, const int grpNum, ERR* err=0);
+    unique_ptr<MatchGroup> getMatchGroup(const Category& cat, const int round, const int grpNum,  ERR* err);
+    bool hasMatchGroup(const Category& cat, const int round, const int grpNum, ERR* err=nullptr);
+
+    unique_ptr<Match> createMatch(const MatchGroup& grp, ERR* err);
+    ERR canAssignPlayerPairToMatch(const Match& ma, const PlayerPair& pp) const;
+    ERR setPlayerPairsForMatch(const Match& ma, const PlayerPair& pp1, const PlayerPair& pp2);
     
   private:
     DbTab matchTab;

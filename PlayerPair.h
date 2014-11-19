@@ -8,6 +8,7 @@
 #ifndef PLAYERPAIR_H
 #define	PLAYERPAIR_H
 
+#include <memory>
 #include "Player.h"
 
 namespace QTournament
@@ -25,6 +26,9 @@ namespace QTournament
     QString getDisplayName(int maxLen = 0) const;
     QString getDisplayName_Team(int maxLen = 0) const;
     int getPairId() const;
+    unique_ptr<Category> getCategory(TournamentDB* db) const;  // only as a hot-fix
+    bool isConsistent(TournamentDB* db) const; // for debugging only
+    int getPairsGroupNum(TournamentDB* db) const;  // only as a hot-fix
 
   private:
     int id1;

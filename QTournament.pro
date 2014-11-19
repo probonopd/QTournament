@@ -44,7 +44,8 @@ HEADERS += \
     ui/delegates/PlayerItemDelegate.h \
     models/CatTableModel.h \
     models/PlayerTableModel.h \
-    models/TeamListModel.h
+    models/TeamListModel.h \
+    Match.h
 
 SOURCES += \
     Category.cpp \
@@ -79,7 +80,8 @@ SOURCES += \
     ui/delegates/PlayerItemDelegate.cpp \
     models/CatTableModel.cpp \
     models/PlayerTableModel.cpp \
-    models/TeamListModel.cpp
+    models/TeamListModel.cpp \
+    Match.cpp
 
 RESOURCES += \
     tournament.qrc

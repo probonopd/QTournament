@@ -284,6 +284,7 @@ TournamentDB DatabaseTestScenario::getScenario02(bool useTeams)
 
 
 //----------------------------------------------------------------------------
+
 void DatabaseTestScenario::prepScenario03(bool useTeams)
 {
   prepScenario02(useTeams);
@@ -326,6 +327,52 @@ TournamentDB DatabaseTestScenario::getScenario03(bool useTeams)
 
 //----------------------------------------------------------------------------
     
+void DatabaseTestScenario::prepScenario04(bool useTeams)
+{
+  prepScenario03(useTeams);
+  Tournament t(getSqliteFileName());
+  CatMngr* cmngr = Tournament::getCatMngr();
+
+  // get some objects to play with
+  Player m1 = Tournament::getPlayerMngr()->getPlayer("f", "l1");
+  Player f1 = Tournament::getPlayerMngr()->getPlayer("f", "l2");
+  Player m2 = Tournament::getPlayerMngr()->getPlayer("f", "l3");
+  Player f2 = Tournament::getPlayerMngr()->getPlayer("f", "l4");
+  Player m3 = Tournament::getPlayerMngr()->getPlayer("f", "l5");
+  Player f3 = Tournament::getPlayerMngr()->getPlayer("f", "l6");
+  Category mx = cmngr->getCategory("MX");
+  Category ms = cmngr->getCategory("MS");
+
+  // pair players for mixed doubles
+  CPPUNIT_ASSERT(cmngr->pairPlayers(mx, m1, f1) == OK);
+  CPPUNIT_ASSERT(cmngr->pairPlayers(mx, m2, f2) == OK);
+  CPPUNIT_ASSERT(cmngr->pairPlayers(mx, m3, f3) == OK);
+
+  // fake a valid category state
+  TournamentDB db{getSqliteFileName(), false};
+  TabRow catRow = db[TAB_CATEGORY][5];
+  catRow.update(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_CAT_IDLE));
+  CPPUNIT_ASSERT(mx.getState() == STAT_CAT_IDLE);
+
+  // create a match group in mixed doubles
+  ERR e;
+  MatchMngr* mm = Tournament::getMatchMngr();
+  auto mg = mm->createMatchGroup(mx, 1, 1, &e);
+  CPPUNIT_ASSERT(e == OK);
+
+  // create an "empty" match in this group
+  mm->createMatch(*mg, &e);
+  CPPUNIT_ASSERT(e == OK);
+}
+
+//----------------------------------------------------------------------------
+
+TournamentDB DatabaseTestScenario::getScenario04(bool useTeams)
+{
+  prepScenario04(useTeams);
+  return TournamentDB(getSqliteFileName(), false);
+}
+
 
 //----------------------------------------------------------------------------
     

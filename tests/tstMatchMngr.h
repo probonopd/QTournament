@@ -21,8 +21,8 @@ class tstMatchMngr : public DatabaseTestScenario
     CPPUNIT_TEST(testCreateNewGroup);
     CPPUNIT_TEST(testHasGroup);
     CPPUNIT_TEST(testGetGroup);
-    //CPPUNIT_TEST(testGetAllPlayers);
-    //CPPUNIT_TEST(testRenamePlayer);
+    CPPUNIT_TEST(testCreateNewMatch);
+    CPPUNIT_TEST(testCanAssignPlayerPairToMatch);
 //  CPPUNIT_TEST();
 //  CPPUNIT_TEST();
 //  CPPUNIT_TEST();
@@ -34,7 +34,8 @@ public:
   void testCreateNewGroup();
   void testHasGroup();
   void testGetGroup();
-  //void testGetGroup();
+  void testCreateNewMatch();
+  void testCanAssignPlayerPairToMatch();
 };
 
 #endif	/* TSTGENERICDBOBJECT_H */

@@ -111,6 +111,7 @@ void TournamentDB::populateTables()
     cols << MG_ROUND + " INTEGER";
     cols << MG_GRP_NUM + " INTEGER";
     cols << seqNumFieldDef;
+    cols <<stateFieldDef;
     tableCreationHelper(TAB_MATCH_GROUP, cols);
     
     // Generate a table for matches

@@ -1,88 +1,99 @@
 /* 
- * File:   MatchGroup.cpp
+ * File:   Team.cpp
  * Author: volker
  * 
- * Created on August 22, 2014, 7:58 PM
+ * Created on March 2, 2014, 6:13 PM
  */
 
-#include "MatchGroup.h"
+#include <stdexcept>
+
+#include "Match.h"
+#include "TournamentDataDefs.h"
+#include "TournamentDB.h"
+#include "TournamentErrorCodes.h"
+#include "MatchMngr.h"
 #include "Tournament.h"
-#include "DbTab.h"
 
 namespace QTournament
 {
 
-  MatchGroup::MatchGroup(TournamentDB* db, int rowId)
-  :GenericDatabaseObject(db, TAB_MATCH_GROUP, rowId)
+  Match::Match(TournamentDB* db, int rowId)
+  :GenericDatabaseObject(db, TAB_MATCH, rowId)
   {
   }
 
 //----------------------------------------------------------------------------
 
-  MatchGroup::MatchGroup(TournamentDB* db, dbOverlay::TabRow row)
+  Match::Match(TournamentDB* db, dbOverlay::TabRow row)
   :GenericDatabaseObject(db, row)
   {
   }
 
 //----------------------------------------------------------------------------
 
-  Category MatchGroup::getCategory()
+  Category Match::getCategory() const
   {
-    int catId = row[MG_CAT_REF].toInt();
-    return Tournament::getCatMngr()->getCategoryById(catId);
+    return getMatchGroup().getCategory();
   }
 
 //----------------------------------------------------------------------------
 
-  int MatchGroup::getGroupNumber()
+  MatchGroup Match::getMatchGroup() const
   {
-    return row[MG_GRP_NUM].toInt();
+    int grpId = row[MA_GRP_REF].toInt();
+    return MatchGroup{db, grpId};
   }
 
 //----------------------------------------------------------------------------
 
-  int MatchGroup::getRound()
+  bool Match::hasPlayerPair1()
   {
-    return row[MG_ROUND].toInt();
-  }  
+    QVariant ppId = row[MA_PAIR1_REF];
+    if (ppId.isNull()) return false;
+    return true;
+  }
 
 //----------------------------------------------------------------------------
 
-  MatchList MatchGroup::getMatches()
+  bool Match::hasPlayerPair2()
   {
-    DbTab matchTab = db->getTab(TAB_MATCH);
-    DbTab::CachingRowIterator it = matchTab.getRowsByColumnValue(MA_GRP_REF, getId());
+    QVariant ppId = row[MA_PAIR2_REF];
+    if (ppId.isNull()) return false;
+    return true;
+  }
 
-    MatchList result;
-    while (!(it.isEnd()))
+//----------------------------------------------------------------------------
+
+  bool Match::hasBothPlayerPairs()
+  {
+    return (hasPlayerPair1() && hasPlayerPair2());
+  }
+
+//----------------------------------------------------------------------------
+
+  PlayerPair Match::getPlayerPair1()
+  {
+    if (!(hasPlayerPair1()))
     {
-      result << Match(db, *it);
-      ++it;
+      throw runtime_error("Invalid request for PlayerPair1 of a match");
     }
 
-    return result;
+    int ppId = row[MA_PAIR1_REF].toInt();
+    return Tournament::getPlayerMngr()->getPlayerPair(ppId);
   }
 
 //----------------------------------------------------------------------------
 
+  PlayerPair Match::getPlayerPair2()
+  {
+    if (!(hasPlayerPair2()))
+    {
+      throw runtime_error("Invalid request for PlayerPair2 of a match");
+    }
 
-//----------------------------------------------------------------------------
-
-
-//----------------------------------------------------------------------------
-
-
-//----------------------------------------------------------------------------
-
-
-//----------------------------------------------------------------------------
-
-
-//----------------------------------------------------------------------------
-
-
-//----------------------------------------------------------------------------
-
+    int ppId = row[MA_PAIR2_REF].toInt();
+    return Tournament::getPlayerMngr()->getPlayerPair(ppId);
+  }
 
 //----------------------------------------------------------------------------
 

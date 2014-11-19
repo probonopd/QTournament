@@ -13,20 +13,25 @@
 #include "TabRow.h"
 #include "TournamentErrorCodes.h"
 #include "Category.h"
+#include "Match.h"
 
 #include <QList>
 
 namespace QTournament
 {
 
+  typedef QList<Match> MatchList;
+
   class MatchGroup : public GenericDatabaseObject
   {
     friend class MatchMngr;
+    friend class Match;
     
   public:
     Category getCategory();
     int getGroupNumber();
     int getRound();
+    MatchList getMatches();
 
   private:
     MatchGroup(TournamentDB* db, int rowId);

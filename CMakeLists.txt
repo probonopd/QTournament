@@ -35,6 +35,7 @@ set(QTournament_Sources
     KO_Config.cpp  
     MatchGroup.cpp 
     MatchMngr.cpp 
+    Match.cpp 
     Player.cpp 
     PlayerMngr.cpp 
     PlayerPair.cpp 
@@ -73,6 +74,7 @@ set(QTournament_Tests
     tests/tstCategory.cpp
     tests/tstKOConfig.cpp
     tests/tstTeam.cpp
+    tests/tstMatch.cpp
     tests/tstCatMngr.cpp
     tests/tstMatchMngr.cpp
     tests/tstTeamMngr.cpp)
