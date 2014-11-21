@@ -45,7 +45,8 @@ HEADERS += \
     models/CatTableModel.h \
     models/PlayerTableModel.h \
     models/TeamListModel.h \
-    Match.h
+    Match.h \
+    RoundRobinGenerator.h
 
 SOURCES += \
     Category.cpp \
@@ -81,7 +82,8 @@ SOURCES += \
     models/CatTableModel.cpp \
     models/PlayerTableModel.cpp \
     models/TeamListModel.cpp \
-    Match.cpp
+    Match.cpp \
+    RoundRobinGenerator.cpp
 
 RESOURCES += \
     tournament.qrc

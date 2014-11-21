@@ -40,6 +40,7 @@ set(QTournament_Sources
     PlayerMngr.cpp 
     PlayerPair.cpp 
     RoundRobinCategory.cpp 
+    RoundRobinGenerator.cpp 
     Team.cpp 
     TeamMngr.cpp 
     Tournament.cpp 
@@ -71,6 +72,7 @@ set(QTournament_Tests
     tests/DatabaseTestScenario.cpp
     tests/tstGroupDef.cpp
     tests/tstPlayerMngr.cpp
+    tests/tstRoundRobinGenerator.cpp
     tests/tstCategory.cpp
     tests/tstKOConfig.cpp
     tests/tstTeam.cpp
