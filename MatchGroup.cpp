@@ -26,7 +26,7 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  Category MatchGroup::getCategory()
+  Category MatchGroup::getCategory() const
   {
     int catId = row[MG_CAT_REF].toInt();
     return Tournament::getCatMngr()->getCategoryById(catId);
@@ -65,6 +65,11 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
+  int MatchGroup::getMatchCount() const
+  {
+    DbTab matchTab = db->getTab(TAB_MATCH);
+    return matchTab.getMatchCountForColumnValue(MA_GRP_REF, getId());
+  }
 
 //----------------------------------------------------------------------------
 

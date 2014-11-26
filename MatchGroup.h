@@ -28,10 +28,11 @@ namespace QTournament
     friend class Match;
     
   public:
-    Category getCategory();
+    Category getCategory() const;
     int getGroupNumber();
     int getRound();
     MatchList getMatches();
+    int getMatchCount() const;
 
   private:
     MatchGroup(TournamentDB* db, int rowId);

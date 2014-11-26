@@ -255,6 +255,7 @@ namespace QTournament
     STAT_MG_FROZEN,   // No more adding or removing of matches; match group CANNOT be scheduled because earlier rounds/groups have to be scheduled first
     STAT_MG_IDLE,     // No more adding or removing of matches; match group can be scheduled and waits for being scheduled
     STAT_MG_SCHEDULED, // Match numbers have been assigned
+    STAT_MG_FINISHED,  // All matches in this group have been finished
     STAT_MA_INCOMPLETE,   // Match is not yet fully defined (e.g., player names or match number are missing)
     STAT_MA_FUZZY,        // Player names are defined by symbolic values (e.g., winner of match XYZ)
     STAT_MA_READY,        // Opponents are fully defined and all players are idle; match can be called

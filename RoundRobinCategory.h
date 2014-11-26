@@ -24,7 +24,7 @@ namespace QTournament
     virtual ERR canFreezeConfig() override;
     virtual bool needsInitialRanking() override;
     virtual bool needsGroupInitialization() override;
-    virtual ERR prepareFirstRound(QList<PlayerPairList> grpCfg, PlayerPairList seed) override;
+    virtual ERR prepareFirstRound() override;
 
     
   private:

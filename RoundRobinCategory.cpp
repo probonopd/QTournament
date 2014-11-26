@@ -7,6 +7,7 @@
 
 #include "RoundRobinCategory.h"
 #include "KO_Config.h"
+#include "Tournament.h"
 
 #include <QDebug>
 
@@ -71,13 +72,32 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  ERR RoundRobinCategory::prepareFirstRound(QList<PlayerPairList> grpCfg, PlayerPairList seed)
+  ERR RoundRobinCategory::prepareFirstRound()
   {
-    // let's see if we can apply the group configuration
-    ERR e = applyGroupAssignment(grpCfg);
-    if (e != OK) return e;
+    if (getState() != STAT_CAT_IDLE) return WRONG_STATE;
 
+    auto mm = Tournament::getMatchMngr();
+    auto pp = Tournament::getPlayerMngr();
 
+    // make sure we have not been called before; to this end, just
+    // check that there have no matches been created for us so far
+    auto allGrp = mm->getMatchGroupsForCat(*this);
+    // do not return an error here, because obviously we have been
+    // called successfully before and we only would to avoid
+    // double initialization
+    if (allGrp.count() != 0) return OK;
+
+    // alright, this is a virgin category. Generate group matches
+    // for each group
+    KO_Config cfg = KO_Config(getParameter_string(GROUP_CONFIG));
+    for (int grpIndex = 0; grpIndex < cfg.getNumGroups(); ++grpIndex)
+    {
+      PlayerPairList grpMembers = getPlayerPairs(grpIndex+1);
+      ERR e = generateGroupMatches(grpMembers, grpIndex+1);
+      if (e != OK) return e;
+    }
+
+    return OK;
   }
 
 //----------------------------------------------------------------------------

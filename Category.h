@@ -47,7 +47,7 @@ namespace QTournament
     bool getParameter_bool(CAT_PARAMETER) const;
     QString getParameter_string(CAT_PARAMETER) const;
     bool setParameter(CAT_PARAMETER p, const QVariant& v);
-    PlayerPairList getPlayerPairs() const;
+    PlayerPairList getPlayerPairs(int grp = GRP_NUM__NOT_ASSIGNED) const;
     QList<Player> getAllPlayersInCategory() const;
     bool isPaired(const Player& p) const;
     ERR canPairPlayers(const Player& p1, const Player& p2) const;
@@ -67,13 +67,14 @@ namespace QTournament
     virtual ERR canFreezeConfig() { throw std::runtime_error("Unimplemented Method: canFreezeConfig"); };
     virtual bool needsInitialRanking() { throw std::runtime_error("Unimplemented Method: needsInitialRanking"); };
     virtual bool needsGroupInitialization() { throw std::runtime_error("Unimplemented Method: needsGroupInitialization"); };
-    virtual ERR prepareFirstRound(QList<PlayerPairList> grpCfg, PlayerPairList seed) { throw std::runtime_error("Unimplemented Method: prepareFirstRound"); };
+    virtual ERR prepareFirstRound() { throw std::runtime_error("Unimplemented Method: prepareFirstRound"); };
 
   private:
     Category (TournamentDB* db, int rowId);
     Category (TournamentDB* db, dbOverlay::TabRow row);
     ERR applyGroupAssignment(QList<PlayerPairList> grpCfg);
     ERR applyInitialRanking(PlayerPairList seed);
+    ERR generateGroupMatches(const PlayerPairList &grpMembers, int grpNum, int firstRoundNum=1) const;
   };
 
   // we need this to have a category object in a QHash

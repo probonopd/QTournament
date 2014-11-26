@@ -49,6 +49,7 @@ namespace QTournament
     ERR splitPlayers(const Category c, int pairId);
     ERR freezeConfig(const Category& c);
     ERR unfreezeConfig(const Category& c);
+    ERR startCategory(const Category& c, QList<PlayerPairList> grpCfg, PlayerPairList seed);
 
   signals:
     void playersPaired(const Category c, const Player& p1, const Player& p2);

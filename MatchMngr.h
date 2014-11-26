@@ -41,10 +41,12 @@ namespace QTournament
     unique_ptr<Match> createMatch(const MatchGroup& grp, ERR* err);
     ERR canAssignPlayerPairToMatch(const Match& ma, const PlayerPair& pp) const;
     ERR setPlayerPairsForMatch(const Match& ma, const PlayerPair& pp1, const PlayerPair& pp2);
+    ERR closeMatchGroup(const MatchGroup& grp);
     
   private:
     DbTab matchTab;
     DbTab groupTab;
+    void updateAllMatchGroupStates(const Category& cat) const;
     
 } ;
 

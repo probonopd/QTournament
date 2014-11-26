@@ -778,9 +778,11 @@ void CatTabWidget::onBtnRunCatClicked()
    * If we made it to this point, it is safe to apply the settings and write to
    * the database.
    */
-  e = selectedCat->prepareFirstRound(ppListList, initialRanking);
-  
-
+  e = Tournament::getCatMngr()->startCategory(*selectedCat, ppListList, initialRanking);
+  if (e != OK)  // should never happen
+  {
+    throw runtime_error("Unexpected error when starting the category");
+  }
 }
 
 //----------------------------------------------------------------------------

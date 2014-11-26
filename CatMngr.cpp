@@ -750,6 +750,54 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
+  ERR CatMngr::startCategory(const Category &c, QList<PlayerPairList> grpCfg, PlayerPairList seed)
+  {
+    // we can only transition to "IDLE" if we are "FROZEN"
+    if (c.getState() != STAT_CAT_FROZEN)
+    {
+      return CATEGORY_NOT_YET_FROZEN;
+    }
+
+    // let's check if we have all the data we need
+    unique_ptr<Category> specializedCat = c.convertToSpecializedObject();
+    if (specializedCat->needsGroupInitialization())
+    {
+      ERR e = specializedCat->canApplyGroupAssignment(grpCfg);
+      if (e != OK) return e;
+    }
+    if (specializedCat->needsInitialRanking())
+    {
+      ERR e = specializedCat->canApplyInitialRanking(seed);
+      if (e != OK) return e;
+    }
+
+    // great, it's safe to apply the settings and write to
+    // the database
+    if (specializedCat->needsGroupInitialization())
+    {
+      ERR e = specializedCat->applyGroupAssignment(grpCfg);
+      if (e != OK)
+      {
+        throw std::runtime_error("Applying group settings failed unexpectedly. Database corruption likely. !! H E L P !!");
+      }
+    }
+
+    if (specializedCat->needsInitialRanking())
+    {
+      ERR e = specializedCat->applyInitialRanking(seed);
+      if (e != OK)
+      {
+        throw std::runtime_error("Applying initial category ranking failed unexpectedly. Database corruption likely. !! H E L P !!");
+      }
+    }
+
+    // switch the category to IDLE state
+    c.setState(STAT_CAT_IDLE);
+    emit categoryStatusChanged(c, STAT_CAT_FROZEN, STAT_CAT_IDLE);
+
+    // do the individual prep of the first round
+    specializedCat->prepareFirstRound();
+  }
 
 //----------------------------------------------------------------------------
 

@@ -335,9 +335,110 @@ namespace QTournament {
 
 //----------------------------------------------------------------------------
 
+  /**
+    Closes a match group so that no further matches can be added. This promotes
+    the match group from CONFIG to FROZEN.
+
+    Also call updateAllMatchGroups() in case the match group can be directly
+    promoted further from FROZEN to IDLE
+
+    \param grp is the match group to close
+
+    \return error code
+    */
+  ERR MatchMngr::closeMatchGroup(const MatchGroup &grp)
+  {
+    // we can only close match groups that are in state CONFIG
+    if (grp.getState() != STAT_MG_CONFIG) return MATCH_GROUP_ALREADY_CLOSED;
+
+    // the match group should contain at least one match
+    if (grp.getMatchCount() < 1) return MATCH_GROUP_EMPTY;
+
+    // we can close the group unconditionally
+    grp.setState(STAT_MG_FROZEN);
+    // TODO: emit signal
+
+    // call updateAllMatchGroupStates in case the group can be further promoted
+    // to idle (which enables the group the be scheduled)
+    updateAllMatchGroupStates(grp.getCategory());
+
+    return OK;
+  }
 
 //----------------------------------------------------------------------------
 
+  /**
+    Checks if any match groups within a category can be promoted to a higher
+    state. This can be, for example:
+      * from SCHEDULED to FINISHED if all matches have been played; or
+      * from FROZEN to IDLE of all predecessor rounds have been SCHEDULED
+
+    \param cat is the category to check the match groups for
+    \return nothing (void)
+    */
+  void MatchMngr::updateAllMatchGroupStates(const Category &cat) const
+  {
+    MatchGroupList mgl = getMatchGroupsForCat(cat);
+
+    // TODO: the following algorithm is not very efficient. Instead of
+    // looping through all match groups using "for", a dedicated
+    // SQL-statement with a suitable WHERE-clause would be better
+
+    // transition from SCHEDULED to FINISHED
+    for (auto mg : mgl)
+    {
+      if (mg.getState() != STAT_MG_SCHEDULED) continue;
+
+      // check all matches in this scheduled category
+      bool isfinished = true;
+      for (auto match : mg.getMatches())
+      {
+        if (match.getState() != STAT_MA_FINISHED)
+        {
+          isfinished = false;
+          break;
+        }
+      }
+      if (isfinished)
+      {
+        mg.setState(STAT_MG_FINISHED);
+        // TODO: emit signal
+      }
+    }
+
+    // transition from FROZEN to IDLE
+    for (auto mg : mgl)
+    {
+      if (mg.getState() != STAT_MG_FROZEN) continue;
+
+      // Condition: all match groups with lower
+      // group numbers must be scheduled
+      int round = mg.getRound();
+      bool canPromote = true;
+      for (int r=1; r < round; ++r)
+      {
+        MatchGroupList mglSubset = getMatchGroupsForCat(cat, r);
+        for (auto mg2 : mglSubset)
+        {
+          OBJ_STATE mgStat = mg2.getState();
+          if (!((mgStat == STAT_MG_SCHEDULED) || (mgStat == STAT_MA_FINISHED)))
+          {
+            canPromote = false;
+            break;
+          }
+        }
+
+        if (!canPromote) break;  // no need to loop through other rounds
+      }
+
+      if (canPromote)
+      {
+        mg.setState(STAT_MG_IDLE);
+        // TODO: emit signal
+      }
+    }
+
+  }
 
 //----------------------------------------------------------------------------
 

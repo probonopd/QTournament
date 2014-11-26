@@ -12,6 +12,8 @@
 #include "CatMngr.h"
 #include "Tournament.h"
 #include "RoundRobinCategory.h"
+#include "RoundRobinGenerator.h"
+#include "Match.h"
 
 #include <stdexcept>
 
@@ -260,7 +262,20 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  PlayerPairList Category::getPlayerPairs() const
+  /**
+    Retrieves a list of PlayerPairs in this category. This method checks for
+    both, PlayerPairs already created in the database and unpaired players
+    that are not yet in the database.
+
+    Additionally, the retrieved PlayerPairs can be limited to one
+    match group only. If this filter is used there will be no check
+    for unpaired, single players that are not yet in the datase.
+
+    \param grp the group number to limit the results to (negative if not used)
+
+    \return a QList of PlayerPairs
+    */
+  PlayerPairList Category::getPlayerPairs(int grp) const
   {
     QList<PlayerPair> result;
     PlayerMngr* pmngr = Tournament::getPlayerMngr();
@@ -268,8 +283,12 @@ namespace QTournament
     // get all players assigned to this category
     QList<Player> singlePlayers = getAllPlayersInCategory();
 
-    // filter out the players that are paired
-    DbTab::CachingRowIterator it = db->getTab(TAB_PAIRS).getRowsByColumnValue(PAIRS_CAT_REF, getId());
+    // filter out the players that are paired and have already
+    // entries in the database
+    QVariantList qvl;
+    qvl << PAIRS_CAT_REF << getId();
+    if (grp > 0) qvl << PAIRS_GRP_NUM << grp;
+    DbTab::CachingRowIterator it = db->getTab(TAB_PAIRS).getRowsByColumnValue(qvl);
     while (!(it.isEnd()))
     {
       int id1 = (*it)[PAIRS_PLAYER1_REF].toInt();
@@ -279,18 +298,27 @@ namespace QTournament
       // id2 is sometimes empty, e.g. in singles categories
       QVariant qv = (*it)[PAIRS_PLAYER2_REF];
       if (qv.isNull()) {
-	result.append(PlayerPair(p1, (*it).getId()));
+        result.append(PlayerPair(p1, (*it).getId()));
       } else {
-	int id2 = qv.toInt();
-	Player p2 = pmngr->getPlayer(id2);
-	result.append(PlayerPair(p1, p2, (*it).getId()));
-	singlePlayers.removeAll(p2);
+        int id2 = qv.toInt();
+        Player p2 = pmngr->getPlayer(id2);
+        result.append(PlayerPair(p1, p2, (*it).getId()));
+        singlePlayers.removeAll(p2);
       }
 
       ++it;
     }
 
-    // create special entries for un-paired players
+    // if we have a valid group number, we are not interested in
+    // the unpaired player that are not yet in the database
+    //
+    // Reason:
+    // If we have group numbers assigned, unpaired, non-databased
+    // players can't exists anymore
+    if (grp > 0) return result;
+
+    // create special entries for un-paired players that do
+    // not yet have an entry in the database
     for (int i=0; i < singlePlayers.count(); i++)
     {
       result.append(PlayerPair(singlePlayers.at(i)));
@@ -635,6 +663,66 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
+  /**
+    Convenience function that generates a set of group matches for
+    a set of PlayerPairs. This function does not do any error checking
+    whether the PlayerPairs or other arguments are valid. It assumes
+    that those checks have been performed before and that it's generally
+    safe to generate the matches here and now.
+
+    \param grpMembers list of PlayerPairs for that the group matches will be generated
+    \param grpNum the group number that will be applied to the matches / match groups
+    \param firstRoundNum the number of the first round of group matches, usually 1
+
+    \return error code
+    */
+  ERR Category::generateGroupMatches(const PlayerPairList& grpMembers, int grpNum, int firstRoundNum) const
+  {
+    if (grpNum < 1) return INVALID_GROUP_NUM;
+    if (firstRoundNum < 1) return INVALID_ROUND;
+
+    RoundRobinGenerator rrg;
+    auto mm = Tournament::getMatchMngr();
+    int numPlayers = grpMembers.count();
+    int internalRoundNum = 0;
+    while (true)
+    {
+      // create matches for the next round
+      auto matches = rrg(numPlayers, internalRoundNum);
+
+      // if no new matches were created, we have
+      // covered all necessary rounds and can return
+      if (matches.size() == 0) return OK;
+
+      // create a match group for the new round
+      ERR e;
+      auto mg = mm->createMatchGroup(*this, firstRoundNum + internalRoundNum, grpNum, &e);
+      if (e != OK) return e;
+
+      // assign matches to this group
+      for (auto match : matches)
+      {
+        int pairIndex1 = get<0>(match);
+        int pairIndex2 = get<1>(match);
+
+        PlayerPair pp1 = grpMembers.at(pairIndex1);
+        PlayerPair pp2 = grpMembers.at(pairIndex2);
+
+        auto newMatch = mm->createMatch(*mg, &e);
+        if (e != OK) return e;
+
+        e = mm->setPlayerPairsForMatch(*newMatch, pp1, pp2);
+        if (e != OK) return e;
+      }
+
+      // close this group (transition to FROZEN) and potentially promote it further to IDLE
+      mm->closeMatchGroup(*mg);
+
+      ++internalRoundNum;
+    }
+
+    return OK;  // should never be reached, but anyway...
+  }
 
   //----------------------------------------------------------------------------
 
