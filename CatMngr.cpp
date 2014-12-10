@@ -796,7 +796,7 @@ namespace QTournament
     emit categoryStatusChanged(c, STAT_CAT_FROZEN, STAT_CAT_IDLE);
 
     // do the individual prep of the first round
-    specializedCat->prepareFirstRound();
+    return specializedCat->prepareFirstRound();
   }
 
 //----------------------------------------------------------------------------

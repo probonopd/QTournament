@@ -249,8 +249,8 @@ namespace QTournament
     STAT_CAT_CONFIG,
     STAT_CAT_FROZEN,  // intermediate state in which the category can be configured for the first round
     STAT_CAT_IDLE,
-    STAT_CAT_PLAYING,
-    STAT_CAT_FINALIZED,
+    STAT_CAT_PLAYING,  // at least one match in this category is currently being played
+    STAT_CAT_FINALIZED, // no more rounds or matches to come
     STAT_MG_CONFIG,   // Match group has been created, matches can still be added or removed
     STAT_MG_FROZEN,   // No more adding or removing of matches; match group CANNOT be scheduled because earlier rounds/groups have to be scheduled first
     STAT_MG_IDLE,     // No more adding or removing of matches; match group can be scheduled and waits for being scheduled

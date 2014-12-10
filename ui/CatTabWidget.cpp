@@ -55,6 +55,7 @@ void CatTabWidget::onCatModelChanged()
   // get information about changed player names or category assignments
   connect(Tournament::getCatMngr(), &CatMngr::playerAddedToCategory, this, &CatTabWidget::onPlayerAddedToCategory);
   connect(Tournament::getCatMngr(), &CatMngr::playerRemovedFromCategory, this, &CatTabWidget::onPlayerRemovedFromCategory);
+  connect(Tournament::getCatMngr(), &CatMngr::categoryStatusChanged, this, &CatTabWidget::onCatStateChanged);
   connect(Tournament::getPlayerMngr(), &PlayerMngr::playerRenamed, this, &CatTabWidget::onPlayerRenamed);
 
   updateControls();
@@ -89,8 +90,9 @@ void CatTabWidget::updateControls()
   //
   SEX sex = selectedCat.getSex();
   MATCH_TYPE mt = selectedCat.getMatchType();
+  bool isEditEnabled = (selectedCat.getState() == STAT_CAT_CONFIG);
 
-  ui.gbGeneric->setEnabled(true);
+  ui.gbGeneric->setEnabled(isEditEnabled);
   
   // update the list box showing the match system
   int matchSysId = static_cast<int>(selectedCat.getMatchSystem());
@@ -188,9 +190,15 @@ void CatTabWidget::updateControls()
     ui.gbPairButtons->setEnabled(false);
     ui.lwPaired->setEnabled(false);
   } else {
-    ui.gbPairButtons->setEnabled(true);
-    ui.lwPaired->setEnabled(true);
+    ui.gbPairButtons->setEnabled(true && isEditEnabled);
+    ui.lwPaired->setEnabled(true && isEditEnabled);
   }
+
+  // disable controls if editing is no longer permitted
+  // because the category is no longer in state CONFIG
+  ui.gbGroups->setEnabled(isEditEnabled);
+  ui.gbSwiss->setEnabled(isEditEnabled);
+  ui.gbRandom->setEnabled(isEditEnabled);
 }
 
 //----------------------------------------------------------------------------
@@ -809,16 +817,84 @@ bool CatTabWidget::unfreezeAndCleanup(unique_ptr<Category> selectedCat)
 }
 
 //----------------------------------------------------------------------------
-    
+
+/**
+  Is being called if the CategoryManager changes the state of a Category. Updates
+  the UI accordingsly.
+  */
+void CatTabWidget::onCatStateChanged(const Category &c, const OBJ_STATE fromState, const OBJ_STATE toState)
+{
+  updateControls();
+}
 
 //----------------------------------------------------------------------------
-    
+
 
 //----------------------------------------------------------------------------
-    
+
 
 //----------------------------------------------------------------------------
-    
+
 
 //----------------------------------------------------------------------------
-    
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+

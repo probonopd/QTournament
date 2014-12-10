@@ -12,6 +12,7 @@
 #include <QInputDialog>
 #include <QString>
 #include <QtWidgets/qmessagebox.h>
+#include "ui/delegates/CatItemDelegate.h"
 
 CategoryTableView::CategoryTableView(QWidget* parent)
 :QTableView(parent)
@@ -21,6 +22,10 @@ CategoryTableView::CategoryTableView(QWidget* parent)
   emptyModel = new QStringListModel();
   
   connect(MainFrame::getMainFramePointer(), &MainFrame::tournamentOpened, this, &CategoryTableView::onTournamentOpened);
+
+  // define a delegate for drawing the category items
+  auto itemDelegate = new CatItemDelegate(this);
+  setItemDelegate(itemDelegate);
 }
 
 //----------------------------------------------------------------------------

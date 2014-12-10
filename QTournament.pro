@@ -46,7 +46,9 @@ HEADERS += \
     models/PlayerTableModel.h \
     models/TeamListModel.h \
     Match.h \
-    RoundRobinGenerator.h
+    RoundRobinGenerator.h \
+    ui/delegates/CatItemDelegate.h \
+    ui/delegates/DelegateItemLED.h
 
 SOURCES += \
     Category.cpp \
@@ -83,7 +85,9 @@ SOURCES += \
     models/PlayerTableModel.cpp \
     models/TeamListModel.cpp \
     Match.cpp \
-    RoundRobinGenerator.cpp
+    RoundRobinGenerator.cpp \
+    ui/delegates/CatItemDelegate.cpp \
+    ui/delegates/DelegateItemLED.cpp
 
 RESOURCES += \
     tournament.qrc

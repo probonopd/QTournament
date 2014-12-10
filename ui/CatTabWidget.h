@@ -44,6 +44,7 @@ public slots:
   void onPlayerAddedToCategory(const Player& p, const Category& c);
   void onPlayerRemovedFromCategory(const Player& p, const Category& c);
   void onPlayerRenamed(const Player& p);
+  void onCatStateChanged(const Category& c, const OBJ_STATE fromState, const OBJ_STATE toState);
 } ;
 
 #endif	/* _CATTABWIDGET_H */

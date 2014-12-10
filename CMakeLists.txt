@@ -62,6 +62,8 @@ set(QTournament_Sources_UI
     ui/TeamListView.cpp 
     ui/TeamTabWidget.cpp 
     ui/delegates/PairItemDelegate.cpp 
+    ui/delegates/DelegateItemLED.cpp 
+    ui/delegates/CatItemDelegate.cpp 
     ui/delegates/PlayerItemDelegate.cpp)
 
 set(QTournament_Tests
