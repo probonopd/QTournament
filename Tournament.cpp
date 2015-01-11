@@ -16,13 +16,14 @@ using namespace dbOverlay;
 
 namespace QTournament
 {
-  TeamMngr* Tournament::tm = NULL;
-  CatMngr* Tournament::cm = NULL;
-  PlayerMngr* Tournament::pm = NULL;
-  TeamListModel* Tournament::tlm = NULL;
-  PlayerTableModel* Tournament::ptm = NULL;
-  CategoryTableModel* Tournament::ctm = NULL;
-  MatchMngr* Tournament::mm = NULL;
+  TeamMngr* Tournament::tm = nullptr;
+  CatMngr* Tournament::cm = nullptr;
+  PlayerMngr* Tournament::pm = nullptr;
+  TeamListModel* Tournament::tlm = nullptr;
+  PlayerTableModel* Tournament::ptm = nullptr;
+  CategoryTableModel* Tournament::ctm = nullptr;
+  MatchMngr* Tournament::mm = nullptr;
+  MatchGroupTableModel* Tournament::mgm = nullptr;
 
 /**
  * Constructor for a new, empty tournament file
@@ -109,6 +110,7 @@ void Tournament::initModels()
   tlm = new TeamListModel(db);
   ptm = new PlayerTableModel(db);
   ctm = new CategoryTableModel(db);
+  mgm = new MatchGroupTableModel(db);
 }
 
 //----------------------------------------------------------------------------
@@ -129,6 +131,7 @@ void Tournament::close()
   delete tlm;
   delete ptm;
   delete ctm;
+  delete mgm;
   
   tm = nullptr;
   cm = nullptr;
@@ -137,6 +140,7 @@ void Tournament::close()
   tlm = nullptr;
   ptm = nullptr;
   ctm = nullptr;
+  mgm = nullptr;
   
   db->close();
   delete db;
@@ -210,7 +214,11 @@ MatchMngr* Tournament::getMatchMngr()
 }
 
 //----------------------------------------------------------------------------
-    
+
+MatchGroupTableModel* Tournament::getMatchGroupTableModel()
+{
+  return mgm;
+}
 
 //----------------------------------------------------------------------------
     

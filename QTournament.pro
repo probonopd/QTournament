@@ -49,7 +49,10 @@ HEADERS += \
     RoundRobinGenerator.h \
     ui/delegates/CatItemDelegate.h \
     ui/delegates/DelegateItemLED.h \
-    ThreadSafeQueue.h
+    ThreadSafeQueue.h \
+    ui/ScheduleTabWidget.h \
+    models/MatchGroupTabModel.h \
+    ui/MatchGroupTableView.h
 
 SOURCES += \
     Category.cpp \
@@ -89,7 +92,10 @@ SOURCES += \
     RoundRobinGenerator.cpp \
     ui/delegates/CatItemDelegate.cpp \
     ui/delegates/DelegateItemLED.cpp \
-    ThreadSafeQueue.cpp
+    ThreadSafeQueue.cpp \
+    ui/ScheduleTabWidget.cpp \
+    models/MatchGroupTabModel.cpp \
+    ui/MatchGroupTableView.cpp
 
 RESOURCES += \
     tournament.qrc
@@ -104,7 +110,8 @@ FORMS += \
     ui/GroupConfigWidget.ui \
     ui/MainFrame.ui \
     ui/PlayerTabWidget.ui \
-    ui/TeamTabWidget.ui
+    ui/TeamTabWidget.ui \
+    ui/ScheduleTabWidget.ui
 
 
 win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../DatabaseOverlayLib/release/ -lDatabaseOverlayLib

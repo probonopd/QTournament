@@ -252,10 +252,11 @@ namespace QTournament
     STAT_CAT_PLAYING,  // at least one match in this category is currently being played
     STAT_CAT_FINALIZED, // no more rounds or matches to come
     STAT_MG_CONFIG,   // Match group has been created, matches can still be added or removed
-    STAT_MG_FROZEN,   // No more adding or removing of matches; match group CANNOT be scheduled because earlier rounds/groups have to be scheduled first
-    STAT_MG_IDLE,     // No more adding or removing of matches; match group can be scheduled and waits for being scheduled
+    STAT_MG_FROZEN,   // No more adding or removing of matches; match group CANNOT be staged because earlier rounds/groups have to be staged / scheduled first
+    STAT_MG_IDLE,     // No more adding or removing of matches; match group can be staged and waits for being staged
+    STAT_MG_STAGED,     // No more adding or removing of matches; match group is selected to be scheduled and waits for being scheduled
     STAT_MG_SCHEDULED, // Match numbers have been assigned
-    STAT_MG_FINISHED,  // All matches in this group have been finished
+    STAT_MG_FINISHED,  // All matches in this group are finished
     STAT_MA_INCOMPLETE,   // Match is not yet fully defined (e.g., player names or match number are missing)
     STAT_MA_FUZZY,        // Player names are defined by symbolic values (e.g., winner of match XYZ)
     STAT_MA_READY,        // Opponents are fully defined and all players are idle; match can be called

@@ -37,6 +37,7 @@ namespace QTournament
     MatchGroupList getAllMatchGroups();
     unique_ptr<MatchGroup> getMatchGroup(const Category& cat, const int round, const int grpNum,  ERR* err);
     bool hasMatchGroup(const Category& cat, const int round, const int grpNum, ERR* err=nullptr);
+    unique_ptr<MatchGroup> getMatchGroupBySeqNum(int mgSeqNum);
 
     unique_ptr<Match> createMatch(const MatchGroup& grp, ERR* err);
     ERR canAssignPlayerPairToMatch(const Match& ma, const PlayerPair& pp) const;
@@ -48,6 +49,9 @@ namespace QTournament
     DbTab groupTab;
     void updateAllMatchGroupStates(const Category& cat) const;
     
+  signals:
+    void beginCreateMatchGroup ();
+    void endCreateMatchGroup (int newMatchGroupSeqNum);
 } ;
 
 }

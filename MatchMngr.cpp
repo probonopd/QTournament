@@ -109,7 +109,11 @@ namespace QTournament {
     qvl << MG_ROUND << round;
     qvl << MG_GRP_NUM << grpNum;
     qvl << GENERIC_STATE_FIELD_NAME << STAT_MG_CONFIG;
+    emit beginCreateMatchGroup();
     int newId = groupTab.insertRow(qvl);
+    fixSeqNumberAfterInsert(TAB_MATCH_GROUP);
+    emit endCreateMatchGroup(groupTab.length() - 1); // the new sequence number is always the greatest
+
     
     // create a match group object for the new group an return a pointer
     // to this new object
@@ -442,6 +446,19 @@ namespace QTournament {
 
 //----------------------------------------------------------------------------
 
+  unique_ptr<MatchGroup> MatchMngr::getMatchGroupBySeqNum(int mgSeqNum)
+  {
+    try {
+      TabRow r = groupTab.getSingleRowByColumnValue(GENERIC_SEQNUM_FIELD_NAME, mgSeqNum);
+      MatchGroup* mg_raw = new MatchGroup(db, r.getId());
+      return unique_ptr<MatchGroup>(mg_raw);
+    }
+    catch (std::exception e)
+    {
+     return nullptr;  // null indicates error
+    }
+    return nullptr;
+  }
 
 //----------------------------------------------------------------------------
 
