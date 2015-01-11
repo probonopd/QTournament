@@ -88,6 +88,13 @@ namespace QTournament {
 
 //----------------------------------------------------------------------------
 
+  int KO_Config::getNumGroupMatches() const
+  {
+    return grpDefs.getTotalMatchCount();
+  }
+
+//----------------------------------------------------------------------------
+
   int KO_Config::getNumGroupDefs() const
   {
     return grpDefs.count();

@@ -27,6 +27,7 @@ namespace QTournament
     
     bool isValid(int opponentCount = -1) const;
     int getNumMatches() const;
+    int getNumGroupMatches() const;
     QString toString() const;
     KO_START getStartLevel() const;
     bool getSecondSurvives() const;

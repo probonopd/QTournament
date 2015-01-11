@@ -9,6 +9,7 @@
 #define	ROUNDROBINCATEGORY_H
 
 #include "Category.h"
+#include "ThreadSafeQueue.h"
 
 
 using namespace dbOverlay;
@@ -24,7 +25,7 @@ namespace QTournament
     virtual ERR canFreezeConfig() override;
     virtual bool needsInitialRanking() override;
     virtual bool needsGroupInitialization() override;
-    virtual ERR prepareFirstRound() override;
+    virtual ERR prepareFirstRound(ProgressQueue* progressNotificationQueue) override;
 
     
   private:

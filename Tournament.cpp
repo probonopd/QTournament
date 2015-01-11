@@ -31,7 +31,6 @@ namespace QTournament
  * @param cfg initial configuration settings for the application
  */
 Tournament::Tournament(const QString& fName, const TournamentSettings& cfg)
-: db(TournamentDB(":memory:", true))    // dummy initializer for satisfying the compiler
 {
     // Check whether the file exists
     QFile f(fName);
@@ -43,10 +42,11 @@ Tournament::Tournament(const QString& fName, const TournamentSettings& cfg)
     }
     
     // create a new, blank database
-    db = TournamentDB(fName, true);
+    db = new TournamentDB(fName, true);
+    db->setLogLevel(1);
 
     // initialize the database
-    KeyValueTab cfgTab = KeyValueTab::getTab(&db, TAB_CFG);
+    KeyValueTab cfgTab = KeyValueTab::getTab(db, TAB_CFG);
     cfgTab.set(CFG_KEY_DB_VERSION, DB_VERSION);
     cfgTab.set(CFG_KEY_TNMT_NAME, cfg.tournamentName);
     cfgTab.set(CFG_KEY_TNMT_ORGA, cfg.organizingClub);
@@ -69,7 +69,6 @@ Tournament::Tournament(const QString& fName, const TournamentSettings& cfg)
  * @param fName name of the file to create; the file may not exist
  */
 Tournament::Tournament(const QString& fName)
-: db(TournamentDB(":memory:", true))    // dummy initializer for satisfying the compiler
 {
     // Check whether the file exists
     QFile f(fName);
@@ -81,7 +80,8 @@ Tournament::Tournament(const QString& fName)
     }
     
     // open an existing database
-    db = TournamentDB(fName, false);
+    db = new TournamentDB(fName, false);
+    db->setLogLevel(1);
     
     // initialize the various managers / handlers
     initManagers();
@@ -96,19 +96,19 @@ Tournament::Tournament(const QString& fName)
 
 void Tournament::initManagers()
 {
-    tm = new TeamMngr(&db);
-    cm = new CatMngr(&db);
-    pm = new PlayerMngr(&db);
-    mm = new MatchMngr(&db);
+    tm = new TeamMngr(db);
+    cm = new CatMngr(db);
+    pm = new PlayerMngr(db);
+    mm = new MatchMngr(db);
 }
 
 //----------------------------------------------------------------------------
 
 void Tournament::initModels()
 {
-  tlm = new TeamListModel(&db);
-  ptm = new PlayerTableModel(&db);
-  ctm = new CategoryTableModel(&db);
+  tlm = new TeamListModel(db);
+  ptm = new PlayerTableModel(db);
+  ctm = new CategoryTableModel(db);
 }
 
 //----------------------------------------------------------------------------
@@ -124,22 +124,40 @@ void Tournament::close()
   delete tm;
   delete cm;
   delete pm;
+  delete mm;
   
   delete tlm;
+  delete ptm;
+  delete ctm;
   
-  tm = NULL;
-  cm = NULL;
-  pm = NULL;
-  tlm = NULL;
+  tm = nullptr;
+  cm = nullptr;
+  pm = nullptr;
+  mm = nullptr;
+  tlm = nullptr;
+  ptm = nullptr;
+  ctm = nullptr;
   
-  db.close();
+  db->close();
+  delete db;
+  db = nullptr;
 }
 
 //----------------------------------------------------------------------------
 
 Tournament::~Tournament()
 {
-  close();
+  // close will be called separately by the UI
+  //close();
+
+  // just to be sure, although should have been
+  // handled by close()
+  if (db)
+  {
+    db->close();
+    delete db;
+    db = nullptr;
+  }
 }
 
 //----------------------------------------------------------------------------

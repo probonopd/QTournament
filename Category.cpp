@@ -673,10 +673,11 @@ namespace QTournament
     \param grpMembers list of PlayerPairs for that the group matches will be generated
     \param grpNum the group number that will be applied to the matches / match groups
     \param firstRoundNum the number of the first round of group matches, usually 1
+    \param progressNotificationQueue is an optional pointer to a FIFO that communicates progress back to the GUI
 
     \return error code
     */
-  ERR Category::generateGroupMatches(const PlayerPairList& grpMembers, int grpNum, int firstRoundNum) const
+  ERR Category::generateGroupMatches(const PlayerPairList& grpMembers, int grpNum, int firstRoundNum, ProgressQueue *progressNotificationQueue) const
   {
     if (grpNum < 1) return INVALID_GROUP_NUM;
     if (firstRoundNum < 1) return INVALID_ROUND;
@@ -713,6 +714,8 @@ namespace QTournament
 
         e = mm->setPlayerPairsForMatch(*newMatch, pp1, pp2);
         if (e != OK) return e;
+
+        if (progressNotificationQueue != nullptr) progressNotificationQueue->step();
       }
 
       // close this group (transition to FROZEN) and potentially promote it further to IDLE

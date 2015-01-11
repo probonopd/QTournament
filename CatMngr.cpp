@@ -750,7 +750,7 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  ERR CatMngr::startCategory(const Category &c, QList<PlayerPairList> grpCfg, PlayerPairList seed)
+  ERR CatMngr::startCategory(const Category &c, QList<PlayerPairList> grpCfg, PlayerPairList seed, ProgressQueue *progressNotificationQueue)
   {
     // we can only transition to "IDLE" if we are "FROZEN"
     if (c.getState() != STAT_CAT_FROZEN)
@@ -796,7 +796,15 @@ namespace QTournament
     emit categoryStatusChanged(c, STAT_CAT_FROZEN, STAT_CAT_IDLE);
 
     // do the individual prep of the first round
-    return specializedCat->prepareFirstRound();
+    ERR result = specializedCat->prepareFirstRound(progressNotificationQueue);
+
+    // indicate the completeness of the initialization to the queue, if necessary
+    if (progressNotificationQueue != nullptr)
+    {
+      progressNotificationQueue->push(-1);
+    }
+
+    return result;
   }
 
 //----------------------------------------------------------------------------

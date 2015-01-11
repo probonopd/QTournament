@@ -71,14 +71,14 @@ void MainFrame::enableControls(bool doEnable)
 void MainFrame::closeCurrentTournament()
 {
   // close the tournament
-  if (tnmt != NULL)
+  if (tnmt != nullptr)
   {
     // this emits a signal to inform everyone that the
     // current tournament is about to die
     tnmt->close();
     
     delete tnmt;
-    tnmt = NULL;
+    tnmt = nullptr;
   }
   
   // delete the test file, if existing

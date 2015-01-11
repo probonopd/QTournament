@@ -44,7 +44,7 @@ namespace QTournament
     ~Tournament();
 
   private:
-    TournamentDB db;
+    TournamentDB* db;
     static TeamMngr* tm;
     static CatMngr* cm;
     static PlayerMngr* pm;

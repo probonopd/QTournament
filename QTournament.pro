@@ -48,7 +48,8 @@ HEADERS += \
     Match.h \
     RoundRobinGenerator.h \
     ui/delegates/CatItemDelegate.h \
-    ui/delegates/DelegateItemLED.h
+    ui/delegates/DelegateItemLED.h \
+    ThreadSafeQueue.h
 
 SOURCES += \
     Category.cpp \
@@ -87,7 +88,8 @@ SOURCES += \
     Match.cpp \
     RoundRobinGenerator.cpp \
     ui/delegates/CatItemDelegate.cpp \
-    ui/delegates/DelegateItemLED.cpp
+    ui/delegates/DelegateItemLED.cpp \
+    ThreadSafeQueue.cpp
 
 RESOURCES += \
     tournament.qrc

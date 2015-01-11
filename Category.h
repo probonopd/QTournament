@@ -17,6 +17,7 @@
 #include "PlayerPair.h"
 #include "TournamentErrorCodes.h"
 #include "KO_Config.h"
+#include "ThreadSafeQueue.h"
 
 namespace QTournament
 {
@@ -67,14 +68,14 @@ namespace QTournament
     virtual ERR canFreezeConfig() { throw std::runtime_error("Unimplemented Method: canFreezeConfig"); };
     virtual bool needsInitialRanking() { throw std::runtime_error("Unimplemented Method: needsInitialRanking"); };
     virtual bool needsGroupInitialization() { throw std::runtime_error("Unimplemented Method: needsGroupInitialization"); };
-    virtual ERR prepareFirstRound() { throw std::runtime_error("Unimplemented Method: prepareFirstRound"); };
+    virtual ERR prepareFirstRound(ProgressQueue* progressNotificationQueue=nullptr) { throw std::runtime_error("Unimplemented Method: prepareFirstRound"); };
 
   private:
     Category (TournamentDB* db, int rowId);
     Category (TournamentDB* db, dbOverlay::TabRow row);
     ERR applyGroupAssignment(QList<PlayerPairList> grpCfg);
     ERR applyInitialRanking(PlayerPairList seed);
-    ERR generateGroupMatches(const PlayerPairList &grpMembers, int grpNum, int firstRoundNum=1) const;
+    ERR generateGroupMatches(const PlayerPairList &grpMembers, int grpNum, int firstRoundNum=1, ProgressQueue* progressNotificationQueue=nullptr) const;
   };
 
   // we need this to have a category object in a QHash
