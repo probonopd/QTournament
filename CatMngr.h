@@ -24,7 +24,7 @@ using namespace dbOverlay;
 namespace QTournament
 {
 
-  class CatMngr : public QObject, GenericObjectManager
+  class CatMngr : public QObject, public GenericObjectManager
   {
     Q_OBJECT
     

@@ -16,8 +16,8 @@ using namespace dbOverlay;
 CategoryTableModel::CategoryTableModel(TournamentDB* _db)
 :QAbstractTableModel(0), db(_db), catTab((_db->getTab(TAB_CATEGORY)))
 {
-  connect(Tournament::getCatMngr(), &CatMngr::beginCreateCategory, this, &CategoryTableModel::onBeginCreateCategory);
-  connect(Tournament::getCatMngr(), &CatMngr::endCreateCategory, this, &CategoryTableModel::onEndCreateCategory);
+  connect(Tournament::getCatMngr(), &CatMngr::beginCreateCategory, this, &CategoryTableModel::onBeginCreateCategory, Qt::DirectConnection);
+  connect(Tournament::getCatMngr(), &CatMngr::endCreateCategory, this, &CategoryTableModel::onEndCreateCategory, Qt::DirectConnection);
 }
 
 //----------------------------------------------------------------------------
@@ -83,7 +83,8 @@ QVariant CategoryTableModel::headerData(int section, Qt::Orientation orientation
 
 void CategoryTableModel::onBeginCreateCategory()
 {
-  beginInsertRows(QModelIndex(), catTab.length(), catTab.length());
+  int newPos = catTab.length();
+  beginInsertRows(QModelIndex(), newPos, newPos);
 }
 //----------------------------------------------------------------------------
 

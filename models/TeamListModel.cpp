@@ -20,8 +20,8 @@ namespace QTournament
   TeamListModel::TeamListModel(TournamentDB* _db)
   : QAbstractListModel(0), db(_db), teamTab(_db->getTab(TAB_TEAM))
   {
-    connect(Tournament::getTeamMngr(), &TeamMngr::beginCreateTeam, this, &TeamListModel::onBeginCreateTeam);
-    connect(Tournament::getTeamMngr(), &TeamMngr::endCreateTeam, this, &TeamListModel::onEndCreateTeam);
+    connect(Tournament::getTeamMngr(), &TeamMngr::beginCreateTeam, this, &TeamListModel::onBeginCreateTeam, Qt::DirectConnection);
+    connect(Tournament::getTeamMngr(), &TeamMngr::endCreateTeam, this, &TeamListModel::onEndCreateTeam, Qt::DirectConnection);
     connect(Tournament::getTeamMngr(), &TeamMngr::teamRenamed, this, &TeamListModel::onTeamRenamed);
   }
 
@@ -60,7 +60,8 @@ namespace QTournament
 
   void TeamListModel::onBeginCreateTeam()
   {
-    beginInsertRows(QModelIndex(), teamTab.length(), teamTab.length());
+    int newPos = teamTab.length();
+    beginInsertRows(QModelIndex(), newPos, newPos);
   }
 
 //----------------------------------------------------------------------------

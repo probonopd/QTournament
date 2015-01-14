@@ -65,7 +65,7 @@
         </layout>
        </item>
        <item>
-        <widget class="QLabel" name="label">
+        <widget class="QLabel" name="laAvail">
          <property name="text">
           <string>Available match groups:</string>
          </property>

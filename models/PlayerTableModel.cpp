@@ -19,8 +19,8 @@ PlayerTableModel::PlayerTableModel(TournamentDB* _db)
         teamTab(_db->getTab(TAB_TEAM)), catTab((_db->getTab(TAB_CATEGORY)))
 {
   connect(Tournament::getTeamMngr(), &TeamMngr::teamRenamed, this, &PlayerTableModel::onTeamRenamed);
-  connect(Tournament::getPlayerMngr(), &PlayerMngr::beginCreatePlayer, this, &PlayerTableModel::onBeginCreatePlayer);
-  connect(Tournament::getPlayerMngr(), &PlayerMngr::endCreatePlayer, this, &PlayerTableModel::onEndCreatePlayer);
+  connect(Tournament::getPlayerMngr(), &PlayerMngr::beginCreatePlayer, this, &PlayerTableModel::onBeginCreatePlayer, Qt::DirectConnection);
+  connect(Tournament::getPlayerMngr(), &PlayerMngr::endCreatePlayer, this, &PlayerTableModel::onEndCreatePlayer, Qt::DirectConnection);
   connect(Tournament::getPlayerMngr(), &PlayerMngr::playerRenamed, this, &PlayerTableModel::onPlayerRenamed);
 }
 
@@ -129,7 +129,8 @@ QVariant PlayerTableModel::headerData(int section, Qt::Orientation orientation, 
 
 void PlayerTableModel::onBeginCreatePlayer()
 {
-    beginInsertRows(QModelIndex(), playerTab.length(), playerTab.length());
+  int newPos = playerTab.length();
+  beginInsertRows(QModelIndex(), newPos, newPos);
 }
 
 //----------------------------------------------------------------------------

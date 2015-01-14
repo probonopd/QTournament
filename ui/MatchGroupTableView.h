@@ -12,6 +12,7 @@
 //#include "delegates/PlayerItemDelegate.h"
 
 #include <QTableView>
+#include <QSortFilterProxyModel>
 
 using namespace QTournament;
 
@@ -30,6 +31,7 @@ public slots:
 private:
   Tournament* tnmt;
   QStringListModel* emptyModel;
+  QSortFilterProxyModel* sortedModel;
   //PlayerItemDelegate* itemDelegate;
 
 };

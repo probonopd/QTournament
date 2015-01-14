@@ -10,20 +10,23 @@
 #include "Category.h"
 #include "Tournament.h"
 
+#include <QDebug>
+
 using namespace QTournament;
 using namespace dbOverlay;
 
 MatchGroupTableModel::MatchGroupTableModel(TournamentDB* _db)
 :QAbstractTableModel(0), db(_db), mgTab((_db->getTab(TAB_MATCH_GROUP)))
 {
-  connect(Tournament::getMatchMngr(), &MatchMngr::beginCreateMatchGroup, this, &MatchGroupTableModel::onBeginCreateMatchGroup);
-  connect(Tournament::getMatchMngr(), &MatchMngr::endCreateMatchGroup, this, &MatchGroupTableModel::onEndCreateMatchGroup);
+  connect(Tournament::getMatchMngr(), &MatchMngr::beginCreateMatchGroup, this, &MatchGroupTableModel::onBeginCreateMatchGroup, Qt::DirectConnection);
+  connect(Tournament::getMatchMngr(), &MatchMngr::endCreateMatchGroup, this, &MatchGroupTableModel::onEndCreateMatchGroup, Qt::DirectConnection);
 }
 
 //----------------------------------------------------------------------------
 
 int MatchGroupTableModel::rowCount(const QModelIndex& parent) const
 {
+  if (parent.isValid()) return 0;
   return mgTab.length();
 }
 
@@ -31,6 +34,7 @@ int MatchGroupTableModel::rowCount(const QModelIndex& parent) const
 
 int MatchGroupTableModel::columnCount(const QModelIndex& parent) const
 {
+  if (parent.isValid()) return 0;
   return 4;
 }
 
@@ -39,10 +43,12 @@ int MatchGroupTableModel::columnCount(const QModelIndex& parent) const
 QVariant MatchGroupTableModel::data(const QModelIndex& index, int role) const
 {
     if (!index.isValid())
-      return QVariant();
+      //return QVariant();
+      return QString("Invalid index");
 
     if (index.row() >= mgTab.length())
-      return QVariant();
+      //return QVariant();
+      return QString("Invalid row: " + QString::number(index.row()));
 
     if (role != Qt::DisplayRole)
       return QVariant();
@@ -76,7 +82,7 @@ QVariant MatchGroupTableModel::data(const QModelIndex& index, int role) const
       return mg->getMatchCount();
     }
 
-    return QString("Not Implemented");
+    return QString("Not Implemented, row=" + QString::number(index.row()) + ", col=" + QString::number(index.row()));
 }
 
 //----------------------------------------------------------------------------
@@ -84,6 +90,11 @@ QVariant MatchGroupTableModel::data(const QModelIndex& index, int role) const
 QVariant MatchGroupTableModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
   if (role != Qt::DisplayRole)
+  {
+    return QVariant();
+  }
+
+  if (section < 0)
   {
     return QVariant();
   }
@@ -103,7 +114,7 @@ QVariant MatchGroupTableModel::headerData(int section, Qt::Orientation orientati
       return tr("Number of matches");
     }
 
-    return QString("Not implemented");
+    return QString("Not implemented, section=" + QString::number(section));
   }
   
   return QString::number(section + 1);
@@ -113,7 +124,8 @@ QVariant MatchGroupTableModel::headerData(int section, Qt::Orientation orientati
 
 void MatchGroupTableModel::onBeginCreateMatchGroup()
 {
-  beginInsertRows(QModelIndex(), mgTab.length(), mgTab.length());
+  int newPos = mgTab.length();
+  beginInsertRows(QModelIndex(), newPos, newPos);
 }
 //----------------------------------------------------------------------------
 

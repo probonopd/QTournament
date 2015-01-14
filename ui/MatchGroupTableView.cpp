@@ -14,7 +14,12 @@ MatchGroupTableView::MatchGroupTableView(QWidget* parent)
   // an empty model for clearing the table when
   // no tournament is open
   emptyModel = new QStringListModel();
-  
+
+  // prepare a proxy model to support sorting by columns
+  sortedModel = new QSortFilterProxyModel();
+  sortedModel->setSourceModel(emptyModel);
+  setModel(sortedModel);
+
   connect(MainFrame::getMainFramePointer(), &MainFrame::tournamentOpened, this, &MatchGroupTableView::onTournamentOpened);
   
   // define a delegate for drawing the player items
@@ -29,6 +34,7 @@ MatchGroupTableView::MatchGroupTableView(QWidget* parent)
 MatchGroupTableView::~MatchGroupTableView()
 {
   delete emptyModel;
+  delete sortedModel;
   //delete itemDelegate;
 }
 
@@ -37,7 +43,7 @@ MatchGroupTableView::~MatchGroupTableView()
 void MatchGroupTableView::onTournamentOpened(Tournament* _tnmt)
 {
   tnmt = _tnmt;
-  setModel(Tournament::getMatchGroupTableModel());
+  sortedModel->setSourceModel(Tournament::getMatchGroupTableModel());
   setEnabled(true);
   
   // connect signals from the Tournament and TeamMngr with my slots
@@ -57,8 +63,8 @@ void MatchGroupTableView::onTournamentClosed()
   disconnect(tnmt, &Tournament::tournamentClosed, this, &MatchGroupTableView::onTournamentClosed);
   
   // invalidate the tournament handle and deactivate the view
-  tnmt = 0;
-  setModel(emptyModel);
+  tnmt = nullptr;
+  sortedModel->setSourceModel(emptyModel);
   setEnabled(false);
   
 }
