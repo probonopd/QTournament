@@ -12,6 +12,7 @@
 #include "delegates/PlayerItemDelegate.h"
 
 #include <QTableView>
+#include <QSortFilterProxyModel>
 
 using namespace QTournament;
 
@@ -26,10 +27,12 @@ public:
 public slots:
   void onTournamentClosed();
   void onTournamentOpened(Tournament* tnmt);
+  QModelIndex mapToSource(const QModelIndex& proxyIndex);
   
 private:
   Tournament* tnmt;
   QStringListModel* emptyModel;
+  QSortFilterProxyModel* sortedModel;
   PlayerItemDelegate* itemDelegate;
 
 };

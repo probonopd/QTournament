@@ -15,10 +15,16 @@ PlayerTableView::PlayerTableView(QWidget* parent)
   // no tournament is open
   emptyModel = new QStringListModel();
   
+  // prepare a proxy model to support sorting by columns
+  sortedModel = new QSortFilterProxyModel();
+  sortedModel->setSourceModel(emptyModel);
+  setModel(sortedModel);
+
   connect(MainFrame::getMainFramePointer(), &MainFrame::tournamentOpened, this, &PlayerTableView::onTournamentOpened);
   
   // define a delegate for drawing the player items
   itemDelegate = new PlayerItemDelegate(this);
+  itemDelegate->setProxy(sortedModel);
   setItemDelegate(itemDelegate);
   
   
@@ -29,6 +35,7 @@ PlayerTableView::PlayerTableView(QWidget* parent)
 PlayerTableView::~PlayerTableView()
 {
   delete emptyModel;
+  delete sortedModel;
   delete itemDelegate;
 }
 
@@ -37,7 +44,7 @@ PlayerTableView::~PlayerTableView()
 void PlayerTableView::onTournamentOpened(Tournament* _tnmt)
 {
   tnmt = _tnmt;
-  setModel(Tournament::getPlayerTableModel());
+  sortedModel->setSourceModel(Tournament::getPlayerTableModel());
   setEnabled(true);
   
   // connect signals from the Tournament and TeamMngr with my slots
@@ -57,14 +64,18 @@ void PlayerTableView::onTournamentClosed()
   disconnect(tnmt, &Tournament::tournamentClosed, this, &PlayerTableView::onTournamentClosed);
   
   // invalidate the tournament handle and deactivate the view
-  tnmt = 0;
-  setModel(emptyModel);
+  tnmt = nullptr;
+  sortedModel->setSourceModel(emptyModel);
   setEnabled(false);
   
 }
 
 //----------------------------------------------------------------------------
-    
+
+QModelIndex PlayerTableView::mapToSource(const QModelIndex &proxyIndex)
+{
+  return sortedModel->mapToSource(proxyIndex);
+}
 
 //----------------------------------------------------------------------------
     

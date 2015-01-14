@@ -22,17 +22,29 @@
 using namespace QTournament;
 
 PlayerItemDelegate::PlayerItemDelegate(QObject* parent)
-: QStyledItemDelegate(parent), fntMetrics(QFontMetrics(QFont()))
+: QStyledItemDelegate(parent), proxy(nullptr), fntMetrics(QFontMetrics(QFont()))
 {
+}
+
+//----------------------------------------------------------------------------
+
+void PlayerItemDelegate::setProxy(QAbstractProxyModel *_proxy)
+{
+  proxy = _proxy;
 }
 
 //----------------------------------------------------------------------------
 
 void PlayerItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-  
-  
-  Player p = Tournament::getPlayerMngr()->getPlayerBySeqNum(index.row());
+  // if necessary, apply a conversion between the proxy model's row number
+  // and the source model's row number
+  int row = index.row();
+  if (proxy)
+  {
+    row = (proxy->mapToSource(index)).row();
+  }
+  Player p = Tournament::getPlayerMngr()->getPlayerBySeqNum(row);
   
   // Paint the background, either in the selection color or in a color related
   // to the participant's sex

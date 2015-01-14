@@ -39,7 +39,14 @@
       </layout>
      </item>
      <item>
-      <widget class="PlayerTableView" name="playerView"/>
+      <widget class="PlayerTableView" name="playerView">
+       <property name="selectionBehavior">
+        <enum>QAbstractItemView::SelectRows</enum>
+       </property>
+       <property name="sortingEnabled">
+        <bool>true</bool>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>
