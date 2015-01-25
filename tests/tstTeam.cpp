@@ -23,7 +23,7 @@ void tstTeam::testRename()
 {
   printStartMsg("tstTeam::testRename");
   
-  TournamentDB db = getScenario01(true);
+  TournamentDB* db = getScenario01(true);
   Tournament t(getSqliteFileName());
   TeamMngr* tmngr = t.getTeamMngr();
   
@@ -46,6 +46,7 @@ void tstTeam::testRename()
   CPPUNIT_ASSERT(t2.rename("xx") == OK);
   CPPUNIT_ASSERT(t2.getName() == "xx");
   
+  delete db;
   printEndMsg();
 }
 

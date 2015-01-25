@@ -44,13 +44,13 @@ protected:
   void cleanupMysql();
   
   void prepScenario01(bool useTeams = true);
-  QTournament::TournamentDB getScenario01(bool useTeams = true);
+  QTournament::TournamentDB* getScenario01(bool useTeams = true);
   void prepScenario02(bool useTeams = true);
-  QTournament::TournamentDB getScenario02(bool useTeams = true);
+  QTournament::TournamentDB* getScenario02(bool useTeams = true);
   void prepScenario03(bool useTeams = true);
-  QTournament::TournamentDB getScenario03(bool useTeams = true);
+  QTournament::TournamentDB* getScenario03(bool useTeams = true);
   void prepScenario04(bool useTeams = true);
-  QTournament::TournamentDB getScenario04(bool useTeams = true);
+  QTournament::TournamentDB* getScenario04(bool useTeams = true);
 
   void execQueryAndDumpError(QSqlQuery& qry, const QString& sqlStatement="");
 

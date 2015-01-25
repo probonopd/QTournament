@@ -24,14 +24,14 @@ void tstGenericDBObject::testStateSetGet()
   printStartMsg("tstGenericDBObject::testStateSetGet");
   
   // initialize a database
-  TournamentDB db = getScenario01(true);
+  TournamentDB* db = getScenario01(true);
 
   // fake a player to get a "state" column to play with
-  db[TAB_PLAYER].insertRow();
+  (*db)[TAB_PLAYER].insertRow();
   
   // construct a GenericDatabaseObject from this player
-  TabRow r = db[TAB_PLAYER][1];
-  GenericDatabaseObject gdo(&db, r);
+  TabRow r = (*db)[TAB_PLAYER][1];
+  GenericDatabaseObject gdo(db, r);
   
   // set a state to initially fill the column
   gdo.setState(STAT_PL_IDLE);
@@ -40,6 +40,8 @@ void tstGenericDBObject::testStateSetGet()
   CPPUNIT_ASSERT(gdo.getState() == STAT_PL_IDLE);
   gdo.setState(STAT_CAT_CONFIG);
   CPPUNIT_ASSERT(gdo.getState() == STAT_CAT_CONFIG);
+
+  delete db;
   
   printEndMsg();
 }

@@ -224,10 +224,10 @@ void DatabaseTestScenario::execQueryAndDumpError(QSqlQuery& qry, const QString& 
 
 //----------------------------------------------------------------------------
 
-TournamentDB DatabaseTestScenario::getScenario01(bool useTeams)
+TournamentDB* DatabaseTestScenario::getScenario01(bool useTeams)
 {
   prepScenario01(useTeams);
-  return TournamentDB(getSqliteFileName(), false);
+  return new TournamentDB(getSqliteFileName(), false);
 }
 
 //----------------------------------------------------------------------------
@@ -276,10 +276,10 @@ void DatabaseTestScenario::prepScenario02(bool useTeams)
 
 //----------------------------------------------------------------------------
     
-TournamentDB DatabaseTestScenario::getScenario02(bool useTeams)
+TournamentDB* DatabaseTestScenario::getScenario02(bool useTeams)
 {
   prepScenario02(useTeams);
-  return TournamentDB(getSqliteFileName(), false);
+  return new TournamentDB(getSqliteFileName(), false);
 }
 
 
@@ -319,10 +319,10 @@ void DatabaseTestScenario::prepScenario03(bool useTeams)
 
 //----------------------------------------------------------------------------
 
-TournamentDB DatabaseTestScenario::getScenario03(bool useTeams)
+TournamentDB* DatabaseTestScenario::getScenario03(bool useTeams)
 {
   prepScenario03(useTeams);
-  return TournamentDB(getSqliteFileName(), false);
+  return new TournamentDB(getSqliteFileName(), false);
 }
 
 //----------------------------------------------------------------------------
@@ -367,10 +367,10 @@ void DatabaseTestScenario::prepScenario04(bool useTeams)
 
 //----------------------------------------------------------------------------
 
-TournamentDB DatabaseTestScenario::getScenario04(bool useTeams)
+TournamentDB* DatabaseTestScenario::getScenario04(bool useTeams)
 {
   prepScenario04(useTeams);
-  return TournamentDB(getSqliteFileName(), false);
+  return new TournamentDB(getSqliteFileName(), false);
 }
 
 

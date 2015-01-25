@@ -25,18 +25,18 @@ void tstCatMngr::testCreateNewCategory()
 {
   printStartMsg("tstCatMngr::testCreateNewCategory");
   
-  TournamentDB db = getScenario01(true);
-  CatMngr cmngr(&db);
+  TournamentDB* db = getScenario01(true);
+  CatMngr cmngr(db);
   
   // try empty or invalid name
   CPPUNIT_ASSERT(cmngr.createNewCategory("") == INVALID_NAME);
   CPPUNIT_ASSERT(cmngr.createNewCategory(QString::null) == INVALID_NAME);
-  CPPUNIT_ASSERT(db[TAB_CATEGORY].length() == 0);
+  CPPUNIT_ASSERT((*db)[TAB_CATEGORY].length() == 0);
   
   // actually create a valid category
   CPPUNIT_ASSERT(cmngr.createNewCategory("c1") == OK);
-  CPPUNIT_ASSERT(db[TAB_CATEGORY].length() == 1);
-  TabRow r = db[TAB_CATEGORY][1];
+  CPPUNIT_ASSERT((*db)[TAB_CATEGORY].length() == 1);
+  TabRow r = (*db)[TAB_CATEGORY][1];
   CPPUNIT_ASSERT(r[GENERIC_NAME_FIELD_NAME].toString() == "c1");
   
   // make sure the default values are set correctly
@@ -48,8 +48,9 @@ void tstCatMngr::testCreateNewCategory()
   
   // name collision
   CPPUNIT_ASSERT(cmngr.createNewCategory("c1") == NAME_EXISTS);
-  CPPUNIT_ASSERT(db[TAB_CATEGORY].length() == 1);
+  CPPUNIT_ASSERT((*db)[TAB_CATEGORY].length() == 1);
   
+  delete db;
   printEndMsg();
 }
 
@@ -59,8 +60,8 @@ void tstCatMngr::testHasCategory()
 {
   printStartMsg("tstCatMngr::testHasCategory");
   
-  TournamentDB db = getScenario01(true);
-  CatMngr cmngr(&db);
+  TournamentDB* db = getScenario01(true);
+  CatMngr cmngr(db);
   
   // try queries on empty table
   CPPUNIT_ASSERT(cmngr.hasCategory("") == false);
@@ -76,6 +77,7 @@ void tstCatMngr::testHasCategory()
   CPPUNIT_ASSERT(cmngr.hasCategory("abc") == false);
   CPPUNIT_ASSERT(cmngr.hasCategory("c1") == true);
   
+  delete db;
   printEndMsg();
 }
 
@@ -85,8 +87,8 @@ void tstCatMngr::testGetCategory()
 {
   printStartMsg("tstCatMngr::testGetCategory");
   
-  TournamentDB db = getScenario01(true);
-  CatMngr cmngr(&db);
+  TournamentDB* db = getScenario01(true);
+  CatMngr cmngr(db);
   
   // actually create a valid category
   CPPUNIT_ASSERT(cmngr.createNewCategory("c1") == OK);
@@ -100,6 +102,7 @@ void tstCatMngr::testGetCategory()
   CPPUNIT_ASSERT(c.getId() == 2);
   CPPUNIT_ASSERT(c.getName() == "c2");
   
+  delete db;
   printEndMsg();
 }
 
@@ -109,8 +112,8 @@ void tstCatMngr::testGetAllCategories()
 {
   printStartMsg("tstCatMngr::testGetAllCategories");
   
-  TournamentDB db = getScenario01(true);
-  CatMngr cmngr(&db);
+  TournamentDB* db = getScenario01(true);
+  CatMngr cmngr(db);
   
   // run on empty table
   QList<Category> result = cmngr.getAllCategories();
@@ -130,7 +133,7 @@ void tstCatMngr::testGetAllCategories()
   CPPUNIT_ASSERT(c.getId() == 2);
   CPPUNIT_ASSERT(c.getName() == "c2");
   
-  
+  delete db;
   printEndMsg();
 }
 
@@ -140,7 +143,7 @@ void tstCatMngr::testAddPlayerToCategory()
 {
   printStartMsg("tstCatMngr::testAddPlayerToCategory");
   
-  TournamentDB db = getScenario02(true);
+  TournamentDB* db = getScenario02(true);
   Tournament t(getSqliteFileName());
   
   // create a team some dummy players
@@ -195,6 +198,7 @@ void tstCatMngr::testAddPlayerToCategory()
   // TODO:
   // Add state-dependent tests, e.g. adding players after category configuration
 
+  delete db;
   printEndMsg();
 }
 
@@ -204,7 +208,7 @@ void tstCatMngr::testRemovePlayerFromCategory()
 {
   printStartMsg("tstCatMngr::testRemovePlayerFromCategory");
   
-  TournamentDB db = getScenario02(true);
+  TournamentDB* db = getScenario02(true);
   Tournament t(getSqliteFileName());
   
   // create a team some dummy players
@@ -234,6 +238,7 @@ void tstCatMngr::testRemovePlayerFromCategory()
   CPPUNIT_ASSERT(ls.hasPlayer(f1));
   CPPUNIT_ASSERT(ls.hasPlayer(f2) == false);
   
+  delete db;
   printEndMsg();
 }
 
@@ -243,7 +248,7 @@ void tstCatMngr::testFreezeCategory()
 {
   printStartMsg("tstCatMngr::testRemovePlayerFromCategory");
   
-  TournamentDB db = getScenario02(true);
+  TournamentDB* db = getScenario02(true);
   Tournament t(getSqliteFileName());
   
   // get a team and a category and assign 40 brand new players to it
@@ -274,7 +279,7 @@ void tstCatMngr::testFreezeCategory()
   CPPUNIT_ASSERT(specialObj->canFreezeConfig() == OK);
   
   // some db consistency checks before executing the actual "method under test"
-  DbTab pairTab = db[TAB_PAIRS];
+  DbTab pairTab = (*db)[TAB_PAIRS];
   CPPUNIT_ASSERT(pairTab.length() == 0);
   QList<PlayerPair> ppList = ms.getPlayerPairs();
   CPPUNIT_ASSERT(ppList.count() == 40);
@@ -306,6 +311,7 @@ void tstCatMngr::testFreezeCategory()
   // check the actual state transition
   CPPUNIT_ASSERT(ms.getState() == STAT_CAT_FROZEN);
   
+  delete db;
   printEndMsg();
 }
 

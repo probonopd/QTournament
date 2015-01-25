@@ -22,13 +22,14 @@ void tstMatch::testGetCat()
 {
   printStartMsg("tstMatch::testGetCat");
 
-  TournamentDB db = getScenario02(true);
+  TournamentDB* db = getScenario02(true);
   Tournament t(getSqliteFileName());
   Category ms = Tournament::getCatMngr()->getCategoryById(1);
   auto ma = initMatchGroup();
 
   CPPUNIT_ASSERT(ma->getCategory() == ms);
 
+  delete db;
   printEndMsg();
 }
 
@@ -69,7 +70,7 @@ void tstMatch::testGetGroup()
 {
   printStartMsg("tstMatch::testGetGroup");
 
-  TournamentDB db = getScenario02(true);
+  TournamentDB* db = getScenario02(true);
   Tournament t(getSqliteFileName());
   auto ma = initMatchGroup();
 
@@ -90,6 +91,7 @@ void tstMatch::testGetGroup()
 
   CPPUNIT_ASSERT(ma->getMatchGroup() != *mg);
 
+  delete db;
   printEndMsg();
 }
 
@@ -99,7 +101,7 @@ void tstMatch::testGetPairs()
 {
   printStartMsg("tstMatch::testGetGroup");
 
-  TournamentDB db = getScenario04(true);
+  TournamentDB* db = getScenario04(true);
   Tournament t(getSqliteFileName());
   MatchMngr* mm = Tournament::getMatchMngr();
   Category mx = Tournament::getCatMngr()->getCategoryById(5);
@@ -121,7 +123,7 @@ void tstMatch::testGetPairs()
 
   // (artificially) assign one pair
   PlayerPair pp1 = Tournament::getPlayerMngr()->getPlayerPair(1);
-  db[TAB_MATCH][ma.getId()].update(MA_PAIR1_REF, pp1.getPairId());
+  (*db)[TAB_MATCH][ma.getId()].update(MA_PAIR1_REF, pp1.getPairId());
 
   // test again
   CPPUNIT_ASSERT(ma.hasPlayerPair1() == true);
@@ -131,7 +133,7 @@ void tstMatch::testGetPairs()
 
   // (artificially) assign the second pair
   PlayerPair pp2 = Tournament::getPlayerMngr()->getPlayerPair(2);
-  db[TAB_MATCH][ma.getId()].update(MA_PAIR2_REF, pp2.getPairId());
+  (*db)[TAB_MATCH][ma.getId()].update(MA_PAIR2_REF, pp2.getPairId());
 
   // test again
   CPPUNIT_ASSERT(ma.hasPlayerPair1() == true);
@@ -140,7 +142,7 @@ void tstMatch::testGetPairs()
   CPPUNIT_ASSERT(ma.getPlayerPair2().getPairId() == pp2.getPairId());
 
   // remove the first one
-  db[TAB_MATCH][ma.getId()].update(MA_PAIR1_REF, QVariant());
+  (*db)[TAB_MATCH][ma.getId()].update(MA_PAIR1_REF, QVariant());
 
   // test again
   CPPUNIT_ASSERT(ma.hasPlayerPair1() == false);
@@ -148,6 +150,7 @@ void tstMatch::testGetPairs()
   CPPUNIT_ASSERT_THROW(ma.getPlayerPair1(), std::runtime_error);
   CPPUNIT_ASSERT(ma.getPlayerPair2().getPairId() == pp2.getPairId());
 
+  delete db;
   printEndMsg();
 }
 

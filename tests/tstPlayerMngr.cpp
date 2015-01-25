@@ -28,7 +28,7 @@ void tstPlayerMngr::testCreateNewPlayer()
 {
   printStartMsg("tstPlayerMngr::testCreateNewPlayer");
   
-  TournamentDB db = getScenario01(true);
+  TournamentDB* db = getScenario01(true);
   Tournament t(getSqliteFileName());
   PlayerMngr* pmngr = Tournament::getPlayerMngr();
   
@@ -49,7 +49,7 @@ void tstPlayerMngr::testCreateNewPlayer()
   CPPUNIT_ASSERT(pmngr->createNewPlayer("abc", "def", M, QString::null) == INVALID_TEAM);
   
   // make sure nothing has been inserted so far
-  CPPUNIT_ASSERT(db[TAB_PLAYER].length() == 0);
+  CPPUNIT_ASSERT((*db)[TAB_PLAYER].length() == 0);
   
   // insert a team
   TeamMngr* tmngr = Tournament::getTeamMngr();
@@ -57,30 +57,31 @@ void tstPlayerMngr::testCreateNewPlayer()
 
   // insert a valid player
   CPPUNIT_ASSERT(pmngr->createNewPlayer("abc", "def", M, "t1") == OK);
-  CPPUNIT_ASSERT(db[TAB_PLAYER].length() == 1);
-  CPPUNIT_ASSERT(db[TAB_PLAYER][1][PL_FNAME].toString() == "abc");
-  CPPUNIT_ASSERT(db[TAB_PLAYER][1][PL_LNAME].toString() == "def");
-  CPPUNIT_ASSERT(db[TAB_PLAYER][1][PL_SEX].toInt() == 0);
-  CPPUNIT_ASSERT(db[TAB_PLAYER][1][PL_TEAM_REF].toInt() == 1);
-  CPPUNIT_ASSERT(db[TAB_PLAYER][1][GENERIC_STATE_FIELD_NAME].toInt() == static_cast<int>(STAT_PL_IDLE));
+  CPPUNIT_ASSERT((*db)[TAB_PLAYER].length() == 1);
+  CPPUNIT_ASSERT((*db)[TAB_PLAYER][1][PL_FNAME].toString() == "abc");
+  CPPUNIT_ASSERT((*db)[TAB_PLAYER][1][PL_LNAME].toString() == "def");
+  CPPUNIT_ASSERT((*db)[TAB_PLAYER][1][PL_SEX].toInt() == 0);
+  CPPUNIT_ASSERT((*db)[TAB_PLAYER][1][PL_TEAM_REF].toInt() == 1);
+  CPPUNIT_ASSERT((*db)[TAB_PLAYER][1][GENERIC_STATE_FIELD_NAME].toInt() == static_cast<int>(STAT_PL_IDLE));
   
   // try to insert the same player again
   CPPUNIT_ASSERT(pmngr->createNewPlayer("abc", "def", M, "t1") == NAME_EXISTS);
-  CPPUNIT_ASSERT(db[TAB_PLAYER].length() == 1);
+  CPPUNIT_ASSERT((*db)[TAB_PLAYER].length() == 1);
   
   // Fake the database to become a tournament without teams
-  TabRow r = db[TAB_CFG].getSingleRowByColumnValue("K", CFG_KEY_USE_TEAMS);
+  TabRow r = (*db)[TAB_CFG].getSingleRowByColumnValue("K", CFG_KEY_USE_TEAMS);
   r.update("V", 0);
   
   // insert valid players without valid team ref
   CPPUNIT_ASSERT(pmngr->createNewPlayer("f1", "def", M, "") == OK);
   CPPUNIT_ASSERT(pmngr->createNewPlayer("f2", "def", M, "sdklfjlsdf") == OK);
   CPPUNIT_ASSERT(pmngr->createNewPlayer("f3", "def", M, QString::null) == OK);
-  CPPUNIT_ASSERT(db[TAB_PLAYER].length() == 4);
-  CPPUNIT_ASSERT(db[TAB_PLAYER][2][PL_TEAM_REF].isNull());
-  CPPUNIT_ASSERT(db[TAB_PLAYER][3][PL_TEAM_REF].isNull());
-  CPPUNIT_ASSERT(db[TAB_PLAYER][4][PL_TEAM_REF].isNull());
+  CPPUNIT_ASSERT((*db)[TAB_PLAYER].length() == 4);
+  CPPUNIT_ASSERT((*db)[TAB_PLAYER][2][PL_TEAM_REF].isNull());
+  CPPUNIT_ASSERT((*db)[TAB_PLAYER][3][PL_TEAM_REF].isNull());
+  CPPUNIT_ASSERT((*db)[TAB_PLAYER][4][PL_TEAM_REF].isNull());
   
+  delete db;
   printEndMsg();
 }
 
@@ -90,7 +91,7 @@ void tstPlayerMngr::testHasPlayer()
 {
   printStartMsg("tstPlayerMngr::testHasPlayer");
   
-  TournamentDB db = getScenario01(true);
+  TournamentDB* db = getScenario01(true);
   Tournament t(getSqliteFileName());
   PlayerMngr* pmngr = Tournament::getPlayerMngr();
   
@@ -118,6 +119,7 @@ void tstPlayerMngr::testHasPlayer()
   CPPUNIT_ASSERT(pmngr->hasPlayer("x", "y") == false);
   CPPUNIT_ASSERT(pmngr->hasPlayer("abc", "def") == true);
   
+  delete db;
   printEndMsg();
 }
 
@@ -127,7 +129,7 @@ void tstPlayerMngr::testGetPlayer()
 {
   printStartMsg("tstPlayerMngr::testGetPlayer");
   
-  TournamentDB db = getScenario01(true);
+  TournamentDB* db = getScenario01(true);
   Tournament t(getSqliteFileName());
   PlayerMngr* pmngr = Tournament::getPlayerMngr();
   
@@ -149,6 +151,7 @@ void tstPlayerMngr::testGetPlayer()
   CPPUNIT_ASSERT(p.getId() == 2);
   CPPUNIT_ASSERT(p.getDisplayName() == "l2, f2");
   
+  delete db;
   printEndMsg();
 }
 
@@ -158,7 +161,7 @@ void tstPlayerMngr::testGetAllPlayers()
 {
   printStartMsg("tstPlayerMngr::testGetAllPlayers");
   
-  TournamentDB db = getScenario01(true);
+  TournamentDB* db = getScenario01(true);
   Tournament t(getSqliteFileName());
   PlayerMngr* pmngr = Tournament::getPlayerMngr();
   
@@ -182,7 +185,7 @@ void tstPlayerMngr::testGetAllPlayers()
   CPPUNIT_ASSERT(p.getId() == 2);
   CPPUNIT_ASSERT(p.getDisplayName() == "l2, f2");
   
-  
+  delete db;
   printEndMsg();
 }
 
@@ -192,7 +195,7 @@ void tstPlayerMngr::testRenamePlayer()
 {
   printStartMsg("tstPlayerMngr::testRenamePlayer");
   
-  TournamentDB db = getScenario01(true);
+  TournamentDB* db = getScenario01(true);
   Tournament t(getSqliteFileName());
   PlayerMngr* pmngr = Tournament::getPlayerMngr();
   
@@ -227,6 +230,9 @@ void tstPlayerMngr::testRenamePlayer()
   // full rename
   CPPUNIT_ASSERT(pmngr->renamePlayer(p, "abc", "def") == OK);
   CPPUNIT_ASSERT(p.getDisplayName() == "def, abc");
+
+  delete db;
+  printEndMsg();
 }
 
 //----------------------------------------------------------------------------

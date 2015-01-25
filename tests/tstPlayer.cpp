@@ -24,7 +24,7 @@ void tstPlayer::testGetAssignedCategories()
   printStartMsg("tstPlayer::testGetAssignedTeams");
   
   
-  TournamentDB db = getScenario02(true);
+  TournamentDB* db = getScenario02(true);
   Tournament t(getSqliteFileName());
   
   // get some players and categories
@@ -53,6 +53,7 @@ void tstPlayer::testGetAssignedCategories()
   CPPUNIT_ASSERT(result.at(0) == ms);
   CPPUNIT_ASSERT(result.at(1) == mx);
   
+  delete db;
   printEndMsg();
 }
 

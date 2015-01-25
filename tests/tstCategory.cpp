@@ -26,7 +26,7 @@ void tstCategory::testGetAddState()
 {
   printStartMsg("tstCategory::testGetAddState");
   
-  TournamentDB db = getScenario02(true);
+  TournamentDB* db = getScenario02(true);
   Tournament t(getSqliteFileName());
   
   // create a team some dummy players
@@ -81,6 +81,7 @@ void tstCategory::testGetAddState()
   // or for previously added players
   // (return values "ALREADY_MEMBER" and "CAT_CLOSED")
   
+  delete db;
   printEndMsg();
 }
 
@@ -90,7 +91,7 @@ void tstCategory::testHasPlayer()
 {
   printStartMsg("tstCategory::testHasPlayer");
   
-  TournamentDB db = getScenario02(true);
+  TournamentDB* db = getScenario02(true);
   Tournament t(getSqliteFileName());
   
   // create a team some dummy players
@@ -115,6 +116,7 @@ void tstCategory::testHasPlayer()
   CPPUNIT_ASSERT(ms.hasPlayer(m2) == false);
   CPPUNIT_ASSERT(ms.hasPlayer(f2) == false);
   
+  delete db;
   printEndMsg();
 }
 
@@ -124,7 +126,7 @@ void tstCategory::testCanPair()
 {
   printStartMsg("tstCategory::testCanPair");
   
-  TournamentDB db = getScenario03(true);
+  TournamentDB* db = getScenario03(true);
   Tournament t(getSqliteFileName());
   
   // create a team some dummy players
@@ -172,6 +174,7 @@ void tstCategory::testCanPair()
   CPPUNIT_ASSERT(md.canPairPlayers(m2, m3) == PLAYER_ALREADY_PAIRED);
   CPPUNIT_ASSERT(md.canPairPlayers(m3, m2) == PLAYER_ALREADY_PAIRED);
   
+  delete db;
   printEndMsg();
 }
 
@@ -181,7 +184,7 @@ void tstCategory::testCanSplit()
 {
   printStartMsg("tstCategory::testCanPair");
   
-  TournamentDB db = getScenario03(true);
+  TournamentDB* db = getScenario03(true);
   Tournament t(getSqliteFileName());
   
   // create a team some dummy players
@@ -215,6 +218,7 @@ void tstCategory::testCanSplit()
   // similar request, but for another category  
   CPPUNIT_ASSERT(cmngr->splitPlayers(mx, m1, m2) == PLAYERS_NOT_A_PAIR);
   
+  delete db;
   printEndMsg();
 }
 

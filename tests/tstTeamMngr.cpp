@@ -25,24 +25,25 @@ void tstTeamMngr::testCreateNewTeam()
 {
   printStartMsg("tstTeamMngr::testCreateNewTeam");
   
-  TournamentDB db = getScenario01(true);
-  TeamMngr tmngr(&db);
+  TournamentDB* db = getScenario01(true);
+  TeamMngr tmngr(db);
   
   // try empty or invalid name
   CPPUNIT_ASSERT(tmngr.createNewTeam("") == INVALID_NAME);
   CPPUNIT_ASSERT(tmngr.createNewTeam(QString::null) == INVALID_NAME);
-  CPPUNIT_ASSERT(db[TAB_TEAM].length() == 0);
+  CPPUNIT_ASSERT((*db)[TAB_TEAM].length() == 0);
   
   // actually create a valid team
   CPPUNIT_ASSERT(tmngr.createNewTeam("t1") == OK);
-  CPPUNIT_ASSERT(db[TAB_TEAM].length() == 1);
-  TabRow r = db[TAB_TEAM][1];
+  CPPUNIT_ASSERT((*db)[TAB_TEAM].length() == 1);
+  TabRow r = (*db)[TAB_TEAM][1];
   CPPUNIT_ASSERT(r[GENERIC_NAME_FIELD_NAME].toString() == "t1");
   
   // name collision
   CPPUNIT_ASSERT(tmngr.createNewTeam("t1") == NAME_EXISTS);
-  CPPUNIT_ASSERT(db[TAB_TEAM].length() == 1);
+  CPPUNIT_ASSERT((*db)[TAB_TEAM].length() == 1);
   
+  delete db;
   printEndMsg();
 }
 
@@ -53,18 +54,19 @@ void tstTeamMngr::testCreateNewTeam2()
   printStartMsg("tstTeamMngr::testCreateNewTeam2");
   
   // !! start a tournament that doesn't use teams !!
-  TournamentDB db = getScenario01(false);
-  TeamMngr tmngr(&db);
+  TournamentDB* db = getScenario01(false);
+  TeamMngr tmngr(db);
   
   // try empty or invalid name
   CPPUNIT_ASSERT(tmngr.createNewTeam("") == NOT_USING_TEAMS);
   CPPUNIT_ASSERT(tmngr.createNewTeam(QString::null) == NOT_USING_TEAMS);
-  CPPUNIT_ASSERT(db[TAB_TEAM].length() == 0);
+  CPPUNIT_ASSERT((*db)[TAB_TEAM].length() == 0);
   
   // actually create a valid team
   CPPUNIT_ASSERT(tmngr.createNewTeam("t1") == NOT_USING_TEAMS);
-  CPPUNIT_ASSERT(db[TAB_TEAM].length() == 0);
+  CPPUNIT_ASSERT((*db)[TAB_TEAM].length() == 0);
   
+  delete db;
   printEndMsg();
 }
 
@@ -74,8 +76,8 @@ void tstTeamMngr::testHasTeam()
 {
   printStartMsg("tstTeamMngr::testHasTeam");
   
-  TournamentDB db = getScenario01(true);
-  TeamMngr tmngr(&db);
+  TournamentDB* db = getScenario01(true);
+  TeamMngr tmngr(db);
   
   // try queries on empty table
   CPPUNIT_ASSERT(tmngr.hasTeam("") == false);
@@ -91,6 +93,7 @@ void tstTeamMngr::testHasTeam()
   CPPUNIT_ASSERT(tmngr.hasTeam("abc") == false);
   CPPUNIT_ASSERT(tmngr.hasTeam("t1") == true);
   
+  delete db;
   printEndMsg();
 }
 
@@ -100,8 +103,8 @@ void tstTeamMngr::testGetTeam()
 {
   printStartMsg("tstTeamMngr::testGetTeam");
   
-  TournamentDB db = getScenario01(true);
-  TeamMngr tmngr(&db);
+  TournamentDB* db = getScenario01(true);
+  TeamMngr tmngr(db);
   
   // actually create a valid team
   CPPUNIT_ASSERT(tmngr.createNewTeam("t1") == OK);
@@ -115,6 +118,7 @@ void tstTeamMngr::testGetTeam()
   CPPUNIT_ASSERT(t.getId() == 2);
   CPPUNIT_ASSERT(t.getName() == "t2");
   
+  delete db;
   printEndMsg();
 }
 
@@ -124,8 +128,8 @@ void tstTeamMngr::testGetAllTeams()
 {
   printStartMsg("tstTeamMngr::testGetAllTeams");
   
-  TournamentDB db = getScenario01(true);
-  TeamMngr tmngr(&db);
+  TournamentDB* db = getScenario01(true);
+  TeamMngr tmngr(db);
   
   // run on empty table
   QList<Team> result = tmngr.getAllTeams();
@@ -145,7 +149,7 @@ void tstTeamMngr::testGetAllTeams()
   CPPUNIT_ASSERT(t.getId() == 2);
   CPPUNIT_ASSERT(t.getName() == "t2");
   
-  
+  delete db;
   printEndMsg();
 }
 
@@ -155,7 +159,7 @@ void tstTeamMngr::testChangeTeamAssignment()
 {
   printStartMsg("tstTeamMngr::testChangeTeamAssignment");
   
-  TournamentDB db = getScenario02(true);
+  TournamentDB* db = getScenario02(true);
   Tournament t(getSqliteFileName());
   
   Player m1 = Tournament::getPlayerMngr()->getPlayer("f", "l1");
@@ -171,6 +175,7 @@ void tstTeamMngr::testChangeTeamAssignment()
   CPPUNIT_ASSERT(m1.getTeam() != t1);
   CPPUNIT_ASSERT(m1.getTeam() == t2);
   
+  delete db;
   printEndMsg();
 }
 

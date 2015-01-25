@@ -43,9 +43,11 @@ set(QTournament_Sources
     RoundRobinGenerator.cpp 
     Team.cpp 
     TeamMngr.cpp 
+    ThreadSafeQueue.cpp
     Tournament.cpp 
     TournamentDB.cpp 
     models/CatTableModel.cpp 
+    models/MatchGroupTabModel.cpp
     models/PlayerTableModel.cpp
     models/TeamListModel.cpp)
 
@@ -61,6 +63,8 @@ set(QTournament_Sources_UI
     ui/PlayerTabWidget.cpp 
     ui/TeamListView.cpp 
     ui/TeamTabWidget.cpp 
+    ui/MatchGroupTableView.cpp
+    ui/ScheduleTabWidget.cpp
     ui/delegates/PairItemDelegate.cpp 
     ui/delegates/DelegateItemLED.cpp 
     ui/delegates/CatItemDelegate.cpp 
