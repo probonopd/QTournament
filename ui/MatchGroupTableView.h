@@ -21,18 +21,24 @@ class MatchGroupTableView : public QTableView
   Q_OBJECT
   
 public:
+  enum class FilterType : std::int8_t { IDLE = 1, STAGED = 2, NONE = 0 };
+
   MatchGroupTableView (QWidget* parent);
   virtual ~MatchGroupTableView ();
+  void setFilter(FilterType ft);
+  void clearFilter();
   
 public slots:
   void onTournamentClosed();
   void onTournamentOpened(Tournament* tnmt);
+  void onFilterUpdateTriggered();
   
 private:
   Tournament* tnmt;
   QStringListModel* emptyModel;
   QSortFilterProxyModel* sortedModel;
   //PlayerItemDelegate* itemDelegate;
+  FilterType currentFilter;
 
 };
 

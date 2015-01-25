@@ -15,6 +15,11 @@ public:
     explicit ScheduleTabWidget(QWidget *parent = 0);
     ~ScheduleTabWidget();
 
+public slots:
+    void onBtnStageClicked();
+    void onBtnUnstageClicked();
+    void onBtnScheduleClicked();
+
 private:
     Ui::ScheduleTabWidget *ui;
 };

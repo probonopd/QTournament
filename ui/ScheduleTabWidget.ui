@@ -28,7 +28,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="pushButton_3">
+          <widget class="QPushButton" name="btnSchedule">
            <property name="text">
             <string>Add all --&gt;</string>
            </property>
@@ -37,26 +37,38 @@
         </layout>
        </item>
        <item>
-        <widget class="QListWidget" name="listWidget">
+        <widget class="MatchGroupTableView" name="mgStagedView">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
            <horstretch>0</horstretch>
            <verstretch>1</verstretch>
           </sizepolicy>
          </property>
+         <property name="selectionMode">
+          <enum>QAbstractItemView::SingleSelection</enum>
+         </property>
+         <property name="selectionBehavior">
+          <enum>QAbstractItemView::SelectRows</enum>
+         </property>
+         <property name="sortingEnabled">
+          <bool>false</bool>
+         </property>
+         <attribute name="verticalHeaderVisible">
+          <bool>false</bool>
+         </attribute>
         </widget>
        </item>
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_3">
          <item>
-          <widget class="QPushButton" name="pushButton_2">
+          <widget class="QPushButton" name="btnStage">
            <property name="text">
             <string>^^</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="pushButton">
+          <widget class="QPushButton" name="btnUnstage">
            <property name="text">
             <string>vv</string>
            </property>
@@ -72,7 +84,7 @@
         </widget>
        </item>
        <item>
-        <widget class="MatchGroupTableView" name="tableView">
+        <widget class="MatchGroupTableView" name="mgIdleView">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
            <horstretch>0</horstretch>
@@ -144,5 +156,59 @@
   </customwidget>
  </customwidgets>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>btnStage</sender>
+   <signal>clicked()</signal>
+   <receiver>ScheduleTabWidget</receiver>
+   <slot>onBtnStageClicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>79</x>
+     <y>189</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>442</x>
+     <y>244</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>btnUnstage</sender>
+   <signal>clicked()</signal>
+   <receiver>ScheduleTabWidget</receiver>
+   <slot>onBtnUnstageClicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>219</x>
+     <y>189</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>442</x>
+     <y>244</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>btnSchedule</sender>
+   <signal>clicked()</signal>
+   <receiver>ScheduleTabWidget</receiver>
+   <slot>onBtnScheduleClicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>223</x>
+     <y>25</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>442</x>
+     <y>244</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>onBtnStageClicked()</slot>
+  <slot>onBtnUnstageClicked()</slot>
+  <slot>onBtnScheduleClicked()</slot>
+ </slots>
 </ui>

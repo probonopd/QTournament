@@ -160,7 +160,7 @@ namespace QTournament
 #define MG_CAT_REF  QString("CategoryRefId")
 #define MG_ROUND  QString("Round")
 #define MG_GRP_NUM  QString("RoundRobinGroupNumber")
-//#define MG_  QString("")
+#define MG_STAGE_SEQ_NUM  QString("StageSequenceNumber")
 //#define MG_  QString("")
 //#define MG_  QString("")
 //#define MG_  QString("")

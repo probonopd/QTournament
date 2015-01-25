@@ -9,7 +9,7 @@
 #include "MainFrame.h"
 
 MatchGroupTableView::MatchGroupTableView(QWidget* parent)
-:QTableView(parent)
+  :QTableView(parent), currentFilter(FilterType::NONE)
 {
   // an empty model for clearing the table when
   // no tournament is open
@@ -44,10 +44,14 @@ void MatchGroupTableView::onTournamentOpened(Tournament* _tnmt)
 {
   tnmt = _tnmt;
   sortedModel->setSourceModel(Tournament::getMatchGroupTableModel());
+  setColumnHidden(4, true);  // hide the column containing the internal object state
   setEnabled(true);
   
   // connect signals from the Tournament and TeamMngr with my slots
-  connect(tnmt, &Tournament::tournamentClosed, this, &MatchGroupTableView::onTournamentClosed);
+  connect(tnmt, &Tournament::tournamentClosed, this, &MatchGroupTableView::onTournamentClosed, Qt::DirectConnection);
+
+  // receive triggers from the underlying models when a filter update is necessary
+  connect(Tournament::getMatchGroupTableModel(), &MatchGroupTableModel::triggerFilterUpdate, this, &MatchGroupTableView::onFilterUpdateTriggered, Qt::DirectConnection);
   
   // resize columns and rows to content once (we do not want permanent automatic resizing)
   horizontalHeader()->resizeSections(QHeaderView::ResizeToContents);
@@ -60,6 +64,7 @@ void MatchGroupTableView::onTournamentClosed()
 {
   // disconnect from all signals, because
   // the sending objects don't exist anymore
+  disconnect(Tournament::getMatchGroupTableModel(), &MatchGroupTableModel::triggerFilterUpdate, this, &MatchGroupTableView::onFilterUpdateTriggered);
   disconnect(tnmt, &Tournament::tournamentClosed, this, &MatchGroupTableView::onTournamentClosed);
   
   // invalidate the tournament handle and deactivate the view
@@ -70,13 +75,41 @@ void MatchGroupTableView::onTournamentClosed()
 }
 
 //----------------------------------------------------------------------------
-    
+
+void MatchGroupTableView::setFilter(FilterType ft)
+{
+  currentFilter = ft;
+
+  if (ft == FilterType::NONE)
+  {
+    sortedModel->setFilterFixedString("");
+    return;
+  }
+
+  OBJ_STATE stat = STAT_MG_IDLE;
+  if (ft == FilterType::STAGED)
+  {
+    stat = STAT_MG_STAGED;
+  }
+
+  int stateId = static_cast<int>(stat);
+  sortedModel->setFilterFixedString(QString::number(stateId));
+  sortedModel->setFilterKeyColumn(MatchGroupTableModel::STATE_COL_ID);
+}
 
 //----------------------------------------------------------------------------
-    
+
+void MatchGroupTableView::clearFilter()
+{
+  setFilter(FilterType::NONE);
+}
 
 //----------------------------------------------------------------------------
-    
+
+void MatchGroupTableView::onFilterUpdateTriggered()
+{
+  if (currentFilter != FilterType::NONE) setFilter(currentFilter);
+}
 
 //----------------------------------------------------------------------------
     

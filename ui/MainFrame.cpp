@@ -17,19 +17,19 @@ using namespace QTournament;
 
 //----------------------------------------------------------------------------
 
-MainFrame* MainFrame::mainFramePointer = NULL;
+MainFrame* MainFrame::mainFramePointer = nullptr;
 
 //----------------------------------------------------------------------------
 
 MainFrame::MainFrame()
 {
-  if (MainFrame::mainFramePointer != NULL)
+  if (MainFrame::mainFramePointer != nullptr)
   {
     throw std::runtime_error("Only one MainFrame instance is allowed!!");
   }
   MainFrame::mainFramePointer = this;
   
-  tnmt = NULL;
+  tnmt = nullptr;
   
   ui.setupUi(this);
   showMaximized();
@@ -43,6 +43,8 @@ MainFrame::MainFrame()
 MainFrame::~MainFrame()
 {
   closeCurrentTournament();
+
+  mainFramePointer = nullptr;
 }
 
 //----------------------------------------------------------------------------

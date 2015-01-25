@@ -35,7 +35,7 @@ int MatchGroupTableModel::rowCount(const QModelIndex& parent) const
 int MatchGroupTableModel::columnCount(const QModelIndex& parent) const
 {
   if (parent.isValid()) return 0;
-  return 4;
+  return 5;
 }
 
 //----------------------------------------------------------------------------
@@ -82,6 +82,14 @@ QVariant MatchGroupTableModel::data(const QModelIndex& index, int role) const
       return mg->getMatchCount();
     }
 
+    // fifth column: current status
+    // Used for filtering only and needs to be hidden in the associated view
+    if (index.column() == STATE_COL_ID)
+    {
+      OBJ_STATE stat = mg->getState();
+      return static_cast<int>(stat);
+    }
+
     return QString("Not Implemented, row=" + QString::number(index.row()) + ", col=" + QString::number(index.row()));
 }
 
@@ -113,6 +121,9 @@ QVariant MatchGroupTableModel::headerData(int section, Qt::Orientation orientati
     if (section == 3) {
       return tr("Number of matches");
     }
+    if (section == STATE_COL_ID) {
+      return tr("State");
+    }
 
     return QString("Not implemented, section=" + QString::number(section));
   }
@@ -132,6 +143,9 @@ void MatchGroupTableModel::onBeginCreateMatchGroup()
 void MatchGroupTableModel::onEndCreateMatchGroup(int newCatSeqNum)
 {
   endInsertRows();
+
+  // tell all associated views to update their filters
+  emit triggerFilterUpdate();
 }
 
 //----------------------------------------------------------------------------
