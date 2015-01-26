@@ -32,7 +32,7 @@
 #include "tstRoundRobinGenerator.h"
 
 // comment / uncomment the following to execute just one suite
-#define TEST_ALL_SUITES
+//#define TEST_ALL_SUITES
 
 // Registers the fixture into the 'registry'
 #ifdef TEST_ALL_SUITES
@@ -50,7 +50,7 @@
   CPPUNIT_TEST_SUITE_REGISTRATION(tstMatch);
   CPPUNIT_TEST_SUITE_REGISTRATION(tstRoundRobinGenerator);
 #else
-  CPPUNIT_TEST_SUITE_REGISTRATION(tstRoundRobinGenerator);
+  CPPUNIT_TEST_SUITE_REGISTRATION(tstMatchMngr);
 #endif
 
 

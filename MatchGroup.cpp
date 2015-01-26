@@ -34,21 +34,21 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  int MatchGroup::getGroupNumber()
+  int MatchGroup::getGroupNumber() const
   {
     return row[MG_GRP_NUM].toInt();
   }
 
 //----------------------------------------------------------------------------
 
-  int MatchGroup::getRound()
+  int MatchGroup::getRound() const
   {
     return row[MG_ROUND].toInt();
   }  
 
 //----------------------------------------------------------------------------
 
-  MatchList MatchGroup::getMatches()
+  MatchList MatchGroup::getMatches() const
   {
     DbTab matchTab = db->getTab(TAB_MATCH);
     DbTab::CachingRowIterator it = matchTab.getRowsByColumnValue(MA_GRP_REF, getId());
@@ -73,6 +73,16 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
+  int MatchGroup::getStageSequenceNumber() const
+  {
+    QVariant result = row[MG_STAGE_SEQ_NUM];
+    if (result.isNull())
+    {
+      return -1;  // group not staged
+    }
+
+    return result.toInt();
+  }
 
 //----------------------------------------------------------------------------
 

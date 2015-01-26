@@ -373,12 +373,98 @@ TournamentDB* DatabaseTestScenario::getScenario04(bool useTeams)
   return new TournamentDB(getSqliteFileName(), false);
 }
 
+//----------------------------------------------------------------------------
+
+// A brand new scenario with a group of 40 players, singles, and
+// match groups for round robin phase already generated
+void DatabaseTestScenario::prepScenario05(bool useTeams)
+{
+  TournamentSettings tSettings;
+  tSettings.organizingClub = "club";
+  tSettings.tournamentName = "name";
+  tSettings.useTeams = useTeams;
+
+  CPPUNIT_ASSERT(!sqliteFileExists());
+  Tournament t(getSqliteFileName(), tSettings);
+  CPPUNIT_ASSERT(sqliteFileExists());
+
+  TeamMngr* tmngr = Tournament::getTeamMngr();
+  PlayerMngr* pmngr = Tournament::getPlayerMngr();
+  CatMngr* cmngr = Tournament::getCatMngr();
+
+  // create one team and one category
+  tmngr->createNewTeam("Team 1");
+  cmngr->createNewCategory("MS");
+  Category ms = cmngr->getCategory("MS");
+  ms.setMatchType(SINGLES);
+  ms.setSex(M);
+
+
+  // create 40 players and assign them to MS
+  for (int i=0; i < 40; ++i)
+  {
+      ERR e = pmngr->createNewPlayer("First", QString::number(i+1), M, "Team 1");
+      CPPUNIT_ASSERT(e == OK);
+
+      // the player's ID can be derived from "i"
+      Player p = pmngr->getPlayer(i+1);
+
+      // assign the player to MS
+      e = cmngr->addPlayerToCategory(p, ms);
+      CPPUNIT_ASSERT(e == OK);
+  }
+
+  // create and set a valid group configuration for MS
+  GroupDef d = GroupDef(5, 8);
+  GroupDefList gdl;
+  gdl.append(d);
+  KO_Config cfg(QUARTER, false, gdl);
+  ms.setParameter(GROUP_CONFIG, cfg.toString());
+
+  // run the category
+  unique_ptr<Category> specialCat = ms.convertToSpecializedObject();
+  ERR e = cmngr->freezeConfig(ms);
+  CPPUNIT_ASSERT(e == OK);
+
+  // fake a list of player-pair-lists for the group assignments
+  QList<PlayerPairList> ppListList;
+  for (int grpNum=0; grpNum < 8; ++grpNum)
+  {
+      PlayerPairList thisGroup;
+      for (int pNum=0; pNum < 5; ++pNum)
+      {
+          int id = (grpNum * 5) + pNum + 1;
+
+          // in this special setting, the player's ID and the
+          // ID of the PlayerPair should be identical
+          Player p = pmngr->getPlayer(id);
+          PlayerPair pp(p, id);
+          thisGroup.append(pp);
+      }
+      ppListList.append(thisGroup);
+  }
+
+  // make sure the faked group assignment is valid
+  e = specialCat->canApplyGroupAssignment(ppListList);
+  CPPUNIT_ASSERT(e == OK);
+
+  // prepare an empty list for the (not required) initial ranking
+  PlayerPairList initialRanking;
+
+  // actually run the category
+  e = cmngr->startCategory(ms, ppListList, initialRanking);
+  CPPUNIT_ASSERT(e == OK);
+
+  // done
+}
 
 //----------------------------------------------------------------------------
     
-
-//----------------------------------------------------------------------------
-    
+TournamentDB* DatabaseTestScenario::getScenario05(bool useTeams)
+{
+  prepScenario05(useTeams);
+  return new TournamentDB(getSqliteFileName(), false);
+}
 
 //----------------------------------------------------------------------------
     

@@ -397,7 +397,161 @@ void tstMatchMngr::testCanAssignPlayerPairToMatch()
 }
 
 //----------------------------------------------------------------------------
-    
+
+void tstMatchMngr::testStageAndUnstageMatchGroup()
+{
+  printStartMsg("tstMatchMngr::testStageAndUnstageMatchGroup");
+
+  TournamentDB* db = getScenario05(true);
+  Tournament t(getSqliteFileName());
+  MatchMngr* mm = Tournament::getMatchMngr();
+  Category ms = Tournament::getCatMngr()->getCategoryById(1);
+
+  // test getMaxStageSeqNum for empty staging area
+  CPPUNIT_ASSERT(mm->getMaxStageSeqNum() == 0);
+
+  // get a "non-stageable" match group
+  ERR e;
+  auto mg1_2 = mm->getMatchGroup(ms, 2, 1, &e);  // players group 1, round 2
+  CPPUNIT_ASSERT(mg1_2 != nullptr);
+  CPPUNIT_ASSERT(e == OK);
+  CPPUNIT_ASSERT(mg1_2->getState() == STAT_MG_FROZEN);
+  CPPUNIT_ASSERT(mg1_2->getStageSequenceNumber() == -1);
+
+  // try to stage this group
+  CPPUNIT_ASSERT(mm->stageMatchGroup(*mg1_2) == WRONG_STATE);
+  CPPUNIT_ASSERT(mg1_2->getState() == STAT_MG_FROZEN);
+  CPPUNIT_ASSERT(mg1_2->getStageSequenceNumber() == -1);
+
+  // get a "stageable" group
+  auto mg1_1 = mm->getMatchGroup(ms, 1, 1, &e);  // players group 1, round 1
+  CPPUNIT_ASSERT(mg1_1 != nullptr);
+  CPPUNIT_ASSERT(e == OK);
+  CPPUNIT_ASSERT(mg1_1->getState() == STAT_MG_IDLE);
+  CPPUNIT_ASSERT(mg1_1->getStageSequenceNumber() == -1);
+
+  // try to stage this group
+  CPPUNIT_ASSERT(mm->stageMatchGroup(*mg1_1) == OK);
+  CPPUNIT_ASSERT(mg1_1->getState() == STAT_MG_STAGED);
+
+  // make sure that the match group for round 2 has been promoted
+  // from FROZEN to IDLE
+  CPPUNIT_ASSERT(mg1_2->getState() == STAT_MG_IDLE);
+  CPPUNIT_ASSERT(mg1_2->getStageSequenceNumber() == -1);
+
+  // test getMaxStageSeqNum for a non-empty staging area
+  CPPUNIT_ASSERT(mm->getMaxStageSeqNum() == 1);
+
+  // make sure the correct sequence number has been assigned
+  TabRow r = (db->getTab(TAB_MATCH_GROUP))[mg1_1->getId()];
+  CPPUNIT_ASSERT(r[MG_STAGE_SEQ_NUM].toInt() == 1);
+  CPPUNIT_ASSERT(mg1_1->getStageSequenceNumber() == 1);
+
+  // stage the next round
+  CPPUNIT_ASSERT(mm->stageMatchGroup(*mg1_2) == OK);
+  CPPUNIT_ASSERT(mg1_2->getState() == STAT_MG_STAGED);
+  CPPUNIT_ASSERT(mm->getMaxStageSeqNum() == 2);
+  r = (db->getTab(TAB_MATCH_GROUP))[mg1_2->getId()];
+  CPPUNIT_ASSERT(r[MG_STAGE_SEQ_NUM].toInt() == 2);
+  CPPUNIT_ASSERT(mg1_2->getStageSequenceNumber() == 2);
+
+  // make sure 3rd round is now IDLE
+  auto mg1_3 = mm->getMatchGroup(ms, 3, 1, &e);  // players group 1, round 3
+  CPPUNIT_ASSERT(mg1_3 != nullptr);
+  CPPUNIT_ASSERT(e == OK);
+  CPPUNIT_ASSERT(mg1_3->getState() == STAT_MG_IDLE);
+  CPPUNIT_ASSERT(mg1_3->getStageSequenceNumber() == -1);
+
+  // add a match round of another players group
+  auto mg2_1 = mm->getMatchGroup(ms, 1, 2, &e);  // players group 2, round 1
+  CPPUNIT_ASSERT(mg2_1 != nullptr);
+  CPPUNIT_ASSERT(e == OK);
+  CPPUNIT_ASSERT(mg2_1->getState() == STAT_MG_IDLE);
+  CPPUNIT_ASSERT(mg2_1->getStageSequenceNumber() == -1);
+  CPPUNIT_ASSERT(mm->stageMatchGroup(*mg2_1) == OK);
+  CPPUNIT_ASSERT(mg2_1->getState() == STAT_MG_STAGED);
+  CPPUNIT_ASSERT(mg2_1->getStageSequenceNumber() == 3);
+
+  // make sure the next match group has been promoted
+  auto mg2_2 = mm->getMatchGroup(ms, 2, 2, &e);  // players group 2, round 2
+  CPPUNIT_ASSERT(mg2_2 != nullptr);
+  CPPUNIT_ASSERT(e == OK);
+  CPPUNIT_ASSERT(mg2_2->getState() == STAT_MG_IDLE);
+
+  // now three match groups are staged
+  CPPUNIT_ASSERT(mm->getMaxStageSeqNum() == 3);
+
+  //
+  // Intermediate status:
+  //   * group 1, round 1: staged, seq num = 1
+  //   * group 1, round 2: staged, seq num = 2
+  //   * group 1, round 3: idle
+  //   * group 1, round 4 & 5: frozen
+  //   * group 2, round 1: staged, seq num = 3
+  //   * group 2, round 2: idle
+  //   * group 2, round 3...5: frozen
+  //   * group 3...8, round 1: idle
+  //   * group 3...8, round 2...5: frozen
+  //
+
+
+  //
+  // now test unstaging
+  //
+
+
+  // "mg1_1 is round 1; since round 2 is staged, it should not
+  // be unstageable
+  CPPUNIT_ASSERT(mm->canUnstageMatchGroup(*mg1_1) == MATCH_GROUP_NOT_UNSTAGEABLE);
+  CPPUNIT_ASSERT(mm->unstageMatchGroup(*mg1_1)  == MATCH_GROUP_NOT_UNSTAGEABLE);
+  CPPUNIT_ASSERT(mg1_1->getState() == STAT_MG_STAGED);
+  CPPUNIT_ASSERT(mg1_1->getStageSequenceNumber() == 1);
+
+  // mg1_2 is the last staged round of players group 2, so it
+  // should be unstageable
+  CPPUNIT_ASSERT(mm->canUnstageMatchGroup(*mg1_2) == OK);
+  CPPUNIT_ASSERT(mm->unstageMatchGroup(*mg1_2)  == OK);
+  CPPUNIT_ASSERT(mg1_2->getState() == STAT_MG_IDLE);
+  CPPUNIT_ASSERT(mg1_2->getStageSequenceNumber() == -1);
+
+  // the sequence number of the follow-up match group
+  // should have been adjusted from "3" to "2"
+  CPPUNIT_ASSERT(mg2_1->getStageSequenceNumber() == 2);
+  CPPUNIT_ASSERT(mm->getMaxStageSeqNum() == 2);
+
+  // match group for round 1 remains untouched
+  CPPUNIT_ASSERT(mg1_1->getState() == STAT_MG_STAGED);
+  CPPUNIT_ASSERT(mg1_1->getStageSequenceNumber() == 1);
+
+  // match group for round 3 must have been demoted from IDLE to FROZEN
+  CPPUNIT_ASSERT(mg1_3->getState() == STAT_MG_FROZEN);
+
+  // now unstage match group 1.1
+  CPPUNIT_ASSERT(mm->canUnstageMatchGroup(*mg1_1) == OK);
+  CPPUNIT_ASSERT(mm->unstageMatchGroup(*mg1_1)  == OK);
+  CPPUNIT_ASSERT(mg1_1->getState() == STAT_MG_IDLE);
+  CPPUNIT_ASSERT(mg1_1->getStageSequenceNumber() == -1);
+
+  // the sequence number of the follow-up match group
+  // should have been adjusted from "3" to "2"
+  CPPUNIT_ASSERT(mg2_1->getStageSequenceNumber() == 1);
+  CPPUNIT_ASSERT(mm->getMaxStageSeqNum() == 1);
+
+  // match group for round 3 must have been demoted from IDLE to FROZEN
+  CPPUNIT_ASSERT(mg1_2->getState() == STAT_MG_FROZEN);
+
+  // finally unstage the 2.1 match group
+  CPPUNIT_ASSERT(mm->canUnstageMatchGroup(*mg2_1) == OK);
+  CPPUNIT_ASSERT(mm->unstageMatchGroup(*mg2_1)  == OK);
+  CPPUNIT_ASSERT(mg2_1->getState() == STAT_MG_IDLE);
+  CPPUNIT_ASSERT(mg2_1->getStageSequenceNumber() == -1);
+  CPPUNIT_ASSERT(mg2_2->getState() == STAT_MG_FROZEN);
+  CPPUNIT_ASSERT(mm->getMaxStageSeqNum() == 0);
+
+
+  delete db;
+  printEndMsg();
+}
 
 //----------------------------------------------------------------------------
     

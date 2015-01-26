@@ -29,10 +29,11 @@ namespace QTournament
     
   public:
     Category getCategory() const;
-    int getGroupNumber();
-    int getRound();
-    MatchList getMatches();
+    int getGroupNumber() const;
+    int getRound() const;
+    MatchList getMatches() const;
     int getMatchCount() const;
+    int getStageSequenceNumber() const;
 
   private:
     MatchGroup(TournamentDB* db, int rowId);

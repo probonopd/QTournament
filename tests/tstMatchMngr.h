@@ -23,7 +23,7 @@ class tstMatchMngr : public DatabaseTestScenario
     CPPUNIT_TEST(testGetGroup);
     CPPUNIT_TEST(testCreateNewMatch);
     CPPUNIT_TEST(testCanAssignPlayerPairToMatch);
-//  CPPUNIT_TEST();
+    CPPUNIT_TEST(testStageAndUnstageMatchGroup);
 //  CPPUNIT_TEST();
 //  CPPUNIT_TEST();
 //  CPPUNIT_TEST();
@@ -36,6 +36,7 @@ public:
   void testGetGroup();
   void testCreateNewMatch();
   void testCanAssignPlayerPairToMatch();
+  void testStageAndUnstageMatchGroup();
 };
 
 #endif	/* TSTGENERICDBOBJECT_H */

@@ -375,7 +375,7 @@ namespace QTournament {
     Checks if any match groups within a category can be promoted to a higher
     state. This can be, for example:
       * from SCHEDULED to FINISHED if all matches have been played; or
-      * from FROZEN to IDLE of all predecessor rounds have been SCHEDULED
+      * from FROZEN to IDLE of all predecessor rounds have been STAGED
 
     \param cat is the category to check the match groups for
     \return nothing (void)
@@ -415,8 +415,8 @@ namespace QTournament {
     {
       if (mg.getState() != STAT_MG_FROZEN) continue;
 
-      // Condition: all match groups with lower
-      // group numbers must be scheduled
+      // Condition: all match groups of the same players group with lower
+      // round numbers must be staged
       int round = mg.getRound();
       bool canPromote = true;
       for (int r=1; r < round; ++r)
@@ -424,8 +424,16 @@ namespace QTournament {
         MatchGroupList mglSubset = getMatchGroupsForCat(cat, r);
         for (auto mg2 : mglSubset)
         {
-          OBJ_STATE mgStat = mg2.getState();
-          if (!((mgStat == STAT_MG_SCHEDULED) || (mgStat == STAT_MA_FINISHED)))
+          int mgGroupNum = mg.getGroupNumber();
+          int mg2GroupNum = mg2.getGroupNumber();
+
+          // skip match groups associated with other player groups
+          //
+          // only applies to "real" player groups (group num > 0)
+          if ((mgGroupNum > 0) && (mg2GroupNum > 0) && (mg2.getGroupNumber() != mg.getGroupNumber())) continue;
+
+          OBJ_STATE mg2Stat = mg2.getState();
+          if (!((mg2Stat == STAT_MG_STAGED) || (mg2Stat == STAT_MG_SCHEDULED) || (mg2Stat == STAT_MA_FINISHED)))
           {
             canPromote = false;
             break;
@@ -462,15 +470,227 @@ namespace QTournament {
 
 //----------------------------------------------------------------------------
 
+  /**
+    Try to promote the match group from IDLE to STAGED.
+
+    Also call updateAllMatchGroups() in case other match group can be
+    subsequently promoted from FROZEN to IDLE
+
+    \param grp is the match group to stage
+
+    \return error code
+    */
+  ERR MatchMngr::stageMatchGroup(const MatchGroup &grp)
+  {
+    if (grp.getState() != STAT_MG_IDLE) return WRONG_STATE;
+
+    // no further checks necessary. Any IDLE match group can be promoted
+
+    // promote the group to STAGED and assign a sequence number
+    int nextStageSeqNum = getMaxStageSeqNum() + 1;
+    grp.setState(STAT_MG_STAGED);
+    int grpId = grp.getId();
+    TabRow r = groupTab[grpId];
+    r.update(MG_STAGE_SEQ_NUM, nextStageSeqNum);
+    // TODO:
+    // emit signal
+
+    // promote other groups from FROZEN to IDLE, if applicable
+    updateAllMatchGroupStates(grp.getCategory());
+
+    return OK;
+  }
 
 //----------------------------------------------------------------------------
 
+  /**
+   * Determines the highest currently assigned sequence number in the staging area
+   *
+   * @return the highest assigned sequence number of all staged match groups or 0 if no group is staged
+   */
+  int MatchMngr::getMaxStageSeqNum() const
+  {
+    // Is there any staged match group at all?
+    int statId = static_cast<int>(STAT_MG_STAGED);
+    if (groupTab.getMatchCountForColumnValue(GENERIC_STATE_FIELD_NAME, statId) < 1)
+    {
+      return 0;  // no staged match groups so far
+    }
+
+    // determine the max sequence number
+    QString sql = "SELECT max(" + MG_STAGE_SEQ_NUM + ") FROM " + TAB_MATCH_GROUP;
+    QVariant result = db->execScalarQuery(sql);
+    if ( (!(result.isValid())) || (result.isNull()))
+    {
+      return 0;  // shouldn't happen, but anyway...
+    }
+
+    return result.toInt();
+  }
 
 //----------------------------------------------------------------------------
 
+  /**
+   * Checks whether a match group can be unstaged or not. In order to demote
+   * a match group from STAGED to IDLE, it must have the highest round number
+   * of all other match groups in this category and (possibly) in the same
+   * players group.
+   *
+   * @param grp the group to check for unstaging
+   *
+   * @return error code
+   */
+  ERR MatchMngr::canUnstageMatchGroup(const MatchGroup &grp)
+  {
+    // first precondition: match group has to be staged
+    if (grp.getState() != STAT_MG_STAGED)
+    {
+      return MATCH_GROUP_NOT_UNSTAGEABLE;
+    }
+
+    int round = grp.getRound();
+    int playersGroup = grp.getGroupNumber();
+    int catId = grp.getCategory().getId();
+
+    // check for a match group with "round + 1" in the staging area
+    QVariantList qvl;
+    qvl << MG_ROUND << round+1;
+    qvl << GENERIC_STATE_FIELD_NAME << static_cast<int>(STAT_MG_STAGED);
+    qvl << MG_CAT_REF << catId;
+    if (groupTab.getMatchCountForColumnValue(qvl) == 0)
+    {
+      // there is no match group of this category and with a higher
+      // round number in the staging area
+      // ==> the match group can be demoted
+      return OK;
+    }
+
+    //
+    // obviously there is at least one match group of this category
+    // and with round number round+1 staged
+    //
+
+    // now compare the players groups to properly check the transition
+    // between round robin rounds and KO-rounds
+    //
+    if (playersGroup < 0)
+    {
+      // this group is already in KO phase, so the next one
+      // must be as well. So the fact that there is a group
+      // with "round+1" already staged is a no-go for unstaging
+      // this group
+      return MATCH_GROUP_NOT_UNSTAGEABLE;
+    }
+
+    // if we made it to this point, at least the current
+    // match group "grp" is still in round robin phase
+    //
+    // let's see if all staged match groups with "round+1" are
+    // in different players groups. If yes, then it's okay
+    // to unstage this match group
+    //
+    // if the match group(s) with "round+1" are of the
+    // same players group or already in KO phase, we can't
+    // demote this match group
+    auto it = groupTab.getRowsByColumnValue(qvl);
+    while (!(it.isEnd()))
+    {
+      auto mg = MatchGroup(db, *it);
+      int nextGroupNumber = mg.getGroupNumber();
+      if (nextGroupNumber < 0)
+      {
+        // next round is already in KO phase
+        return MATCH_GROUP_NOT_UNSTAGEABLE;
+      }
+
+      // the next round's group belongs to the same
+      // players group ==> can't unstage
+      if (nextGroupNumber == playersGroup)
+      {
+        return MATCH_GROUP_NOT_UNSTAGEABLE;
+      }
+      ++it;
+    }
+
+    return OK;
+  }
 
 //----------------------------------------------------------------------------
 
+  /**
+   * Tries to demote a match group from STAGED to IDLE. If this demotion is
+   * possible, other match groups will automatically be demoted from IDLE
+   * to FROZEN, if applicable
+   *
+   * @param grp the group to demote
+   *
+   * @return error code
+   */
+  ERR MatchMngr::unstageMatchGroup(const MatchGroup &grp)
+  {
+    // check all preconditions for a demotion
+    ERR e = canUnstageMatchGroup(grp);
+    if (e != OK) return e;
+
+    // great, we can safely demote this match group to IDLE
+    grp.setState(STAT_MG_IDLE);
+    // TODO: emit signal
+
+    // store and delete old stage sequence number
+    int oldStageSeqNumber = grp.getStageSequenceNumber();
+    int grpId = grp.getId();
+    TabRow r = groupTab[grpId];
+    r.update(MG_STAGE_SEQ_NUM, QVariant());
+    // TODO: emit signal
+
+    // update all subsequent sequence numbers
+    QString where = MG_STAGE_SEQ_NUM + " > " + QString::number(oldStageSeqNumber);
+    auto it = groupTab.getRowsByWhereClause(where);
+    while (!(it.isEnd()))
+    {
+      auto mg = MatchGroup(db, *it);
+      int old = mg.getStageSequenceNumber();
+      (*it).update(MG_STAGE_SEQ_NUM, old - 1);
+      // TODO: emit signal
+      ++it;
+    }
+
+    // demote other rounds from IDLE to FROZEN
+    // check for a match group with "round + 1" in state IDLE
+    int round = grp.getRound();
+    int playersGroup = grp.getGroupNumber();
+    int catId = grp.getCategory().getId();
+
+    QVariantList qvl;
+    qvl << MG_ROUND << round+1;
+    qvl << GENERIC_STATE_FIELD_NAME << static_cast<int>(STAT_MG_IDLE);
+    qvl << MG_CAT_REF << catId;
+    it = groupTab.getRowsByColumnValue(qvl);
+    while (!(it.isEnd()))
+    {
+      auto mg = MatchGroup(db, *it);
+
+      // if our demoted match group and the IDLE match group are round-robin-groups,
+      // the IDLE match group has only to be demoted if it matches the "grp's" players group
+      //
+      // or in inverse logic: if the player groups to not match, we don't have to
+      // touch this group
+      int otherPlayersGroup = mg.getGroupNumber();
+      if ((playersGroup > 0) && (otherPlayersGroup > 0) && (playersGroup != otherPlayersGroup))
+      {
+        ++it;
+        continue;
+      }
+
+      // in all other cases, the "IDLE" group has to be demoted to FROZEN
+      mg.setState(STAT_MG_FROZEN);
+      // TODO: emit signal
+
+      ++it;
+    }
+
+    return OK;
+  }
 
 //----------------------------------------------------------------------------
 

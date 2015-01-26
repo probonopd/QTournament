@@ -49,6 +49,7 @@ namespace QTournament
         WRONG_STATE,
         MATCH_GROUP_ALREADY_CLOSED,
         MATCH_GROUP_EMPTY,
+        MATCH_GROUP_NOT_UNSTAGEABLE,
     };
 }
 

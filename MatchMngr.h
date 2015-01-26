@@ -43,7 +43,12 @@ namespace QTournament
     ERR canAssignPlayerPairToMatch(const Match& ma, const PlayerPair& pp) const;
     ERR setPlayerPairsForMatch(const Match& ma, const PlayerPair& pp1, const PlayerPair& pp2);
     ERR closeMatchGroup(const MatchGroup& grp);
-    
+
+    ERR stageMatchGroup(const MatchGroup& grp);
+    int getMaxStageSeqNum() const;
+    ERR canUnstageMatchGroup(const MatchGroup& grp);
+    ERR unstageMatchGroup(const MatchGroup& grp);
+
   private:
     DbTab matchTab;
     DbTab groupTab;
