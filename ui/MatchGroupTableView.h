@@ -8,6 +8,8 @@
 #ifndef MATCHGROUPTABLEVIEW_H
 #define	MATCHGROUPTABLEVIEW_H
 
+#include <memory>
+
 #include "Tournament.h"
 //#include "delegates/PlayerItemDelegate.h"
 
@@ -27,6 +29,7 @@ public:
   virtual ~MatchGroupTableView ();
   void setFilter(FilterType ft);
   void clearFilter();
+  unique_ptr<MatchGroup> getSelectedMatchGroup();
   
 public slots:
   void onTournamentClosed();

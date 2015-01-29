@@ -482,7 +482,8 @@ namespace QTournament {
     */
   ERR MatchMngr::stageMatchGroup(const MatchGroup &grp)
   {
-    if (grp.getState() != STAT_MG_IDLE) return WRONG_STATE;
+    ERR e = canStageMatchGroup(grp);
+    if (e != OK) return e;
 
     // no further checks necessary. Any IDLE match group can be promoted
 
@@ -694,6 +695,24 @@ namespace QTournament {
 
 //----------------------------------------------------------------------------
 
+  /**
+   * Checks whether a match group can be Staged or not.
+   * Currently this is only a check whether the match group is in state
+   * IDLE or not
+   *
+   * @param grp the group to check for unstaging
+   *
+   * @return error code
+   */
+  ERR MatchMngr::canStageMatchGroup(const MatchGroup &grp)
+  {
+    if (grp.getState() != STAT_MG_IDLE)
+    {
+      return WRONG_STATE;
+    }
+
+    return OK;
+  }
 
 //----------------------------------------------------------------------------
 

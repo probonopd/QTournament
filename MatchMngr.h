@@ -47,6 +47,7 @@ namespace QTournament
     ERR stageMatchGroup(const MatchGroup& grp);
     int getMaxStageSeqNum() const;
     ERR canUnstageMatchGroup(const MatchGroup& grp);
+    ERR canStageMatchGroup(const MatchGroup& grp);
     ERR unstageMatchGroup(const MatchGroup& grp);
 
   private:

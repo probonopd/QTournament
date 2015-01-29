@@ -35,7 +35,7 @@ int MatchGroupTableModel::rowCount(const QModelIndex& parent) const
 int MatchGroupTableModel::columnCount(const QModelIndex& parent) const
 {
   if (parent.isValid()) return 0;
-  return 5;
+  return 6;
 }
 
 //----------------------------------------------------------------------------
@@ -90,6 +90,13 @@ QVariant MatchGroupTableModel::data(const QModelIndex& index, int role) const
       return static_cast<int>(stat);
     }
 
+    // sixth column: stage sequence number
+    // Used for sorting in the "Staged Match Groups View" only and needs to be hidden in the associated view
+    if (index.column() == STAGE_SEQ_COL_ID)
+    {
+      return mg->getStageSequenceNumber();
+    }
+
     return QString("Not Implemented, row=" + QString::number(index.row()) + ", col=" + QString::number(index.row()));
 }
 
@@ -123,6 +130,9 @@ QVariant MatchGroupTableModel::headerData(int section, Qt::Orientation orientati
     }
     if (section == STATE_COL_ID) {
       return tr("State");
+    }
+    if (section == STAGE_SEQ_COL_ID) {
+      return tr("StageSeqNum");
     }
 
     return QString("Not implemented, section=" + QString::number(section));

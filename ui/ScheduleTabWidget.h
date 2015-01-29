@@ -2,6 +2,8 @@
 #define SCHEDULETABWIDGET_H
 
 #include <QDialog>
+#include <QItemSelection>
+#include <QItemSelectionModel>
 
 namespace Ui {
 class ScheduleTabWidget;
@@ -19,9 +21,12 @@ public slots:
     void onBtnStageClicked();
     void onBtnUnstageClicked();
     void onBtnScheduleClicked();
+    void onIdleSelectionChanged(const QItemSelection &, const QItemSelection &);
+    void onStagedSelectionChanged(const QItemSelection &, const QItemSelection &);
 
 private:
     Ui::ScheduleTabWidget *ui;
+    void updateButtons();
 };
 
 #endif // SCHEDULETABWIDGET_H

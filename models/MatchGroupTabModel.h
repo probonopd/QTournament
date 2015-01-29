@@ -22,6 +22,7 @@ class MatchGroupTableModel : public QAbstractTableModel
   
 public:
   static constexpr int STATE_COL_ID = 4;  // id of the column with the match group state
+  static constexpr int STAGE_SEQ_COL_ID = 5;  // id of the column with the stage sequence number
 
   MatchGroupTableModel (TournamentDB* _db);
   int rowCount(const QModelIndex & parent = QModelIndex()) const;

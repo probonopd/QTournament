@@ -44,7 +44,8 @@ void MatchGroupTableView::onTournamentOpened(Tournament* _tnmt)
 {
   tnmt = _tnmt;
   sortedModel->setSourceModel(Tournament::getMatchGroupTableModel());
-  setColumnHidden(4, true);  // hide the column containing the internal object state
+  setColumnHidden(MatchGroupTableModel::STATE_COL_ID, true);  // hide the column containing the internal object state
+  setColumnHidden(MatchGroupTableModel::STAGE_SEQ_COL_ID, true);  // hide the column containing the stage sequence number
   setEnabled(true);
   
   // connect signals from the Tournament and TeamMngr with my slots
@@ -112,7 +113,25 @@ void MatchGroupTableView::onFilterUpdateTriggered()
 }
 
 //----------------------------------------------------------------------------
-    
+
+unique_ptr<MatchGroup> MatchGroupTableView::getSelectedMatchGroup()
+{
+  // make sure we have non-empty model
+  auto mod = model();
+  if (mod == nullptr) return nullptr;
+  if (mod->rowCount() == 0) return nullptr;
+
+  // make sure we have one item selected
+  QModelIndexList indexes = selectionModel()->selection().indexes();
+  if (indexes.count() == 0)
+  {
+    return nullptr;
+  }
+
+  // return the selected item
+  int selectedSourceRow = sortedModel->mapToSource(indexes.at(0)).row();
+  return Tournament::getMatchMngr()->getMatchGroupBySeqNum(selectedSourceRow);
+}
 
 //----------------------------------------------------------------------------
     
