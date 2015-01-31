@@ -38,6 +38,7 @@ namespace QTournament
     unique_ptr<MatchGroup> getMatchGroup(const Category& cat, const int round, const int grpNum,  ERR* err);
     bool hasMatchGroup(const Category& cat, const int round, const int grpNum, ERR* err=nullptr);
     unique_ptr<MatchGroup> getMatchGroupBySeqNum(int mgSeqNum);
+    unique_ptr<Match> getMatchBySeqNum(int maSeqNum) const;
 
     unique_ptr<Match> createMatch(const MatchGroup& grp, ERR* err);
     ERR canAssignPlayerPairToMatch(const Match& ma, const PlayerPair& pp) const;
@@ -46,18 +47,28 @@ namespace QTournament
 
     ERR stageMatchGroup(const MatchGroup& grp);
     int getMaxStageSeqNum() const;
+    int getMaxMatchNum() const;
     ERR canUnstageMatchGroup(const MatchGroup& grp);
     ERR canStageMatchGroup(const MatchGroup& grp);
     ERR unstageMatchGroup(const MatchGroup& grp);
+
+    void scheduleAllStagedMatchGroups() const;
+    MatchGroupList getStagedMatchGroupsOrderedBySequence() const;
 
   private:
     DbTab matchTab;
     DbTab groupTab;
     void updateAllMatchGroupStates(const Category& cat) const;
+    void updateMatchStatus(const Match& ma) const;
+    bool hasMandatoryPredecessor(const Match& ma) const;
     
   signals:
     void beginCreateMatchGroup ();
     void endCreateMatchGroup (int newMatchGroupSeqNum);
+    void beginCreateMatch();
+    void endCreateMatch(int newMatchSeqNum);
+    void matchStatusChanged(int matchId, int matchSeqNum, OBJ_STATE fromState, OBJ_STATE toState) const;
+    void matchGroupStatusChanged(int matchGroupId, int matchGroupSeqNum, OBJ_STATE fromState, OBJ_STATE toState) const;
 } ;
 
 }

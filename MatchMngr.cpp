@@ -240,7 +240,10 @@ namespace QTournament {
     QVariantList qvl;
     qvl << MA_GRP_REF << grp.getId();
     qvl << GENERIC_STATE_FIELD_NAME << STAT_MA_INCOMPLETE;
+    emit beginCreateMatch();
     int newId = matchTab.insertRow(qvl);
+    fixSeqNumberAfterInsert(TAB_MATCH);
+    emit endCreateMatch(matchTab.length() - 1); // the new sequence number is always the highest
 
     // create a match group object for the new group and return a pointer
     // to this new object
@@ -360,7 +363,7 @@ namespace QTournament {
 
     // we can close the group unconditionally
     grp.setState(STAT_MG_FROZEN);
-    // TODO: emit signal
+    emit matchGroupStatusChanged(grp.getId(), grp.getSeqNum(), STAT_MG_CONFIG, STAT_MG_FROZEN);
 
     // call updateAllMatchGroupStates in case the group can be further promoted
     // to idle (which enables the group the be scheduled)
@@ -406,7 +409,7 @@ namespace QTournament {
       if (isfinished)
       {
         mg.setState(STAT_MG_FINISHED);
-        // TODO: emit signal
+        emit matchGroupStatusChanged(mg.getId(), mg.getSeqNum(), STAT_MG_SCHEDULED, STAT_MG_FINISHED);
       }
     }
 
@@ -433,7 +436,7 @@ namespace QTournament {
           if ((mgGroupNum > 0) && (mg2GroupNum > 0) && (mg2.getGroupNumber() != mg.getGroupNumber())) continue;
 
           OBJ_STATE mg2Stat = mg2.getState();
-          if (!((mg2Stat == STAT_MG_STAGED) || (mg2Stat == STAT_MG_SCHEDULED) || (mg2Stat == STAT_MA_FINISHED)))
+          if (!((mg2Stat == STAT_MG_STAGED) || (mg2Stat == STAT_MG_SCHEDULED) || (mg2Stat == STAT_MG_FINISHED)))
           {
             canPromote = false;
             break;
@@ -446,7 +449,7 @@ namespace QTournament {
       if (canPromote)
       {
         mg.setState(STAT_MG_IDLE);
-        // TODO: emit signal
+        emit matchGroupStatusChanged(mg.getId(), mg.getSeqNum(), STAT_MG_FROZEN, STAT_MG_IDLE);
       }
     }
 
@@ -493,8 +496,7 @@ namespace QTournament {
     int grpId = grp.getId();
     TabRow r = groupTab[grpId];
     r.update(MG_STAGE_SEQ_NUM, nextStageSeqNum);
-    // TODO:
-    // emit signal
+    emit matchGroupStatusChanged(grp.getId(), grp.getSeqNum(), STAT_MG_IDLE, STAT_MG_STAGED);
 
     // promote other groups from FROZEN to IDLE, if applicable
     updateAllMatchGroupStates(grp.getCategory());
@@ -635,14 +637,14 @@ namespace QTournament {
 
     // great, we can safely demote this match group to IDLE
     grp.setState(STAT_MG_IDLE);
-    // TODO: emit signal
 
     // store and delete old stage sequence number
     int oldStageSeqNumber = grp.getStageSequenceNumber();
     int grpId = grp.getId();
     TabRow r = groupTab[grpId];
     r.update(MG_STAGE_SEQ_NUM, QVariant());
-    // TODO: emit signal
+
+    emit matchGroupStatusChanged(grp.getId(), grp.getSeqNum(), STAT_MG_STAGED, STAT_MG_IDLE);
 
     // update all subsequent sequence numbers
     QString where = MG_STAGE_SEQ_NUM + " > " + QString::number(oldStageSeqNumber);
@@ -652,7 +654,7 @@ namespace QTournament {
       auto mg = MatchGroup(db, *it);
       int old = mg.getStageSequenceNumber();
       (*it).update(MG_STAGE_SEQ_NUM, old - 1);
-      // TODO: emit signal
+      emit matchGroupStatusChanged(mg.getId(), mg.getSeqNum(), STAT_MG_STAGED, STAT_MG_STAGED);
       ++it;
     }
 
@@ -685,7 +687,7 @@ namespace QTournament {
 
       // in all other cases, the "IDLE" group has to be demoted to FROZEN
       mg.setState(STAT_MG_FROZEN);
-      // TODO: emit signal
+      emit matchGroupStatusChanged(mg.getId(), mg.getSeqNum(), STAT_MG_IDLE, STAT_MG_FROZEN);
 
       ++it;
     }
@@ -716,21 +718,219 @@ namespace QTournament {
 
 //----------------------------------------------------------------------------
 
+  /**
+   * Checks whether the necessary conditions are met to promote a match
+   * to a higher state
+   *
+   * @param ma the match to check/promote
+   */
+  void MatchMngr::updateMatchStatus(const Match &ma) const
+  {
+    OBJ_STATE curState = ma.getState();
+
+    // from INCOMPLETE to WAITING
+    if (curState == STAT_MA_INCOMPLETE)
+    {
+      if (ma.hasBothPlayerPairs() && (ma.getMatchNumber() != MATCH_NUM_NOT_ASSIGNED))
+      {
+        ma.setState(STAT_MA_WAITING);
+        curState = STAT_MA_WAITING;
+        emit matchStatusChanged(ma.getId(), ma.getSeqNum(), STAT_MA_INCOMPLETE, STAT_MA_WAITING);
+      }
+    }
+
+    // TODO: handle FUZZY (not yet implemented in the database)
+
+    // from WAITING to READY or BUSY
+    bool hasPredecessor = hasMandatoryPredecessor(ma);
+    bool playersAvail = ma.hasAllPlayersIdle();
+    if ((curState == STAT_MA_WAITING) && (!hasPredecessor))
+    {
+      curState = playersAvail ? STAT_MA_READY : STAT_MA_BUSY;
+      ma.setState(curState);
+      emit matchStatusChanged(ma.getId(), ma.getSeqNum(), STAT_MA_WAITING, curState);
+    }
+
+    // from READY to BUSY
+    if ((curState == STAT_MA_READY) && !playersAvail)
+    {
+      ma.setState(STAT_MA_BUSY);
+      curState = STAT_MA_BUSY;
+      emit matchStatusChanged(ma.getId(), ma.getSeqNum(), STAT_MA_READY, STAT_MA_BUSY);
+    }
+
+    // from BUSY to READY
+    if ((curState == STAT_MA_BUSY) && playersAvail)
+    {
+      ma.setState(STAT_MA_READY);
+      curState = STAT_MA_READY;
+      emit matchStatusChanged(ma.getId(), ma.getSeqNum(), STAT_MA_BUSY, STAT_MA_READY);
+    }
+
+    // RUNNING is handled separately
+    // FINISHED is handled separately
+    // POSTPONED is handled separately
+  }
 
 //----------------------------------------------------------------------------
 
+  /**
+   * Checks whether a match can potentially be called, given that all players are
+   * available (which is not checked here).
+   * Essentially this boils down to check if there any matches in earlier rounds
+   * that have to be played first
+   *
+   * @param ma the match to check
+   * @return true if earlier matches have to be played first, false otherwise
+   */
+  bool MatchMngr::hasMandatoryPredecessor(const Match &ma) const
+  {
+    auto mm = Tournament::getMatchMngr();
+    auto mg = ma.getMatchGroup();
+
+    int round = mg.getRound();
+    if (round < 2)
+    {
+      // matches in round 1 can always be played
+      return false;
+    }
+
+    // okay, our match is at least in round 2. Check for unplayed matches
+    // in round-1
+    auto cat = ma.getCategory();
+    int prevRoundsPlayersGroup = cat.getGroupNumForPredecessorRound(mg.getGroupNumber());
+    for (auto prevMg : getMatchGroupsForCat(cat, round-1))
+    {
+      int playersGroup = prevMg.getGroupNumber();
+      if ((prevRoundsPlayersGroup == ANY_PLAYERS_GROUP_NUMBER) && (playersGroup < 0))
+      {
+        continue;  // we're looking for any round robins, but this a KO group or an iterative group
+      }
+
+      if ((prevRoundsPlayersGroup > 0) && (playersGroup != prevRoundsPlayersGroup))
+      {
+        // we're looking for a specific players group in round robins,
+        // but this a KO group or an iterative group or a wrong
+        // players group
+        continue;
+      }
+
+      if (((prevRoundsPlayersGroup == GROUP_NUM__SEMIFINAL) ||
+           (prevRoundsPlayersGroup == GROUP_NUM__QUARTERFINAL) ||
+           (prevRoundsPlayersGroup == GROUP_NUM__L16)) && (playersGroup != prevRoundsPlayersGroup))
+      {
+        continue;  // wrong KO round
+      }
+
+      // if we made it to this point, the match group has to be finished befor
+      // the match can be called
+      if (prevMg.getState() != STAT_MG_FINISHED) return true;
+    }
+
+    return false;   // no match group found that has to be finished before the match
+  }
 
 //----------------------------------------------------------------------------
 
+  /**
+   * Assigns match numbers to all matches in all currently staged match groups and
+   * clears the staging area
+   */
+  void MatchMngr::scheduleAllStagedMatchGroups() const
+  {
+    int nextMatchNumber = getMaxMatchNum() + 1;
+
+    for (auto mg : getStagedMatchGroupsOrderedBySequence())
+    {
+      for (auto ma : mg.getMatches())
+      {
+        int matchId = ma.getId();
+        TabRow r = matchTab[matchId];
+        r.update(MA_NUM, nextMatchNumber);
+        updateMatchStatus(ma);
+
+        // Manually trigger (another) update, because assigning the match number
+        // does not change the match state in all cases. So we need to have at
+        // least this one trigger to tell everone that the data has changed
+        emit matchStatusChanged(matchId, ma.getSeqNum(), ma.getState(), ma.getState());
+
+        ++nextMatchNumber;
+      }
+
+      // update the match group's state
+      mg.setState(STAT_MG_SCHEDULED);
+      TabRow r = groupTab[mg.getId()];
+      r.update(MG_STAGE_SEQ_NUM, QVariant());  // delete the sequence number
+      emit matchGroupStatusChanged(mg.getId(), mg.getSeqNum(), STAT_MG_STAGED, STAT_MG_SCHEDULED);
+    }
+  }
 
 //----------------------------------------------------------------------------
 
+  /**
+   * Retrieves a list of all currently staged match groups. The
+   * earliest-to-be-played group is at index 0
+   *
+   * @return a list of match groups, sorted by stage sequence number
+   */
+  MatchGroupList MatchMngr::getStagedMatchGroupsOrderedBySequence() const
+  {
+    MatchGroupList result;
+
+    QString where = MG_STAGE_SEQ_NUM + " > 0 ORDER BY " + MG_STAGE_SEQ_NUM + " ASC";
+    auto it = groupTab.getRowsByWhereClause(where);
+    while (!(it.isEnd()))
+    {
+      MatchGroup mg(db, *it);
+      result.append(mg);
+      ++it;
+    }
+
+    return result;
+  }
 
 //----------------------------------------------------------------------------
 
+  /**
+   * Determines the highest currently assigned match number
+   *
+   * @return the highest assigned match number of all matches in all groups; 0 if no number has been assigned yet
+   */
+  int MatchMngr::getMaxMatchNum() const
+  {
+    // Is there any staged match group at all?
+    QString where = MA_NUM + " > 0";
+    if (matchTab.getMatchCountForWhereClause(where) < 1)
+    {
+      return 0;  // no assigned match numbers so far
+    }
+
+    // determine the max match number
+    QString sql = "SELECT max(" + MA_NUM + ") FROM " + TAB_MATCH;
+    QVariant result = db->execScalarQuery(sql);
+    if ( (!(result.isValid())) || (result.isNull()))
+    {
+      return 0;  // shouldn't happen, but anyway...
+    }
+
+    return result.toInt();
+  }
 
 //----------------------------------------------------------------------------
 
+  unique_ptr<Match> MatchMngr::getMatchBySeqNum(int maSeqNum) const
+  {
+    try {
+      TabRow r = matchTab.getSingleRowByColumnValue(GENERIC_SEQNUM_FIELD_NAME, maSeqNum);
+      Match* ma_raw = new Match(db, r.getId());
+      return unique_ptr<Match>(ma_raw);
+    }
+    catch (std::exception e)
+    {
+     return nullptr;  // null indicates error
+    }
+    return nullptr;
+  }
 
 //----------------------------------------------------------------------------
 

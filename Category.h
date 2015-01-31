@@ -58,6 +58,7 @@ namespace QTournament
     unique_ptr<Category> convertToSpecializedObject() const;
     ERR canApplyGroupAssignment(QList<PlayerPairList> grpCfg);
     ERR canApplyInitialRanking(PlayerPairList seed);
+    int getGroupNumForPredecessorRound(const int grpNum) const;
 
     
     virtual ~Category() {};

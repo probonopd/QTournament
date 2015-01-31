@@ -24,6 +24,7 @@ namespace QTournament
   CategoryTableModel* Tournament::ctm = nullptr;
   MatchMngr* Tournament::mm = nullptr;
   MatchGroupTableModel* Tournament::mgm = nullptr;
+  MatchTableModel* Tournament::mam = nullptr;
 
 /**
  * Constructor for a new, empty tournament file
@@ -111,6 +112,7 @@ void Tournament::initModels()
   ptm = new PlayerTableModel(db);
   ctm = new CategoryTableModel(db);
   mgm = new MatchGroupTableModel(db);
+  mam = new MatchTableModel(db);
 }
 
 //----------------------------------------------------------------------------
@@ -132,6 +134,7 @@ void Tournament::close()
   delete ptm;
   delete ctm;
   delete mgm;
+  delete mam;
   
   tm = nullptr;
   cm = nullptr;
@@ -141,6 +144,7 @@ void Tournament::close()
   ptm = nullptr;
   ctm = nullptr;
   mgm = nullptr;
+  mam = nullptr;
   
   db->close();
   delete db;
@@ -222,6 +226,10 @@ MatchGroupTableModel* Tournament::getMatchGroupTableModel()
 
 //----------------------------------------------------------------------------
     
+MatchTableModel* Tournament::getMatchTableModel()
+{
+  return mam;
+}
 
 //----------------------------------------------------------------------------
     

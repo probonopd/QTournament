@@ -52,7 +52,10 @@ HEADERS += \
     ThreadSafeQueue.h \
     ui/ScheduleTabWidget.h \
     models/MatchGroupTabModel.h \
-    ui/MatchGroupTableView.h
+    ui/MatchGroupTableView.h \
+    models/MatchTabModel.h \
+    ui/GuiHelpers.h \
+    ui/MatchTableView.h
 
 SOURCES += \
     Category.cpp \
@@ -95,7 +98,10 @@ SOURCES += \
     ThreadSafeQueue.cpp \
     ui/ScheduleTabWidget.cpp \
     models/MatchGroupTabModel.cpp \
-    ui/MatchGroupTableView.cpp
+    ui/MatchGroupTableView.cpp \
+    models/MatchTabModel.cpp \
+    ui/GuiHelpers.cpp \
+    ui/MatchTableView.cpp
 
 RESOURCES += \
     tournament.qrc

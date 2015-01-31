@@ -729,6 +729,55 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
+  int Category::getGroupNumForPredecessorRound(const int grpNum) const
+  {
+    // a regular players group
+    if (grpNum > 0) return grpNum;
+
+    // a regular round, e.g. in swiss ladder or random matches
+    if (grpNum == GROUP_NUM__ITERATION) return GROUP_NUM__ITERATION;
+
+    // if we made it to this point, we are in KO rounds.
+    // so we need the KO-config to decide if there is a previous
+    // KO round or if we fall back to round robins
+    KO_Config cfg = KO_Config(getParameter_string(GROUP_CONFIG));
+    KO_START startLvl = cfg.getStartLevel();
+
+    if (startLvl == FINAL) return ANY_PLAYERS_GROUP_NUMBER;
+
+    if (startLvl == SEMI)
+    {
+      if (grpNum == GROUP_NUM__FINAL) return GROUP_NUM__SEMIFINAL;
+    }
+
+    if (startLvl == QUARTER)
+    {
+      switch (grpNum)
+      {
+      case GROUP_NUM__FINAL:
+        return GROUP_NUM__SEMIFINAL;
+      case GROUP_NUM__SEMIFINAL:
+        return GROUP_NUM__QUARTERFINAL;
+      }
+    }
+
+    if (startLvl == L16)
+    {
+      switch (grpNum)
+      {
+      case GROUP_NUM__FINAL:
+        return GROUP_NUM__SEMIFINAL;
+      case GROUP_NUM__SEMIFINAL:
+        return GROUP_NUM__QUARTERFINAL;
+      case GROUP_NUM__QUARTERFINAL:
+        return GROUP_NUM__L16;
+      }
+    }
+
+    return ANY_PLAYERS_GROUP_NUMBER;
+  }
+
+
 
   //----------------------------------------------------------------------------
 

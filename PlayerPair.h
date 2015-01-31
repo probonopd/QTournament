@@ -29,6 +29,7 @@ namespace QTournament
     unique_ptr<Category> getCategory(TournamentDB* db) const;  // only as a hot-fix
     bool isConsistent(TournamentDB* db) const; // for debugging only
     int getPairsGroupNum(TournamentDB* db) const;  // only as a hot-fix
+    bool areAllPlayersIdle() const;
 
   private:
     int id1;

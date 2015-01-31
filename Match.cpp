@@ -46,7 +46,7 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  bool Match::hasPlayerPair1()
+  bool Match::hasPlayerPair1() const
   {
     QVariant ppId = row[MA_PAIR1_REF];
     if (ppId.isNull()) return false;
@@ -55,7 +55,7 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  bool Match::hasPlayerPair2()
+  bool Match::hasPlayerPair2() const
   {
     QVariant ppId = row[MA_PAIR2_REF];
     if (ppId.isNull()) return false;
@@ -64,14 +64,14 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  bool Match::hasBothPlayerPairs()
+  bool Match::hasBothPlayerPairs() const
   {
     return (hasPlayerPair1() && hasPlayerPair2());
   }
 
 //----------------------------------------------------------------------------
 
-  PlayerPair Match::getPlayerPair1()
+  PlayerPair Match::getPlayerPair1() const
   {
     if (!(hasPlayerPair1()))
     {
@@ -84,7 +84,7 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  PlayerPair Match::getPlayerPair2()
+  PlayerPair Match::getPlayerPair2() const
   {
     if (!(hasPlayerPair2()))
     {
@@ -97,12 +97,44 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
+  int Match::getMatchNumber() const
+  {
+    QVariant num = row[MA_NUM];
+    if (num.isNull()) return MATCH_NUM_NOT_ASSIGNED;
+    return num.toInt();
+  }
 
 //----------------------------------------------------------------------------
 
+  bool Match::hasAllPlayersIdle() const
+  {
+    if (!(hasBothPlayerPairs())) return false;
+
+    auto pp = getPlayerPair1();
+    if (!(pp.areAllPlayersIdle())) return false;
+    pp = getPlayerPair2();
+    if (!(pp.areAllPlayersIdle())) return false;
+    return true;
+  }
 
 //----------------------------------------------------------------------------
 
+  QString Match::getDisplayName() const
+  {
+    QString name1 = "??";
+    if (hasPlayerPair1())
+    {
+      name1 = getPlayerPair1().getDisplayName();
+    }
+
+    QString name2 = "??";
+    if (hasPlayerPair2())
+    {
+      name2 = getPlayerPair2().getDisplayName();
+    }
+
+    return name1 + " : " + name2;
+  }
 
 //----------------------------------------------------------------------------
 

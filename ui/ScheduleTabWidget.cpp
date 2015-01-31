@@ -49,13 +49,6 @@ void ScheduleTabWidget::onBtnStageClicked()
   if (mm->canStageMatchGroup(*mg) != OK) return;
 
   mm->stageMatchGroup(*mg);
-
-  // temporary hack: update views
-  ui->mgIdleView->setFilter(MatchGroupTableView::FilterType::NONE);
-  ui->mgStagedView->setFilter(MatchGroupTableView::FilterType::NONE);
-  ui->mgIdleView->setFilter(MatchGroupTableView::FilterType::IDLE);
-  ui->mgStagedView->setFilter(MatchGroupTableView::FilterType::STAGED);
-
 }
 
 //----------------------------------------------------------------------------
@@ -70,19 +63,18 @@ void ScheduleTabWidget::onBtnUnstageClicked()
   if (mm->canUnstageMatchGroup(*mg) != OK) return;
 
   mm->unstageMatchGroup(*mg);
-
-  // temporary hack: update views
-  ui->mgIdleView->setFilter(MatchGroupTableView::FilterType::NONE);
-  ui->mgStagedView->setFilter(MatchGroupTableView::FilterType::NONE);
-  ui->mgIdleView->setFilter(MatchGroupTableView::FilterType::IDLE);
-  ui->mgStagedView->setFilter(MatchGroupTableView::FilterType::STAGED);
 }
 
 //----------------------------------------------------------------------------
 
 void ScheduleTabWidget::onBtnScheduleClicked()
 {
+  // is at least one match group staged?
+  auto mm = Tournament::getMatchMngr();
+  if (mm->getMaxStageSeqNum() == 0) return;
 
+  mm->scheduleAllStagedMatchGroups();
+  updateButtons();
 }
 
 //----------------------------------------------------------------------------
@@ -122,6 +114,9 @@ void ScheduleTabWidget::updateButtons()
   } else {
     ui->btnUnstage->setEnabled(false);
   }
+
+  // update the "Schedule"-button
+  ui->btnSchedule->setEnabled(mm->getMaxStageSeqNum() != 0);
 }
 
 //----------------------------------------------------------------------------

@@ -123,7 +123,17 @@
         </widget>
        </item>
        <item>
-        <widget class="QListView" name="listView_2"/>
+        <widget class="MatchTableView" name="tableView_2">
+         <property name="selectionMode">
+          <enum>QAbstractItemView::SingleSelection</enum>
+         </property>
+         <property name="selectionBehavior">
+          <enum>QAbstractItemView::SelectRows</enum>
+         </property>
+         <attribute name="verticalHeaderVisible">
+          <bool>false</bool>
+         </attribute>
+        </widget>
        </item>
       </layout>
      </item>
@@ -153,6 +163,11 @@
    <class>MatchGroupTableView</class>
    <extends>QTableView</extends>
    <header>ui/MatchGroupTableView.h</header>
+  </customwidget>
+  <customwidget>
+   <class>MatchTableView</class>
+   <extends>QTableView</extends>
+   <header>ui/MatchTableView.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

@@ -208,6 +208,17 @@ namespace QTournament {
 
 //----------------------------------------------------------------------------
 
+  bool PlayerPair::areAllPlayersIdle() const
+  {
+    auto p = getPlayer1();
+    if (p.getState() != STAT_PL_IDLE) return false;
+    if (hasPlayer2())
+    {
+      p = getPlayer2();
+      if (p.getState() != STAT_PL_IDLE) return false;
+    }
+    return true;
+  }
 
 //----------------------------------------------------------------------------
 

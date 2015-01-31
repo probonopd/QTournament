@@ -29,11 +29,14 @@ namespace QTournament
   public:
     Category getCategory() const;
     MatchGroup getMatchGroup() const;
-    bool hasPlayerPair1();
-    bool hasPlayerPair2();
-    bool hasBothPlayerPairs();
-    PlayerPair getPlayerPair1();
-    PlayerPair getPlayerPair2();
+    bool hasPlayerPair1() const;
+    bool hasPlayerPair2() const;
+    bool hasBothPlayerPairs() const;
+    PlayerPair getPlayerPair1() const;
+    PlayerPair getPlayerPair2() const;
+    int getMatchNumber() const;
+    bool hasAllPlayersIdle() const;
+    QString getDisplayName() const;
 
   private:
     Match (TournamentDB* db, int rowId);

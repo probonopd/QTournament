@@ -5,27 +5,27 @@
  * Created on March 17, 2014, 7:51 PM
  */
 
-#ifndef MATCHGROUPTABLEMODEL_H
-#define	MATCHGROUPTABLEMODEL_H
+#ifndef MATCHTABLEMODEL_H
+#define	MATCHTABLEMODEL_H
 
 #include <QAbstractTableModel>
 
 #include "DbTab.h"
 #include "TournamentDB.h"
-#include "MatchGroup.h"
+#include "Match.h"
 
 using namespace QTournament;
 
-class MatchGroupTableModel : public QAbstractTableModel
+class MatchTableModel : public QAbstractTableModel
 {
   Q_OBJECT
   
 public:
-  static constexpr int STATE_COL_ID = 4;  // id of the column with the match group state
-  static constexpr int STAGE_SEQ_COL_ID = 5;  // id of the column with the stage sequence number
+  static constexpr int STATE_COL_ID = 5;  // id of the column with the match state
+  static constexpr int MATCH_NUM_COL_ID = 0;  // id of the column with the match number
   static constexpr int COLUMN_COUNT = 6;  // number of columns in the model
 
-  MatchGroupTableModel (TournamentDB* _db);
+  MatchTableModel (TournamentDB* _db);
   int rowCount(const QModelIndex & parent = QModelIndex()) const;
   int columnCount(const QModelIndex & parent = QModelIndex()) const;
   QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const;
@@ -33,15 +33,15 @@ public:
   
   private:
     TournamentDB* db;
-    dbOverlay::DbTab mgTab;
+    dbOverlay::DbTab matchTab;
     
 public slots:
-    void onBeginCreateMatchGroup();
-    void onEndCreateMatchGroup(int newMatchGroupSeqNum);
-    void onMatchGroupStatusChanged(int matchGroupId, int matchGroupSeqNum);
+    void onBeginCreateMatch();
+    void onEndCreateMatch(int newMatchSeqNum);
+    void onMatchStatusChanged(int matchId, int matchSeqNum);
 
 signals:
-    void triggerFilterUpdate();
+    //void triggerFilterUpdate();
 
 };
 

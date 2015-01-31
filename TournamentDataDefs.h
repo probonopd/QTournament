@@ -258,10 +258,11 @@ namespace QTournament
     STAT_MG_SCHEDULED, // Match numbers have been assigned
     STAT_MG_FINISHED,  // All matches in this group are finished
     STAT_MA_INCOMPLETE,   // Match is not yet fully defined (e.g., player names or match number are missing)
-    STAT_MA_FUZZY,        // Player names are defined by symbolic values (e.g., winner of match XYZ)
-    STAT_MA_READY,        // Opponents are fully defined and all players are idle; match can be called
-    STAT_MA_BUSY,         // Opponents are fully defined but some players are buys; match cannot be called
-    STAT_MA_RUNNING,      // The match is currently running
+    STAT_MA_FUZZY,        // Player names are defined by symbolic values (e.g., winner of match XYZ); match cannot be called
+    STAT_MA_WAITING,      // Player names and match number are assigned but match cannot be called because earlier rounds have to be played first
+    STAT_MA_READY,        // Opponents and match number are fully defined and all players are idle; match can be called
+    STAT_MA_BUSY,         // Opponents and match number are fully defined but some players are buys; match cannot be called
+    STAT_MA_RUNNING,      // The match is currently being played
     STAT_MA_FINISHED,     // The match is finished and the result has been entered
     STAT_MA_POSTPONED     // The match is postponed and cannot be called
   };
@@ -324,9 +325,16 @@ namespace QTournament
 // A special group number indicating that the match is
 // not in any group at all
 #define GRP_NUM__NOT_ASSIGNED -1
+
+// A special value that matches any players group
+// Is only used for return values of functions
+#define ANY_PLAYERS_GROUP_NUMBER -200
     
 //----------------------------------------------------------------------------
 
+// A special match number, indicating that a match number
+// has not yet been assigned
+#define MATCH_NUM_NOT_ASSIGNED -1
 
 //----------------------------------------------------------------------------
     
