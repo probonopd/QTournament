@@ -151,9 +151,6 @@ void MatchTableModel::onBeginCreateMatch()
 void MatchTableModel::onEndCreateMatch(int newMatchSeqNum)
 {
   endInsertRows();
-
-  // tell all associated views to update their filters
-  //emit triggerFilterUpdate();
 }
 
 //----------------------------------------------------------------------------

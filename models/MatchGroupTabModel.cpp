@@ -9,6 +9,7 @@
 
 #include "Category.h"
 #include "Tournament.h"
+#include "../ui/GuiHelpers.h"
 
 #include <QDebug>
 
@@ -63,18 +64,16 @@ QVariant MatchGroupTableModel::data(const QModelIndex& index, int role) const
       return c.getName();
     }
 
-    // second column: group number, if applicable
+    // second column: round
     if (index.column() == 1)
     {
-      int grpNum = mg->getGroupNumber();
-      if (grpNum > 0) return grpNum;
-      return "";
+      return mg->getRound();
     }
 
-    // third column: round
+    // third column: group number
     if (index.column() == 2)
     {
-      return mg->getRound();
+      return GuiHelpers::groupNumToString(mg->getGroupNumber());
     }
 
     // fourth column: number of matches in this match group
@@ -121,10 +120,10 @@ QVariant MatchGroupTableModel::headerData(int section, Qt::Orientation orientati
       return tr("Category");
     }
     if (section == 1) {
-      return tr("Group");
+      return tr("Round");
     }
     if (section == 2) {
-      return tr("Round");
+      return tr("Group");
     }
     if (section == 3) {
       return tr("Number of matches");

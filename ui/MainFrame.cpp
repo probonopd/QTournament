@@ -96,7 +96,7 @@ void MainFrame::closeCurrentTournament()
 
 void MainFrame::setupTestScenario(int scenarioID)
 {
-  if ((scenarioID < 0) || (scenarioID > 3))
+  if ((scenarioID < 0) || (scenarioID > 5))
   {
     QMessageBox::critical(this, "Setup Test Scenario", "The scenario ID " + QString::number(scenarioID) + " is invalid!");
   }
@@ -121,7 +121,7 @@ void MainFrame::setupTestScenario(int scenarioID)
   PlayerMngr* pmngr = Tournament::getPlayerMngr();
   CatMngr* cmngr = Tournament::getCatMngr();
   
-  if ((scenarioID > 0) && (scenarioID < 99))
+  if ((scenarioID > 0) && (scenarioID < 99))   // Scenario 1...
   {
     tmngr->createNewTeam("Team 1");
     tmngr->createNewTeam("Team 2");
@@ -160,7 +160,7 @@ void MainFrame::setupTestScenario(int scenarioID)
     mx.setSex(M); // shouldn't matter at all
   }
   
-  if ((scenarioID > 1) && (scenarioID < 99))
+  if ((scenarioID > 1) && (scenarioID < 99))  // Scenario 2...
   {
     Category md = cmngr->getCategory("MD");
     Category ms = cmngr->getCategory("MS");
@@ -190,7 +190,7 @@ void MainFrame::setupTestScenario(int scenarioID)
   
   // a scenario with a lot of participants, including a group of
   // forty players in one category
-  if (scenarioID == 3)
+  if ((scenarioID > 2) && (scenarioID < 99))  // Scenario 3...
   {
     tmngr->createNewTeam("Massive");
     Category ls = cmngr->getCategory("LS");
@@ -209,6 +209,57 @@ void MainFrame::setupTestScenario(int scenarioID)
     gdl.append(d);
     KO_Config cfg(QUARTER, false, gdl);
     ls.setParameter(GROUP_CONFIG, cfg.toString());
+  }
+
+  // extend scenario 3 to already start category "LS"
+  if ((scenarioID > 3) && (scenarioID < 99))  // Scenario 4...
+  {
+    Category ls = cmngr->getCategory("LS");
+
+    // run the category
+    unique_ptr<Category> specialCat = ls.convertToSpecializedObject();
+    ERR e = cmngr->freezeConfig(ls);
+    assert(e == OK);
+
+    // fake a list of player-pair-lists for the group assignments
+    QList<PlayerPairList> ppListList;
+    for (int grpNum=0; grpNum < 8; ++grpNum)
+    {
+        PlayerPairList thisGroup;
+        for (int pNum=0; pNum < 5; ++pNum)
+        {
+            int playerId = (grpNum * 5) + pNum + 7;  // the first six IDs are already in use; see above
+
+            Player p = pmngr->getPlayer(playerId);
+            PlayerPair pp(p, (playerId-6));   // PlayerPairID starts at 1
+            thisGroup.append(pp);
+        }
+        ppListList.append(thisGroup);
+    }
+
+    // make sure the faked group assignment is valid
+    e = specialCat->canApplyGroupAssignment(ppListList);
+    assert(e == OK);
+
+    // prepare an empty list for the (not required) initial ranking
+    PlayerPairList initialRanking;
+
+    // actually run the category
+    e = cmngr->startCategory(ls, ppListList, initialRanking);
+    assert(e == OK);
+  }
+
+  // extend scenario 4 to already stage and schedule a few match groups in category "LS"
+  if ((scenarioID > 4) && (scenarioID < 99))  // Scenario 5...
+  {
+    Category ls = cmngr->getCategory("LS");
+    MatchMngr* mm = Tournament::getMatchMngr();
+
+    ERR e;
+    auto mg = mm->getMatchGroup(ls, 1, 3, &e);  // round 1, players group 3
+    assert(e == OK);
+    mm->stageMatchGroup(*mg);
+    mm->scheduleAllStagedMatchGroups();
   }
 
   enableControls(true);
@@ -247,6 +298,18 @@ void MainFrame::setupScenario03()
 }
 
 //----------------------------------------------------------------------------
+
+void MainFrame::setupScenario04()
+{
+  setupTestScenario(4);
+}
+
+//----------------------------------------------------------------------------
+
+void MainFrame::setupScenario05()
+{
+  setupTestScenario(5);
+}
 
 //----------------------------------------------------------------------------
 

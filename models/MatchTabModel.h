@@ -40,9 +40,6 @@ public slots:
     void onEndCreateMatch(int newMatchSeqNum);
     void onMatchStatusChanged(int matchId, int matchSeqNum);
 
-signals:
-    //void triggerFilterUpdate();
-
 };
 
 #endif	/* MATCHGROUPTABLEMODEL_H */

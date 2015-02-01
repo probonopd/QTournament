@@ -53,7 +53,7 @@
         </widget>
         <widget class="ScheduleTabWidget" name="tabSchedule">
          <attribute name="title">
-          <string>Tmp</string>
+          <string>Scheduler</string>
          </attribute>
         </widget>
        </widget>
@@ -90,6 +90,8 @@
     <addaction name="actionScenario01"/>
     <addaction name="actionScenario02"/>
     <addaction name="actionScenario03"/>
+    <addaction name="actionScenario04"/>
+    <addaction name="actionScenario05"/>
    </widget>
    <addaction name="menuTournament"/>
    <addaction name="menuTesting"/>
@@ -133,6 +135,16 @@
   <action name="actionScenario03">
    <property name="text">
     <string>Scenario03</string>
+   </property>
+  </action>
+  <action name="actionScenario04">
+   <property name="text">
+    <string>Scenario04</string>
+   </property>
+  </action>
+  <action name="actionScenario05">
+   <property name="text">
+    <string>Scenario05</string>
    </property>
   </action>
  </widget>
@@ -276,6 +288,38 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>actionScenario04</sender>
+   <signal>triggered()</signal>
+   <receiver>MainFrame</receiver>
+   <slot>setupScenario04()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>508</x>
+     <y>379</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionScenario05</sender>
+   <signal>triggered()</signal>
+   <receiver>MainFrame</receiver>
+   <slot>setupScenario05()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>508</x>
+     <y>379</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>newTournament()</slot>
@@ -284,5 +328,7 @@
   <slot>setupScenario01()</slot>
   <slot>setupScenario02()</slot>
   <slot>setupScenario03()</slot>
+  <slot>setupScenario04()</slot>
+  <slot>setupScenario05()</slot>
  </slots>
 </ui>

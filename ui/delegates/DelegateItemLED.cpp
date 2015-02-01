@@ -1,5 +1,7 @@
+#include <QDebug>
 
 #include "DelegateItemLED.h"
+
 
 const QMap<OBJ_STATE, QColor> DelegateItemLED::state2color = {
   {STAT_CAT_FROZEN, Qt::darkYellow},
@@ -7,8 +9,8 @@ const QMap<OBJ_STATE, QColor> DelegateItemLED::state2color = {
   {STAT_CAT_PLAYING, Qt::green},
   {STAT_CAT_FINALIZED, Qt::darkRed},
   {STAT_PL_IDLE, Qt::green},
-//  {STAT_, Qt::},
-//  {STAT_, Qt::},
+  {STAT_MA_READY, Qt::green},
+  {STAT_MA_WAITING, Qt::yellow},
 //  {STAT_, Qt::},
 //  {STAT_, Qt::},
 //  {STAT_, Qt::},
@@ -25,6 +27,7 @@ void DelegateItemLED::operator ()(QPainter* painter, QRect itemArea, int margin,
     this->operator ()(painter, itemArea, margin, size, state2color[state]);
   } else {
     this->operator ()(painter, itemArea, margin, size, defaultColor);
+    qDebug() << "Applied default color to unknown state " << static_cast<int>(state);
   }
 }
 

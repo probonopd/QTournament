@@ -11,7 +11,7 @@
 #include <memory>
 
 #include "Tournament.h"
-//#include "delegates/PlayerItemDelegate.h"
+#include "delegates/MatchItemDelegate.h"
 
 #include <QTableView>
 #include <QSortFilterProxyModel>
@@ -27,21 +27,17 @@ public:
 
   MatchTableView (QWidget* parent);
   virtual ~MatchTableView ();
-  //void setFilter(FilterType ft);
-  //void clearFilter();
   unique_ptr<Match> getSelectedMatch();
   
 public slots:
   void onTournamentClosed();
   void onTournamentOpened(Tournament* tnmt);
-  //void onFilterUpdateTriggered();
   
 private:
   Tournament* tnmt;
   QStringListModel* emptyModel;
   QSortFilterProxyModel* sortedModel;
-  //PlayerItemDelegate* itemDelegate;
-  //FilterType currentFilter;
+  MatchItemDelegate* itemDelegate;
 
 };
 

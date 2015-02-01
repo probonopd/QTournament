@@ -55,7 +55,8 @@ HEADERS += \
     ui/MatchGroupTableView.h \
     models/MatchTabModel.h \
     ui/GuiHelpers.h \
-    ui/MatchTableView.h
+    ui/MatchTableView.h \
+    ui/delegates/MatchItemDelegate.h
 
 SOURCES += \
     Category.cpp \
@@ -101,7 +102,8 @@ SOURCES += \
     ui/MatchGroupTableView.cpp \
     models/MatchTabModel.cpp \
     ui/GuiHelpers.cpp \
-    ui/MatchTableView.cpp
+    ui/MatchTableView.cpp \
+    ui/delegates/MatchItemDelegate.cpp
 
 RESOURCES += \
     tournament.qrc
