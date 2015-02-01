@@ -78,11 +78,23 @@ QSize MatchItemDelegate::sizeHint(const QStyleOptionViewItem& option, const QMod
     width += ITEM_MARGIN + ITEM_STAT_INDICATOR_SIZE;
   }
   
-  return QSize(width, ITEM_ROW_HEIGHT);
+  // this doesn't work, because option.state is not yet updated
+  // to QtStyle::State_Selected when sizeHint is called for a freshly
+  // selected item
+  //int height = (option.state & QStyle::State_Selected) ? ITEM_ROW_HEIGHT_SELECTED : ITEM_ROW_HEIGHT;
+
+  int row = index.row();
+  int height = (row == selectedRow) ? ITEM_ROW_HEIGHT_SELECTED : ITEM_ROW_HEIGHT;
+
+  return QSize(width, height);
 }
 
 //----------------------------------------------------------------------------
-    
+
+void MatchItemDelegate::setSelectedRow(int _selRow)
+{
+  selectedRow = _selRow;
+}
 
 //----------------------------------------------------------------------------
     

@@ -7,6 +7,7 @@
 
 #include "MatchTableView.h"
 #include "MainFrame.h"
+#include <QMessageBox>
 
 MatchTableView::MatchTableView(QWidget* parent)
   :QTableView(parent)
@@ -22,6 +23,11 @@ MatchTableView::MatchTableView(QWidget* parent)
 
   connect(MainFrame::getMainFramePointer(), &MainFrame::tournamentOpened, this, &MatchTableView::onTournamentOpened);
   
+  // react on selection changes in the match table view
+  connect(selectionModel(),
+    SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
+    SLOT(onSelectionChanged(const QItemSelection&, const QItemSelection&)));
+
   // define a delegate for drawing the match items
   itemDelegate = new MatchItemDelegate(this);
   itemDelegate->setProxy(sortedModel);
@@ -55,6 +61,9 @@ void MatchTableView::onTournamentOpened(Tournament* _tnmt)
   // resize columns and rows to content once (we do not want permanent automatic resizing)
   horizontalHeader()->resizeSections(QHeaderView::ResizeToContents);
   verticalHeader()->resizeSections(QHeaderView::ResizeToContents);
+
+  horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+  verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 }
 
 //----------------------------------------------------------------------------
@@ -95,6 +104,19 @@ unique_ptr<Match> MatchTableView::getSelectedMatch()
 
 //----------------------------------------------------------------------------
 
+void MatchTableView::onSelectionChanged(const QItemSelection& selectedItem, const QItemSelection& deselectedItem)
+{
+  resizeRowsToContents();
+  for (auto item : selectedItem)
+  {
+    itemDelegate->setSelectedRow(item.top());
+    resizeRowToContents(item.top());
+  }
+  for (auto item : deselectedItem)
+  {
+    resizeRowToContents(item.top());
+  }
+}
 
 //----------------------------------------------------------------------------
     

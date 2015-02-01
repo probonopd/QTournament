@@ -212,6 +212,7 @@ void MainFrame::setupTestScenario(int scenarioID)
   }
 
   // extend scenario 3 to already start category "LS"
+  // and add a few players to LD and start this category, too
   if ((scenarioID > 3) && (scenarioID < 99))  // Scenario 4...
   {
     Category ls = cmngr->getCategory("LS");
@@ -247,9 +248,64 @@ void MainFrame::setupTestScenario(int scenarioID)
     // actually run the category
     e = cmngr->startCategory(ls, ppListList, initialRanking);
     assert(e == OK);
+
+    // we're done with LS here...
+
+    // add 16 players to LD
+    Category ld = cmngr->getCategory("LD");
+    for (int id=100; id < 116; ++id)
+    {
+      e = ld.addPlayer(pmngr->getPlayer(id));
+      assert(e == OK);
+    }
+
+    // generate eight player pairs
+    for (int id=100; id < 116; id+=2)
+    {
+      Player p1 = pmngr->getPlayer(id);
+      Player p2 = pmngr->getPlayer(id+1);
+      e = cmngr->pairPlayers(ld, p1, p2);
+      assert(e == OK);
+    }
+
+    // set the config to be 2 groups of 4 players each
+    // and that KOs start with the final
+    GroupDef d = GroupDef(4, 2);
+    GroupDefList gdl;
+    gdl.append(d);
+    KO_Config cfg(FINAL, false, gdl);
+    ld.setParameter(GROUP_CONFIG, cfg.toString());
+
+    // freeze
+    specialCat = ld.convertToSpecializedObject();
+    e = cmngr->freezeConfig(ld);
+    qDebug() << static_cast<int>(e);
+    assert(e == OK);
+
+    // fake a list of player-pair-lists for the group assignments
+    ppListList.clear();
+    PlayerPairList allPairsInCat = ld.getPlayerPairs();
+    for (int grpNum=0; grpNum < 2; ++grpNum)
+    {
+        PlayerPairList thisGroup;
+        for (int pNum=0; pNum < 4; ++pNum)
+        {
+            thisGroup.append(allPairsInCat.at(grpNum * 4 + pNum));
+        }
+        ppListList.append(thisGroup);
+    }
+
+    // make sure the faked group assignment is valid
+    e = specialCat->canApplyGroupAssignment(ppListList);
+    assert(e == OK);
+
+    // actually run the category
+    e = cmngr->startCategory(ld, ppListList, initialRanking);  // "initialRanking" is reused from above
+    assert(e == OK);
   }
 
-  // extend scenario 4 to already stage and schedule a few match groups in category "LS"
+  // extend scenario 4 to already stage and schedule a few match groups
+  // in category "LS" and "LD"
   if ((scenarioID > 4) && (scenarioID < 99))  // Scenario 5...
   {
     Category ls = cmngr->getCategory("LS");
@@ -257,6 +313,18 @@ void MainFrame::setupTestScenario(int scenarioID)
 
     ERR e;
     auto mg = mm->getMatchGroup(ls, 1, 3, &e);  // round 1, players group 3
+    assert(e == OK);
+    mm->stageMatchGroup(*mg);
+    mm->scheduleAllStagedMatchGroups();
+
+    Category ld = cmngr->getCategory("LD");
+    mg = mm->getMatchGroup(ld, 1, 1, &e);  // round 1, players group 1
+    assert(e == OK);
+    mm->stageMatchGroup(*mg);
+    mg = mm->getMatchGroup(ld, 1, 2, &e);  // round 1, players group 2
+    assert(e == OK);
+    mm->stageMatchGroup(*mg);
+    mg = mm->getMatchGroup(ld, 2, 1, &e);  // round 2, players group 1
     assert(e == OK);
     mm->stageMatchGroup(*mg);
     mm->scheduleAllStagedMatchGroups();

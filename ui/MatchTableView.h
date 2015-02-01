@@ -32,6 +32,9 @@ public:
 public slots:
   void onTournamentClosed();
   void onTournamentOpened(Tournament* tnmt);
+
+private slots:
+  void onSelectionChanged(const QItemSelection&selectedItem, const QItemSelection&deselectedItem);
   
 private:
   Tournament* tnmt;

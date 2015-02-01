@@ -18,6 +18,7 @@ class MatchItemDelegate : public QStyledItemDelegate
 
 public:
   static constexpr int ITEM_ROW_HEIGHT = 30;
+  static constexpr int ITEM_ROW_HEIGHT_SELECTED = 90;
   static constexpr int ITEM_STAT_INDICATOR_SIZE = 15;
   static constexpr int ITEM_MARGIN = 5;
 
@@ -25,10 +26,12 @@ public:
   void setProxy(QAbstractProxyModel* _proxy);
   void paint (QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index ) const;
   QSize sizeHint (const QStyleOptionViewItem& option, const QModelIndex& index ) const;
+  void setSelectedRow(int _selRow);
   
 private:
   QFontMetrics fntMetrics;
   QAbstractProxyModel* proxy;
+  int selectedRow;
 } ;
 
 #endif	/* MATCHITEMDELEGATE_H */
