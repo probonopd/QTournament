@@ -50,6 +50,7 @@ namespace QTournament
         MATCH_GROUP_ALREADY_CLOSED,
         MATCH_GROUP_EMPTY,
         MATCH_GROUP_NOT_UNSTAGEABLE,
+        COURT_NUMBER_EXISTS,
     };
 }
 

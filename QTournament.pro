@@ -8,7 +8,7 @@ QT       += sql widgets
 
 TARGET = QTournament
 TEMPLATE = app
-QMAKE_CXXFLAGS += -std=c++11
+QMAKE_CXXFLAGS += -std=c++11 -Wno-unused-parameter
 
 HEADERS += \
     Category.h \
@@ -56,7 +56,9 @@ HEADERS += \
     models/MatchTabModel.h \
     ui/GuiHelpers.h \
     ui/MatchTableView.h \
-    ui/delegates/MatchItemDelegate.h
+    ui/delegates/MatchItemDelegate.h \
+    Court.h \
+    CourtMngr.h
 
 SOURCES += \
     Category.cpp \
@@ -103,7 +105,9 @@ SOURCES += \
     models/MatchTabModel.cpp \
     ui/GuiHelpers.cpp \
     ui/MatchTableView.cpp \
-    ui/delegates/MatchItemDelegate.cpp
+    ui/delegates/MatchItemDelegate.cpp \
+    Court.cpp \
+    CourtMngr.cpp
 
 RESOURCES += \
     tournament.qrc

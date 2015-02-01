@@ -89,6 +89,12 @@ namespace QTournament
 //----------------------------------------------------------------------------
     
 #define TAB_COURT QString("Court")
+#define CO_NUMBER QString("Number")
+#define CO_IS_MANUAL_ASSIGNMENT QString("IsManualAssignment")
+//#define CO_ QString("")
+//#define CO_ QString("")
+//#define CO_ QString("")
+//#define CO_ QString("")
 //#define CO_ QString("")
 
 //----------------------------------------------------------------------------
@@ -264,7 +270,10 @@ namespace QTournament
     STAT_MA_BUSY,         // Opponents and match number are fully defined but some players are buys; match cannot be called
     STAT_MA_RUNNING,      // The match is currently being played
     STAT_MA_FINISHED,     // The match is finished and the result has been entered
-    STAT_MA_POSTPONED     // The match is postponed and cannot be called
+    STAT_MA_POSTPONED,    // The match is postponed and cannot be called
+    STAT_CO_AVAIL,        // The court is empty and can be assigned to a match
+    STAT_CO_BUSY,         // The court is being used by a match
+    STAT_CO_DISABLED,     // The court cannot be used (temporarily)
   };
   
 //----------------------------------------------------------------------------

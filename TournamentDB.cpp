@@ -36,6 +36,8 @@ void TournamentDB::populateTables()
     cols.clear();
     cols << nameFieldDef;
     cols << seqNumFieldDef;
+    cols << CO_NUMBER + " INTEGER";
+    cols << CO_IS_MANUAL_ASSIGNMENT + " INTEGER";
     tableCreationHelper(TAB_COURT, cols);
     
     // Generate the table holding the teams

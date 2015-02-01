@@ -25,6 +25,7 @@ namespace QTournament
   MatchMngr* Tournament::mm = nullptr;
   MatchGroupTableModel* Tournament::mgm = nullptr;
   MatchTableModel* Tournament::mam = nullptr;
+  CourtMngr* Tournament::com = nullptr;
 
 /**
  * Constructor for a new, empty tournament file
@@ -102,6 +103,7 @@ void Tournament::initManagers()
     cm = new CatMngr(db);
     pm = new PlayerMngr(db);
     mm = new MatchMngr(db);
+    com = new CourtMngr(db);
 }
 
 //----------------------------------------------------------------------------
@@ -129,6 +131,7 @@ void Tournament::close()
   delete cm;
   delete pm;
   delete mm;
+  delete com;
   
   delete tlm;
   delete ptm;
@@ -232,7 +235,11 @@ MatchTableModel* Tournament::getMatchTableModel()
 }
 
 //----------------------------------------------------------------------------
-    
+
+CourtMngr* Tournament::getCourtMngr()
+{
+  return com;
+}
 
 //----------------------------------------------------------------------------
     
