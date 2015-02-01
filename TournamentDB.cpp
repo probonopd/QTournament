@@ -35,6 +35,7 @@ void TournamentDB::populateTables()
     // Generate the table for the courts
     cols.clear();
     cols << nameFieldDef;
+    cols << stateFieldDef;
     cols << seqNumFieldDef;
     cols << CO_NUMBER + " INTEGER";
     cols << CO_IS_MANUAL_ASSIGNMENT + " INTEGER";

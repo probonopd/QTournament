@@ -150,7 +150,17 @@
         </widget>
        </item>
        <item>
-        <widget class="QListView" name="listView_3"/>
+        <widget class="CourtTableView" name="tableView_3">
+         <property name="selectionMode">
+          <enum>QAbstractItemView::SingleSelection</enum>
+         </property>
+         <property name="selectionBehavior">
+          <enum>QAbstractItemView::SelectRows</enum>
+         </property>
+         <attribute name="verticalHeaderVisible">
+          <bool>false</bool>
+         </attribute>
+        </widget>
        </item>
       </layout>
      </item>
@@ -168,6 +178,11 @@
    <class>MatchTableView</class>
    <extends>QTableView</extends>
    <header>ui/MatchTableView.h</header>
+  </customwidget>
+  <customwidget>
+   <class>CourtTableView</class>
+   <extends>QTableView</extends>
+   <header>ui/CourtTableView.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

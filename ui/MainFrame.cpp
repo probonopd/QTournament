@@ -306,6 +306,7 @@ void MainFrame::setupTestScenario(int scenarioID)
 
   // extend scenario 4 to already stage and schedule a few match groups
   // in category "LS" and "LD"
+  // Additionally, we add 4 courts to the tournament
   if ((scenarioID > 4) && (scenarioID < 99))  // Scenario 5...
   {
     Category ls = cmngr->getCategory("LS");
@@ -328,6 +329,15 @@ void MainFrame::setupTestScenario(int scenarioID)
     assert(e == OK);
     mm->stageMatchGroup(*mg);
     mm->scheduleAllStagedMatchGroups();
+
+    // add four courts
+    auto cm = Tournament::getCourtMngr();
+    for (int i=1; i <= 4; ++i)
+    {
+      cm->createNewCourt(i, "XX", &e);
+      assert(e == OK);
+    }
+
   }
 
   enableControls(true);

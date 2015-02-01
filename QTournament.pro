@@ -58,7 +58,9 @@ HEADERS += \
     ui/MatchTableView.h \
     ui/delegates/MatchItemDelegate.h \
     Court.h \
-    CourtMngr.h
+    CourtMngr.h \
+    models/CourtTabModel.h \
+    ui/CourtTableView.h
 
 SOURCES += \
     Category.cpp \
@@ -107,7 +109,9 @@ SOURCES += \
     ui/MatchTableView.cpp \
     ui/delegates/MatchItemDelegate.cpp \
     Court.cpp \
-    CourtMngr.cpp
+    CourtMngr.cpp \
+    models/CourtTabModel.cpp \
+    ui/CourtTableView.cpp
 
 RESOURCES += \
     tournament.qrc

@@ -23,6 +23,7 @@
 #include "MatchMngr.h"
 #include "models/MatchGroupTabModel.h"
 #include "models/MatchTabModel.h"
+#include "models/CourtTabModel.h"
 #include "CourtMngr.h"
 
 using namespace dbOverlay;
@@ -45,6 +46,7 @@ namespace QTournament
     static MatchMngr* getMatchMngr();
     static MatchGroupTableModel* getMatchGroupTableModel();
     static MatchTableModel* getMatchTableModel();
+    static CourtTableModel* getCourtTableModel();
     static CourtMngr* getCourtMngr();
     void close();
     ~Tournament();
@@ -60,6 +62,7 @@ namespace QTournament
     static MatchMngr* mm;
     static MatchGroupTableModel* mgm;
     static MatchTableModel* mam;
+    static CourtTableModel* courtMod;
     static CourtMngr* com;
     
     void initManagers ();

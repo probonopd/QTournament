@@ -50,6 +50,7 @@ namespace QTournament
     void beginCreateCourt ();
     void endCreateCourt (int newCourtSeqNum);
     void courtRenamed (const Court& p);
+    void courtStatusChanged(int courtId, int courtSeqNum, OBJ_STATE fromState, OBJ_STATE toState);
   };
 }
 
