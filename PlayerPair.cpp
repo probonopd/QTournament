@@ -222,6 +222,19 @@ namespace QTournament {
 
 //----------------------------------------------------------------------------
 
+  QString PlayerPair::getCallName(const QString& sepString) const
+  {
+    auto p = getPlayer1();
+    QString result = p.getFirstName() + " " + p.getLastName();
+    if (hasPlayer2())
+    {
+      p = getPlayer2();
+      result += "    " + sepString + "    ";
+      result += p.getFirstName() + " " + p.getLastName();
+    }
+
+    return result;
+  }
 
 //----------------------------------------------------------------------------
 

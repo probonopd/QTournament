@@ -809,6 +809,71 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
+  /**
+   * Changes to category's status from IDLE to PLAYING or back to IDLE or finished,
+   * depending on the matches currently being played.
+   *
+   * @param c the category to update
+   */
+  void CatMngr::updateCatStatusFromMatchStatus(const Category &c)
+  {
+    OBJ_STATE curStat = c.getState();
+    if ((curStat != STAT_CAT_IDLE) && (curStat != STAT_CAT_PLAYING))
+    {
+      return;  // nothing to do for us
+    }
+
+    auto mm = Tournament::getMatchMngr();
+    bool hasMatchRunning = false;
+    bool hasUnfinishedMatch = false;
+    for (auto mg : mm->getMatchGroupsForCat(c))
+    {
+      // search for at least one match that's being played
+      for (auto ma : mg.getMatches())
+      {
+        OBJ_STATE maState = ma.getState();
+        if (maState == STAT_MA_RUNNING)
+        {
+          hasMatchRunning = true;
+          break;
+        }
+
+        if ((maState != STAT_MA_FINISHED) && !hasUnfinishedMatch)
+        {
+          hasUnfinishedMatch = true;
+        }
+      }
+
+      if (hasMatchRunning) break;
+    }
+
+    // if we're IDLE and least one match is being played,
+    // change state to PLAYING
+    if ((curStat == STAT_CAT_IDLE) && hasMatchRunning)
+    {
+      c.setState(STAT_CAT_PLAYING);
+      emit categoryStatusChanged(c, STAT_CAT_IDLE, STAT_CAT_PLAYING);
+      return;
+    }
+
+    // if we're PLAYING and no match is being played and all matches are done
+    // change state to FINALIZED
+    if ((curStat == STAT_CAT_PLAYING) && !hasMatchRunning && !hasUnfinishedMatch)
+    {
+      c.setState(STAT_CAT_FINALIZED);
+      emit categoryStatusChanged(c, STAT_CAT_PLAYING, STAT_CAT_FINALIZED);
+      return;
+    }
+
+    // if we're PLAYING and no match is being played and at least one match is not done
+    // change state back to IDLE
+    if ((curStat == STAT_CAT_PLAYING) && !hasMatchRunning && hasUnfinishedMatch)
+    {
+      c.setState(STAT_CAT_IDLE);
+      emit categoryStatusChanged(c, STAT_CAT_PLAYING, STAT_CAT_IDLE);
+      return;
+    }
+  }
 
 //----------------------------------------------------------------------------
 

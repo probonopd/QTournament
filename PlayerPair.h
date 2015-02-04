@@ -25,6 +25,7 @@ namespace QTournament
     Player getPlayer2() const;
     QString getDisplayName(int maxLen = 0) const;
     QString getDisplayName_Team(int maxLen = 0) const;
+    QString getCallName(const QString &sepString) const;
     int getPairId() const;
     unique_ptr<Category> getCategory(TournamentDB* db) const;  // only as a hot-fix
     bool isConsistent(TournamentDB* db) const; // for debugging only

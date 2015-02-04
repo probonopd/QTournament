@@ -338,6 +338,10 @@ void MainFrame::setupTestScenario(int scenarioID)
       assert(e == OK);
     }
 
+    // make courts 3 and 4 manual assignment only
+    cm->getCourt(3)->setManualAssignment(true);
+    cm->getCourt(4)->setManualAssignment(true);
+
   }
 
   enableControls(true);

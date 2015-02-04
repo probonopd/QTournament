@@ -934,15 +934,149 @@ namespace QTournament {
 
 //----------------------------------------------------------------------------
 
+  /**
+   * Determines the next callable match and the next free court. Can be used for
+   * automatically calling the next match, e.g., after a previous match is finished
+   *
+   * @param matchNum will contain the database ID of the next callable match
+   * @param courtNum will contain the database ID of the next free court
+   * @param includeManualCourts should be set to true if the search for free courts shall include courts with manual match assignment
+   *
+   * @return the identified match and court number and an error code
+   */
+  ERR MatchMngr::getNextViableMatchCourtPair(int *matchId, int *courtId, bool includeManualCourts) const
+  {
+    // default return values: error
+    *matchId = -1;
+    *courtId = -1;
+
+    // find the next available match with the lowest match number
+    int reqState = static_cast<int>(STAT_MA_READY);
+    QString where = GENERIC_STATE_FIELD_NAME + " = " + QString::number(reqState);
+    where += " ORDER BY " + MA_NUM + " ASC";
+    if (matchTab.getMatchCountForWhereClause(where) < 1)
+    {
+      return NO_MATCH_AVAIL;
+    }
+    TabRow matchRow = matchTab.getSingleRowByWhereClause(where);
+
+    ERR err;
+    auto nextCourt = Tournament::getCourtMngr()->autoSelectNextUnusedCourt(&err, includeManualCourts);
+    if (err == OK)
+    {
+      *matchId = matchRow.getId();
+      *courtId = nextCourt->getId();
+      return OK;
+    }
+
+    return err;
+  }
 
 //----------------------------------------------------------------------------
 
+  /**
+   * Determines whether it is okay to start a specific match on a specific court
+   *
+   * @param ma the match to start
+   * @param court the court to start it on
+   *
+   * @return error code
+   */
+  ERR MatchMngr::canAssignMatchToCourt(const Match &ma, const Court& court) const
+  {
+    // check the match's state
+    if (ma.getState() != STAT_MA_READY)
+    {
+      return MATCH_NOT_RUNNABLE;
+    }
+
+    // check the court's availability
+    OBJ_STATE stat = court.getState();
+    if (stat == STAT_CO_AVAIL)
+    {
+      return OK;
+    }
+    if (stat == STAT_CO_DISABLED)
+    {
+      return COURT_DISABLED;
+    }
+
+    return COURT_BUSY;
+  }
 
 //----------------------------------------------------------------------------
 
+  ERR MatchMngr::assignMatchToCourt(const Match &ma, const Court &court) const
+  {
+    ERR e = canAssignMatchToCourt(ma, court);
+    if (e != OK) return e;
+
+    // NORMALLY, we should first acquire the court and then assign the
+    // match to this court. BUT acquiring triggers an update of the
+    // associate court views and we want the update to show the match
+    // details, too. So we first assign the match and formally acquire the
+    // court afterwards. This way, the match is already linked to the court
+    // when all views are updated.
+
+    QVariantList qvl;
+
+    // assign the court
+    qvl << MA_COURT_REF << court.getId();
+
+    // copy the actual players to the database
+    // TODO: implement substitute players etc. So far, we only copy
+    // the contents of the player pairs blindly
+    PlayerPair pp = ma.getPlayerPair1();
+    qvl << MA_ACTUAL_PLAYER1A_REF << pp.getPlayer1().getId();
+    if (pp.hasPlayer2())
+    {
+      qvl << MA_ACTUAL_PLAYER1B_REF << pp.getPlayer2().getId();
+    }
+    pp = ma.getPlayerPair2();
+    qvl << MA_ACTUAL_PLAYER2A_REF << pp.getPlayer1().getId();
+    if (pp.hasPlayer2())
+    {
+      qvl << MA_ACTUAL_PLAYER2B_REF << pp.getPlayer2().getId();
+    }
+
+    // update the match state
+    qvl << GENERIC_STATE_FIELD_NAME << static_cast<int>(STAT_MA_RUNNING);
+
+    // execute all updates at once
+    TabRow matchRow = matchTab[ma.getId()];
+    matchRow.update(qvl);
+
+    // tell the world that the match status has changed
+    emit matchStatusChanged(ma.getId(), ma.getSeqNum(), STAT_MA_READY, STAT_MA_RUNNING);
+
+    // now we finally acquire the court in the aftermath
+    bool isOkay = Tournament::getCourtMngr()->acquireCourt(court);
+    assert(isOkay);
+
+    // update the category's state to "PLAYING", if necessary
+    Tournament::getCatMngr()->updateCatStatusFromMatchStatus(ma.getCategory());
+
+    // TODO: add call time to database
+
+    return OK;
+  }
 
 //----------------------------------------------------------------------------
 
+  unique_ptr<Court> MatchMngr::autoAssignMatchToNextAvailCourt(const Match &ma, ERR *err, bool includeManualCourts) const
+  {
+    ERR e;
+    auto nextCourt = Tournament::getCourtMngr()->autoSelectNextUnusedCourt(&e, includeManualCourts);
+    if (nextCourt != nullptr)
+    {
+      *err = assignMatchToCourt(ma, *nextCourt);
+      return (*err == OK) ? move(nextCourt) : nullptr;
+    }
+
+    // return the error resulting from the court selection
+    *err = e;
+    return nullptr;
+  }
 
 //----------------------------------------------------------------------------
 

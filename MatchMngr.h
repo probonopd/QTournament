@@ -16,6 +16,7 @@
 #include "Category.h"
 #include "MatchGroup.h"
 #include "Match.h"
+#include "Court.h"
 
 #include <QList>
 #include <QString>
@@ -54,6 +55,11 @@ namespace QTournament
 
     void scheduleAllStagedMatchGroups() const;
     MatchGroupList getStagedMatchGroupsOrderedBySequence() const;
+
+    ERR getNextViableMatchCourtPair(int* matchId, int* courtId, bool includeManualCourts=false) const;
+    ERR canAssignMatchToCourt(const Match& ma, const Court &court) const;
+    ERR assignMatchToCourt(const Match& ma, const Court& court) const;
+    unique_ptr<Court> autoAssignMatchToNextAvailCourt(const Match& ma, ERR* err, bool includeManualCourts=false) const;
 
   private:
     DbTab matchTab;

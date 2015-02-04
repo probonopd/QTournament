@@ -123,7 +123,7 @@
         </widget>
        </item>
        <item>
-        <widget class="MatchTableView" name="tableView_2">
+        <widget class="MatchTableView" name="tvMatches">
          <property name="selectionMode">
           <enum>QAbstractItemView::SingleSelection</enum>
          </property>
@@ -150,7 +150,7 @@
         </widget>
        </item>
        <item>
-        <widget class="CourtTableView" name="tableView_3">
+        <widget class="CourtTableView" name="tvCourts">
          <property name="selectionMode">
           <enum>QAbstractItemView::SingleSelection</enum>
          </property>
@@ -235,10 +235,27 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>tvMatches</sender>
+   <signal>doubleClicked(QModelIndex)</signal>
+   <receiver>ScheduleTabWidget</receiver>
+   <slot>onMatchDoubleClicked(QModelIndex)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>442</x>
+     <y>254</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>442</x>
+     <y>244</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>onBtnStageClicked()</slot>
   <slot>onBtnUnstageClicked()</slot>
   <slot>onBtnScheduleClicked()</slot>
+  <slot>onMatchDoubleClicked(QModelIndex)</slot>
  </slots>
 </ui>

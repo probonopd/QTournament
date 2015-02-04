@@ -132,6 +132,7 @@ void TournamentDB::populateTables()
     cols << genForeignKeyClause(MA_ACTUAL_PLAYER2B_REF, TAB_PLAYER);
     cols << MA_RESULT + " VARCHAR(50)";
     cols << genForeignKeyClause(MA_COURT_REF, TAB_COURT);
+    cols << MA_CALL_TIMES + " VARCHAR(50)";
     tableCreationHelper(TAB_MATCH, cols);
 }
 

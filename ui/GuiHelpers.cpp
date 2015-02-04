@@ -33,3 +33,32 @@ QString GuiHelpers::groupNumToString(int grpNum)
   return "??";
 
 }
+
+/**
+ * Generates a text proposal that the user should announce when calling a match
+ *
+ * This can't be integrated in the Match class, because Match is not derived
+ * from QObject, so we don't have tr() available there
+ *
+ * @param ma the match to call
+ * @param co the court the match shall be played on
+ *
+ * @return a string with the announcement
+ */
+QString GuiHelpers::prepCall(const QTournament::Match &ma, const QTournament::Court &co)
+{
+  QString call = tr("Please announce:\n\n\n");
+
+  call += tr("Next match,\n\n");
+  call += tr("match number ") + QString::number(ma.getMatchNumber()) + " on court number " + QString::number(co.getNumber());
+  call += "\n\n";
+  call += ma.getCategory().getName() + ",\n\n";
+  call += ma.getPlayerPair1().getCallName(tr("and")) + "\n\n";
+  call += tr("        versus\n\n");
+  call += ma.getPlayerPair2().getCallName(tr("and")) + ",\n\n";
+  call += tr("match number ") + QString::number(ma.getMatchNumber()) + " on court number " + QString::number(co.getNumber());
+  call += "\n\n\n";
+  call += tr("Call executed?");
+
+  return call;
+}

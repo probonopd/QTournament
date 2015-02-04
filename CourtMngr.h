@@ -41,7 +41,11 @@ namespace QTournament
     bool hasCourtById(int id);
     unique_ptr<Court> getCourtById(int id);
 
-    unique_ptr<Court> getNextUnusedCourt(bool includeManual=false);
+    unique_ptr<Court> getNextUnusedCourt(bool includeManual=false) const;
+    unique_ptr<Court> autoSelectNextUnusedCourt(ERR* err, bool includeManual=false) const;
+
+    bool acquireCourt(const Court& co);
+    bool releaseCourt(const Court& co);
 
   private:
     DbTab courtTab;

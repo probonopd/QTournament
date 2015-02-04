@@ -148,7 +148,7 @@ namespace QTournament
 #define MA_ACTUAL_PLAYER2B_REF  QString("ActualPlayer2bRefId")
 #define MA_RESULT  QString("Result")
 #define MA_COURT_REF  QString("CourtRefId")
-//#define MA_  QString("")
+#define MA_CALL_TIMES  QString("CallTimes")
 //#define MA_  QString("")
 //#define MA_  QString("")
 //#define MA_  QString("")

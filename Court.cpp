@@ -61,7 +61,17 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
+  bool Court::isManualAssignmentOnly() const
+  {
+    return (row[CO_IS_MANUAL_ASSIGNMENT].toInt() == 1);
+  }
+
 //----------------------------------------------------------------------------
+
+  void Court::setManualAssignment(bool isManual)
+  {
+    row.update(CO_IS_MANUAL_ASSIGNMENT, isManual ? 1 : 0);
+  }
 
 //----------------------------------------------------------------------------
 

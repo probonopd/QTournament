@@ -186,35 +186,107 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  unique_ptr<Court> CourtMngr::getNextUnusedCourt(bool includeManual)
+  unique_ptr<Court> CourtMngr::getNextUnusedCourt(bool includeManual) const
   {
-    QVariantList qvl;
-    qvl << GENERIC_STATE_FIELD_NAME << static_cast<int>(STAT_CO_AVAIL);
+    int reqState = static_cast<int>(STAT_CO_AVAIL);
+    QString where = GENERIC_STATE_FIELD_NAME + " = " + QString::number(reqState);
 
     // further restrict the search criteria if courts for manual
     // match assignment are excluded
     if (!includeManual)
     {
-      qvl << CO_IS_MANUAL_ASSIGNMENT << 0;
+      where += " AND " + CO_IS_MANUAL_ASSIGNMENT + " = 0";
     }
 
-    if (courtTab.getMatchCountForColumnValue(qvl) < 1)
+    // always get the court with the lowest number first
+    where += " ORDER BY " + CO_NUMBER + " ASC";
+
+
+    if (courtTab.getMatchCountForWhereClause(where) < 1)
     {
       return nullptr;   // no free courts available
     }
 
-    TabRow r = courtTab.getSingleRowByColumnValue(qvl);
+    TabRow r = courtTab.getSingleRowByWhereClause(where);
     return unique_ptr<Court>(new Court(db, r));
   }
 
 //----------------------------------------------------------------------------
 
+  bool CourtMngr::acquireCourt(const Court &co)
+  {
+    if (co.getState() != STAT_CO_AVAIL)
+    {
+      return false;
+    }
+
+    co.setState(STAT_CO_BUSY);
+    emit courtStatusChanged(co.getId(), co.getSeqNum(), STAT_CO_AVAIL, STAT_CO_BUSY);
+    return true;
+  }
 
 //----------------------------------------------------------------------------
 
+  bool CourtMngr::releaseCourt(const Court &co)
+  {
+    if (co.getState() != STAT_CO_BUSY)
+    {
+      return false;
+    }
+
+    // make sure there is no currently running match
+    // assigned to this court
+    QVariantList qvl;
+    qvl << GENERIC_STATE_FIELD_NAME << static_cast<int>(STAT_MA_RUNNING);
+    qvl << MA_COURT_REF << co.getId();
+    DbTab matchTab = (*db)[TAB_MATCH];
+    if (matchTab.getMatchCountForColumnValue(qvl) > 0)
+    {
+      return false;   // there is at least one running match assigned to this court
+    }
+
+    // all fine, we can fall back to AVAIL
+    co.setState(STAT_CO_AVAIL);
+    emit courtStatusChanged(co.getId(), co.getSeqNum(), STAT_CO_BUSY, STAT_CO_AVAIL);
+    return true;
+  }
 
 //----------------------------------------------------------------------------
 
+  unique_ptr<Court> CourtMngr::autoSelectNextUnusedCourt(ERR *err, bool includeManual) const
+  {
+    // find the next free court that is not subject to manual assignment
+    auto nextAutoCourt = getNextUnusedCourt(false);
+    if (nextAutoCourt != nullptr)
+    {
+      // okay, we have a regular court
+      *err = OK;
+      return nextAutoCourt;
+    }
+
+    // Damn, no court for automatic assignment available.
+    // So let's check for courts with manual assignment, too.
+    auto nextManualCourt = getNextUnusedCourt(true);
+    if (nextManualCourt == nullptr)
+    {
+      // okay, there is court available at all
+      *err = NO_COURT_AVAIL;
+      return nullptr;
+    }
+
+    // great, so there is a free court, but it's for
+    // manual assigment only. If we were told to include such
+    // manual courts, everything is fine
+    if (includeManual)
+    {
+      *err = OK;
+      return nextManualCourt;
+    }
+
+    // indicate to the user that there would be a manual court
+    *err = ONLY_MANUAL_COURT_AVAIL;
+    return nullptr;
+  }
 
 //----------------------------------------------------------------------------
 

@@ -26,6 +26,8 @@ namespace QTournament
     QString getName(int maxLen = 0) const;
     ERR rename(const QString& newName);
     int getNumber() const;
+    bool isManualAssignmentOnly() const;
+    void setManualAssignment(bool isManual);
 
   private:
     Court (TournamentDB* db, int rowId);
