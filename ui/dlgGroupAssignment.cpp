@@ -11,7 +11,7 @@
 #include <QMessageBox>
 
 dlgGroupAssignment::dlgGroupAssignment(Category& _cat)
-:cfg(KO_Config(QUARTER, false)), cat{_cat}    // dummy, just for formal initialization
+:cfg(KO_Config(QUARTER, false)), cat(_cat)    // dummy, just for formal initialization
 {
   ui.setupUi(this);
   cfg = KO_Config(cat.getParameter(GROUP_CONFIG).toString());
