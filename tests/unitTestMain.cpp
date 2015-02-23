@@ -30,6 +30,7 @@
 #include "tstMatchMngr.h"
 #include "tstMatch.h"
 #include "tstRoundRobinGenerator.h"
+#include "tstScore.h"
 
 // comment / uncomment the following to execute just one suite
 //#define TEST_ALL_SUITES
@@ -49,8 +50,9 @@
   CPPUNIT_TEST_SUITE_REGISTRATION(tstMatchMngr);
   CPPUNIT_TEST_SUITE_REGISTRATION(tstMatch);
   CPPUNIT_TEST_SUITE_REGISTRATION(tstRoundRobinGenerator);
+  CPPUNIT_TEST_SUITE_REGISTRATION(tstScore);
 #else
-  CPPUNIT_TEST_SUITE_REGISTRATION(tstMatchMngr);
+  CPPUNIT_TEST_SUITE_REGISTRATION(tstScore);
 #endif
 
 

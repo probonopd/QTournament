@@ -8,6 +8,8 @@
 #ifndef MATCH_H
 #define	MATCH_H
 
+#include <memory>
+
 #include "GenericDatabaseObject.h"
 #include "TournamentDB.h"
 #include "TabRow.h"
@@ -15,6 +17,7 @@
 #include "Category.h"
 #include "Court.h"
 //#include "MatchGroup.h"
+#include "Score.h"
 
 #include <QList>
 
@@ -38,6 +41,11 @@ namespace QTournament
     int getMatchNumber() const;
     bool hasAllPlayersIdle() const;
     QString getDisplayName() const;
+
+    unique_ptr<MatchScore> getScore(ERR *err=nullptr);
+    ERR setScore(const MatchScore& score);
+
+    unique_ptr<Court> getCourt(ERR *err=nullptr) const;
 
   private:
     Match (TournamentDB* db, int rowId);

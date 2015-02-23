@@ -138,11 +138,59 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
+  unique_ptr<MatchScore> Match::getScore(ERR *err)
+  {
+    QVariant scoreEntry = row[MA_RESULT];
+
+    if (scoreEntry.isNull())
+    {
+      if (err != nullptr) *err = NO_MATCH_RESULT_SET;
+      return nullptr;
+    }
+
+    // we assume that any score that has been written to the database
+    // is valid. So we simply parse it from the database string
+    // without further validating it against the category settings
+    QString scoreString = scoreEntry.toString();
+    auto result = MatchScore::fromStringWithoutValidation(scoreString);
+    if (result == nullptr)
+    {
+      // this should never happen
+      //
+      // but if it does, we clear the invalid database entry
+      // and return an error
+      row.update(MA_RESULT, QVariant());
+      if (err != nullptr) *err = INCONSISTENT_MATCH_RESULT_STRING;
+      return nullptr;
+    }
+
+    if (err != nullptr) *err = OK;
+    return result;
+  }
+
 //----------------------------------------------------------------------------
 
+  ERR Match::setScore(const MatchScore &score)
+  {
+
+  }
 
 //----------------------------------------------------------------------------
 
+  unique_ptr<Court> Match::getCourt(ERR *err) const
+  {
+    QVariant courtEntry = row[MA_COURT_REF];
+    if (courtEntry.isNull())
+    {
+      if (err != nullptr) *err = NO_COURT_ASSIGNED;
+      return nullptr;
+    }
+
+    int courtId = courtEntry.toInt();
+    auto result = Tournament::getCourtMngr()->getCourtById(courtId);
+    if (err != nullptr) *err = OK;
+    return result;
+  }
 
 //----------------------------------------------------------------------------
 

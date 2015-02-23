@@ -26,9 +26,12 @@ link_directories("../DatabaseOverlayLib")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 set(QTournament_Sources
+    ui/GuiHelpers.cpp
     tournament.qrc
     Category.cpp 
-    CatMngr.cpp 
+    CatMngr.cpp
+    Court.cpp
+    CourtMngr.cpp 
     GenericDatabaseObject.cpp 
     GenericObjectManager.cpp
     GroupDef.cpp 
@@ -41,6 +44,7 @@ set(QTournament_Sources
     PlayerPair.cpp 
     RoundRobinCategory.cpp 
     RoundRobinGenerator.cpp 
+    Score.cpp
     Team.cpp 
     TeamMngr.cpp 
     ThreadSafeQueue.cpp
@@ -49,25 +53,30 @@ set(QTournament_Sources
     models/CatTableModel.cpp 
     models/MatchGroupTabModel.cpp
     models/PlayerTableModel.cpp
+    models/CourtTabModel.cpp
+    models/MatchTabModel.cpp
     models/TeamListModel.cpp)
 
 set(QTournament_Sources_UI
     ui/CatTableView.cpp 
     ui/CatTabWidget.cpp 
+    ui/CourtTableView.cpp
     ui/dlgEditPlayer.cpp 
     ui/dlgGroupAssignment.cpp 
     ui/GroupAssignmentListWidget.cpp 
     ui/GroupConfigWidget.cpp 
     ui/MainFrame.cpp 
+    ui/MatchGroupTableView.cpp
+    ui/MatchTableView.cpp
     ui/PlayerTableView.cpp 
     ui/PlayerTabWidget.cpp 
+    ui/ScheduleTabWidget.cpp
     ui/TeamListView.cpp 
     ui/TeamTabWidget.cpp 
-    ui/MatchGroupTableView.cpp
-    ui/ScheduleTabWidget.cpp
-    ui/delegates/PairItemDelegate.cpp 
-    ui/delegates/DelegateItemLED.cpp 
     ui/delegates/CatItemDelegate.cpp 
+    ui/delegates/DelegateItemLED.cpp 
+    ui/delegates/MatchItemDelegate.cpp
+    ui/delegates/PairItemDelegate.cpp 
     ui/delegates/PlayerItemDelegate.cpp)
 
 set(QTournament_Tests
@@ -81,6 +90,7 @@ set(QTournament_Tests
     tests/tstRoundRobinGenerator.cpp
     tests/tstCategory.cpp
     tests/tstKOConfig.cpp
+    tests/tstScore.cpp
     tests/tstTeam.cpp
     tests/tstMatch.cpp
     tests/tstCatMngr.cpp

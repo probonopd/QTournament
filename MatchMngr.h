@@ -17,6 +17,7 @@
 #include "MatchGroup.h"
 #include "Match.h"
 #include "Court.h"
+#include "Score.h"
 
 #include <QList>
 #include <QString>
@@ -61,6 +62,8 @@ namespace QTournament
     ERR assignMatchToCourt(const Match& ma, const Court& court) const;
     unique_ptr<Court> autoAssignMatchToNextAvailCourt(const Match& ma, ERR* err, bool includeManualCourts=false) const;
 
+    ERR setMatchScoreAndFinalizeMatch(const Match& ma, const MatchScore& score);
+
   private:
     DbTab matchTab;
     DbTab groupTab;
@@ -75,6 +78,7 @@ namespace QTournament
     void endCreateMatch(int newMatchSeqNum);
     void matchStatusChanged(int matchId, int matchSeqNum, OBJ_STATE fromState, OBJ_STATE toState) const;
     void matchGroupStatusChanged(int matchGroupId, int matchGroupSeqNum, OBJ_STATE fromState, OBJ_STATE toState) const;
+    void matchResultUpdated(int matchId, int matchSeqNum) const;
 } ;
 
 }

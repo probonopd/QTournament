@@ -1080,6 +1080,50 @@ namespace QTournament {
 
 //----------------------------------------------------------------------------
 
+  ERR MatchMngr::setMatchScoreAndFinalizeMatch(const Match &ma, const MatchScore &score)
+  {
+    // check the match's state
+    if (ma.getState() != STAT_MA_RUNNING)
+    {
+      return MATCH_NOT_RUNNING;
+    }
+
+    // check if the score is valid for the category settings
+    Category cat = ma.getCategory();
+    bool isDrawAllowed = cat.getParameter_bool(ALLOW_DRAW);
+    int numWinGames = 2; // TODO: this needs to become a category parameter!
+    if (!(score.isValidScore(numWinGames, isDrawAllowed)))
+    {
+      return INVALID_MATCH_RESULT_FOR_CATEGORY_SETTINGS;
+    }
+
+    // everything is fine, so write the result to the database
+    // and update the match status
+    int maId = ma.getId();
+    int maSeqNum = ma.getSeqNum();
+    QVariantList qvl;
+    qvl << MA_RESULT << score.toString();
+    qvl << GENERIC_STATE_FIELD_NAME << static_cast<int>(STAT_MA_FINISHED);
+    TabRow matchRow = matchTab[maId];
+    matchRow.update(qvl);
+
+    emit matchResultUpdated(maId, maSeqNum);
+    emit matchStatusChanged(maId, maSeqNum, STAT_MA_RUNNING, STAT_MA_FINISHED);
+
+    // release the court
+    ERR e;
+    auto pCourt = ma.getCourt(&e);
+    assert(e == OK);
+    bool isOkay = Tournament::getCourtMngr()->releaseCourt(*pCourt);
+    assert(isOkay);
+
+    // update the category's state to "FINALIZED", if necessary
+    Tournament::getCatMngr()->updateCatStatusFromMatchStatus(ma.getCategory());
+
+    // TODO: add finish time to database
+
+    return OK;
+  }
 
 //----------------------------------------------------------------------------
 
