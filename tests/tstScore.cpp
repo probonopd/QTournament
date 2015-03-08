@@ -257,6 +257,100 @@ void tstScore::testMatchScore_GetWinner_GetLoser()
 
 //----------------------------------------------------------------------------
 
+void tstScore::testRandomMatchGeneration()
+{
+  constexpr int MATCH_COUNT = 1000;
+  constexpr double PROBABILITY_MARGIN = 0.05;
+
+  printStartMsg("tstScore::testRandomMatchGeneration");
+
+  // a lambda as a match generator
+  auto matchGenerator = [](int count, int numWinGames, bool drawAllowed) {
+    MatchScoreList result;
+    for (int i=0; i < count; ++i)
+    {
+      result.append(*(MatchScore::genRandomScore(numWinGames, drawAllowed)));
+    }
+    return result;
+  };
+
+  // a lambda to compare an actual count with an expected count
+  // including a margin
+  auto isCountInRange = [](int expected, int actual, double margin) {
+    int absMargin = static_cast<int>(expected * margin);
+    int minCount = expected - absMargin;
+    int maxCount = expected + absMargin;
+    return ((actual <= maxCount) && (actual >= minCount));
+  };
+
+  // Generate matches with 2 win games and no draw
+  MatchScoreList msl = matchGenerator(MATCH_COUNT, 2, false);
+  CPPUNIT_ASSERT(msl.count() == MATCH_COUNT);
+
+  // gather some statistics
+  int p1Wins = 0;
+  int p2Wins = 0;
+  int gamesCount = 0;
+  int gamesBeyond21 = 0;
+  for (MatchScore ms : msl)
+  {
+    if (ms.getWinner() == 1) ++p1Wins;
+    if (ms.getWinner() == 2) ++p2Wins;
+
+    int cnt = ms.getNumGames();
+    for (int i=0; i < cnt; ++i)
+    {
+      ++gamesCount;
+      auto gs = ms.getGame(i);
+      if (gs->getWinnerScore() > 21) ++gamesBeyond21;
+    }
+  }
+
+  // make sure that wins are equally distributed among players
+  CPPUNIT_ASSERT(isCountInRange(MATCH_COUNT / 2, p1Wins, PROBABILITY_MARGIN));
+  CPPUNIT_ASSERT(isCountInRange(MATCH_COUNT / 2, p2Wins, PROBABILITY_MARGIN));
+  CPPUNIT_ASSERT(isCountInRange(gamesCount * 0.3, gamesBeyond21, PROBABILITY_MARGIN));
+
+
+  // Generate matches with 3 win games and draw
+  msl.clear();
+  msl = matchGenerator(MATCH_COUNT, 3, true);
+  CPPUNIT_ASSERT(msl.count() == MATCH_COUNT);
+
+  // gather some statistics
+  p1Wins = 0;
+  p2Wins = 0;
+  int draws = 0;
+  gamesCount = 0;
+  gamesBeyond21 = 0;
+  for (MatchScore ms : msl)
+  {
+    if (ms.getWinner() == 0) ++draws;
+    if (ms.getWinner() == 1) ++p1Wins;
+    if (ms.getWinner() == 2) ++p2Wins;
+
+    int cnt = ms.getNumGames();
+    for (int i=0; i < cnt; ++i)
+    {
+      ++gamesCount;
+      auto gs = ms.getGame(i);
+      if (gs->getWinnerScore() > 21) ++gamesBeyond21;
+    }
+
+    if (ms.getWinner() == 0)
+    {
+      CPPUNIT_ASSERT(ms.getNumGames() == 4);   // 4 = (numWinGames - 1) * 2
+    }
+  }
+
+  // make sure that wins are equally distributed among players
+  CPPUNIT_ASSERT(isCountInRange(MATCH_COUNT * 0.3, draws, PROBABILITY_MARGIN));
+  CPPUNIT_ASSERT(isCountInRange(MATCH_COUNT * 0.35, p1Wins, PROBABILITY_MARGIN));
+  CPPUNIT_ASSERT(isCountInRange(MATCH_COUNT * 0.35, p2Wins, PROBABILITY_MARGIN));
+  CPPUNIT_ASSERT(isCountInRange(gamesCount * 0.3, gamesBeyond21, PROBABILITY_MARGIN));
+
+  printEndMsg();
+}
 
 //----------------------------------------------------------------------------
 

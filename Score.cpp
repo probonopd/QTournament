@@ -1,8 +1,11 @@
-#include "Score.h"
+#include <memory>
 
 #include <exception>
-
 #include <QStringList>
+#include <QtGlobal>
+
+#include "Score.h"
+
 
 namespace QTournament {
 
@@ -114,6 +117,75 @@ int GameScore::getLoser() const
 {
   return (player1Score < player2Score) ? 1 : 2;
 }
+
+//----------------------------------------------------------------------------
+
+int GameScore::getWinnerScore() const
+{
+  return (player1Score > player2Score) ? player1Score : player2Score;
+}
+
+//----------------------------------------------------------------------------
+
+int GameScore::getLoserScore() const
+{
+  return (player1Score < player2Score) ? player1Score : player2Score;
+}
+
+//----------------------------------------------------------------------------
+
+int GameScore::getWinnerScoreForLoserScore(int loserScore)
+{
+  if (loserScore < 0) return -1; // invalid value
+  if (loserScore < 20) return 21;
+  if (loserScore < 29) return loserScore + 2;
+  if (loserScore == 29) return 30;
+  return -1;  // invalid
+}
+
+//----------------------------------------------------------------------------
+
+unique_ptr<GameScore> GameScore::genRandomGame(int winner)
+{
+  if ((winner < 0) || (winner > 2)) return nullptr;
+
+  // a nice little lambda expression for returning a random number
+  // in the range 0 <= r < 1.0
+  auto myRand = []() -> double { return qrand() / (RAND_MAX * 1.0); };
+  // or in the range 0 <= r <= maxInt
+  auto myRandInt = [myRand](int maxInt) -> int { return static_cast<int>(round(myRand() * maxInt)); };
+
+  // some arbitrary values:
+  // probability for a games to last beyond 21 points
+  constexpr double beyond21PointsThreshold = 0.3;
+
+  // define the winner, if necessary
+  if (winner == 0)
+  {
+    winner = (myRand() > 0.5) ? 2 : 1;
+  }
+
+  int loserScore = myRandInt(19);
+  if (myRand() < beyond21PointsThreshold)
+  {
+    loserScore = 20 + myRandInt(9);
+  }
+
+  if (winner == 1)
+  {
+    return fromScore(getWinnerScoreForLoserScore(loserScore), loserScore);
+  }
+  return fromScore(loserScore, getWinnerScoreForLoserScore(loserScore));
+}
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
 
 //----------------------------------------------------------------------------
 
@@ -350,6 +422,118 @@ bool MatchScore::isValidScore(int numWinGames, bool drawAllowed) const
 {
   return isValidScore(games, numWinGames, drawAllowed);
 }
+
+//----------------------------------------------------------------------------
+
+unique_ptr<MatchScore> MatchScore::genRandomScore(int numWinGames, bool drawAllowed)
+{
+  // a nice little lambda expression for returning a random number
+  // in the range 0 <= r < 1.0
+  auto myRand = []() -> double { return qrand() / (RAND_MAX * 1.0); };
+
+  // some arbitrary values:
+  // probability for a draw
+  constexpr double drawThreshold = 0.3;
+  // probability the winner of the first game to win the following games as well
+  constexpr double firstWinnerIsStrongerThreshold = 0.7;
+
+  // container for the match result
+  GameScoreList gsl;
+
+  // we have an actual draw
+  if (drawAllowed && (myRand() < drawThreshold))
+  {
+    int wonGamesForEachPlayer = numWinGames -1 ;
+
+    // there is no point in shuffling the sequence
+    // of won / lost games in a match, since the sequence
+    // hasn't any influence on the final ranking.
+    // Thus, we create alternating wins for the two players
+    for (int i=0; i< wonGamesForEachPlayer; ++i)
+    {
+      gsl.append(*(GameScore::genRandomGame(1)));
+      gsl.append(*(GameScore::genRandomGame(2)));
+    }
+
+    return fromGameScoreListWithoutValidation(gsl);
+  }
+
+  // if we make it to this point, we have a real winner / loser
+  int firstWinner = -1;
+  int p1WinGameCount = 0;
+  int p2WinGameCount = 0;
+  while (true)
+  {
+    int thisGameWinner = -1;
+
+    // decide who wins the first game
+    if (firstWinner < 0)
+    {
+      firstWinner = (myRand() < 0.5) ? 1 : 2;
+      thisGameWinner = firstWinner;
+    }
+
+    // decide who wins subsequent games
+    if (firstWinner > 0)
+    {
+      if (myRand() < firstWinnerIsStrongerThreshold)
+      {
+        thisGameWinner = firstWinner;
+      } else {
+        thisGameWinner = (firstWinner == 1) ? 2 : 1;
+      }
+    }
+
+    gsl.append(*(GameScore::genRandomGame(thisGameWinner)));
+
+    if (thisGameWinner == 1) ++p1WinGameCount;
+    else ++p2WinGameCount;
+
+    if ((p1WinGameCount == numWinGames) || (p2WinGameCount == numWinGames)) break;
+  }
+
+  return fromGameScoreListWithoutValidation(gsl);
+}
+
+//----------------------------------------------------------------------------
+
+unique_ptr<GameScore> MatchScore::getGame(int n) const
+{
+  if ((n < 0) || (n > (games.count() - 1)))
+  {
+    return nullptr;
+  }
+
+  return unique_ptr<GameScore>(new GameScore(games.at(n)));
+}
+
+//----------------------------------------------------------------------------
+
+int MatchScore::getNumGames() const
+{
+  return games.count();
+}
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
 
 //----------------------------------------------------------------------------
 

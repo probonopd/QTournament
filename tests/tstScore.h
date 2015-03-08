@@ -23,7 +23,7 @@ class tstScore : public BasicTestClass
     CPPUNIT_TEST(testGameScore_GetWinner);
     CPPUNIT_TEST(testMatchScore_FactoryFuncs_ToString);
     CPPUNIT_TEST(testMatchScore_GetWinner_GetLoser);
-//  CPPUNIT_TEST();
+    CPPUNIT_TEST(testRandomMatchGeneration);
 //  CPPUNIT_TEST();
 //  CPPUNIT_TEST();
 //  CPPUNIT_TEST();
@@ -40,6 +40,7 @@ public:
   void testGameScore_GetWinner();
   void testMatchScore_FactoryFuncs_ToString();
   void testMatchScore_GetWinner_GetLoser();
+  void testRandomMatchGeneration();
 };
 
 #endif	/* TSTSCORE_H */

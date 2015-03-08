@@ -17,12 +17,16 @@ public:
   static bool isValidScore(int sc1, int sc2);
   static unique_ptr<GameScore> fromScore(int sc1, int sc2);
   static unique_ptr<GameScore> fromString(const QString& s);
+  static int getWinnerScoreForLoserScore(int loserScore);
+  static unique_ptr<GameScore> genRandomGame(int winner = 0);
 
   QString toString() const;
 
   tuple<int, int> getScore() const;
   int getWinner() const;
   int getLoser() const;
+  int getWinnerScore() const;
+  int getLoserScore() const;
 
 private:
   GameScore(int sc1, int sc2);
@@ -60,6 +64,8 @@ public:
 
   tuple<int, int> getMatchSum() const;
 
+  static unique_ptr<MatchScore> genRandomScore(int numWinGames=2, bool drawAllowed=false);
+
 private:
   MatchScore() {};
   bool addGame(const GameScore& sc);
@@ -69,5 +75,8 @@ private:
   GameScoreList games;
 
 };
+
+typedef QList<MatchScore> MatchScoreList;
+
 }
 #endif // SCORE_H
