@@ -11,6 +11,7 @@ const QMap<OBJ_STATE, QColor> DelegateItemLED::state2color = {
   {STAT_PL_IDLE, Qt::green},
   {STAT_PL_PLAYING, Qt::blue},
   {STAT_MA_READY, Qt::green},
+  {STAT_MA_BUSY, Qt::red},
   {STAT_MA_WAITING, Qt::yellow},
 //  {STAT_, Qt::},
 //  {STAT_, Qt::},

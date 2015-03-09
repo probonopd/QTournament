@@ -105,6 +105,9 @@ void Tournament::initManagers()
     pm = new PlayerMngr(db);
     mm = new MatchMngr(db);
     com = new CourtMngr(db);
+
+    // wire some signals between managers
+    connect(pm, &PlayerMngr::playerStatusChanged, mm, &MatchMngr::onPlayerStatusChanged, Qt::DirectConnection);
 }
 
 //----------------------------------------------------------------------------

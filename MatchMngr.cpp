@@ -1256,6 +1256,7 @@ namespace QTournament {
           (*it).update(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_READY));
           emit matchStatusChanged(ma.getId(), ma.getSeqNum(), STAT_MA_BUSY, STAT_MA_READY);
         }
+        ++it;
       }
     }
   }
