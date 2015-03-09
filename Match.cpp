@@ -106,19 +106,6 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  bool Match::hasAllPlayersIdle() const
-  {
-    if (!(hasBothPlayerPairs())) return false;
-
-    auto pp = getPlayerPair1();
-    if (!(pp.areAllPlayersIdle())) return false;
-    pp = getPlayerPair2();
-    if (!(pp.areAllPlayersIdle())) return false;
-    return true;
-  }
-
-//----------------------------------------------------------------------------
-
   QString Match::getDisplayName() const
   {
     QString name1 = "??";
@@ -194,6 +181,10 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
+  QList<Player> Match::determineActualPlayers() const
+  {
+    return Tournament::getPlayerMngr()->determineActualPlayersForMatch(*this);
+  }
 
 //----------------------------------------------------------------------------
 

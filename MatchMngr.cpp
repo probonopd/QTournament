@@ -742,8 +742,8 @@ namespace QTournament {
     // TODO: handle FUZZY (not yet implemented in the database)
 
     // from WAITING to READY or BUSY
-    bool hasPredecessor = hasMandatoryPredecessor(ma);
-    bool playersAvail = ma.hasAllPlayersIdle();
+    bool hasPredecessor = hasUnfinishedMandatoryPredecessor(ma);
+    bool playersAvail = ((Tournament::getPlayerMngr()->canAcquirePlayerPairsForMatch(ma)) == OK);
     if ((curState == STAT_MA_WAITING) && (!hasPredecessor))
     {
       curState = playersAvail ? STAT_MA_READY : STAT_MA_BUSY;
@@ -783,9 +783,8 @@ namespace QTournament {
    * @param ma the match to check
    * @return true if earlier matches have to be played first, false otherwise
    */
-  bool MatchMngr::hasMandatoryPredecessor(const Match &ma) const
+  bool MatchMngr::hasUnfinishedMandatoryPredecessor(const Match &ma) const
   {
-    auto mm = Tournament::getMatchMngr();
     auto mg = ma.getMatchGroup();
 
     int round = mg.getRound();
@@ -798,16 +797,16 @@ namespace QTournament {
     // okay, our match is at least in round 2. Check for unplayed matches
     // in round-1
     auto cat = ma.getCategory();
-    int prevRoundsPlayersGroup = cat.getGroupNumForPredecessorRound(mg.getGroupNumber());
+    int requiredPrevRoundsPlayersGroup = cat.getGroupNumForPredecessorRound(mg.getGroupNumber());
     for (auto prevMg : getMatchGroupsForCat(cat, round-1))
     {
-      int playersGroup = prevMg.getGroupNumber();
-      if ((prevRoundsPlayersGroup == ANY_PLAYERS_GROUP_NUMBER) && (playersGroup < 0))
+      int actualPrevRoundsPlayersGroup = prevMg.getGroupNumber();
+      if ((requiredPrevRoundsPlayersGroup == ANY_PLAYERS_GROUP_NUMBER) && (actualPrevRoundsPlayersGroup < 0))
       {
         continue;  // we're looking for any round robins, but this a KO group or an iterative group
       }
 
-      if ((prevRoundsPlayersGroup > 0) && (playersGroup != prevRoundsPlayersGroup))
+      if ((requiredPrevRoundsPlayersGroup > 0) && (actualPrevRoundsPlayersGroup != requiredPrevRoundsPlayersGroup))
       {
         // we're looking for a specific players group in round robins,
         // but this a KO group or an iterative group or a wrong
@@ -815,14 +814,14 @@ namespace QTournament {
         continue;
       }
 
-      if (((prevRoundsPlayersGroup == GROUP_NUM__SEMIFINAL) ||
-           (prevRoundsPlayersGroup == GROUP_NUM__QUARTERFINAL) ||
-           (prevRoundsPlayersGroup == GROUP_NUM__L16)) && (playersGroup != prevRoundsPlayersGroup))
+      if (((requiredPrevRoundsPlayersGroup == GROUP_NUM__SEMIFINAL) ||
+           (requiredPrevRoundsPlayersGroup == GROUP_NUM__QUARTERFINAL) ||
+           (requiredPrevRoundsPlayersGroup == GROUP_NUM__L16)) && (actualPrevRoundsPlayersGroup != requiredPrevRoundsPlayersGroup))
       {
         continue;  // wrong KO round
       }
 
-      // if we made it to this point, the match group has to be finished befor
+      // if we made it to this point, the match group is a mandatory predecessor and has to be finished before
       // the match can be called
       if (prevMg.getState() != STAT_MG_FINISHED) return true;
     }
@@ -990,6 +989,10 @@ namespace QTournament {
       return MATCH_NOT_RUNNABLE;
     }
 
+    // check the player's availability
+    ERR e = Tournament::getPlayerMngr()->canAcquirePlayerPairsForMatch(ma);
+    if (e != OK) return e;  // PLAYER_NOT_IDLE
+
     // check the court's availability
     OBJ_STATE stat = court.getState();
     if (stat == STAT_CO_AVAIL)
@@ -1017,6 +1020,19 @@ namespace QTournament {
     // details, too. So we first assign the match and formally acquire the
     // court afterwards. This way, the match is already linked to the court
     // when all views are updated.
+
+
+    // EXTREMELY IMPORTANT:
+    // Always maintain this sequence when updating object states:
+    //   1) the match that's being called
+    //   2) player status
+    //   -) step (2) automatically triggers an update of applicable other matches to BUSY
+    //   3) court
+    //   4) other matches from WAITING to READY or BUSY, based on match sequence logic
+    //   5) category states
+    //
+    // Since match groups don't distinguish between SCHEDULED and FINISHED, a match group
+    // update is not necessary
 
     QVariantList qvl;
 
@@ -1048,6 +1064,10 @@ namespace QTournament {
 
     // tell the world that the match status has changed
     emit matchStatusChanged(ma.getId(), ma.getSeqNum(), STAT_MA_READY, STAT_MA_RUNNING);
+
+    // update the player's status
+    e = Tournament::getPlayerMngr()->acquirePlayerPairsForMatch(ma);
+    assert(e == OK);  // must be, because the condition has been check by canAssignMatchToCourt()
 
     // now we finally acquire the court in the aftermath
     bool isOkay = Tournament::getCourtMngr()->acquireCourt(court);
@@ -1097,6 +1117,18 @@ namespace QTournament {
       return INVALID_MATCH_RESULT_FOR_CATEGORY_SETTINGS;
     }
 
+
+    // EXTREMELY IMPORTANT:
+    // Always maintain this sequence when updating object states:
+    //   1) the match that's being finished
+    //   2) player status
+    //   -) step (2) automatically triggers an update of applicable other matches to BUSY
+    //   3) court
+    //   4) match group status to FINISH, based on match completion
+    //   5) other matches from WAITING to READY or BUSY, based on match sequence logic
+    //   6) category states
+
+
     // everything is fine, so write the result to the database
     // and update the match status
     int maId = ma.getId();
@@ -1110,12 +1142,28 @@ namespace QTournament {
     emit matchResultUpdated(maId, maSeqNum);
     emit matchStatusChanged(maId, maSeqNum, STAT_MA_RUNNING, STAT_MA_FINISHED);
 
+    // release the players
+    Tournament::getPlayerMngr()->releasePlayerPairsAfterMatch(ma);
+
     // release the court
     ERR e;
     auto pCourt = ma.getCourt(&e);
     assert(e == OK);
     bool isOkay = Tournament::getCourtMngr()->releaseCourt(*pCourt);
     assert(isOkay);
+
+    // update the match group
+    updateAllMatchGroupStates(ma.getCategory());
+
+    // update other matches in this category from WAITING to READY or BUSY, if applicable
+    for (MatchGroup mg : getMatchGroupsForCat(ma.getCategory()))
+    {
+      for (Match otherMatch : mg.getMatches())
+      {
+        if (otherMatch.getState() != STAT_MA_WAITING) continue;
+        updateMatchStatus(otherMatch);
+      }
+    }
 
     // update the category's state to "FINALIZED", if necessary
     Tournament::getCatMngr()->updateCatStatusFromMatchStatus(ma.getCategory());
@@ -1146,9 +1194,71 @@ namespace QTournament {
 
 //----------------------------------------------------------------------------
 
+  unique_ptr<Match> MatchMngr::getMatch(int id) const
+  {
+    try
+    {
+      Match* ma = new Match(db, id);
+      return unique_ptr<Match>(ma);
+    }
+    catch (std::exception e)
+    {
+
+    }
+    return nullptr;
+  }
 
 //----------------------------------------------------------------------------
 
+  void MatchMngr::onPlayerStatusChanged(int playerId, int playerSeqNum, OBJ_STATE fromState, OBJ_STATE toState)
+  {
+    // IMPORTANT:
+    // This is the only place, where a transition from/to BUSY is managed
+    //
+    // IMPORTANT:
+    // We only transition from READY to BUSY, never from any other state.
+    // Otherwise we wouldn't to which state we should return to, after the
+    // BUSY-condition is no longer applicable. Read: the only transition
+    // back from BUSY is to READY!!
+
+
+    // set matches that are READY to BUSY, if the necessary players become unavailable
+    if (toState == STAT_PL_PLAYING)
+    {
+      DbTab::CachingRowIterator it = matchTab.getRowsByColumnValue(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_READY));
+      while (!(it.isEnd()))
+      {
+        Match ma = Match(db, *it);
+        PlayerList pl = ma.determineActualPlayers();
+        for (Player p : pl)
+        {
+          if (p.getId() == playerId)
+          {
+            (*it).update(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_BUSY));
+            emit matchStatusChanged(ma.getId(), ma.getSeqNum(), STAT_MA_READY, STAT_MA_BUSY);
+            break;  // no need to check other players for this match
+          }
+        }
+        ++it;
+      }
+    }
+
+    // switch matches from BUSY to READY, if all players are available again
+    if (toState == STAT_PL_IDLE)
+    {
+      PlayerMngr* pm = Tournament::getPlayerMngr();
+      DbTab::CachingRowIterator it = matchTab.getRowsByColumnValue(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_BUSY));
+      while (!(it.isEnd()))
+      {
+        Match ma = Match(db, *it);
+        if (pm->canAcquirePlayerPairsForMatch(ma) == OK)
+        {
+          (*it).update(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_READY));
+          emit matchStatusChanged(ma.getId(), ma.getSeqNum(), STAT_MA_BUSY, STAT_MA_READY);
+        }
+      }
+    }
+  }
 
 //----------------------------------------------------------------------------
 

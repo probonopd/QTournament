@@ -39,13 +39,13 @@ namespace QTournament
     PlayerPair getPlayerPair1() const;
     PlayerPair getPlayerPair2() const;
     int getMatchNumber() const;
-    bool hasAllPlayersIdle() const;
     QString getDisplayName() const;
 
     unique_ptr<MatchScore> getScore(ERR *err=nullptr);
     ERR setScore(const MatchScore& score);
 
     unique_ptr<Court> getCourt(ERR *err=nullptr) const;
+    QList<Player> determineActualPlayers() const;
 
   private:
     Match (TournamentDB* db, int rowId);

@@ -16,6 +16,7 @@
 #include "TournamentErrorCodes.h"
 #include "DbTab.h"
 #include "GenericObjectManager.h"
+#include "Match.h"
 
 #include <QList>
 #include <QObject>
@@ -42,6 +43,12 @@ namespace QTournament
     Player getPlayer(int id);
     PlayerPair getPlayerPair(int id);
 
+    ERR canAcquirePlayerPairsForMatch(const Match& ma);
+    ERR acquirePlayerPairsForMatch(const Match& ma);
+    ERR releasePlayerPairsAfterMatch(const Match& ma);
+
+    PlayerList determineActualPlayersForMatch(const Match& ma) const;
+
   private:
     DbTab playerTab;
 
@@ -49,6 +56,7 @@ namespace QTournament
     void beginCreatePlayer ();
     void endCreatePlayer (int newPlayerSeqNum);
     void playerRenamed (const Player& p);
+    void playerStatusChanged(int playerId, int playerSeqNum, OBJ_STATE fromState, OBJ_STATE toState);
   };
 }
 

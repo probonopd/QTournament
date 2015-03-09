@@ -21,6 +21,8 @@ class PlayerTableModel : public QAbstractTableModel
   Q_OBJECT
   
 public:
+  static constexpr int COLUMN_COUNT = 4;  // number of columns in the model
+
   PlayerTableModel (TournamentDB* _db);
   int rowCount(const QModelIndex & parent = QModelIndex()) const;
   int columnCount(const QModelIndex & parent = QModelIndex()) const;
@@ -38,6 +40,7 @@ public slots:
   void onEndCreatePlayer(int newPlayerSeqNum);
   void onPlayerRenamed(const Player& p);
   void onTeamRenamed(int teamSeqNum);
+  void onPlayerStatusChanged(int playerId, int playerSeqNum);
 
 };
 

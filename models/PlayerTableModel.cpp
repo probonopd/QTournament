@@ -21,7 +21,8 @@ PlayerTableModel::PlayerTableModel(TournamentDB* _db)
   connect(Tournament::getTeamMngr(), &TeamMngr::teamRenamed, this, &PlayerTableModel::onTeamRenamed);
   connect(Tournament::getPlayerMngr(), &PlayerMngr::beginCreatePlayer, this, &PlayerTableModel::onBeginCreatePlayer, Qt::DirectConnection);
   connect(Tournament::getPlayerMngr(), &PlayerMngr::endCreatePlayer, this, &PlayerTableModel::onEndCreatePlayer, Qt::DirectConnection);
-  connect(Tournament::getPlayerMngr(), &PlayerMngr::playerRenamed, this, &PlayerTableModel::onPlayerRenamed);
+  connect(Tournament::getPlayerMngr(), &PlayerMngr::playerRenamed, this, &PlayerTableModel::onPlayerRenamed, Qt::DirectConnection);
+  connect(Tournament::getPlayerMngr(), &PlayerMngr::playerStatusChanged, this, &PlayerTableModel::onPlayerStatusChanged, Qt::DirectConnection);
 }
 
 //----------------------------------------------------------------------------
@@ -165,6 +166,12 @@ void PlayerTableModel::onPlayerRenamed(const Player& p)
 
 //----------------------------------------------------------------------------
 
+void PlayerTableModel::onPlayerStatusChanged(int playerId, int playerSeqNum)
+{
+  QModelIndex startIdx = createIndex(playerSeqNum, 0);
+  QModelIndex endIdx = createIndex(playerSeqNum, COLUMN_COUNT-1);
+  emit dataChanged(startIdx, endIdx);
+}
 
 //----------------------------------------------------------------------------
 

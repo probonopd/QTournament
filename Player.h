@@ -40,6 +40,8 @@ namespace QTournament
     Player (TournamentDB* db, dbOverlay::TabRow row);
   };
 
+  typedef QList<Player> PlayerList;
+
 }
 #endif	/* TEAM_H */
 

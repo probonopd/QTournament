@@ -41,6 +41,7 @@ namespace QTournament
     bool hasMatchGroup(const Category& cat, const int round, const int grpNum, ERR* err=nullptr);
     unique_ptr<MatchGroup> getMatchGroupBySeqNum(int mgSeqNum);
     unique_ptr<Match> getMatchBySeqNum(int maSeqNum) const;
+    unique_ptr<Match> getMatch(int id) const;
 
     unique_ptr<Match> createMatch(const MatchGroup& grp, ERR* err);
     ERR canAssignPlayerPairToMatch(const Match& ma, const PlayerPair& pp) const;
@@ -71,7 +72,7 @@ namespace QTournament
     DbTab groupTab;
     void updateAllMatchGroupStates(const Category& cat) const;
     void updateMatchStatus(const Match& ma) const;
-    bool hasMandatoryPredecessor(const Match& ma) const;
+    bool hasUnfinishedMandatoryPredecessor(const Match& ma) const;
     
   signals:
     void beginCreateMatchGroup ();
@@ -81,6 +82,9 @@ namespace QTournament
     void matchStatusChanged(int matchId, int matchSeqNum, OBJ_STATE fromState, OBJ_STATE toState) const;
     void matchGroupStatusChanged(int matchGroupId, int matchGroupSeqNum, OBJ_STATE fromState, OBJ_STATE toState) const;
     void matchResultUpdated(int matchId, int matchSeqNum) const;
+
+  public slots:
+    void onPlayerStatusChanged(int playerId, int playerSeqNum, OBJ_STATE fromState, OBJ_STATE toState);
 } ;
 
 }

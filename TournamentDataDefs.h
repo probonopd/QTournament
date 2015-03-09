@@ -252,6 +252,7 @@ namespace QTournament
 
   enum OBJ_STATE {
     STAT_PL_IDLE,
+    STAT_PL_PLAYING,
     STAT_CAT_CONFIG,
     STAT_CAT_FROZEN,  // intermediate state in which the category can be configured for the first round
     STAT_CAT_IDLE,
@@ -267,7 +268,7 @@ namespace QTournament
     STAT_MA_FUZZY,        // Player names are defined by symbolic values (e.g., winner of match XYZ); match cannot be called
     STAT_MA_WAITING,      // Player names and match number are assigned but match cannot be called because earlier rounds have to be played first
     STAT_MA_READY,        // Opponents and match number are fully defined and all players are idle; match can be called
-    STAT_MA_BUSY,         // Opponents and match number are fully defined but some players are buys; match cannot be called
+    STAT_MA_BUSY,         // Opponents and match number are fully defined but some players are busy; match cannot be called
     STAT_MA_RUNNING,      // The match is currently being played
     STAT_MA_FINISHED,     // The match is finished and the result has been entered
     STAT_MA_POSTPONED,    // The match is postponed and cannot be called

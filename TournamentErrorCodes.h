@@ -62,6 +62,8 @@ namespace QTournament
         INCONSISTENT_MATCH_RESULT_STRING,
         MATCH_NOT_RUNNING,
         NO_COURT_ASSIGNED,
+        PLAYER_NOT_IDLE,
+        PLAYER_NOT_PLAYING,
     };
 }
 

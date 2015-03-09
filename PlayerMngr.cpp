@@ -11,6 +11,7 @@
 #include "TournamentDataDefs.h"
 #include <stdexcept>
 #include <QtCore/qdebug.h>
+#include <QList>
 #include "HelperFunc.h"
 #include "TeamMngr.h"
 #include "Tournament.h"
@@ -259,15 +260,121 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
+  ERR PlayerMngr::canAcquirePlayerPairsForMatch(const Match& ma)
+  {
+    PlayerList pl = determineActualPlayersForMatch(ma);
+
+    for (Player p : pl)
+    {
+      if (p.getState() != STAT_PL_IDLE) return PLAYER_NOT_IDLE;
+    }
+
+    return OK;
+  }
 
 //----------------------------------------------------------------------------
 
+  ERR PlayerMngr::acquirePlayerPairsForMatch(const Match& ma)
+  {
+    ERR e = canAcquirePlayerPairsForMatch(ma);
+    if (e != OK) return e;
+
+    // update the status of all players to PLAYING
+    PlayerList pl = determineActualPlayersForMatch(ma);
+    for (Player p : pl)
+    {
+      OBJ_STATE oldStat = p.getState();
+      TabRow r = playerTab[p.getId()];
+      r.update(GENERIC_STATE_FIELD_NAME, STAT_PL_PLAYING);
+      emit playerStatusChanged(p.getId(), p.getSeqNum(), oldStat, STAT_PL_PLAYING);
+    }
+
+    return OK;
+  }
 
 //----------------------------------------------------------------------------
 
+  ERR PlayerMngr::releasePlayerPairsAfterMatch(const Match& ma)
+  {
+    PlayerList pl = determineActualPlayersForMatch(ma);
+
+    // update all player states back to idle
+    for (Player p : pl)
+    {
+      TabRow r = playerTab[p.getId()];
+      r.update(GENERIC_STATE_FIELD_NAME, STAT_PL_IDLE);
+      emit playerStatusChanged(p.getId(), p.getSeqNum(), STAT_PL_PLAYING, STAT_PL_IDLE);
+    }
+
+    return OK;
+  }
 
 //----------------------------------------------------------------------------
 
+  PlayerList PlayerMngr::determineActualPlayersForMatch(const Match &ma) const
+  {
+    // Important assumption: the "actual players" section has to be always
+    // filled completely or not at all.
+    // E.g., it is not permitted to set only "actual player 1a" without setting
+    // "actual player 2a" at the same time!
+
+
+    //
+    // this function serves as a hook to (later) introduce
+    // resolving player substitutions etc. into a list of
+    // effective players for a game
+    //
+
+    PlayerList result;
+    PlayerMngr* pm = Tournament::getPlayerMngr();
+
+    // have "actual players" already been assigned?
+    // if yes, return those values. They overrule everything else
+    TabRow matchRow = (db->getTab(TAB_MATCH))[ma.getId()];
+    QVariant pRef = matchRow[MA_ACTUAL_PLAYER1A_REF];
+    if (!(pRef.isNull()))
+    {
+      result << pm->getPlayer(pRef.toInt());
+
+      pRef = matchRow[MA_ACTUAL_PLAYER1B_REF];
+      if (!(pRef.isNull())) result << pm->getPlayer(pRef.toInt());
+
+      pRef = matchRow[MA_ACTUAL_PLAYER2A_REF];
+      if (!(pRef.isNull())) result << pm->getPlayer(pRef.toInt());  // should always be true, since we have a valid player1a
+
+      pRef = matchRow[MA_ACTUAL_PLAYER2B_REF];
+      if (!(pRef.isNull())) result << pm->getPlayer(pRef.toInt());
+
+      return result;
+    }
+
+
+    // okay, if we don't have "actual players" stored, we go by player pairs
+
+
+    // return an empty list if player pairs are incomplete.
+    // Otherwise, we can't distinguish between a singles match and
+    // an incomplete doubles match
+    if ((!(ma.hasPlayerPair1())) || (!(ma.hasPlayerPair2())))
+    {
+      return PlayerList();
+    }
+
+    PlayerPair pp1 = ma.getPlayerPair1();
+    PlayerPair pp2 = ma.getPlayerPair2();
+    result << pp1.getPlayer1();
+    result << pp2.getPlayer1();
+    if (pp1.hasPlayer2()) result << pp1.getPlayer2();
+    if (pp2.hasPlayer2()) result << pp2.getPlayer2();
+
+    //
+    // TODO:
+    // Here, a potential subsitution algorithm could kick in
+    // and replace the "theoretical players" with "actual players", if applicable
+    //
+
+    return result;
+  }
 
 //----------------------------------------------------------------------------
 

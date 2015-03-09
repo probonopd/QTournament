@@ -52,8 +52,10 @@ void MatchTableView::onTournamentOpened(Tournament* _tnmt)
   setColumnHidden(MatchTableModel::STATE_COL_ID, true);  // hide the column containing the internal object state
 
   // create a regular expression, that matches either the match state
-  // READY or WAITING
+  // READY, BUSY, FUZZY or WAITING
   QString reString = "^" + QString::number(static_cast<int>(STAT_MA_READY)) + "|";
+  reString += QString::number(static_cast<int>(STAT_MA_BUSY)) + "|";
+  reString += QString::number(static_cast<int>(STAT_MA_FUZZY)) + "|";   // TODO: check if there can be a condition where a match is FUZZY but without assigned match number
   reString += QString::number(static_cast<int>(STAT_MA_WAITING)) + "$";
 
   // apply the regExp as a filter on the state id column
