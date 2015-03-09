@@ -50,8 +50,17 @@ void MatchTableView::onTournamentOpened(Tournament* _tnmt)
   tnmt = _tnmt;
   sortedModel->setSourceModel(Tournament::getMatchTableModel());
   setColumnHidden(MatchTableModel::STATE_COL_ID, true);  // hide the column containing the internal object state
-  sortedModel->setFilterRegExp("^[0-9]{1,4}$");  // matches "0" to "9999"
-  sortedModel->setFilterKeyColumn(MatchTableModel::MATCH_NUM_COL_ID);
+
+  // create a regular expression, that matches either the match state
+  // READY or WAITING
+  QString reString = "^" + QString::number(static_cast<int>(STAT_MA_READY)) + "|";
+  reString += QString::number(static_cast<int>(STAT_MA_WAITING)) + "$";
+
+  // apply the regExp as a filter on the state id column
+  sortedModel->setFilterRegExp(reString);
+  sortedModel->setFilterKeyColumn(MatchTableModel::STATE_COL_ID);
+
+  // sort matches in ascing match number order
   sortedModel->sort(MatchTableModel::MATCH_NUM_COL_ID, Qt::AscendingOrder);
   setEnabled(true);
   

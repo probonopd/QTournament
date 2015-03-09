@@ -8,15 +8,20 @@
 #ifndef COURT_H
 #define	COURT_H
 
+#include <memory>
+
 #include <QList>
 
 #include "GenericDatabaseObject.h"
 #include "TournamentDB.h"
 #include "TabRow.h"
 #include "TournamentErrorCodes.h"
+//#include "Match.h"
 
 namespace QTournament
 {
+  class Match;
+
   class Court : public GenericDatabaseObject
   {
 
@@ -28,6 +33,7 @@ namespace QTournament
     int getNumber() const;
     bool isManualAssignmentOnly() const;
     void setManualAssignment(bool isManual);
+    unique_ptr<Match> getMatch() const;
 
   private:
     Court (TournamentDB* db, int rowId);

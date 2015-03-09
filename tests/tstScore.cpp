@@ -304,6 +304,8 @@ void tstScore::testRandomMatchGeneration()
       auto gs = ms.getGame(i);
       if (gs->getWinnerScore() > 21) ++gamesBeyond21;
     }
+
+    CPPUNIT_ASSERT(ms.isValidScore(2, false));
   }
 
   // make sure that wins are equally distributed among players
@@ -341,6 +343,8 @@ void tstScore::testRandomMatchGeneration()
     {
       CPPUNIT_ASSERT(ms.getNumGames() == 4);   // 4 = (numWinGames - 1) * 2
     }
+
+    CPPUNIT_ASSERT(ms.isValidScore(3, true));
   }
 
   // make sure that wins are equally distributed among players

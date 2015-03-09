@@ -5,9 +5,13 @@
 #include <QItemSelection>
 #include <QItemSelectionModel>
 
+#include "Match.h"
+
 namespace Ui {
 class ScheduleTabWidget;
 }
+
+using namespace QTournament;
 
 class ScheduleTabWidget : public QDialog
 {
@@ -24,10 +28,12 @@ public slots:
     void onIdleSelectionChanged(const QItemSelection &, const QItemSelection &);
     void onStagedSelectionChanged(const QItemSelection &, const QItemSelection &);
     void onMatchDoubleClicked(const QModelIndex& index);
+    void onCourtDoubleClicked(const QModelIndex& index);
 
 private:
     Ui::ScheduleTabWidget *ui;
     void updateButtons();
+    void askAndStoreMatchResult(const Match& ma);
 };
 
 #endif // SCHEDULETABWIDGET_H

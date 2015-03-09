@@ -64,6 +64,8 @@ namespace QTournament
 
     ERR setMatchScoreAndFinalizeMatch(const Match& ma, const MatchScore& score);
 
+    unique_ptr<Match> getMatchForCourt(const Court& court);
+
   private:
     DbTab matchTab;
     DbTab groupTab;

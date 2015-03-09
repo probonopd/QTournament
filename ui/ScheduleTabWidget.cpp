@@ -1,8 +1,9 @@
+#include <QMessageBox>
+
 #include "ScheduleTabWidget.h"
 #include "ui_ScheduleTabWidget.h"
 #include "GuiHelpers.h"
-
-#include <QMessageBox>
+#include "Score.h"
 
 ScheduleTabWidget::ScheduleTabWidget(QWidget *parent) :
     QDialog(parent),
@@ -214,9 +215,84 @@ void ScheduleTabWidget::onMatchDoubleClicked(const QModelIndex &index)
 
 //----------------------------------------------------------------------------
 
+void ScheduleTabWidget::onCourtDoubleClicked(const QModelIndex &index)
+{
+  auto court = ui->tvCourts->getSelectedCourt();
+  if (court == nullptr) return;
+
+  auto ma = court->getMatch();
+  if (ma == nullptr)
+  {
+    return;  // no match assigned to this court
+  }
+
+  askAndStoreMatchResult(*ma);
+}
 
 //----------------------------------------------------------------------------
 
+void ScheduleTabWidget::askAndStoreMatchResult(const Match &ma)
+{
+  // only accept results for running matches
+  if (ma.getState() != STAT_MA_RUNNING)
+  {
+    return;
+  }
+
+  //
+  // TODO: replace with a real user interaction!
+  //
+  // For now, we simply assign a random result
+  //
+
+  // determine the random match result
+  int numWinGames = 2;  // TODO: this needs to become a category parameter
+  bool isDrawAllowed = ma.getCategory().getParameter_bool(ALLOW_DRAW);
+  auto matchResult = MatchScore::genRandomScore(numWinGames, isDrawAllowed);
+
+  //
+  // everything from here can remain as it is
+  //
+
+
+  // create a (rather ugly) confirmation message box
+  QString msg = tr("Please confirm:\n\n");
+  msg += ma.getPlayerPair1().getDisplayName() + "\n";
+  msg += "\tvs.\n";
+  msg += ma.getPlayerPair2().getDisplayName() + "\n\n";
+  msg += tr("Result: ");
+  QString sResult = matchResult->toString();
+  sResult = sResult.replace(",", ", ");
+  msg += sResult + "\n\n\n";
+  if (matchResult->getWinner() == 1)
+  {
+    msg += tr("WINNER: ");
+    msg += ma.getPlayerPair1().getDisplayName();
+    msg += "\n\n";
+    msg += tr("LOSER: ");
+    msg += ma.getPlayerPair2().getDisplayName();
+  }
+  if (matchResult->getWinner() == 2)
+  {
+    msg += tr("WINNER: ");
+    msg += ma.getPlayerPair2().getDisplayName();
+    msg += "\n\n";
+    msg += tr("LOSER: ");
+    msg += ma.getPlayerPair1().getDisplayName();
+  }
+  if (matchResult->getWinner() == 0)
+  {
+    msg += tr("The match result is DRAW");
+  }
+  msg += "\n\n";
+
+  int confirm = QMessageBox::question(this, tr("Please confirm match result"), msg);
+  if (confirm != QMessageBox::Yes) return;
+
+  // actually store the data and update the internal object states
+  MatchMngr* mm = Tournament::getMatchMngr();
+  mm->setMatchScoreAndFinalizeMatch(ma, *matchResult);
+}
 
 //----------------------------------------------------------------------------
 

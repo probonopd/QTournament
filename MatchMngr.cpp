@@ -1127,6 +1127,22 @@ namespace QTournament {
 
 //----------------------------------------------------------------------------
 
+  unique_ptr<Match> MatchMngr::getMatchForCourt(const Court &court)
+  {
+    // search for matches in state RUNNING and assigned to the court
+    QVariantList qvl;
+    qvl << MA_COURT_REF << court.getId();
+    qvl << GENERIC_STATE_FIELD_NAME << static_cast<int>(STAT_MA_RUNNING);
+
+    if (matchTab.getMatchCountForColumnValue(qvl) != 1)
+    {
+      return nullptr;
+    }
+
+    TabRow r = matchTab.getSingleRowByColumnValue(qvl);
+
+    return unique_ptr<Match>(new Match(db, r));
+  }
 
 //----------------------------------------------------------------------------
 
