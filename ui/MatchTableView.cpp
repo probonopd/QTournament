@@ -130,7 +130,19 @@ void MatchTableView::onSelectionChanged(const QItemSelection& selectedItem, cons
 }
 
 //----------------------------------------------------------------------------
-    
+
+void MatchTableView::updateSelectionAfterDataChange()
+{
+  QModelIndexList indexes = selectionModel()->selection().indexes();
+  if (indexes.count() == 0)
+  {
+    return;
+  }
+  resizeRowsToContents();
+  int selectedTargetRow = indexes.at(0).row();
+  itemDelegate->setSelectedRow(selectedTargetRow);
+  resizeRowToContents(selectedTargetRow);
+}
 
 //----------------------------------------------------------------------------
     

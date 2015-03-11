@@ -205,7 +205,8 @@ void ScheduleTabWidget::onMatchDoubleClicked(const QModelIndex &index)
         msg += tr("Sorry, this shouldn't happen.\n");
         msg += tr("The match cannot be started.");
         QMessageBox::critical(this, tr("Assign match to court"), msg);
-      }
+      }      
+      ui->tvMatches->updateSelectionAfterDataChange();
       return;
     }
     QMessageBox::information(this, tr("Assign match to court"), tr("Call cancled, match not started"));

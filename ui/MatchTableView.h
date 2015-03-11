@@ -28,6 +28,7 @@ public:
   MatchTableView (QWidget* parent);
   virtual ~MatchTableView ();
   unique_ptr<Match> getSelectedMatch();
+  void updateSelectionAfterDataChange();
   
 public slots:
   void onTournamentClosed();

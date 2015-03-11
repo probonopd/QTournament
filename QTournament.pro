@@ -61,7 +61,8 @@ HEADERS += \
     CourtMngr.h \
     models/CourtTabModel.h \
     ui/CourtTableView.h \
-    Score.h
+    Score.h \
+    ui/delegates/CourtItemDelegate.h
 
 SOURCES += \
     Category.cpp \
@@ -113,7 +114,8 @@ SOURCES += \
     CourtMngr.cpp \
     models/CourtTabModel.cpp \
     ui/CourtTableView.cpp \
-    Score.cpp
+    Score.cpp \
+    ui/delegates/CourtItemDelegate.cpp
 
 RESOURCES += \
     tournament.qrc

@@ -62,3 +62,22 @@ QString GuiHelpers::prepCall(const QTournament::Match &ma, const QTournament::Co
 
   return call;
 }
+
+
+void GuiHelpers::drawFormattedText(QPainter *painter, QRect r, const QString &s, int alignmentFlags, bool isBold, bool isItalics, QFont fnt, QColor fntColor, double fntSizeFac)
+{
+  fnt.setItalic(isItalics);
+  fnt.setBold(isBold);
+  fnt.setPointSizeF(fnt.pointSizeF() * fntSizeFac);
+
+  painter->save();
+  painter->setPen(QPen(fntColor));
+  painter->setFont(fnt);
+  painter->drawText(r, alignmentFlags, s);
+  painter->restore();
+}
+
+void GuiHelpers::drawFormattedText(QPainter *painter, QRect r, const QString &s, int alignmentFlags, bool isBold, bool isItalics, double fntSizeFac)
+{
+  drawFormattedText(painter, r, s, alignmentFlags, isBold, isItalics, QFont(), QColor(0,0,0), fntSizeFac);
+}

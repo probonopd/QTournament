@@ -10,11 +10,11 @@
 
 #include <memory>
 
-#include "Tournament.h"
-//#include "delegates/MatchItemDelegate.h"
-
 #include <QTableView>
 #include <QSortFilterProxyModel>
+
+#include "Tournament.h"
+#include "delegates/CourtItemDelegate.h"
 
 using namespace QTournament;
 
@@ -40,7 +40,7 @@ private:
   Tournament* tnmt;
   QStringListModel* emptyModel;
   QSortFilterProxyModel* sortedModel;
-  //MatchItemDelegate* itemDelegate;
+  CourtItemDelegate* itemDelegate;
 
 };
 

@@ -15,7 +15,7 @@
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout_2">
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout">
+    <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,2,2">
      <item>
       <layout class="QVBoxLayout" name="verticalLayout_3">
        <item>
@@ -111,9 +111,6 @@
       </layout>
      </item>
      <item>
-      <layout class="QVBoxLayout" name="verticalLayout_2"/>
-     </item>
-     <item>
       <layout class="QVBoxLayout" name="verticalLayout_4">
        <item>
         <widget class="QLabel" name="label_3">
@@ -136,9 +133,6 @@
         </widget>
        </item>
       </layout>
-     </item>
-     <item>
-      <layout class="QVBoxLayout" name="verticalLayout"/>
      </item>
      <item>
       <layout class="QVBoxLayout" name="verticalLayout_5">

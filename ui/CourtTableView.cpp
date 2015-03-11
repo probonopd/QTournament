@@ -5,9 +5,9 @@
  * Created on March 17, 2014, 8:19 PM
  */
 
+#include <QMessageBox>
 #include "CourtTableView.h"
 #include "MainFrame.h"
-#include <QMessageBox>
 
 CourtTableView::CourtTableView(QWidget* parent)
   :QTableView(parent)
@@ -29,9 +29,9 @@ CourtTableView::CourtTableView(QWidget* parent)
     SLOT(onSelectionChanged(const QItemSelection&, const QItemSelection&)));
 
   // define a delegate for drawing the court items
-//  itemDelegate = new MatchItemDelegate(this);
-//  itemDelegate->setProxy(sortedModel);
-//  setItemDelegate(itemDelegate);
+  itemDelegate = new CourtItemDelegate(this);
+  itemDelegate->setProxy(sortedModel);
+  setItemDelegate(itemDelegate);
 }
 
 //----------------------------------------------------------------------------
@@ -103,16 +103,16 @@ unique_ptr<Court> CourtTableView::getSelectedCourt()
 
 void CourtTableView::onSelectionChanged(const QItemSelection& selectedItem, const QItemSelection& deselectedItem)
 {
-//  resizeRowsToContents();
-//  for (auto item : selectedItem)
-//  {
-//    itemDelegate->setSelectedRow(item.top());
-//    resizeRowToContents(item.top());
-//  }
-//  for (auto item : deselectedItem)
-//  {
-//    resizeRowToContents(item.top());
-//  }
+  resizeRowsToContents();
+  for (auto item : selectedItem)
+  {
+    itemDelegate->setSelectedRow(item.top());
+    resizeRowToContents(item.top());
+  }
+  for (auto item : deselectedItem)
+  {
+    resizeRowToContents(item.top());
+  }
 }
 
 //----------------------------------------------------------------------------
