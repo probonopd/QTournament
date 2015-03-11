@@ -10,11 +10,14 @@
 
 #include <memory>
 
-#include "Tournament.h"
-#include "delegates/MatchItemDelegate.h"
-
 #include <QTableView>
 #include <QSortFilterProxyModel>
+#include <QListWidget>
+#include <QMenu>
+#include <QAction>
+
+#include "Tournament.h"
+#include "delegates/MatchItemDelegate.h"
 
 using namespace QTournament;
 
@@ -36,6 +39,7 @@ public slots:
 
 private slots:
   void onSelectionChanged(const QItemSelection&selectedItem, const QItemSelection&deselectedItem);
+  void onContextMenuRequested(const QPoint& pos);
   
 private:
   Tournament* tnmt;
@@ -43,6 +47,14 @@ private:
   QSortFilterProxyModel* sortedModel;
   MatchItemDelegate* itemDelegate;
 
+  unique_ptr<QMenu> contextMenu;
+  QAction* actPostponeMatch;
+  QAction* actWalkover;
+  QAction* actCourtSubmenu;
+  QMenu* courtSelectionMenu;
+
+  void prepContextMenu();
+  void updateCourtSelectionMenu();
 };
 
 #endif	/* MATCHTABLEVIEW_H */

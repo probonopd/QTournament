@@ -5,9 +5,13 @@
  * Created on March 17, 2014, 8:19 PM
  */
 
+#include <QMessageBox>
+
 #include "MatchTableView.h"
 #include "MainFrame.h"
-#include <QMessageBox>
+
+#include "CourtMngr.h"
+#include "Court.h"
 
 MatchTableView::MatchTableView(QWidget* parent)
   :QTableView(parent)
@@ -28,10 +32,18 @@ MatchTableView::MatchTableView(QWidget* parent)
     SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
     SLOT(onSelectionChanged(const QItemSelection&, const QItemSelection&)));
 
+  // handle context menu requests
+  setContextMenuPolicy(Qt::CustomContextMenu);
+  connect(this, SIGNAL(customContextMenuRequested(const QPoint&)),
+          this, SLOT(onContextMenuRequested(const QPoint&)));
+
   // define a delegate for drawing the match items
   itemDelegate = new MatchItemDelegate(this);
   itemDelegate->setProxy(sortedModel);
   setItemDelegate(itemDelegate);
+
+  // setup the context menu
+  prepContextMenu();
 }
 
 //----------------------------------------------------------------------------
@@ -127,6 +139,12 @@ void MatchTableView::onSelectionChanged(const QItemSelection& selectedItem, cons
   {
     resizeRowToContents(item.top());
   }
+
+  // update the availability of actions, depending on the selected match
+  auto ma = getSelectedMatch();
+  if (ma == nullptr) return;  // shouldn't happen
+  actWalkover->setEnabled(ma->getState() == STAT_MA_READY);
+  actCourtSubmenu->setEnabled(ma->getState() == STAT_MA_READY);
 }
 
 //----------------------------------------------------------------------------
@@ -145,13 +163,79 @@ void MatchTableView::updateSelectionAfterDataChange()
 }
 
 //----------------------------------------------------------------------------
-    
+
+void MatchTableView::onContextMenuRequested(const QPoint& pos)
+{
+  // map from scroll area coordinates to global widget coordinates
+  QPoint globalPos = viewport()->mapToGlobal(pos);
+
+  // resolve the click coordinates to the table row
+  int clickedRow = rowAt(pos.y());
+
+  // exit if no table row is under the cursor
+  if (clickedRow < 0) return;
+
+  // find out which match is selected
+  auto ma = getSelectedMatch();
+  if (ma == nullptr) return;  // shouldn't happen
+
+  // show the context menu
+  updateCourtSelectionMenu();
+  QAction* selectedItem = contextMenu->exec(globalPos);
+
+  if (selectedItem == nullptr) return; // user canceled
+
+  QMessageBox::information(this, "ksdjf", "action = " + selectedItem->text());
+}
 
 //----------------------------------------------------------------------------
-    
+
+void MatchTableView::prepContextMenu()
+{
+  // prepare all actions
+  actWalkover = new QAction(tr("Walkover"), this);
+  actPostponeMatch = new QAction(tr("Postpone"), this);
+
+  // create the context menu and connect it to the actions
+  contextMenu = unique_ptr<QMenu>(new QMenu());
+  contextMenu->addAction(actWalkover);
+  contextMenu->addAction(actPostponeMatch);
+  contextMenu->addSeparator();
+  courtSelectionMenu = contextMenu->addMenu(tr("Call match on court..."));
+  actCourtSubmenu = courtSelectionMenu->menuAction();
+  updateCourtSelectionMenu();
+}
 
 //----------------------------------------------------------------------------
-    
+
+void MatchTableView::updateCourtSelectionMenu()
+{
+  courtSelectionMenu->clear();
+
+
+  // completely re-build the list of available courts
+
+
+  CourtMngr* cm = Tournament::getCourtMngr();
+  if (cm == nullptr) return;   // occurs if we're launching the application without a tournament loaded yet
+
+
+  QStringList availCourtNum;
+  for (auto co : cm->getAllCourts())
+  {
+    if (co.getState() == STAT_CO_AVAIL)
+    {
+      availCourtNum << QString::number(co.getNumber());
+    }
+  }
+
+  availCourtNum.sort();
+
+  for (QString num : availCourtNum)
+  {
+    courtSelectionMenu->addAction(num);
+  }
+}
 
 //----------------------------------------------------------------------------
     
