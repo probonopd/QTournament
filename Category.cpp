@@ -14,6 +14,7 @@
 #include "RoundRobinCategory.h"
 #include "RoundRobinGenerator.h"
 #include "Match.h"
+#include "CatRoundStatus.h"
 
 #include <stdexcept>
 
@@ -781,6 +782,10 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
+  CatRoundStatus Category::getRoundStatus() const
+  {
+    return CatRoundStatus(db, *this);
+  }
 
   //----------------------------------------------------------------------------
 

@@ -132,32 +132,15 @@ namespace QTournament {
     {
       qvl << MG_ROUND << round;
     }
-    DbTab::CachingRowIterator it = groupTab.getRowsByColumnValue(qvl);
-    
-    MatchGroupList result;
-    while (!(it.isEnd()))
-    {
-      result << MatchGroup(db, *it);
-      ++it;
-    }
-    
-    return result;
+
+    return getObjectsByColumnValue<MatchGroup>(groupTab, qvl);
   }
   
 //----------------------------------------------------------------------------
 
   MatchGroupList MatchMngr::getAllMatchGroups()
   {
-    MatchGroupList result;
-    
-    DbTab::CachingRowIterator it = groupTab.getAllRows();
-    while (!(it.isEnd()))
-    {
-      result << MatchGroup(db, *it);
-      ++it;
-    }
-    
-    return result;
+    return getAllObjects<MatchGroup>(groupTab);
   }
 
 //----------------------------------------------------------------------------
@@ -595,10 +578,8 @@ namespace QTournament {
     // if the match group(s) with "round+1" are of the
     // same players group or already in KO phase, we can't
     // demote this match group
-    auto it = groupTab.getRowsByColumnValue(qvl);
-    while (!(it.isEnd()))
+    for (MatchGroup mg : getObjectsByColumnValue<MatchGroup>(groupTab, qvl))
     {
-      auto mg = MatchGroup(db, *it);
       int nextGroupNumber = mg.getGroupNumber();
       if (nextGroupNumber < 0)
       {
@@ -612,7 +593,6 @@ namespace QTournament {
       {
         return MATCH_GROUP_NOT_UNSTAGEABLE;
       }
-      ++it;
     }
 
     return OK;
@@ -648,14 +628,11 @@ namespace QTournament {
 
     // update all subsequent sequence numbers
     QString where = MG_STAGE_SEQ_NUM + " > " + QString::number(oldStageSeqNumber);
-    auto it = groupTab.getRowsByWhereClause(where);
-    while (!(it.isEnd()))
+    for (MatchGroup mg : getObjectsByWhereClause<MatchGroup>(groupTab, where))
     {
-      auto mg = MatchGroup(db, *it);
       int old = mg.getStageSequenceNumber();
-      (*it).update(MG_STAGE_SEQ_NUM, old - 1);
+      mg.row.update(MG_STAGE_SEQ_NUM, old - 1);
       emit matchGroupStatusChanged(mg.getId(), mg.getSeqNum(), STAT_MG_STAGED, STAT_MG_STAGED);
-      ++it;
     }
 
     // demote other rounds from IDLE to FROZEN
@@ -668,11 +645,8 @@ namespace QTournament {
     qvl << MG_ROUND << round+1;
     qvl << GENERIC_STATE_FIELD_NAME << static_cast<int>(STAT_MG_IDLE);
     qvl << MG_CAT_REF << catId;
-    it = groupTab.getRowsByColumnValue(qvl);
-    while (!(it.isEnd()))
+    for (MatchGroup mg : getObjectsByColumnValue<MatchGroup>(groupTab, qvl))
     {
-      auto mg = MatchGroup(db, *it);
-
       // if our demoted match group and the IDLE match group are round-robin-groups,
       // the IDLE match group has only to be demoted if it matches the "grp's" players group
       //
@@ -681,15 +655,12 @@ namespace QTournament {
       int otherPlayersGroup = mg.getGroupNumber();
       if ((playersGroup > 0) && (otherPlayersGroup > 0) && (playersGroup != otherPlayersGroup))
       {
-        ++it;
         continue;
       }
 
       // in all other cases, the "IDLE" group has to be demoted to FROZEN
       mg.setState(STAT_MG_FROZEN);
       emit matchGroupStatusChanged(mg.getId(), mg.getSeqNum(), STAT_MG_IDLE, STAT_MG_FROZEN);
-
-      ++it;
     }
 
     return OK;
@@ -877,15 +848,7 @@ namespace QTournament {
     MatchGroupList result;
 
     QString where = MG_STAGE_SEQ_NUM + " > 0 ORDER BY " + MG_STAGE_SEQ_NUM + " ASC";
-    auto it = groupTab.getRowsByWhereClause(where);
-    while (!(it.isEnd()))
-    {
-      MatchGroup mg(db, *it);
-      result.append(mg);
-      ++it;
-    }
-
-    return result;
+    return getObjectsByWhereClause<MatchGroup>(groupTab, where);
   }
 
 //----------------------------------------------------------------------------
@@ -1225,21 +1188,18 @@ namespace QTournament {
     // set matches that are READY to BUSY, if the necessary players become unavailable
     if (toState == STAT_PL_PLAYING)
     {
-      DbTab::CachingRowIterator it = matchTab.getRowsByColumnValue(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_READY));
-      while (!(it.isEnd()))
+      for (Match ma : getObjectsByColumnValue<Match>(matchTab, GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_READY)))
       {
-        Match ma = Match(db, *it);
         PlayerList pl = ma.determineActualPlayers();
         for (Player p : pl)
         {
           if (p.getId() == playerId)
           {
-            (*it).update(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_BUSY));
+            ma.row.update(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_BUSY));
             emit matchStatusChanged(ma.getId(), ma.getSeqNum(), STAT_MA_READY, STAT_MA_BUSY);
             break;  // no need to check other players for this match
           }
         }
-        ++it;
       }
     }
 
@@ -1247,25 +1207,30 @@ namespace QTournament {
     if (toState == STAT_PL_IDLE)
     {
       PlayerMngr* pm = Tournament::getPlayerMngr();
-      DbTab::CachingRowIterator it = matchTab.getRowsByColumnValue(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_BUSY));
-      while (!(it.isEnd()))
+      for (Match ma : getObjectsByColumnValue<Match>(matchTab, GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_BUSY)))
       {
-        Match ma = Match(db, *it);
         if (pm->canAcquirePlayerPairsForMatch(ma) == OK)
         {
-          (*it).update(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_READY));
+          ma.row.update(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_READY));
           emit matchStatusChanged(ma.getId(), ma.getSeqNum(), STAT_MA_BUSY, STAT_MA_READY);
         }
-        ++it;
       }
     }
   }
 
 //----------------------------------------------------------------------------
 
+  MatchList MatchMngr::getCurrentlyRunningMatches() const
+  {
+    return getObjectsByColumnValue<Match>(matchTab, GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_RUNNING));
+  }
 
 //----------------------------------------------------------------------------
 
+  MatchList MatchMngr::getMatchesForMatchGroup(const MatchGroup &grp) const
+  {
+    return getObjectsByColumnValue<Match>(matchTab, MA_GRP_REF, grp.getId());
+  }
 
 //----------------------------------------------------------------------------
 

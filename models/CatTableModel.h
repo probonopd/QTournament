@@ -21,6 +21,8 @@ class CategoryTableModel : public QAbstractTableModel
   Q_OBJECT
   
 public:
+  static constexpr int COLUMN_COUNT = 7;  // number of columns in the model
+
   CategoryTableModel (TournamentDB* _db);
   int rowCount(const QModelIndex & parent = QModelIndex()) const;
   int columnCount(const QModelIndex & parent = QModelIndex()) const;

@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1009</width>
+    <width>1128</width>
     <height>858</height>
    </rect>
   </property>
@@ -44,6 +44,9 @@
          <widget class="CategoryTableView" name="catTableView">
           <property name="selectionMode">
            <enum>QAbstractItemView::SingleSelection</enum>
+          </property>
+          <property name="selectionBehavior">
+           <enum>QAbstractItemView::SelectRows</enum>
           </property>
          </widget>
         </item>
@@ -577,7 +580,7 @@ for each round</string>
   <slot>onBtnRunCatClicked()</slot>
  </slots>
  <buttongroups>
-  <buttongroup name="rbgSex"/>
   <buttongroup name="rbgMatchType"/>
+  <buttongroup name="rbgSex"/>
  </buttongroups>
 </ui>

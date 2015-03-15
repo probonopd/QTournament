@@ -129,15 +129,14 @@ unique_ptr<Match> MatchTableView::getSelectedMatch()
 
 void MatchTableView::onSelectionChanged(const QItemSelection& selectedItem, const QItemSelection& deselectedItem)
 {
-  resizeRowsToContents();
   for (auto item : selectedItem)
   {
     itemDelegate->setSelectedRow(item.top());
-    resizeRowToContents(item.top());
+    //resizeRowToContents(item.top());
   }
   for (auto item : deselectedItem)
   {
-    resizeRowToContents(item.top());
+    //resizeRowToContents(item.top());
   }
 
   // update the availability of actions, depending on the selected match
@@ -156,7 +155,6 @@ void MatchTableView::updateSelectionAfterDataChange()
   {
     return;
   }
-  resizeRowsToContents();
   int selectedTargetRow = indexes.at(0).row();
   itemDelegate->setSelectedRow(selectedTargetRow);
   resizeRowToContents(selectedTargetRow);

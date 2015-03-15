@@ -21,11 +21,13 @@
 
 namespace QTournament
 {
+  class CatRoundStatus;
 
   class Category : public GenericDatabaseObject
   {
     friend class CatMngr;
     friend class RoundRobinCategory;
+    friend class GenericObjectManager;
     
   public:
     QString getName() const;
@@ -59,6 +61,7 @@ namespace QTournament
     ERR canApplyGroupAssignment(QList<PlayerPairList> grpCfg);
     ERR canApplyInitialRanking(PlayerPairList seed);
     int getGroupNumForPredecessorRound(const int grpNum) const;
+    CatRoundStatus getRoundStatus() const;
 
     
     virtual ~Category() {};

@@ -19,6 +19,7 @@ namespace QTournament
   class Team : public GenericDatabaseObject
   {
     friend class TeamMngr;
+    friend class GenericObjectManager;
     
   public:
     QString getName(int maxLen=0) const;

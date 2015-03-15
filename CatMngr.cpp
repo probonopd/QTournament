@@ -102,22 +102,13 @@ namespace QTournament
 //----------------------------------------------------------------------------
 
   /**
-   * Returns a list of all teams
+   * Returns a list of all categories
    *
-   * @Return QList holding all Teams
+   * @Return QList holding all categories
    */
   QList<Category> CatMngr::getAllCategories()
   {
-    QList<Category> result;
-    
-    DbTab::CachingRowIterator it = catTab.getAllRows();
-    while (!(it.isEnd()))
-    {
-      result << Category(db, *it);
-      ++it;
-    }
-    
-    return result;
+    return getAllObjects<Category>(catTab);
   }
 
 //----------------------------------------------------------------------------

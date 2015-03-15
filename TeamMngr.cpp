@@ -100,16 +100,7 @@ namespace QTournament
    */
   QList<Team> TeamMngr::getAllTeams()
   {
-    QList<Team> result;
-    
-    DbTab::CachingRowIterator it = teamTab.getAllRows();
-    while (!(it.isEnd()))
-    {
-      result << Team(db, *it);
-      ++it;
-    }
-    
-    return result;
+    return getAllObjects<Team>(teamTab);
   }
 
 //----------------------------------------------------------------------------

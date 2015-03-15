@@ -67,6 +67,9 @@ namespace QTournament
 
     unique_ptr<Match> getMatchForCourt(const Court& court);
 
+    MatchList getCurrentlyRunningMatches() const;
+    MatchList getMatchesForMatchGroup(const MatchGroup& grp) const;
+
   private:
     DbTab matchTab;
     DbTab groupTab;

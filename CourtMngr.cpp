@@ -100,16 +100,7 @@ namespace QTournament
    */
   QList<Court> CourtMngr::getAllCourts()
   {
-    QList<Court> result;
-    
-    DbTab::CachingRowIterator it = courtTab.getAllRows();
-    while (!(it.isEnd()))
-    {
-      result << Court(db, *it);
-      ++it;
-    }
-    
-    return result;
+    return getAllObjects<Court>(courtTab);
   }
 
 //----------------------------------------------------------------------------

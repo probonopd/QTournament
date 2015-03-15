@@ -28,6 +28,46 @@ namespace QTournament
   protected:
     TournamentDB* db;
     KeyValueTab cfg;
+
+    template<class T>
+    QList<T> getObjectsByColumnValue(const DbTab& objectTab, QVariantList qvl) const
+    {
+      DbTab::CachingRowIterator it = objectTab.getRowsByColumnValue(qvl);
+      return iterator2Objects<T>(it);
+    }
+
+    template<class T>
+    QList<T> getObjectsByColumnValue(const DbTab& objectTab, const QString& colName, const QVariant& val) const
+    {
+      DbTab::CachingRowIterator it = objectTab.getRowsByColumnValue(colName, val);
+      return iterator2Objects<T>(it);
+    }
+
+    template<class T>
+    QList<T> getObjectsByWhereClause(const DbTab& objectTab, const QString& where, const QVariantList& args=QVariantList()) const
+    {
+      DbTab::CachingRowIterator it = objectTab.getRowsByWhereClause(where, args);
+      return iterator2Objects<T>(it);
+    }
+
+    template<class T>
+    QList<T> getAllObjects(const DbTab& objectTab) const
+    {
+      DbTab::CachingRowIterator it = objectTab.getAllRows();
+      return iterator2Objects<T>(it);
+    }
+
+    template<class T>
+    QList<T> iterator2Objects(DbTab::CachingRowIterator it) const
+    {
+      QList<T> result;
+      while (!(it.isEnd()))
+      {
+        result.append(T(db, *it));
+        ++it;
+      }
+      return result;
+    }
   };
 
 }

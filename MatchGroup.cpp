@@ -50,17 +50,7 @@ namespace QTournament
 
   MatchList MatchGroup::getMatches() const
   {
-    DbTab matchTab = db->getTab(TAB_MATCH);
-    DbTab::CachingRowIterator it = matchTab.getRowsByColumnValue(MA_GRP_REF, getId());
-
-    MatchList result;
-    while (!(it.isEnd()))
-    {
-      result << Match(db, *it);
-      ++it;
-    }
-
-    return result;
+    return Tournament::getMatchMngr()->getMatchesForMatchGroup(*this);
   }
 
 //----------------------------------------------------------------------------

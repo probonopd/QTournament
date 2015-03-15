@@ -26,7 +26,8 @@ namespace QTournament
   {
 
     friend class CourtMngr;
-    
+    friend class GenericObjectManager;
+
   public:
     QString getName(int maxLen = 0) const;
     ERR rename(const QString& newName);

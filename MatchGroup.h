@@ -26,6 +26,7 @@ namespace QTournament
   {
     friend class MatchMngr;
     friend class Match;
+    friend class GenericObjectManager;
     
   public:
     Category getCategory() const;
