@@ -22,7 +22,7 @@ public:
 
   int getFinishedRoundsCount() const;
   int getCurrentlyRunningRoundNumber() const;
-  int getTotalRoundsCount();
+  int getTotalRoundsCount() const;
   QList<int> getCurrentlyRunningRoundNumbers() const;
 
   tuple<int, int, int> getMatchCountForCurrentRound() const;

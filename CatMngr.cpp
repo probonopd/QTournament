@@ -17,6 +17,7 @@
 #include "Player.h"
 #include "Tournament.h"
 #include "KO_Config.h"
+#include "CatRoundStatus.h"
 
 using namespace dbOverlay;
 
@@ -816,26 +817,15 @@ namespace QTournament
       return;  // nothing to do for us
     }
 
+    // determine whether we have at least one RUNING and/or one
+    // unfinished match in the category
     auto mm = Tournament::getMatchMngr();
     bool hasMatchRunning = false;
     bool hasUnfinishedMatch = false;
     for (auto mg : mm->getMatchGroupsForCat(c))
     {
-      // search for at least one match that's being played
-      for (auto ma : mg.getMatches())
-      {
-        OBJ_STATE maState = ma.getState();
-        if (maState == STAT_MA_RUNNING)
-        {
-          hasMatchRunning = true;
-          break;
-        }
-
-        if ((maState != STAT_MA_FINISHED) && !hasUnfinishedMatch)
-        {
-          hasUnfinishedMatch = true;
-        }
-      }
+      hasMatchRunning = mg.hasMatchesInState(STAT_MA_RUNNING);
+      hasUnfinishedMatch = mg.hasMatches__NOT__InState(STAT_MA_FINISHED);
 
       if (hasMatchRunning) break;
     }
@@ -849,18 +839,26 @@ namespace QTournament
       return;
     }
 
-    // if we're PLAYING and no match is being played and all matches are done
+    // check if the whole category is finished
+    CatRoundStatus crs = c.getRoundStatus();
+    int lastFinishedRound = crs.getFinishedRoundsCount();
+    int totalRounds = crs.getTotalRoundsCount();
+    bool catIsFinished = ((totalRounds > 0) && (totalRounds == lastFinishedRound));
+
+    // if we've finished the last round
     // change state to FINALIZED
-    if ((curStat == STAT_CAT_PLAYING) && !hasMatchRunning && !hasUnfinishedMatch)
+    if ((curStat == STAT_CAT_PLAYING) && catIsFinished)
     {
-      c.setState(STAT_CAT_FINALIZED);
-      emit categoryStatusChanged(c, STAT_CAT_PLAYING, STAT_CAT_FINALIZED);
-      return;
+      {
+        c.setState(STAT_CAT_FINALIZED);
+        emit categoryStatusChanged(c, STAT_CAT_PLAYING, STAT_CAT_FINALIZED);
+        return;
+      }
     }
 
-    // if we're PLAYING and no match is being played and at least one match is not done
+    // if we're PLAYING and where not finished
     // change state back to IDLE
-    if ((curStat == STAT_CAT_PLAYING) && !hasMatchRunning && hasUnfinishedMatch)
+    if ((curStat == STAT_CAT_PLAYING) && !catIsFinished && !hasMatchRunning)
     {
       c.setState(STAT_CAT_IDLE);
       emit categoryStatusChanged(c, STAT_CAT_PLAYING, STAT_CAT_IDLE);

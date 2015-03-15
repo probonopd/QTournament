@@ -87,6 +87,16 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
+  bool MatchGroup::hasMatches__NOT__InState(OBJ_STATE stat) const
+  {
+    // for performance reasons, we issue a single SQL-statement here
+    // instead of looping through all matches in the group
+    QString where = MA_GRP_REF + " = " + QString::number(row.getId());
+    where += " AND " + GENERIC_NAME_FIELD_NAME + " != ";
+    where += static_cast<int>(stat);
+
+    return (matchTab.getMatchCountForWhereClause(where) > 0);
+  }
 
 //----------------------------------------------------------------------------
 

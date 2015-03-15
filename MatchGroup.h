@@ -39,6 +39,7 @@ namespace QTournament
     int getMatchCount() const;
     int getStageSequenceNumber() const;
     bool hasMatchesInState(OBJ_STATE stat) const;
+    bool hasMatches__NOT__InState(OBJ_STATE stat) const;
 
   private:
     MatchGroup(TournamentDB* db, int rowId);

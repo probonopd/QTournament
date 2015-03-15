@@ -147,6 +147,11 @@ tuple<int, int, int> CatRoundStatus::getMatchCountForCurrentRound() const
 
 //----------------------------------------------------------------------------
 
+int CatRoundStatus::getTotalRoundsCount() const
+{
+  auto specializedCat = cat.convertToSpecializedObject();
+  return specializedCat->calcTotalRoundsCount();
+}
 
 //----------------------------------------------------------------------------
 
