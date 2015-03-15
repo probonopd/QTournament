@@ -13,14 +13,14 @@ namespace QTournament
 {
 
   MatchGroup::MatchGroup(TournamentDB* db, int rowId)
-  :GenericDatabaseObject(db, TAB_MATCH_GROUP, rowId)
+  :GenericDatabaseObject(db, TAB_MATCH_GROUP, rowId), matchTab(db->getTab(TAB_MATCH))
   {
   }
 
 //----------------------------------------------------------------------------
 
   MatchGroup::MatchGroup(TournamentDB* db, dbOverlay::TabRow row)
-  :GenericDatabaseObject(db, row)
+  :GenericDatabaseObject(db, row), matchTab(db->getTab(TAB_MATCH))
   {
   }
 
@@ -57,7 +57,6 @@ namespace QTournament
 
   int MatchGroup::getMatchCount() const
   {
-    DbTab matchTab = db->getTab(TAB_MATCH);
     return matchTab.getMatchCountForColumnValue(MA_GRP_REF, getId());
   }
 
@@ -76,6 +75,15 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
+  bool MatchGroup::hasMatchesInState(OBJ_STATE stat) const
+  {
+    // for performance reasons, we issue a single SQL-statement here
+    // instead of looping through all matches in the group
+    QVariantList qvl;
+    qvl << MA_GRP_REF << row.getId();
+    qvl << GENERIC_STATE_FIELD_NAME << static_cast<int>(stat);
+    return (matchTab.getMatchCountForColumnValue(qvl) > 0);
+  }
 
 //----------------------------------------------------------------------------
 

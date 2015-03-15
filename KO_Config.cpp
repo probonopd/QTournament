@@ -296,6 +296,26 @@ namespace QTournament {
 
 //----------------------------------------------------------------------------
 
+  int KO_Config::getNumRounds() const
+  {
+    int result = -1;
+
+    // find the max number of rounds
+    // among all group definitions
+    for (GroupDef g : grpDefs)
+    {
+      int grpSize = g.getGroupSize();
+
+      // for an even group size, the number of
+      // rounds is "size - 1", for odd sizes it's
+      // "size" which each player having a bye
+      int numRounds = ((grpSize % 2) == 0) ? grpSize-1 : grpSize;
+
+      if (numRounds > result) result = numRounds;
+    }
+
+    return result;
+  }
 
 //----------------------------------------------------------------------------
 

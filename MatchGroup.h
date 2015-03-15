@@ -14,8 +14,11 @@
 #include "TournamentErrorCodes.h"
 #include "Category.h"
 #include "Match.h"
+#include "DbTab.h"
 
 #include <QList>
+
+using namespace dbOverlay;
 
 namespace QTournament
 {
@@ -35,11 +38,12 @@ namespace QTournament
     MatchList getMatches() const;
     int getMatchCount() const;
     int getStageSequenceNumber() const;
+    bool hasMatchesInState(OBJ_STATE stat) const;
 
   private:
     MatchGroup(TournamentDB* db, int rowId);
     MatchGroup(TournamentDB* db, dbOverlay::TabRow row);
-
+    DbTab matchTab;
   } ;
 
 }

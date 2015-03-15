@@ -789,6 +789,18 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
+  bool Category::hasMatchesInState(OBJ_STATE stat, int round) const
+  {
+    MatchMngr* mm = Tournament::getMatchMngr();
+
+    MatchGroupList mgl = mm->getMatchGroupsForCat(*this, round);
+    for (MatchGroup mg : mgl)
+    {
+      if (mg.hasMatchesInState(stat)) return true;
+    }
+
+    return false;
+  }
 
   //----------------------------------------------------------------------------
 

@@ -274,12 +274,11 @@ void MainFrame::setupTestScenario(int scenarioID)
     GroupDefList gdl;
     gdl.append(d);
     KO_Config cfg(FINAL, false, gdl);
-    ld.setParameter(GROUP_CONFIG, cfg.toString());
+    assert(ld.setParameter(GROUP_CONFIG, cfg.toString()) == true);
 
     // freeze
     specialCat = ld.convertToSpecializedObject();
     e = cmngr->freezeConfig(ld);
-    qDebug() << static_cast<int>(e);
     assert(e == OK);
 
     // fake a list of player-pair-lists for the group assignments

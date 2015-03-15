@@ -106,6 +106,30 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
+  int RoundRobinCategory::calcTotalRoundsCount()
+  {
+    OBJ_STATE stat = getState();
+    if ((stat == STAT_CAT_CONFIG) || (stat == STAT_CAT_FROZEN))
+    {
+      return -1;   // category not yet fully configured; can't calc rounds
+    }
+
+    // the following call must succeed, since we made it past the
+    // configuration point
+    KO_Config cfg = KO_Config(getParameter_string(GROUP_CONFIG));
+
+    // the number of rounds is
+    // (number of group rounds) + (number of KO rounds)
+    int groupRounds = cfg.getNumRounds();
+
+    KO_START startLevel = cfg.getStartLevel();
+    int eliminationRounds = 1;  // finals
+    if (startLevel != FINAL) ++eliminationRounds; // semi-finals for all, except we dive straight into finals
+    if ((startLevel == QUARTER) || (startLevel == L16)) ++eliminationRounds;  // QF and last 16
+    if (startLevel == L16) ++eliminationRounds;  // round of last 16
+
+    return groupRounds + eliminationRounds;
+  }
 
 //----------------------------------------------------------------------------
 

@@ -425,6 +425,8 @@ namespace QTournament
     }
     if (p == GROUP_CONFIG)
     {
+      if (c.getState() != STAT_CAT_CONFIG) return false;
+
       c.row.update(CAT_GROUP_CONFIG, v.toString());
       return true;
     }
@@ -867,7 +869,6 @@ namespace QTournament
   }
 
 //----------------------------------------------------------------------------
-
 
 //----------------------------------------------------------------------------
 

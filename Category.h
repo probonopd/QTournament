@@ -62,6 +62,7 @@ namespace QTournament
     ERR canApplyInitialRanking(PlayerPairList seed);
     int getGroupNumForPredecessorRound(const int grpNum) const;
     CatRoundStatus getRoundStatus() const;
+    bool hasMatchesInState(OBJ_STATE stat, int round=-1) const;
 
     
     virtual ~Category() {};
@@ -73,6 +74,7 @@ namespace QTournament
     virtual bool needsInitialRanking() { throw std::runtime_error("Unimplemented Method: needsInitialRanking"); };
     virtual bool needsGroupInitialization() { throw std::runtime_error("Unimplemented Method: needsGroupInitialization"); };
     virtual ERR prepareFirstRound(ProgressQueue* progressNotificationQueue=nullptr) { throw std::runtime_error("Unimplemented Method: prepareFirstRound"); };
+    virtual int calcTotalRoundsCount() { throw std::runtime_error("Unimplemented Method: calcTotalRoundsCount"); };
 
   private:
     Category (TournamentDB* db, int rowId);

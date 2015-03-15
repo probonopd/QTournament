@@ -26,6 +26,7 @@ namespace QTournament
     virtual bool needsInitialRanking() override;
     virtual bool needsGroupInitialization() override;
     virtual ERR prepareFirstRound(ProgressQueue* progressNotificationQueue) override;
+    virtual int calcTotalRoundsCount() override;
 
     
   private:

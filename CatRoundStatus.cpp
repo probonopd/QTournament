@@ -26,38 +26,48 @@ CatRoundStatus::~CatRoundStatus()
 
 //----------------------------------------------------------------------------
 
+QList<int> CatRoundStatus::getCurrentlyRunningRoundNumbers() const
+{
+  QList<int> result;
+
+  int lastFinishedRound = getFinishedRoundsCount();
+  int minRoundRunning = -1;
+  int maxRoundRunning = -1;
+
+  // the initial round that could be in state RUNNING
+  int roundToCheck = (lastFinishedRound < 0) ? 1 : lastFinishedRound+1;
+
+  // the last round that can possibly in state RUNNING
+  int lastRoundToCheck = Tournament::getMatchMngr()->getHighestUsedRoundNumberInCategory(cat);
+
+  // loop through all applicable rounds and check their status
+  while (roundToCheck <= lastRoundToCheck)
+  {
+    bool hasFinishedMatches = cat.hasMatchesInState(STAT_MA_FINISHED, roundToCheck);
+    bool hasRunningMatches = cat.hasMatchesInState(STAT_MA_RUNNING, roundToCheck);
+
+    if (hasFinishedMatches || hasRunningMatches)
+    {
+      if (minRoundRunning < 0) minRoundRunning = roundToCheck;
+      if (maxRoundRunning < roundToCheck) maxRoundRunning = roundToCheck;
+      result.append(roundToCheck);
+    }
+
+    ++roundToCheck;
+  }
+
+  return result;
+}
+
 int CatRoundStatus::getCurrentlyRunningRoundNumber() const
 {
-  // filter through all currently running matches
-  // and search for a match that belongs to this
-  // category
-  for (Match ma : Tournament::getMatchMngr()->getCurrentlyRunningMatches())
-  {
-    if (ma.getCategory() == cat)
-    {
-      return ma.getMatchGroup().getRound();
-    }
-  }
+  QList<int> runningRounds = getCurrentlyRunningRoundNumbers();
+  int n = runningRounds.count();
 
-  // in some cases, a round is running but no match
-  // of this round is currently being played
-  //
-  // read: SOME matches in this round are finished,
-  // some are not and none is currently running
-  //
-  // good news: we only need to check finishedRounds+1 for this
-  // ugly border case
-  int finishedRounds = getFinishedRoundsCount();
-  if (finishedRounds == NO_ROUNDS_FINISHED_YET) finishedRounds = 0;
-  for (MatchGroup mg : Tournament::getMatchMngr()->getMatchGroupsForCat(cat, finishedRounds+1))
-  {
-    for (Match ma : mg.getMatches())
-    {
-      if (ma.getState() == STAT_MA_FINISHED) return finishedRounds+1;
-    }
-  }
+  if (n < 1) return NO_CURRENTLY_RUNNING_ROUND;
+  if (n == 1) return runningRounds.at(0);
 
-  return NO_CURRENTLY_RUNNING_ROUND;  // any other case
+  return MULTIPLE_ROUNDS_RUNNING;  // can happen in group match rounds
 }
 
 //----------------------------------------------------------------------------
@@ -105,23 +115,29 @@ int CatRoundStatus::getFinishedRoundsCount() const
 
 tuple<int, int, int> CatRoundStatus::getMatchCountForCurrentRound() const
 {
-  int curRound = getCurrentlyRunningRoundNumber();
-  if (curRound == NO_CURRENTLY_RUNNING_ROUND)
+  QList<int> runningRounds = getCurrentlyRunningRoundNumbers();
+
+  if (runningRounds.count() == 0)
   {
-    return make_tuple(curRound, curRound, curRound);
+    int tmp = NO_CURRENTLY_RUNNING_ROUND;
+    return make_tuple(tmp, tmp, tmp);
   }
 
   int unfinishedMatchCount = 0;
   int runningMatchCount = 0;
   int totalMatchCount = 0;
-  MatchGroupList matchGroupsInThisRound = Tournament::getMatchMngr()->getMatchGroupsForCat(cat, curRound);
-  for (MatchGroup mg : matchGroupsInThisRound)
+
+  for (int curRound : runningRounds)
   {
-    for (Match ma : mg.getMatches())
+    MatchGroupList matchGroupsInThisRound = Tournament::getMatchMngr()->getMatchGroupsForCat(cat, curRound);
+    for (MatchGroup mg : matchGroupsInThisRound)
     {
-      if (ma.getState() != STAT_MA_FINISHED) ++unfinishedMatchCount;
-      if (ma.getState() == STAT_MA_RUNNING) ++runningMatchCount;
-      ++totalMatchCount;
+      for (Match ma : mg.getMatches())
+      {
+        if (ma.getState() != STAT_MA_FINISHED) ++unfinishedMatchCount;
+        if (ma.getState() == STAT_MA_RUNNING) ++runningMatchCount;
+        ++totalMatchCount;
+      }
     }
   }
 

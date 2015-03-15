@@ -1234,9 +1234,36 @@ namespace QTournament {
 
 //----------------------------------------------------------------------------
 
+  bool MatchMngr::hasMatchesInCategory(const Category &cat, int round) const
+  {
+    MatchGroupList mgl = getMatchGroupsForCat(cat, round);
+    for (MatchGroup mg : mgl)
+    {
+      if (mg.getMatchCount() > 0) return true;
+    }
+
+    return false;
+  }
 
 //----------------------------------------------------------------------------
 
+  int MatchMngr::getHighestUsedRoundNumberInCategory(const Category& cat) const
+  {
+    // do we have match groups in this category at all?
+    int grpCount = groupTab.getMatchCountForColumnValue(MG_CAT_REF, cat.getId());
+    if (grpCount == 0) return 0;
+
+    // query the highest used round number
+    QString sql = "SELECT max(" + MG_GRP_NUM + ") FROM " + TAB_MATCH_GROUP;
+
+    QVariant result = db->execScalarQuery(sql);
+    if ( (!(result.isValid())) || (result.isNull()))
+    {
+      return 0;  // shouldn't happen, but anyway...
+    }
+
+    return result.toInt();
+  }
 
 //----------------------------------------------------------------------------
 

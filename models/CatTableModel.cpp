@@ -50,14 +50,14 @@ QVariant CategoryTableModel::data(const QModelIndex& index, int role) const
     
     Category c = Tournament::getCatMngr()->getCategoryBySeqNum(index.row());
     
-    // first column: name
-    if (index.column() == 0)
+    // name
+    if (index.column() == COL_NAME)
     {
       return c.getName();
     }
 
-    // second column: number of finished rounds
-    if (index.column() == 1)
+    // number of finished rounds
+    if (index.column() == COL_FINISHED_ROUNDS)
     {
       CatRoundStatus crs = c.getRoundStatus();
       int finishedRounds = crs.getFinishedRoundsCount();
@@ -69,21 +69,34 @@ QVariant CategoryTableModel::data(const QModelIndex& index, int role) const
       return finishedRounds;
     }
 
-    // third column: number of currently played round
-    if (index.column() == 2)
+    // number of currently played round
+    if (index.column() == COL_CURRENT_ROUND)
     {
       CatRoundStatus crs = c.getRoundStatus();
       int currentRoundNum = crs.getCurrentlyRunningRoundNumber();
+
       if (currentRoundNum == CatRoundStatus::NO_CURRENTLY_RUNNING_ROUND)
       {
         return "--";
       }
 
+      if (currentRoundNum == CatRoundStatus::MULTIPLE_ROUNDS_RUNNING)
+      {
+        // generate a comma-separated list of currently running rounds
+        QList<int> runningRounds = crs.getCurrentlyRunningRoundNumbers();
+        QString result = "";
+        for (int round : runningRounds)
+        {
+          result += QString::number(round) + ", ";
+        }
+        return result.left(result.length() - 2);
+      }
+
       return currentRoundNum;
     }
 
-    // fourth column: total number of matches in the current round
-    if (index.column() == 3)
+    // total number of matches in the current round
+    if (index.column() == COL_TOTAL_MATCHES)
     {
       CatRoundStatus crs = c.getRoundStatus();
       auto matchStat = crs.getMatchCountForCurrentRound();
@@ -96,8 +109,8 @@ QVariant CategoryTableModel::data(const QModelIndex& index, int role) const
       return total;
     }
 
-    // fifth column: number of unfinished matches in the current round
-    if (index.column() == 4)
+    // number of unfinished matches in the current round
+    if (index.column() == COL_UNFINISHED_MATCHES)
     {
       CatRoundStatus crs = c.getRoundStatus();
       auto matchStat = crs.getMatchCountForCurrentRound();
@@ -110,8 +123,8 @@ QVariant CategoryTableModel::data(const QModelIndex& index, int role) const
       return unfinished;
     }
 
-    // sixth column: number of running matches in the current round
-    if (index.column() == 5)
+    // number of running matches in the current round
+    if (index.column() == COL_RUNNING_MATCHES)
     {
       CatRoundStatus crs = c.getRoundStatus();
       auto matchStat = crs.getMatchCountForCurrentRound();
@@ -124,8 +137,8 @@ QVariant CategoryTableModel::data(const QModelIndex& index, int role) const
       return runningMatches;
     }
 
-    // seventh column: number of waiting matches in the current round
-    if (index.column() == 6)
+    // number of waiting matches in the current round
+    if (index.column() == COL_WAITING_MATCHES)
     {
       CatRoundStatus crs = c.getRoundStatus();
       auto matchStat = crs.getMatchCountForCurrentRound();
@@ -140,6 +153,16 @@ QVariant CategoryTableModel::data(const QModelIndex& index, int role) const
 
       return waitingMatches;
     }
+
+    // total number of rounds
+    if (index.column() == COL_TOTAL_ROUNDS)
+    {
+      auto specialCat = c.convertToSpecializedObject();
+      int result = specialCat->calcTotalRoundsCount();
+      if (result > 0) return result;
+      return "--";
+    }
+
     return QString("Not Implemented");
 }
 
@@ -154,32 +177,36 @@ QVariant CategoryTableModel::headerData(int section, Qt::Orientation orientation
   
   if (orientation == Qt::Horizontal)
   {
-    if (section == 0) {
+    if (section == COL_NAME) {
       return tr("Name");
     }
     
-    if (section == 1) {
+    if (section == COL_FINISHED_ROUNDS) {
       return tr("Finished rounds");
     }
 
-    if (section == 2) {
+    if (section == COL_CURRENT_ROUND) {
       return tr("Current round");
     }
 
-    if (section == 3) {
+    if (section == COL_TOTAL_MATCHES) {
       return tr("Total matches\nin current round");
     }
 
-    if (section == 4) {
+    if (section == COL_UNFINISHED_MATCHES) {
       return tr("Unfinished matches\nin current round");
     }
 
-    if (section == 5) {
+    if (section == COL_RUNNING_MATCHES) {
       return tr("Running matches\nin current round");
     }
 
-    if (section == 6) {
+    if (section == COL_WAITING_MATCHES) {
       return tr("Waiting matches\nin current round");
+    }
+
+    if (section == COL_TOTAL_ROUNDS) {
+      return tr("Total rounds");
     }
 
     return QString("Not implemented");
