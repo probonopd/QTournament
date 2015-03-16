@@ -8,6 +8,7 @@
 #include <assert.h>
 #include "MatchMngr.h"
 #include "Tournament.h"
+#include "CatRoundStatus.h"
 
 using namespace dbOverlay;
 
@@ -1080,6 +1081,11 @@ namespace QTournament {
       return INVALID_MATCH_RESULT_FOR_CATEGORY_SETTINGS;
     }
 
+    // conserve the round status BEFORE we finalize the match.
+    // we need this information later to detect whether we've finished
+    // a round or not
+    CatRoundStatus crsBeforeMatch = ma.getCategory().getRoundStatus();
+
 
     // EXTREMELY IMPORTANT:
     // Always maintain this sequence when updating object states:
@@ -1130,6 +1136,17 @@ namespace QTournament {
 
     // update the category's state to "FINALIZED", if necessary
     Tournament::getCatMngr()->updateCatStatusFromMatchStatus(ma.getCategory());
+
+    // get the round status AFTER the match and check whether
+    // we'e just finished a round
+    CatRoundStatus crsAfterMatch = ma.getCategory().getRoundStatus();
+    if (crsAfterMatch.getFinishedRoundsCount() != crsBeforeMatch.getFinishedRoundsCount())
+    {
+      // call the hook for finished rounds (e.g., for updating the ranking information
+      // or for generating new matches)
+      auto specialCat = ma.getCategory().convertToSpecializedObject();
+      specialCat->onRoundCompleted(crsBeforeMatch.getFinishedRoundsCount());
+    }
 
     // TODO: add finish time to database
 
@@ -1267,6 +1284,12 @@ namespace QTournament {
 
 //----------------------------------------------------------------------------
 
+  unique_ptr<Match> MatchMngr::getMatchForPlayerPairAndRound(const PlayerPair &pp, int round) const
+  {
+    QString sId = QString::number(pp.getPairId());
+    QString where = MA_PAIR1_REF + " = " + sId + " OR " + MA_PAIR2_REF + " = " + sId;
+    return getSingleObjectByWhereClause<Match>(matchTab, where);
+  }
 
 //----------------------------------------------------------------------------
 

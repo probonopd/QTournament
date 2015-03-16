@@ -63,7 +63,9 @@ HEADERS += \
     ui/CourtTableView.h \
     Score.h \
     ui/delegates/CourtItemDelegate.h \
-    CatRoundStatus.h
+    CatRoundStatus.h \
+    RankingMngr.h \
+    RankingEntry.h
 
 SOURCES += \
     Category.cpp \
@@ -117,7 +119,9 @@ SOURCES += \
     ui/CourtTableView.cpp \
     Score.cpp \
     ui/delegates/CourtItemDelegate.cpp \
-    CatRoundStatus.cpp
+    CatRoundStatus.cpp \
+    RankingMngr.cpp \
+    RankingEntry.cpp
 
 RESOURCES += \
     tournament.qrc

@@ -30,7 +30,7 @@ namespace QTournament
     KeyValueTab cfg;
 
     template<class T>
-    QList<T> getObjectsByColumnValue(const DbTab& objectTab, QVariantList qvl) const
+    QList<T> getObjectsByColumnValue(const DbTab& objectTab, const QVariantList& qvl) const
     {
       DbTab::CachingRowIterator it = objectTab.getRowsByColumnValue(qvl);
       return iterator2Objects<T>(it);
@@ -67,6 +67,30 @@ namespace QTournament
         ++it;
       }
       return result;
+    }
+
+    template<class T>
+    unique_ptr<T> getSingleObjectByColumnValue(const DbTab& objectTab, const QVariantList& qvl) const
+    {
+      try
+      {
+        TabRow r = objectTab.getSingleRowByColumnValue(qvl);
+        return unique_ptr<T>(new T(db, r));
+      } catch (std::exception e) {
+      }
+      return nullptr;
+    }
+
+    template<class T>
+    unique_ptr<T> getSingleObjectByWhereClause(const DbTab& objectTab, const QString& where, const QVariantList& args=QVariantList()) const
+    {
+      try
+      {
+        TabRow r = objectTab.getSingleRowByWhereClause(where, args);
+        return unique_ptr<T>(new T(db, r));
+      } catch (std::exception e) {
+      }
+      return nullptr;
     }
   };
 

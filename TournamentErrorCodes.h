@@ -64,6 +64,8 @@ namespace QTournament
         NO_COURT_ASSIGNED,
         PLAYER_NOT_IDLE,
         PLAYER_NOT_PLAYING,
+        ROUND_NOT_FINISHED,
+        RANKING_ALREADY_EXISTS
     };
 }
 

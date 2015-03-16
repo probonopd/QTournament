@@ -44,6 +44,7 @@ namespace QTournament
     MatchList getCurrentlyRunningMatches() const;
     MatchList getMatchesForMatchGroup(const MatchGroup& grp) const;
     unique_ptr<Match> getMatchForCourt(const Court& court);
+    unique_ptr<Match> getMatchForPlayerPairAndRound(const PlayerPair& pp, int round) const;
 
     // boolean hasXXXXX functions for MATCHES
     bool hasMatchesInCategory(const Category& cat, int round=-1) const;

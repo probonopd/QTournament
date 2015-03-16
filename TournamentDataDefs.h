@@ -189,7 +189,23 @@ namespace QTournament
   
 //----------------------------------------------------------------------------
 
-  
+#define TAB_RANKING QString("Ranking")
+#define RA_ROUND  QString("Round")
+#define RA_PAIR_REF  QString("PlayerPairRef")
+#define RA_GAMES_WON  QString("GamesWon")
+#define RA_GAMES_LOST  QString("GamesLost")
+#define RA_MATCHES_WON  QString("MatchesWon")
+#define RA_MATCHES_LOST  QString("MatchesLost")
+#define RA_MATCHES_DRAW  QString("MatchesDraw")
+#define RA_POINTS_WON  QString("PointsWon")
+#define RA_POINTS_LOST  QString("PointsLost")
+#define RA_RANK  QString("Rank")
+#define RA_CAT_REF  QString("CategoryRef")
+//#define RA_  QString("")
+//#define RA_  QString("")
+//#define RA_  QString("")
+//#define RA_  QString("")
+
 //----------------------------------------------------------------------------
 
   
