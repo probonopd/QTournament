@@ -1286,9 +1286,18 @@ namespace QTournament {
 
   unique_ptr<Match> MatchMngr::getMatchForPlayerPairAndRound(const PlayerPair &pp, int round) const
   {
+    auto cat = pp.getCategory(db);
+    if (cat == nullptr) return nullptr;
+
     QString sId = QString::number(pp.getPairId());
-    QString where = MA_PAIR1_REF + " = " + sId + " OR " + MA_PAIR2_REF + " = " + sId;
-    return getSingleObjectByWhereClause<Match>(matchTab, where);
+    for (MatchGroup mg : getMatchGroupsForCat(*cat, round))
+    {
+      QString where = "(" + MA_PAIR1_REF + " = " + sId + " OR " + MA_PAIR2_REF + " = " + sId + ")";
+      where += " AND " + MA_GRP_REF + " = " + QString::number(mg.getId());
+      auto result = getSingleObjectByWhereClause<Match>(matchTab, where);
+      if (result != nullptr) return result;
+    }
+    return nullptr;
   }
 
 //----------------------------------------------------------------------------

@@ -53,6 +53,8 @@ protected:
   QTournament::TournamentDB* getScenario04(bool useTeams = true);
   void prepScenario05(bool useTeams = true);
   QTournament::TournamentDB* getScenario05(bool useTeams = true);
+  void prepScenario06(bool useTeams = true);
+  QTournament::TournamentDB* getScenario06(bool useTeams = true);
 
   void execQueryAndDumpError(QSqlQuery& qry, const QString& sqlStatement="");
 

@@ -92,8 +92,8 @@ namespace QTournament
     // for performance reasons, we issue a single SQL-statement here
     // instead of looping through all matches in the group
     QString where = MA_GRP_REF + " = " + QString::number(row.getId());
-    where += " AND " + GENERIC_NAME_FIELD_NAME + " != ";
-    where += static_cast<int>(stat);
+    where += " AND " + GENERIC_STATE_FIELD_NAME + " != ";
+    where += QString::number(static_cast<int>(stat));
 
     return (matchTab.getMatchCountForWhereClause(where) > 0);
   }

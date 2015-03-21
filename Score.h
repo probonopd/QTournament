@@ -55,6 +55,8 @@ public:
   int getLoser() const;
 
   int getNumGames() const;
+  int getPointsSum() const;
+
   unique_ptr<GameScore> getGame(int n) const;
 
   tuple<int, int> getScoreSum() const;

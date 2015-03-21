@@ -47,13 +47,42 @@ namespace QTournament
       ppList = _ppList;
     }
 
+    // make sure that all matches for these player pairs have
+    // valid results. We need to check this in a separate loop
+    // to avoid that the ranking entries have already been
+    // halfway written to the database when we encore an invalid
+    // match
+    for (PlayerPair pp : ppList)
+    {
+      unique_ptr<Match> ma = Tournament::getMatchMngr()->getMatchForPlayerPairAndRound(pp, lastRound);
+      if (ma != nullptr)
+      {
+        ERR e;
+        unique_ptr<MatchScore> score = ma->getScore(&e);
+        if (e != OK)
+        {
+          if (err != nullptr) *err = e;
+          return RankingEntryList();
+        }
+        if (score == nullptr)
+        {
+          if (err != nullptr) *err = NO_MATCH_RESULT_SET;
+          return RankingEntryList();
+        }
+      }
+    }
+
+    //
+    // Okay, we can be pretty sure that the rest of this method
+    // succeeds and that we leave the database in a consistent state
+    //
+
+
     // iterate over the player pair list and create entries
     // based on match result and, possibly, previous ranking entries
     RankingEntryList result;
     for (PlayerPair pp : ppList)
     {
-      unique_ptr<Match> ma = Tournament::getMatchMngr()->getMatchForPlayerPairAndRound(pp, lastRound);
-
       // prepare the values for the new entry
       int wonMatches = 0;
       int drawMatches = 0;
@@ -62,6 +91,10 @@ namespace QTournament
       int lostGames = 0;
       int wonPoints = 0;
       int lostPoints = 0;
+
+      // get match results, if the player played in this round
+      // (maybe the player had a bye; in this case we skip this section)
+      unique_ptr<Match> ma = Tournament::getMatchMngr()->getMatchForPlayerPairAndRound(pp, lastRound);
       if (ma != nullptr)
       {
         // determine whether our pp is player 1 or player 2
@@ -69,7 +102,10 @@ namespace QTournament
         int playerNum = (pp1Id == pp.getPairId()) ? 1 : 2;
 
         // create column values for match data
-        unique_ptr<MatchScore> score = ma->getScore();
+        ERR e;
+        unique_ptr<MatchScore> score = ma->getScore(&e);
+        if (score == nullptr) qDebug() << "!!! NULL !!!";
+        if (e != OK) qDebug() << e;
         wonMatches = (score->getWinner() == playerNum) ? 1 : 0;
         lostMatches = (score->getLoser() == playerNum) ? 1 : 0;
         drawMatches = (score->getWinner() == 0) ? 1 : 0;
@@ -82,9 +118,8 @@ namespace QTournament
 
         // create column values for point data
         tuple<int, int> scoreSum = score->getScoreSum();
-        int pointsTotal = get<0>(scoreSum) + get<1>(scoreSum);
         wonPoints = (playerNum == 1) ? get<0>(scoreSum) : get<1>(scoreSum);
-        lostPoints = pointsTotal - wonPoints;
+        lostPoints = score->getPointsSum() - wonPoints;
       }
 
       // add values from previous round, if required

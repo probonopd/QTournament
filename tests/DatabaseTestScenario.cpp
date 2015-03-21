@@ -15,6 +15,7 @@
 #include "Tournament.h"
 #include "TournamentDataDefs.h"
 #include "TournamentDB.h"
+#include "CatRoundStatus.h"
 
 #include <QtSql/QSqlQuery>
 #include <QFile>
@@ -468,9 +469,99 @@ TournamentDB* DatabaseTestScenario::getScenario05(bool useTeams)
 
 //----------------------------------------------------------------------------
     
+// Extend scenario05 by scheduling and running all matches
+// in round 1
+void DatabaseTestScenario::prepScenario06(bool useTeams)
+{
+  prepScenario05(useTeams);
+  Tournament t(getSqliteFileName());
+  MatchMngr* mm = Tournament::getMatchMngr();
+  CatMngr* cm = Tournament::getCatMngr();
+
+  // stage all match groups in round 1 to 5
+  Category ms = cm->getCategory("MS");
+  for (int round=1; round < 6; ++round)
+  {
+    for (MatchGroup mg : mm->getMatchGroupsForCat(ms, round))
+    {
+      CPPUNIT_ASSERT(mm->stageMatchGroup(mg) == OK);
+    }
+  }
+
+  // schedule all match groups in round 1
+  mm->scheduleAllStagedMatchGroups();
+
+  // 80 matches should now be scheduled
+  // (8 groups with 5 players each, means: 8 groups with 5 rounds of 2 matches each)
+  qDebug() << "Matches scheduled = " << mm->getMaxMatchNum();
+  CPPUNIT_ASSERT(mm->getMaxMatchNum() == 80);
+
+  // create a court for playing the matches
+  auto court = Tournament::getCourtMngr()->createNewCourt(1, "1", nullptr);
+  CPPUNIT_ASSERT(court != nullptr);
+
+  // run the matches in round 1 (16 matches) one-by-one
+  int callCount = 0;
+      while(true)
+  {
+      int nextMatchId = 0;
+      for (MatchGroup mg : mm->getMatchGroupsForCat(ms, 1))
+      {
+        for (Match ma : mg.getMatches())
+        {
+          if (ma.getState() == STAT_MA_READY)
+          {
+            nextMatchId = ma.getId();
+            qDebug() << "   Found match! ID = " << nextMatchId << ", round = " << ma.getMatchGroup().getRound() << ", group = " << ma.getMatchGroup().getGroupNumber();
+            break;
+          }
+        }
+        if (nextMatchId > 0) break;
+      }
+      if (nextMatchId < 1) break;
+
+      // get the next callable match
+      auto ma = mm->getMatch(nextMatchId);
+
+      // start the match
+      CPPUNIT_ASSERT(mm->assignMatchToCourt(*ma, *court) == OK);
+      CPPUNIT_ASSERT((*ma).getState() == STAT_MA_RUNNING);
+
+      // finish the match with a random result
+      auto score = MatchScore::genRandomScore();
+      CPPUNIT_ASSERT(score != nullptr);
+      CPPUNIT_ASSERT(mm->setMatchScoreAndFinalizeMatch(*ma, *score) == OK);
+      CPPUNIT_ASSERT((*ma).getState() == STAT_MA_FINISHED);
+      ERR e;
+      auto storedScore = ma->getScore(&e);
+      CPPUNIT_ASSERT(e == OK);
+      CPPUNIT_ASSERT(storedScore != nullptr);
+      CPPUNIT_ASSERT(storedScore->toString() == score->toString());
+      qDebug() << "Result of match ID " << ma->getId() << ": " + storedScore->toString();
+
+      // make sure that round 1 is not yet identified as "finished"
+      CatRoundStatus crs = ms.getRoundStatus();
+      if (callCount < 15)
+      {
+        CPPUNIT_ASSERT(crs.getFinishedRoundsCount() == CatRoundStatus::NO_ROUNDS_FINISHED_YET);
+      } else {
+        CPPUNIT_ASSERT(crs.getFinishedRoundsCount() == 1);
+      }
+
+      ++callCount;
+  }
+  qDebug() << "Matches called = " << callCount;
+  CPPUNIT_ASSERT(callCount == 16);
+
+}
 
 //----------------------------------------------------------------------------
     
+TournamentDB* DatabaseTestScenario::getScenario06(bool useTeams)
+{
+  prepScenario06(useTeams);
+  return new TournamentDB(getSqliteFileName(), false);
+}
 
 //----------------------------------------------------------------------------
     

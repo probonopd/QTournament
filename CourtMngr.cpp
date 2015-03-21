@@ -24,19 +24,17 @@ namespace QTournament
 
   unique_ptr<Court> CourtMngr::createNewCourt(const int courtNum, const QString& _name, ERR *err)
   {
-    assert (err != nullptr);
-
     QString name = _name.trimmed();
     
     if (name.length() > MAX_NAME_LEN)
     {
-      *err = INVALID_NAME;
+      if (err != nullptr) *err = INVALID_NAME;
       return nullptr;
     }
     
     if (hasCourt(courtNum))
     {
-      *err = COURT_NUMBER_EXISTS;
+      if (err != nullptr) *err = COURT_NUMBER_EXISTS;
       return nullptr;
     }
     
@@ -56,7 +54,7 @@ namespace QTournament
     // create a court object for the new court and return a pointer
     // to this new object
     Court* co_raw = new Court(db, newId);
-    *err = OK;
+    if (err != nullptr) *err = OK;
     return unique_ptr<Court>(co_raw);
   }
 

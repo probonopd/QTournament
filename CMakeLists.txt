@@ -30,6 +30,7 @@ set(QTournament_Sources
     tournament.qrc
     Category.cpp 
     CatMngr.cpp
+    CatRoundStatus.cpp
     Court.cpp
     CourtMngr.cpp 
     GenericDatabaseObject.cpp 
@@ -42,6 +43,8 @@ set(QTournament_Sources
     Player.cpp 
     PlayerMngr.cpp 
     PlayerPair.cpp 
+    RankingEntry.cpp
+    RankingMngr.cpp
     RoundRobinCategory.cpp 
     RoundRobinGenerator.cpp 
     Score.cpp
@@ -74,6 +77,7 @@ set(QTournament_Sources_UI
     ui/TeamListView.cpp 
     ui/TeamTabWidget.cpp 
     ui/delegates/CatItemDelegate.cpp 
+    ui/delegates/CourtItemDelegate.cpp
     ui/delegates/DelegateItemLED.cpp 
     ui/delegates/MatchItemDelegate.cpp
     ui/delegates/PairItemDelegate.cpp 
@@ -95,6 +99,7 @@ set(QTournament_Tests
     tests/tstMatch.cpp
     tests/tstCatMngr.cpp
     tests/tstMatchMngr.cpp
+    tests/tstRankingMngr.cpp
     tests/tstTeamMngr.cpp)
     
 add_executable(QTournament main.cpp ${QTournament_Sources} ${QTournament_Sources_UI})
