@@ -47,6 +47,14 @@ namespace QTournament
     // sequence: won, lost
     tuple<int, int> getPointStats() const;
 
+    // required for sort()
+    friend void swap(RankingEntry& a, RankingEntry& b) noexcept
+    {
+      // only swap the row member; no need to swap the DB-pointer
+      // because it is identical for both instances
+      swap(a.row, b.row);
+    }
+
   private:
     RankingEntry (TournamentDB* db, int rowId);
     RankingEntry (TournamentDB* db, dbOverlay::TabRow row);

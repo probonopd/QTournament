@@ -201,7 +201,7 @@ namespace QTournament
 #define RA_POINTS_LOST  QString("PointsLost")
 #define RA_RANK  QString("Rank")
 #define RA_CAT_REF  QString("CategoryRef")
-//#define RA_  QString("")
+#define RA_GRP_NUM  QString("MatchGroupNumber")
 //#define RA_  QString("")
 //#define RA_  QString("")
 //#define RA_  QString("")

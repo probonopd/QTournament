@@ -65,7 +65,7 @@ namespace QTournament
 
   int RankingEntry::getGroupNumber() const
   {
-    return getPlayerPair().getPairsGroupNum(db);
+    return row[RA_GRP_NUM].toInt();
   }
 
 //----------------------------------------------------------------------------
@@ -112,7 +112,6 @@ namespace QTournament
   }
 
 //----------------------------------------------------------------------------
-
 
 //----------------------------------------------------------------------------
 

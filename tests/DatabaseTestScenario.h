@@ -23,9 +23,12 @@
 #include "BasicTestClass.h"
 #include "GenericDatabase.h"
 #include "TournamentDB.h"
+#include "Category.h"
 
 class DatabaseTestScenario : public BasicTestClass
 {
+  //class Category;
+
 public:
 
 protected:
@@ -57,6 +60,8 @@ protected:
   QTournament::TournamentDB* getScenario06(bool useTeams = true);
 
   void execQueryAndDumpError(QSqlQuery& qry, const QString& sqlStatement="");
+
+  bool playRound(const QTournament::Category& cat, int round, int expectedMatchCount);
 
 public:
   virtual void tearDown ();

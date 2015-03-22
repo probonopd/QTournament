@@ -133,6 +133,32 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
+  // this return a function that should return true if "a" goes before "b" when sorting. Read:
+  // return a function that return true true if the score of "a" is better than "b"
+  std::function<bool (RankingEntry& a, RankingEntry& b)> RoundRobinCategory::getLessThanFunction()
+  {
+    return [](RankingEntry& a, RankingEntry& b) {
+      // first criteria: won matches
+      tuple<int, int, int, int> matchStatsA = a.getMatchStats();
+      tuple<int, int, int, int> matchStatsB = b.getMatchStats();
+      if ((get<0>(matchStatsA)) > (get<0>(matchStatsB))) return true;
+
+      // second criteria: won games
+      tuple<int, int, int> gameStatsA = a.getGameStats();
+      tuple<int, int, int> gameStatsB = b.getGameStats();
+      if ((get<0>(gameStatsA)) > (get<0>(gameStatsB))) return true;
+
+      // third criteria: more points
+      tuple<int, int> pointStatsA = a.getPointStats();
+      tuple<int, int> pointStatsB = b.getPointStats();
+      if ((get<0>(pointStatsA)) > (get<0>(pointStatsB))) return true;
+
+      // TODO: add a direct comparison as additional criteria?
+
+      // Default: "a" is not strictly better than "b", so we return false
+      return false;
+    };
+  }
 
 //----------------------------------------------------------------------------
 

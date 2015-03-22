@@ -9,6 +9,7 @@
 #define	CATEGORY_H
 
 #include <memory>
+#include <functional>
 
 #include "GenericDatabaseObject.h"
 #include "TournamentDB.h"
@@ -22,6 +23,7 @@
 namespace QTournament
 {
   class CatRoundStatus;
+  class RankingEntry;
 
   class Category : public GenericDatabaseObject
   {
@@ -76,6 +78,7 @@ namespace QTournament
     virtual ERR prepareFirstRound(ProgressQueue* progressNotificationQueue=nullptr) { throw std::runtime_error("Unimplemented Method: prepareFirstRound"); };
     virtual int calcTotalRoundsCount() { throw std::runtime_error("Unimplemented Method: calcTotalRoundsCount"); };
     virtual void onRoundCompleted(int round) { throw std::runtime_error("Unimplemented Method: onRoundCompleted"); };
+    virtual std::function<bool (RankingEntry&, RankingEntry&)> getLessThanFunction()  { throw std::runtime_error("Unimplemented Method: getLessThanFunction"); };
 
   private:
     Category (TournamentDB* db, int rowId);

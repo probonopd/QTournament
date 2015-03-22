@@ -18,8 +18,8 @@
 class tstRankingMngr : public DatabaseTestScenario
 {
   CPPUNIT_TEST_SUITE( tstRankingMngr );
-    CPPUNIT_TEST(testCreateUnsortedRanking);
-//  CPPUNIT_TEST();
+    //CPPUNIT_TEST(testCreateUnsortedRanking);
+    CPPUNIT_TEST(testSortRanking__RoundRobin);
 //  CPPUNIT_TEST();
 //  CPPUNIT_TEST();
 //  CPPUNIT_TEST();
@@ -35,6 +35,10 @@ class tstRankingMngr : public DatabaseTestScenario
   
 public:
   void testCreateUnsortedRanking();
+  void testSortRanking__RoundRobin();
+
+private:
+  void checkSortSequence__RoundRobin(int round);
 };
 
 #endif	/* TSTRANKINGMNGR_H */

@@ -10,6 +10,7 @@
 
 #include "Category.h"
 #include "ThreadSafeQueue.h"
+#include "RankingEntry.h"
 
 
 using namespace dbOverlay;
@@ -27,6 +28,7 @@ namespace QTournament
     virtual bool needsGroupInitialization() override;
     virtual ERR prepareFirstRound(ProgressQueue* progressNotificationQueue) override;
     virtual int calcTotalRoundsCount() override;
+    virtual std::function<bool(RankingEntry& a, RankingEntry& b)> getLessThanFunction() override;
 
     
   private:

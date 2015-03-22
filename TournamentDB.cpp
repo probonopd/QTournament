@@ -140,6 +140,7 @@ void TournamentDB::populateTables()
     cols << RA_ROUND + " INTEGER";
     cols << genForeignKeyClause(RA_PAIR_REF, TAB_PAIRS);
     cols << genForeignKeyClause(RA_CAT_REF, TAB_CATEGORY);  // this eases searching in the tab. theoretically, the category could be derived from the player pair
+    cols << RA_GRP_NUM << " INTEGER";   // this eases searching in the tab. theoretically, the group number could be derived from the player pair
     cols << RA_GAMES_WON  + " INTEGER";
     cols << RA_GAMES_LOST  + " INTEGER";
     cols << RA_MATCHES_WON  + " INTEGER";

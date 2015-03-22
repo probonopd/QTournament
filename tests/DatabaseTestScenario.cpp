@@ -16,6 +16,7 @@
 #include "TournamentDataDefs.h"
 #include "TournamentDB.h"
 #include "CatRoundStatus.h"
+#include "Category.h"
 
 #include <QtSql/QSqlQuery>
 #include <QFile>
@@ -501,58 +502,8 @@ void DatabaseTestScenario::prepScenario06(bool useTeams)
   CPPUNIT_ASSERT(court != nullptr);
 
   // run the matches in round 1 (16 matches) one-by-one
-  int callCount = 0;
-      while(true)
-  {
-      int nextMatchId = 0;
-      for (MatchGroup mg : mm->getMatchGroupsForCat(ms, 1))
-      {
-        for (Match ma : mg.getMatches())
-        {
-          if (ma.getState() == STAT_MA_READY)
-          {
-            nextMatchId = ma.getId();
-            qDebug() << "   Found match! ID = " << nextMatchId << ", round = " << ma.getMatchGroup().getRound() << ", group = " << ma.getMatchGroup().getGroupNumber();
-            break;
-          }
-        }
-        if (nextMatchId > 0) break;
-      }
-      if (nextMatchId < 1) break;
-
-      // get the next callable match
-      auto ma = mm->getMatch(nextMatchId);
-
-      // start the match
-      CPPUNIT_ASSERT(mm->assignMatchToCourt(*ma, *court) == OK);
-      CPPUNIT_ASSERT((*ma).getState() == STAT_MA_RUNNING);
-
-      // finish the match with a random result
-      auto score = MatchScore::genRandomScore();
-      CPPUNIT_ASSERT(score != nullptr);
-      CPPUNIT_ASSERT(mm->setMatchScoreAndFinalizeMatch(*ma, *score) == OK);
-      CPPUNIT_ASSERT((*ma).getState() == STAT_MA_FINISHED);
-      ERR e;
-      auto storedScore = ma->getScore(&e);
-      CPPUNIT_ASSERT(e == OK);
-      CPPUNIT_ASSERT(storedScore != nullptr);
-      CPPUNIT_ASSERT(storedScore->toString() == score->toString());
-      qDebug() << "Result of match ID " << ma->getId() << ": " + storedScore->toString();
-
-      // make sure that round 1 is not yet identified as "finished"
-      CatRoundStatus crs = ms.getRoundStatus();
-      if (callCount < 15)
-      {
-        CPPUNIT_ASSERT(crs.getFinishedRoundsCount() == CatRoundStatus::NO_ROUNDS_FINISHED_YET);
-      } else {
-        CPPUNIT_ASSERT(crs.getFinishedRoundsCount() == 1);
-      }
-
-      ++callCount;
-  }
-  qDebug() << "Matches called = " << callCount;
-  CPPUNIT_ASSERT(callCount == 16);
-
+  CPPUNIT_ASSERT(playRound(ms, 1, 16));
+  qDebug() << "Matches called = " << 16;
 }
 
 //----------------------------------------------------------------------------
@@ -564,7 +515,70 @@ TournamentDB* DatabaseTestScenario::getScenario06(bool useTeams)
 }
 
 //----------------------------------------------------------------------------
-    
+
+bool DatabaseTestScenario::playRound(const Category &cat, int round, int expectedMatchCount)
+{
+  MatchMngr* mm = Tournament::getMatchMngr();
+  CatMngr* cm = Tournament::getCatMngr();
+
+  // we assume that one court exists
+  auto court = Tournament::getCourtMngr()->getCourt(1);
+  CPPUNIT_ASSERT(court != nullptr);
+
+  // run the matches one-by-one
+  int callCount = 0;
+  while(true)
+  {
+    int nextMatchId = 0;
+    for (MatchGroup mg : mm->getMatchGroupsForCat(cat, round))
+    {
+      for (Match ma : mg.getMatches())
+      {
+        if (ma.getState() == STAT_MA_READY)
+        {
+          nextMatchId = ma.getId();
+          qDebug() << "   Found match! ID = " << nextMatchId << ", round = " << ma.getMatchGroup().getRound() << ", group = " << ma.getMatchGroup().getGroupNumber();
+          break;
+        }
+      }
+      if (nextMatchId > 0) break;
+    }
+    if (nextMatchId < 1) break;
+
+    // get the next callable match
+    auto ma = mm->getMatch(nextMatchId);
+
+    // start the match
+    CPPUNIT_ASSERT(mm->assignMatchToCourt(*ma, *court) == OK);
+    CPPUNIT_ASSERT((*ma).getState() == STAT_MA_RUNNING);
+
+    // finish the match with a random result
+    auto score = MatchScore::genRandomScore();
+    CPPUNIT_ASSERT(score != nullptr);
+    CPPUNIT_ASSERT(mm->setMatchScoreAndFinalizeMatch(*ma, *score) == OK);
+    CPPUNIT_ASSERT((*ma).getState() == STAT_MA_FINISHED);
+    ERR e;
+    auto storedScore = ma->getScore(&e);
+    CPPUNIT_ASSERT(e == OK);
+    CPPUNIT_ASSERT(storedScore != nullptr);
+    CPPUNIT_ASSERT(storedScore->toString() == score->toString());
+    qDebug() << "Result of match ID " << ma->getId() << ": " + storedScore->toString();
+
+    // make sure that the round is not yet identified as "finished"
+    CatRoundStatus crs = cat.getRoundStatus();
+    int expectedLastRound = (round < 2) ? CatRoundStatus::NO_ROUNDS_FINISHED_YET : round-1;
+    if (callCount < (expectedMatchCount-1))
+    {
+        CPPUNIT_ASSERT(crs.getFinishedRoundsCount() == expectedLastRound);
+    } else {
+        CPPUNIT_ASSERT(crs.getFinishedRoundsCount() == round);
+    }
+
+    ++callCount;
+  }
+
+  return (callCount == expectedMatchCount);
+}
 
 //----------------------------------------------------------------------------
     

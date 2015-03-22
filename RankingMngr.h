@@ -29,6 +29,7 @@ namespace QTournament
   class RankingEntry;
 
   typedef QList<RankingEntry> RankingEntryList;
+  typedef QList<RankingEntryList> RankingEntryListList;
 
   class RankingMngr : public QObject, GenericObjectManager
   {
@@ -37,9 +38,11 @@ namespace QTournament
   public:
     RankingMngr (TournamentDB* _db);
     RankingEntryList createUnsortedRankingEntriesForLastRound(const Category &cat, ERR *err=nullptr, PlayerPairList _ppList=PlayerPairList(), bool reset=false);
+    RankingEntryListList sortRankingEntriesForLastRound(const Category &cat, ERR *err=nullptr) const;
 
-    unique_ptr<RankingEntry> getRankingEntry(const Category &cat, const PlayerPair &pp, int round) const;
-    RankingEntryList getSortedRanking(const Category &cat, int round) const;
+    unique_ptr<RankingEntry> getRankingEntry(const PlayerPair &pp, int round) const;
+    unique_ptr<RankingEntry> getRankingEntry(const Category &cat, int round, int grpNum, int rank) const;
+    RankingEntryListList getSortedRanking(const Category &cat, int round) const;
 
   private:
     DbTab rankTab;

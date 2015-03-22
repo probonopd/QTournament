@@ -6,6 +6,7 @@
  */
 
 #include <stdexcept>
+#include <algorithm>
 
 #include "RankingMngr.h"
 #include "Tournament.h"
@@ -129,7 +130,7 @@ namespace QTournament
         // the next call may return nullptr, but this is fine.
         // it just means that there is no old entry to build upon
         // and thus we start with the scoring at zero
-        prevEntry = getRankingEntry(cat, pp, lastRound-1);
+        prevEntry = getRankingEntry(pp, lastRound-1);
       }
 
       if (prevEntry != nullptr)
@@ -160,7 +161,8 @@ namespace QTournament
       qvl << RA_POINTS_LOST << lostPoints;
       qvl << RA_PAIR_REF << pp.getPairId();
       qvl << RA_ROUND << lastRound;
-      qvl << RA_CAT_REF << cat.getId();
+      qvl << RA_CAT_REF << cat.getId();  // eases searching, but is redundant information
+      qvl << RA_GRP_NUM << pp.getPairsGroupNum(db); // eases searching, but is redundant information
 
       // create the new entry and add an instance
       // of the entry to the result list
@@ -174,10 +176,10 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  unique_ptr<RankingEntry> RankingMngr::getRankingEntry(const Category &cat, const PlayerPair &pp, int round) const
+  unique_ptr<RankingEntry> RankingMngr::getRankingEntry(const PlayerPair &pp, int round) const
   {
     QVariantList qvl;
-    qvl << RA_CAT_REF << cat.getId();
+    qvl << RA_CAT_REF << pp.getCategory(db)->getId();
     qvl << RA_PAIR_REF << pp.getPairId();
     qvl << RA_ROUND << round;
 
@@ -186,17 +188,104 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  RankingEntryList RankingMngr::getSortedRanking(const Category &cat, int round) const
+  RankingEntryListList RankingMngr::getSortedRanking(const Category &cat, int round) const
   {
-    QString where = RA_CAT_REF + " = " + QString::number(cat.getId());
-    where += " AND " + RA_ROUND + " = " + QString::number(round);
-    where += " ORDER BY " + RA_RANK + " ASC";
+    RankingEntryListList result;
 
-    return getObjectsByWhereClause<RankingEntry>(rankTab, where);
+    // get separate lists for every match group.
+    //
+    // In non-round-robin matches, this does no harm because
+    // there is only one (artificial) match group in those cases
+    for (MatchGroup mg : Tournament::getMatchMngr()->getMatchGroupsForCat(cat, round))
+    {
+      QString where = RA_CAT_REF + " = " + QString::number(cat.getId());
+      where += " AND " + RA_ROUND + " = " + QString::number(round);
+      where += " AND " + RA_GRP_NUM + " = " + QString::number(mg.getGroupNumber());
+      where += " ORDER BY " + RA_RANK + " ASC";
+
+      result.append(getObjectsByWhereClause<RankingEntry>(rankTab, where));
+    }
+
+    return result;
   }
 
 //----------------------------------------------------------------------------
+
+  RankingEntryListList RankingMngr::sortRankingEntriesForLastRound(const Category& cat, ERR* err) const
+  {
+    // determine the round we should create the entries for
+    CatRoundStatus crs = cat.getRoundStatus();
+    int lastRound = crs.getFinishedRoundsCount();
+    if (lastRound < 1)
+    {
+      if (err != nullptr) *err = ROUND_NOT_FINISHED;
+      return RankingEntryListList();
+    }
+
+    // make sure we have (unsorted) ranking entries
+    QVariantList qvl;
+    qvl << RA_CAT_REF << cat.getId();
+    qvl << RA_ROUND << lastRound;
+    if (rankTab.getMatchCountForColumnValue(qvl) < 1)
+    {
+      if (err != nullptr) *err = MISSING_RANKING_ENTRIES;
+      return RankingEntryListList();
+    }
+
+    // get the category-specific comparison function
+    auto specializedCat = cat.convertToSpecializedObject();
+    auto lessThanFunc = specializedCat->getLessThanFunction();
+
+    // prepare the result object
+    RankingEntryListList result;
+
+    // apply separate sorting for every match group.
+    //
+    // In non-round-robin matches, this does no harm because
+    // there is only one (artificial) match group in those cases
+    qvl << RA_GRP_NUM << 4242;  // dummy number, just to fill the field
+    for (MatchGroup mg : Tournament::getMatchMngr()->getMatchGroupsForCat(cat, lastRound))
+    {
+      // remove last group number
+      // and append the current one
+      qvl.removeLast();
+      qvl << mg.getGroupNumber();
+
+      // get the ranking entries
+      RankingEntryList rankList = getObjectsByColumnValue<RankingEntry>(rankTab, qvl);
+
+      // call the standard sorting algorithm
+      std::sort(rankList.begin(), rankList.end(), lessThanFunc);
+
+      // write the sort results back to the database
+      int rank = 1;
+      for (RankingEntry re : rankList)
+      {
+        re.row.update(RA_RANK, rank);
+        ++rank;
+      }
+
+      // add the sorted group list to the result
+      result.append(rankList);
+    }
+
+    if (err != nullptr) *err = OK;
+    return result;
+  }
+
 //----------------------------------------------------------------------------
+
+  unique_ptr<RankingEntry> RankingMngr::getRankingEntry(const Category& cat, int round, int grpNum, int rank) const
+  {
+    QVariantList qvl;
+    qvl << RA_CAT_REF << cat.getId();
+    qvl << RA_ROUND << round;
+    qvl << RA_GRP_NUM << grpNum;
+    qvl << RA_RANK << rank;
+
+    return getSingleObjectByColumnValue<RankingEntry>(rankTab, qvl);
+  }
+
 //----------------------------------------------------------------------------
 //----------------------------------------------------------------------------
 //----------------------------------------------------------------------------
