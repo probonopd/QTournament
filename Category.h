@@ -77,7 +77,7 @@ namespace QTournament
     virtual bool needsGroupInitialization() { throw std::runtime_error("Unimplemented Method: needsGroupInitialization"); };
     virtual ERR prepareFirstRound(ProgressQueue* progressNotificationQueue=nullptr) { throw std::runtime_error("Unimplemented Method: prepareFirstRound"); };
     virtual int calcTotalRoundsCount() { throw std::runtime_error("Unimplemented Method: calcTotalRoundsCount"); };
-    virtual void onRoundCompleted(int round) { throw std::runtime_error("Unimplemented Method: onRoundCompleted"); };
+    virtual ERR onRoundCompleted(int round) { throw std::runtime_error("Unimplemented Method: onRoundCompleted"); };
     virtual std::function<bool (RankingEntry&, RankingEntry&)> getLessThanFunction()  { throw std::runtime_error("Unimplemented Method: getLessThanFunction"); };
 
   private:

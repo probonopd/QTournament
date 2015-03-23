@@ -13,7 +13,7 @@ const QMap<OBJ_STATE, QColor> DelegateItemLED::state2color = {
   {STAT_MA_READY, Qt::green},
   {STAT_MA_BUSY, Qt::red},
   {STAT_MA_WAITING, Qt::yellow},
-//  {STAT_, Qt::},
+  {STAT_CAT_WAIT_FOR_INTERMEDIATE_SEEDING, Qt::yellow},
 //  {STAT_, Qt::},
 //  {STAT_, Qt::},
 };

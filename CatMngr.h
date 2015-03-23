@@ -52,6 +52,7 @@ namespace QTournament
     ERR unfreezeConfig(const Category& c);
     ERR startCategory(const Category& c, QList<PlayerPairList> grpCfg, PlayerPairList seed, ProgressQueue* progressNotificationQueue=nullptr);
     void updateCatStatusFromMatchStatus(const Category& c);
+    bool switchCatToWaitForSeeding(const Category& cat);
 
   signals:
     void playersPaired(const Category c, const Player& p1, const Player& p2);

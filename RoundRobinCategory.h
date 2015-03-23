@@ -29,6 +29,7 @@ namespace QTournament
     virtual ERR prepareFirstRound(ProgressQueue* progressNotificationQueue) override;
     virtual int calcTotalRoundsCount() override;
     virtual std::function<bool(RankingEntry& a, RankingEntry& b)> getLessThanFunction() override;
+    virtual ERR onRoundCompleted(int round) override;
 
     
   private:

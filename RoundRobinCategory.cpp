@@ -162,6 +162,38 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
+  ERR RoundRobinCategory::onRoundCompleted(int round)
+  {
+    // determine the number of group rounds.
+    //
+    // The following call must succeed, since we made it past the
+    // configuration point
+    KO_Config cfg = KO_Config(getParameter_string(GROUP_CONFIG));
+    int groupRounds = cfg.getNumRounds();
+
+    // if we are still in group rounds, simply calculate the
+    // new ranking
+    if (round <= groupRounds)
+    {
+      RankingMngr* rm = Tournament::getRankingMngr();
+      ERR err;
+      rm->createUnsortedRankingEntriesForLastRound(*this, &err);
+      if (err != OK) return err;  // shouldn't happen
+      rm->sortRankingEntriesForLastRound(*this, &err);
+      if (err != OK) return err;  // shouldn't happen
+    }
+
+    // if this was the last round in group rounds,
+    // we need to wait for user input (seeding)
+    // before we can enter the KO rounds
+    if (round == groupRounds)
+    {
+      Tournament::getCatMngr()->switchCatToWaitForSeeding(*this);
+    }
+
+    // TODO: add action for KO rounds
+    return OK;
+  }
 
 //----------------------------------------------------------------------------
 

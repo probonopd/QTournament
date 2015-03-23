@@ -953,6 +953,16 @@ namespace QTournament {
       return MATCH_NOT_RUNNABLE;
     }
 
+    //
+    // TODO: we shouldn't be able to start matches if the
+    // associated category is a state other than PLAYING
+    // or IDLE. In particular, we shouldn't call games
+    // if we're in WAITING_FOR_SEEDING.
+    //
+    // Maybe this needs to be solved here or maybe we should
+    // update the match status when we leave IDLE or PLAYING
+    //
+
     // check the player's availability
     ERR e = Tournament::getPlayerMngr()->canAcquirePlayerPairsForMatch(ma);
     if (e != OK) return e;  // PLAYER_NOT_IDLE
@@ -1084,7 +1094,7 @@ namespace QTournament {
     // conserve the round status BEFORE we finalize the match.
     // we need this information later to detect whether we've finished
     // a round or not
-    CatRoundStatus crsBeforeMatch = ma.getCategory().getRoundStatus();
+    int lastFinishedRoundBeforeMatch = ma.getCategory().getRoundStatus().getFinishedRoundsCount();
 
 
     // EXTREMELY IMPORTANT:
@@ -1139,13 +1149,13 @@ namespace QTournament {
 
     // get the round status AFTER the match and check whether
     // we'e just finished a round
-    CatRoundStatus crsAfterMatch = ma.getCategory().getRoundStatus();
-    if (crsAfterMatch.getFinishedRoundsCount() != crsBeforeMatch.getFinishedRoundsCount())
+    int lastFinishedRoundAfterMatch = ma.getCategory().getRoundStatus().getFinishedRoundsCount();
+    if (lastFinishedRoundBeforeMatch != lastFinishedRoundAfterMatch)
     {
       // call the hook for finished rounds (e.g., for updating the ranking information
       // or for generating new matches)
       auto specialCat = ma.getCategory().convertToSpecializedObject();
-      specialCat->onRoundCompleted(crsBeforeMatch.getFinishedRoundsCount());
+      specialCat->onRoundCompleted(lastFinishedRoundAfterMatch);
     }
 
     // TODO: add finish time to database

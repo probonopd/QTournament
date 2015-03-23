@@ -329,7 +329,7 @@ namespace QTournament
       ERR e = splitPlayers(c, p, partner);
       if (e != OK)
       {
-	return e;
+        return e;
       }
     }
     
@@ -812,7 +812,7 @@ namespace QTournament
   void CatMngr::updateCatStatusFromMatchStatus(const Category &c)
   {
     OBJ_STATE curStat = c.getState();
-    if ((curStat != STAT_CAT_IDLE) && (curStat != STAT_CAT_PLAYING))
+    if ((curStat != STAT_CAT_IDLE) && (curStat != STAT_CAT_PLAYING) && (curStat != STAT_CAT_WAIT_FOR_INTERMEDIATE_SEEDING))
     {
       return;  // nothing to do for us
     }
@@ -867,6 +867,16 @@ namespace QTournament
   }
 
 //----------------------------------------------------------------------------
+
+  bool CatMngr::switchCatToWaitForSeeding(const Category& cat)
+  {
+    // only switch to SEEDING if no match is currently running
+    if (cat.getState() != STAT_CAT_IDLE) return false;
+
+    cat.setState(STAT_CAT_WAIT_FOR_INTERMEDIATE_SEEDING);
+    emit categoryStatusChanged(cat, STAT_CAT_IDLE, STAT_CAT_WAIT_FOR_INTERMEDIATE_SEEDING);
+    return true;
+  }
 
 //----------------------------------------------------------------------------
 
