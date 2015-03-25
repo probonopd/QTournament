@@ -163,8 +163,8 @@ void ReportsTabWidget::showReport(const QString& repName)
       upSimpleReport newReport = rep->regenerateReport();
       if (newReport == nullptr) return;
 
-      // store the newly created report in our own unique_ptr
-      // the old reports will be automatically deleted
+      // store the newly created report in our own unique_ptr.
+      // The old report will be automatically deleted
       //
       // if we don't store the new report in curReport,
       // it would be automatically deleted when we leave

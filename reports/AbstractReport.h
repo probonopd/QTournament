@@ -21,6 +21,7 @@ namespace QTournament
     static constexpr double A4_WIDTH__MM = 210.0;
     static constexpr double A4_HEIGHT__MM = 297.0;
     static constexpr double DEFAULT_MARGIN__MM = 10.0;
+    static constexpr double AFTER_HEADLINE_SKIP__MM = 5.0;
 
     AbstractReport(TournamentDB* _db, const QString& _name);
     virtual ~AbstractReport();
@@ -31,6 +32,7 @@ namespace QTournament
     static upSimpleReport createEmptyReport_Portrait();
 
     QString getName() const;
+    void setHeaderAndHeadline(SimpleReportLib::SimpleReportGenerator* rep, const QString& headline) const;
 
   private:
     TournamentDB* db;

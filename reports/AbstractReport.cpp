@@ -42,6 +42,15 @@ QString AbstractReport::getName() const
 
 //----------------------------------------------------------------------------
 
+void AbstractReport::setHeaderAndHeadline(SimpleReportLib::SimpleReportGenerator* rep, const QString& headline) const
+{
+  SimpleReportLib::TabSet ts;
+  ts.addTab(A4_WIDTH__MM / 2.0 - DEFAULT_MARGIN__MM, SimpleReportLib::TAB_JUSTIFICATION::TAB_CENTER);
+  rep->pushTabs(ts);
+  rep->writeLine("\t" + headline, "H1");
+  rep->popTabs();
+  rep->skip(AFTER_HEADLINE_SKIP__MM);
+}
 
 //----------------------------------------------------------------------------
 
