@@ -48,6 +48,7 @@ public slots:
 
 signals:
   void tournamentOpened (Tournament* tnmt);
+  void tournamentClosed ();
 };
 
 #endif	/* _MAINFRAME_H */

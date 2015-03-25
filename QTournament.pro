@@ -65,7 +65,37 @@ HEADERS += \
     ui/delegates/CourtItemDelegate.h \
     CatRoundStatus.h \
     RankingMngr.h \
-    RankingEntry.h
+    RankingEntry.h \
+    build.debug/ui_CatTabWidget.h \
+    build.debug/ui_dlgEditPlayer.h \
+    build.debug/ui_dlgGroupAssignment.h \
+    build.debug/ui_GroupAssignmentListWidget.h \
+    build.debug/ui_GroupConfigWidget.h \
+    build.debug/ui_MainFrame.h \
+    build.debug/ui_PlayerTabWidget.h \
+    build.debug/ui_ScheduleTabWidget.h \
+    build.debug/ui_TeamTabWidget.h \
+    tests/BasicTestClass.h \
+    tests/DatabaseTestScenario.h \
+    tests/tstCategory.h \
+    tests/tstCatMngr.h \
+    tests/tstGenericDBObject.h \
+    tests/tstGroupDef.h \
+    tests/tstKOConfig.h \
+    tests/tstMatch.h \
+    tests/tstMatchMngr.h \
+    tests/tstPlayer.h \
+    tests/tstPlayerMngr.h \
+    tests/tstRankingMngr.h \
+    tests/tstRoundRobinGenerator.h \
+    tests/tstScore.h \
+    tests/tstTeam.h \
+    tests/tstTeamMngr.h \
+    tests/tstTournament.h \
+    reports/AbstractReport.h \
+    reports/ParticipantsList.h \
+    ui/ReportsTabWidget.h \
+    reports/ReportFactory.h
 
 SOURCES += \
     Category.cpp \
@@ -121,7 +151,11 @@ SOURCES += \
     ui/delegates/CourtItemDelegate.cpp \
     CatRoundStatus.cpp \
     RankingMngr.cpp \
-    RankingEntry.cpp
+    RankingEntry.cpp \
+    reports/AbstractReport.cpp \
+    reports/ParticipantsList.cpp \
+    ui/ReportsTabWidget.cpp \
+    reports/ReportFactory.cpp
 
 RESOURCES += \
     tournament.qrc
@@ -137,7 +171,8 @@ FORMS += \
     ui/MainFrame.ui \
     ui/PlayerTabWidget.ui \
     ui/TeamTabWidget.ui \
-    ui/ScheduleTabWidget.ui
+    ui/ScheduleTabWidget.ui \
+    ui/ReportsTabWidget.ui
 
 
 win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../DatabaseOverlayLib/release/ -lDatabaseOverlayLib
@@ -146,3 +181,11 @@ else:unix:!macx: LIBS += -L$$PWD/../DatabaseOverlayLib/ -lDatabaseOverlayLib
 
 INCLUDEPATH += $$PWD/../DatabaseOverlayLib
 DEPENDPATH += $$PWD/../DatabaseOverlayLib
+
+win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../build-SimpleReportGenerator-Desktop_Clang-Release/ -lSimpleReportGenerator
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../build-SimpleReportGenerator-Desktop_Clang-Debug/ -lSimpleReportGenerator
+else:unix:CONFIG(release, debug|release): LIBS += -L$$PWD/../build-SimpleReportGenerator-Desktop_Clang-Release/ -lSimpleReportGenerator
+else:unix:CONFIG(debug, debug|release): LIBS += -L$$PWD/../build-SimpleReportGenerator-Desktop_Clang-Debug/ -lSimpleReportGenerator
+
+INCLUDEPATH += $$PWD/../SimpleReportGeneratorLib
+DEPENDPATH += $$PWD/../SimpleReportGeneratorLib

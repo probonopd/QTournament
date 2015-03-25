@@ -28,6 +28,7 @@ namespace QTournament
   CourtMngr* Tournament::com = nullptr;
   CourtTableModel* Tournament::courtMod = nullptr;
   RankingMngr* Tournament::rm = nullptr;
+  ReportFactory* Tournament::repFab = nullptr;
 
 /**
  * Constructor for a new, empty tournament file
@@ -107,6 +108,7 @@ void Tournament::initManagers()
     mm = new MatchMngr(db);
     com = new CourtMngr(db);
     rm = new RankingMngr(db);
+    repFab = new ReportFactory(db);
 
     // wire some signals between managers
     connect(pm, &PlayerMngr::playerStatusChanged, mm, &MatchMngr::onPlayerStatusChanged, Qt::DirectConnection);
@@ -140,6 +142,7 @@ void Tournament::close()
   delete mm;
   delete com;
   delete rm;
+  delete repFab;
   
   delete tlm;
   delete ptm;
@@ -160,6 +163,7 @@ void Tournament::close()
   com = nullptr;
   courtMod = nullptr;
   rm = nullptr;
+  repFab = nullptr;
   
   db->close();
   delete db;
@@ -265,6 +269,13 @@ CourtTableModel* Tournament::getCourtTableModel()
 RankingMngr* Tournament::getRankingMngr()
 {
   return rm;
+}
+
+//----------------------------------------------------------------------------
+
+ReportFactory* Tournament::getReportFactory()
+{
+  return repFab;
 }
 
 //----------------------------------------------------------------------------

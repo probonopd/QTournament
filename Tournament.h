@@ -8,6 +8,8 @@
 #ifndef TOURNAMENT_H
 #define	TOURNAMENT_H
 
+#include <memory>
+
 #include <QString>
 #include <QObject>
 
@@ -26,6 +28,7 @@
 #include "models/CourtTabModel.h"
 #include "CourtMngr.h"
 #include "RankingMngr.h"
+#include "reports/ReportFactory.h"
 
 using namespace dbOverlay;
 
@@ -50,6 +53,7 @@ namespace QTournament
     static CourtTableModel* getCourtTableModel();
     static CourtMngr* getCourtMngr();
     static RankingMngr* getRankingMngr();
+    static ReportFactory* getReportFactory();
     void close();
     ~Tournament();
 
@@ -67,6 +71,7 @@ namespace QTournament
     static CourtTableModel* courtMod;
     static CourtMngr* com;
     static RankingMngr* rm;
+    static ReportFactory* repFab;
     
     void initManagers ();
     void initModels();
