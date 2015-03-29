@@ -19,6 +19,7 @@ public:
   GuiHelpers();
   ~GuiHelpers();
   static QString groupNumToString(int grpNum);
+  static QString groupNumToLongString(int grpNum);
   static QString prepCall(const QTournament::Match& ma, const QTournament::Court& co);
 
   static void drawFormattedText(QPainter* painter, QRect r, const QString& s, int alignmentFlags=Qt::AlignVCenter|Qt::AlignLeft,

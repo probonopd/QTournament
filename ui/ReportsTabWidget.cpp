@@ -179,6 +179,10 @@ void ReportsTabWidget::showReport(const QString& repName)
 
 //----------------------------------------------------------------------------
 
+void ReportsTabWidget::onBtnReloadClicked()
+{
+  updateRepPool();
+}
 
 //----------------------------------------------------------------------------
 

@@ -125,7 +125,7 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  unique_ptr<MatchScore> Match::getScore(ERR *err)
+  unique_ptr<MatchScore> Match::getScore(ERR *err) const
   {
     QVariant scoreEntry = row[MA_RESULT];
 

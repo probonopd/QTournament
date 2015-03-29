@@ -12,6 +12,8 @@ GuiHelpers::~GuiHelpers()
 
 }
 
+//----------------------------------------------------------------------------
+
 QString GuiHelpers::groupNumToString(int grpNum)
 {
   if (grpNum > 0) return QString::number(grpNum);
@@ -33,6 +35,32 @@ QString GuiHelpers::groupNumToString(int grpNum)
   return "??";
 
 }
+
+//----------------------------------------------------------------------------
+
+QString GuiHelpers::groupNumToLongString(int grpNum)
+{
+  if (grpNum > 0) return (tr("Group ") + QString::number(grpNum));
+
+  switch (grpNum)
+  {
+  case GROUP_NUM__ITERATION:
+    return "--";
+  case GROUP_NUM__L16:
+    return tr("Round of Last 16");
+  case GROUP_NUM__QUARTERFINAL:
+    return tr("Quarter Finals");
+  case GROUP_NUM__SEMIFINAL:
+    return tr("Semi Finals");
+  case GROUP_NUM__FINAL:
+    return tr("Finals");
+  }
+
+  return "??";
+
+}
+
+//----------------------------------------------------------------------------
 
 /**
  * Generates a text proposal that the user should announce when calling a match
@@ -63,6 +91,7 @@ QString GuiHelpers::prepCall(const QTournament::Match &ma, const QTournament::Co
   return call;
 }
 
+//----------------------------------------------------------------------------
 
 void GuiHelpers::drawFormattedText(QPainter *painter, QRect r, const QString &s, int alignmentFlags, bool isBold, bool isItalics, QFont fnt, QColor fntColor, double fntSizeFac)
 {
@@ -77,7 +106,63 @@ void GuiHelpers::drawFormattedText(QPainter *painter, QRect r, const QString &s,
   painter->restore();
 }
 
+//----------------------------------------------------------------------------
+
 void GuiHelpers::drawFormattedText(QPainter *painter, QRect r, const QString &s, int alignmentFlags, bool isBold, bool isItalics, double fntSizeFac)
 {
   drawFormattedText(painter, r, s, alignmentFlags, isBold, isItalics, QFont(), QColor(0,0,0), fntSizeFac);
 }
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------
+

@@ -95,7 +95,9 @@ HEADERS += \
     reports/AbstractReport.h \
     reports/ParticipantsList.h \
     ui/ReportsTabWidget.h \
-    reports/ReportFactory.h
+    reports/ReportFactory.h \
+    reports/MatchResultList.h \
+    reports/MatchResultList_byGroup.h
 
 SOURCES += \
     Category.cpp \
@@ -155,7 +157,9 @@ SOURCES += \
     reports/AbstractReport.cpp \
     reports/ParticipantsList.cpp \
     ui/ReportsTabWidget.cpp \
-    reports/ReportFactory.cpp
+    reports/ReportFactory.cpp \
+    reports/MatchResultList.cpp \
+    reports/MatchResultList_byGroup.cpp
 
 RESOURCES += \
     tournament.qrc

@@ -45,6 +45,8 @@ public slots:
   void setupScenario03();
   void setupScenario04();
   void setupScenario05();
+  void setupScenario06();
+  void onCurrentTabChanged(int newCurrentTab);
 
 signals:
   void tournamentOpened (Tournament* tnmt);

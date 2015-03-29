@@ -26,6 +26,8 @@ namespace QTournament
 
     static constexpr char REP__PARTLIST_BY_NAME[] = "ParticipantsListByName";
     static constexpr char REP__PARTLIST_BY_TEAM[] = "ParticipantsListByTeam";
+    static constexpr char REP__RESULTS[] = "Results";
+    static constexpr char REP__RESULTS_BY_GROUP[] = "ResultsByGroup";
 
   private:
     TournamentDB* db;

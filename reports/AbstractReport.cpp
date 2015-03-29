@@ -92,12 +92,66 @@ void AbstractReport::prepStyles(upSimpleReport& rep) const
 
 //----------------------------------------------------------------------------
 
+void AbstractReport::printIntermediateHeader(upSimpleReport& rep, const QString& txt, double skipBefore__MM) const
+{
+  if (skipBefore__MM < 0) skipBefore__MM = 0.0;
+
+  // check for sufficient space
+  if (!(rep->hasSpaceForAnotherLine(INTERMEDIATEHEADLINE_STYLE, skipBefore__MM + SKIP_AFTER_INTERMEDIATE_HEADER__MM)))
+  {
+    rep->startNextPage();
+  }
+  if (skipBefore__MM > 0) rep->skip(skipBefore__MM);
+  rep->writeLine(txt, INTERMEDIATEHEADLINE_STYLE);
+  rep->addHorLine();
+  rep->skip(SKIP_AFTER_INTERMEDIATE_HEADER__MM);
+}
 
 //----------------------------------------------------------------------------
 
+void AbstractReport::prepTabsForMatchResults(upSimpleReport& rep) const
+{
+  rep->clearAllTabs();
+
+  rep->addTab(10.0, SimpleReportLib::TAB_LEFT);   // Name
+
+  // score tabs for up to five games
+  for (int game=0; game < 5; ++game)
+  {
+    double colonPos = 150 + game*10.0;
+    rep->addTab(colonPos - 1.0,  SimpleReportLib::TAB_RIGHT);  // first score
+    rep->addTab(colonPos,  SimpleReportLib::TAB_CENTER);  // colon
+    rep->addTab(colonPos + 1.0,  SimpleReportLib::TAB_LEFT);  // second score
+  }
+}
 
 //----------------------------------------------------------------------------
 
+void AbstractReport::printMatchResult(upSimpleReport& rep, const Match& ma, const QString& continuationString) const
+{
+  OBJ_STATE maState = ma.getState();
+  if (maState != STAT_MA_FINISHED) return;
+
+  QString txtLine = QString::number(ma.getMatchNumber()) + "\t";
+  txtLine += ma.getPlayerPair1().getDisplayName();
+  txtLine += "   :   ";
+  txtLine += ma.getPlayerPair2().getDisplayName();
+  txtLine += "\t";
+
+  QString scoreString = (ma.getScore())->toString();
+  scoreString.replace(",", "\t");
+  scoreString.replace(":", "\t:\t");
+  txtLine += scoreString;
+
+  // do we need to start a new page?
+  if (!(rep->hasSpaceForAnotherLine(QString())))
+  {
+    // the new page is automatically created by the following call
+    printIntermediateHeader(rep, continuationString);
+  }
+
+  rep->writeLine(txtLine);
+}
 
 //----------------------------------------------------------------------------
 

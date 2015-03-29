@@ -42,7 +42,7 @@ namespace QTournament
     int getMatchNumber() const;
     QString getDisplayName() const;
 
-    unique_ptr<MatchScore> getScore(ERR *err=nullptr);
+    unique_ptr<MatchScore> getScore(ERR *err=nullptr) const;
     ERR setScore(const MatchScore& score);
 
     unique_ptr<Court> getCourt(ERR *err=nullptr) const;

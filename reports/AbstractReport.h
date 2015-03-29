@@ -7,6 +7,7 @@
 
 #include "TournamentDB.h"
 #include "SimpleReportGenerator.h"
+#include "Match.h"
 
 
 namespace QTournament
@@ -23,6 +24,8 @@ namespace QTournament
     static constexpr double DEFAULT_MARGIN__MM = 10.0;
     static constexpr double AFTER_HEADLINE_SKIP__MM = 5.0;
     static constexpr double HEAD_SUBHEAD_SKIP__MM = 0.5;
+    static constexpr double SKIP_BEFORE_INTERMEDIATE_HEADER__MM = 4.0;
+    static constexpr double SKIP_AFTER_INTERMEDIATE_HEADER__MM = 1.0;
 
     static constexpr char HEADLINE_STYLE[] = "Headline";
     static constexpr char SUBHEADLINE_STYLE[] = "SubHeadline";
@@ -39,11 +42,14 @@ namespace QTournament
     QString getName() const;
     void setHeaderAndHeadline(SimpleReportLib::SimpleReportGenerator* rep, const QString& headline, const QString& subHead=QString()) const;
 
-  private:
+  protected:
     TournamentDB* db;
     QString name;
 
     void prepStyles(upSimpleReport& rep) const;
+    void printIntermediateHeader(upSimpleReport& rep, const QString& txt, double skipBefore__MM=SKIP_BEFORE_INTERMEDIATE_HEADER__MM) const;
+    void prepTabsForMatchResults(upSimpleReport& rep) const;
+    void printMatchResult(upSimpleReport& rep, const Match& ma, const QString& continuationString) const;
   };
 
   typedef unique_ptr<AbstractReport> upAbstractReport;

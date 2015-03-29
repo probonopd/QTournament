@@ -144,7 +144,7 @@ void ParticipantsList::createTeamSortedReport(upSimpleReport &rep) const
   for (Team t : tl)
   {
     // start a new team section
-    double skip = SKIP_BEFORE_NEW_TEAM__MM;
+    double skip = SKIP_BEFORE_INTERMEDIATE_HEADER__MM;
     if (isFirstTeam)
     {
       skip = 0.0;
@@ -154,9 +154,7 @@ void ParticipantsList::createTeamSortedReport(upSimpleReport &rep) const
     {
       rep->startNextPage();
     }
-    rep->skip(skip);
-    rep->writeLine(t.getName(), INTERMEDIATEHEADLINE_STYLE);
-    rep->addHorLine();
+    printIntermediateHeader(rep, t.getName(), skip);
 
     // get the players of the team and sort them by name
     PlayerList pl = tm->getPlayersForTeam(t);
@@ -169,8 +167,7 @@ void ParticipantsList::createTeamSortedReport(upSimpleReport &rep) const
       if (!(rep->hasSpaceForAnotherLine(QString())))
       {
         rep->startNextPage();
-        rep->writeLine(t.getName() + tr(" (cont.)"), INTERMEDIATEHEADLINE_STYLE);
-        rep->addHorLine();
+        printIntermediateHeader(rep, t.getName() + tr(" (cont.)"));
       }
 
       QString txtLine;
