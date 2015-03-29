@@ -38,6 +38,10 @@ namespace QTournament
     Team getTeamById (int id);
     ERR changeTeamAssigment(const Player& p, const Team& newTeam);
 
+    PlayerList getPlayersForTeam(const Team& t) const;
+
+    static std::function<bool (Team&, Team&)> getTeamSortFunction_byName();
+
   private:
     DbTab teamTab;
 

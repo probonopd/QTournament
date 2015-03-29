@@ -4,7 +4,8 @@
 
 namespace QTournament
 {
-  const QString ReportFactory::REP__PARTLIST_BY_NAME = QStringLiteral("ParticipantsListByName");
+  constexpr char ReportFactory::REP__PARTLIST_BY_NAME[];
+  constexpr char ReportFactory::REP__PARTLIST_BY_TEAM[];
 
 
   ReportFactory::ReportFactory(TournamentDB* _db)
@@ -28,6 +29,7 @@ namespace QTournament
 
     // we can always generate a participants list
     result.append(REP__PARTLIST_BY_NAME);
+    result.append(REP__PARTLIST_BY_TEAM);
 
     return result;
   }
@@ -39,6 +41,10 @@ namespace QTournament
     if (repName == REP__PARTLIST_BY_NAME)
     {
       return upAbstractReport(new ParticipantsList(db, REP__PARTLIST_BY_NAME, ParticipantsList::SORT_BY_NAME));
+    }
+    if (repName == REP__PARTLIST_BY_TEAM)
+    {
+      return upAbstractReport(new ParticipantsList(db, REP__PARTLIST_BY_TEAM, ParticipantsList::SORT_BY_TEAM));
     }
 
     return nullptr;

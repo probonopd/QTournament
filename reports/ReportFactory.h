@@ -24,7 +24,8 @@ namespace QTournament
     // this works only with std::vector; QList<> won't compile... weird...
     std::vector<upAbstractReport> getMissingReports(const QStringList& existingReportNames) const;
 
-    static const QString REP__PARTLIST_BY_NAME;
+    static constexpr char REP__PARTLIST_BY_NAME[] = "ParticipantsListByName";
+    static constexpr char REP__PARTLIST_BY_TEAM[] = "ParticipantsListByTeam";
 
   private:
     TournamentDB* db;

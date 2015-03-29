@@ -8,6 +8,8 @@
 #ifndef PLAYERMNGR_H
 #define	PLAYERMNGR_H
 
+#include <functional>
+
 #include "TournamentDB.h"
 #include "Team.h"
 #include "Player.h"
@@ -48,6 +50,8 @@ namespace QTournament
     ERR releasePlayerPairsAfterMatch(const Match& ma);
 
     PlayerList determineActualPlayersForMatch(const Match& ma) const;
+
+    static std::function<bool (Player&, Player&)> getPlayerSortFunction_byName();
 
   private:
     DbTab playerTab;

@@ -53,6 +53,7 @@ namespace QTournament
     ERR startCategory(const Category& c, QList<PlayerPairList> grpCfg, PlayerPairList seed, ProgressQueue* progressNotificationQueue=nullptr);
     void updateCatStatusFromMatchStatus(const Category& c);
     bool switchCatToWaitForSeeding(const Category& cat);
+    static std::function<bool (Category&, Category&)> getCategorySortFunction_byName();
 
   signals:
     void playersPaired(const Category c, const Player& p1, const Player& p2);

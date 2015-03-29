@@ -118,7 +118,7 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  QList<Category> Player::getAssignedCategories()
+  QList<Category> Player::getAssignedCategories() const
   {
     QList<Category> result;
     DbTab::CachingRowIterator it = db->getTab(TAB_P2C).getRowsByColumnValue(P2C_PLAYER_REF, getId());

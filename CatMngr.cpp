@@ -880,6 +880,12 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
+  std::function<bool (Category&, Category&)> CatMngr::getCategorySortFunction_byName()
+  {
+    return [](Category& c1, Category& c2) {
+      return (QString::localeAwareCompare(c1.getName(), c2.getName()) < 0) ? true : false;
+    };
+  }
 
 //----------------------------------------------------------------------------
 

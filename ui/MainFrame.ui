@@ -58,7 +58,7 @@
         </widget>
         <widget class="ReportsTabWidget" name="tabReports">
          <attribute name="title">
-          <string>Page</string>
+          <string>Reports</string>
          </attribute>
         </widget>
        </widget>
