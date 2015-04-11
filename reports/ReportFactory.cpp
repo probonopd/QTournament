@@ -10,6 +10,7 @@ namespace QTournament
 {
   constexpr char ReportFactory::REP__PARTLIST_BY_NAME[];
   constexpr char ReportFactory::REP__PARTLIST_BY_TEAM[];
+  constexpr char ReportFactory::REP__PARTLIST_BY_CATEGORY[];
   constexpr char ReportFactory::REP__RESULTS[];
   constexpr char ReportFactory::REP__RESULTS_BY_GROUP[];
 
@@ -37,6 +38,7 @@ namespace QTournament
     // we can always generate a participants list
     result.append(REP__PARTLIST_BY_NAME);
     result.append(REP__PARTLIST_BY_TEAM);
+    result.append(REP__PARTLIST_BY_CATEGORY);
 
     // we can print result lists for all finished or running rounds
     // in all categories
@@ -94,6 +96,10 @@ namespace QTournament
     if (pureRepName == REP__PARTLIST_BY_TEAM)
     {
       return upAbstractReport(new ParticipantsList(db, REP__PARTLIST_BY_TEAM, ParticipantsList::SORT_BY_TEAM));
+    }
+    if (pureRepName == REP__PARTLIST_BY_CATEGORY)
+    {
+      return upAbstractReport(new ParticipantsList(db, REP__PARTLIST_BY_CATEGORY, ParticipantsList::SORT_BY_CATEGORY));
     }
 
     // result lists by round

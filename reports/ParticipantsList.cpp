@@ -6,6 +6,7 @@
 
 #include "PlayerMngr.h"
 #include "TeamMngr.h"
+#include "CatMngr.h"
 #include "Team.h"
 
 namespace QTournament
@@ -16,7 +17,7 @@ ParticipantsList::ParticipantsList(TournamentDB* _db, const QString& _name, int 
   :AbstractReport(_db, _name), sortCriterion(_sortCriterion)
 {
   // apply a default criterion if no reasonable argument was provided
-  if ((sortCriterion != SORT_BY_NAME) && (sortCriterion != SORT_BY_TEAM))
+  if ((sortCriterion != SORT_BY_NAME) && (sortCriterion != SORT_BY_TEAM) && (sortCriterion != SORT_BY_CATEGORY))
   {
     sortCriterion = SORT_BY_NAME;
   }
@@ -55,6 +56,10 @@ upSimpleReport ParticipantsList::regenerateReport() const
   {
     createTeamSortedReport(result);
   }
+  if (sortCriterion == SORT_BY_CATEGORY)
+  {
+    createCategorySortedReport(result);
+  }
 
   // set header and footer
   setHeaderAndFooter(result, tr("Participants List"));
@@ -76,6 +81,10 @@ QStringList ParticipantsList::getReportLocators() const
   if (sortCriterion == SORT_BY_TEAM)
   {
     loc += tr("by team");
+  }
+  if (sortCriterion == SORT_BY_CATEGORY)
+  {
+    loc += tr("by category");
   }
 
   result.append(loc);
@@ -191,6 +200,106 @@ void ParticipantsList::createTeamSortedReport(upSimpleReport &rep) const
       rep->writeLine(txtLine);
     }
 
+  }
+}
+
+//----------------------------------------------------------------------------
+
+void ParticipantsList::createCategorySortedReport(upSimpleReport& rep) const
+{
+  CatMngr* cm = Tournament::getCatMngr();
+  PlayerMngr* pm = Tournament::getPlayerMngr();
+  TeamMngr* tm = Tournament::getTeamMngr();
+
+  QList<Category> allCats = cm->getAllCategories();
+
+  if (rep == nullptr) rep = createEmptyReport_Portrait();
+
+  // do we have any categories at all?
+  if (allCats.isEmpty())
+  {
+    setHeaderAndHeadline(rep.get(), tr("List of Participants"), tr("Sorted by category"));
+    rep->writeLine(tr("No categories have been created yet."));
+    return;
+  }
+
+  // prepare a two-column layout
+  rep->addTab(95.0, SimpleReportLib::TAB_LEFT);
+
+  // sort categories by name
+  std::sort(allCats.begin(), allCats.end(), CatMngr::getCategorySortFunction_byName());
+
+  // dump the participants of each category, sorted by team
+  // and with each category starting on a new page
+  bool isFirstPage = true;
+  for (Category cat : allCats)
+  {
+    // append a new page for the next category, if necessary
+    if (!isFirstPage)
+    {
+      rep->startNextPage();
+    }
+    isFirstPage = false;
+
+    // set the page headline
+    setHeaderAndHeadline(rep.get(), tr("Participants in category ") + cat.getName());
+
+    // loop over the list of players in this category
+    // and derive a list of all involved teams
+    QStringList teamNameList;
+    for (Player p : cat.getAllPlayersInCategory())
+    {
+      QString teamName = p.getTeam().getName();
+      if (teamNameList.contains(teamName)) continue;
+      teamNameList.append(teamName);
+    }
+
+    // skip this category if the player list is empty
+    if (teamNameList.isEmpty())
+    {
+      rep->writeLine(tr("No players hae been assigned to this category yet"));
+      continue;
+    }
+
+    // sort the team names alphabetically
+    teamNameList.sort();
+
+    // list all players per team
+    for (QString teamName : teamNameList)
+    {
+      printIntermediateHeader(rep, teamName);
+
+      // create a list of all players in this team
+      // and in this category
+      Team team = tm->getTeam(teamName);
+      PlayerList pl;
+      for (Player p : tm->getPlayersForTeam(team))
+      {
+        if (cat.hasPlayer(p)) pl.append(p);
+      }
+
+      // sort the player list alphabetically
+      std::sort(pl.begin(), pl.end(), PlayerMngr::getPlayerSortFunction_byName());
+
+      // dump the player names in two columns
+      QString txt;
+      int colCount = 0;
+      for (Player p : pl)
+      {
+        if (colCount > 0) txt += "\t";
+        txt += p.getDisplayName();
+        ++colCount;
+
+        if (colCount == 2)
+        {
+          rep->writeLine(txt);
+          colCount = 0;
+          txt.clear();
+        }
+      }
+      // dump the last line
+      if (colCount > 0) rep->writeLine(txt);
+    }
   }
 }
 

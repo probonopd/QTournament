@@ -21,6 +21,7 @@ namespace QTournament
   public:
     static constexpr int SORT_BY_NAME = 1;
     static constexpr int SORT_BY_TEAM = 2;
+    static constexpr int SORT_BY_CATEGORY = 3;
 
     ParticipantsList(TournamentDB* _db, const QString& _name, int _sortCriterion=SORT_BY_NAME);
     virtual ~ParticipantsList();
@@ -32,6 +33,7 @@ namespace QTournament
     int sortCriterion;
     void createNameSortedReport(upSimpleReport& rep) const;
     void createTeamSortedReport(upSimpleReport& rep) const;
+    void createCategorySortedReport(upSimpleReport& rep) const;
     QString getCommaSepCatListForPlayer(const Player& p) const;
   };
 
