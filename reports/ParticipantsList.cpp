@@ -257,7 +257,7 @@ void ParticipantsList::createCategorySortedReport(upSimpleReport& rep) const
     // skip this category if the player list is empty
     if (teamNameList.isEmpty())
     {
-      rep->writeLine(tr("No players hae been assigned to this category yet"));
+      rep->writeLine(tr("No players have been assigned to this category yet"));
       continue;
     }
 

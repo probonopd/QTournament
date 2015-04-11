@@ -5,6 +5,7 @@
 #include "MatchResultList_byGroup.h"
 #include "CatMngr.h"
 #include "CatRoundStatus.h"
+#include "Standings.h"
 
 namespace QTournament
 {
@@ -13,7 +14,7 @@ namespace QTournament
   constexpr char ReportFactory::REP__PARTLIST_BY_CATEGORY[];
   constexpr char ReportFactory::REP__RESULTS[];
   constexpr char ReportFactory::REP__RESULTS_BY_GROUP[];
-
+  constexpr char ReportFactory::REP__STANDINGS_BY_CATEGORY[];
 
   ReportFactory::ReportFactory(TournamentDB* _db)
     : db(_db)
@@ -80,6 +81,27 @@ namespace QTournament
     }
 
 
+    // we can print ranking lists for all finished rounds
+    // in all categories
+    for (Category cat : cm->getAllCategories())
+    {
+      OBJ_STATE catState = cat.getState();
+      if ((catState == STAT_CAT_CONFIG) || (catState == STAT_CAT_FROZEN))
+      {
+        continue;  // no rankings for "unstarted" categories
+      }
+
+      int id = cat.getId();
+      QString repName = REP__STANDINGS_BY_CATEGORY;
+      repName += "," + QString::number(id) + ",";
+
+      CatRoundStatus crs = cat.getRoundStatus();
+      for (int round=1; round <= crs.getFinishedRoundsCount(); ++round)
+      {
+        result.append(repName + QString::number(round));
+      }
+    }
+
     return result;
   }
 
@@ -118,6 +140,15 @@ namespace QTournament
       int grpNum = repName.split(",")[2].toInt();
       Category cat = Tournament::getCatMngr()->getCategoryById(catId);
       return upAbstractReport(new MatchResultList_ByGroup(db, repName, cat, grpNum));
+    }
+
+    // standings by category
+    if (pureRepName == REP__STANDINGS_BY_CATEGORY)
+    {
+      int catId = repName.split(",")[1].toInt();
+      int round = repName.split(",")[2].toInt();
+      Category cat = Tournament::getCatMngr()->getCategoryById(catId);
+      return upAbstractReport(new Standings(db, repName, cat, round));
     }
 
     return nullptr;
