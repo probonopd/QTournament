@@ -53,7 +53,8 @@ upSimpleReport MatchResultList::regenerateReport() const
   }
 
   upSimpleReport result = createEmptyReport_Portrait();
-  setHeaderAndHeadline(result.get(), cat.getName() + tr(" -- Results of Round ") + QString::number(round), subHeader);
+  QString repName = cat.getName() + tr(" -- Results of Round ") + QString::number(round);
+  setHeaderAndHeadline(result.get(), repName, subHeader);
   result->addTab(10.0, SimpleReportLib::TAB_LEFT);
   for (int game=0; game < 5; ++game)
   {
@@ -115,6 +116,10 @@ upSimpleReport MatchResultList::regenerateReport() const
       result->writeLine(txtLine);
     }
   }
+
+  // set header and footer
+  setHeaderAndFooter(result, repName);
+
   return result;
 }
 

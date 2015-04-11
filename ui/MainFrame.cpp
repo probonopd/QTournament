@@ -106,8 +106,8 @@ void MainFrame::setupTestScenario(int scenarioID)
   
   // prepare a brand-new scenario
   TournamentSettings cfg;
-  cfg.organizingClub = "club";
-  cfg.tournamentName = "name";
+  cfg.organizingClub = "SV Whatever";
+  cfg.tournamentName = "World Championship";
   cfg.useTeams = true;
   tnmt = new Tournament(testFileName, cfg);
   

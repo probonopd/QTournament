@@ -45,11 +45,13 @@ namespace QTournament
   protected:
     TournamentDB* db;
     QString name;
+    KeyValueTab cfg;
 
     void prepStyles(upSimpleReport& rep) const;
     void printIntermediateHeader(upSimpleReport& rep, const QString& txt, double skipBefore__MM=SKIP_BEFORE_INTERMEDIATE_HEADER__MM) const;
     void prepTabsForMatchResults(upSimpleReport& rep) const;
     void printMatchResult(upSimpleReport& rep, const Match& ma, const QString& continuationString) const;
+    void setHeaderAndFooter(upSimpleReport& rep, const QString& reportName) const;
   };
 
   typedef unique_ptr<AbstractReport> upAbstractReport;

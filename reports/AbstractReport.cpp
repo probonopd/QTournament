@@ -8,7 +8,7 @@ namespace QTournament
   constexpr char AbstractReport::INTERMEDIATEHEADLINE_STYLE[];
 
 AbstractReport::AbstractReport(TournamentDB* _db, const QString& _name)
-  :db(_db), name(_name)
+  :db(_db), name(_name), cfg(KeyValueTab::getTab(db, TAB_CFG))
 {
   if (db == nullptr)
   {
@@ -155,6 +155,21 @@ void AbstractReport::printMatchResult(upSimpleReport& rep, const Match& ma, cons
 
 //----------------------------------------------------------------------------
 
+void AbstractReport::setHeaderAndFooter(upSimpleReport& rep, const QString& reportName) const
+{
+  QString tName = cfg[CFG_KEY_TNMT_NAME].toString();
+  QString cName = cfg[CFG_KEY_TNMT_ORGA].toString();
+  rep->setGlobalHeader(cName, tName, SimpleReportLib::HeaderFooterStrings::TOKEN_CURDATE);
+
+  QString fl = SimpleReportLib::HeaderFooterStrings::TOKEN_CURTIME;
+
+  QString fr = SimpleReportLib::HeaderFooterStrings::TOKEN_CURPGNUM;
+  fr += " / ";
+  fr += SimpleReportLib::HeaderFooterStrings::TOKEN_TOTALPGNUM;
+  rep->setGlobalFooter(fl , reportName, fr);
+
+  rep->applyHeaderAndFooterOnAllPages();
+}
 
 //----------------------------------------------------------------------------
 

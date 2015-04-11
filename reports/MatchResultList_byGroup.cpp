@@ -56,7 +56,8 @@ upSimpleReport MatchResultList_ByGroup::regenerateReport() const
   }
 
   upSimpleReport result = createEmptyReport_Portrait();
-  setHeaderAndHeadline(result.get(), cat.getName() + tr(" -- Results of Group ") + QString::number(grpNum));
+  QString repName = cat.getName() + tr(" -- Results of Group ") + QString::number(grpNum);
+  setHeaderAndHeadline(result.get(), repName);
   prepTabsForMatchResults(result);
 
   for (MatchGroup mg : filteredList)
@@ -76,6 +77,9 @@ upSimpleReport MatchResultList_ByGroup::regenerateReport() const
       result->writeLine(tr("Note: this round is not finished yet; results for this group can be incomplete."));
     }
   }
+
+  // set header and footer
+  setHeaderAndFooter(result, repName);
 
   return result;
 }

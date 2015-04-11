@@ -56,6 +56,9 @@ upSimpleReport ParticipantsList::regenerateReport() const
     createTeamSortedReport(result);
   }
 
+  // set header and footer
+  setHeaderAndFooter(result, tr("Participants List"));
+
   return result;
 }
 
