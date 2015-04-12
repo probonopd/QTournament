@@ -8,6 +8,10 @@
 #include "RoundRobinCategory.h"
 #include "KO_Config.h"
 #include "Tournament.h"
+#include "CatRoundStatus.h"
+#include "RankingEntry.h"
+#include "RankingMngr.h"
+#include "assert.h"
 
 #include <QDebug>
 
@@ -162,6 +166,108 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
+  ERR RoundRobinCategory::onRoundCompleted(int round)
+  {
+    // determine the number of group rounds.
+    //
+    // The following call must succeed, since we made it past the
+    // configuration point
+    KO_Config cfg = KO_Config(getParameter_string(GROUP_CONFIG));
+    int groupRounds = cfg.getNumRounds();
+
+    // if we are still in group rounds, simply calculate the
+    // new ranking
+    if (round <= groupRounds)
+    {
+      RankingMngr* rm = Tournament::getRankingMngr();
+      ERR err;
+      rm->createUnsortedRankingEntriesForLastRound(*this, &err);
+      if (err != OK) return err;  // shouldn't happen
+      rm->sortRankingEntriesForLastRound(*this, &err);
+      if (err != OK) return err;  // shouldn't happen
+    }
+
+    // if this was the last round in group rounds,
+    // we need to wait for user input (seeding)
+    // before we can enter the KO rounds
+    if (round == groupRounds)
+    {
+      Tournament::getCatMngr()->switchCatToWaitForSeeding(*this);
+    }
+
+    // TODO: add action for KO rounds
+    return OK;
+  }
+
+//----------------------------------------------------------------------------
+
+  ERR RoundRobinCategory::prepareNextRound(PlayerList seeding, ProgressQueue* progressNotificationQueue)
+  {
+    if (getState() != STAT_CAT_WAIT_FOR_INTERMEDIATE_SEEDING)
+    {
+      return NOTHING_TO_PREPARE;
+    }
+
+    // get the list of player pairs that are qualified for the KO phase
+    PlayerPairList qualifiedPlayers = getQualifiedPlayersAfterRoundRobin_sorted();
+    assert(qualifiedPlayers.size() > 0);   // this MUST be true, otherwise something went terribly wrong
+
+    // make sure the provided seeding list and the list of qualified players
+    // is identical
+    if (seeding.size() != qualifiedPlayers.size())
+    {
+      return INVALID_SEEDING_LIST;
+    }
+    for (PlayerPair pp : qualifiedPlayers)
+    {
+      if (!(seeding.contains(pp))) return INVALID_SEEDING_LIST;
+    }
+
+    // great, we can actually go ahead and create KO matches based on the seeding list
+
+  }
+
+//----------------------------------------------------------------------------
+
+  PlayerPairList RoundRobinCategory::getQualifiedPlayersAfterRoundRobin_sorted() const
+  {
+    // have we finished the round robin phase?
+    CatRoundStatus crs = getRoundStatus();
+    KO_Config cfg = KO_Config(getParameter_string(GROUP_CONFIG));
+    int numGroupRounds = cfg.getNumRounds();
+    if (crs.getFinishedRoundsCount() < numGroupRounds)
+    {
+      return PlayerList();  // nope, we're not there yet
+    }
+
+    // get the ranking after the last round-robin round
+    RankingEntryListList rll = Tournament::getRankingMngr()->getSortedRanking(this, numGroupRounds);
+    assert(rll.size() == cfg.getNumGroups());
+
+    PlayerPairList result;
+    for (RankingEntryList rl : rll)
+    {
+      // this should be guaranteed by the minimum group size of three
+      assert(rl.size() >= 2);
+
+      // the first in each group is always qualified
+      result.push_front(rl.at(0));
+
+      // maybe the second qualifies as well
+      if (cfg.getSecondSurvives())
+      {
+        result.push_back(rl.at(1));
+      }
+    }
+
+    // the list entries for the first-ranked players is in reverse order, e.g.:
+    // the first of group 8 is at index 0, the first of group 7 is at index 1, ...
+    //
+    // let's fix that (for cosmetic reasons)
+    std::reverse(result.begin(), result.begin() + cfg.getNumGroups() + 1);  // +1 because the last element is not included in the reversing operation
+
+    return result;
+  }
 
 //----------------------------------------------------------------------------
 

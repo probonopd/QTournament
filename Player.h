@@ -9,6 +9,7 @@
 #define	PLAYER_H
 
 #include "GenericDatabaseObject.h"
+#include "GenericObjectManager.h"
 #include "TournamentDB.h"
 #include "TabRow.h"
 #include "TournamentErrorCodes.h"
@@ -25,6 +26,7 @@ namespace QTournament
   {
     friend class PlayerMngr;
     friend class TeamMngr;
+    friend class GenericObjectManager;
     
   public:
     QString getDisplayName(int maxLen = 0) const;
@@ -33,7 +35,7 @@ namespace QTournament
     ERR rename(const QString& newFirst, const QString& newLast);
     SEX getSex() const;
     Team getTeam() const;
-    QList<Category> getAssignedCategories();
+    QList<Category> getAssignedCategories() const;
 
   private:
     Player (TournamentDB* db, int rowId);

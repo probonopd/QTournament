@@ -376,7 +376,53 @@ namespace QTournament
     return result;
   }
 
-//----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
+
+  std::function<bool (Player&, Player&)> PlayerMngr::getPlayerSortFunction_byName()
+  {
+    return [](Player& p1, Player& p2) {
+      // compare last name
+      int cmpLast = QString::localeAwareCompare(p1.getLastName(), p2.getLastName());
+      if (cmpLast < 0) return true;
+      if (cmpLast > 0) return false;
+
+      // last name is identical ==> compare first name
+      int cmpFirst = QString::localeAwareCompare(p1.getFirstName(), p2.getFirstName());
+      if (cmpFirst < 0) return true;
+      if (cmpFirst > 0) return false;
+
+      // names are identical. So we display the player who has registered earlier
+      // as the first player
+      if (p1.getId() < p2.getId()) return true;
+      return false;
+    };
+  }
+
+  //----------------------------------------------------------------------------
+
+
+  //----------------------------------------------------------------------------
+
+
+  //----------------------------------------------------------------------------
+
+
+  //----------------------------------------------------------------------------
+
+
+  //----------------------------------------------------------------------------
+
+
+  //----------------------------------------------------------------------------
+
+
+  //----------------------------------------------------------------------------
+
+
+  //----------------------------------------------------------------------------
+
+
+  //----------------------------------------------------------------------------
 
 
 }

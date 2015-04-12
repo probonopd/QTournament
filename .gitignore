@@ -1,5 +1,8 @@
 /dist/
 /build/
+/build.tests/
+/build.debug/
+/build.release/
 /nbproject
 *.o
 moc_*.cpp

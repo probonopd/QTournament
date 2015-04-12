@@ -133,6 +133,10 @@ void TournamentDB::populateTables()
     cols << MA_RESULT + " VARCHAR(50)";
     cols << genForeignKeyClause(MA_COURT_REF, TAB_COURT);
     cols << MA_CALL_TIMES + " VARCHAR(50)";
+    cols << MA_PAIR1_SYMBOLIC_VAL + " INTEGER";
+    cols << MA_PAIR2_SYMBOLIC_VAL + " INTEGER";
+    cols << MA_WINNER_RANK + " INTEGER";
+    cols << MA_LOSER_RANK + " INTEGER";
     tableCreationHelper(TAB_MATCH, cols);
 
     // Generate a table with ranking information

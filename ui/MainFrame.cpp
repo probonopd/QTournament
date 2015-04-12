@@ -96,7 +96,7 @@ void MainFrame::closeCurrentTournament()
 
 void MainFrame::setupTestScenario(int scenarioID)
 {
-  if ((scenarioID < 0) || (scenarioID > 5))
+  if ((scenarioID < 0) || (scenarioID > 6))
   {
     QMessageBox::critical(this, "Setup Test Scenario", "The scenario ID " + QString::number(scenarioID) + " is invalid!");
   }
@@ -106,8 +106,8 @@ void MainFrame::setupTestScenario(int scenarioID)
   
   // prepare a brand-new scenario
   TournamentSettings cfg;
-  cfg.organizingClub = "club";
-  cfg.tournamentName = "name";
+  cfg.organizingClub = "SV Whatever";
+  cfg.tournamentName = "World Championship";
   cfg.useTeams = true;
   tnmt = new Tournament(testFileName, cfg);
   
@@ -336,11 +336,58 @@ void MainFrame::setupTestScenario(int scenarioID)
       cm->createNewCourt(i, "XX", &e);
       assert(e == OK);
     }
+  }
 
-    // make courts 3 and 4 manual assignment only
-    cm->getCourt(3)->setManualAssignment(true);
-    cm->getCourt(4)->setManualAssignment(true);
+  // extend scenario 5 to already play all matches in the round-robin rounds
+  // of category "LS" and "LD"
+  if ((scenarioID > 5) && (scenarioID < 99))  // Scenario 6...
+  {
+    Category ls = cmngr->getCategory("LS");
+    Category ld = cmngr->getCategory("LD");
+    MatchMngr* mm = Tournament::getMatchMngr();
+    CourtMngr* cm = Tournament::getCourtMngr();
+    ERR e;
 
+    // stage and schedule all matches in round 1
+    // of LS and LD
+    bool canStageMatchGroups = true;
+    while (canStageMatchGroups)
+    {
+      canStageMatchGroups = false;
+      for (MatchGroup mg : mm->getMatchGroupsForCat(ls))
+      {
+        if (mg.getState() != STAT_MG_IDLE) continue;
+        if (mm->canStageMatchGroup(mg) != OK) continue;
+        mm->stageMatchGroup(mg);
+        canStageMatchGroups = true;
+      }
+      for (MatchGroup mg : mm->getMatchGroupsForCat(ld))
+      {
+        if (mg.getState() != STAT_MG_IDLE) continue;
+        if (mm->canStageMatchGroup(mg) != OK) continue;
+        mm->stageMatchGroup(mg);
+        canStageMatchGroups = true;
+      }
+    }
+    mm->scheduleAllStagedMatchGroups();
+
+    // play all scheduled matches
+    while (true)
+    {
+      int nextMacthId;
+      int nextCourtId;
+      mm->getNextViableMatchCourtPair(&nextMacthId, &nextCourtId);
+      if (nextMacthId <= 0) break;
+
+      auto nextMatch = mm->getMatch(nextMacthId);
+      if (nextMatch == nullptr) break;
+      auto nextCourt = cm->getCourtById(nextCourtId);
+      if (nextCourt == nullptr) break;
+
+      if (mm->assignMatchToCourt(*nextMatch, *nextCourt) != OK) break;
+      auto score = MatchScore::genRandomScore();
+      mm->setMatchScoreAndFinalizeMatch(*nextMatch, *score);
+    }
   }
 
   enableControls(true);
@@ -394,6 +441,13 @@ void MainFrame::setupScenario05()
 
 //----------------------------------------------------------------------------
 
+void MainFrame::setupScenario06()
+{
+  setupTestScenario(6);
+}
+
+//----------------------------------------------------------------------------
+
 MainFrame* MainFrame::getMainFramePointer()
 {
   return mainFramePointer;
@@ -401,6 +455,10 @@ MainFrame* MainFrame::getMainFramePointer()
 
 //----------------------------------------------------------------------------
 
+void MainFrame::onCurrentTabChanged(int newCurrentTab)
+{
+
+}
 
 //----------------------------------------------------------------------------
 

@@ -125,7 +125,7 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  unique_ptr<MatchScore> Match::getScore(ERR *err)
+  unique_ptr<MatchScore> Match::getScore(ERR *err) const
   {
     QVariant scoreEntry = row[MA_RESULT];
 
@@ -188,9 +188,45 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
+  unique_ptr<PlayerPair> Match::getWinner() const
+  {
+    unique_ptr<MatchScore> score = getScore();
+    if (score == nullptr)
+    {
+      return nullptr;   // score is not yet set
+    }
+
+    int winner = score->getWinner();
+    if (winner == 0)
+    {
+      return nullptr;   // draw; no winner
+    }
+
+    PlayerPair w = (winner == 1) ? getPlayerPair1() : getPlayerPair2();
+
+    return unique_ptr<PlayerPair>(new PlayerPair(w));
+  }
 
 //----------------------------------------------------------------------------
 
+  unique_ptr<PlayerPair> Match::getLoser() const
+  {
+    unique_ptr<MatchScore> score = getScore();
+    if (score == nullptr)
+    {
+      return nullptr;   // score is not yet set
+    }
+
+    int loser = score->getLoser();
+    if (loser == 0)
+    {
+      return nullptr;   // draw; no loser
+    }
+
+    PlayerPair l = (loser == 1) ? getPlayerPair1() : getPlayerPair2();
+
+    return unique_ptr<PlayerPair>(new PlayerPair(l));
+  }
 
 //----------------------------------------------------------------------------
 

@@ -189,9 +189,19 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
+  std::function<bool (Team&, Team&)> TeamMngr::getTeamSortFunction_byName()
+  {
+    return [](Team& t1, Team& t2) {
+      return (QString::localeAwareCompare(t1.getName(), t2.getName()) < 0) ? true : false;
+    };
+  }
 
 //----------------------------------------------------------------------------
 
+  PlayerList TeamMngr::getPlayersForTeam(const Team& t) const
+  {
+    return getObjectsByColumnValue<Player>((*db)[TAB_PLAYER], PL_TEAM_REF, t.getId());
+  }
 
 //----------------------------------------------------------------------------
 

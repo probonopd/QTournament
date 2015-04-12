@@ -92,6 +92,7 @@ namespace QTournament
     void updateAllMatchGroupStates(const Category& cat) const;
     void updateMatchStatus(const Match& ma) const;
     bool hasUnfinishedMandatoryPredecessor(const Match& ma) const;
+    void resolveSymbolicNamesAfterFinishedMatch(const Match& ma) const;
     
   signals:
     void beginCreateMatchGroup ();

@@ -224,6 +224,10 @@ namespace QTournament {
     QVariantList qvl;
     qvl << MA_GRP_REF << grp.getId();
     qvl << GENERIC_STATE_FIELD_NAME << STAT_MA_INCOMPLETE;
+    qvl << MA_PAIR1_SYMBOLIC_VAL << 0;   // default: no symbolic name
+    qvl << MA_PAIR2_SYMBOLIC_VAL << 0;   // default: no symbolic name
+    qvl << MA_WINNER_RANK << -1;         // default: no rank, no knock out
+    qvl << MA_LOSER_RANK << -1;         // default: no rank, no knock out
     emit beginCreateMatch();
     int newId = matchTab.insertRow(qvl);
     fixSeqNumberAfterInsert(TAB_MATCH);
@@ -953,6 +957,16 @@ namespace QTournament {
       return MATCH_NOT_RUNNABLE;
     }
 
+    //
+    // TODO: we shouldn't be able to start matches if the
+    // associated category is a state other than PLAYING
+    // or IDLE. In particular, we shouldn't call games
+    // if we're in WAITING_FOR_SEEDING.
+    //
+    // Maybe this needs to be solved here or maybe we should
+    // update the match status when we leave IDLE or PLAYING
+    //
+
     // check the player's availability
     ERR e = Tournament::getPlayerMngr()->canAcquirePlayerPairsForMatch(ma);
     if (e != OK) return e;  // PLAYER_NOT_IDLE
@@ -1084,7 +1098,7 @@ namespace QTournament {
     // conserve the round status BEFORE we finalize the match.
     // we need this information later to detect whether we've finished
     // a round or not
-    CatRoundStatus crsBeforeMatch = ma.getCategory().getRoundStatus();
+    int lastFinishedRoundBeforeMatch = ma.getCategory().getRoundStatus().getFinishedRoundsCount();
 
 
     // EXTREMELY IMPORTANT:
@@ -1134,18 +1148,23 @@ namespace QTournament {
       }
     }
 
+    // in case some other match refers to this match with a symbolic name
+    // (e.g., winner of match XYZ), resolve those symbolic names into
+    // real player pairs
+    resolveSymbolicNamesAfterFinishedMatch(ma);
+
     // update the category's state to "FINALIZED", if necessary
     Tournament::getCatMngr()->updateCatStatusFromMatchStatus(ma.getCategory());
 
     // get the round status AFTER the match and check whether
     // we'e just finished a round
-    CatRoundStatus crsAfterMatch = ma.getCategory().getRoundStatus();
-    if (crsAfterMatch.getFinishedRoundsCount() != crsBeforeMatch.getFinishedRoundsCount())
+    int lastFinishedRoundAfterMatch = ma.getCategory().getRoundStatus().getFinishedRoundsCount();
+    if (lastFinishedRoundBeforeMatch != lastFinishedRoundAfterMatch)
     {
       // call the hook for finished rounds (e.g., for updating the ranking information
       // or for generating new matches)
       auto specialCat = ma.getCategory().convertToSpecializedObject();
-      specialCat->onRoundCompleted(crsBeforeMatch.getFinishedRoundsCount());
+      specialCat->onRoundCompleted(lastFinishedRoundAfterMatch);
     }
 
     // TODO: add finish time to database
@@ -1302,6 +1321,52 @@ namespace QTournament {
 
 //----------------------------------------------------------------------------
 
+  void MatchMngr::resolveSymbolicNamesAfterFinishedMatch(const Match &ma) const
+  {
+    int matchId = ma.getId();
+    auto winnerPair = ma.getWinner();
+    auto loserPair = ma.getLoser();
+
+    MatchList ml;
+    if (winnerPair != nullptr)
+    {
+      // find all matches that use the winner of this match as player 1
+      // and resolve their symbolic references
+      ml = getObjectsByColumnValue<Match>(matchTab, MA_PAIR1_SYMBOLIC_VAL, matchId);
+      for (Match m : ml)
+      {
+        m.row.update(MA_PAIR1_REF, winnerPair->getPairId());  // set the reference to the winner
+        m.row.update(MA_PAIR1_SYMBOLIC_VAL, 0);   // delete symbolic reference
+      }
+      // find all matches that use the winner of this match as player 2
+      // and resolve their symbolic references
+      ml = getObjectsByColumnValue<Match>(matchTab, MA_PAIR2_SYMBOLIC_VAL, matchId);
+      for (Match m : ml)
+      {
+        m.row.update(MA_PAIR2_REF, winnerPair->getPairId());  // set the reference to the winner
+        m.row.update(MA_PAIR2_SYMBOLIC_VAL, 0);   // delete symbolic reference
+      }
+    }
+    if (loserPair != nullptr)
+    {
+      // find all matches that use the loser of this match as player 1
+      // and resolve their symbolic references
+      ml = getObjectsByColumnValue<Match>(matchTab, MA_PAIR1_SYMBOLIC_VAL, -matchId);
+      for (Match m : ml)
+      {
+        m.row.update(MA_PAIR1_REF, loserPair->getPairId());  // set the reference to the winner
+        m.row.update(MA_PAIR1_SYMBOLIC_VAL, 0);   // delete symbolic reference
+      }
+      // find all matches that use the loser of this match as player 2
+      // and resolve their symbolic references
+      ml = getObjectsByColumnValue<Match>(matchTab, MA_PAIR2_SYMBOLIC_VAL, -matchId);
+      for (Match m : ml)
+      {
+        m.row.update(MA_PAIR2_REF, loserPair->getPairId());  // set the reference to the winner
+        m.row.update(MA_PAIR2_SYMBOLIC_VAL, 0);   // delete symbolic reference
+      }
+    }
+  }
 
 //----------------------------------------------------------------------------
 

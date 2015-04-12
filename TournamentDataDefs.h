@@ -149,10 +149,10 @@ namespace QTournament
 #define MA_RESULT  QString("Result")
 #define MA_COURT_REF  QString("CourtRefId")
 #define MA_CALL_TIMES  QString("CallTimes")
-//#define MA_  QString("")
-//#define MA_  QString("")
-//#define MA_  QString("")
-//#define MA_  QString("")
+#define MA_PAIR1_SYMBOLIC_VAL  QString("PlayerPair1SymbolicValue")
+#define MA_PAIR2_SYMBOLIC_VAL  QString("PlayerPair2SymbolicValue")
+#define MA_WINNER_RANK  QString("WinnerRank")
+#define MA_LOSER_RANK  QString("LoserRank")
 //#define MA_  QString("")
 //#define MA_  QString("")
 //#define MA_  QString("")
@@ -274,6 +274,7 @@ namespace QTournament
     STAT_CAT_IDLE,
     STAT_CAT_PLAYING,  // at least one match in this category is currently being played
     STAT_CAT_FINALIZED, // no more rounds or matches to come
+    STAT_CAT_WAIT_FOR_INTERMEDIATE_SEEDING,  // we need user-controlled seeding / match generation before we can continue
     STAT_MG_CONFIG,   // Match group has been created, matches can still be added or removed
     STAT_MG_FROZEN,   // No more adding or removing of matches; match group CANNOT be staged because earlier rounds/groups have to be staged / scheduled first
     STAT_MG_IDLE,     // No more adding or removing of matches; match group can be staged and waits for being staged
@@ -281,7 +282,7 @@ namespace QTournament
     STAT_MG_SCHEDULED, // Match numbers have been assigned
     STAT_MG_FINISHED,  // All matches in this group are finished
     STAT_MA_INCOMPLETE,   // Match is not yet fully defined (e.g., player names or match number are missing)
-    STAT_MA_FUZZY,        // Player names are defined by symbolic values (e.g., winner of match XYZ); match cannot be called
+    STAT_MA_FUZZY,        // Player names are defined by symbolic values (e.g., winner of match XYZ); match number is assigned; match cannot be called
     STAT_MA_WAITING,      // Player names and match number are assigned but match cannot be called because earlier rounds have to be played first
     STAT_MA_READY,        // Opponents and match number are fully defined and all players are idle; match can be called
     STAT_MA_BUSY,         // Opponents and match number are fully defined but some players are busy; match cannot be called
