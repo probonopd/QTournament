@@ -65,7 +65,8 @@ HEADERS += \
     ui/delegates/CourtItemDelegate.h \
     CatRoundStatus.h \
     RankingMngr.h \
-    RankingEntry.h
+    RankingEntry.h \
+    BracketGenerator.h
 
 SOURCES += \
     Category.cpp \
@@ -121,7 +122,8 @@ SOURCES += \
     ui/delegates/CourtItemDelegate.cpp \
     CatRoundStatus.cpp \
     RankingMngr.cpp \
-    RankingEntry.cpp
+    RankingEntry.cpp \
+    BracketGenerator.cpp
 
 RESOURCES += \
     tournament.qrc
