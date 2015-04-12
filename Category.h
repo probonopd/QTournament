@@ -32,6 +32,9 @@ namespace QTournament
     friend class GenericObjectManager;
     
   public:
+    static constexpr int BRACKET_SINGLE_ELIM = 1;
+    static constexpr int BRACKET_DOUBLE_ELIM = 2;
+
     QString getName() const;
     ERR rename(const QString& newName);
     MATCH_TYPE getMatchType() const;
@@ -79,6 +82,7 @@ namespace QTournament
     virtual int calcTotalRoundsCount() { throw std::runtime_error("Unimplemented Method: calcTotalRoundsCount"); };
     virtual ERR onRoundCompleted(int round) { throw std::runtime_error("Unimplemented Method: onRoundCompleted"); };
     virtual std::function<bool (RankingEntry&, RankingEntry&)> getLessThanFunction()  { throw std::runtime_error("Unimplemented Method: getLessThanFunction"); };
+    virtual ERR prepareNextRound(PlayerList seeding, ProgressQueue* progressNotificationQueue=nullptr) { throw std::runtime_error("Unimplemented Method: prepareNextRound"); };
 
   private:
     Category (TournamentDB* db, int rowId);
@@ -86,6 +90,7 @@ namespace QTournament
     ERR applyGroupAssignment(QList<PlayerPairList> grpCfg);
     ERR applyInitialRanking(PlayerPairList seed);
     ERR generateGroupMatches(const PlayerPairList &grpMembers, int grpNum, int firstRoundNum=1, ProgressQueue* progressNotificationQueue=nullptr) const;
+    ERR generateBracketMatches(int bracketMode, const PlayerPairList& seeding, int firstRoundNum, ProgressQueue* progressNotificationQueue=nullptr) const;
   };
 
   // we need this to have a category object in a QHash

@@ -103,7 +103,7 @@ upSimpleReport Standings::regenerateReport() const
       rowContent << QString::number(curRank);
       rowContent << re.getPlayerPair().getDisplayName();
 
-      // TODO: this doesn't work if we draw matches are allowed!
+      // TODO: this doesn't work if draw matches are allowed!
       auto matchStats = re.getMatchStats();
       rowContent << QString::number(get<0>(matchStats));
       rowContent << ":";
@@ -140,8 +140,8 @@ QStringList Standings::getReportLocators() const
   QStringList result;
 
   QString loc = tr("Standings::");
-  loc += cat.getName() + "::by round::";
-  loc += tr("Round ") + QString::number(round);
+  loc += cat.getName() + "::";
+  loc += tr("after round ") + QString::number(round);
 
   result.append(loc);
 

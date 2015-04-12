@@ -32,6 +32,21 @@ namespace QTournament
     int getPairsGroupNum(TournamentDB* db) const;  // only as a hot-fix
     bool areAllPlayersIdle() const;
 
+    inline bool operator == (const PlayerPair& other) const {
+      // case 1: we have player pairs with a database ID
+      if ((pairId > 0) && (other.pairId > 0))
+      {
+        return (pairId == other.pairId);
+      }
+
+      // case 2: we have player pairs "in memory" without
+      // database entry
+      return ((id1 == other.id1) && (id2 == other.id2));
+    }
+    inline bool operator != (const PlayerPair& other) const {
+      return (!(this->operator ==(other)));
+    }
+
   private:
     int id1;
     int id2;
