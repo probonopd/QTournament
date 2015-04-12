@@ -156,7 +156,7 @@ SOURCES += \
     CatRoundStatus.cpp \
     RankingMngr.cpp \
     RankingEntry.cpp \
-    BracketGenerator.cpp
+    BracketGenerator.cpp \
     reports/AbstractReport.cpp \
     reports/ParticipantsList.cpp \
     ui/ReportsTabWidget.cpp \
