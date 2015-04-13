@@ -69,6 +69,8 @@ namespace QTournament
         MISSING_RANKING_ENTRIES,
         NOTHING_TO_PREPARE,
         INVALID_SEEDING_LIST,
+        INVALID_PLAYER_PAIR,
+        INVALID_MATCH_LINK
     };
 }
 

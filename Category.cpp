@@ -15,6 +15,7 @@
 #include "RoundRobinGenerator.h"
 #include "Match.h"
 #include "CatRoundStatus.h"
+#include "BracketGenerator.h"
 
 #include <stdexcept>
 
@@ -681,7 +682,8 @@ namespace QTournament
   ERR Category::generateGroupMatches(const PlayerPairList& grpMembers, int grpNum, int firstRoundNum, ProgressQueue *progressNotificationQueue) const
   {
     if (grpNum < 1) return INVALID_GROUP_NUM;
-    if (firstRoundNum < 1) return INVALID_ROUND;
+    CatRoundStatus crs = getRoundStatus();
+    if (firstRoundNum <= crs.getHighestGeneratedMatchRound()) return INVALID_ROUND;
 
     RoundRobinGenerator rrg;
     auto mm = Tournament::getMatchMngr();
@@ -726,6 +728,185 @@ namespace QTournament
     }
 
     return OK;  // should never be reached, but anyway...
+  }
+
+  //----------------------------------------------------------------------------
+
+  /**
+    Convenience function that generates a set of bracket matches for
+    a list of PlayerPairs. This function does not do any error checking
+    whether the PlayerPairs or other arguments are valid. It assumes
+    that those checks have been performed before and that it's generally
+    safe to generate the matches here and now.
+
+    \param bracketMode is the type of bracket to use (e.g., single elimination)
+    \param seeding is the initial list of player pairs, sorted from best player (index 0) to weakest player
+    \param firstRoundNum the number of the first round of bracket matches
+    \param progressNotificationQueue is an optional pointer to a FIFO that communicates progress back to the GUI
+
+    \return error code
+    */
+  ERR Category::generateBracketMatches(int bracketMode, const PlayerPairList& seeding, int firstRoundNum, ProgressQueue* progressNotificationQueue) const
+  {
+    CatRoundStatus crs = getRoundStatus();
+    if (firstRoundNum <= crs.getHighestGeneratedMatchRound()) return INVALID_ROUND;
+
+    // generate the bracket data for the player list
+    BracketGenerator gen{bracketMode};
+    BracketMatchDataList bmdl = gen.getBracketMatches(seeding.size());
+    int numBracketRounds = gen.getNumRounds(seeding.size());
+
+    // sort the bracket data so that we have early rounds first
+    std::sort(bmdl.begin(), bmdl.end(), BracketGenerator::getBracketMatchSortFunction_earlyRoundsFirst());
+
+    // create match groups and matches "from left to right"
+    MatchMngr* mm = Tournament::getMatchMngr();
+    int curRound = -1;
+    int curDepth = -1;
+    unique_ptr<MatchGroup> curGroup = nullptr;
+    QHash<int, int> bracket2Match;
+    for (BracketMatchData bmd : bmdl)
+    {
+      // do we have to start a new round / group?
+      if (bmd.depthInBracket != curDepth)
+      {
+        if (curGroup != nullptr)
+        {
+          mm->closeMatchGroup(*curGroup);
+        }
+
+        curDepth = bmd.depthInBracket;
+        ++curRound;
+
+        // determine the number for the new match group
+        int grpNum = GROUP_NUM__ITERATION;
+        switch (curDepth)
+        {
+        case 0:
+          grpNum = GROUP_NUM__FINAL;
+          break;
+        case 1:
+          grpNum = GROUP_NUM__SEMIFINAL;
+          break;
+        case 2:
+          grpNum = GROUP_NUM__QUARTERFINAL;
+          break;
+        case 3:
+          grpNum = GROUP_NUM__L16;
+          break;
+        }
+
+        // create the match group
+        ERR err;
+        curGroup = mm->createMatchGroup(*this, firstRoundNum+curDepth, grpNum, &err);
+        assert(err == OK);
+        assert(curGroup != nullptr);
+      }
+
+      // create a new, empty match in this group and map it to the bracket match id
+      ERR err;
+      auto ma = mm->createMatch(*curGroup, &err);
+      assert(err == OK);
+      assert(ma != nullptr);
+
+      bracket2Match.insert(bmd.getBracketMatchId(), ma->getId());
+
+    }
+
+    // a little helper function that returns an iterator to a match with
+    // a given ID
+    auto getMatchById = [&bmdl](int matchId) {
+      BracketMatchDataList::iterator i = bmdl.begin();
+      while (i != bmdl.end())
+      {
+        if ((*i).getBracketMatchId() == matchId) return i;
+        ++i;
+      }
+    };
+
+    // fill the empty matches with the right values
+    PlayerMngr* pm = Tournament::getPlayerMngr();
+    for (BracketMatchData bmd : bmdl)
+    {
+      // "zero" is invalid for initialRank!
+      assert(bmd.initialRank_Player1 != 0);
+      assert(bmd.initialRank_Player2 != 0);
+
+      auto ma = mm->getMatch(bracket2Match.value(bmd.getBracketMatchId()));
+      assert(ma != nullptr);
+
+      // case 1: we have "real" players that we can use
+      if ((bmd.initialRank_Player1 > 0) && (bmd.initialRank_Player1 <= seeding.size()))
+      {
+        PlayerPair pp = seeding.at(bmd.initialRank_Player1 - 1);
+        mm->setPlayerPairForMatch(*ma, pp, 1);
+      }
+      if ((bmd.initialRank_Player2 > 0) && (bmd.initialRank_Player2 <= seeding.size()))
+      {
+        PlayerPair pp = seeding.at(bmd.initialRank_Player2 - 1);
+        mm->setPlayerPairForMatch(*ma, pp, 2);
+      }
+
+      // case 2: we have "symbolic" values like "winner of bracket match XYZ"
+      if (bmd.initialRank_Player1 < 0)
+      {
+        int srcBracketMatchId = -(bmd.initialRank_Player1);
+        BracketMatchData srcBracketMatch = *(getMatchById(srcBracketMatchId));
+
+        int srcDatabaseMatchId = bracket2Match.value(srcBracketMatchId);
+        auto srcDatabaseMatch = mm->getMatch(srcDatabaseMatchId);
+
+        if (srcBracketMatch.nextMatchForWinner == bmd.getBracketMatchId())  // player 1 of bmd is the winner of srcMatch
+        {
+          assert(srcBracketMatch.nextMatchPlayerPosForWinner == 1);
+          mm->setSymbolicPlayerForMatch(*srcDatabaseMatch, *ma, true, 1);
+        } else {
+          // player 1 of bmd is the loser of srcMatch
+          assert(srcBracketMatch.nextMatchPlayerPosForLoser == 1);
+          mm->setSymbolicPlayerForMatch(*srcDatabaseMatch, *ma, false, 1);
+        }
+      }
+      if (bmd.initialRank_Player2 < 0)
+      {
+        int srcBracketMatchId = -(bmd.initialRank_Player2);
+        BracketMatchData srcBracketMatch = *(getMatchById(srcBracketMatchId));
+
+        int srcDatabaseMatchId = bracket2Match.value(srcBracketMatchId);
+        auto srcDatabaseMatch = mm->getMatch(srcDatabaseMatchId);
+
+        if (srcBracketMatch.nextMatchForWinner == bmd.getBracketMatchId())  // player 2 of bmd is the winner of srcMatch
+        {
+          assert(srcBracketMatch.nextMatchPlayerPosForWinner == 2);
+          mm->setSymbolicPlayerForMatch(*srcDatabaseMatch, *ma, true, 2);
+        } else {
+          // player 2 of bmd is the loser of srcMatch
+          assert(srcBracketMatch.nextMatchPlayerPosForLoser == 2);
+          mm->setSymbolicPlayerForMatch(*srcDatabaseMatch, *ma, false, 2);
+        }
+      }
+
+      // case 3 (rare): only one player is used and the match does not need to be played,
+      // BUT the match contains information about the final rank of the one player
+      if ((bmd.initialRank_Player1 == BracketMatchData::UNUSED_PLAYER) && (bmd.nextMatchForWinner < 0))
+      {
+        mm->setPlayerToUnused(*ma, 1, -(bmd.nextMatchForWinner));
+      }
+      if ((bmd.initialRank_Player2 == BracketMatchData::UNUSED_PLAYER) && (bmd.nextMatchForWinner < 0))
+      {
+        mm->setPlayerToUnused(*ma, 2, -(bmd.nextMatchForWinner));
+      }
+
+      // last step: perhaps we have final ranks for winner and/or loser
+      if (bmd.nextMatchForWinner < 0)
+      {
+        mm->setRankForWinnerOrLoser(*ma, true, -(bmd.nextMatchForWinner));
+      }
+      if (bmd.nextMatchForLoser < 0)
+      {
+        mm->setRankForWinnerOrLoser(*ma, false, -(bmd.nextMatchForLoser));
+      }
+    }
+
   }
 
   //----------------------------------------------------------------------------

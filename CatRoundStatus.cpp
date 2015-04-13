@@ -59,6 +59,15 @@ QList<int> CatRoundStatus::getCurrentlyRunningRoundNumbers() const
   return result;
 }
 
+//----------------------------------------------------------------------------
+
+int CatRoundStatus::getHighestGeneratedMatchRound() const
+{
+  return Tournament::getMatchMngr()->getHighestUsedRoundNumberInCategory(cat);
+}
+
+//----------------------------------------------------------------------------
+
 int CatRoundStatus::getCurrentlyRunningRoundNumber() const
 {
   QList<int> runningRounds = getCurrentlyRunningRoundNumbers();

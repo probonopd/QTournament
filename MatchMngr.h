@@ -76,11 +76,17 @@ namespace QTournament
     // starting / finishing matches
     ERR canAssignPlayerPairToMatch(const Match& ma, const PlayerPair& pp) const;
     ERR setPlayerPairsForMatch(const Match& ma, const PlayerPair& pp1, const PlayerPair& pp2);
+    ERR setPlayerPairForMatch(const Match& ma, const PlayerPair& pp, int ppPos) const;
+    ERR setSymbolicPlayerForMatch(const Match& fromMatch, const Match& toMatch, bool asWinner, int dstPlayerPosInMatch) const;
+    ERR setPlayerToUnused(const Match& ma, int unusedPlayerPos, int winnerRank) const;   // use only if this is the last match for the winner!
+    ERR setRankForWinnerOrLoser(const Match& ma, bool isWinner, int rank) const;
     ERR getNextViableMatchCourtPair(int* matchId, int* courtId, bool includeManualCourts=false) const;
     ERR canAssignMatchToCourt(const Match& ma, const Court &court) const;
     ERR assignMatchToCourt(const Match& ma, const Court& court) const;
     unique_ptr<Court> autoAssignMatchToNextAvailCourt(const Match& ma, ERR* err, bool includeManualCourts=false) const;
     ERR setMatchScoreAndFinalizeMatch(const Match& ma, const MatchScore& score);
+    ERR setNextMatchForWinner(const Match& fromMatch, const Match& toMatch, int playerNum) const;
+    ERR setNextMatchForLoser(const Match& fromMatch, const Match& toMatch, int playerNum) const;
 
     // configuration of MATCH GROUPS
     ERR closeMatchGroup(const MatchGroup& grp);
@@ -93,6 +99,7 @@ namespace QTournament
     void updateMatchStatus(const Match& ma) const;
     bool hasUnfinishedMandatoryPredecessor(const Match& ma) const;
     void resolveSymbolicNamesAfterFinishedMatch(const Match& ma) const;
+    static constexpr int SYMBOLIC_ID_FOR_UNUSED_PLAYER_PAIR_IN_MATCH = 999999;
     
   signals:
     void beginCreateMatchGroup ();

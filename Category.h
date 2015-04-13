@@ -32,9 +32,6 @@ namespace QTournament
     friend class GenericObjectManager;
     
   public:
-    static constexpr int BRACKET_SINGLE_ELIM = 1;
-    static constexpr int BRACKET_DOUBLE_ELIM = 2;
-
     QString getName() const;
     ERR rename(const QString& newName);
     MATCH_TYPE getMatchType() const;
@@ -82,7 +79,7 @@ namespace QTournament
     virtual int calcTotalRoundsCount() { throw std::runtime_error("Unimplemented Method: calcTotalRoundsCount"); };
     virtual ERR onRoundCompleted(int round) { throw std::runtime_error("Unimplemented Method: onRoundCompleted"); };
     virtual std::function<bool (RankingEntry&, RankingEntry&)> getLessThanFunction()  { throw std::runtime_error("Unimplemented Method: getLessThanFunction"); };
-    virtual ERR prepareNextRound(PlayerList seeding, ProgressQueue* progressNotificationQueue=nullptr) { throw std::runtime_error("Unimplemented Method: prepareNextRound"); };
+    virtual ERR prepareNextRound(PlayerPairList seeding, ProgressQueue* progressNotificationQueue=nullptr) { throw std::runtime_error("Unimplemented Method: prepareNextRound"); };
 
   private:
     Category (TournamentDB* db, int rowId);

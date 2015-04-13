@@ -244,6 +244,19 @@ namespace QTournament {
 
   ERR MatchMngr::setPlayerPairsForMatch(const Match &ma, const PlayerPair &pp1, const PlayerPair &pp2)
   {
+    //
+    // Initial note: we do not solve this function here by simply calling
+    // setPlayerPairForMatch() twice. Because if we would do so, we could
+    // leave the match in an invalid state if pp1 is valid (and thus assigned
+    // to the match by the first call) and pp2 is not (and thus playerpair2 is
+    // not set).
+    //
+
+
+    // make sure the player pair is valid (has a database entry)
+    if (pp1.getPairId() < 1) return INVALID_PLAYER_PAIR;
+    if (pp2.getPairId() < 1) return INVALID_PLAYER_PAIR;
+
     // check if an assignment of the player pairs is okay
     ERR e = canAssignPlayerPairToMatch(ma, pp1);
     if (e != OK) return e;
@@ -260,6 +273,107 @@ namespace QTournament {
     TabRow matchRow = matchTab[ma.getId()];
     matchRow.update(MA_PAIR1_REF, pp1.getPairId());
     matchRow.update(MA_PAIR2_REF, pp2.getPairId());
+
+    return OK;
+  }
+
+//----------------------------------------------------------------------------
+
+  ERR MatchMngr::setPlayerPairForMatch(const Match& ma, const PlayerPair& pp, int ppPos) const
+  {
+    // make sure the player pair is valid (has a database entry)
+    if (pp.getPairId() < 1) return INVALID_PLAYER_PAIR;
+
+    // check if an assignment of the player pairs is okay
+    ERR e = canAssignPlayerPairToMatch(ma, pp);
+    if (e != OK) return e;
+
+    // assign the player pair
+    TabRow matchRow = matchTab[ma.getId()];
+    if (ppPos == 1) matchRow.update(MA_PAIR1_REF, pp.getPairId());
+    if (ppPos == 2) matchRow.update(MA_PAIR2_REF, pp.getPairId());
+
+    return OK;
+  }
+
+//----------------------------------------------------------------------------
+
+  ERR MatchMngr::setSymbolicPlayerForMatch(const Match& fromMatch, const Match& toMatch, bool asWinner, int dstPlayerPosInMatch) const
+  {
+    // Only allow changing / setting players if we not yet fully configured
+    if (toMatch.getState() != STAT_MA_INCOMPLETE) return MATCH_NOT_CONFIGURALE_ANYMORE;
+
+    // fromMatch and toMatch must be in the same category
+    int fromMatchCatId = fromMatch.getCategory().getId();
+    int toMatchCatId = toMatch.getCategory().getId();
+    if (fromMatchCatId != toMatchCatId)
+    {
+      return INVALID_MATCH_LINK;
+    }
+
+    // toMatch must be in a later round than fromMatch
+    MatchGroup fromGroup = fromMatch.getMatchGroup();
+    MatchGroup toGroup = toMatch.getMatchGroup();
+    if (toGroup.getRound() <= fromGroup.getRound())
+    {
+      return INVALID_MATCH_LINK;
+    }
+
+    // okay, the link is valid
+    TabRow toRow = matchTab[toMatch.getId()];
+    int dstId = asWinner ? fromMatch.getId() : -(fromMatch.getId());
+    if (dstPlayerPosInMatch == 1)
+    {
+      toRow.update(MA_PAIR1_SYMBOLIC_VAL, dstId);
+      toRow.update(MA_PAIR1_REF, QVariant());
+    }
+    if (dstPlayerPosInMatch == 2)
+    {
+      toRow.update(MA_PAIR2_SYMBOLIC_VAL, dstId);
+      toRow.update(MA_PAIR2_REF, QVariant());
+    }
+
+    return OK;
+  }
+
+//----------------------------------------------------------------------------
+
+  ERR MatchMngr::setPlayerToUnused(const Match& ma, int unusedPlayerPos, int winnerRank) const
+  {
+    // Only allow changing / setting player pairs if we not yet fully configured
+    if (ma.getState() != STAT_MA_INCOMPLETE) return MATCH_NOT_CONFIGURALE_ANYMORE;
+
+    TabRow matchRow = matchTab[ma.getId()];
+    if (unusedPlayerPos == 1)
+    {
+      matchRow.update(MA_PAIR1_REF, QVariant());
+      matchRow.update(MA_PAIR1_SYMBOLIC_VAL, SYMBOLIC_ID_FOR_UNUSED_PLAYER_PAIR_IN_MATCH);
+    }
+    if (unusedPlayerPos == 2)
+    {
+      matchRow.update(MA_PAIR2_REF, QVariant());
+      matchRow.update(MA_PAIR2_SYMBOLIC_VAL, SYMBOLIC_ID_FOR_UNUSED_PLAYER_PAIR_IN_MATCH);
+    }
+    matchRow.update(MA_WINNER_RANK, winnerRank);
+
+    return OK;
+  }
+
+//----------------------------------------------------------------------------
+
+  ERR MatchMngr::setRankForWinnerOrLoser(const Match& ma, bool isWinner, int rank) const
+  {
+    // Only allow changing / setting match data if we not yet fully configured
+    if (ma.getState() != STAT_MA_INCOMPLETE) return MATCH_NOT_CONFIGURALE_ANYMORE;
+
+    // TODO: check if rank is really valid
+
+    if (isWinner)
+    {
+      ma.row.update(MA_WINNER_RANK, rank);
+    } else {
+      ma.row.update(MA_LOSER_RANK, rank);
+    }
 
     return OK;
   }
@@ -715,7 +829,25 @@ namespace QTournament {
       }
     }
 
-    // TODO: handle FUZZY (not yet implemented in the database)
+    // from INCOMPLETE to FUZZY
+    if (curState == STAT_MA_INCOMPLETE)
+    {
+      int fuzzy1 = ma.row[MA_PAIR1_SYMBOLIC_VAL].toInt();
+      int fuzzy2 = ma.row[MA_PAIR2_SYMBOLIC_VAL].toInt();
+
+      // we shall never have a symbolic and a real player assignment at the same time
+      assert((fuzzy1 != 0) && (ma.hasPlayerPair1() == false));
+      assert((fuzzy2 != 0) && (ma.hasPlayerPair2() == false));
+
+      if ((fuzzy1 != 0) || (fuzzy2 != 0))
+      {
+        ma.setState(STAT_MA_FUZZY);
+        curState = STAT_MA_FUZZY;
+        emit matchStatusChanged(ma.getId(), ma.getSeqNum(), STAT_MA_INCOMPLETE, STAT_MA_FUZZY);
+      }
+    }
+
+    // transition from FUZZY to WAITING is handled in resolveSymbolicNamesAfterFinishedMatch()
 
     // from WAITING to READY or BUSY
     bool hasPredecessor = hasUnfinishedMandatoryPredecessor(ma);
@@ -1335,6 +1467,9 @@ namespace QTournament {
       ml = getObjectsByColumnValue<Match>(matchTab, MA_PAIR1_SYMBOLIC_VAL, matchId);
       for (Match m : ml)
       {
+        // we may only modify matches in state FUZZY
+        if (m.getState() != STAT_MA_FUZZY) continue;
+
         m.row.update(MA_PAIR1_REF, winnerPair->getPairId());  // set the reference to the winner
         m.row.update(MA_PAIR1_SYMBOLIC_VAL, 0);   // delete symbolic reference
       }
@@ -1343,10 +1478,14 @@ namespace QTournament {
       ml = getObjectsByColumnValue<Match>(matchTab, MA_PAIR2_SYMBOLIC_VAL, matchId);
       for (Match m : ml)
       {
+        // we may only modify matches in state FUZZY
+        if (m.getState() != STAT_MA_FUZZY) continue;
+
         m.row.update(MA_PAIR2_REF, winnerPair->getPairId());  // set the reference to the winner
         m.row.update(MA_PAIR2_SYMBOLIC_VAL, 0);   // delete symbolic reference
       }
     }
+
     if (loserPair != nullptr)
     {
       // find all matches that use the loser of this match as player 1
@@ -1354,6 +1493,9 @@ namespace QTournament {
       ml = getObjectsByColumnValue<Match>(matchTab, MA_PAIR1_SYMBOLIC_VAL, -matchId);
       for (Match m : ml)
       {
+        // we may only modify matches in state FUZZY
+        if (m.getState() != STAT_MA_FUZZY) continue;
+
         m.row.update(MA_PAIR1_REF, loserPair->getPairId());  // set the reference to the winner
         m.row.update(MA_PAIR1_SYMBOLIC_VAL, 0);   // delete symbolic reference
       }
@@ -1362,10 +1504,30 @@ namespace QTournament {
       ml = getObjectsByColumnValue<Match>(matchTab, MA_PAIR2_SYMBOLIC_VAL, -matchId);
       for (Match m : ml)
       {
+        // we may only modify matches in state FUZZY
+        if (m.getState() != STAT_MA_FUZZY) continue;
+
         m.row.update(MA_PAIR2_REF, loserPair->getPairId());  // set the reference to the winner
         m.row.update(MA_PAIR2_SYMBOLIC_VAL, 0);   // delete symbolic reference
       }
     }
+
+    // if we resolved all symbolic references of a match, it may be promoted from
+    // FUZZY at least to WAITING, maybe even to READY or BUSY
+    QVariantList qvl;
+    qvl << GENERIC_STATE_FIELD_NAME << static_cast<int>(STAT_MA_FUZZY);
+    qvl << MA_PAIR1_SYMBOLIC_VAL << 0;
+    qvl << MA_PAIR2_SYMBOLIC_VAL << 0;
+    for (Match m : getObjectsByColumnValue<Match>(matchTab, qvl))
+    {
+      m.setState(STAT_MA_WAITING);
+      emit matchStatusChanged(m.getId(), m.getSeqNum(), STAT_MA_FUZZY, STAT_MA_WAITING);
+
+      // perhaps we can further promote the match from WAITING to READY or BUSY.
+      // to this end, call the "standard" promotion function
+      updateMatchStatus(m);
+    }
+
   }
 
 //----------------------------------------------------------------------------

@@ -201,7 +201,7 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  ERR RoundRobinCategory::prepareNextRound(PlayerList seeding, ProgressQueue* progressNotificationQueue)
+  ERR RoundRobinCategory::prepareNextRound(PlayerPairList seeding, ProgressQueue* progressNotificationQueue)
   {
     if (getState() != STAT_CAT_WAIT_FOR_INTERMEDIATE_SEEDING)
     {
@@ -237,11 +237,11 @@ namespace QTournament
     int numGroupRounds = cfg.getNumRounds();
     if (crs.getFinishedRoundsCount() < numGroupRounds)
     {
-      return PlayerList();  // nope, we're not there yet
+      return PlayerPairList();  // nope, we're not there yet
     }
 
     // get the ranking after the last round-robin round
-    RankingEntryListList rll = Tournament::getRankingMngr()->getSortedRanking(this, numGroupRounds);
+    RankingEntryListList rll = Tournament::getRankingMngr()->getSortedRanking(*this, numGroupRounds);
     assert(rll.size() == cfg.getNumGroups());
 
     PlayerPairList result;
@@ -251,12 +251,12 @@ namespace QTournament
       assert(rl.size() >= 2);
 
       // the first in each group is always qualified
-      result.push_front(rl.at(0));
+      result.push_front(rl.at(0).getPlayerPair());
 
       // maybe the second qualifies as well
       if (cfg.getSecondSurvives())
       {
-        result.push_back(rl.at(1));
+        result.push_back(rl.at(1).getPlayerPair());
       }
     }
 

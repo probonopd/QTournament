@@ -24,6 +24,7 @@ public:
   int getCurrentlyRunningRoundNumber() const;
   int getTotalRoundsCount() const;
   QList<int> getCurrentlyRunningRoundNumbers() const;
+  int getHighestGeneratedMatchRound() const;
 
   tuple<int, int, int> getMatchCountForCurrentRound() const;
 
