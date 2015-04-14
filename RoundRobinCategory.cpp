@@ -12,6 +12,7 @@
 #include "RankingEntry.h"
 #include "RankingMngr.h"
 #include "assert.h"
+#include "BracketGenerator.h"
 
 #include <QDebug>
 
@@ -208,6 +209,20 @@ namespace QTournament
       return NOTHING_TO_PREPARE;
     }
 
+    // we must be between the last round robin round and the first KO round;
+    // no rounds may currently be running
+    CatRoundStatus crs = getRoundStatus();
+    KO_Config cfg = KO_Config(getParameter_string(GROUP_CONFIG));
+    int groupRounds = cfg.getNumRounds();
+    if (crs.getFinishedRoundsCount() != groupRounds)
+    {
+      return INVALID_ROUND;
+    }
+    if (!(crs.getCurrentlyRunningRoundNumbers().isEmpty()))
+    {
+      return INVALID_ROUND;
+    }
+
     // get the list of player pairs that are qualified for the KO phase
     PlayerPairList qualifiedPlayers = getQualifiedPlayersAfterRoundRobin_sorted();
     assert(qualifiedPlayers.size() > 0);   // this MUST be true, otherwise something went terribly wrong
@@ -224,7 +239,7 @@ namespace QTournament
     }
 
     // great, we can actually go ahead and create KO matches based on the seeding list
-
+    return generateBracketMatches(BracketGenerator::BRACKET_SINGLE_ELIM, seeding, 42, progressNotificationQueue);
   }
 
 //----------------------------------------------------------------------------

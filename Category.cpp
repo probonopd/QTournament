@@ -682,8 +682,6 @@ namespace QTournament
   ERR Category::generateGroupMatches(const PlayerPairList& grpMembers, int grpNum, int firstRoundNum, ProgressQueue *progressNotificationQueue) const
   {
     if (grpNum < 1) return INVALID_GROUP_NUM;
-    CatRoundStatus crs = getRoundStatus();
-    if (firstRoundNum <= crs.getHighestGeneratedMatchRound()) return INVALID_ROUND;
 
     RoundRobinGenerator rrg;
     auto mm = Tournament::getMatchMngr();
@@ -754,7 +752,12 @@ namespace QTournament
     // generate the bracket data for the player list
     BracketGenerator gen{bracketMode};
     BracketMatchDataList bmdl = gen.getBracketMatches(seeding.size());
-    int numBracketRounds = gen.getNumRounds(seeding.size());
+
+    // prepare the notification queue, if any
+    if (progressNotificationQueue != nullptr)
+    {
+      progressNotificationQueue->reset(bmdl.size() * 2);
+    }
 
     // sort the bracket data so that we have early rounds first
     std::sort(bmdl.begin(), bmdl.end(), BracketGenerator::getBracketMatchSortFunction_earlyRoundsFirst());
@@ -811,6 +814,8 @@ namespace QTournament
 
       bracket2Match.insert(bmd.getBracketMatchId(), ma->getId());
 
+      if (progressNotificationQueue != nullptr) progressNotificationQueue->step();
+
     }
 
     // a little helper function that returns an iterator to a match with
@@ -822,10 +827,10 @@ namespace QTournament
         if ((*i).getBracketMatchId() == matchId) return i;
         ++i;
       }
+      return i;
     };
 
     // fill the empty matches with the right values
-    PlayerMngr* pm = Tournament::getPlayerMngr();
     for (BracketMatchData bmd : bmdl)
     {
       // "zero" is invalid for initialRank!
@@ -855,6 +860,7 @@ namespace QTournament
 
         int srcDatabaseMatchId = bracket2Match.value(srcBracketMatchId);
         auto srcDatabaseMatch = mm->getMatch(srcDatabaseMatchId);
+        assert(srcDatabaseMatch != nullptr);
 
         if (srcBracketMatch.nextMatchForWinner == bmd.getBracketMatchId())  // player 1 of bmd is the winner of srcMatch
         {
@@ -905,8 +911,11 @@ namespace QTournament
       {
         mm->setRankForWinnerOrLoser(*ma, false, -(bmd.nextMatchForLoser));
       }
+
+      if (progressNotificationQueue != nullptr) progressNotificationQueue->step();
     }
 
+    return OK;
   }
 
   //----------------------------------------------------------------------------
