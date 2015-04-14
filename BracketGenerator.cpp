@@ -1,4 +1,6 @@
 #include "BracketGenerator.h"
+#include <memory>
+#include <vector>
 
 namespace QTournament
 {
@@ -22,9 +24,9 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  BracketMatchDataList BracketGenerator::genBracket__SingleElim(int numPlayers) const
+  upBracketMatchDataVector BracketGenerator::genBracket__SingleElim(int numPlayers) const
   {
-    BracketMatchDataList result;
+    upBracketMatchDataVector result;
 
     // return an empty list in case of invalid arguments
     if (numPlayers < 2)
@@ -40,12 +42,12 @@ namespace QTournament
     //
     // the initial configuration is easy:
     // we start with finals, which is simply "first vs. second"
-    BracketMatchData bmData;
-    bmData.setInitialRanks(1, 2);
-    bmData.nextMatchForLoser = -2;
-    bmData.nextMatchForWinner = -1;
-    bmData.depthInBracket = 0;
-    result.append(bmData);
+    upBracketMatchData bmData = upBracketMatchData(new BracketMatchData);
+    bmData->setInitialRanks(1, 2);
+    bmData->nextMatchForLoser = -2;
+    bmData->nextMatchForWinner = -1;
+    bmData->depthInBracket = 0;
+    result.push_back(std::move(bmData));
 
     int nActual = 2;
     int curDepth = 0;
@@ -70,31 +72,37 @@ namespace QTournament
 
       nActual *= 2;  // the number of players doubles in each round
       ++curDepth;
-      BracketMatchDataList newMatches;
 
-      for (auto prevMatch : result)   // loop over all matches generated so far
+      int matchCountBeforeWhile = result.size();
+      int cnt=0;
+      while (cnt < matchCountBeforeWhile)   // loop over all matches generated so far
       {
-        if (prevMatch.depthInBracket != (curDepth-1)) continue;  // skip all but the last round
+        upBracketMatchData& prevMatch = result.at(cnt);
+        if (prevMatch->depthInBracket != (curDepth-1))
+        {
+          ++cnt;
+          continue;  // skip all but the last round
+        }
 
-        int rank1 = prevMatch.initialRank_Player1;
-        int rank2 = prevMatch.initialRank_Player1;
+        int rank1 = prevMatch->initialRank_Player1;
+        int rank2 = prevMatch->initialRank_Player2;
 
-        BracketMatchData newBracketMatch1;
-        newBracketMatch1.setInitialRanks(rank1, (nActual+1)-rank1);
-        newBracketMatch1.setNextMatchForWinner(prevMatch, 1);
-        newBracketMatch1.nextMatchForLoser = BracketMatchData::NO_NEXT_MATCH;
-        newBracketMatch1.depthInBracket = curDepth;
+        upBracketMatchData newBracketMatch1 = upBracketMatchData(new BracketMatchData);
+        newBracketMatch1->setInitialRanks(rank1, (nActual+1)-rank1);
+        newBracketMatch1->setNextMatchForWinner(*prevMatch, 1);
+        newBracketMatch1->nextMatchForLoser = BracketMatchData::NO_NEXT_MATCH;
+        newBracketMatch1->depthInBracket = curDepth;
 
-        BracketMatchData newBracketMatch2;
-        newBracketMatch2.setInitialRanks(rank2, (nActual+1)-rank2);
-        newBracketMatch2.setNextMatchForWinner(prevMatch, 2);
-        newBracketMatch1.nextMatchForLoser = BracketMatchData::NO_NEXT_MATCH;
-        newBracketMatch1.depthInBracket = curDepth;
+        upBracketMatchData newBracketMatch2 = upBracketMatchData(new BracketMatchData);
+        newBracketMatch2->setInitialRanks(rank2, (nActual+1)-rank2);
+        newBracketMatch2->setNextMatchForWinner(*prevMatch, 2);
+        newBracketMatch2->nextMatchForLoser = BracketMatchData::NO_NEXT_MATCH;
+        newBracketMatch2->depthInBracket = curDepth;
 
-        newMatches.append(newBracketMatch1);
-        newMatches.append(newBracketMatch2);
+        result.push_back(std::move(newBracketMatch1));
+        result.push_back(std::move(newBracketMatch2));
+        ++cnt;
       }
-      result.append(newMatches);
     }
 
     removeUnusedMatches(result, numPlayers);
@@ -108,31 +116,37 @@ namespace QTournament
   {
     if (numPlayers < 2) return BracketMatchDataList();
 
-    if (bracketType == BRACKET_SINGLE_ELIM) return genBracket__SingleElim(numPlayers);
+    upBracketMatchDataVector upResult;
+    if (bracketType == BRACKET_SINGLE_ELIM) upResult = genBracket__SingleElim(numPlayers);
+    else throw std::runtime_error("TODO: Unimplemented bracket type!");
 
-    throw std::runtime_error("TODO: Unimplemented bracket type!");
+    // convert unique_ptrs to standard objects that are easier to handle
+    BracketMatchDataList result;
+    for_each(upResult.begin(), upResult.end(), [&result](upBracketMatchData& b){result.append(*b);});
+
+    return result;
   }
 
 //----------------------------------------------------------------------------
 
-  void BracketGenerator::removeUnusedMatches(BracketMatchDataList &bracketMatches, int numPlayers) const
+  void BracketGenerator::removeUnusedMatches(upBracketMatchDataVector &bracketMatches, int numPlayers) const
   {
     // sort the bracket matches so that we always traverse the tree "from left to right" (read: from the
     // earlier to the later matches)
-    std::sort(bracketMatches.begin(), bracketMatches.end(), getBracketMatchSortFunction_earlyRoundsFirst());
+    std::sort(bracketMatches.begin(), bracketMatches.end(), getBracketMatchSortFunction_up_earlyRoundsFirst());
 
     // a little helper function that returns an iterator to a match with
     // a given ID
     auto getMatchById = [&bracketMatches](int matchId) {
-      BracketMatchDataList::iterator i = bracketMatches.begin();
+      upBracketMatchDataVector::iterator i = bracketMatches.begin();
       while (i != bracketMatches.end())
       {
-        if ((*i).getBracketMatchId() == matchId) return i;
+        if ((**i).getBracketMatchId() == matchId) return i;
         ++i;
       }
     };
 
-    // a little helper function that update a player
+    // a little helper function that updates a player
     // in a bracket match pointed to by a match ID
     auto updatePlayer = [&](int matchId, int playerPos, int newVal) {
       auto iMatch = getMatchById(matchId);
@@ -140,9 +154,9 @@ namespace QTournament
 
       if (playerPos == 1)
       {
-        (*iMatch).initialRank_Player1 = newVal;
+        (*iMatch)->initialRank_Player1 = newVal;
       } else {
-        (*iMatch).initialRank_Player2 = newVal;
+        (*iMatch)->initialRank_Player2 = newVal;
       }
     };
 
@@ -155,19 +169,19 @@ namespace QTournament
 
       // first step: flag all matches with initial ranks > numPlayers for BOTH players
       // as "to be deleted"
-      BracketMatchDataList::iterator i = bracketMatches.begin();
+      upBracketMatchDataVector::iterator i = bracketMatches.begin();
       while (i != bracketMatches.end())
       {
-        BracketMatchData bmd = *i;
-        if ((bmd.initialRank_Player1 > numPlayers) && (bmd.initialRank_Player2 > numPlayers))
+        upBracketMatchData& bmd = *i;
+        if ((bmd->initialRank_Player1 > numPlayers) && (bmd->initialRank_Player2 > numPlayers))
         {
-          if (bmd.nextMatchForWinner > 0)
+          if (bmd->nextMatchForWinner > 0)
           {
-            updatePlayer(bmd.nextMatchForWinner, bmd.nextMatchPlayerPosForWinner, BracketMatchData::UNUSED_PLAYER);
+            updatePlayer(bmd->nextMatchForWinner, bmd->nextMatchPlayerPosForWinner, BracketMatchData::UNUSED_PLAYER);
           }
-          if (bmd.nextMatchForLoser > 0)
+          if (bmd->nextMatchForLoser > 0)
           {
-            updatePlayer(bmd.nextMatchForLoser, bmd.nextMatchPlayerPosForLoser, BracketMatchData::UNUSED_PLAYER);
+            updatePlayer(bmd->nextMatchForLoser, bmd->nextMatchPlayerPosForLoser, BracketMatchData::UNUSED_PLAYER);
           }
           // actually delete the element from the match list
           i = bracketMatches.erase(i);
@@ -182,28 +196,28 @@ namespace QTournament
       i = bracketMatches.begin();
       while (i != bracketMatches.end())
       {
-        BracketMatchData bmd = *i;
-        if (bmd.initialRank_Player1 > numPlayers)
+        upBracketMatchData& bmd = *i;
+        if (bmd->initialRank_Player1 > numPlayers)
         {
           // player 1 does not exist, this means that player 2 wins automatically;
           // find the match the winner will be promoted to
-          if (bmd.nextMatchForWinner > 0)
+          if (bmd->nextMatchForWinner > 0)
           {
-            updatePlayer(bmd.nextMatchForWinner, bmd.nextMatchPlayerPosForWinner, bmd.initialRank_Player2);
+            updatePlayer(bmd->nextMatchForWinner, bmd->nextMatchPlayerPosForWinner, bmd->initialRank_Player2);
 
             // if player2 of "bmd" is not a directly seeded, initial player
             // but the winner/loser of a previous match, we need to update
             // that previous match, too
-            if (bmd.initialRank_Player2 < 0)
+            if (bmd->initialRank_Player2 < 0)
             {
-              int prevMatchId = -(bmd.initialRank_Player2);
+              int prevMatchId = -(bmd->initialRank_Player2);
               auto prevMatch = getMatchById(prevMatchId);
-              auto nextMatch = getMatchById(bmd.nextMatchForWinner);
-              if ((*prevMatch).nextMatchForWinner == bmd.getBracketMatchId())
+              auto nextMatch = getMatchById(bmd->nextMatchForWinner);
+              if ((*prevMatch)->nextMatchForWinner == bmd->getBracketMatchId())
               {
-                (*prevMatch).setNextMatchForWinner(*nextMatch, bmd.nextMatchPlayerPosForWinner);
+                (*prevMatch)->setNextMatchForWinner(**nextMatch, bmd->nextMatchPlayerPosForWinner);
               } else {
-                (*prevMatch).setNextMatchForLoser(*nextMatch, bmd.nextMatchPlayerPosForWinner);
+                (*prevMatch)->setNextMatchForLoser(**nextMatch, bmd->nextMatchPlayerPosForWinner);
               }
             }
           }
@@ -211,14 +225,14 @@ namespace QTournament
           // player 1 does not exist and player 2 wins automatically
           // ==> we have no loser! If we promote the (non-existing) loser to a next match
           // we need to update that match, too
-          if (bmd.nextMatchForLoser > 0)
+          if (bmd->nextMatchForLoser > 0)
           {
-            updatePlayer(bmd.nextMatchForLoser, bmd.nextMatchPlayerPosForLoser, BracketMatchData::UNUSED_PLAYER);
+            updatePlayer(bmd->nextMatchForLoser, bmd->nextMatchPlayerPosForLoser, BracketMatchData::UNUSED_PLAYER);
           }
 
           // we may only delete this match if the winner does not achieve a final rank.
           // Otherwise we would lose this ranking information.
-          if (bmd.nextMatchForWinner >= 0)
+          if (bmd->nextMatchForWinner >= 0)
           {
             i = bracketMatches.erase(i);
           } else {
@@ -231,27 +245,27 @@ namespace QTournament
           continue;
         }
 
-        if (bmd.initialRank_Player2 > numPlayers)
+        if (bmd->initialRank_Player2 > numPlayers)
         {
           // player 2 does not exist, this means that player 1 wins automatically;
           // find the match the winner will be promoted to
-          if (bmd.nextMatchForWinner > 0)
+          if (bmd->nextMatchForWinner > 0)
           {
-            updatePlayer(bmd.nextMatchForWinner, bmd.nextMatchPlayerPosForWinner, bmd.initialRank_Player1);
+            updatePlayer(bmd->nextMatchForWinner, bmd->nextMatchPlayerPosForWinner, bmd->initialRank_Player1);
 
             // if player1 of "bmd" is not a directly seeded, initial player
             // but the winner/loser of a previous match, we need to update
             // that previous match, too
-            if (bmd.initialRank_Player1 < 0)
+            if (bmd->initialRank_Player1 < 0)
             {
-              int prevMatchId = -(bmd.initialRank_Player1);
+              int prevMatchId = -(bmd->initialRank_Player1);
               auto prevMatch = getMatchById(prevMatchId);
-              auto nextMatch = getMatchById(bmd.nextMatchForWinner);
-              if ((*prevMatch).nextMatchForWinner == bmd.getBracketMatchId())
+              auto nextMatch = getMatchById(bmd->nextMatchForWinner);
+              if ((*prevMatch)->nextMatchForWinner == bmd->getBracketMatchId())
               {
-                (*prevMatch).setNextMatchForWinner(*nextMatch, bmd.nextMatchPlayerPosForWinner);
+                (*prevMatch)->setNextMatchForWinner(**nextMatch, bmd->nextMatchPlayerPosForWinner);
               } else {
-                (*prevMatch).setNextMatchForLoser(*nextMatch, bmd.nextMatchPlayerPosForWinner);
+                (*prevMatch)->setNextMatchForLoser(**nextMatch, bmd->nextMatchPlayerPosForWinner);
               }
             }
           }
@@ -259,14 +273,14 @@ namespace QTournament
           // player 2 does not exist and player 1 wins automatically
           // ==> we have no loser! If we promote the (non-existing) loser to a next match
           // we need to update that match, too
-          if (bmd.nextMatchForLoser > 0)
+          if (bmd->nextMatchForLoser > 0)
           {
-            updatePlayer(bmd.nextMatchForLoser, bmd.nextMatchPlayerPosForLoser, BracketMatchData::UNUSED_PLAYER);
+            updatePlayer(bmd->nextMatchForLoser, bmd->nextMatchPlayerPosForLoser, BracketMatchData::UNUSED_PLAYER);
           }
 
           // we may only delete this match if the winner does not achieve a final rank.
           // Otherwise we would lose this ranking information.
-          if (bmd.nextMatchForWinner >= 0)
+          if (bmd->nextMatchForWinner >= 0)
           {
             i = bracketMatches.erase(i);
           } else {
@@ -289,6 +303,16 @@ namespace QTournament
       return bmd1.depthInBracket > bmd2.depthInBracket;
     };
   }
+
+
+//----------------------------------------------------------------------------
+
+    std::function<bool (upBracketMatchData&, upBracketMatchData&)> BracketGenerator::getBracketMatchSortFunction_up_earlyRoundsFirst()
+    {
+      return [](upBracketMatchData& bmd1, upBracketMatchData& bmd2) {
+        return bmd1->depthInBracket > bmd2->depthInBracket;
+      };
+    }
 
 //----------------------------------------------------------------------------
 
@@ -347,7 +371,7 @@ namespace QTournament
 
   int BracketMatchData::getBracketMatchId()
   {
-    return getBracketMatchId();
+    return bracketMatchId;
   }
 
 //----------------------------------------------------------------------------
@@ -360,7 +384,7 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  bool BracketMatchData::setNextMatchForWinner(BracketMatchData &nextBracketMatch, int posInNextMatch)
+  void BracketMatchData::setNextMatchForWinner(BracketMatchData &nextBracketMatch, int posInNextMatch)
   {
     nextMatchForWinner = nextBracketMatch.getBracketMatchId();
     nextMatchPlayerPosForWinner = posInNextMatch;
@@ -378,7 +402,8 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  bool BracketMatchData::setNextMatchForLoser(BracketMatchData &nextBracketMatch, int posInNextMatch)
+  void BracketMatchData::setNextMatchForLoser(
+      BracketMatchData &nextBracketMatch, int posInNextMatch)
   {
     nextMatchForLoser = nextBracketMatch.getBracketMatchId();
     nextMatchPlayerPosForLoser = posInNextMatch;
@@ -396,6 +421,16 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
+  void BracketMatchData::dumpOnScreen()
+  {
+    qDebug() << "Bracket Match ID = " << bracketMatchId;
+    qDebug() << "  Depth        = " << depthInBracket;
+    qDebug() << "  I1           = " << initialRank_Player1;
+    qDebug() << "  I2           = " << initialRank_Player2;
+    qDebug() << "  Winner to    = " << nextMatchForWinner << "." << nextMatchPlayerPosForWinner;
+    qDebug() << "  Loser to     = " << nextMatchForLoser << "." << nextMatchPlayerPosForLoser;
+    qDebug();
+  }
 
 //----------------------------------------------------------------------------
 

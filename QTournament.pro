@@ -67,32 +67,6 @@ HEADERS += \
     RankingMngr.h \
     RankingEntry.h \
     BracketGenerator.h \
-    build.debug/ui_CatTabWidget.h \
-    build.debug/ui_dlgEditPlayer.h \
-    build.debug/ui_dlgGroupAssignment.h \
-    build.debug/ui_GroupAssignmentListWidget.h \
-    build.debug/ui_GroupConfigWidget.h \
-    build.debug/ui_MainFrame.h \
-    build.debug/ui_PlayerTabWidget.h \
-    build.debug/ui_ScheduleTabWidget.h \
-    build.debug/ui_TeamTabWidget.h \
-    tests/BasicTestClass.h \
-    tests/DatabaseTestScenario.h \
-    tests/tstCategory.h \
-    tests/tstCatMngr.h \
-    tests/tstGenericDBObject.h \
-    tests/tstGroupDef.h \
-    tests/tstKOConfig.h \
-    tests/tstMatch.h \
-    tests/tstMatchMngr.h \
-    tests/tstPlayer.h \
-    tests/tstPlayerMngr.h \
-    tests/tstRankingMngr.h \
-    tests/tstRoundRobinGenerator.h \
-    tests/tstScore.h \
-    tests/tstTeam.h \
-    tests/tstTeamMngr.h \
-    tests/tstTournament.h \
     reports/AbstractReport.h \
     reports/ParticipantsList.h \
     ui/ReportsTabWidget.h \

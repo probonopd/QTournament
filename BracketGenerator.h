@@ -1,7 +1,9 @@
 #ifndef BRACKETGENERATOR_H
 #define BRACKETGENERATOR_H
 
+#include <memory>
 #include <functional>
+#include <vector>
 
 #include <QList>
 
@@ -40,15 +42,19 @@ namespace QTournament
     static void resetBracketMatchId();
     int getBracketMatchId();
     void setInitialRanks(int initialRank_P1, int initialRank_P2);
-    bool setNextMatchForWinner(BracketMatchData& nextBracketMatch, int posInNextMatch);
-    bool setNextMatchForLoser(BracketMatchData& nextBracketMatch, int posInNextMatch);
+    void setNextMatchForWinner(BracketMatchData& nextBracketMatch, int posInNextMatch);
+    void setNextMatchForLoser(BracketMatchData& nextBracketMatch, int posInNextMatch);
+
+    void dumpOnScreen();
 
   private:
     static int lastBracketMatchId;
     int bracketMatchId;
   };
 
+  typedef unique_ptr<BracketMatchData> upBracketMatchData;
   typedef QList<BracketMatchData> BracketMatchDataList;
+  typedef std::vector<upBracketMatchData> upBracketMatchDataVector;
 
   class BracketGenerator
   {
@@ -61,12 +67,13 @@ namespace QTournament
 
     BracketMatchDataList getBracketMatches(int numPlayers) const;
     static std::function<bool (BracketMatchData&, BracketMatchData&)> getBracketMatchSortFunction_earlyRoundsFirst();
+    static std::function<bool (upBracketMatchData&, upBracketMatchData&)> getBracketMatchSortFunction_up_earlyRoundsFirst();
     int getNumRounds(int numPlayers) const;
 
   private:
     int bracketType;
-    BracketMatchDataList genBracket__SingleElim(int numPlayers) const;
-    void removeUnusedMatches(BracketMatchDataList& bracketMatches, int numPlayers) const;  // modifies the list IN PLACE!!
+    upBracketMatchDataVector genBracket__SingleElim(int numPlayers) const;
+    void removeUnusedMatches(upBracketMatchDataVector& bracketMatches, int numPlayers) const;  // modifies the list IN PLACE!!
   };
 
 }

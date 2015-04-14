@@ -21,6 +21,8 @@ find_package(Qt5Core)
 # Include the header of the database overlay lib
 include_directories("../DatabaseOverlayLib")
 link_directories("../DatabaseOverlayLib")
+include_directories("../SimpleReportGeneratorLib")
+link_directories("../SimpleReportGeneratorLib")
 
 # Enable support for C++ 11
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
@@ -28,6 +30,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 set(QTournament_Sources
     ui/GuiHelpers.cpp
     tournament.qrc
+    BracketGenerator.cpp
     Category.cpp 
     CatMngr.cpp
     CatRoundStatus.cpp
@@ -58,7 +61,13 @@ set(QTournament_Sources
     models/PlayerTableModel.cpp
     models/CourtTabModel.cpp
     models/MatchTabModel.cpp
-    models/TeamListModel.cpp)
+    models/TeamListModel.cpp
+    reports/AbstractReport.cpp
+    reports/MatchResultList.cpp
+    reports/MatchResultList_byGroup.cpp
+    reports/ParticipantsList.cpp
+    reports/ReportFactory.cpp
+    reports/Standings.cpp)
 
 set(QTournament_Sources_UI
     ui/CatTableView.cpp 
@@ -72,7 +81,8 @@ set(QTournament_Sources_UI
     ui/MatchGroupTableView.cpp
     ui/MatchTableView.cpp
     ui/PlayerTableView.cpp 
-    ui/PlayerTabWidget.cpp 
+    ui/PlayerTabWidget.cpp
+    ui/ReportsTabWidget.cpp 
     ui/ScheduleTabWidget.cpp
     ui/TeamListView.cpp 
     ui/TeamTabWidget.cpp 
@@ -85,6 +95,7 @@ set(QTournament_Sources_UI
 
 set(QTournament_Tests
     tests/BasicTestClass.cpp
+    tests/tstBracketGenerator.cpp
     tests/tstGenericDBObject.cpp
     tests/tstPlayer.cpp
     tests/tstTournament.cpp
@@ -111,6 +122,6 @@ qt5_use_modules(QTournament_Tests Widgets Sql)
 
 # Use the Widgets module from Qt 5.
 #target_link_libraries(helloworld Qt5::Widgets)
-target_link_libraries(QTournament DatabaseOverlayLib)
-target_link_libraries(QTournament_Tests DatabaseOverlayLib cppunit)
+target_link_libraries(QTournament DatabaseOverlayLib SimpleReportGenerator)
+target_link_libraries(QTournament_Tests DatabaseOverlayLib cppunit SimpleReportGenerator)
 

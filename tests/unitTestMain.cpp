@@ -32,6 +32,7 @@
 #include "tstRoundRobinGenerator.h"
 #include "tstScore.h"
 #include "tstRankingMngr.h"
+#include "tstBracketGenerator.h"
 
 // comment / uncomment the following to execute just one suite
 //#define TEST_ALL_SUITES
@@ -53,8 +54,9 @@
   CPPUNIT_TEST_SUITE_REGISTRATION(tstRoundRobinGenerator);
   CPPUNIT_TEST_SUITE_REGISTRATION(tstScore);
   CPPUNIT_TEST_SUITE_REGISTRATION(tstRankingMngr);
+  CPPUNIT_TEST_SUITE_REGISTRATION(tstBracketGenerator);
 #else
-  CPPUNIT_TEST_SUITE_REGISTRATION(tstRankingMngr);
+  CPPUNIT_TEST_SUITE_REGISTRATION(tstBracketGenerator);
 #endif
 
 
