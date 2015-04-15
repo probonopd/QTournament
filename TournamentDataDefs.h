@@ -316,7 +316,8 @@ namespace QTournament
     SWISS_LADDER,
     GROUPS_WITH_KO,
     RANDOMIZE,
-    RANKING
+    RANKING,
+    SINGLE_ELIM,
   };
   
 //----------------------------------------------------------------------------

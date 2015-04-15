@@ -116,10 +116,22 @@ namespace QTournament
 
   ERR CatMngr::setMatchSystem(Category& c, MATCH_SYSTEM s)
   {
+    if (c.getState() != STAT_CAT_CONFIG)
+    {
+      return CATEGORY_NOT_CONFIGURALE_ANYMORE;
+    }
+
     // TODO: implement checks, updates to other tables etc
     int sysInt = static_cast<int>(s);
     c.row.update(CAT_SYS, sysInt);
     
+    // if we switch to single elimination categories,
+    // prevent draw
+    if (s == SINGLE_ELIM)
+    {
+      setCatParam_AllowDraw(c, false);
+    }
+
     return OK;
   }
 
@@ -452,6 +464,12 @@ namespace QTournament
       return true; // no change necessary;
     }
 
+    // no draw matches in elimination categories
+    if ((c.getMatchSystem() == SINGLE_ELIM) && (allowDraw))
+    {
+      return false;
+    }
+
     // ensure consistent scoring before accepting draw
     if (allowDraw)
     {
@@ -460,13 +478,13 @@ namespace QTournament
 
       if (drawScore < 1)
       {
-	drawScore = 1;
-	c.row.update(CAT_DRAW_SCORE, 1);
+        drawScore = 1;
+        c.row.update(CAT_DRAW_SCORE, 1);
       }
       if (winScore <= drawScore)
       {
-	winScore = drawScore + 1;
-	c.row.update(CAT_WIN_SCORE, winScore);
+        winScore = drawScore + 1;
+        c.row.update(CAT_WIN_SCORE, winScore);
       }
     }
 
@@ -676,15 +694,15 @@ namespace QTournament
       PlayerPair pp = ppList.at(i);
       if (!(pp.hasPlayer2()))
       {
-	int playerId = pp.getPlayer1().getId();
-	
-	QVariantList qvl;
-	qvl << PAIRS_CAT_REF << catId;
-	qvl << PAIRS_GRP_NUM << GRP_NUM__NOT_ASSIGNED;
-	qvl << PAIRS_PLAYER1_REF << playerId;
-	// leave out PAIRS_PLAYER2_REF to assign a NULL value
-	
-	db->getTab(TAB_PAIRS).insertRow(qvl);
+        int playerId = pp.getPlayer1().getId();
+
+        QVariantList qvl;
+        qvl << PAIRS_CAT_REF << catId;
+        qvl << PAIRS_GRP_NUM << GRP_NUM__NOT_ASSIGNED;
+        qvl << PAIRS_PLAYER1_REF << playerId;
+        // leave out PAIRS_PLAYER2_REF to assign a NULL value
+
+        db->getTab(TAB_PAIRS).insertRow(qvl);
       }
     }
     
@@ -727,8 +745,8 @@ namespace QTournament
       int ppId = pp.getPairId();
       if (ppId < 1)
       {
-	// We should never get here
-	throw std::runtime_error("Inconsistent player pair data!");
+        // We should never get here
+        throw std::runtime_error("Inconsistent player pair data!");
       }
       
       // the actual removal
@@ -885,6 +903,24 @@ namespace QTournament
     return [](Category& c1, Category& c2) {
       return (QString::localeAwareCompare(c1.getName(), c2.getName()) < 0) ? true : false;
     };
+  }
+
+//----------------------------------------------------------------------------
+
+  PlayerPairList CatMngr::getSeeding(const Category& c) const
+  {
+    // as long as the category is still in configuration, we can't rely
+    // on the existence of valid player pairs in the database and thus
+    // we'll return an empty list as an error indicator
+    if (c.getState() == STAT_CAT_CONFIG) return PlayerPairList();
+
+    // get the player pairs for the category
+    DbTab pairTab = (*db)[TAB_PAIRS];
+    QString where = PAIRS_CAT_REF + " = ? ORDER BY " + PAIRS_INITIAL_RANK + " ASC";
+    QVariantList qvl;
+    qvl << c.getId();
+
+    return getObjectsByWhereClause<PlayerPair>(pairTab, where, qvl);
   }
 
 //----------------------------------------------------------------------------

@@ -57,7 +57,7 @@ void MatchItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
 
     // draw the name
     r.adjust(2 * ITEM_MARGIN + ITEM_STAT_INDICATOR_SIZE, 0, 0, 0);
-    QString txt = ma->getDisplayName();
+    QString txt = ma->getDisplayName(tr("Winner"), tr("Loser"));
     painter->drawText(r, Qt::AlignVCenter|Qt::AlignLeft, txt);
   } else {
     painter->drawText(option.rect, Qt::AlignCenter, index.data(Qt::DisplayRole).toString());

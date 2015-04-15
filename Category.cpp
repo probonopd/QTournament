@@ -16,6 +16,7 @@
 #include "Match.h"
 #include "CatRoundStatus.h"
 #include "BracketGenerator.h"
+#include "ElimCategory.h"
 
 #include <stdexcept>
 
@@ -180,7 +181,7 @@ namespace QTournament
       Player partner = getPartner(p);
       if (canSplitPlayers(p, partner) != OK)
       {
-	return false;
+        return false;
       }
     }
 
@@ -327,6 +328,22 @@ namespace QTournament
     }
 
     return result;
+  }
+
+  //----------------------------------------------------------------------------
+
+  int Category::getDatabasePlayerPairCount(int grp) const
+  {
+    // since we want to count only player pairs in the database,
+    // we must be beyond CONFIG to be sure that valid database
+    // entries exist
+    if (getState() == STAT_CAT_CONFIG) return -1;
+
+    DbTab pairTab = (*db)[TAB_PAIRS];
+    QVariantList qvl;
+    qvl << PAIRS_CAT_REF << getId();
+    if (grp > 0) qvl << PAIRS_GRP_NUM << grp;
+    return pairTab.getMatchCountForColumnValue(qvl);
   }
 
   //----------------------------------------------------------------------------
@@ -515,6 +532,10 @@ namespace QTournament
 
     if (sys == GROUPS_WITH_KO) {
       return unique_ptr<Category>(new RoundRobinCategory(db, row));
+    }
+
+    if (sys == SINGLE_ELIM) {
+      return unique_ptr<Category>(new EliminationCategory(db, row));
     }
 
     // THIS IS JUST A HOT FIX UNTIL WE HAVE
@@ -801,7 +822,7 @@ namespace QTournament
 
         // create the match group
         ERR err;
-        curGroup = mm->createMatchGroup(*this, firstRoundNum+curDepth, grpNum, &err);
+        curGroup = mm->createMatchGroup(*this, firstRoundNum+curRound, grpNum, &err);
         assert(err == OK);
         assert(curGroup != nullptr);
       }
@@ -815,8 +836,9 @@ namespace QTournament
       bracket2Match.insert(bmd.getBracketMatchId(), ma->getId());
 
       if (progressNotificationQueue != nullptr) progressNotificationQueue->step();
-
     }
+    // close the last open match group (the finals)
+    if (curGroup != nullptr) mm->closeMatchGroup(*curGroup);
 
     // a little helper function that returns an iterator to a match with
     // a given ID

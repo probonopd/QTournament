@@ -40,19 +40,22 @@ namespace QTournament
     PlayerPair getPlayerPair1() const;
     PlayerPair getPlayerPair2() const;
     int getMatchNumber() const;
-    QString getDisplayName() const;
+    QString getDisplayName(const QString& localWinnerName, const QString& localLoserName) const;
 
     unique_ptr<MatchScore> getScore(ERR *err=nullptr) const;
-    ERR setScore(const MatchScore& score);
     unique_ptr<PlayerPair> getWinner() const;
     unique_ptr<PlayerPair> getLoser() const;
 
     unique_ptr<Court> getCourt(ERR *err=nullptr) const;
     QList<Player> determineActualPlayers() const;
 
+    int getSymbolicPlayerPair1Name() const;
+    int getSymbolicPlayerPair2Name() const;
+
   private:
     Match (TournamentDB* db, int rowId);
     Match (TournamentDB* db, dbOverlay::TabRow row);
+    int getSymbolicPlayerPairName(int playerPos) const;
 
   };
 

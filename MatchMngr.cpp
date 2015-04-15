@@ -832,14 +832,14 @@ namespace QTournament {
     // from INCOMPLETE to FUZZY
     if (curState == STAT_MA_INCOMPLETE)
     {
-      int fuzzy1 = ma.row[MA_PAIR1_SYMBOLIC_VAL].toInt();
-      int fuzzy2 = ma.row[MA_PAIR2_SYMBOLIC_VAL].toInt();
+      bool isFuzzy1 = (ma.row[MA_PAIR1_SYMBOLIC_VAL].toInt() != 0);
+      bool isFuzzy2 = (ma.row[MA_PAIR2_SYMBOLIC_VAL].toInt() != 0);
 
       // we shall never have a symbolic and a real player assignment at the same time
-      assert((fuzzy1 != 0) && (ma.hasPlayerPair1() == false));
-      assert((fuzzy2 != 0) && (ma.hasPlayerPair2() == false));
+      assert((isFuzzy1 && ma.hasPlayerPair1()) == false);
+      assert((isFuzzy2 && ma.hasPlayerPair2()) == false);
 
-      if ((fuzzy1 != 0) || (fuzzy2 != 0))
+      if (isFuzzy1 || isFuzzy2)
       {
         ma.setState(STAT_MA_FUZZY);
         curState = STAT_MA_FUZZY;

@@ -66,7 +66,7 @@ QVariant MatchTableModel::data(const QModelIndex& index, int role) const
     // second column: match name
     if (index.column() == 1)
     {
-      return ma->getDisplayName();
+      return ma->getDisplayName(tr("Winner"), tr("Loser"));
     }
 
     // third column: category name

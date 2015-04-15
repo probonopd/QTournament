@@ -40,6 +40,7 @@ CatTabWidget::CatTabWidget()
   ui.cbMatchSystem->addItem(tr("Group matches with KO rounds"), static_cast<int>(GROUPS_WITH_KO));
   ui.cbMatchSystem->addItem(tr("Random matches (for fun tournaments)"), static_cast<int>(RANDOMIZE));
   ui.cbMatchSystem->addItem(tr("Tree-like ranking system"), static_cast<int>(RANKING));
+  ui.cbMatchSystem->addItem(tr("Single Elimination"), static_cast<int>(SINGLE_ELIM));
 }
 
 //----------------------------------------------------------------------------
@@ -170,6 +171,12 @@ void CatTabWidget::updateControls()
   // the "accept draw" checkbox
   bool allowDraw = selectedCat.getParameter(ALLOW_DRAW).toBool();
   ui.cbDraw->setChecked(allowDraw);
+  if (selectedCat.getMatchSystem() == SINGLE_ELIM)
+  {
+    ui.cbDraw->setEnabled(false);
+  } else {
+    ui.cbDraw->setEnabled(true);
+  }
   
   // the score spinnboxes
   int drawScore = selectedCat.getParameter(DRAW_SCORE).toInt();
@@ -699,11 +706,20 @@ void CatTabWidget::onBtnRunCatClicked()
   PlayerPairList initialRanking;
   if (selectedCat->needsInitialRanking())
   {
-    QString msg = tr("This category needs a seeded ranking. That's not yet implemeted");
-    msg += tr("\nOperation cancelled.");
-    QMessageBox::warning(this, tr("Run Category"), msg);
-    unfreezeAndCleanup(std::move(selectedCat));
-    return;
+    // TODO: here fake an arbitrary seeding. This has to be fixed later with
+    // a real GUI dialog
+    PlayerPairList fakedSeeding = selectedCat->getPlayerPairs();
+
+    QString msg = tr("This category needs an initial seeded ranking. A GUI for that is not yet implemeted.");
+    msg += tr("\nInstead, a random seeding will be applied");
+    QMessageBox::StandardButton reply = QMessageBox::warning(this, tr("Run Category"), msg, QMessageBox::Ok | QMessageBox::Cancel);
+    if (reply != QMessageBox::Ok)
+    {
+      unfreezeAndCleanup(std::move(selectedCat));
+      return;
+    }
+
+    initialRanking = fakedSeeding;
   }
 
   /*

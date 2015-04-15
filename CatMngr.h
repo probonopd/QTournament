@@ -54,6 +54,7 @@ namespace QTournament
     void updateCatStatusFromMatchStatus(const Category& c);
     bool switchCatToWaitForSeeding(const Category& cat);
     static std::function<bool (Category&, Category&)> getCategorySortFunction_byName();
+    PlayerPairList getSeeding(const Category& c) const;
 
   signals:
     void playersPaired(const Category c, const Player& p1, const Player& p2);

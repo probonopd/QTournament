@@ -106,7 +106,7 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  QString Match::getDisplayName() const
+  QString Match::getDisplayName(const QString& localWinnerName, const QString& localLoserName) const
   {
     QString name1 = "??";
     if (hasPlayerPair1())
@@ -114,10 +114,28 @@ namespace QTournament
       name1 = getPlayerPair1().getDisplayName();
     }
 
+    // maybe, the name of player pair 1 is only symbolic
+    // as of now
+    int symName1 = getSymbolicPlayerPair1Name();
+    if (symName1 != 0)
+    {
+      name1 = (symName1 > 0) ? localWinnerName : localLoserName;
+      name1 += " #" + QString::number(abs(symName1));
+    }
+
     QString name2 = "??";
     if (hasPlayerPair2())
     {
       name2 = getPlayerPair2().getDisplayName();
+    }
+
+    // maybe, the name of player pair 1 is only symbolic
+    // as of now
+    int symName2 = getSymbolicPlayerPair2Name();
+    if (symName2 != 0)
+    {
+      name2 = (symName2 > 0) ? localWinnerName : localLoserName;
+      name2 += " #" + QString::number(abs(symName2));
     }
 
     return name1 + " : " + name2;
@@ -157,10 +175,6 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  ERR Match::setScore(const MatchScore &score)
-  {
-
-  }
 
 //----------------------------------------------------------------------------
 
@@ -184,6 +198,42 @@ namespace QTournament
   QList<Player> Match::determineActualPlayers() const
   {
     return Tournament::getPlayerMngr()->determineActualPlayersForMatch(*this);
+  }
+
+//----------------------------------------------------------------------------
+
+  int Match::getSymbolicPlayerPair1Name() const
+  {
+    return getSymbolicPlayerPairName(1);
+  }
+
+  int Match::getSymbolicPlayerPair2Name() const
+  {
+    return getSymbolicPlayerPairName(2);
+  }
+
+  int Match::getSymbolicPlayerPairName(int playerPos) const
+  {
+    // if we have a regular PP, don't return a symbolic name
+    if ((playerPos == 1) && hasPlayerPair1()) return 0;
+    if ((playerPos == 2) && hasPlayerPair2()) return 0;
+
+    // check if we have a symbolic name
+    QVariant symName = (playerPos == 1) ? row[MA_PAIR1_SYMBOLIC_VAL] : row[MA_PAIR2_SYMBOLIC_VAL];
+    if (symName.isNull()) return 0;
+
+    // okay, there is a symbolic name
+    int matchRef = symName.toInt();
+    if (matchRef == 0) return 0;
+
+    bool isWinner = matchRef > 0;
+    if (matchRef < 0) matchRef = -matchRef;
+
+    auto ma = Tournament::getMatchMngr()->getMatch(matchRef);
+    int matchNumber = ma->getMatchNumber();
+    if (matchNumber == MATCH_NUM_NOT_ASSIGNED) return 0;
+
+    return isWinner ? matchNumber : -matchNumber;
   }
 
 //----------------------------------------------------------------------------

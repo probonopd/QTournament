@@ -29,6 +29,7 @@ namespace QTournament
   {
     friend class CatMngr;
     friend class RoundRobinCategory;
+    friend class EliminationCategory;
     friend class GenericObjectManager;
     
   public:
@@ -53,6 +54,7 @@ namespace QTournament
     QString getParameter_string(CAT_PARAMETER) const;
     bool setParameter(CAT_PARAMETER p, const QVariant& v);
     PlayerPairList getPlayerPairs(int grp = GRP_NUM__NOT_ASSIGNED) const;
+    int getDatabasePlayerPairCount(int grp = GRP_NUM__NOT_ASSIGNED) const;
     QList<Player> getAllPlayersInCategory() const;
     bool isPaired(const Player& p) const;
     ERR canPairPlayers(const Player& p1, const Player& p2) const;

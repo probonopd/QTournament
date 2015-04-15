@@ -146,7 +146,9 @@ void CourtItemDelegate::paintMatchInfoCell_Selected(QPainter *painter, const QSt
   QRect row3 = row2.translated(0, ITEM_TEXT_ROW_HEIGHT + ITEM_TEXT_ROW_SKIP);
 
   // draw the player names
-  GuiHelpers::drawFormattedText(painter, row1, ma.getDisplayName(), Qt::AlignVCenter|Qt::AlignLeft, true, false, QFont(), QColor(Qt::white), 1.2);
+  GuiHelpers::drawFormattedText(painter, row1, ma.getDisplayName(tr("Winner"), tr("Loser")),
+                                Qt::AlignVCenter|Qt::AlignLeft, true, false,
+                                QFont(), QColor(Qt::white), 1.2);
 
   // draw the first info line with the match number and the category
   QString txt = tr("Match number:");
@@ -171,7 +173,7 @@ void CourtItemDelegate::paintMatchInfoCell_Unselected(QPainter *painter, const Q
 
   // draw the name
   r.adjust(2 * ITEM_MARGIN + ITEM_STAT_INDICATOR_SIZE, 0, 0, 0);
-  QString txt = ma.getDisplayName();
+  QString txt = ma.getDisplayName(tr("Winner"), tr("Loser"));
   painter->drawText(r, Qt::AlignVCenter|Qt::AlignLeft, txt);
 }
 
