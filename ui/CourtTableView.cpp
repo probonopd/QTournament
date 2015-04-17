@@ -8,6 +8,7 @@
 #include <QMessageBox>
 #include "CourtTableView.h"
 #include "MainFrame.h"
+#include "CourtMngr.h"
 
 CourtTableView::CourtTableView(QWidget* parent)
   :QTableView(parent)
@@ -159,10 +160,17 @@ void CourtTableView::onContextMenuRequested(const QPoint& pos)
   // add a court. If a row is under the cursor, we may
   // do everything except for adding courts
   bool isRowClicked = (clickedRow >= 0);
+  bool hasMatch = false;
+  auto co = getSelectedCourt();
+  if (co != nullptr)
+  {
+    auto ma = co->getMatch();
+    hasMatch = (ma != nullptr);
+  }
   actAddCourt->setEnabled(!isRowClicked);
-  actFinishMatch->setEnabled(isRowClicked);
-  actWalkover->setEnabled(isRowClicked);
-  actUndoCall->setEnabled(isRowClicked);
+  actFinishMatch->setEnabled(hasMatch && isRowClicked);
+  actWalkover->setEnabled(hasMatch && isRowClicked);
+  actUndoCall->setEnabled(hasMatch && isRowClicked);
 
   // show the context menu; actions are triggered
   // by the menu itself and we do not need to take
@@ -174,7 +182,18 @@ void CourtTableView::onContextMenuRequested(const QPoint& pos)
 
 void CourtTableView::onActionAddCourtTriggered()
 {
-  QMessageBox::information(this, "ksdjf", "Add Court!");
+  CourtMngr* cm = Tournament::getCourtMngr();
+
+  int nextCourtNum = cm->getHighestUnusedCourtNumber();
+
+  ERR err;
+  cm->createNewCourt(nextCourtNum, QString::number(nextCourtNum), &err);
+
+  if (err != OK)
+  {
+    QMessageBox::warning(this, tr("Add court"),
+                         tr("Something went wrong, error code = ") + QString::number(static_cast<int>(err)));
+  }
 }
 
 //----------------------------------------------------------------------------

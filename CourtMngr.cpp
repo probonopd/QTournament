@@ -67,6 +67,21 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
+  int CourtMngr::getHighestUnusedCourtNumber() const
+  {
+    // do we have any courts at all?
+    if (courtTab.length() == 0) return 1;
+
+    // okay, get the highest used court number
+    QString where = "id > 0 ORDER BY " + CO_NUMBER + " DESC";
+    TabRow r = courtTab.getSingleRowByWhereClause(where);
+    int cNum = r[CO_NUMBER].toInt();
+
+    return cNum + 1;
+  }
+
+//----------------------------------------------------------------------------
+
   /**
    * Returns a database object for a court identified by its court number
    *
