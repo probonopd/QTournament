@@ -1434,7 +1434,7 @@ namespace QTournament {
     if (grpCount == 0) return 0;
 
     // query the highest used round number
-    QString sql = "SELECT max(" + MG_GRP_NUM + ") FROM " + TAB_MATCH_GROUP;
+    QString sql = "SELECT max(" + MG_ROUND + ") FROM " + TAB_MATCH_GROUP;
 
     QVariant result = db->execScalarQuery(sql);
     if ( (!(result.isValid())) || (result.isNull()))
