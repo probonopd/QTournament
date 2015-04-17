@@ -35,13 +35,22 @@ public slots:
 
 private slots:
   void onSelectionChanged(const QItemSelection&selectedItem, const QItemSelection&deselectedItem);
-  
+  void onContextMenuRequested(const QPoint& pos);
+  void onActionAddCourtTriggered();
+
 private:
   Tournament* tnmt;
   QStringListModel* emptyModel;
   QSortFilterProxyModel* sortedModel;
   CourtItemDelegate* itemDelegate;
 
+  unique_ptr<QMenu> contextMenu;
+  QAction* actAddCourt;
+  QAction* actWalkover;
+  QAction* actUndoCall;
+  QAction* actFinishMatch;
+
+  void prepContextMenu();
 };
 
 #endif	/* COURTTABLEVIEW_H */

@@ -28,10 +28,18 @@ CourtTableView::CourtTableView(QWidget* parent)
     SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
     SLOT(onSelectionChanged(const QItemSelection&, const QItemSelection&)));
 
+  // handle context menu requests
+  setContextMenuPolicy(Qt::CustomContextMenu);
+  connect(this, SIGNAL(customContextMenuRequested(const QPoint&)),
+          this, SLOT(onContextMenuRequested(const QPoint&)));
+
   // define a delegate for drawing the court items
   itemDelegate = new CourtItemDelegate(this);
   itemDelegate->setProxy(sortedModel);
   setItemDelegate(itemDelegate);
+
+  // setup the context menu and its actions
+  prepContextMenu();
 }
 
 //----------------------------------------------------------------------------
@@ -117,12 +125,57 @@ void CourtTableView::onSelectionChanged(const QItemSelection& selectedItem, cons
 
 //----------------------------------------------------------------------------
     
+void CourtTableView::prepContextMenu()
+{
+  // prepare all actions
+  actWalkover = new QAction(tr("Walkover"), this);
+  actAddCourt = new QAction(tr("Add court"), this);
+  actUndoCall = new QAction(tr("Undo call"), this);
+  actFinishMatch = new QAction(tr("Finish match"), this);
+
+  // link actions to slots
+  connect(actAddCourt, SIGNAL(triggered()), this, SLOT(onActionAddCourtTriggered()));
+
+  // create the context menu and connect it to the actions
+  contextMenu = unique_ptr<QMenu>(new QMenu());
+  contextMenu->addAction(actFinishMatch);
+  contextMenu->addAction(actWalkover);
+  contextMenu->addAction(actUndoCall);
+  contextMenu->addSeparator();
+  contextMenu->addAction(actAddCourt);
+}
 
 //----------------------------------------------------------------------------
     
+void CourtTableView::onContextMenuRequested(const QPoint& pos)
+{
+  // map from scroll area coordinates to global widget coordinates
+  QPoint globalPos = viewport()->mapToGlobal(pos);
+
+  // resolve the click coordinates to the table row
+  int clickedRow = rowAt(pos.y());
+
+  // if no table row is under the cursor, we may only
+  // add a court. If a row is under the cursor, we may
+  // do everything except for adding courts
+  bool isRowClicked = (clickedRow >= 0);
+  actAddCourt->setEnabled(!isRowClicked);
+  actFinishMatch->setEnabled(isRowClicked);
+  actWalkover->setEnabled(isRowClicked);
+  actUndoCall->setEnabled(isRowClicked);
+
+  // show the context menu; actions are triggered
+  // by the menu itself and we do not need to take
+  // further steps here
+  contextMenu->exec(globalPos);
+}
 
 //----------------------------------------------------------------------------
-    
+
+void CourtTableView::onActionAddCourtTriggered()
+{
+  QMessageBox::information(this, "ksdjf", "Add Court!");
+}
 
 //----------------------------------------------------------------------------
     
