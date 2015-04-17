@@ -34,6 +34,7 @@ namespace QTournament
     CourtMngr (TournamentDB* _db);
     unique_ptr<Court> createNewCourt (const int courtNum, const QString& _name, ERR *err);
     bool hasCourt (const int courtNum);
+    int getHighestUnusedCourtNumber() const;
     unique_ptr<Court> getCourt(const int courtNum);
     QList<Court> getAllCourts();
     ERR renameCourt (Court& c, const QString& _newName);
