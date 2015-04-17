@@ -950,6 +950,23 @@ namespace QTournament
     // a regular round, e.g. in swiss ladder or random matches
     if (grpNum == GROUP_NUM__ITERATION) return GROUP_NUM__ITERATION;
 
+    // in elimination categories, everything before "L16" is "Iteration"
+    // and the rest follows the normal KO-logic
+    MATCH_SYSTEM mSys = getMatchSystem();
+    if (mSys == SINGLE_ELIM)
+    {
+      switch(grpNum)
+      {
+      case GROUP_NUM__FINAL:
+        return GROUP_NUM__SEMIFINAL;
+      case GROUP_NUM__SEMIFINAL:
+        return GROUP_NUM__QUARTERFINAL;
+      case GROUP_NUM__QUARTERFINAL:
+        return GROUP_NUM__L16;
+      }
+      return GROUP_NUM__ITERATION;
+    }
+
     // if we made it to this point, we are in KO rounds.
     // so we need the KO-config to decide if there is a previous
     // KO round or if we fall back to round robins

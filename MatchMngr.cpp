@@ -929,8 +929,20 @@ namespace QTournament {
         continue;  // wrong KO round
       }
 
-      // if we made it to this point, the match group is a mandatory predecessor and has to be finished before
-      // the match can be called
+      //
+      // if we made it to this point, the match group is a mandatory predecessor
+      //
+
+      // in round robins, rounds are independent from each other. for this reason,
+      // we may, for instance, start matches in round 3 before round 2 is finished.
+      // the same assumption holds for elimination rounds
+      MATCH_SYSTEM mSys = cat.getMatchSystem();
+      if ((mSys == SINGLE_ELIM) || ((mSys == GROUPS_WITH_KO) && (mg.getGroupNumber() > 0)))
+      {
+        return false;
+      }
+
+      // Okay, the previous match group really has to be finished first.
       if (prevMg.getState() != STAT_MG_FINISHED) return true;
     }
 
