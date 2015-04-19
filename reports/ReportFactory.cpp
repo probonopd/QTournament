@@ -6,6 +6,7 @@
 #include "CatMngr.h"
 #include "CatRoundStatus.h"
 #include "Standings.h"
+#include "InOutList.h"
 
 namespace QTournament
 {
@@ -15,6 +16,7 @@ namespace QTournament
   constexpr char ReportFactory::REP__RESULTS[];
   constexpr char ReportFactory::REP__RESULTS_BY_GROUP[];
   constexpr char ReportFactory::REP__STANDINGS_BY_CATEGORY[];
+  constexpr char ReportFactory::REP__INOUTLIST_BY_CATEGORY[];
 
   ReportFactory::ReportFactory(TournamentDB* _db)
     : db(_db)
@@ -48,34 +50,28 @@ namespace QTournament
       OBJ_STATE catState = cat.getState();
       if ((catState == STAT_CAT_CONFIG) || (catState == STAT_CAT_FROZEN))
       {
-        continue;  // match results for "unstarted" categories
+        continue;  // no reports for "unstarted" categories
       }
-
-      int id = cat.getId();
-      QString repName = REP__RESULTS;
-      repName += "," + QString::number(id) + ",";
 
       CatRoundStatus crs = cat.getRoundStatus();
       for (int round=1; round <= crs.getFinishedRoundsCount(); ++round)
       {
-        result.append(repName + QString::number(round));
+        result.append(genRepName(REP__RESULTS, cat, round));
       }
       for (int round : crs.getCurrentlyRunningRoundNumbers())
       {
-        result.append(repName + QString::number(round));
+        result.append(genRepName(REP__RESULTS, cat, round));
       }
 
       // we can also print result lists for all categories with
       // round robin groups
       if (cat.getMatchSystem() == GROUPS_WITH_KO)
       {
-        QString repName = REP__RESULTS_BY_GROUP;
-        repName += "," + QString::number(id) + ",";
         for (MatchGroup mg : Tournament::getMatchMngr()->getMatchGroupsForCat(cat, 1))
         {
           int grpNum = mg.getGroupNumber();
           if (grpNum < 0) continue;
-          result.append(repName + QString::number(grpNum));
+          result.append(genRepName(REP__RESULTS_BY_GROUP, cat, grpNum));
         }
       }
     }
@@ -91,16 +87,27 @@ namespace QTournament
         continue;  // no rankings for "unstarted" categories
       }
 
-      int id = cat.getId();
-      QString repName = REP__STANDINGS_BY_CATEGORY;
-      repName += "," + QString::number(id) + ",";
-
       CatRoundStatus crs = cat.getRoundStatus();
       for (int round=1; round <= crs.getFinishedRoundsCount(); ++round)
       {
-        result.append(repName + QString::number(round));
+        result.append(genRepName(REP__STANDINGS_BY_CATEGORY, cat, round));
       }
     }
+
+    // we brute-force check all categories and rounds for the availability
+    // of in-out-lists
+    for (Category cat : cm->getAllCategories())
+    {
+      CatRoundStatus crs = cat.getRoundStatus();
+      for (int round=1; round <= crs.getFinishedRoundsCount(); ++round)
+      {
+        if (InOutList::isValidCatRoundCombination(cat, round))
+        {
+          result.append(genRepName(REP__INOUTLIST_BY_CATEGORY, cat, round));
+        }
+      }
+    }
+
 
     return result;
   }
@@ -109,7 +116,18 @@ namespace QTournament
 
   upAbstractReport ReportFactory::getReportByName(const QString& repName) const
   {
-    QString pureRepName = repName.split(",")[0];
+    QStringList repNameComponent = repName.split(",");
+    QString pureRepName = repNameComponent[0];
+    int intParam1 = 0;
+    if (repNameComponent.size() > 1)
+    {
+      intParam1 = repNameComponent[1].toInt();
+    }
+    int intParam2 = 0;
+    if (repNameComponent.size() > 2)
+    {
+      intParam2 = repNameComponent[2].toInt();
+    }
 
     if (pureRepName == REP__PARTLIST_BY_NAME)
     {
@@ -127,8 +145,8 @@ namespace QTournament
     // result lists by round
     if (pureRepName == REP__RESULTS)
     {
-      int catId = repName.split(",")[1].toInt();
-      int round = repName.split(",")[2].toInt();
+      int catId = intParam1;
+      int round = intParam2;
       Category cat = Tournament::getCatMngr()->getCategoryById(catId);
       return upAbstractReport(new MatchResultList(db, repName, cat, round));
     }
@@ -136,8 +154,8 @@ namespace QTournament
     // result lists by group
     if (pureRepName == REP__RESULTS_BY_GROUP)
     {
-      int catId = repName.split(",")[1].toInt();
-      int grpNum = repName.split(",")[2].toInt();
+      int catId = intParam1;
+      int grpNum = intParam2;
       Category cat = Tournament::getCatMngr()->getCategoryById(catId);
       return upAbstractReport(new MatchResultList_ByGroup(db, repName, cat, grpNum));
     }
@@ -145,10 +163,19 @@ namespace QTournament
     // standings by category
     if (pureRepName == REP__STANDINGS_BY_CATEGORY)
     {
-      int catId = repName.split(",")[1].toInt();
-      int round = repName.split(",")[2].toInt();
+      int catId = intParam1;
+      int round = intParam2;
       Category cat = Tournament::getCatMngr()->getCategoryById(catId);
       return upAbstractReport(new Standings(db, repName, cat, round));
+    }
+
+    // in-out-lists
+    if (pureRepName == REP__INOUTLIST_BY_CATEGORY)
+    {
+      int catId = intParam1;
+      int round = intParam2;
+      Category cat = Tournament::getCatMngr()->getCategoryById(catId);
+      return upAbstractReport(new InOutList(db, repName, cat, round));
     }
 
     return nullptr;
@@ -169,6 +196,20 @@ namespace QTournament
     }
 
     return result;
+  }
+
+//----------------------------------------------------------------------------
+
+  QString ReportFactory::genRepName(QString repBaseName, const Category& cat, int intParam) const
+  {
+    QString repName = repBaseName;
+    repName += "," + QString::number(cat.getId());
+    if (intParam > 0)
+    {
+     repName += "," + QString::number(intParam);
+    }
+
+    return repName;
   }
 
 //----------------------------------------------------------------------------

@@ -74,7 +74,8 @@ HEADERS += \
     reports/MatchResultList.h \
     reports/MatchResultList_byGroup.h \
     reports/Standings.h \
-    ElimCategory.h
+    ElimCategory.h \
+    reports/InOutList.h
 
 SOURCES += \
     Category.cpp \
@@ -139,7 +140,8 @@ SOURCES += \
     reports/MatchResultList.cpp \
     reports/MatchResultList_byGroup.cpp \
     reports/Standings.cpp \
-    ElimCategory.cpp
+    ElimCategory.cpp \
+    reports/InOutList.cpp
 
 RESOURCES += \
     tournament.qrc

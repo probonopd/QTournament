@@ -96,7 +96,7 @@ void MainFrame::closeCurrentTournament()
 
 void MainFrame::setupTestScenario(int scenarioID)
 {
-  if ((scenarioID < 0) || (scenarioID > 6))
+  if ((scenarioID < 0) || (scenarioID > 7))
   {
     QMessageBox::critical(this, "Setup Test Scenario", "The scenario ID " + QString::number(scenarioID) + " is invalid!");
   }
@@ -213,7 +213,7 @@ void MainFrame::setupTestScenario(int scenarioID)
 
   // extend scenario 3 to already start category "LS"
   // and add a few players to LD and start this category, too
-  if ((scenarioID > 3) && (scenarioID < 99))  // Scenario 4...
+  if ((scenarioID > 3) && (scenarioID < 7))  // Scenario 4...
   {
     Category ls = cmngr->getCategory("LS");
 
@@ -306,7 +306,7 @@ void MainFrame::setupTestScenario(int scenarioID)
   // extend scenario 4 to already stage and schedule a few match groups
   // in category "LS" and "LD"
   // Additionally, we add 4 courts to the tournament
-  if ((scenarioID > 4) && (scenarioID < 99))  // Scenario 5...
+  if ((scenarioID > 4) && (scenarioID < 7))  // Scenario 5...
   {
     Category ls = cmngr->getCategory("LS");
     MatchMngr* mm = Tournament::getMatchMngr();
@@ -340,7 +340,7 @@ void MainFrame::setupTestScenario(int scenarioID)
 
   // extend scenario 5 to already play all matches in the round-robin rounds
   // of category "LS" and "LD"
-  if ((scenarioID > 5) && (scenarioID < 99))  // Scenario 6...
+  if ((scenarioID > 5) && (scenarioID < 7))  // Scenario 6...
   {
     Category ls = cmngr->getCategory("LS");
     Category ld = cmngr->getCategory("LD");
@@ -381,6 +381,82 @@ void MainFrame::setupTestScenario(int scenarioID)
 
       auto nextMatch = mm->getMatch(nextMacthId);
       if (nextMatch == nullptr) break;
+      auto nextCourt = cm->getCourtById(nextCourtId);
+      if (nextCourt == nullptr) break;
+
+      if (mm->assignMatchToCourt(*nextMatch, *nextCourt) != OK) break;
+      auto score = MatchScore::genRandomScore();
+      mm->setMatchScoreAndFinalizeMatch(*nextMatch, *score);
+    }
+  }
+
+  // extend scenario 3, set the LS match system to "single elimination",
+  // run the category, stage the first three rounds, play the first
+  // round and start the second
+  if ((scenarioID > 6) && (scenarioID < 99))  // Scenario 7...
+  {
+    Category ls = cmngr->getCategory("LS");
+
+    // set the match system to Single Elimination
+    ERR e = ls.setMatchSystem(SINGLE_ELIM) ;
+    assert(e == OK);
+
+    // run the category
+    unique_ptr<Category> specialCat = ls.convertToSpecializedObject();
+    e = cmngr->freezeConfig(ls);
+    assert(e == OK);
+
+    // prepare an empty list for the not-required initial group assignment
+    QList<PlayerPairList> ppListList;
+
+    // prepare a list for the (faked) initial ranking
+    PlayerPairList initialRanking = ls.getPlayerPairs();
+
+    // actually run the category
+    e = cmngr->startCategory(ls, ppListList, initialRanking);
+    assert(e == OK);
+
+    // stage all match groups
+    MatchMngr* mm = Tournament::getMatchMngr();
+    auto mg = mm->getMatchGroup(ls, 1, GROUP_NUM__ITERATION, &e);  // round 1
+    assert(e == OK);
+    mm->stageMatchGroup(*mg);
+    mg = mm->getMatchGroup(ls, 2, GROUP_NUM__ITERATION, &e);  // round 2
+    assert(e == OK);
+    mm->stageMatchGroup(*mg);
+    mg = mm->getMatchGroup(ls, 3, GROUP_NUM__L16, &e);  // round 3
+    assert(e == OK);
+    mm->stageMatchGroup(*mg);
+    mg = mm->getMatchGroup(ls, 4, GROUP_NUM__QUARTERFINAL, &e);  // round 4
+    assert(e == OK);
+    mm->stageMatchGroup(*mg);
+    mg = mm->getMatchGroup(ls, 5, GROUP_NUM__SEMIFINAL, &e);  // round 5
+    assert(e == OK);
+    mm->stageMatchGroup(*mg);
+    mg = mm->getMatchGroup(ls, 6, GROUP_NUM__FINAL, &e);  // round 6
+    assert(e == OK);
+    mm->stageMatchGroup(*mg);
+    mm->scheduleAllStagedMatchGroups();
+
+    // add four courts
+    auto cm = Tournament::getCourtMngr();
+    for (int i=1; i <= 4; ++i)
+    {
+      cm->createNewCourt(i, "XX", &e);
+      assert(e == OK);
+    }
+
+    // play all matches in round 1
+    while (true)
+    {
+      int nextMacthId;
+      int nextCourtId;
+      mm->getNextViableMatchCourtPair(&nextMacthId, &nextCourtId);
+      if (nextMacthId <= 0) break;
+
+      auto nextMatch = mm->getMatch(nextMacthId);
+      if (nextMatch == nullptr) break;
+      if (nextMatch->getMatchGroup().getRound() == 2) break;
       auto nextCourt = cm->getCourtById(nextCourtId);
       if (nextCourt == nullptr) break;
 
@@ -444,6 +520,13 @@ void MainFrame::setupScenario05()
 void MainFrame::setupScenario06()
 {
   setupTestScenario(6);
+}
+
+//----------------------------------------------------------------------------
+
+void MainFrame::setupScenario07()
+{
+  setupTestScenario(7);
 }
 
 //----------------------------------------------------------------------------

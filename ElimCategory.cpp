@@ -133,6 +133,52 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
+  PlayerPairList EliminationCategory::getRemainingPlayersAfterRound(int round, ERR* err) const
+  {
+    // we can only determine remaining players after completed rounds
+    CatRoundStatus crs = getRoundStatus();
+    if (round > crs.getFinishedRoundsCount())
+    {
+      if (err != nullptr) *err = INVALID_ROUND;
+      return PlayerPairList();
+    }
+
+    // get the list for the previous round, if any
+    PlayerPairList result;
+    if (round > 1)
+    {
+      ERR e;
+      result = this->getRemainingPlayersAfterRound(round-1, &e);
+      if (e != OK)
+      {
+        if (err != nullptr) *err = INVALID_ROUND;
+        return PlayerPairList();
+      }
+    } else {
+      result = getPlayerPairs();
+    }
+
+    // get the match losers of this round
+    // and remove them from the list of the previous round
+    MatchMngr* mm = Tournament::getMatchMngr();
+    for (MatchGroup mg : mm->getMatchGroupsForCat(*this, round))
+    {
+      for (Match ma : mg.getMatches())
+      {
+        auto loser = ma.getLoser();
+        if (loser == nullptr) continue;   // shouldn't happen
+        result.removeAll(*loser);
+      }
+    }
+
+    if (err != nullptr) *err = OK;
+    return result;
+  }
+
+//----------------------------------------------------------------------------
+
+//----------------------------------------------------------------------------
+
 
 //----------------------------------------------------------------------------
 

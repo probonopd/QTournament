@@ -31,6 +31,7 @@ namespace QTournament
     virtual std::function<bool(RankingEntry& a, RankingEntry& b)> getLessThanFunction() override;
     virtual ERR onRoundCompleted(int round) override;
     virtual ERR prepareNextRound(PlayerPairList seeding, ProgressQueue* progressNotificationQueue=nullptr) override;
+    virtual PlayerPairList getRemainingPlayersAfterRound(int round, ERR *err) const override;
     
   private:
     EliminationCategory (TournamentDB* db, int rowId);

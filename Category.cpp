@@ -1033,6 +1033,34 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
+  PlayerPairList Category::getEliminatedPlayersAfterRound(int round, ERR* err) const
+  {
+    //
+    // Approach: determine the list of eliminated players by
+    // subtracting the remaining players from the full list of players
+    //
+
+    auto specialCat = convertToSpecializedObject();
+
+    ERR e;
+    PlayerPairList remainingPlayers = specialCat->getRemainingPlayersAfterRound(round, &e);
+    if (e != OK)
+    {
+      if (err != nullptr) *err = e;
+      return PlayerPairList();
+    }
+
+    PlayerPairList allPlayers = getPlayerPairs();
+    PlayerPairList eliminatedPlayers;
+    for (PlayerPair pp : allPlayers)
+    {
+      if (remainingPlayers.contains(pp)) continue;
+      eliminatedPlayers.append(pp);
+    }
+
+    if (err != nullptr) *err = OK;
+    return eliminatedPlayers;
+  }
 
   //----------------------------------------------------------------------------
 

@@ -98,6 +98,7 @@
     <addaction name="actionScenario04"/>
     <addaction name="actionScenario05"/>
     <addaction name="actionScenario06"/>
+    <addaction name="actionScenario07"/>
    </widget>
    <addaction name="menuTournament"/>
    <addaction name="menuTesting"/>
@@ -156,6 +157,11 @@
   <action name="actionScenario06">
    <property name="text">
     <string>Scenario06</string>
+   </property>
+  </action>
+  <action name="actionScenario07">
+   <property name="text">
+    <string>Scenario07</string>
    </property>
   </action>
  </widget>
@@ -369,6 +375,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>actionScenario07</sender>
+   <signal>triggered()</signal>
+   <receiver>MainFrame</receiver>
+   <slot>setupScenario07()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>508</x>
+     <y>379</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>newTournament()</slot>
@@ -381,5 +403,6 @@
   <slot>setupScenario05()</slot>
   <slot>onCurrentTabChanged(int)</slot>
   <slot>setupScenario06()</slot>
+  <slot>setupScenario07()</slot>
  </slots>
 </ui>

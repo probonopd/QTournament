@@ -67,6 +67,7 @@ namespace QTournament
     int getGroupNumForPredecessorRound(const int grpNum) const;
     CatRoundStatus getRoundStatus() const;
     bool hasMatchesInState(OBJ_STATE stat, int round=-1) const;
+    PlayerPairList getEliminatedPlayersAfterRound(int round, ERR *err) const;
 
     
     virtual ~Category() {};
@@ -82,6 +83,7 @@ namespace QTournament
     virtual ERR onRoundCompleted(int round) { throw std::runtime_error("Unimplemented Method: onRoundCompleted"); };
     virtual std::function<bool (RankingEntry&, RankingEntry&)> getLessThanFunction()  { throw std::runtime_error("Unimplemented Method: getLessThanFunction"); };
     virtual ERR prepareNextRound(PlayerPairList seeding, ProgressQueue* progressNotificationQueue=nullptr) { throw std::runtime_error("Unimplemented Method: prepareNextRound"); };
+    virtual PlayerPairList getRemainingPlayersAfterRound(int round, ERR *err) const { throw std::runtime_error("Unimplemented Method: getRemainingPlayersAfterRound"); };
 
   private:
     Category (TournamentDB* db, int rowId);

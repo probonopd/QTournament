@@ -244,6 +244,77 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
+  PlayerPairList RoundRobinCategory::getRemainingPlayersAfterRound(int round, ERR* err) const
+  {
+    // we can only determine remaining players after completed rounds
+    CatRoundStatus crs = getRoundStatus();
+    if (round > crs.getFinishedRoundsCount())
+    {
+      if (err != nullptr) *err = INVALID_ROUND;
+      return PlayerPairList();
+    }
+
+    // the following call must succeed since we finished at least one round
+    KO_Config cfg = KO_Config(getParameter_string(GROUP_CONFIG));
+    int numGroupRounds = cfg.getNumRounds();
+
+    // three cases for the list of remaining players:
+    //   1) before the last round robing round (==> all players)
+    //   2) after the last RR round and before the first KO round (==> qualified players)
+    //   3) in KO rounds (==> survivors)
+
+    if (round < numGroupRounds)
+    {
+      if (err != nullptr) *err = OK;
+      return getPlayerPairs();
+    }
+
+    if (round == numGroupRounds)
+    {
+      if (err != nullptr) *err = OK;
+      return getQualifiedPlayersAfterRoundRobin_sorted();
+    }
+
+    if (round > numGroupRounds)
+    {
+      //
+      // TODO: this is redundant code. See EliminationCategory
+      //
+
+      // get the list for the previous round
+      PlayerPairList result;
+      ERR e;
+      result = this->getRemainingPlayersAfterRound(round-1, &e);
+      if (e != OK)
+      {
+        if (err != nullptr) *err = INVALID_ROUND;
+        return PlayerPairList();
+      }
+
+      // get the match losers of this round
+      // and remove them from the list of the previous round
+      MatchMngr* mm = Tournament::getMatchMngr();
+      for (MatchGroup mg : mm->getMatchGroupsForCat(*this, round))
+      {
+        for (Match ma : mg.getMatches())
+        {
+          auto loser = ma.getLoser();
+          if (loser == nullptr) continue;   // shouldn't happen
+          result.removeAll(*loser);
+        }
+      }
+
+      if (err != nullptr) *err = OK;
+      return result;
+    }
+
+    // we should never reach this point
+    if (err != nullptr) *err = INVALID_ROUND;
+    return PlayerPairList();
+  }
+
+//----------------------------------------------------------------------------
+
   PlayerPairList RoundRobinCategory::getQualifiedPlayersAfterRoundRobin_sorted() const
   {
     // have we finished the round robin phase?
@@ -279,7 +350,10 @@ namespace QTournament
     // the first of group 8 is at index 0, the first of group 7 is at index 1, ...
     //
     // let's fix that (for cosmetic reasons)
-    std::reverse(result.begin(), result.begin() + cfg.getNumGroups() + 1);  // +1 because the last element is not included in the reversing operation
+    if (cfg.getSecondSurvives())
+    {
+      std::reverse(result.begin(), result.begin() + cfg.getNumGroups() + 1);  // +1 because the last element is not included in the reversing operation
+    }
 
     return result;
   }
