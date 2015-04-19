@@ -171,12 +171,24 @@ void CatTabWidget::updateControls()
   // the "accept draw" checkbox
   bool allowDraw = selectedCat.getParameter(ALLOW_DRAW).toBool();
   ui.cbDraw->setChecked(allowDraw);
+
+  // the checkbox must be disabled under two conditions:
+  // 1) we are in a match system with elimination rounds
+  // 2) we have round robins resulting directly in finals
+  //
+  // In the latter case, we need the second player for the
+  // match for 3rd place
+  bool enableDrawCheckbox = true;
   if (selectedCat.getMatchSystem() == SINGLE_ELIM)
   {
-    ui.cbDraw->setEnabled(false);
-  } else {
-    ui.cbDraw->setEnabled(true);
+    enableDrawCheckbox = false;
   }
+  if (ms == GROUPS_WITH_KO)
+  {
+    KO_Config cfg = KO_Config(selectedCat.getParameter_string(GROUP_CONFIG));
+    if (cfg.getStartLevel() == FINAL) enableDrawCheckbox = false;
+  }
+  ui.cbDraw->setEnabled(enableDrawCheckbox);
   
   // the score spinnboxes
   int drawScore = selectedCat.getParameter(DRAW_SCORE).toInt();
