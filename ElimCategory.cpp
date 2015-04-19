@@ -124,7 +124,15 @@ namespace QTournament
     // this is only to get the accumulated values for the finalists right
     ERR err;
     RankingMngr* rm = Tournament::getRankingMngr();
-    rm->createUnsortedRankingEntriesForLastRound(*this, &err);
+    PlayerPairList ppList;
+    if (round == 1)
+    {
+      ppList = getPlayerPairs();
+    } else {
+      ppList = this->getRemainingPlayersAfterRound(round - 1, &err);
+      if (err != OK) return err;
+    }
+    rm->createUnsortedRankingEntriesForLastRound(*this, &err, ppList);
     if (err != OK) return err;
 
     CatRoundStatus crs = getRoundStatus();

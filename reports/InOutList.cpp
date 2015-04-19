@@ -54,17 +54,64 @@ upSimpleReport InOutList::regenerateReport() const
   {
     result->writeLine(tr("All players are still in the game, no knock-outs yet."));
   } else {
-    printIntermediateHeader(result, tr("Knocked-out players"));
+    // sort the outList be the number of rounds that each player survived
+    RankingMngr* rm = Tournament::getRankingMngr();
+    QHash<int, int> ppId2Rounds;
     for (PlayerPair pp : outList)
     {
-      result->writeLine(pp.getDisplayName());
+      int roundCount = rm->getHighestRoundWithRankingEntryForPlayerPair(cat, pp);
+      ppId2Rounds.insert(pp.getPairId(), roundCount);
+    }
+    std::sort(outList.begin(), outList.end(), [&](PlayerPair& pp1, PlayerPair& pp2) {
+      int roundsPP1 = ppId2Rounds.value(pp1.getPairId());
+      int roundsPP2 = ppId2Rounds.value(pp2.getPairId());
+      return roundsPP1 < roundsPP2;
+    });
+
+    // prepare a table of the knocked-out players
+    QStringList header;
+    header.append(tr("Name"));
+    header.append(tr("Team"));
+    header.append(tr("Rounds played"));
+    SimpleReportLib::TabSet ts;
+    ts.addTab(90, SimpleReportLib::TAB_JUSTIFICATION::TAB_LEFT);
+    ts.addTab(145, SimpleReportLib::TAB_JUSTIFICATION::TAB_LEFT);
+    SimpleReportLib::TableWriter tw(ts);
+    tw.setHeader(header);
+
+    // fill the table
+    for (PlayerPair pp : outList)
+    {
+      QStringList rowContent;
+      rowContent << pp.getDisplayName();
+      rowContent << pp.getDisplayName_Team();
+      rowContent << QString::number(ppId2Rounds.value(pp.getPairId()));
+      tw.appendRow(rowContent);
     }
 
-    printIntermediateHeader(result, tr("Remaining players"));
+    // put the table below an extra header
+    printIntermediateHeader(result, "Knocked-out Players");
+    tw.setNextPageContinuationCaption(tr("List of knocked-out players (cont.)"));
+    tw.write(result.get());
+
+    // prepare a tab for the remaining players
+    header.removeLast();
+    tw = SimpleReportLib::TableWriter(ts);
+    tw.setHeader(header);
+
+    // fill the table
     for (PlayerPair pp : inList)
     {
-      result->writeLine(pp.getDisplayName());
+      QStringList rowContent;
+      rowContent << pp.getDisplayName();
+      rowContent << pp.getDisplayName_Team();
+      tw.appendRow(rowContent);
     }
+
+    // put the table below an extra header
+    printIntermediateHeader(result, "Remaining Players");
+    tw.setNextPageContinuationCaption(tr("List of remaining players (cont.)"));
+    tw.write(result.get());
   }
 
   return result;

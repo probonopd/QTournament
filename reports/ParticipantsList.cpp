@@ -142,7 +142,6 @@ void ParticipantsList::createTeamSortedReport(upSimpleReport &rep) const
   // do we have any teams at all?
   if (tl.size() == 0) return;
 
-  upSimpleReport result = createEmptyReport_Portrait();
   setHeaderAndHeadline(rep.get(), tr("List of Participants"), tr("Sorted by team"));
   rep->addTab(50.0, SimpleReportLib::TAB_LEFT);
   rep->addTab(110.0, SimpleReportLib::TAB_LEFT);

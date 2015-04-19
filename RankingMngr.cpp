@@ -211,6 +211,20 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
+  int RankingMngr::getHighestRoundWithRankingEntryForPlayerPair(const Category& cat, const PlayerPair& pp) const
+  {
+    QString where = RA_CAT_REF + " = " + QString::number(cat.getId());
+    where += " AND " + RA_PAIR_REF + " = " + QString::number(pp.getPairId());
+    where += " ORDER BY " + RA_ROUND + " DESC";
+
+    auto re = getSingleObjectByWhereClause<RankingEntry>(rankTab, where);
+    if (re == nullptr) return -1;
+
+    return re->getRound();
+  }
+
+//----------------------------------------------------------------------------
+
   RankingEntryListList RankingMngr::sortRankingEntriesForLastRound(const Category& cat, ERR* err) const
   {
     // determine the round we should create the entries for

@@ -46,6 +46,8 @@ namespace QTournament
     unique_ptr<RankingEntry> getRankingEntry(const Category &cat, int round, int grpNum, int rank) const;
     RankingEntryListList getSortedRanking(const Category &cat, int round) const;
 
+    int getHighestRoundWithRankingEntryForPlayerPair(const Category &cat, const PlayerPair &pp) const;
+
   private:
     DbTab rankTab;
 
