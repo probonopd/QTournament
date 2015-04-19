@@ -111,7 +111,7 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  int RoundRobinCategory::calcTotalRoundsCount()
+  int RoundRobinCategory::calcTotalRoundsCount() const
   {
     OBJ_STATE stat = getState();
     if ((stat == STAT_CAT_CONFIG) || (stat == STAT_CAT_FROZEN))
@@ -337,12 +337,16 @@ namespace QTournament
       assert(rl.size() >= 2);
 
       // the first in each group is always qualified
-      result.push_front(rl.at(0).getPlayerPair());
+      auto qualifiedPP = rl.at(0).getPlayerPair();
+      assert(qualifiedPP != nullptr);
+      result.push_front(*qualifiedPP);
 
       // maybe the second qualifies as well
       if (cfg.getSecondSurvives())
       {
-        result.push_back(rl.at(1).getPlayerPair());
+        qualifiedPP = rl.at(1).getPlayerPair();
+        assert(qualifiedPP != nullptr);
+        result.push_back(*qualifiedPP);
       }
     }
 

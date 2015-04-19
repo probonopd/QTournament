@@ -58,6 +58,24 @@ namespace QTournament {
 
 //----------------------------------------------------------------------------
 
+  PlayerPair::PlayerPair(TournamentDB* db, int ppId)
+  {
+    TabRow row = db->getTab(TAB_PAIRS)[ppId];
+
+    pairId = ppId;
+    id1 = row[PAIRS_PLAYER1_REF].toInt();
+    id2 = -1;
+
+    QVariant _id2 = row[PAIRS_PLAYER2_REF];
+    if (!(_id2.isNull()))
+    {
+      id2 = _id2.toInt();
+      sortPlayers();
+    }
+  }
+
+//----------------------------------------------------------------------------
+
   void PlayerPair::sortPlayers()
   {
     // if we have two players, sort the man first

@@ -45,10 +45,13 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  PlayerPair RankingEntry::getPlayerPair() const
+  unique_ptr<PlayerPair> RankingEntry::getPlayerPair() const
   {
-    int ppId = row[RA_PAIR_REF].toInt();
-    return Tournament::getPlayerMngr()->getPlayerPair(ppId);
+    QVariant _ppId = row[RA_PAIR_REF];
+    if (_ppId.isNull()) return nullptr;
+
+    int ppId = _ppId.toInt();
+    return unique_ptr<PlayerPair>(new PlayerPair(db, ppId));
   }
 
 //----------------------------------------------------------------------------

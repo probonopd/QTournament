@@ -21,6 +21,7 @@ namespace QTournament
     PlayerPair(const Player& p1, int _pairId);
     PlayerPair(const Player& p1);
     PlayerPair(const TournamentDB* db, const TabRow& row);
+    PlayerPair(TournamentDB* db, int ppId);
     bool hasPlayer2() const;
     Player getPlayer1() const;
     Player getPlayer2() const;

@@ -34,7 +34,7 @@ namespace QTournament
 
     int getRound() const;
     Category getCategory() const;
-    PlayerPair getPlayerPair() const;
+    unique_ptr<PlayerPair> getPlayerPair() const;
     int getRank() const;
     int getGroupNumber() const;
 

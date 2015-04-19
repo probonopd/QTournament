@@ -52,6 +52,9 @@ namespace QTournament
     int getSymbolicPlayerPair1Name() const;
     int getSymbolicPlayerPair2Name() const;
 
+    int getWinnerRank() const;
+    int getLoserRank() const;
+
   private:
     Match (TournamentDB* db, int rowId);
     Match (TournamentDB* db, dbOverlay::TabRow row);

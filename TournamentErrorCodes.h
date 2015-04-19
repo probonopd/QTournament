@@ -70,7 +70,8 @@ namespace QTournament
         NOTHING_TO_PREPARE,
         INVALID_SEEDING_LIST,
         INVALID_PLAYER_PAIR,
-        INVALID_MATCH_LINK
+        INVALID_MATCH_LINK,
+        INVALID_RANK,
     };
 }
 

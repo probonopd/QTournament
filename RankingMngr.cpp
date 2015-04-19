@@ -275,6 +275,77 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
+  ERR RankingMngr::forceRank(const RankingEntry& re, int rank) const
+  {
+    if (rank < 1) return INVALID_RANK;
+
+    QVariantList qvl;
+    re.row.update(RA_RANK, rank);
+
+    return OK;
+  }
+
+//----------------------------------------------------------------------------
+
+  void RankingMngr::fillRankGaps(const Category& cat, int round, int maxRank)
+  {
+    int catId = cat.getId();
+
+    // a little helper function for creating a dummy ranking entry
+    auto insertRankingEntry = [&](int g, int r) {
+      QVariantList qvl;
+      qvl << RA_MATCHES_WON << -1;
+      qvl << RA_MATCHES_DRAW << -1;
+      qvl << RA_MATCHES_LOST << -1;
+      qvl << RA_GAMES_WON << -1;
+      qvl << RA_GAMES_LOST << -1;
+      qvl << RA_POINTS_WON << -1;
+      qvl << RA_POINTS_LOST << -1;
+      qvl << RA_PAIR_REF << QVariant();
+      qvl << RA_ROUND << round;
+      qvl << RA_CAT_REF << catId;
+      qvl << RA_GRP_NUM << g;
+      qvl << RA_RANK << r;
+      rankTab.insertRow(qvl);
+    };
+
+    RankingEntryListList rll = getSortedRanking(cat, round);
+    if (rll.isEmpty()) return;
+
+    // for each match group, go through the
+    // list of ranking entries and fill gaps
+    // or append entries up to maxRank
+    for (RankingEntryList rl : rll)
+    {
+      int lastSeenRank = 0;
+      int grpNum = rl.at(0).getGroupNumber();
+
+      for (RankingEntry re : rl)
+      {
+        int curRank = re.getRank();
+        if (curRank == RankingEntry::NO_RANK_ASSIGNED) continue;
+
+        // fill gaps, e.g., insert a dummy rank 4 and 5 between existing,
+        // "real" entries 3 and 6
+        while (curRank > (lastSeenRank+1))
+        {
+          ++lastSeenRank;
+          insertRankingEntry(grpNum, lastSeenRank);
+        }
+        lastSeenRank = curRank;
+      }
+
+      // append entries up to maxRank
+      while (lastSeenRank < maxRank)
+      {
+        ++lastSeenRank;
+        insertRankingEntry(grpNum, lastSeenRank);
+      }
+    }
+  }
+
+//----------------------------------------------------------------------------
+
   unique_ptr<RankingEntry> RankingMngr::getRankingEntry(const Category& cat, int round, int grpNum, int rank) const
   {
     QVariantList qvl;

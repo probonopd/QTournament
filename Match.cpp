@@ -212,6 +212,30 @@ namespace QTournament
     return getSymbolicPlayerPairName(2);
   }
 
+//----------------------------------------------------------------------------
+
+  int Match::getWinnerRank() const
+  {
+    QVariant _wr = row[MA_WINNER_RANK];
+    if (_wr.isNull()) return -1;
+
+    int wr = _wr.toInt();
+    return (wr < 1) ? -1 : wr;
+  }
+
+//----------------------------------------------------------------------------
+
+  int Match::getLoserRank() const
+  {
+    QVariant _lr = row[MA_LOSER_RANK];
+    if (_lr.isNull()) return -1;
+
+    int lr = _lr.toInt();
+    return (lr < 1) ? -1 : lr;
+  }
+
+//----------------------------------------------------------------------------
+
   int Match::getSymbolicPlayerPairName(int playerPos) const
   {
     // if we have a regular PP, don't return a symbolic name

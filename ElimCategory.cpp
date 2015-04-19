@@ -92,7 +92,7 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  int EliminationCategory::calcTotalRoundsCount()
+  int EliminationCategory::calcTotalRoundsCount() const
   {
     OBJ_STATE stat = getState();
     if ((stat == STAT_CAT_CONFIG) || (stat == STAT_CAT_FROZEN))
@@ -120,7 +120,47 @@ namespace QTournament
 
   ERR EliminationCategory::onRoundCompleted(int round)
   {
-    // TODO: add action for KO rounds
+    // create ranking entries for everyone who played.
+    // this is only to get the accumulated values for the finalists right
+    ERR err;
+    RankingMngr* rm = Tournament::getRankingMngr();
+    rm->createUnsortedRankingEntriesForLastRound(*this, &err);
+    if (err != OK) return err;
+
+    CatRoundStatus crs = getRoundStatus();
+
+    // there's nothing to do for us except after the last round.
+    // after the last roound, we have to create ranking entries
+    int lastFinishedRound = crs.getFinishedRoundsCount();
+    if (lastFinishedRound != calcTotalRoundsCount())
+    {
+      return OK;
+    }
+
+    // set the ranks for the winner / losers of the finals
+    MatchMngr* mm = Tournament::getMatchMngr();
+    for (MatchGroup mg : mm->getMatchGroupsForCat(*this, lastFinishedRound))
+    {
+      for (Match ma : mg.getMatches())
+      {
+        auto winner = ma.getWinner();
+        assert(winner != nullptr);
+        auto re = rm->getRankingEntry(*winner, lastFinishedRound);
+        assert(re != nullptr);
+        int winnerRank = ma.getWinnerRank();
+        assert(winnerRank > 0);
+        rm->forceRank(*re, winnerRank);
+
+        auto loser = ma.getLoser();
+        assert(loser != nullptr);
+        re = rm->getRankingEntry(*loser, lastFinishedRound);
+        assert(re != nullptr);
+        int loserRank = ma.getLoserRank();
+        assert(loserRank > 0);
+        rm->forceRank(*re, loserRank);
+      }
+    }
+
     return OK;
   }
 
@@ -135,6 +175,12 @@ namespace QTournament
 
   PlayerPairList EliminationCategory::getRemainingPlayersAfterRound(int round, ERR* err) const
   {
+    if (round == calcTotalRoundsCount())
+    {
+      if (err != nullptr) *err = OK;
+      return PlayerPairList();  // no remaining players after last round
+    }
+
     // we can only determine remaining players after completed rounds
     CatRoundStatus crs = getRoundStatus();
     if (round > crs.getFinishedRoundsCount())
@@ -160,6 +206,14 @@ namespace QTournament
 
     // get the match losers of this round
     // and remove them from the list of the previous round
+    //
+    // exception: losers in semi-finals will continue in the
+    // match for 3rd place
+    if (round == (calcTotalRoundsCount() - 1))  // semi-finals
+    {
+      if (err != nullptr) *err = OK;
+      return result;
+    }
     MatchMngr* mm = Tournament::getMatchMngr();
     for (MatchGroup mg : mm->getMatchGroupsForCat(*this, round))
     {

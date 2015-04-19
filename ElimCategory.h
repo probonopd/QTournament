@@ -27,7 +27,7 @@ namespace QTournament
     virtual bool needsInitialRanking() override;
     virtual bool needsGroupInitialization() override;
     virtual ERR prepareFirstRound(ProgressQueue* progressNotificationQueue=nullptr) override;
-    virtual int calcTotalRoundsCount() override;
+    virtual int calcTotalRoundsCount() const override;
     virtual std::function<bool(RankingEntry& a, RankingEntry& b)> getLessThanFunction() override;
     virtual ERR onRoundCompleted(int round) override;
     virtual ERR prepareNextRound(PlayerPairList seeding, ProgressQueue* progressNotificationQueue=nullptr) override;

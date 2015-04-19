@@ -39,6 +39,8 @@ namespace QTournament
     RankingMngr (TournamentDB* _db);
     RankingEntryList createUnsortedRankingEntriesForLastRound(const Category &cat, ERR *err=nullptr, PlayerPairList _ppList=PlayerPairList(), bool reset=false);
     RankingEntryListList sortRankingEntriesForLastRound(const Category &cat, ERR *err=nullptr) const;
+    ERR forceRank(const RankingEntry& re, int rank) const;
+    void fillRankGaps(const Category& cat, int round, int maxRank);
 
     unique_ptr<RankingEntry> getRankingEntry(const PlayerPair &pp, int round) const;
     unique_ptr<RankingEntry> getRankingEntry(const Category &cat, int round, int grpNum, int rank) const;

@@ -95,32 +95,40 @@ upSimpleReport Standings::regenerateReport() const
     tw.setHeader(7, tr("Games"));
     tw.setHeader(10, tr("Points"));
 
-    int curRank = 1;
     for (RankingEntry re : rl)
     {
       QStringList rowContent;
       rowContent << "";   // first column is unused
+
+      // skip entries without a valid rank
+      int curRank = re.getRank();
+      if (curRank == RankingEntry::NO_RANK_ASSIGNED) continue;
+
       rowContent << QString::number(curRank);
-      rowContent << re.getPlayerPair().getDisplayName();
 
-      // TODO: this doesn't work if draw matches are allowed!
-      auto matchStats = re.getMatchStats();
-      rowContent << QString::number(get<0>(matchStats));
-      rowContent << ":";
-      rowContent << QString::number(get<2>(matchStats));
+      auto pp = re.getPlayerPair();
+      rowContent << ((pp != nullptr) ? (*pp).getDisplayName() : "??");
 
-      auto gameStats = re.getGameStats();
-      rowContent << QString::number(get<0>(gameStats));
-      rowContent << ":";
-      rowContent << QString::number(get<1>(gameStats));
+      if (pp != nullptr)
+      {
+        // TODO: this doesn't work if draw matches are allowed!
+        auto matchStats = re.getMatchStats();
+        rowContent << QString::number(get<0>(matchStats));
+        rowContent << ":";
+        rowContent << QString::number(get<2>(matchStats));
 
-      auto pointStats = re.getPointStats();
-      rowContent << QString::number(get<0>(pointStats));
-      rowContent << ":";
-      rowContent << QString::number(get<1>(pointStats));
+        auto gameStats = re.getGameStats();
+        rowContent << QString::number(get<0>(gameStats));
+        rowContent << ":";
+        rowContent << QString::number(get<1>(gameStats));
+
+        auto pointStats = re.getPointStats();
+        rowContent << QString::number(get<0>(pointStats));
+        rowContent << ":";
+        rowContent << QString::number(get<1>(pointStats));
+      }
 
       tw.appendRow(rowContent);
-      ++curRank;
     }
 
     tw.setNextPageContinuationCaption(tableName + tr(" (cont.)"));

@@ -446,7 +446,7 @@ void MainFrame::setupTestScenario(int scenarioID)
       assert(e == OK);
     }
 
-    // play all matches in round 1
+    // play all matches
     while (true)
     {
       int nextMacthId;
@@ -456,7 +456,7 @@ void MainFrame::setupTestScenario(int scenarioID)
 
       auto nextMatch = mm->getMatch(nextMacthId);
       if (nextMatch == nullptr) break;
-      if (nextMatch->getMatchGroup().getRound() == 2) break;
+      //if (nextMatch->getMatchGroup().getRound() == 2) break;
       auto nextCourt = cm->getCourtById(nextCourtId);
       if (nextCourt == nullptr) break;
 
