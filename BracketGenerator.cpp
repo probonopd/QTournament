@@ -49,6 +49,15 @@ namespace QTournament
     bmData->depthInBracket = 0;
     result.push_back(std::move(bmData));
 
+    // prepare a match for third place but don't store it yet
+    // in the result list (otherwise it would be part of the
+    // "split-each-match-into-two-new-ones"-algorithm (see below)
+    upBracketMatchData thirdPlaceMatch = upBracketMatchData(new BracketMatchData);
+    thirdPlaceMatch->setInitialRanks(3, 4);
+    thirdPlaceMatch->nextMatchForLoser = -4;
+    thirdPlaceMatch->nextMatchForWinner = -3;
+    thirdPlaceMatch->depthInBracket = 0;
+
     int nActual = 2;
     int curDepth = 0;
 
@@ -99,11 +108,21 @@ namespace QTournament
         newBracketMatch2->nextMatchForLoser = BracketMatchData::NO_NEXT_MATCH;
         newBracketMatch2->depthInBracket = curDepth;
 
+        // a special treatment for semifinals: losers get a match for third place
+        if (curDepth == 1)
+        {
+          newBracketMatch1->setNextMatchForLoser(*thirdPlaceMatch, 1);
+          newBracketMatch2->setNextMatchForLoser(*thirdPlaceMatch, 2);
+        }
+
         result.push_back(std::move(newBracketMatch1));
         result.push_back(std::move(newBracketMatch2));
         ++cnt;
       }
     }
+
+    // if we have more that two players, we want to play for the third place
+    if (numPlayers > 2) result.push_back(std::move(thirdPlaceMatch));
 
     removeUnusedMatches(result, numPlayers);
 
