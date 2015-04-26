@@ -1,8 +1,10 @@
+#include <QKeyEvent>
+
 #include "DlgSeedingEditor.h"
 #include "ui_DlgSeedingEditor.h"
 
 DlgSeedingEditor::DlgSeedingEditor(QWidget *parent) :
-  QDialog(parent),
+  QDialog(parent), positionInput(0),
   ui(new Ui::DlgSeedingEditor)
 {
   ui->setupUi(this);
@@ -11,6 +13,19 @@ DlgSeedingEditor::DlgSeedingEditor(QWidget *parent) :
 
   ui->sbRangeMin->setValue(2);
   ui->sbRangeMin->setMinimum(2);
+
+  // intercept keypress-events for some widgets for implementing
+  // an "player warp" by pressing a number key
+  ui->lwSeeding->installEventFilter(this);
+  ui->btnUp->installEventFilter(this);
+  ui->btnDown->installEventFilter(this);
+
+  // combine subsequent keypresses into one number; for this we
+  // need a timer
+  keypressTimer = new QTimer();
+  keypressTimer->setInterval(SUBSEQUENT_KEYPRESS_TIMEOUT__MS);
+  keypressTimer->setSingleShot(true);
+  connect(keypressTimer, SIGNAL(timeout()), this, SLOT(onKeypressTimerElapsed()));
 }
 
 //----------------------------------------------------------------------------
@@ -77,6 +92,14 @@ void DlgSeedingEditor::onSelectionChanged()
 
 //----------------------------------------------------------------------------
 
+void DlgSeedingEditor::onKeypressTimerElapsed()
+{
+  ui->lwSeeding->warpSelectedPlayerTo(positionInput-1);
+  positionInput = 0;
+}
+
+//----------------------------------------------------------------------------
+
 void DlgSeedingEditor::updateButtons()
 {
   bool hasItems = (ui->lwSeeding->count() > 0);
@@ -93,4 +116,86 @@ void DlgSeedingEditor::updateButtons()
   // up / down availability depends on the selected item
   ui->btnUp->setEnabled(ui->lwSeeding->canMoveSelectedPlayerUp());
   ui->btnDown->setEnabled(ui->lwSeeding->canMoveSelectedPlayerDown());
+}
+
+//----------------------------------------------------------------------------
+
+bool DlgSeedingEditor::eventFilter(QObject* target, QEvent* event)
+{
+  // we only want to catch key presses here
+  if (event->type() != QEvent::KeyPress)
+  {
+    return QDialog::eventFilter(target, event);
+  }
+
+  // we only want to catch keys 0...9
+  QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
+  int key = keyEvent->key();
+  if ((key != Qt::Key_0) && (key != Qt::Key_1) && (key != Qt::Key_2) && (key != Qt::Key_3) &&
+      (key != Qt::Key_4) && (key != Qt::Key_5) && (key != Qt::Key_6) && (key != Qt::Key_7) &&
+      (key != Qt::Key_8) && (key != Qt::Key_9))
+  {
+    return QDialog::eventFilter(target, event);
+  }
+
+  // we only want to catch key events sent to the list widget or the up/down buttons
+  // (read: keys that are pressed while these widgets own the focus)
+  if ((target != ui->lwSeeding) && (target != ui->btnUp) && (target != ui->btnDown))
+  {
+    return QDialog::eventFilter(target, event);
+  }
+
+  // processing keys here makes no sense if no row is selected in
+  // the list widget
+  if (ui->lwSeeding->currentRow() < 0)
+  {
+    return QDialog::eventFilter(target, event);
+  }
+
+  // convert the event ID into a real number
+  int keyValue = 0;
+  switch (key)
+  {
+  case Qt::Key_1:
+    keyValue = 1;
+    break;
+  case Qt::Key_2:
+    keyValue = 2;
+    break;
+  case Qt::Key_3:
+    keyValue = 3;
+    break;
+  case Qt::Key_4:
+    keyValue = 4;
+    break;
+  case Qt::Key_5:
+    keyValue = 5;
+    break;
+  case Qt::Key_6:
+    keyValue = 6;
+    break;
+  case Qt::Key_7:
+    keyValue = 7;
+    break;
+  case Qt::Key_8:
+    keyValue = 8;
+    break;
+  case Qt::Key_9:
+    keyValue = 9;
+    break;
+  }
+
+  // if this is the first keypress after a pause of
+  // SUBSEQUENT_KEYPRESS_TIMEOUT__MS we start gathering
+  // a new number. Otherwise, we combine the previously
+  // pressed digits with the new one
+  if (keypressTimer->isActive())
+  {
+    positionInput = positionInput * 10 + keyValue;
+  } else {
+    positionInput = keyValue;
+    keypressTimer->start();
+  }
+
+  return true;
 }

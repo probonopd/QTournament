@@ -2,6 +2,7 @@
 #define DLGSEEDINGEDITOR_H
 
 #include <QDialog>
+#include <QTimer>
 
 #include "Tournament.h"
 #include "PlayerPair.h"
@@ -26,10 +27,16 @@ public slots:
   void onShuffleModeChange();
   void onSelectionChanged();
 
+private slots:
+  void onKeypressTimerElapsed();
 
 private:
+  static constexpr int SUBSEQUENT_KEYPRESS_TIMEOUT__MS = 1000;
   Ui::DlgSeedingEditor *ui;
   void updateButtons();
+  bool eventFilter(QObject *target, QEvent *event);
+  int positionInput;
+  QTimer* keypressTimer;
 };
 
 #endif // DLGSEEDINGEDITOR_H

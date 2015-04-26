@@ -24,6 +24,7 @@ public:
   void shufflePlayers(int fromIndex = -1);
   void moveSelectedPlayerUp();
   void moveSelectedPlayerDown();
+  void warpSelectedPlayerTo(int targetRow);
   PlayerPairList getSeedList() const;
   void clearListAndFillFromSeed(const PlayerPairList& seed);
 

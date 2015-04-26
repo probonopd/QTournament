@@ -87,6 +87,22 @@ void SeedingListWidget::moveSelectedPlayerDown()
 
 //----------------------------------------------------------------------------
 
+void SeedingListWidget::warpSelectedPlayerTo(int targetRow)
+{
+  int selectedRow = currentRow();
+  if (selectedRow < 0) return;
+  if ((targetRow < 0) || (targetRow >= count())) return;
+  if (targetRow == selectedRow) return;
+
+  QListWidgetItem* i = takeItem(selectedRow);
+  insertItem(targetRow, i);
+
+  // let the selection follow the item
+  setCurrentRow(targetRow);
+}
+
+//----------------------------------------------------------------------------
+
 PlayerPairList SeedingListWidget::getSeedList() const
 {
   PlayerPairList result;

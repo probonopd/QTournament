@@ -305,7 +305,7 @@ void MainFrame::setupTestScenario(int scenarioID)
 
     // temporary hack: show a DlgSeedingEditor for testing purposes
     DlgSeedingEditor dlg{this};
-    dlg.initSeedingList(ld.getPlayerPairs());
+    dlg.initSeedingList(ls.getPlayerPairs());
     dlg.exec();
   }
 
