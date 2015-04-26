@@ -21,11 +21,12 @@
 #define PAIR_ITEM_STAT_INDICATOR_SIZE 15
 #define PAIR_ITEM_MARGIN 5
 #define PAIR_ITEM_TEAMNAME_SHRINK_FAC 0.8
+#define PAIR_ITEM_INDEX_NUMBER_SPACE 25
 
 using namespace QTournament;
 
-PairItemDelegate::PairItemDelegate(QObject* parent)
-: QStyledItemDelegate(parent), fntMetrics(QFontMetrics(QFont()))
+PairItemDelegate::PairItemDelegate(QObject* parent, bool _showListIndex)
+: QStyledItemDelegate(parent), fntMetrics(QFontMetrics(QFont())), showListIndex(_showListIndex)
 {
 }
 
@@ -36,6 +37,11 @@ void PairItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
   PlayerPair pp = Tournament::getPlayerMngr()->getPlayerPair(index.data(Qt::UserRole).toInt());
   QString playerName = pp.getDisplayName();
   QString teamName = pp.getDisplayName_Team();
+
+  // Preceed the item with an index number?
+  if (showListIndex)
+  {
+  }
   
   // Paint the background in the selection color if necessary
   QColor teamFontColor(PAIR_ITEM_TEAMNAME_COL__REGULAR);
@@ -45,8 +51,25 @@ void PairItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
     teamFontColor = QColor(PAIR_ITEM_TEAMNAME_COL__HIGHLIGHT);
   }
   
+  // get the rectangle that's available for painting the pair item
   QRect r = option.rect;
-  QRect rPlayerName = r.adjusted(PAIR_ITEM_MARGIN, PAIR_ITEM_MARGIN, -PAIR_ITEM_MARGIN, -r.height() / 2);
+
+  // apply the left and right margin
+  r.adjust(PAIR_ITEM_MARGIN, 0, -PAIR_ITEM_MARGIN, 0);
+
+  if (showListIndex)
+  {
+    QString playerIndex = QString::number(index.row() + 1) + ". ";
+    QRect rPlayerIndex = r.adjusted(0, PAIR_ITEM_MARGIN, 0, -r.height() / 2);
+    rPlayerIndex.setWidth(PAIR_ITEM_INDEX_NUMBER_SPACE);
+    painter->drawText(rPlayerIndex, Qt::AlignVCenter|Qt::AlignRight, playerIndex);
+
+    // shift all further text painting left, so that the index number
+    // builds a separate "column"
+    r.adjust(PAIR_ITEM_INDEX_NUMBER_SPACE, 0, 0, 0);
+  }
+
+  QRect rPlayerName = r.adjusted(0, PAIR_ITEM_MARGIN, 0, -r.height() / 2);
   painter->drawText(rPlayerName, Qt::AlignVCenter|Qt::AlignLeft, playerName);
   
   QFont teamFont = QFont();
@@ -55,7 +78,7 @@ void PairItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
   painter->save();
   painter->setPen(QPen(teamFontColor));
   painter->setFont(teamFont);
-  QRect rTeamName = r.adjusted(PAIR_ITEM_MARGIN, r.height() / 2, -PAIR_ITEM_MARGIN, -PAIR_ITEM_MARGIN);
+  QRect rTeamName = r.adjusted(0, r.height() / 2, 0, -PAIR_ITEM_MARGIN);
   painter->drawText(rTeamName, Qt::AlignVCenter|Qt::AlignLeft, teamName);
   painter->restore();
 }

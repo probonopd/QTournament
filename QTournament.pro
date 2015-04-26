@@ -75,7 +75,9 @@ HEADERS += \
     reports/MatchResultList_byGroup.h \
     reports/Standings.h \
     ElimCategory.h \
-    reports/InOutList.h
+    reports/InOutList.h \
+    ui/SeedingListWidget.h \
+    ui/DlgSeedingEditor.h
 
 SOURCES += \
     Category.cpp \
@@ -141,7 +143,9 @@ SOURCES += \
     reports/MatchResultList_byGroup.cpp \
     reports/Standings.cpp \
     ElimCategory.cpp \
-    reports/InOutList.cpp
+    reports/InOutList.cpp \
+    ui/SeedingListWidget.cpp \
+    ui/DlgSeedingEditor.cpp
 
 RESOURCES += \
     tournament.qrc
@@ -158,7 +162,8 @@ FORMS += \
     ui/PlayerTabWidget.ui \
     ui/TeamTabWidget.ui \
     ui/ScheduleTabWidget.ui \
-    ui/ReportsTabWidget.ui
+    ui/ReportsTabWidget.ui \
+    ui/DlgSeedingEditor.ui
 
 
 win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../DatabaseOverlayLib/release/ -lDatabaseOverlayLib

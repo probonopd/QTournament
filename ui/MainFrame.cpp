@@ -12,6 +12,7 @@
 #include <QMessageBox>
 #include <stdexcept>
 #include <QtCore/qnamespace.h>
+#include "ui/DlgSeedingEditor.h"
 
 using namespace QTournament;
 
@@ -301,6 +302,11 @@ void MainFrame::setupTestScenario(int scenarioID)
     // actually run the category
     e = cmngr->startCategory(ld, ppListList, initialRanking);  // "initialRanking" is reused from above
     assert(e == OK);
+
+    // temporary hack: show a DlgSeedingEditor for testing purposes
+    DlgSeedingEditor dlg{this};
+    dlg.initSeedingList(ld.getPlayerPairs());
+    dlg.exec();
   }
 
   // extend scenario 4 to already stage and schedule a few match groups

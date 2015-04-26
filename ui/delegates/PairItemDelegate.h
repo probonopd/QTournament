@@ -14,12 +14,13 @@
 class PairItemDelegate : public QStyledItemDelegate
 {
 public:
-  PairItemDelegate(QObject* parent = 0);
+  PairItemDelegate(QObject* parent = nullptr, bool _showListIndex = false);
   void paint (QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index ) const;
   QSize sizeHint (const QStyleOptionViewItem& option, const QModelIndex& index ) const;
   
 private:
   QFontMetrics fntMetrics;
+  bool showListIndex;
 } ;
 
 #endif	/* PAIRITEMDELEGATE_H */
