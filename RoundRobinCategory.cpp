@@ -315,6 +315,50 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
+  PlayerPairList RoundRobinCategory::getPlayerPairsForIntermediateSeeding() const
+  {
+    if (getState() != STAT_CAT_WAIT_FOR_INTERMEDIATE_SEEDING)
+    {
+      return PlayerPairList();
+    }
+
+    return getQualifiedPlayersAfterRoundRobin_sorted();
+  }
+
+//----------------------------------------------------------------------------
+
+  ERR RoundRobinCategory::resolveIntermediateSeeding(const PlayerPairList& seed, ProgressQueue* progressNotificationQueue) const
+  {
+    if (getState() != STAT_CAT_WAIT_FOR_INTERMEDIATE_SEEDING)
+    {
+      return CATEGORY_NEEDS_NO_SEEDING;
+    }
+
+    // make sure that the required player pairs and the
+    // provided player pairs are identical
+    PlayerPairList controlList = getPlayerPairsForIntermediateSeeding();
+    for (PlayerPair pp : seed)
+    {
+      if (!(controlList.contains(pp)))
+      {
+        return INVALID_SEEDING_LIST;
+      }
+      controlList.removeAll(pp);
+    }
+    if (!(controlList.isEmpty()))
+    {
+      return INVALID_SEEDING_LIST;
+    }
+
+    // okay, the list is valid. Now lets generate single-KO matches
+    // for the second phase of the tournament
+    KO_Config cfg = KO_Config(getParameter_string(GROUP_CONFIG));
+    int numGroupRounds = cfg.getNumRounds();
+    return generateBracketMatches(BracketGenerator::BRACKET_SINGLE_ELIM, seed, numGroupRounds+1, progressNotificationQueue);
+  }
+
+//----------------------------------------------------------------------------
+
   PlayerPairList RoundRobinCategory::getQualifiedPlayersAfterRoundRobin_sorted() const
   {
     // have we finished the round robin phase?
@@ -350,14 +394,15 @@ namespace QTournament
       }
     }
 
-    // the list entries for the first-ranked players is in reverse order, e.g.:
+    // the list entries for the first-ranked players are in reverse order, e.g.:
     // the first of group 8 is at index 0, the first of group 7 is at index 1, ...
     //
     // let's fix that (for cosmetic reasons)
-    if (cfg.getSecondSurvives())
-    {
-      std::reverse(result.begin(), result.begin() + cfg.getNumGroups() + 1);  // +1 because the last element is not included in the reversing operation
-    }
+    //std::reverse(result.begin(), result.begin() + cfg.getNumGroups() + 1);  // +1 because the last element is not included in the reversing operation
+    auto firstItem = std::begin(result);
+    auto lastItem = firstItem;
+    std::advance(lastItem, cfg.getNumGroups());
+    std::reverse(firstItem, lastItem);
 
     return result;
   }

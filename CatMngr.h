@@ -55,6 +55,7 @@ namespace QTournament
     bool switchCatToWaitForSeeding(const Category& cat);
     static std::function<bool (Category&, Category&)> getCategorySortFunction_byName();
     PlayerPairList getSeeding(const Category& c) const;
+    ERR continueWithIntermediateSeeding(const Category& c, const PlayerPairList& seeding, ProgressQueue* progressNotificationQueue=nullptr);
 
   signals:
     void playersPaired(const Category c, const Player& p1, const Player& p2);

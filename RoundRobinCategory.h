@@ -32,6 +32,8 @@ namespace QTournament
     virtual ERR onRoundCompleted(int round) override;
     virtual ERR prepareNextRound(PlayerPairList seeding, ProgressQueue* progressNotificationQueue=nullptr) override;
     virtual PlayerPairList getRemainingPlayersAfterRound(int round, ERR *err) const override;
+    virtual PlayerPairList getPlayerPairsForIntermediateSeeding() const override;
+    virtual ERR resolveIntermediateSeeding(const PlayerPairList& seed, ProgressQueue* progressNotificationQueue=nullptr) const override;
 
     PlayerPairList getQualifiedPlayersAfterRoundRobin_sorted() const;
 

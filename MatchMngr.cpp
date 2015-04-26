@@ -1435,6 +1435,7 @@ namespace QTournament {
 
     // query the highest used round number
     QString sql = "SELECT max(" + MG_ROUND + ") FROM " + TAB_MATCH_GROUP;
+    sql += " WHERE " + MG_CAT_REF + " = " + QString::number(cat.getId());
 
     QVariant result = db->execScalarQuery(sql);
     if ( (!(result.isValid())) || (result.isNull()))

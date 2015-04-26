@@ -84,6 +84,8 @@ namespace QTournament
     virtual std::function<bool (RankingEntry&, RankingEntry&)> getLessThanFunction()  { throw std::runtime_error("Unimplemented Method: getLessThanFunction"); };
     virtual ERR prepareNextRound(PlayerPairList seeding, ProgressQueue* progressNotificationQueue=nullptr) { throw std::runtime_error("Unimplemented Method: prepareNextRound"); };
     virtual PlayerPairList getRemainingPlayersAfterRound(int round, ERR *err) const { throw std::runtime_error("Unimplemented Method: getRemainingPlayersAfterRound"); };
+    virtual PlayerPairList getPlayerPairsForIntermediateSeeding() const { throw std::runtime_error("Unimplemented Method: getPlayerPairsForIntermediateSeeding"); };
+    virtual ERR resolveIntermediateSeeding(const PlayerPairList& seed, ProgressQueue* progressNotificationQueue=nullptr) const { throw std::runtime_error("Unimplemented Method: resolveIntermediateSeeding"); };
 
   private:
     Category (TournamentDB* db, int rowId);

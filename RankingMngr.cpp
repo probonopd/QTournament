@@ -201,7 +201,7 @@ namespace QTournament
       QString where = RA_CAT_REF + " = " + QString::number(cat.getId());
       where += " AND " + RA_ROUND + " = " + QString::number(round);
       where += " AND " + RA_GRP_NUM + " = " + QString::number(mg.getGroupNumber());
-      where += " ORDER BY " + RA_RANK + " ASC";
+      where += " ORDER BY " + RA_GRP_NUM + ", " + RA_RANK + " ASC";
 
       result.append(getObjectsByWhereClause<RankingEntry>(rankTab, where));
     }

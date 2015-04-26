@@ -925,6 +925,32 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
+  ERR CatMngr::continueWithIntermediateSeeding(const Category& c, const PlayerPairList& seeding, ProgressQueue* progressNotificationQueue)
+  {
+    if (c.getState() != STAT_CAT_WAIT_FOR_INTERMEDIATE_SEEDING)
+    {
+      return CATEGORY_NEEDS_NO_SEEDING;
+    }
+
+    auto specialCat = c.convertToSpecializedObject();
+    ERR e = specialCat->resolveIntermediateSeeding(seeding, progressNotificationQueue);
+
+    // indicate the completeness of the initialization to the queue, if necessary
+    if (progressNotificationQueue != nullptr)
+    {
+      progressNotificationQueue->push(-1);
+    }
+
+    if (e != OK) return e;
+
+    // if the previous calls succeeded, we are guaranteed to
+    // safely transit to IDLE and continue with new matches,
+    // if necessary
+    c.setState(STAT_CAT_IDLE);
+    emit categoryStatusChanged(c, STAT_CAT_WAIT_FOR_INTERMEDIATE_SEEDING, STAT_CAT_IDLE);
+
+    return OK;
+  }
 
 //----------------------------------------------------------------------------
 

@@ -224,6 +224,18 @@ void CatTabWidget::updateControls()
   ui.gbGroups->setEnabled(isEditEnabled);
   ui.gbSwiss->setEnabled(isEditEnabled);
   ui.gbRandom->setEnabled(isEditEnabled);
+
+  // change the label of the "run" button and enable or
+  // disable it
+  OBJ_STATE catState = selectedCat.getState();
+  if (catState == STAT_CAT_WAIT_FOR_INTERMEDIATE_SEEDING)
+  {
+    ui.btnRunCategory->setText("Continue");
+  } else {
+    ui.btnRunCategory->setText("Run");
+  }
+  bool enableRunButton = ((catState == STAT_CAT_CONFIG) || (catState == STAT_CAT_WAIT_FOR_INTERMEDIATE_SEEDING));
+  ui.btnRunCategory->setEnabled(enableRunButton);
 }
 
 //----------------------------------------------------------------------------
@@ -653,6 +665,14 @@ void CatTabWidget::onBtnRunCatClicked()
   if (!(ui.catTableView->hasCategorySelected())) return;
   
   unique_ptr<Category> selectedCat = ui.catTableView->getSelectedCategory().convertToSpecializedObject();
+
+  // branch here to another function if the button was pressed to
+  // continue a category that's waiting in state STAT_CAT_WAIT_FOR_INTERMEDIATE_SEEDING
+  if (selectedCat->getState() == STAT_CAT_WAIT_FOR_INTERMEDIATE_SEEDING)
+  {
+    handleIntermediateSeedingForSelectedCat();
+    return;
+  }
   
   ERR e = selectedCat->canFreezeConfig();
   if (e == CONFIG_ALREADY_FROZEN)
@@ -888,6 +908,85 @@ bool CatTabWidget::unfreezeAndCleanup(unique_ptr<Category> selectedCat)
 
   // clean-up and return
   return OK;
+}
+
+//----------------------------------------------------------------------------
+
+void CatTabWidget::handleIntermediateSeedingForSelectedCat()
+{
+  if (!(ui.catTableView->hasCategorySelected())) return;
+  unique_ptr<Category> selectedCat = ui.catTableView->getSelectedCategory().convertToSpecializedObject();
+  if (selectedCat == nullptr) return;
+
+  if (selectedCat->getState() != STAT_CAT_WAIT_FOR_INTERMEDIATE_SEEDING)
+  {
+    return;
+  }
+
+  PlayerPairList seedCandidates = selectedCat->getPlayerPairsForIntermediateSeeding();
+  if (seedCandidates.isEmpty()) return;
+
+  DlgSeedingEditor dlg;
+  dlg.initSeedingList(seedCandidates);
+  dlg.setModal(true);
+  int result = dlg.exec();
+
+  if (result != QDialog::Accepted)
+  {
+    return;
+  }
+
+  PlayerPairList seeding = dlg.getSeeding();
+  if (seeding.isEmpty())
+  {
+    QMessageBox::warning(this, tr("Intermediate Seeding"), tr("Can't read seeding.\nOperation cancelled."));
+    return;
+  }
+
+  /*
+   * If we made it to this point, we can generate matches for the next round(s)
+   *
+   * Since this operation might take some time, we display a progress dialog
+   * that is being updated through a queue from an external thread
+   */
+  ProgressQueue progQueue;
+  QProgressDialog dlgProg;
+  dlgProg.setLabelText(tr("Creating matches..."));
+  dlgProg.setMinimum(0);
+  dlgProg.setMaximum(100);
+  dlgProg.setWindowModality(Qt::WindowModal);
+  dlgProg.setMinimumDuration(0);
+  dlgProg.setValue(0);
+
+  promise<ERR> errPromise;
+  auto errFuture = errPromise.get_future();
+  std::thread th1 {
+    // the thread-function itself is only a lambda
+    [&]{
+      ERR e = Tournament::getCatMngr()->continueWithIntermediateSeeding(*selectedCat, seeding, &progQueue);
+      errPromise.set_value(e);
+    }
+  };
+  while (1)
+  {
+    // wait for at least one update
+    shared_ptr<int> newVal= progQueue.blockingPop();
+    assert(newVal != nullptr);
+
+    // empty the queue by reading all other updates, if available
+    //while (progQueue.hasData()) newVal = progQueue.blockingPop();
+
+    // update the progress bar with the last read value
+    if (*newVal < 0) break;
+    dlgProg.setValue(*newVal);
+  }
+  th1.join();
+  ERR e = errFuture.get();
+
+  if (e != OK)  // should never happen
+  {
+    throw runtime_error("Unexpected error when applying intermediate seeding");
+  }
 }
 
 //----------------------------------------------------------------------------
