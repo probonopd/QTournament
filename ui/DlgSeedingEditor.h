@@ -26,6 +26,7 @@ public slots:
   void onBtnShuffleClicked();
   void onShuffleModeChange();
   void onSelectionChanged();
+  PlayerPairList getSeeding();
 
 private slots:
   void onKeypressTimerElapsed();

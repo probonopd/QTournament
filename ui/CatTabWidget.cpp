@@ -16,6 +16,7 @@
 #include "CatTabWidget.h"
 #include "TournamentDataDefs.h"
 #include "dlgGroupAssignment.h"
+#include "DlgSeedingEditor.h"
 
 CatTabWidget::CatTabWidget()
 {
@@ -706,7 +707,7 @@ void CatTabWidget::onBtnRunCatClicked()
     }
 
     ppListList = dlg.getGroupAssignments();
-    if (ppListList.count() == 0)
+    if (ppListList.isEmpty())
     {
       QMessageBox::warning(this, tr("Run Category"), tr("Can't read group assignments.\nOperation cancelled."));
       unfreezeAndCleanup(std::move(selectedCat));
@@ -718,20 +719,24 @@ void CatTabWidget::onBtnRunCatClicked()
   PlayerPairList initialRanking;
   if (selectedCat->needsInitialRanking())
   {
-    // TODO: here fake an arbitrary seeding. This has to be fixed later with
-    // a real GUI dialog
-    PlayerPairList fakedSeeding = selectedCat->getPlayerPairs();
+    DlgSeedingEditor dlg;
+    dlg.initSeedingList(selectedCat->getPlayerPairs());
+    dlg.setModal(true);
+    int result = dlg.exec();
 
-    QString msg = tr("This category needs an initial seeded ranking. A GUI for that is not yet implemeted.");
-    msg += tr("\nInstead, a random seeding will be applied");
-    QMessageBox::StandardButton reply = QMessageBox::warning(this, tr("Run Category"), msg, QMessageBox::Ok | QMessageBox::Cancel);
-    if (reply != QMessageBox::Ok)
+    if (result != QDialog::Accepted)
     {
       unfreezeAndCleanup(std::move(selectedCat));
       return;
     }
 
-    initialRanking = fakedSeeding;
+    initialRanking = dlg.getSeeding();
+    if (initialRanking.isEmpty())
+    {
+      QMessageBox::warning(this, tr("Run Category"), tr("Can't read seeding.\nOperation cancelled."));
+      unfreezeAndCleanup(std::move(selectedCat));
+      return;
+    }
   }
 
   /*

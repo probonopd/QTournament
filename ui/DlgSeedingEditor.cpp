@@ -90,6 +90,11 @@ void DlgSeedingEditor::onSelectionChanged()
   updateButtons();
 }
 
+PlayerPairList DlgSeedingEditor::getSeeding()
+{
+  return ui->lwSeeding->getSeedList();
+}
+
 //----------------------------------------------------------------------------
 
 void DlgSeedingEditor::onKeypressTimerElapsed()
