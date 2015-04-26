@@ -98,7 +98,7 @@
             </sizepolicy>
            </property>
            <property name="title">
-            <string>Shuffle Settings</string>
+            <string>Shuffle players</string>
            </property>
            <property name="flat">
             <bool>false</bool>
