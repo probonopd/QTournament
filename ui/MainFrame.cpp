@@ -115,7 +115,31 @@ void MainFrame::newTournament()
 
 void MainFrame::openTournament()
 {
-  enableControls(false);
+  // ask for the file name
+  QFileDialog fDlg{this};
+  fDlg.setAcceptMode(QFileDialog::AcceptOpen);
+  fDlg.setFileMode(QFileDialog::ExistingFile);
+  fDlg.setNameFilter(tr("QTournament Files (*.tdb)"));
+  int result = fDlg.exec();
+
+  if (result != QDialog::Accepted)
+  {
+    return;
+  }
+
+  // close other possibly open tournaments
+  if (tnmt != nullptr)
+  {
+    closeCurrentTournament();
+  }
+
+  // get the filename
+  QString filename = fDlg.selectedFiles().at(0);
+
+  // open the tournament
+  tnmt = new Tournament(filename);
+  emit tournamentOpened(tnmt);
+  enableControls(true);
 }
 
 //----------------------------------------------------------------------------
