@@ -91,23 +91,23 @@ void MainFrame::newTournament()
   QString filename = fDlg.selectedFiles().at(0);
   QString ext = filename.right(4).toLower();
   if (ext != ".tdb") filename += ".tdb";
-  QMessageBox::information(this, "Using:", filename);
 
   // if the file exists, delete it.
   // the user has consented to the deletion in the
   // dialog
-  QFile f{filename};
-  if (f.exists())
+  if (QFile::exists(filename))
   {
-    bool removeResult = f.remove();
+    bool removeResult =  QFile::remove(filename);
+
     if (!removeResult)
     {
       QMessageBox::warning(this, tr("New tournament"), tr("Could not delete ") + filename + tr(", no new tournament created."));
+      return;
     }
   }
 
   tnmt = new Tournament(filename, *settings);
-
+  emit tournamentOpened(tnmt);
   enableControls(true);
 }
 
