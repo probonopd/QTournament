@@ -174,13 +174,6 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  ERR EliminationCategory::prepareNextRound(PlayerPairList seeding, ProgressQueue* progressNotificationQueue)
-  {
-    return NOTHING_TO_PREPARE;
-  }
-
-//----------------------------------------------------------------------------
-
   PlayerPairList EliminationCategory::getRemainingPlayersAfterRound(int round, ERR* err) const
   {
     if (round == calcTotalRoundsCount())

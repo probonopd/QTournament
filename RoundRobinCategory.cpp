@@ -246,48 +246,6 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  ERR RoundRobinCategory::prepareNextRound(PlayerPairList seeding, ProgressQueue* progressNotificationQueue)
-  {
-    if (getState() != STAT_CAT_WAIT_FOR_INTERMEDIATE_SEEDING)
-    {
-      return NOTHING_TO_PREPARE;
-    }
-
-    // we must be between the last round robin round and the first KO round;
-    // no rounds may currently be running
-    CatRoundStatus crs = getRoundStatus();
-    KO_Config cfg = KO_Config(getParameter_string(GROUP_CONFIG));
-    int groupRounds = cfg.getNumRounds();
-    if (crs.getFinishedRoundsCount() != groupRounds)
-    {
-      return INVALID_ROUND;
-    }
-    if (!(crs.getCurrentlyRunningRoundNumbers().isEmpty()))
-    {
-      return INVALID_ROUND;
-    }
-
-    // get the list of player pairs that are qualified for the KO phase
-    PlayerPairList qualifiedPlayers = getQualifiedPlayersAfterRoundRobin_sorted();
-    assert(qualifiedPlayers.size() > 0);   // this MUST be true, otherwise something went terribly wrong
-
-    // make sure the provided seeding list and the list of qualified players
-    // is identical
-    if (seeding.size() != qualifiedPlayers.size())
-    {
-      return INVALID_SEEDING_LIST;
-    }
-    for (PlayerPair pp : qualifiedPlayers)
-    {
-      if (!(seeding.contains(pp))) return INVALID_SEEDING_LIST;
-    }
-
-    // great, we can actually go ahead and create KO matches based on the seeding list
-    return generateBracketMatches(BracketGenerator::BRACKET_SINGLE_ELIM, seeding, 42, progressNotificationQueue);
-  }
-
-//----------------------------------------------------------------------------
-
   PlayerPairList RoundRobinCategory::getRemainingPlayersAfterRound(int round, ERR* err) const
   {
     // we can only determine remaining players after completed rounds
