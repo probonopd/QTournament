@@ -774,6 +774,50 @@ namespace QTournament
     BracketGenerator gen{bracketMode};
     BracketMatchDataList bmdl = gen.getBracketMatches(seeding.size());
 
+    //
+    // handle a special corner case here:
+    //
+    // If we are
+    //   * in KO matches after round robins; and
+    //   * we are configured to start directly with the finals; and
+    //   * the second of each group qualifies
+    //
+    // then we have four initial players that DO NOT need a
+    // semi final. The normal behavior of the BracketGenerator for
+    // four players is to generate semi-finals and finals. But in this
+    // special case, we only need the finals ("real" final and the
+    // match for third place).
+    //
+    // So if the conditions above are fulfilled, we regenerate a
+    // new set of matches. This is not very elegant (since it should
+    // be solved in the BracketGenerator) but efficient...
+    //
+    if (getMatchSystem() == GROUPS_WITH_KO)
+    {
+      KO_Config cfg = KO_Config(getParameter_string(GROUP_CONFIG));
+      if ((cfg.getStartLevel() == FINAL) && (cfg.getSecondSurvives()))
+      {
+        // we start with finals, which is simply "first vs. second"
+        BracketMatchData final;
+        final.setInitialRanks(1, 2);
+        final.nextMatchForLoser = -2;
+        final.nextMatchForWinner = -1;
+        final.depthInBracket = 0;
+
+        // match for third place
+        BracketMatchData thirdPlaceMatch;
+        thirdPlaceMatch.setInitialRanks(3, 4);
+        thirdPlaceMatch.nextMatchForLoser = -4;
+        thirdPlaceMatch.nextMatchForWinner = -3;
+        thirdPlaceMatch.depthInBracket = 0;
+
+        // replace all previously generated matches with these two
+        bmdl.clear();
+        bmdl.push_back(final);
+        bmdl.push_back(thirdPlaceMatch);
+      }
+    }
+
     // prepare the notification queue, if any
     if (progressNotificationQueue != nullptr)
     {

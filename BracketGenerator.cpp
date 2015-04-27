@@ -113,6 +113,7 @@ namespace QTournament
         {
           newBracketMatch1->setNextMatchForLoser(*thirdPlaceMatch, 1);
           newBracketMatch2->setNextMatchForLoser(*thirdPlaceMatch, 2);
+          result.push_back(std::move(thirdPlaceMatch));
         }
 
         result.push_back(std::move(newBracketMatch1));
@@ -120,9 +121,6 @@ namespace QTournament
         ++cnt;
       }
     }
-
-    // if we have more that two players, we want to play for the third place
-    if (numPlayers > 2) result.push_back(std::move(thirdPlaceMatch));
 
     removeUnusedMatches(result, numPlayers);
 

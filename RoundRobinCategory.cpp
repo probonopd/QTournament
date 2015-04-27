@@ -176,12 +176,13 @@ namespace QTournament
     KO_Config cfg = KO_Config(getParameter_string(GROUP_CONFIG));
     int groupRounds = cfg.getNumRounds();
 
+    RankingMngr* rm = Tournament::getRankingMngr();
+    ERR err;
+
     // if we are still in group rounds, simply calculate the
     // new ranking
     if (round <= groupRounds)
     {
-      RankingMngr* rm = Tournament::getRankingMngr();
-      ERR err;
       rm->createUnsortedRankingEntriesForLastRound(*this, &err);
       if (err != OK) return err;  // shouldn't happen
       rm->sortRankingEntriesForLastRound(*this, &err);
@@ -196,7 +197,50 @@ namespace QTournament
       Tournament::getCatMngr()->switchCatToWaitForSeeding(*this);
     }
 
-    // TODO: add action for KO rounds
+    // Actions for KO rounds
+    if (round > groupRounds)
+    {
+      // create ranking entries for everyone who played.
+      // this is only to get the accumulated values for the finalists right
+      PlayerPairList ppList;
+      ppList = this->getRemainingPlayersAfterRound(round - 1, &err);
+      if (err != OK) return err;
+      rm->createUnsortedRankingEntriesForLastRound(*this, &err, ppList);
+      if (err != OK) return err;
+
+      // there's nothing to do for us except after the last round.
+      // after the last roound, we have to create final ranking entries
+      CatRoundStatus crs = getRoundStatus();
+      int lastFinishedRound = crs.getFinishedRoundsCount();
+      if (lastFinishedRound != calcTotalRoundsCount())
+      {
+        return OK;
+      }
+
+      // set the ranks for the winner / losers of the finals
+      MatchMngr* mm = Tournament::getMatchMngr();
+      for (MatchGroup mg : mm->getMatchGroupsForCat(*this, lastFinishedRound))
+      {
+        for (Match ma : mg.getMatches())
+        {
+          auto winner = ma.getWinner();
+          assert(winner != nullptr);
+          auto re = rm->getRankingEntry(*winner, lastFinishedRound);
+          assert(re != nullptr);
+          int winnerRank = ma.getWinnerRank();
+          assert(winnerRank > 0);
+          rm->forceRank(*re, winnerRank);
+
+          auto loser = ma.getLoser();
+          assert(loser != nullptr);
+          re = rm->getRankingEntry(*loser, lastFinishedRound);
+          assert(re != nullptr);
+          int loserRank = ma.getLoserRank();
+          assert(loserRank > 0);
+          rm->forceRank(*re, loserRank);
+        }
+      }
+    }
     return OK;
   }
 
@@ -293,6 +337,14 @@ namespace QTournament
 
       // get the match losers of this round
       // and remove them from the list of the previous round
+      //
+      // exception: losers in semi-finals will continue in the
+      // match for 3rd place
+      if (round == (calcTotalRoundsCount() - 1))  // semi-finals
+      {
+        if (err != nullptr) *err = OK;
+        return result;
+      }
       MatchMngr* mm = Tournament::getMatchMngr();
       for (MatchGroup mg : mm->getMatchGroupsForCat(*this, round))
       {

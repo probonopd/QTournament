@@ -149,6 +149,34 @@ namespace QTournament
         lostPoints += get<1>(pointStat);
       }
 
+      // determine the match group number for this entry
+      int grpNum;
+      if (ma != nullptr)
+      {
+        // easiest and most likely case
+        grpNum = ma->getMatchGroup().getGroupNumber();
+      } else {
+        // hmmmm, we need to determine the group number of a
+        // playerPair that haven't played in this round
+
+        // case 1:
+        // we are in some sort of round-robin round with
+        // multiple match groups. In this case, the group
+        // number can be derived directly from the PlayerPair
+        MatchMngr* mm = Tournament::getMatchMngr();
+        if (mm->getMatchGroupsForCat(cat, lastRound).size() > 1)
+        {
+          grpNum = pp.getPairsGroupNum(db);
+        }
+
+        // case 2:
+        // we are either in a round-robin phase with only
+        // one group or in a KO-round or similar. So we have
+        // only one match group. Thus, we can derive the
+        // group number from the match group
+        grpNum = mm->getMatchGroupsForCat(cat, lastRound).at(0).getGroupNumber();
+      }
+
       // prep the complete data set for the entry,
       // but leave the "rank" column empty
       QVariantList qvl;
@@ -162,7 +190,7 @@ namespace QTournament
       qvl << RA_PAIR_REF << pp.getPairId();
       qvl << RA_ROUND << lastRound;
       qvl << RA_CAT_REF << cat.getId();  // eases searching, but is redundant information
-      qvl << RA_GRP_NUM << pp.getPairsGroupNum(db); // eases searching, but is redundant information
+      qvl << RA_GRP_NUM << grpNum; // eases searching, but is redundant information
 
       // create the new entry and add an instance
       // of the entry to the result list
