@@ -72,7 +72,7 @@ Tournament::Tournament(const QString& fName, const TournamentSettings& cfg)
 /**
  * Constructor for an existing tournament file
  * 
- * @param fName name of the file to create; the file may not exist
+ * @param fName name of the file to create; the file must exist
  */
 Tournament::Tournament(const QString& fName)
 {

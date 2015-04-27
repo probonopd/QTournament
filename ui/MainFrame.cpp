@@ -5,14 +5,14 @@
  * Created on February 16, 2014, 5:16 PM
  */
 
-#include "MainFrame.h"
-
-#include "Tournament.h"
-
-#include <QMessageBox>
 #include <stdexcept>
-#include <QtCore/qnamespace.h>
-#include "ui/DlgSeedingEditor.h"
+#include <QMessageBox>
+#include <QFileDialog>
+#include <QFile>
+
+#include "MainFrame.h"
+#include "Tournament.h"
+#include "ui/DlgTournamentSettings.h"
 
 using namespace QTournament;
 
@@ -52,6 +52,62 @@ MainFrame::~MainFrame()
 
 void MainFrame::newTournament()
 {
+  // show a dialog for setting the tournament parameters
+  DlgTournamentSettings dlg{this};
+  dlg.setModal(true);
+  int result = dlg.exec();
+
+  if (result != QDialog::Accepted)
+  {
+    return;
+  }
+
+  // make sure we get the settings from the dialog
+  auto settings = dlg.getTournamentSettings();
+  if (settings == nullptr)
+  {
+    QMessageBox::warning(this, tr("New tournament"), tr("Something went wrong; no new tournament created."));
+    return;
+  }
+
+  // ask for the file name
+  QFileDialog fDlg{this};
+  fDlg.setAcceptMode(QFileDialog::AcceptSave);
+  fDlg.setNameFilter(tr("QTournament Files (*.tdb)"));
+  result = fDlg.exec();
+
+  if (result != QDialog::Accepted)
+  {
+    return;
+  }
+
+  // close other possibly open tournaments
+  if (tnmt != nullptr)
+  {
+    closeCurrentTournament();
+  }
+
+  // get the filename and fix the extension, if necessary
+  QString filename = fDlg.selectedFiles().at(0);
+  QString ext = filename.right(4).toLower();
+  if (ext != ".tdb") filename += ".tdb";
+  QMessageBox::information(this, "Using:", filename);
+
+  // if the file exists, delete it.
+  // the user has consented to the deletion in the
+  // dialog
+  QFile f{filename};
+  if (f.exists())
+  {
+    bool removeResult = f.remove();
+    if (!removeResult)
+    {
+      QMessageBox::warning(this, tr("New tournament"), tr("Could not delete ") + filename + tr(", no new tournament created."));
+    }
+  }
+
+  tnmt = new Tournament(filename, *settings);
+
   enableControls(true);
 }
 
