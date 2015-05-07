@@ -4,6 +4,7 @@
 #include "ui_ScheduleTabWidget.h"
 #include "GuiHelpers.h"
 #include "Score.h"
+#include "ui/DlgMatchResult.h"
 
 ScheduleTabWidget::ScheduleTabWidget(QWidget *parent) :
     QDialog(parent),
@@ -239,6 +240,10 @@ void ScheduleTabWidget::askAndStoreMatchResult(const Match &ma)
   {
     return;
   }
+
+  DlgMatchResult dlg(this, ma);
+  dlg.setModal(true);
+  dlg.exec();
 
   //
   // TODO: replace with a real user interaction!

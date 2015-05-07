@@ -1108,6 +1108,73 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
+  int Category::getMaxNumGamesInRound(int round) const
+  {
+    //
+    // TODO: the basic number of winGames needs to become
+    // a category parameter
+    //
+    int numWinGames = 2;
+
+    // calculate the results for both cases, draw or no draw
+    int resultWithDraw = 2 * (numWinGames - 1);
+    int resultNoDraw = 2 * numWinGames - 1;
+
+
+    // is a draw basically allowed?
+    bool isDrawAllowed = getParameter_bool(ALLOW_DRAW);
+    if (!isDrawAllowed)
+    {
+      return resultNoDraw;
+    }
+
+
+    //
+    // everything below this point can only be reached if the
+    // "ALLOW_DRAW" parameter is true
+    //
+
+
+    // in any kind of "bracket match", draws are not possible.
+    // So we need to have a "decision game", if necessary
+    MATCH_SYSTEM ms = getMatchSystem();
+    if ((ms == RANKING) || (ms == SINGLE_ELIM))
+    {
+      return resultNoDraw;
+    }
+
+    // in swiss ladder or random matches, draws are okay
+    if ((ms == SWISS_LADDER) || (ms == RANDOMIZE))
+    {
+      return resultWithDraw;
+    }
+
+    // in round-robins with subsequent KO matches, it depends on the round
+    // we're in
+    if (ms == GROUPS_WITH_KO)
+    {
+      // invalid parameter
+      if (round < 1) return -1;
+
+      KO_Config cfg = KO_Config(getParameter_string(GROUP_CONFIG));
+      if (round <= cfg.getNumRounds())
+      {
+        // if draw is allowed and we're still in the round-robin phase,
+        // a draw is possible
+        return resultWithDraw;
+      }
+
+      // in the KO-phase, draw is not possible, regardless of the
+      // category setting
+      return resultNoDraw;
+    }
+
+    // default value, should never be reached
+    return resultNoDraw;
+  }
+
+  //----------------------------------------------------------------------------
+
 
   //----------------------------------------------------------------------------
 

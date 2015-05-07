@@ -78,7 +78,9 @@ HEADERS += \
     reports/InOutList.h \
     ui/SeedingListWidget.h \
     ui/DlgSeedingEditor.h \
-    ui/DlgTournamentSettings.h
+    ui/DlgTournamentSettings.h \
+    ui/GameResultWidget.h \
+    ui/DlgMatchResult.h
 
 SOURCES += \
     Category.cpp \
@@ -147,7 +149,9 @@ SOURCES += \
     reports/InOutList.cpp \
     ui/SeedingListWidget.cpp \
     ui/DlgSeedingEditor.cpp \
-    ui/DlgTournamentSettings.cpp
+    ui/DlgTournamentSettings.cpp \
+    ui/GameResultWidget.cpp \
+    ui/DlgMatchResult.cpp
 
 RESOURCES += \
     tournament.qrc
@@ -166,7 +170,9 @@ FORMS += \
     ui/ScheduleTabWidget.ui \
     ui/ReportsTabWidget.ui \
     ui/DlgSeedingEditor.ui \
-    ui/DlgTournamentSettings.ui
+    ui/DlgTournamentSettings.ui \
+    ui/GameResultWidget.ui \
+    ui/DlgMatchResult.ui
 
 
 win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../DatabaseOverlayLib/release/ -lDatabaseOverlayLib
