@@ -241,25 +241,16 @@ void ScheduleTabWidget::askAndStoreMatchResult(const Match &ma)
     return;
   }
 
+  // ask the user for the match result
   DlgMatchResult dlg(this, ma);
   dlg.setModal(true);
-  dlg.exec();
-
-  //
-  // TODO: replace with a real user interaction!
-  //
-  // For now, we simply assign a random result
-  //
-
-  // determine the random match result
-  int numWinGames = 2;  // TODO: this needs to become a category parameter
-  bool isDrawAllowed = ma.getCategory().getParameter_bool(ALLOW_DRAW);
-  auto matchResult = MatchScore::genRandomScore(numWinGames, isDrawAllowed);
-
-  //
-  // everything from here can remain as it is
-  //
-
+  int dlgResult = dlg.exec();
+  if (dlgResult != QDialog::Accepted)
+  {
+    return;
+  }
+  auto matchResult = dlg.getMatchScore();
+  assert(matchResult != nullptr);
 
   // create a (rather ugly) confirmation message box
   QString msg = tr("Please confirm:\n\n");
