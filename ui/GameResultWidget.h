@@ -27,6 +27,7 @@ public:
   void setGameNumber(int n);
   bool hasValidScore() const;
   unique_ptr<GameScore> getScore() const;
+  void setScore(const GameScore& sc);
 
 private slots:
   void onScoreSelectionChanged();

@@ -54,6 +54,19 @@ unique_ptr<GameScore> GameResultWidget::getScore() const
 
 //----------------------------------------------------------------------------
 
+void GameResultWidget::setScore(const GameScore& sc)
+{
+  int sc1 = get<0>(sc.getScore());
+  int sc2 = get<1>(sc.getScore());
+
+  int newIndex = ui->cbPlayer1Score->findText(QString::number(sc1));
+  ui->cbPlayer1Score->setCurrentIndex(newIndex);
+  newIndex = ui->cbPlayer1Score->findText(QString::number(sc2));
+  ui->cbPlayer2Score->setCurrentIndex(newIndex);
+}
+
+//----------------------------------------------------------------------------
+
 void GameResultWidget::onScoreSelectionChanged()
 {
   QComboBox* sender = (QComboBox*) QObject::sender();

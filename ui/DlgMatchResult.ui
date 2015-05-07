@@ -218,4 +218,7 @@
    </hints>
   </connection>
  </connections>
+ <slots>
+  <slot>onRandomResultTriggered()</slot>
+ </slots>
 </ui>

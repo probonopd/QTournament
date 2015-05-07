@@ -4,6 +4,7 @@
 #include <memory>
 
 #include <QDialog>
+#include <QShortcut>
 
 #include "Match.h"
 #include "Score.h"
@@ -26,6 +27,7 @@ public:
 
 private slots:
   void onGameScoreSelectionChanged();
+  void onRandomResultTriggered();
 
 private:
   Ui::DlgMatchResult *ui;
@@ -33,6 +35,7 @@ private:
   void updateControls();
   bool isGame3Necessary() const;
   bool hasValidResult() const;
+  QShortcut* shortcutRandomResult;
 };
 
 #endif // DLGMATCHRESULT_H

@@ -1,3 +1,5 @@
+#include <QMessageBox>
+
 #include "DlgMatchResult.h"
 #include "ui_DlgMatchResult.h"
 #include "Match.h"
@@ -19,7 +21,7 @@ DlgMatchResult::DlgMatchResult(QWidget *parent, const Match& _ma) :
   ui->game1Widget->setGameNumber(1);
   ui->game2Widget->setGameNumber(2);
   ui->game3Widget->setGameNumber(3);
-  ui->laMatchNum->setText(tr("Match Number:") + QString::number(ma.getMatchNumber()));
+  ui->laMatchNum->setText(tr("Match Number: ") + QString::number(ma.getMatchNumber()));
   ui->laCatName->setText(ma.getCategory().getName());
 
   QString p1 = ma.getPlayerPair1().getDisplayName();
@@ -34,6 +36,10 @@ DlgMatchResult::DlgMatchResult(QWidget *parent, const Match& _ma) :
   ui->laLoserName->setStyleSheet("QLabel { color : red; }");
   ui->laDraw->setStyleSheet("QLabel { color : blue; }");
 
+  // create a keyboard shortcut for setting a random result
+  shortcutRandomResult = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_R), this, SLOT(onRandomResultTriggered()));
+
+  // initialize buttons, label visibility etc.
   updateControls();
 }
 
@@ -42,6 +48,7 @@ DlgMatchResult::DlgMatchResult(QWidget *parent, const Match& _ma) :
 DlgMatchResult::~DlgMatchResult()
 {
   delete ui;
+  delete shortcutRandomResult;
 }
 
 //----------------------------------------------------------------------------
@@ -68,6 +75,32 @@ unique_ptr<MatchScore> DlgMatchResult::getMatchScore() const
 
 void DlgMatchResult::onGameScoreSelectionChanged()
 {
+  updateControls();
+}
+
+//----------------------------------------------------------------------------
+
+void DlgMatchResult::onRandomResultTriggered()
+{
+  // is a draw possible?
+  //
+  // TODO: the number of two won games for a victory is hardcoded here!
+  int round = ma.getMatchGroup().getRound();
+  bool isDrawPossible = (ma.getCategory().getMaxNumGamesInRound(round) == 2);
+
+  // generate a random match score
+  //
+  // TODO: "2" win games hardcoded again
+  auto randomResult = MatchScore::genRandomScore(2, isDrawPossible);
+  assert(randomResult != nullptr);
+
+  ui->game1Widget->setScore(*(randomResult->getGame(0)));
+  ui->game2Widget->setScore(*(randomResult->getGame(1)));
+  if (randomResult->getNumGames() > 2)
+  {
+    ui->game3Widget->setScore(*(randomResult->getGame(2)));
+  }
+
   updateControls();
 }
 
