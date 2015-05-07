@@ -21,8 +21,13 @@ DlgMatchResult::DlgMatchResult(QWidget *parent, const Match& _ma) :
   ui->game3Widget->setGameNumber(3);
   ui->laMatchNum->setText(tr("Match Number:") + QString::number(ma.getMatchNumber()));
   ui->laCatName->setText(ma.getCategory().getName());
-  ui->laPlayer1Name->setText(ma.getPlayerPair1().getDisplayName());
-  ui->laPlayer2Name->setText(ma.getPlayerPair2().getDisplayName());
+
+  QString p1 = ma.getPlayerPair1().getDisplayName();
+  p1.replace(" / ", " /\n");
+  QString p2 = ma.getPlayerPair2().getDisplayName();
+  p2.replace(" / ", " /\n");
+  ui->laPlayer1Name->setText(p1);
+  ui->laPlayer2Name->setText(p2);
 
   // set the colors of the winner, loser and draw labels
   ui->laWinnerName->setStyleSheet("QLabel { color : green; }");
