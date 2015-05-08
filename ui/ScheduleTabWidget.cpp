@@ -289,6 +289,61 @@ void ScheduleTabWidget::askAndStoreMatchResult(const Match &ma)
   // actually store the data and update the internal object states
   MatchMngr* mm = Tournament::getMatchMngr();
   mm->setMatchScoreAndFinalizeMatch(ma, *matchResult);
+
+  // ask the user if the next available match should be started on the
+  // now free court
+  //
+  // first of all, check if there is a next match available
+  int nextMatchId;
+  int nextCourtId;
+  ERR e = mm->getNextViableMatchCourtPair(&nextMatchId, &nextCourtId, true);
+  if ((e == NO_MATCH_AVAIL) || (nextMatchId < 1))
+  {
+    return;
+  }
+
+  // now ask if the match should be started
+  confirm = QMessageBox::question(this, tr("Next Match"), tr("Start the next available match on the free court?"));
+  if (confirm != QMessageBox::Yes) return;
+
+  // instead of the court determined by getNextViableMatchCourtPair we use
+  // the court of the previous match
+  auto oldCourt = ma.getCourt();
+  assert(oldCourt != nullptr);
+
+  // can we assign the next match to the old court?
+  auto nextMatch = mm->getMatch(nextMatchId);
+  assert(nextMatch != nullptr);
+  e = mm->canAssignMatchToCourt(*nextMatch, *oldCourt);
+  if (e != OK)
+  {
+    QString msg = tr("The match cannot be started on this court. Please start the next match manually.");
+    QMessageBox::critical(this, tr("Next Match"), msg);
+    return;
+  }
+
+  // ok, we're all set. Call the match
+  //
+  // TODO: this is redundant code
+  QString call = GuiHelpers::prepCall(*nextMatch, *oldCourt);
+  int result = QMessageBox::question(this, tr("Assign match to court"), call);
+
+  if (result == QMessageBox::Yes)
+  {
+    // after all the checks before, the following call
+    // should always yield "ok"
+    e = mm->assignMatchToCourt(*nextMatch, *oldCourt);
+    if (e != OK)
+    {
+      QString msg = tr("An unexpected error occured.\n");
+      msg += tr("Sorry, this shouldn't happen.\n");
+      msg += tr("The match cannot be started.");
+      QMessageBox::critical(this, tr("Assign match to court"), msg);
+    }
+    ui->tvMatches->updateSelectionAfterDataChange();
+    return;
+  }
+  QMessageBox::information(this, tr("Assign match to court"), tr("Call cancled, match not started"));
 }
 
 //----------------------------------------------------------------------------
