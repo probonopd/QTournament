@@ -130,7 +130,7 @@ void GuiHelpers::execWalkover(const QTournament::Match& ma, int playerNum)
   {
     msg += ma.getPlayerPair1().getDisplayName();
   } else {
-    msg += ma.getPlayerPair1().getDisplayName();
+    msg += ma.getPlayerPair2().getDisplayName();
   }
   msg += "\n\n";
   msg += tr("All games will be 21:0.") + "\n\n";

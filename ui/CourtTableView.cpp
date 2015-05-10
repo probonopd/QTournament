@@ -9,6 +9,7 @@
 #include "CourtTableView.h"
 #include "MainFrame.h"
 #include "CourtMngr.h"
+#include "ui/GuiHelpers.h"
 
 CourtTableView::CourtTableView(QWidget* parent)
   :QTableView(parent)
@@ -89,7 +90,7 @@ void CourtTableView::onTournamentClosed()
 
 //----------------------------------------------------------------------------
 
-unique_ptr<Court> CourtTableView::getSelectedCourt()
+unique_ptr<Court> CourtTableView::getSelectedCourt() const
 {
   // make sure we have non-empty model
   auto mod = model();
@@ -106,6 +107,16 @@ unique_ptr<Court> CourtTableView::getSelectedCourt()
   // return the selected item
   int selectedSourceRow = sortedModel->mapToSource(indexes.at(0)).row();
   return Tournament::getCourtMngr()->getCourtBySeqNum(selectedSourceRow);
+}
+
+//----------------------------------------------------------------------------
+
+unique_ptr<Match> CourtTableView::getSelectedMatch() const
+{
+  auto co = getSelectedCourt();
+  if (co == nullptr) return nullptr;
+
+  return co->getMatch();
 }
 
 //----------------------------------------------------------------------------
@@ -129,28 +140,62 @@ void CourtTableView::onSelectionChanged(const QItemSelection& selectedItem, cons
 void CourtTableView::initContextMenu()
 {
   // prepare all actions
-  actWalkover = new QAction(tr("Walkover"), this);
   actAddCourt = new QAction(tr("Add court"), this);
   actUndoCall = new QAction(tr("Undo call"), this);
   actFinishMatch = new QAction(tr("Finish match"), this);
 
+  // create sub-actions for the walkover-selection
+  actWalkoverP1 = new QAction("P1", this);  // this is just a dummy
+  actWalkoverP2 = new QAction("P2", this);  // this is just a dummy
+
   // link actions to slots
   connect(actAddCourt, SIGNAL(triggered()), this, SLOT(onActionAddCourtTriggered()));
+  connect(actWalkoverP1, SIGNAL(triggered(bool)), this, SLOT(onWalkoverP1Triggered()));
+  connect(actWalkoverP2, SIGNAL(triggered(bool)), this, SLOT(onWalkoverP2Triggered()));
 
   // create the context menu and connect it to the actions
   contextMenu = unique_ptr<QMenu>(new QMenu());
   contextMenu->addAction(actFinishMatch);
-  contextMenu->addAction(actWalkover);
+  walkoverSelectionMenu = contextMenu->addMenu(tr("Walkover for..."));
+  walkoverSelectionMenu->addAction(actWalkoverP1);
+  walkoverSelectionMenu->addAction(actWalkoverP2);
   contextMenu->addAction(actUndoCall);
   contextMenu->addSeparator();
   contextMenu->addAction(actAddCourt);
+
+  updateContextMenu(false);
 }
 
 //----------------------------------------------------------------------------
 
-void CourtTableView::updateContextMenu()
+void CourtTableView::updateContextMenu(bool isRowClicked)
 {
+  // disable / enable actions that depend on a selected match
+  auto ma = getSelectedMatch();
+  bool isMatchClicked = (isRowClicked && (ma != nullptr));
+  actUndoCall->setEnabled(isMatchClicked);
+  walkoverSelectionMenu->setEnabled(isMatchClicked);
+  actFinishMatch->setEnabled(isMatchClicked);
 
+  // enable / disable actions that depend on a selected row
+  actAddCourt->setEnabled(!isRowClicked);
+
+  // update the player pair names for the walkover menu
+  if (ma != nullptr)
+  {
+    actWalkoverP1->setText(ma->getPlayerPair1().getDisplayName());
+    actWalkoverP2->setText(ma->getPlayerPair2().getDisplayName());
+  }
+}
+
+//----------------------------------------------------------------------------
+
+void CourtTableView::execWalkover(int playerNum) const
+{
+  auto ma = getSelectedMatch();
+  if (ma == nullptr) return;
+  if ((playerNum != 1) && (playerNum != 2)) return; // shouldn't happen
+  GuiHelpers::execWalkover(*ma, playerNum);
 }
 
 //----------------------------------------------------------------------------
@@ -167,17 +212,7 @@ void CourtTableView::onContextMenuRequested(const QPoint& pos)
   // add a court. If a row is under the cursor, we may
   // do everything except for adding courts
   bool isRowClicked = (clickedRow >= 0);
-  bool hasMatch = false;
-  auto co = getSelectedCourt();
-  if (co != nullptr)
-  {
-    auto ma = co->getMatch();
-    hasMatch = (ma != nullptr);
-  }
-  actAddCourt->setEnabled(!isRowClicked);
-  actFinishMatch->setEnabled(hasMatch && isRowClicked);
-  actWalkover->setEnabled(hasMatch && isRowClicked);
-  actUndoCall->setEnabled(hasMatch && isRowClicked);
+  updateContextMenu(isRowClicked);
 
   // show the context menu; actions are triggered
   // by the menu itself and we do not need to take
@@ -201,6 +236,20 @@ void CourtTableView::onActionAddCourtTriggered()
     QMessageBox::warning(this, tr("Add court"),
                          tr("Something went wrong, error code = ") + QString::number(static_cast<int>(err)));
   }
+}
+
+//----------------------------------------------------------------------------
+
+void CourtTableView::onWalkoverP1Triggered()
+{
+  execWalkover(1);
+}
+
+//----------------------------------------------------------------------------
+
+void CourtTableView::onWalkoverP2Triggered()
+{
+  execWalkover(2);
 }
 
 //----------------------------------------------------------------------------

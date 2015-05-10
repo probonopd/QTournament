@@ -15,6 +15,7 @@
 
 #include "Tournament.h"
 #include "delegates/CourtItemDelegate.h"
+#include "Match.h"
 
 using namespace QTournament;
 
@@ -27,8 +28,9 @@ public:
 
   CourtTableView (QWidget* parent);
   virtual ~CourtTableView ();
-  unique_ptr<Court> getSelectedCourt();
-  
+  unique_ptr<Court> getSelectedCourt() const;
+  unique_ptr<Match> getSelectedMatch() const;
+
 public slots:
   void onTournamentClosed();
   void onTournamentOpened(Tournament* tnmt);
@@ -37,6 +39,8 @@ private slots:
   void onSelectionChanged(const QItemSelection&selectedItem, const QItemSelection&deselectedItem);
   void onContextMenuRequested(const QPoint& pos);
   void onActionAddCourtTriggered();
+  void onWalkoverP1Triggered();
+  void onWalkoverP2Triggered();
 
 private:
   Tournament* tnmt;
@@ -46,13 +50,15 @@ private:
 
   unique_ptr<QMenu> contextMenu;
   QAction* actAddCourt;
-  QAction* actWalkover;
   QAction* actUndoCall;
   QAction* actFinishMatch;
   QMenu* walkoverSelectionMenu;
+  QAction* actWalkoverP1;
+  QAction* actWalkoverP2;
 
   void initContextMenu();
-  void updateContextMenu();
+  void updateContextMenu(bool isRowClicked);
+  void execWalkover(int playerNum) const;
 };
 
 #endif	/* COURTTABLEVIEW_H */
