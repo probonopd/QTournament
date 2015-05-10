@@ -1222,17 +1222,23 @@ namespace QTournament {
 
 //----------------------------------------------------------------------------
 
-  ERR MatchMngr::setMatchScoreAndFinalizeMatch(const Match &ma, const MatchScore &score)
+  ERR MatchMngr::setMatchScoreAndFinalizeMatch(const Match &ma, const MatchScore &score, bool isWalkover) const
   {
     // check the match's state
-    if (ma.getState() != STAT_MA_RUNNING)
+    OBJ_STATE oldState = ma.getState();
+    if ((!isWalkover) && (oldState != STAT_MA_RUNNING))
     {
       return MATCH_NOT_RUNNING;
+    }
+    if (isWalkover && oldState != STAT_MA_READY &&
+        oldState != STAT_MA_RUNNING && oldState != STAT_MA_WAITING && oldState != STAT_MA_BUSY)
+    {
+      return WRONG_STATE;
     }
 
     // check if the score is valid for the category settings
     Category cat = ma.getCategory();
-    bool isDrawAllowed = cat.getParameter_bool(ALLOW_DRAW);
+    bool isDrawAllowed = cat.isDrawAllowedInRound(ma.getMatchGroup().getRound());
     int numWinGames = 2; // TODO: this needs to become a category parameter!
     if (!(score.isValidScore(numWinGames, isDrawAllowed)))
     {
@@ -1267,17 +1273,22 @@ namespace QTournament {
     matchRow.update(qvl);
 
     emit matchResultUpdated(maId, maSeqNum);
-    emit matchStatusChanged(maId, maSeqNum, STAT_MA_RUNNING, STAT_MA_FINISHED);
+    emit matchStatusChanged(maId, maSeqNum, oldState, STAT_MA_FINISHED);
 
-    // release the players
-    Tournament::getPlayerMngr()->releasePlayerPairsAfterMatch(ma);
+    // if this was a regular, running match we need to release the court
+    // and the players
+    if (oldState == STAT_MA_RUNNING)
+    {
+      // release the players
+      Tournament::getPlayerMngr()->releasePlayerPairsAfterMatch(ma);
 
-    // release the court
-    ERR e;
-    auto pCourt = ma.getCourt(&e);
-    assert(e == OK);
-    bool isOkay = Tournament::getCourtMngr()->releaseCourt(*pCourt);
-    assert(isOkay);
+      // release the court
+      ERR e;
+      auto pCourt = ma.getCourt(&e);
+      assert(e == OK);
+      bool isOkay = Tournament::getCourtMngr()->releaseCourt(*pCourt);
+      assert(isOkay);
+    }
 
     // update the match group
     updateAllMatchGroupStates(ma.getCategory());
@@ -1314,6 +1325,41 @@ namespace QTournament {
     // TODO: add finish time to database
 
     return OK;
+  }
+
+//----------------------------------------------------------------------------
+
+  ERR MatchMngr::walkover(const Match& ma, int playerNum) const
+  {
+    // for a walkover, the match must be in READY, WAITING, RUNNING or BUSY
+    OBJ_STATE stat = ma.getState();
+    if ((stat != STAT_MA_READY) && (stat != STAT_MA_RUNNING) && (stat != STAT_MA_WAITING) && (stat != STAT_MA_BUSY))
+    {
+      return WRONG_STATE;
+    }
+
+    // the playerNum must be either 1 or 2
+    if ((playerNum != 1) && (playerNum != 2))
+    {
+      return INVALID_PLAYER_PAIR;
+    }
+
+    // determine the game results
+    int sc1 = (playerNum == 1) ? 21 : 0;
+    int sc2 = (playerNum == 1) ? 0 : 21;
+
+    // fake a match result
+    int numWinGames = 2;    // TODO: this should become a category parameter
+    GameScoreList gsl;
+    for (int i=0; i < numWinGames; ++i)
+    {
+      gsl.append(*(GameScore::fromScore(sc1, sc2)));
+    }
+    auto ms = MatchScore::fromGameScoreListWithoutValidation(gsl);
+    assert(ms != nullptr);
+
+    setMatchScoreAndFinalizeMatch(ma, *ms, true);
+
   }
 
 //----------------------------------------------------------------------------

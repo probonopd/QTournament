@@ -1121,11 +1121,20 @@ namespace QTournament
     int resultNoDraw = 2 * numWinGames - 1;
 
 
+    // return the number of games dependent on the
+    // draw status
+    return (isDrawAllowedInRound(round) ? resultWithDraw : resultNoDraw);
+  }
+
+  //----------------------------------------------------------------------------
+
+  bool Category::isDrawAllowedInRound(int round) const
+  {
     // is a draw basically allowed?
     bool isDrawAllowed = getParameter_bool(ALLOW_DRAW);
     if (!isDrawAllowed)
     {
-      return resultNoDraw;
+      return false;
     }
 
 
@@ -1140,13 +1149,13 @@ namespace QTournament
     MATCH_SYSTEM ms = getMatchSystem();
     if ((ms == RANKING) || (ms == SINGLE_ELIM))
     {
-      return resultNoDraw;
+      return false;
     }
 
     // in swiss ladder or random matches, draws are okay
     if ((ms == SWISS_LADDER) || (ms == RANDOMIZE))
     {
-      return resultWithDraw;
+      return true;
     }
 
     // in round-robins with subsequent KO matches, it depends on the round
@@ -1154,23 +1163,23 @@ namespace QTournament
     if (ms == GROUPS_WITH_KO)
     {
       // invalid parameter
-      if (round < 1) return -1;
+      if (round < 1) return false;
 
       KO_Config cfg = KO_Config(getParameter_string(GROUP_CONFIG));
       if (round <= cfg.getNumRounds())
       {
         // if draw is allowed and we're still in the round-robin phase,
         // a draw is possible
-        return resultWithDraw;
+        return true;
       }
 
       // in the KO-phase, draw is not possible, regardless of the
       // category setting
-      return resultNoDraw;
+      return false;
     }
 
     // default value, should never be reached
-    return resultNoDraw;
+    return false;
   }
 
   //----------------------------------------------------------------------------

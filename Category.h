@@ -69,6 +69,7 @@ namespace QTournament
     bool hasMatchesInState(OBJ_STATE stat, int round=-1) const;
     PlayerPairList getEliminatedPlayersAfterRound(int round, ERR *err) const;
     int getMaxNumGamesInRound(int round) const;
+    bool isDrawAllowedInRound(int round) const;
 
     
     virtual ~Category() {};
