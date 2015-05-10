@@ -49,8 +49,10 @@ private:
   QAction* actWalkover;
   QAction* actUndoCall;
   QAction* actFinishMatch;
+  QMenu* walkoverSelectionMenu;
 
-  void prepContextMenu();
+  void initContextMenu();
+  void updateContextMenu();
 };
 
 #endif	/* COURTTABLEVIEW_H */

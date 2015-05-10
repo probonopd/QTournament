@@ -27,6 +27,7 @@ public:
                                 double fntSizeFac = 1.0);
   static void drawFormattedText(QPainter* painter, QRect r, const QString& s, int alignmentFlags=Qt::AlignVCenter|Qt::AlignLeft,
                                 bool isBold=false, bool isItalics=false, double fntSizeFac = 1.0);
+  static void execWalkover(const QTournament::Match& ma, int playerNum);
 };
 
 #endif // GUIHELPERS_H

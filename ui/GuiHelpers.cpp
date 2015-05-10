@@ -1,6 +1,10 @@
 #include "GuiHelpers.h"
 
+#include <QMessageBox>
+
 #include "TournamentDataDefs.h"
+#include "MatchMngr.h"
+#include "Tournament.h"
 
 GuiHelpers::GuiHelpers()
 {
@@ -111,6 +115,35 @@ void GuiHelpers::drawFormattedText(QPainter *painter, QRect r, const QString &s,
 void GuiHelpers::drawFormattedText(QPainter *painter, QRect r, const QString &s, int alignmentFlags, bool isBold, bool isItalics, double fntSizeFac)
 {
   drawFormattedText(painter, r, s, alignmentFlags, isBold, isItalics, QFont(), QColor(0,0,0), fntSizeFac);
+}
+
+//----------------------------------------------------------------------------
+
+void GuiHelpers::execWalkover(const QTournament::Match& ma, int playerNum)
+{
+  if ((playerNum != 1) && (playerNum != 2)) return; // shouldn't happen
+  if (!(ma.isWalkoverPossible())) return;
+
+  // get a user confirmation
+  QString msg = tr("This will be a walkover for\n\n\t");
+  if (playerNum == 1)
+  {
+    msg += ma.getPlayerPair1().getDisplayName();
+  } else {
+    msg += ma.getPlayerPair1().getDisplayName();
+  }
+  msg += "\n\n";
+  msg += tr("All games will be 21:0.") + "\n\n";
+  msg += tr("WARNING: this step is irrevocable!") + "\n\n";
+  msg += tr("Proceed?");
+  int result = QMessageBox::question(0, tr("Confirm walkover"), msg);
+  if (result != QMessageBox::Yes)
+  {
+    return;
+  }
+  QTournament::MatchMngr* mm = QTournament::Tournament::getMatchMngr();
+  assert(mm != nullptr);
+  mm->walkover(ma, playerNum);
 }
 
 //----------------------------------------------------------------------------

@@ -30,7 +30,7 @@ public:
 
   MatchTableView (QWidget* parent);
   virtual ~MatchTableView ();
-  unique_ptr<Match> getSelectedMatch();
+  unique_ptr<Match> getSelectedMatch() const;
   void updateSelectionAfterDataChange();
   
 public slots:
@@ -40,6 +40,8 @@ public slots:
 private slots:
   void onSelectionChanged(const QItemSelection&selectedItem, const QItemSelection&deselectedItem);
   void onContextMenuRequested(const QPoint& pos);
+  void onWalkoverP1Triggered();
+  void onWalkoverP2Triggered();
   
 private:
   Tournament* tnmt;
@@ -49,12 +51,14 @@ private:
 
   unique_ptr<QMenu> contextMenu;
   QAction* actPostponeMatch;
-  QAction* actWalkover;
-  QAction* actCourtSubmenu;
+  QMenu* walkoverSelectionMenu;
   QMenu* courtSelectionMenu;
+  QAction* actWalkoverP1;
+  QAction* actWalkoverP2;
 
-  void prepContextMenu();
-  void updateCourtSelectionMenu();
+  void initContextMenu();
+  void updateContextMenu();
+  void execWalkover(int playerNum) const;
 };
 
 #endif	/* MATCHTABLEVIEW_H */

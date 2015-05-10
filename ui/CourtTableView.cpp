@@ -40,7 +40,7 @@ CourtTableView::CourtTableView(QWidget* parent)
   setItemDelegate(itemDelegate);
 
   // setup the context menu and its actions
-  prepContextMenu();
+  initContextMenu();
 }
 
 //----------------------------------------------------------------------------
@@ -126,7 +126,7 @@ void CourtTableView::onSelectionChanged(const QItemSelection& selectedItem, cons
 
 //----------------------------------------------------------------------------
     
-void CourtTableView::prepContextMenu()
+void CourtTableView::initContextMenu()
 {
   // prepare all actions
   actWalkover = new QAction(tr("Walkover"), this);
@@ -144,6 +144,13 @@ void CourtTableView::prepContextMenu()
   contextMenu->addAction(actUndoCall);
   contextMenu->addSeparator();
   contextMenu->addAction(actAddCourt);
+}
+
+//----------------------------------------------------------------------------
+
+void CourtTableView::updateContextMenu()
+{
+
 }
 
 //----------------------------------------------------------------------------

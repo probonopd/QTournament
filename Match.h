@@ -55,6 +55,8 @@ namespace QTournament
     int getWinnerRank() const;
     int getLoserRank() const;
 
+    bool isWalkoverPossible() const;
+
   private:
     Match (TournamentDB* db, int rowId);
     Match (TournamentDB* db, dbOverlay::TabRow row);

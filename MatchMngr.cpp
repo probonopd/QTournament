@@ -1230,8 +1230,7 @@ namespace QTournament {
     {
       return MATCH_NOT_RUNNING;
     }
-    if (isWalkover && oldState != STAT_MA_READY &&
-        oldState != STAT_MA_RUNNING && oldState != STAT_MA_WAITING && oldState != STAT_MA_BUSY)
+    if (isWalkover && (!(ma.isWalkoverPossible())))
     {
       return WRONG_STATE;
     }
@@ -1332,8 +1331,7 @@ namespace QTournament {
   ERR MatchMngr::walkover(const Match& ma, int playerNum) const
   {
     // for a walkover, the match must be in READY, WAITING, RUNNING or BUSY
-    OBJ_STATE stat = ma.getState();
-    if ((stat != STAT_MA_READY) && (stat != STAT_MA_RUNNING) && (stat != STAT_MA_WAITING) && (stat != STAT_MA_BUSY))
+    if (!(ma.isWalkoverPossible()))
     {
       return WRONG_STATE;
     }
@@ -1358,8 +1356,7 @@ namespace QTournament {
     auto ms = MatchScore::fromGameScoreListWithoutValidation(gsl);
     assert(ms != nullptr);
 
-    setMatchScoreAndFinalizeMatch(ma, *ms, true);
-
+    return setMatchScoreAndFinalizeMatch(ma, *ms, true);
   }
 
 //----------------------------------------------------------------------------

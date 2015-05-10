@@ -236,6 +236,14 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
+  bool Match::isWalkoverPossible() const
+  {
+    OBJ_STATE stat = getState();
+    return ((stat == STAT_MA_READY) || (stat == STAT_MA_RUNNING) || (stat == STAT_MA_BUSY) || (stat == STAT_MA_WAITING));
+  }
+
+//----------------------------------------------------------------------------
+
   int Match::getSymbolicPlayerPairName(int playerPos) const
   {
     // if we have a regular PP, don't return a symbolic name

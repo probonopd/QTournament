@@ -12,6 +12,7 @@
 
 #include "CourtMngr.h"
 #include "Court.h"
+#include "ui/GuiHelpers.h"
 
 MatchTableView::MatchTableView(QWidget* parent)
   :QTableView(parent)
@@ -43,7 +44,7 @@ MatchTableView::MatchTableView(QWidget* parent)
   setItemDelegate(itemDelegate);
 
   // setup the context menu
-  prepContextMenu();
+  initContextMenu();
 }
 
 //----------------------------------------------------------------------------
@@ -106,7 +107,7 @@ void MatchTableView::onTournamentClosed()
 
 //----------------------------------------------------------------------------
 
-unique_ptr<Match> MatchTableView::getSelectedMatch()
+unique_ptr<Match> MatchTableView::getSelectedMatch() const
 {
   // make sure we have non-empty model
   auto mod = model();
@@ -138,12 +139,6 @@ void MatchTableView::onSelectionChanged(const QItemSelection& selectedItem, cons
   {
     //resizeRowToContents(item.top());
   }
-
-  // update the availability of actions, depending on the selected match
-  auto ma = getSelectedMatch();
-  if (ma == nullptr) return;  // shouldn't happen
-  actWalkover->setEnabled(ma->getState() == STAT_MA_READY);
-  actCourtSubmenu->setEnabled(ma->getState() == STAT_MA_READY);
 }
 
 //----------------------------------------------------------------------------
@@ -178,7 +173,7 @@ void MatchTableView::onContextMenuRequested(const QPoint& pos)
   if (ma == nullptr) return;  // shouldn't happen
 
   // show the context menu
-  updateCourtSelectionMenu();
+  updateContextMenu();
   QAction* selectedItem = contextMenu->exec(globalPos);
 
   if (selectedItem == nullptr) return; // user canceled
@@ -188,51 +183,102 @@ void MatchTableView::onContextMenuRequested(const QPoint& pos)
 
 //----------------------------------------------------------------------------
 
-void MatchTableView::prepContextMenu()
+void MatchTableView::onWalkoverP1Triggered()
 {
-  // prepare all actions
-  actWalkover = new QAction(tr("Walkover"), this);
-  actPostponeMatch = new QAction(tr("Postpone"), this);
-
-  // create the context menu and connect it to the actions
-  contextMenu = unique_ptr<QMenu>(new QMenu());
-  contextMenu->addAction(actWalkover);
-  contextMenu->addAction(actPostponeMatch);
-  contextMenu->addSeparator();
-  courtSelectionMenu = contextMenu->addMenu(tr("Call match on court..."));
-  actCourtSubmenu = courtSelectionMenu->menuAction();
-  updateCourtSelectionMenu();
+  execWalkover(1);
 }
 
 //----------------------------------------------------------------------------
 
-void MatchTableView::updateCourtSelectionMenu()
+void MatchTableView::onWalkoverP2Triggered()
 {
-  courtSelectionMenu->clear();
+  execWalkover(2);
+}
 
+//----------------------------------------------------------------------------
+
+void MatchTableView::initContextMenu()
+{
+  // prepare all actions
+  actPostponeMatch = new QAction(tr("Postpone"), this);
+
+  // create sub-actions for the walkover-selection
+  actWalkoverP1 = new QAction("P1", this);  // this is just a dummy
+  actWalkoverP2 = new QAction("P2", this);  // this is just a dummy
+
+  // create the context menu and connect it to the actions
+  contextMenu = unique_ptr<QMenu>(new QMenu());
+  walkoverSelectionMenu = contextMenu->addMenu(tr("Walkover for..."));
+  walkoverSelectionMenu->addAction(actWalkoverP1);
+  walkoverSelectionMenu->addAction(actWalkoverP2);
+  contextMenu->addAction(actPostponeMatch);
+  contextMenu->addSeparator();
+  courtSelectionMenu = contextMenu->addMenu(tr("Call match on court..."));
+
+  // connect actions and slots
+  connect(actWalkoverP1, SIGNAL(triggered(bool)), this, SLOT(onWalkoverP1Triggered()));
+  connect(actWalkoverP2, SIGNAL(triggered(bool)), this, SLOT(onWalkoverP2Triggered()));
+
+  updateContextMenu();
+}
+
+//----------------------------------------------------------------------------
+
+void MatchTableView::updateContextMenu()
+{
+  auto ma = getSelectedMatch();
 
   // completely re-build the list of available courts
-
-
-  CourtMngr* cm = Tournament::getCourtMngr();
-  if (cm == nullptr) return;   // occurs if we're launching the application without a tournament loaded yet
-
-
-  QStringList availCourtNum;
-  for (auto co : cm->getAllCourts())
+  bool isCallPossible = ((ma != nullptr) && (ma->getState() == STAT_MA_READY));
+  courtSelectionMenu->setEnabled(isCallPossible);
+  if (isCallPossible)
   {
-    if (co.getState() == STAT_CO_AVAIL)
+    courtSelectionMenu->clear();
+
+    CourtMngr* cm = Tournament::getCourtMngr();
+
+    QStringList availCourtNum;
+    for (auto co : cm->getAllCourts())
     {
-      availCourtNum << QString::number(co.getNumber());
+      if (co.getState() == STAT_CO_AVAIL)
+      {
+        availCourtNum << QString::number(co.getNumber());
+      }
+    }
+
+    availCourtNum.sort();
+
+    for (QString num : availCourtNum)
+    {
+      courtSelectionMenu->addAction(num);
     }
   }
 
-  availCourtNum.sort();
-
-  for (QString num : availCourtNum)
+  // update the player pair names for the walkover menu
+  walkoverSelectionMenu->setEnabled(ma != nullptr);
+  if (ma != nullptr)
   {
-    courtSelectionMenu->addAction(num);
+    if (ma->isWalkoverPossible())
+    {
+      actWalkoverP1->setText(ma->getPlayerPair1().getDisplayName());
+      actWalkoverP2->setText(ma->getPlayerPair2().getDisplayName());
+    } else {
+      walkoverSelectionMenu->setEnabled(false);
+    }
   }
+
+  // update the "postpone" action
+  actPostponeMatch->setEnabled(ma != nullptr);
+}
+
+//----------------------------------------------------------------------------
+
+void MatchTableView::execWalkover(int playerNum) const
+{
+  auto ma = getSelectedMatch();
+  if (ma == nullptr) return; // shouldn't happen
+  if ((playerNum != 1) && (playerNum != 2)) return; // shouldn't happen
+  GuiHelpers::execWalkover(*ma, playerNum);
 }
 
 //----------------------------------------------------------------------------
