@@ -176,7 +176,8 @@ namespace QTournament
 
   PlayerPairList EliminationCategory::getRemainingPlayersAfterRound(int round, ERR* err) const
   {
-    if (round == calcTotalRoundsCount())
+    int lastRoundInThisCat = calcTotalRoundsCount();
+    if (round == lastRoundInThisCat)
     {
       if (err != nullptr) *err = OK;
       return PlayerPairList();  // no remaining players after last round
@@ -205,27 +206,103 @@ namespace QTournament
       result = getPlayerPairs();
     }
 
-    // get the match losers of this round
-    // and remove them from the list of the previous round
+    // now that we have the survivors of the previous round (or
+    // the initial list of all players if this is round one) we
+    // sort out all players are not further used in future matches
     //
-    // exception: losers in semi-finals will continue in the
-    // match for 3rd place
-    if (round == (calcTotalRoundsCount() - 1))  // semi-finals
-    {
-      if (err != nullptr) *err = OK;
-      return result;
-    }
+    // for this, we walk through all matches in this round and remove
+    // those players that have no future matches.
+    //
+    // "no future match" can mean player "eliminated" or "ranked"
     MatchMngr* mm = Tournament::getMatchMngr();
     for (MatchGroup mg : mm->getMatchGroupsForCat(*this, round))
     {
       for (Match ma : mg.getMatches())
       {
         auto loser = ma.getLoser();
-        if (loser == nullptr) continue;   // shouldn't happen
-        result.removeAll(*loser);
+        assert(loser != nullptr);
+        int loserPairId = loser->getPairId();
+        assert(loserPairId > 0);
+
+        auto winner = ma.getWinner();
+        assert(winner != nullptr);
+        int winnerPairId = winner->getPairId();
+        assert(winnerPairId > 0);
+
+        bool winnerOut = false;
+        bool loserOut = false;
+
+        // check 1: is there a final rank for the winner?
+        if (ma.getWinnerRank() > 0)
+        {
+          result.removeAll(*winner);
+          winnerOut = true;
+        }
+
+        // check 2: is there a final rank for the loser?
+        if (ma.getLoserRank() > 0)
+        {
+          result.removeAll(*loser);
+          loserOut = true;
+        }
+
+        //
+        // Intermezzo: a helper function for searching
+        // for future matches of a pair ID
+        //
+        DbTab matchTab = db->getTab(TAB_MATCH);
+        auto hasFutureMatch = [&](const PlayerPair& pp, bool asWinner) {
+          // step 1: search by pair
+          for (int r=round+1; r <= lastRoundInThisCat; ++r)
+          {
+            auto next = mm->getMatchForPlayerPairAndRound(pp, r);
+            if (next != nullptr)
+            {
+              return true;
+            }
+          }
+
+          // step 2: search for "is winner of" or "is loser of"
+          // this match
+          QString where = MA_PAIR1_SYMBOLIC_VAL + " = ? OR ";
+          where += MA_PAIR2_SYMBOLIC_VAL + " = ?";
+          QVariantList qvl;
+          int symbMatchId = asWinner ? ma.getId() : -(ma.getId());
+          qvl << symbMatchId << symbMatchId;
+          if (matchTab.getMatchCountForWhereClause(where, qvl) > 0)
+          {
+            return true;
+          }
+
+          return false;
+        };
+        //   --------- Intermezzo end -----------------
+
+
+        // check 3: if the winner is still in: is there
+        // a future game in this category for the winner?
+        if (!winnerOut)
+        {
+          if (!(hasFutureMatch(*winner, true)))
+          {
+            result.removeAll(*winner);
+          }
+        }
+
+        // check 4: if the loser is still in: is there
+        // a future game in this category for the winner?
+        if (!loserOut)
+        {
+          if (!(hasFutureMatch(*loser, false)))
+          {
+            result.removeAll(*loser);
+          }
+        }
       }
     }
 
+    // everyone who has not yet been kicked from the
+    // list survives this round
     if (err != nullptr) *err = OK;
     return result;
   }
