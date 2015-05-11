@@ -535,7 +535,7 @@ namespace QTournament
     }
 
     if (sys == SINGLE_ELIM) {
-      return unique_ptr<Category>(new EliminationCategory(db, row));
+      return unique_ptr<Category>(new EliminationCategory(db, row, BracketGenerator::BRACKET_SINGLE_ELIM));
     }
 
     // THIS IS JUST A HOT FIX UNTIL WE HAVE

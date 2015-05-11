@@ -33,8 +33,10 @@ namespace QTournament
     virtual PlayerPairList getRemainingPlayersAfterRound(int round, ERR *err) const override;
     
   private:
-    EliminationCategory (TournamentDB* db, int rowId);
-    EliminationCategory (TournamentDB* db, dbOverlay::TabRow row);
+    EliminationCategory (TournamentDB* db, int rowId, int eliminationMode);
+    EliminationCategory (TournamentDB* db, dbOverlay::TabRow row, int eliminationMode);
+
+    int elimMode;
 
   } ;
 }

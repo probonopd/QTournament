@@ -21,18 +21,30 @@ using namespace dbOverlay;
 namespace QTournament
 {
 
-  EliminationCategory::EliminationCategory(TournamentDB* db, int rowId)
+  EliminationCategory::EliminationCategory(TournamentDB* db, int rowId, int eliminationMode)
   : Category(db, rowId)
   {
-    qDebug() << "!!  Elim  !!";
+    if ((eliminationMode != BracketGenerator::BRACKET_SINGLE_ELIM) &&
+        (eliminationMode != BracketGenerator::BRACKET_DOUBLE_ELIM))
+    {
+      throw std::invalid_argument("Invalid elimination mode in ctor of EliminationCategory!");
+    }
+
+    elimMode = eliminationMode;
   }
 
 //----------------------------------------------------------------------------
 
-  EliminationCategory::EliminationCategory(TournamentDB* db, dbOverlay::TabRow row)
+  EliminationCategory::EliminationCategory(TournamentDB* db, dbOverlay::TabRow row, int eliminationMode)
   : Category(db, row)
   {
-    qDebug() << "!!  Elim  !!";
+    if ((eliminationMode != BracketGenerator::BRACKET_SINGLE_ELIM) &&
+        (eliminationMode != BracketGenerator::BRACKET_DOUBLE_ELIM))
+    {
+      throw std::invalid_argument("Invalid elimination mode in ctor of EliminationCategory!");
+    }
+
+    elimMode = eliminationMode;
   }
 
 //----------------------------------------------------------------------------
@@ -87,7 +99,7 @@ namespace QTournament
     // alright, this is a virgin category. Generate bracket matches
     // for each group
     PlayerPairList seeding = Tournament::getCatMngr()->getSeeding(*this);
-    return generateBracketMatches(BracketGenerator::BRACKET_SINGLE_ELIM, seeding, 1, progressNotificationQueue);
+    return generateBracketMatches(elimMode, seeding, 1, progressNotificationQueue);
   }
 
 //----------------------------------------------------------------------------
@@ -100,7 +112,7 @@ namespace QTournament
       return -1;   // category not yet fully configured; can't calc rounds
     }
 
-    BracketGenerator bg{BracketGenerator::BRACKET_SINGLE_ELIM};
+    BracketGenerator bg{elimMode};
     int numPairs = getDatabasePlayerPairCount();
     return bg.getNumRounds(numPairs);
   }
@@ -135,37 +147,35 @@ namespace QTournament
     rm->createUnsortedRankingEntriesForLastRound(*this, &err, ppList);
     if (err != OK) return err;
 
-    CatRoundStatus crs = getRoundStatus();
-
-    // there's nothing to do for us except after the last round.
-    // after the last roound, we have to create ranking entries
-    int lastFinishedRound = crs.getFinishedRoundsCount();
-    if (lastFinishedRound != calcTotalRoundsCount())
-    {
-      return OK;
-    }
-
-    // set the ranks for the winner / losers of the finals
+    // set the rank for all players that ended up at a final rank
+    // in this or any prior round
     MatchMngr* mm = Tournament::getMatchMngr();
-    for (MatchGroup mg : mm->getMatchGroupsForCat(*this, lastFinishedRound))
+    for (int r=1; r <= round; ++r)
     {
-      for (Match ma : mg.getMatches())
+      for (MatchGroup mg : mm->getMatchGroupsForCat(*this, r))
       {
-        auto winner = ma.getWinner();
-        assert(winner != nullptr);
-        auto re = rm->getRankingEntry(*winner, lastFinishedRound);
-        assert(re != nullptr);
-        int winnerRank = ma.getWinnerRank();
-        assert(winnerRank > 0);
-        rm->forceRank(*re, winnerRank);
+        for (Match ma : mg.getMatches())
+        {
+          int winnerRank = ma.getWinnerRank();
+          if (winnerRank > 0)
+          {
+            auto w = ma.getWinner();
+            assert(w != nullptr);
+            auto re = rm->getRankingEntry(*w, round);
+            assert(re != nullptr);
+            rm->forceRank(*re, winnerRank);
+          }
 
-        auto loser = ma.getLoser();
-        assert(loser != nullptr);
-        re = rm->getRankingEntry(*loser, lastFinishedRound);
-        assert(re != nullptr);
-        int loserRank = ma.getLoserRank();
-        assert(loserRank > 0);
-        rm->forceRank(*re, loserRank);
+          int loserRank = ma.getLoserRank();
+          if (winnerRank > 0)
+          {
+            auto l = ma.getLoser();
+            assert(l != nullptr);
+            auto re = rm->getRankingEntry(*l, round);
+            assert(re != nullptr);
+            rm->forceRank(*re, loserRank);
+          }
+        }
       }
     }
 
