@@ -14,7 +14,9 @@ namespace QTournament
 
   BracketGenerator::BracketGenerator(int type)
   {
-    if ((type != BRACKET_SINGLE_ELIM) && (type != BRACKET_DOUBLE_ELIM))
+    if ((type != BRACKET_SINGLE_ELIM) &&
+        (type != BRACKET_DOUBLE_ELIM) &&
+        (type != BRACKET_RANKING1))
     {
       throw std::runtime_error("Request for an invalid bracket type");
     }
@@ -200,6 +202,8 @@ namespace QTournament
       newBracketMatch->nextMatchPlayerPosForWinner = rawBracketData[i][4];
       newBracketMatch->nextMatchPlayerPosForLoser = rawBracketData[i][5];
       newBracketMatch->depthInBracket = rawBracketData[i][6];
+
+      result.push_back(std::move(newBracketMatch));
     }
 
     removeUnusedMatches(result, numPlayers);
@@ -399,7 +403,47 @@ namespace QTournament
   std::function<bool (BracketMatchData&, BracketMatchData&)> BracketGenerator::getBracketMatchSortFunction_earlyRoundsFirst()
   {
     return [](BracketMatchData& bmd1, BracketMatchData& bmd2) {
-      return bmd1.depthInBracket > bmd2.depthInBracket;
+      // if matches are at the same depth level,
+      // than matches with end in a final rank should be played
+      // later.
+      //
+      // if both matches result in a final rank, the lower
+      // rank should be played later
+
+      int depth1 = bmd1.depthInBracket;
+      int depth2 = bmd2.depthInBracket;
+
+      if (depth1 == depth2)
+      {
+        int rank1 = bmd1.nextMatchForWinner;
+        int rank2 = bmd2.nextMatchForWinner;
+        if ((rank1 < 0) && (rank2 > 0))
+        {
+          // only match 1 results in a final rank,
+          // so play match 2 first
+          return false;
+        }
+        if ((rank1 > 0) && (rank2 < 0))
+        {
+          // only match 2 results in a final rank,
+          // so play match 1 first
+          return true;
+        }
+        if ((rank1 < 0) && (rank2 < 0))
+        {
+          // if rank1 is higher (e.g. -1 = rank 1) then
+          // play match 1 later
+          return rank1 < rank2;
+        }
+
+        // no match ends in a final rank, order doesn't matter
+        return true;
+      }
+
+      // if we made it to this point, we can be sure
+      // that the matches are at different depths, so
+      // the depth is the only sorting criteria
+      return depth1 > depth2;
     };
   }
 
@@ -409,7 +453,47 @@ namespace QTournament
     std::function<bool (upBracketMatchData&, upBracketMatchData&)> BracketGenerator::getBracketMatchSortFunction_up_earlyRoundsFirst()
     {
       return [](upBracketMatchData& bmd1, upBracketMatchData& bmd2) {
-        return bmd1->depthInBracket > bmd2->depthInBracket;
+        // if matches are at the same depth level,
+        // than matches with end in a final rank should be played
+        // later.
+        //
+        // if both matches result in a final rank, the lower
+        // rank should be played later
+
+        int depth1 = bmd1->depthInBracket;
+        int depth2 = bmd2->depthInBracket;
+
+        if (depth1 == depth2)
+        {
+          int rank1 = bmd1->nextMatchForWinner;
+          int rank2 = bmd2->nextMatchForWinner;
+          if ((rank1 < 0) && (rank2 > 0))
+          {
+            // only match 1 results in a final rank,
+            // so play match 2 first
+            return false;
+          }
+          if ((rank1 > 0) && (rank2 < 0))
+          {
+            // only match 2 results in a final rank,
+            // so play match 1 first
+            return true;
+          }
+          if ((rank1 < 0) && (rank2 < 0))
+          {
+            // if rank1 is higher (e.g. -1 = rank 1) then
+            // play match 1 later
+            return rank1 < rank2;
+          }
+
+          // no match ends in a final rank, order doesn't matter
+          return true;
+        }
+
+        // if we made it to this point, we can be sure
+        // that the matches are at different depths, so
+        // the depth is the only sorting criteria
+        return depth1 > depth2;
       };
     }
 
@@ -433,7 +517,10 @@ namespace QTournament
         n = n * 2;
         ++nRounds;
       }
-    } else {
+      return nRounds;
+    }
+    if (bracketType == BracketGenerator::BRACKET_RANKING1)
+    {
       // hard-coded values RANKING1
       if (numPlayers > 8) return 5;
       if (numPlayers > 4) return 3;
@@ -441,7 +528,7 @@ namespace QTournament
       return 1;
     }
 
-    return nRounds;
+    return -1;   // shouldn't happen
   }
 
 //----------------------------------------------------------------------------

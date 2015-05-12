@@ -177,7 +177,7 @@ void MainFrame::closeCurrentTournament()
 
 void MainFrame::setupTestScenario(int scenarioID)
 {
-  if ((scenarioID < 0) || (scenarioID > 7))
+  if ((scenarioID < 0) || (scenarioID > 8))
   {
     QMessageBox::critical(this, "Setup Test Scenario", "The scenario ID " + QString::number(scenarioID) + " is invalid!");
   }
@@ -202,7 +202,7 @@ void MainFrame::setupTestScenario(int scenarioID)
   PlayerMngr* pmngr = Tournament::getPlayerMngr();
   CatMngr* cmngr = Tournament::getCatMngr();
   
-  if ((scenarioID > 0) && (scenarioID < 99))   // Scenario 1...
+  auto scenario01 = [&]()
   {
     tmngr->createNewTeam("Team 1");
     tmngr->createNewTeam("Team 2");
@@ -239,10 +239,11 @@ void MainFrame::setupTestScenario(int scenarioID)
     Category mx = cmngr->getCategory("MX");
     mx.setMatchType(MIXED);
     mx.setSex(M); // shouldn't matter at all
-  }
+  };
   
-  if ((scenarioID > 1) && (scenarioID < 99))  // Scenario 2...
+  auto scenario02 = [&]()
   {
+    scenario01();
     Category md = cmngr->getCategory("MD");
     Category ms = cmngr->getCategory("MS");
     Category mx = cmngr->getCategory("MX");
@@ -267,12 +268,13 @@ void MainFrame::setupTestScenario(int scenarioID)
     cmngr->addPlayerToCategory(l1, mx);
     cmngr->addPlayerToCategory(l2, mx);
     cmngr->addPlayerToCategory(l3, mx);
-  }
+  };
   
   // a scenario with a lot of participants, including a group of
   // forty players in one category
-  if ((scenarioID > 2) && (scenarioID < 99))  // Scenario 3...
+  auto scenario03 = [&]()
   {
+    scenario02();
     tmngr->createNewTeam("Massive");
     Category ls = cmngr->getCategory("LS");
     
@@ -290,12 +292,13 @@ void MainFrame::setupTestScenario(int scenarioID)
     gdl.append(d);
     KO_Config cfg(QUARTER, false, gdl);
     ls.setParameter(GROUP_CONFIG, cfg.toString());
-  }
+  };
 
   // extend scenario 3 to already start category "LS"
   // and add a few players to LD and start this category, too
-  if ((scenarioID > 3) && (scenarioID < 7))  // Scenario 4...
+  auto scenario04 = [&]()
   {
+    scenario03();
     Category ls = cmngr->getCategory("LS");
 
     // run the category
@@ -382,13 +385,14 @@ void MainFrame::setupTestScenario(int scenarioID)
     // actually run the category
     e = cmngr->startCategory(ld, ppListList, initialRanking);  // "initialRanking" is reused from above
     assert(e == OK);
-  }
+  };
 
   // extend scenario 4 to already stage and schedule a few match groups
   // in category "LS" and "LD"
   // Additionally, we add 4 courts to the tournament
-  if ((scenarioID > 4) && (scenarioID < 7))  // Scenario 5...
+  auto scenario05 = [&]()
   {
+    scenario04();
     Category ls = cmngr->getCategory("LS");
     MatchMngr* mm = Tournament::getMatchMngr();
 
@@ -417,12 +421,13 @@ void MainFrame::setupTestScenario(int scenarioID)
       cm->createNewCourt(i, "XX", &e);
       assert(e == OK);
     }
-  }
+  };
 
   // extend scenario 5 to already play all matches in the round-robin rounds
   // of category "LS" and "LD"
-  if ((scenarioID > 5) && (scenarioID < 7))  // Scenario 6...
+  auto scenario06 = [&]()
   {
+    scenario05();
     Category ls = cmngr->getCategory("LS");
     Category ld = cmngr->getCategory("LD");
     MatchMngr* mm = Tournament::getMatchMngr();
@@ -469,13 +474,14 @@ void MainFrame::setupTestScenario(int scenarioID)
       auto score = MatchScore::genRandomScore();
       mm->setMatchScoreAndFinalizeMatch(*nextMatch, *score);
     }
-  }
+  };
 
   // extend scenario 3, set the LS match system to "single elimination",
   // run the category, stage the first three rounds, play the first
   // round and start the second
-  if ((scenarioID > 6) && (scenarioID < 99))  // Scenario 7...
+  auto scenario07 = [&]()
   {
+    scenario03();
     Category ls = cmngr->getCategory("LS");
 
     // set the match system to Single Elimination
@@ -545,6 +551,52 @@ void MainFrame::setupTestScenario(int scenarioID)
       auto score = MatchScore::genRandomScore();
       mm->setMatchScoreAndFinalizeMatch(*nextMatch, *score);
     }
+  };
+
+  // a scenario with up to 16 players in a ranking1-bracket
+  auto scenario08 = [&]()
+  {
+    scenario02();
+    tmngr->createNewTeam("Ranking Team");
+    Category ls = cmngr->getCategory("LS");
+
+    for (int i=0; i < 8; i++)
+    {
+      QString lastName = "Ranking" + QString::number(i);
+      pmngr->createNewPlayer("Lady", lastName, F, "Ranking Team");
+      Player p = pmngr->getPlayer(i + 7);   // the first six IDs are already used by previous ini-functions above
+      ls.addPlayer(p);
+    }
+
+    ls.setMatchSystem(RANKING);
+  };
+
+  switch (scenarioID)
+  {
+  case 1:
+    scenario01();
+    break;
+  case 2:
+    scenario02();
+    break;
+  case 3:
+    scenario03();
+    break;
+  case 4:
+    scenario04();
+    break;
+  case 5:
+    scenario05();
+    break;
+  case 6:
+    scenario06();
+    break;
+  case 7:
+    scenario07();
+    break;
+  case 8:
+    scenario08();
+    break;
   }
 
   enableControls(true);
@@ -608,6 +660,13 @@ void MainFrame::setupScenario06()
 void MainFrame::setupScenario07()
 {
   setupTestScenario(7);
+}
+
+//----------------------------------------------------------------------------
+
+void MainFrame::setupScenario08()
+{
+  setupTestScenario(8);
 }
 
 //----------------------------------------------------------------------------

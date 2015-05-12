@@ -5,7 +5,7 @@ ProgressQueue::ProgressQueue(int _maxVal)
 {
   if (_maxVal <= 0)
   {
-    throw std::invalid_argument("Can't have a max progress alue less or equal to zero");
+    throw std::invalid_argument("Ctor: can't have a max progress value less or equal to zero");
   }
 
   maxVal = _maxVal;
@@ -39,7 +39,7 @@ void ProgressQueue::reset(int _maxVal)
 {
   if (_maxVal <= 0)
   {
-    throw std::invalid_argument("Can't have a max progress alue less or equal to zero");
+    throw std::invalid_argument("Reset: Can't have a max progress value less or equal to zero");
   }
 
   // acquire a lock on the mutex

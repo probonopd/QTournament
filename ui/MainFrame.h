@@ -47,6 +47,7 @@ public slots:
   void setupScenario05();
   void setupScenario06();
   void setupScenario07();
+  void setupScenario08();
   void onCurrentTabChanged(int newCurrentTab);
 
 signals:

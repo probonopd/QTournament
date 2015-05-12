@@ -538,6 +538,10 @@ namespace QTournament
       return unique_ptr<Category>(new EliminationCategory(db, row, BracketGenerator::BRACKET_SINGLE_ELIM));
     }
 
+    if (sys == RANKING) {
+      return unique_ptr<Category>(new EliminationCategory(db, row, BracketGenerator::BRACKET_RANKING1));
+    }
+
     // THIS IS JUST A HOT FIX UNTIL WE HAVE
     // SPECIALIZED CLASSED FOR ALL MATCH SYSTEMS!!!
     //
