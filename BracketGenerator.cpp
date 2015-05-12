@@ -129,12 +129,94 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
+  upBracketMatchDataVector BracketGenerator::genBracket__Ranking1(int numPlayers) const
+  {
+    upBracketMatchDataVector result;
+
+    // return an empty list in case of invalid arguments
+    if ((numPlayers < 2) || (numPlayers > 16))
+    {
+      return result;
+    }
+
+    BracketMatchData::resetBracketMatchId();
+
+    // hard-code the bracket matches according to a
+    // given tournament bracket
+    int rawBracketData[36][7] =
+    {
+      // initialRank1, initialRank2, nextMatchWinner, nextMatchLoser, posWinner, posLoser, depth
+      {1,                   16,            10,              9,            1,        1,       4},   // Match 1
+      {8,                    9,            10,              9,            2,        2,       4},   // Match 2
+      {4,                   13,            12,             11,            1,        1,       4},   // Match 3
+      {5,                   12,            12,             11,            2,        2,       4},   // Match 4
+      {11,                   6,            14,             13,            1,        1,       4},   // Match 5
+      {14,                   3,            14,             13,            2,        2,       4},   // Match 6
+      {10,                   7,            16,             15,            1,        1,       4},   // Match 7
+      {15,                   2,            16,             15,            2,        2,       4},   // Match 8
+
+      {-1,                  -2,            17,             21,            1,        1,       3},   // Match 9
+      {-1,                  -2,            27,             19,            1,        2,       3},   // Match 10
+      {-3,                  -4,            18,             22,            1,        1,       3},   // Match 11
+      {-3,                  -4,            27,             20,            2,        2,       3},   // Match 12
+      {-5,                  -6,            19,             21,            1,        2,       3},   // Match 13
+      {-5,                  -6,            28,             17,            1,        2,       3},   // Match 14
+      {-7,                  -8,            20,             22,            1,        2,       3},   // Match 15
+      {-7,                  -8,            28,             18,            2,        2,       3},   // Match 16
+
+      {-9,                 -14,            25,             23,            1,        1,       2},   // Match 17
+      {-11,                -16,            25,             24,            2,        1,       2},   // Match 18
+      {-13,                -10,            26,             23,            1,        2,       2},   // Match 19
+      {-15,                -12,            26,             24,            2,        2,       2},   // Match 20
+
+      {-9,                 -13,            30,             29,            1,        1,       1},   // Match 21
+      {-11,                -15,            30,             29,            2,        2,       1},   // Match 22
+      {-17,                -19,            32,             31,            1,        1,       1},   // Match 23
+      {-18,                -20,            32,             31,            2,        2,       1},   // Match 24
+      {-17,                -18,            34,             33,            1,        1,       1},   // Match 25
+      {-19,                -20,            34,             33,            2,        2,       1},   // Match 26
+      {-10,                -12,            36,             35,            1,        1,       1},   // Match 27
+      {-14,                -16,            36,             35,            2,        2,       1},   // Match 28
+
+      {-21,                -22,           -15,            -16,            0,        0,       0},   // Match 29
+      {-21,                -22,           -13,            -14,            0,        0,       0},   // Match 30
+      {-23,                -24,           -11,            -12,            0,        0,       0},   // Match 31
+      {-23,                -24,            -9,            -10,            0,        0,       0},   // Match 32
+      {-25,                -26,            -7,             -8,            0,        0,       0},   // Match 33
+      {-25,                -26,            -5,             -6,            0,        0,       0},   // Match 34
+      {-27,                -28,            -3,             -4,            0,        0,       0},   // Match 35
+      {-27,                -28,            -1,            - 2,            0,        0,       0},   // Match 36
+    };
+
+    // convert the hard-coded data into bracket match data entries
+    for (int i=0; i < 36; ++i)
+    {
+      upBracketMatchData newBracketMatch = upBracketMatchData(new BracketMatchData);
+
+      newBracketMatch->initialRank_Player1 = rawBracketData[i][0];
+      newBracketMatch->initialRank_Player2 = rawBracketData[i][1];
+      newBracketMatch->nextMatchForWinner = rawBracketData[i][2];
+      newBracketMatch->nextMatchForLoser = rawBracketData[i][3];
+      newBracketMatch->nextMatchPlayerPosForWinner = rawBracketData[i][4];
+      newBracketMatch->nextMatchPlayerPosForLoser = rawBracketData[i][5];
+      newBracketMatch->depthInBracket = rawBracketData[i][6];
+    }
+
+    removeUnusedMatches(result, numPlayers);
+
+    return result;
+  }
+
+
+//----------------------------------------------------------------------------
+
   BracketMatchDataList BracketGenerator::getBracketMatches(int numPlayers) const
   {
     if (numPlayers < 2) return BracketMatchDataList();
 
     upBracketMatchDataVector upResult;
     if (bracketType == BRACKET_SINGLE_ELIM) upResult = genBracket__SingleElim(numPlayers);
+    if (bracketType == BRACKET_RANKING1) upResult = genBracket__Ranking1(numPlayers);
     else throw std::runtime_error("TODO: Unimplemented bracket type!");
 
     // convert unique_ptrs to standard objects that are easier to handle
@@ -342,12 +424,21 @@ namespace QTournament
     // three-point-something which is then rounded up to 4
     //
     // Thus I use a stupid loop here to count up the rounds
-    int nRounds = 1;
-    int n = 2;
-    while (n < numPlayers)
+    if (bracketType != BracketGenerator::BRACKET_RANKING1)
     {
-      n = n * 2;
-      ++nRounds;
+      int nRounds = 1;
+      int n = 2;
+      while (n < numPlayers)
+      {
+        n = n * 2;
+        ++nRounds;
+      }
+    } else {
+      // hard-coded values RANKING1
+      if (numPlayers > 8) return 5;
+      if (numPlayers > 4) return 3;
+      if (numPlayers > 2) return 2;
+      return 1;
     }
 
     return nRounds;

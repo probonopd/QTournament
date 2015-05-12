@@ -25,7 +25,8 @@ namespace QTournament
   : Category(db, rowId)
   {
     if ((eliminationMode != BracketGenerator::BRACKET_SINGLE_ELIM) &&
-        (eliminationMode != BracketGenerator::BRACKET_DOUBLE_ELIM))
+        (eliminationMode != BracketGenerator::BRACKET_DOUBLE_ELIM) &&
+        (eliminationMode != BracketGenerator::BRACKET_RANKING1))
     {
       throw std::invalid_argument("Invalid elimination mode in ctor of EliminationCategory!");
     }
@@ -39,7 +40,8 @@ namespace QTournament
   : Category(db, row)
   {
     if ((eliminationMode != BracketGenerator::BRACKET_SINGLE_ELIM) &&
-        (eliminationMode != BracketGenerator::BRACKET_DOUBLE_ELIM))
+        (eliminationMode != BracketGenerator::BRACKET_DOUBLE_ELIM) &&
+        (eliminationMode != BracketGenerator::BRACKET_RANKING1))
     {
       throw std::invalid_argument("Invalid elimination mode in ctor of EliminationCategory!");
     }
@@ -61,7 +63,25 @@ namespace QTournament
     {
       return UNPAIRED_PLAYERS;
     }
-    
+
+    // we should have at least two players / pairs
+    int numPairs = getAllPlayersInCategory().size();
+    if (getMatchType() != SINGLES)
+    {
+      numPairs = numPairs / 2;    // numPairs before division must be even, because we had no unpaired players (see check above)
+    }
+    if (numPairs < 2)
+    {
+      return INVALID_PLAYER_COUNT;
+    }
+
+    // for the bracket mode "ranking1" we may not have more
+    // than 16 players
+    if ((elimMode == BracketGenerator::BRACKET_RANKING1) && (numPairs > 16))
+    {
+      return INVALID_PLAYER_COUNT;
+    }
+
     return OK;
   }
 

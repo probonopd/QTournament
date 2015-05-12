@@ -1,3 +1,4 @@
+
 #ifndef BRACKETGENERATOR_H
 #define BRACKETGENERATOR_H
 
@@ -61,6 +62,7 @@ namespace QTournament
   public:
     static constexpr int BRACKET_SINGLE_ELIM = 1;
     static constexpr int BRACKET_DOUBLE_ELIM = 2;
+    static constexpr int BRACKET_RANKING1 = 3;
 
     BracketGenerator();
     BracketGenerator(int type);
@@ -73,6 +75,7 @@ namespace QTournament
   private:
     int bracketType;
     upBracketMatchDataVector genBracket__SingleElim(int numPlayers) const;
+    upBracketMatchDataVector genBracket__Ranking1(int numPlayers) const;
     void removeUnusedMatches(upBracketMatchDataVector& bracketMatches, int numPlayers) const;  // modifies the list IN PLACE!!
   };
 
