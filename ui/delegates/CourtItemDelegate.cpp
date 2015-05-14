@@ -154,7 +154,8 @@ void CourtItemDelegate::paintMatchInfoCell_Selected(QPainter *painter, const QSt
   QString txt = tr("Match number:");
   txt += " " + QString::number(ma.getMatchNumber()) + "    ";
   txt += tr("Category:");
-  txt += " " + ma.getCategory().getName();
+  txt += " " + ma.getCategory().getName() + "    ";
+  txt += tr("Round: ") + QString::number(ma.getMatchGroup().getRound());
   GuiHelpers::drawFormattedText(painter, row2, txt, Qt::AlignVCenter|Qt::AlignLeft, false, false, 1.0);
 
   // draw a second info line with call times
