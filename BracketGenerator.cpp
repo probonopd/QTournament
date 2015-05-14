@@ -219,9 +219,17 @@ namespace QTournament
     if (numPlayers < 2) return BracketMatchDataList();
 
     upBracketMatchDataVector upResult;
-    if (bracketType == BRACKET_SINGLE_ELIM) upResult = genBracket__SingleElim(numPlayers);
-    if (bracketType == BRACKET_RANKING1) upResult = genBracket__Ranking1(numPlayers);
-    else throw std::runtime_error("TODO: Unimplemented bracket type!");
+    switch (bracketType)
+    {
+    case BRACKET_SINGLE_ELIM:
+      upResult = genBracket__SingleElim(numPlayers);
+      break;
+    case BRACKET_RANKING1:
+      upResult = genBracket__Ranking1(numPlayers);
+      break;
+    default:
+      throw std::runtime_error("TODO: Unimplemented bracket type!");
+    }
 
     // convert unique_ptrs to standard objects that are easier to handle
     BracketMatchDataList result;
@@ -238,6 +246,18 @@ namespace QTournament
     // earlier to the later matches)
     std::sort(bracketMatches.begin(), bracketMatches.end(), getBracketMatchSortFunction_up_earlyRoundsFirst());
 
+    // since I have some trouble with std::sort() (see below), I put in another safeguard
+    // that all bracket matches are sorted properly
+    int nMatches = bracketMatches.size();
+    for (int i=0; i < (nMatches-1); ++i)
+    {
+      // the depth of a match must be greater or equal to the depth of the following
+      // match. Remember: macthes with higher depth values are played first
+      assert(bracketMatches[i]->depthInBracket >= bracketMatches[i+1]->depthInBracket);
+    }
+    // the last match must be at depth 0
+    assert(bracketMatches[nMatches-1]->depthInBracket == 0);
+
     // a little helper function that returns an iterator to a match with
     // a given ID
     auto getMatchById = [&bracketMatches](int matchId) {
@@ -247,6 +267,7 @@ namespace QTournament
         if ((**i).getBracketMatchId() == matchId) return i;
         ++i;
       }
+      return i;
     };
 
     // a little helper function that updates a player
@@ -403,15 +424,42 @@ namespace QTournament
   std::function<bool (BracketMatchData&, BracketMatchData&)> BracketGenerator::getBracketMatchSortFunction_earlyRoundsFirst()
   {
     return [](BracketMatchData& bmd1, BracketMatchData& bmd2) {
+      // initial note:
+      // std::sort now seems to provide invalid bmd2 reference that
+      // cause a SIGSEGV. Using the debugger I could trace it down to
+      // stl_algo.h using an invalid value for the last element of the
+      // vector, although std:sort was called with a correct value.
+      // std::sort seems to go beyond the last element and that causes
+      // a SIGSEGV.
+      //
+      // weird.
+      //
+      // changing the compiler or the optimization settings didn't help.
+      //
+      // as workaround, i test the validity of bmd1 and bmd2 first
+      int depth1;
+      int depth2;
+      try
+      {
+        // this is madness: being a reference, bmd1 or bmd2 can't be null
+        // by definition! however, i encountered bmd1 being a null reference
+        // during debugging
+        if (&bmd1 == nullptr) return false;
+        if (&bmd2 == nullptr) return false;
+        depth1 = bmd1.depthInBracket;
+        depth2 = bmd2.depthInBracket;
+      } catch (std::exception& e)
+      {
+        return false;    // invalid pointer, return some arbitrary value
+      }
+
       // if matches are at the same depth level,
       // than matches with end in a final rank should be played
       // later.
       //
-      // if both matches result in a final rank, the lower
+      // if both matches result in a final rank, the numerically lower
       // rank should be played later
 
-      int depth1 = bmd1.depthInBracket;
-      int depth2 = bmd2.depthInBracket;
 
       if (depth1 == depth2)
       {
@@ -453,15 +501,42 @@ namespace QTournament
     std::function<bool (upBracketMatchData&, upBracketMatchData&)> BracketGenerator::getBracketMatchSortFunction_up_earlyRoundsFirst()
     {
       return [](upBracketMatchData& bmd1, upBracketMatchData& bmd2) {
+        // initial note:
+        // std::sort now seems to provide invalid bmd2 reference that
+        // cause a SIGSEGV. Using the debugger I could trace it down to
+        // stl_algo.h using an invalid value for the last element of the
+        // vector, although std:sort was called with a correct value.
+        // std::sort seems to go beyond the last element and that causes
+        // a SIGSEGV.
+        //
+        // weird.
+        //
+        // changing the compiler or the optimization settings didn't help.
+        //
+        // as a workaround, i test the validity of bmd1 and bmd2 first
+        int depth1;
+        int depth2;
+        try
+        {
+          if (bmd1 == nullptr) return false;
+          if (bmd2 == nullptr) return false;
+          uint64_t p1 = (uint64_t)(bmd1.get());
+          if (p1 < 0x1000) return false;
+          uint64_t p2 = (uint64_t)(bmd2.get());
+          if (p2 < 0x1000) return false;
+          depth1 = bmd1->depthInBracket;
+          depth2 = bmd2->depthInBracket;
+        } catch (std::exception& e)
+        {
+          return false;    // invalid pointer, return some arbitrary value
+        }
+
         // if matches are at the same depth level,
         // than matches with end in a final rank should be played
         // later.
         //
-        // if both matches result in a final rank, the lower
+        // if both matches result in a final rank, the numerically lower
         // rank should be played later
-
-        int depth1 = bmd1->depthInBracket;
-        int depth2 = bmd2->depthInBracket;
 
         if (depth1 == depth2)
         {

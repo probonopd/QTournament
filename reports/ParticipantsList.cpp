@@ -134,7 +134,6 @@ void ParticipantsList::createNameSortedReport(upSimpleReport& rep) const
 
 void ParticipantsList::createTeamSortedReport(upSimpleReport &rep) const
 {
-  PlayerMngr* pm = Tournament::getPlayerMngr();
   TeamMngr* tm = Tournament::getTeamMngr();
 
   QList<Team> tl = tm->getAllTeams();
@@ -207,7 +206,6 @@ void ParticipantsList::createTeamSortedReport(upSimpleReport &rep) const
 void ParticipantsList::createCategorySortedReport(upSimpleReport& rep) const
 {
   CatMngr* cm = Tournament::getCatMngr();
-  PlayerMngr* pm = Tournament::getPlayerMngr();
   TeamMngr* tm = Tournament::getTeamMngr();
 
   QList<Category> allCats = cm->getAllCategories();

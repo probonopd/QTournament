@@ -36,7 +36,7 @@ void CatItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& optio
   QColor bgColor = option.palette.color(QPalette::Background);
   if(option.state & QStyle::State_Selected)
   {
-    QColor bgColor = option.palette.color(QPalette::Highlight);
+    bgColor = option.palette.color(QPalette::Highlight);
     painter->fillRect(option.rect, bgColor);
   }
   

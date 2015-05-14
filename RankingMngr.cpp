@@ -51,7 +51,7 @@ namespace QTournament
     // make sure that all matches for these player pairs have
     // valid results. We need to check this in a separate loop
     // to avoid that the ranking entries have already been
-    // halfway written to the database when we encore an invalid
+    // halfway written to the database when we encounter an invalid
     // match
     for (PlayerPair pp : ppList)
     {
@@ -157,7 +157,7 @@ namespace QTournament
         grpNum = ma->getMatchGroup().getGroupNumber();
       } else {
         // hmmmm, we need to determine the group number of a
-        // playerPair that haven't played in this round
+        // playerPair that hasn't played in this round
 
         // case 1:
         // we are in some sort of round-robin round with
@@ -167,14 +167,15 @@ namespace QTournament
         if (mm->getMatchGroupsForCat(cat, lastRound).size() > 1)
         {
           grpNum = pp.getPairsGroupNum(db);
-        }
+        } else {
 
-        // case 2:
-        // we are either in a round-robin phase with only
-        // one group or in a KO-round or similar. So we have
-        // only one match group. Thus, we can derive the
-        // group number from the match group
-        grpNum = mm->getMatchGroupsForCat(cat, lastRound).at(0).getGroupNumber();
+          // case 2:
+          // we are either in a round-robin phase with only
+          // one group or in a KO-round or similar. So we have
+          // only one match group. Thus, we can derive the
+          // group number from the match group
+          grpNum = mm->getMatchGroupsForCat(cat, lastRound).at(0).getGroupNumber();
+        }
       }
 
       // prep the complete data set for the entry,

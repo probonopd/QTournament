@@ -734,7 +734,6 @@ namespace QTournament
     // remove all player pairs without a partner from the official pair list
     // See also the constraints in freezeConfig()
     PlayerPairList ppList = c.getPlayerPairs();
-    int catId = c.getId();
     DbTab ppTab = db->getTab(TAB_PAIRS);
     for (int i=0; i < ppList.count(); i++)
     {

@@ -83,7 +83,7 @@ QSize MatchItemDelegate::sizeHint(const QStyleOptionViewItem& option, const QMod
   // selected item
   //int height = (option.state & QStyle::State_Selected) ? ITEM_ROW_HEIGHT_SELECTED : ITEM_ROW_HEIGHT;
 
-  int row = index.row();
+  //int row = index.row();
   //int height = (row == selectedRow) ? ITEM_ROW_HEIGHT_SELECTED : ITEM_ROW_HEIGHT;
   int height = ITEM_ROW_HEIGHT;
 

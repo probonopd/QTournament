@@ -432,7 +432,6 @@ void MainFrame::setupTestScenario(int scenarioID)
     Category ld = cmngr->getCategory("LD");
     MatchMngr* mm = Tournament::getMatchMngr();
     CourtMngr* cm = Tournament::getCourtMngr();
-    ERR e;
 
     // stage and schedule all matches in round 1
     // of LS and LD
