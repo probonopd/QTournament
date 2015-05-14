@@ -152,6 +152,7 @@ void CourtTableView::initContextMenu()
   connect(actAddCourt, SIGNAL(triggered()), this, SLOT(onActionAddCourtTriggered()));
   connect(actWalkoverP1, SIGNAL(triggered(bool)), this, SLOT(onWalkoverP1Triggered()));
   connect(actWalkoverP2, SIGNAL(triggered(bool)), this, SLOT(onWalkoverP2Triggered()));
+  connect(actUndoCall, SIGNAL(triggered(bool)), this, SLOT(onActionUndoCallTriggered()));
 
   // create the context menu and connect it to the actions
   contextMenu = unique_ptr<QMenu>(new QMenu());
@@ -250,6 +251,17 @@ void CourtTableView::onWalkoverP1Triggered()
 void CourtTableView::onWalkoverP2Triggered()
 {
   execWalkover(2);
+}
+
+//----------------------------------------------------------------------------
+
+void CourtTableView::onActionUndoCallTriggered()
+{
+  auto ma = getSelectedMatch();
+  if (ma == nullptr) return;
+
+  MatchMngr* mm = Tournament::getMatchMngr();
+  mm->undoMatchCall(*ma);
 }
 
 //----------------------------------------------------------------------------

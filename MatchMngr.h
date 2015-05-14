@@ -88,6 +88,7 @@ namespace QTournament
     ERR setNextMatchForWinner(const Match& fromMatch, const Match& toMatch, int playerNum) const;
     ERR setNextMatchForLoser(const Match& fromMatch, const Match& toMatch, int playerNum) const;
     ERR walkover(const Match& ma, int playerNum) const;
+    ERR undoMatchCall(const Match& ma) const;
 
     // configuration of MATCH GROUPS
     ERR closeMatchGroup(const MatchGroup& grp);

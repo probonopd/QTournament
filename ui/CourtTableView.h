@@ -41,6 +41,7 @@ private slots:
   void onActionAddCourtTriggered();
   void onWalkoverP1Triggered();
   void onWalkoverP2Triggered();
+  void onActionUndoCallTriggered();
 
 private:
   Tournament* tnmt;

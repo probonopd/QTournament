@@ -1361,6 +1361,56 @@ namespace QTournament {
 
 //----------------------------------------------------------------------------
 
+  ERR MatchMngr::undoMatchCall(const Match& ma) const
+  {
+    if (ma.getState() != STAT_MA_RUNNING)
+    {
+      return MATCH_NOT_RUNNING;
+    }
+
+    // release the players first, because we need the entries
+    // in MA_ACTUAL_PLAYER1A_REF etc.
+    Tournament::getPlayerMngr()->releasePlayerPairsAfterMatch(ma);
+
+    // store the court the match is running on
+    ERR e;
+    auto pCourt = ma.getCourt(&e);
+    assert(e == OK);
+
+    // reset the references to the court and the actual players
+    QVariantList qvl;
+    qvl << MA_ACTUAL_PLAYER1A_REF << QVariant();
+    qvl << MA_ACTUAL_PLAYER1B_REF << QVariant();
+    qvl << MA_ACTUAL_PLAYER2A_REF << QVariant();
+    qvl << MA_ACTUAL_PLAYER2B_REF << QVariant();
+    qvl << MA_COURT_REF << QVariant();
+
+    // set the state back to READY
+    qvl << GENERIC_STATE_FIELD_NAME << static_cast<int>(STAT_MA_READY);
+
+    // apply all changes at once
+    int maId = ma.getId();
+    TabRow matchRow = matchTab[maId];
+    matchRow.update(qvl);
+    emit matchStatusChanged(maId, ma.getSeqNum(), STAT_MA_RUNNING, STAT_MA_READY);
+
+    // release the court
+    bool isOkay = Tournament::getCourtMngr()->releaseCourt(*pCourt);
+    assert(isOkay);
+
+    // update the match group
+    updateAllMatchGroupStates(ma.getCategory());
+
+    // update the category's state
+    Tournament::getCatMngr()->updateCatStatusFromMatchStatus(ma.getCategory());
+
+    // TODO: erase start time from database
+
+    return OK;
+  }
+
+//----------------------------------------------------------------------------
+
   unique_ptr<Match> MatchMngr::getMatchForCourt(const Court &court)
   {
     // search for matches in state RUNNING and assigned to the court
