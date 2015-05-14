@@ -172,6 +172,9 @@
    <class>MatchTableView</class>
    <extends>QTableView</extends>
    <header>ui/MatchTableView.h</header>
+   <slots>
+    <slot>onMatchDoubleClicked(QModelIndex)</slot>
+   </slots>
   </customwidget>
   <customwidget>
    <class>CourtTableView</class>
@@ -232,7 +235,7 @@
   <connection>
    <sender>tvMatches</sender>
    <signal>doubleClicked(QModelIndex)</signal>
-   <receiver>ScheduleTabWidget</receiver>
+   <receiver>tvMatches</receiver>
    <slot>onMatchDoubleClicked(QModelIndex)</slot>
    <hints>
     <hint type="sourcelabel">
@@ -240,8 +243,8 @@
      <y>254</y>
     </hint>
     <hint type="destinationlabel">
-     <x>442</x>
-     <y>244</y>
+     <x>408</x>
+     <y>254</y>
     </hint>
    </hints>
   </connection>
@@ -266,7 +269,6 @@
   <slot>onBtnStageClicked()</slot>
   <slot>onBtnUnstageClicked()</slot>
   <slot>onBtnScheduleClicked()</slot>
-  <slot>onMatchDoubleClicked(QModelIndex)</slot>
   <slot>onCourtDoubleClicked(QModelIndex)</slot>
  </slots>
 </ui>

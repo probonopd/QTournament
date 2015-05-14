@@ -42,7 +42,8 @@ private slots:
   void onContextMenuRequested(const QPoint& pos);
   void onWalkoverP1Triggered();
   void onWalkoverP2Triggered();
-  
+  void onMatchDoubleClicked(const QModelIndex& index);
+
 private:
   Tournament* tnmt;
   QStringListModel* emptyModel;
@@ -59,6 +60,7 @@ private:
   void initContextMenu();
   void updateContextMenu();
   void execWalkover(int playerNum) const;
+  void execCall(const Match& ma, const Court& co);
 };
 
 #endif	/* MATCHTABLEVIEW_H */

@@ -27,7 +27,6 @@ public slots:
     void onBtnScheduleClicked();
     void onIdleSelectionChanged(const QItemSelection &, const QItemSelection &);
     void onStagedSelectionChanged(const QItemSelection &, const QItemSelection &);
-    void onMatchDoubleClicked(const QModelIndex& index);
     void onCourtDoubleClicked(const QModelIndex& index);
 
 private:
