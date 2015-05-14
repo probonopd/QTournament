@@ -1511,6 +1511,11 @@ namespace QTournament {
 
   void MatchMngr::resolveSymbolicNamesAfterFinishedMatch(const Match &ma) const
   {
+    if (ma.getState() != STAT_MA_FINISHED)
+    {
+      return;
+    }
+
     int matchId = ma.getId();
     auto winnerPair = ma.getWinner();
     auto loserPair = ma.getLoser();
@@ -1523,8 +1528,9 @@ namespace QTournament {
       ml = getObjectsByColumnValue<Match>(matchTab, MA_PAIR1_SYMBOLIC_VAL, matchId);
       for (Match m : ml)
       {
-        // we may only modify matches in state FUZZY
-        if (m.getState() != STAT_MA_FUZZY) continue;
+        // we may only modify matches in state FUZZY or INCOMPLETE
+        OBJ_STATE stat = m.getState();
+        if ((stat != STAT_MA_FUZZY) && (stat != STAT_MA_INCOMPLETE)) continue;
 
         m.row.update(MA_PAIR1_REF, winnerPair->getPairId());  // set the reference to the winner
         m.row.update(MA_PAIR1_SYMBOLIC_VAL, 0);   // delete symbolic reference
@@ -1534,8 +1540,9 @@ namespace QTournament {
       ml = getObjectsByColumnValue<Match>(matchTab, MA_PAIR2_SYMBOLIC_VAL, matchId);
       for (Match m : ml)
       {
-        // we may only modify matches in state FUZZY
-        if (m.getState() != STAT_MA_FUZZY) continue;
+        // we may only modify matches in state FUZZY or INCOMPLETE
+        OBJ_STATE stat = m.getState();
+        if ((stat != STAT_MA_FUZZY) && (stat != STAT_MA_INCOMPLETE)) continue;
 
         m.row.update(MA_PAIR2_REF, winnerPair->getPairId());  // set the reference to the winner
         m.row.update(MA_PAIR2_SYMBOLIC_VAL, 0);   // delete symbolic reference
@@ -1549,8 +1556,9 @@ namespace QTournament {
       ml = getObjectsByColumnValue<Match>(matchTab, MA_PAIR1_SYMBOLIC_VAL, -matchId);
       for (Match m : ml)
       {
-        // we may only modify matches in state FUZZY
-        if (m.getState() != STAT_MA_FUZZY) continue;
+        // we may only modify matches in state FUZZY or INCOMPLETE
+        OBJ_STATE stat = m.getState();
+        if ((stat != STAT_MA_FUZZY) && (stat != STAT_MA_INCOMPLETE)) continue;
 
         m.row.update(MA_PAIR1_REF, loserPair->getPairId());  // set the reference to the winner
         m.row.update(MA_PAIR1_SYMBOLIC_VAL, 0);   // delete symbolic reference
@@ -1560,8 +1568,9 @@ namespace QTournament {
       ml = getObjectsByColumnValue<Match>(matchTab, MA_PAIR2_SYMBOLIC_VAL, -matchId);
       for (Match m : ml)
       {
-        // we may only modify matches in state FUZZY
-        if (m.getState() != STAT_MA_FUZZY) continue;
+        // we may only modify matches in state FUZZY or INCOMPLETE
+        OBJ_STATE stat = m.getState();
+        if ((stat != STAT_MA_FUZZY) && (stat != STAT_MA_INCOMPLETE)) continue;
 
         m.row.update(MA_PAIR2_REF, loserPair->getPairId());  // set the reference to the winner
         m.row.update(MA_PAIR2_SYMBOLIC_VAL, 0);   // delete symbolic reference
