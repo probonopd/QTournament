@@ -151,8 +151,9 @@ namespace QTournament
 
   ERR EliminationCategory::onRoundCompleted(int round)
   {
-    // create ranking entries for everyone who played.
-    // this is only to get the accumulated values for the finalists right
+    // create ranking entries for everyone who played
+    // and for everyone who achieved a final rank in a
+    // previous round
     ERR err;
     RankingMngr* rm = Tournament::getRankingMngr();
     PlayerPairList ppList;
@@ -163,6 +164,25 @@ namespace QTournament
       ppList = this->getRemainingPlayersAfterRound(round - 1, &err);
       if (err != OK) return err;
     }
+    auto rll = rm->getSortedRanking(*this, round-1);
+    for (auto rl : rll)
+    {
+      for (RankingEntry re : rl)
+      {
+        if (re.getRank() != RankingEntry::NO_RANK_ASSIGNED)
+        {
+          auto pp = re.getPlayerPair();
+          assert(pp != nullptr);
+          if (!(ppList.contains(*pp)))
+          {
+            ppList.append(*pp);
+          }
+        }
+      }
+    }
+
+    // create unsorted entries for everyone who played in this round
+    // or who achieved a final rank in a previous round
     rm->createUnsortedRankingEntriesForLastRound(*this, &err, ppList);
     if (err != OK) return err;
 
@@ -186,7 +206,7 @@ namespace QTournament
           }
 
           int loserRank = ma.getLoserRank();
-          if (winnerRank > 0)
+          if (loserRank > 0)
           {
             auto l = ma.getLoser();
             assert(l != nullptr);

@@ -392,6 +392,7 @@ namespace QTournament
                 (*prevMatch)->setNextMatchForLoser(**nextMatch, bmd->nextMatchPlayerPosForWinner);
               }
             }
+            matchesChanged = true;
           }
 
           // player 2 does not exist and player 1 wins automatically
@@ -400,6 +401,7 @@ namespace QTournament
           if (bmd->nextMatchForLoser > 0)
           {
             updatePlayer(bmd->nextMatchForLoser, bmd->nextMatchPlayerPosForLoser, BracketMatchData::UNUSED_PLAYER);
+            matchesChanged = true;
           }
 
           // we may only delete this match if the winner does not achieve a final rank.
@@ -416,7 +418,66 @@ namespace QTournament
         ++i;
       }
 
+      // third step:
+      // all matches that have one "unused player" and that have a final rank for the winner
+      // transfer their final rank to the previous match. Example:
+      // in match 42 we have the winner of #21 (player 1) and UNUSED_PLAYER (player 2). The
+      // winner rank of match #42 is 9. So we change match #21 from "winner goes to #42" to "winner goes to
+      // rank 9" and delete match #42
+      i = bracketMatches.begin();
+      while (i != bracketMatches.end())
+      {
+        upBracketMatchData& bmd = *i;
+        if ((bmd->initialRank_Player1 == BracketMatchData::UNUSED_PLAYER) && (bmd->initialRank_Player2 < 0))
+        {
+          int prevMatchId = -(bmd->initialRank_Player2);
+          auto prevMatch = getMatchById(prevMatchId);
+          int winnerRank = bmd->nextMatchForWinner;
+          assert(winnerRank < 0);   // must be true because of step 2 before
+          if ((*prevMatch)->nextMatchForWinner == bmd->getBracketMatchId())
+          {
+            (*prevMatch)->nextMatchForWinner = winnerRank;
+          } else {
+            (*prevMatch)->nextMatchForLoser = winnerRank;
+          }
+
+          i = bracketMatches.erase(i);
+          matchesChanged = true;
+          continue;
+        }
+        if ((bmd->initialRank_Player2 == BracketMatchData::UNUSED_PLAYER) && (bmd->initialRank_Player1 < 0))
+        {
+          int prevMatchId = -(bmd->initialRank_Player1);
+          assert(prevMatchId > 0);    // there should never be a final rank for a non-symbolic player
+          auto prevMatch = getMatchById(prevMatchId);
+          int winnerRank = bmd->nextMatchForWinner;
+          assert(winnerRank < 0);   // must be true because of step 2 before
+          if ((*prevMatch)->nextMatchForWinner == bmd->getBracketMatchId())
+          {
+            (*prevMatch)->nextMatchForWinner = winnerRank;
+          } else {
+            (*prevMatch)->nextMatchForLoser = winnerRank;
+          }
+
+          i = bracketMatches.erase(i);
+          matchesChanged = true;
+          continue;
+        }
+        ++i;
+      }
     }
+
+    // before we return we want to check that no match has "UNUSED_PLAYER" anymore
+    upBracketMatchDataVector::iterator i = bracketMatches.begin();
+    while (i != bracketMatches.end())
+    {
+      upBracketMatchData& bmd = *i;
+      assert(bmd->initialRank_Player1 != BracketMatchData::UNUSED_PLAYER);
+      assert(bmd->initialRank_Player2 != BracketMatchData::UNUSED_PLAYER);
+      ++i;
+    }
+
+    // Done.
   }
 
 //----------------------------------------------------------------------------
