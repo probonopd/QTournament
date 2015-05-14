@@ -559,7 +559,7 @@ void MainFrame::setupTestScenario(int scenarioID)
     tmngr->createNewTeam("Ranking Team");
     Category ls = cmngr->getCategory("LS");
 
-    for (int i=0; i < 8; i++)
+    for (int i=0; i < 3; i++)
     {
       QString lastName = "Ranking" + QString::number(i);
       pmngr->createNewPlayer("Lady", lastName, F, "Ranking Team");

@@ -111,7 +111,7 @@ namespace QTournament
         newBracketMatch2->depthInBracket = curDepth;
 
         // a special treatment for semifinals: losers get a match for third place
-        if (curDepth == 1)
+        if ((curDepth == 1) && (numPlayers > 3))
         {
           newBracketMatch1->setNextMatchForLoser(*thirdPlaceMatch, 1);
           newBracketMatch2->setNextMatchForLoser(*thirdPlaceMatch, 2);
