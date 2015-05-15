@@ -13,6 +13,7 @@
 #include "CourtMngr.h"
 #include "Court.h"
 #include "ui/GuiHelpers.h"
+#include "SignalRelay.h"
 
 MatchTableView::MatchTableView(QWidget* parent)
   :QTableView(parent)
@@ -45,6 +46,10 @@ MatchTableView::MatchTableView(QWidget* parent)
 
   // setup the context menu
   initContextMenu();
+
+  // register for an ackward signal relay mechanism in order
+  // to give reports access to the currently selected match
+  SignalRelay::getInstance()->registerSender(this);
 }
 
 //----------------------------------------------------------------------------
@@ -139,6 +144,12 @@ void MatchTableView::onSelectionChanged(const QItemSelection& selectedItem, cons
   {
     //resizeRowToContents(item.top());
   }
+
+  // emit a signal containing the newly selected match
+  // this is used by the result sheets report to update
+  // the range of printed matches
+  auto ma = getSelectedMatch();
+  emit matchSelectionChanged((ma == nullptr) ? -1 : ma->getId());
 }
 
 //----------------------------------------------------------------------------

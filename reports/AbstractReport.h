@@ -30,6 +30,9 @@ namespace QTournament
     static constexpr char HEADLINE_STYLE[] = "Headline";
     static constexpr char SUBHEADLINE_STYLE[] = "SubHeadline";
     static constexpr char INTERMEDIATEHEADLINE_STYLE[] = "IntermediateHeadline";
+    static constexpr char RESULTSHEET_NAME_STYLE[] = "ResultSheet_Name";
+    static constexpr char RESULTSHEET_TEAM_STYLE[] = "ResultSheet_Team";
+    static constexpr char RESULTSHEET_GAMELABEL_STYLE[] = "ResultSheet_GameLabel";
 
     AbstractReport(TournamentDB* _db, const QString& _name);
     virtual ~AbstractReport();

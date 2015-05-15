@@ -1045,6 +1045,22 @@ namespace QTournament {
 
 //----------------------------------------------------------------------------
 
+  unique_ptr<Match> MatchMngr::getMatchByMatchNum(int maNum) const
+  {
+    try {
+      TabRow r = matchTab.getSingleRowByColumnValue(MA_NUM, maNum);
+      Match* ma_raw = new Match(db, r.getId());
+      return unique_ptr<Match>(ma_raw);
+    }
+    catch (std::exception e)
+    {
+     return nullptr;  // null indicates error
+    }
+    return nullptr;
+  }
+
+//----------------------------------------------------------------------------
+
   /**
    * Determines the next callable match and the next free court. Can be used for
    * automatically calling the next match, e.g., after a previous match is finished

@@ -11,6 +11,7 @@
 #include <QString>
 #include <QFile>
 #include <stdexcept>
+#include "SignalRelay.h"
 
 using namespace dbOverlay;
 
@@ -168,6 +169,8 @@ void Tournament::close()
   db->close();
   delete db;
   db = nullptr;
+
+  SignalRelay::cleanUp();
 }
 
 //----------------------------------------------------------------------------

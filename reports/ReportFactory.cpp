@@ -7,6 +7,7 @@
 #include "CatRoundStatus.h"
 #include "Standings.h"
 #include "InOutList.h"
+#include "ResultSheets.h"
 
 namespace QTournament
 {
@@ -17,6 +18,7 @@ namespace QTournament
   constexpr char ReportFactory::REP__RESULTS_BY_GROUP[];
   constexpr char ReportFactory::REP__STANDINGS_BY_CATEGORY[];
   constexpr char ReportFactory::REP__INOUTLIST_BY_CATEGORY[];
+  constexpr char ReportFactory::REP__RESULTSHEETS[];
 
   ReportFactory::ReportFactory(TournamentDB* _db)
     : db(_db)
@@ -108,6 +110,10 @@ namespace QTournament
       }
     }
 
+    // we can always generate result sheets
+    result.append(genRepName(REP__RESULTSHEETS, 6, 0));
+    result.append(genRepName(REP__RESULTSHEETS, 9, 0));
+
 
     return result;
   }
@@ -178,6 +184,13 @@ namespace QTournament
       return upAbstractReport(new InOutList(db, repName, cat, round));
     }
 
+    // result sheets
+    if (pureRepName == REP__RESULTSHEETS)
+    {
+      int numMatches = intParam1;
+      return upAbstractReport(new ResultSheets(db, repName, numMatches));
+    }
+
     return nullptr;
   }
 
@@ -202,11 +215,18 @@ namespace QTournament
 
   QString ReportFactory::genRepName(QString repBaseName, const Category& cat, int intParam) const
   {
+    return genRepName(repBaseName, cat.getId(), intParam);
+  }
+
+//----------------------------------------------------------------------------
+
+  QString ReportFactory::genRepName(QString repBaseName, int intParam1, int intParam2) const
+  {
     QString repName = repBaseName;
-    repName += "," + QString::number(cat.getId());
-    if (intParam > 0)
+    repName += "," + QString::number(intParam1);
+    if (intParam2 > 0)
     {
-     repName += "," + QString::number(intParam);
+     repName += "," + QString::number(intParam2);
     }
 
     return repName;

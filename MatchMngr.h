@@ -45,6 +45,9 @@ namespace QTournament
     MatchList getMatchesForMatchGroup(const MatchGroup& grp) const;
     unique_ptr<Match> getMatchForCourt(const Court& court);
     unique_ptr<Match> getMatchForPlayerPairAndRound(const PlayerPair& pp, int round) const;
+    unique_ptr<Match> getMatchBySeqNum(int maSeqNum) const;
+    unique_ptr<Match> getMatchByMatchNum(int maNum) const;
+    unique_ptr<Match> getMatch(int id) const;
 
     // boolean hasXXXXX functions for MATCHES
     bool hasMatchesInCategory(const Category& cat, int round=-1) const;
@@ -58,8 +61,6 @@ namespace QTournament
 
     // boolean hasXXXXX functions for MATCH GROUPS
     bool hasMatchGroup(const Category& cat, const int round, const int grpNum, ERR* err=nullptr);
-    unique_ptr<Match> getMatchBySeqNum(int maSeqNum) const;
-    unique_ptr<Match> getMatch(int id) const;
 
     // staging of match groups
     ERR stageMatchGroup(const MatchGroup& grp);

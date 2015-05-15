@@ -80,7 +80,9 @@ HEADERS += \
     ui/DlgSeedingEditor.h \
     ui/DlgTournamentSettings.h \
     ui/GameResultWidget.h \
-    ui/DlgMatchResult.h
+    ui/DlgMatchResult.h \
+    reports/ResultSheets.h \
+    SignalRelay.h
 
 SOURCES += \
     Category.cpp \
@@ -151,7 +153,9 @@ SOURCES += \
     ui/DlgSeedingEditor.cpp \
     ui/DlgTournamentSettings.cpp \
     ui/GameResultWidget.cpp \
-    ui/DlgMatchResult.cpp
+    ui/DlgMatchResult.cpp \
+    reports/ResultSheets.cpp \
+    SignalRelay.cpp
 
 RESOURCES += \
     tournament.qrc

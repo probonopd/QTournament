@@ -31,10 +31,12 @@ namespace QTournament
     static constexpr char REP__RESULTS_BY_GROUP[] = "ResultsByGroup";
     static constexpr char REP__STANDINGS_BY_CATEGORY[] = "StandingsByCategory";
     static constexpr char REP__INOUTLIST_BY_CATEGORY[] = "InOutListByCategory";
+    static constexpr char REP__RESULTSHEETS[] = "ResultSheets";
 
   private:
     TournamentDB* db;
     QString genRepName(QString repBaseName, const Category& cat, int intParam) const;
+    QString genRepName(QString repBaseName, int intParam1, int intParam2) const;
   };
 
 }

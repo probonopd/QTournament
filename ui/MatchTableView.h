@@ -44,6 +44,9 @@ private slots:
   void onWalkoverP2Triggered();
   void onMatchDoubleClicked(const QModelIndex& index);
 
+signals:
+  void matchSelectionChanged(int newlySelectedMatchId);
+
 private:
   Tournament* tnmt;
   QStringListModel* emptyModel;

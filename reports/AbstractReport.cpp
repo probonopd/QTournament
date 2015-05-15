@@ -6,6 +6,9 @@ namespace QTournament
   constexpr char AbstractReport::HEADLINE_STYLE[];
   constexpr char AbstractReport::SUBHEADLINE_STYLE[];
   constexpr char AbstractReport::INTERMEDIATEHEADLINE_STYLE[];
+  constexpr char AbstractReport::RESULTSHEET_NAME_STYLE[];
+  constexpr char AbstractReport::RESULTSHEET_TEAM_STYLE[];
+  constexpr char AbstractReport::RESULTSHEET_GAMELABEL_STYLE[];
 
 AbstractReport::AbstractReport(TournamentDB* _db, const QString& _name)
   :db(_db), name(_name), cfg(KeyValueTab::getTab(db, TAB_CFG))
@@ -88,6 +91,20 @@ void AbstractReport::prepStyles(upSimpleReport& rep) const
   style = rep->createChildTextStyle(INTERMEDIATEHEADLINE_STYLE);
   style->setFontSize_MM(3.5);
 
+  // player names in result sheets: 3 mm, bold
+  style = rep->createChildTextStyle(RESULTSHEET_NAME_STYLE);
+  style->setFontSize_MM(3.0);
+  style->setBoldState(true);
+
+  // team names in result sheets: 2 mm, italic
+  style = rep->createChildTextStyle(RESULTSHEET_TEAM_STYLE);
+  style->setFontSize_MM(2.0);
+  style->setItalicsState(true);
+
+  // "Game xx:"-labels in result sheets: 2,5 mm, bold
+  style = rep->createChildTextStyle(RESULTSHEET_GAMELABEL_STYLE);
+  style->setFontSize_MM(2.5);
+  style->setBoldState(true);
 }
 
 //----------------------------------------------------------------------------

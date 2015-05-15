@@ -264,11 +264,28 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>tvMatches</sender>
+   <signal>clicked(QModelIndex)</signal>
+   <receiver>ScheduleTabWidget</receiver>
+   <slot>onMatchSelectionChanged()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>408</x>
+     <y>254</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>442</x>
+     <y>244</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>onBtnStageClicked()</slot>
   <slot>onBtnUnstageClicked()</slot>
   <slot>onBtnScheduleClicked()</slot>
   <slot>onCourtDoubleClicked(QModelIndex)</slot>
+  <slot>onMatchSelectionChanged()</slot>
  </slots>
 </ui>
