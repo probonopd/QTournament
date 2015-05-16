@@ -23,6 +23,7 @@ namespace QTournament
     static constexpr double A4_WIDTH__MM = 210.0;
     static constexpr double A4_HEIGHT__MM = 297.0;
     static constexpr double DEFAULT_MARGIN__MM = 10.0;
+    static constexpr double BEFORE_HEADLINE_SKIP__MM = 2.0;
     static constexpr double AFTER_HEADLINE_SKIP__MM = 5.0;
     static constexpr double HEAD_SUBHEAD_SKIP__MM = 0.5;
     static constexpr double SKIP_BEFORE_INTERMEDIATE_HEADER__MM = 4.0;

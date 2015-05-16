@@ -58,6 +58,7 @@ namespace QTournament
       }
 
       CatRoundStatus crs = cat.getRoundStatus();
+      result.append(genRepName(REP__RESULTS_AND_NEXT_MATCHES, cat, 0));   // llist of initial matches
       for (int round=1; round <= crs.getFinishedRoundsCount(); ++round)
       {
         result.append(genRepName(REP__RESULTS, cat, round));

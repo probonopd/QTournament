@@ -63,7 +63,7 @@ void AbstractReport::setHeaderAndHeadline(SimpleReportLib::SimpleReportGenerator
   SimpleReportLib::TabSet ts;
   ts.addTab(A4_WIDTH__MM / 2.0 - DEFAULT_MARGIN__MM, SimpleReportLib::TAB_JUSTIFICATION::TAB_CENTER);
   rep->pushTabs(ts);
-  rep->writeLine("\t" + headline, HEADLINE_STYLE);
+  rep->writeLine("\t" + headline, HEADLINE_STYLE, 0.0, BEFORE_HEADLINE_SKIP__MM);
   if (subHead.length() > 0)
   {
     rep->skip(HEAD_SUBHEAD_SKIP__MM);

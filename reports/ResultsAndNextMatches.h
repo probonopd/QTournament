@@ -27,6 +27,11 @@ namespace QTournament
   private:
     Category cat;
     int round;
+
+    void printResultPart(upSimpleReport& rep) const;
+    void printNextMatchPart(upSimpleReport& rep) const;
+
+    std::function<bool (Match& ma1, Match& ma2)> getSortFunction_MatchByGroupAndNumber() const;
   };
 
 }
