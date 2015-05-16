@@ -147,6 +147,20 @@ namespace QTournament {
 
 //----------------------------------------------------------------------------
 
+  QString PlayerPair::getDisplayName_FirstNameFirst() const
+  {
+    QString result = getPlayer1().getDisplayName_FirstNameFirst();
+    if (hasPlayer2())
+    {
+      result += " / ";
+      result += getPlayer2().getDisplayName_FirstNameFirst();
+    }
+
+    return result;
+  }
+
+//----------------------------------------------------------------------------
+
   int PlayerPair::getPairId() const
   {
     return pairId;

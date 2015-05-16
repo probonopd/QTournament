@@ -94,7 +94,13 @@ upSimpleReport ResultSheets::regenerateReport() const
       // we might have empty sheets due to rounding
       if (matchIndex >= matchList.size()) continue;
 
+      result->warpTo(n * SHEET_HEIGHT__MM + SHEET_TOP_MARGIN__MM);
       printMatchData(result, matchList.at(matchIndex));
+
+      if (n < (SHEETS_PER_PAGE - 1))
+      {
+        result->addHorLine_absPos((n+1) * SHEET_HEIGHT__MM, SimpleReportLib::THIN);
+      }
     }
 
     if (p < (numPages - 1))
@@ -114,7 +120,11 @@ QStringList ResultSheets::getReportLocators() const
   QStringList result;
 
   QString loc = tr("Result Sheets::");
-  loc += tr("selected match plus ") + QString::number(numMatches-1);
+  loc += tr("selected match");
+  if (numMatches > 1)
+  {
+    loc += " " + tr("plus") + " " + QString::number(numMatches-1);
+  }
 
   result.append(loc);
 
@@ -139,12 +149,44 @@ void ResultSheets::onMatchSelectionChanged(int newlySelectedMatchId)
 void ResultSheets::printMatchData(upSimpleReport& rep, const Match& ma) const
 {
   QString header = tr("Match Number: ") + QString::number(ma.getMatchNumber());
-  header += "\t\t\t\t" + tr("Court") + ": _______";
+  header += ", " + ma.getCategory().getName() + "\t\t\t\t" + tr("Court: ____________");
   rep->writeLine(header);
   rep->skip(3.0);
-  QString name1 = ma.getPlayerPair1().getDisplayName();
-  QString name2 = ma.getPlayerPair1().getDisplayName();
-  rep->writeLine("\t" + name1 + "\t:\t" + name2, RESULTSHEET_NAME_STYLE);
+
+  // write player name(s)
+  PlayerPair pp1 = ma.getPlayerPair1();
+  PlayerPair pp2 = ma.getPlayerPair2();
+  QString name1 = pp1.getPlayer1().getDisplayName_FirstNameFirst();
+  QString name2 = pp2.getPlayer1().getDisplayName_FirstNameFirst();
+
+  if (pp1.hasPlayer2())
+  {
+    name1 += " /";
+    name2 += " /";
+    rep->writeLine("\t" + name1 + "\t:\t" + name2, RESULTSHEET_NAME_STYLE);
+    name1 = pp1.getPlayer2().getDisplayName_FirstNameFirst();
+    name2 = pp2.getPlayer2().getDisplayName_FirstNameFirst();
+    rep->writeLine("\t" + name1 + "\t\t" + name2, RESULTSHEET_NAME_STYLE);
+  } else {
+    rep->writeLine("\t" + name1 + "\t:\t" + name2, RESULTSHEET_NAME_STYLE);
+  }
+
+  // write the team names
+  QString team1 = pp1.getDisplayName_Team();
+  QString team2 = pp2.getDisplayName_Team();
+  rep->writeLine("\t" + team1 + "\t\t" + team2, RESULTSHEET_TEAM_STYLE);
+
+  rep->skip(8.0);
+
+  // print the score area
+  for (int n=0; n < GAMES_PER_SHEET; ++n)
+  {
+    QString txt = QString::number(n+1) + ". ";
+    txt += tr("Game:");
+    txt += "\t__________     \t:\t     __________";
+    rep->writeLine(txt, RESULTSHEET_GAMELABEL_STYLE);
+    rep->skip(6.5);
+  }
 }
 
 //----------------------------------------------------------------------------

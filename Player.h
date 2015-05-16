@@ -30,6 +30,7 @@ namespace QTournament
     
   public:
     QString getDisplayName(int maxLen = 0) const;
+    QString getDisplayName_FirstNameFirst() const;
     QString getFirstName() const;
     QString getLastName() const;
     ERR rename(const QString& newFirst, const QString& newLast);

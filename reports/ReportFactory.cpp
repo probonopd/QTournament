@@ -111,8 +111,10 @@ namespace QTournament
     }
 
     // we can always generate result sheets
-    result.append(genRepName(REP__RESULTSHEETS, 6, 0));
-    result.append(genRepName(REP__RESULTSHEETS, 9, 0));
+    result.append(genRepName(REP__RESULTSHEETS, 1, 0));
+    result.append(genRepName(REP__RESULTSHEETS, 4, 0));
+    result.append(genRepName(REP__RESULTSHEETS, 8, 0));
+    result.append(genRepName(REP__RESULTSHEETS, 12, 0));
 
 
     return result;

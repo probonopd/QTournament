@@ -74,6 +74,16 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
+  QString Player::getDisplayName_FirstNameFirst() const
+  {
+    QString first = row[PL_FNAME].toString();
+    QString last = row[PL_LNAME].toString();
+
+    return first + " " + last;
+  }
+
+//----------------------------------------------------------------------------
+
   ERR Player::rename(const QString& newFirst, const QString& newLast)
   {
     return Tournament::getPlayerMngr()->renamePlayer(*this, newFirst, newLast);
