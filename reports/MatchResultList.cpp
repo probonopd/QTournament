@@ -55,13 +55,18 @@ upSimpleReport MatchResultList::regenerateReport() const
   upSimpleReport result = createEmptyReport_Portrait();
   QString repName = cat.getName() + tr(" -- Results of Round ") + QString::number(round);
   setHeaderAndHeadline(result.get(), repName, subHeader);
-  result->addTab(10.0, SimpleReportLib::TAB_LEFT);
+
+  // prepare a tabset for a table with match results
+  SimpleReportLib::TabSet ts;
+  ts.addTab(8.0, SimpleReportLib::TAB_JUSTIFICATION::TAB_RIGHT);   // the match number
+  ts.addTab(12.0, SimpleReportLib::TAB_JUSTIFICATION::TAB_LEFT);   // the players
+  ts.addTab(145, SimpleReportLib::TAB_JUSTIFICATION::TAB_LEFT);   // dummy tab for a column label
   for (int game=0; game < 5; ++game)
   {
-    double colonPos = 150 + game*10.0;
-    result->addTab(colonPos - 1.0,  SimpleReportLib::TAB_RIGHT);  // first score
-    result->addTab(colonPos,  SimpleReportLib::TAB_CENTER);  // colon
-    result->addTab(colonPos + 1.0,  SimpleReportLib::TAB_LEFT);  // second score
+    double colonPos = 150 + game*12.0;
+    ts.addTab(colonPos - 1.0,  SimpleReportLib::TAB_JUSTIFICATION::TAB_RIGHT);  // first score
+    ts.addTab(colonPos,  SimpleReportLib::TAB_JUSTIFICATION::TAB_CENTER);  // colon
+    ts.addTab(colonPos + 1.0,  SimpleReportLib::TAB_JUSTIFICATION::TAB_LEFT);  // second score
   }
 
   // print a warning if the round is incomplete
@@ -82,6 +87,11 @@ upSimpleReport MatchResultList::regenerateReport() const
       printIntermediateHeader(result, GuiHelpers::groupNumToLongString(grpNum));
     }
 
+    SimpleReportLib::TableWriter tw(ts);
+    tw.setHeader(0, tr("Match"));
+    tw.setHeader(2, tr("Player"));
+    tw.setHeader(3, tr("Game results"));
+
     // print each finished match
     MatchList ml = mg.getMatches();
     std::sort(ml.begin(), ml.end(), [](Match& m1, Match& m2){
@@ -95,26 +105,34 @@ upSimpleReport MatchResultList::regenerateReport() const
 
       hasAtLeastOneFinishedMatch = true;
 
-      QString txtLine = QString::number(ma.getMatchNumber()) + "\t";
-      txtLine += ma.getPlayerPair1().getDisplayName();
-      txtLine += "   :   ";
-      txtLine += ma.getPlayerPair2().getDisplayName();
-      txtLine += "\t";
+      QStringList rowContent;
+      rowContent << "";  // first column not used
+      rowContent << QString::number(ma.getMatchNumber());
 
-      QString scoreString = (ma.getScore())->toString();
-      scoreString.replace(",", "\t");
-      scoreString.replace(":", "\t:\t");
-      txtLine += scoreString;
+      QString pNames = ma.getPlayerPair1().getDisplayName();
+      pNames += "   :   ";
+      pNames += ma.getPlayerPair2().getDisplayName();
+      rowContent << pNames;
+      rowContent << "";  // a dummy tab for the "Game results" label
 
-      // do we need to start a new page?
-      if (!(result->hasSpaceForAnotherLine(QString())))
+      auto ms = ma.getScore();
+      assert(ms != nullptr);
+      for (int i=0; i < ms->getNumGames(); ++i)
       {
-        // the new page is automatically created by the following call
-        printIntermediateHeader(result, GuiHelpers::groupNumToLongString(grpNum) + tr(" (cont.)"));
-      }
+        auto gs = ms->getGame(i);
+        assert(gs != nullptr);
 
-      result->writeLine(txtLine);
+        tuple<int, int> sc = gs->getScore();
+        rowContent << QString::number(get<0>(sc));
+        rowContent << ":";
+        rowContent << QString::number(get<1>(sc));
+      }
+      tw.appendRow(rowContent);
+
     }
+    tw.setNextPageContinuationCaption(GuiHelpers::groupNumToLongString(grpNum) + tr(" (cont.)"));
+    tw.write(result.get());
+    result->skip(3.0);
   }
 
   // set header and footer

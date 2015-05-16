@@ -84,7 +84,7 @@ upSimpleReport Standings::regenerateReport() const
     // a pair of three tabs for each matches, games and points
     for (int i=0; i< 3; ++i)
     {
-      double colonPos = 100 + i*30.0;
+      double colonPos = 120 + i*30.0;
       ts.addTab(colonPos - 1.0,  SimpleReportLib::TAB_RIGHT);  // first number
       ts.addTab(colonPos,  SimpleReportLib::TAB_CENTER);  // colon
       ts.addTab(colonPos + 1.0,  SimpleReportLib::TAB_LEFT);  // second number
@@ -133,6 +133,7 @@ upSimpleReport Standings::regenerateReport() const
 
     tw.setNextPageContinuationCaption(tableName + tr(" (cont.)"));
     tw.write(result.get());
+    result->skip(3.0);
   }
 
   // set header and footer
