@@ -77,11 +77,18 @@ QString GuiHelpers::groupNumToLongString(int grpNum)
  *
  * @return a string with the announcement
  */
-QString GuiHelpers::prepCall(const QTournament::Match &ma, const QTournament::Court &co)
+QString GuiHelpers::prepCall(const QTournament::Match &ma, const QTournament::Court &co, int nCall)
 {
   QString call = tr("Please announce:\n\n\n");
 
-  call += tr("Next match,\n\n");
+  if (nCall == 0)
+  {
+    call += tr("Next match,\n\n");
+  } else {
+    call += QString::number(nCall + 1) + ". ";
+    call += tr("call for ");
+  }
+
   call += tr("match number ") + QString::number(ma.getMatchNumber()) + " on court number " + QString::number(co.getNumber());
   call += "\n\n";
   call += ma.getCategory().getName() + ",\n\n";
@@ -89,6 +96,13 @@ QString GuiHelpers::prepCall(const QTournament::Match &ma, const QTournament::Co
   call += tr("        versus\n\n");
   call += ma.getPlayerPair2().getCallName(tr("and")) + ",\n\n";
   call += tr("match number ") + QString::number(ma.getMatchNumber()) + " on court number " + QString::number(co.getNumber());
+  if (nCall > 0)
+  {
+    call += "\n\n";
+    call += tr("THIS IS THE ");
+    call += QString::number(nCall + 1) + ". ";
+    call += tr("CALL!");
+  }
   call += "\n\n\n";
   call += tr("Call executed?");
 

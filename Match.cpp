@@ -244,6 +244,66 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
+  QDateTime Match::getStartTime() const
+  {
+    QVariant startTime = row[MA_START_TIME];
+    if (startTime.isNull()) return QDateTime();   // return null-time as error indicator
+    uint epochSecs = startTime.toUInt();
+
+    return QDateTime::fromTime_t(epochSecs);
+  }
+
+//----------------------------------------------------------------------------
+
+  bool Match::addAddtionalCallTime() const
+  {
+    QDateTime curDateTime = QDateTime::currentDateTimeUtc();
+    uint epochSecs = curDateTime.toTime_t();
+    QString sEpochSecs = QString::number(epochSecs);
+
+    QString callTimes = "";
+    QVariant _callTimes = row[MA_ADDITIONAL_CALL_TIMES];
+    if (!(_callTimes.isNull()))
+    {
+      callTimes = _callTimes.toString() + ",";
+    }
+    callTimes += sEpochSecs;
+
+    // we have a limit of 50 chars for this CSV-string
+    if (callTimes.length() <= 50)
+    {
+      row.update(MA_ADDITIONAL_CALL_TIMES, callTimes);
+      return true;
+    }
+
+    return false;
+  }
+
+//----------------------------------------------------------------------------
+
+  QList<QDateTime> Match::getAdditionalCallTimes() const
+  {
+    QList<QDateTime> result;
+
+    QVariant _callTimes = row[MA_ADDITIONAL_CALL_TIMES];
+    if (_callTimes.isNull())
+    {
+      return result;
+    }
+
+    QStringList sCallTimes = _callTimes.toString().split(",");
+
+    for (QString sCallTime : sCallTimes)
+    {
+      uint epochSecs = sCallTime.toUInt();
+      result.append(QDateTime::fromTime_t(epochSecs));
+    }
+
+    return result;
+  }
+
+//----------------------------------------------------------------------------
+
   int Match::getSymbolicPlayerPairName(int playerPos) const
   {
     // if we have a regular PP, don't return a symbolic name

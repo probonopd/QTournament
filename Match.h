@@ -10,6 +10,8 @@
 
 #include <memory>
 
+#include <QDateTime>
+
 #include "GenericDatabaseObject.h"
 #include "TournamentDB.h"
 #include "TabRow.h"
@@ -56,6 +58,10 @@ namespace QTournament
     int getLoserRank() const;
 
     bool isWalkoverPossible() const;
+
+    QDateTime getStartTime() const;
+    bool addAddtionalCallTime() const;
+    QList<QDateTime> getAdditionalCallTimes() const;
 
   private:
     Match (TournamentDB* db, int rowId);

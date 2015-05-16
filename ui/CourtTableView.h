@@ -42,8 +42,10 @@ private slots:
   void onWalkoverP1Triggered();
   void onWalkoverP2Triggered();
   void onActionUndoCallTriggered();
+  void onActionAddCallTriggered();
 
 private:
+  static constexpr int MAX_NUM_ADD_CALL = 3;
   Tournament* tnmt;
   QStringListModel* emptyModel;
   QSortFilterProxyModel* sortedModel;
@@ -56,6 +58,7 @@ private:
   QMenu* walkoverSelectionMenu;
   QAction* actWalkoverP1;
   QAction* actWalkoverP2;
+  QAction* actAddCall;
 
   void initContextMenu();
   void updateContextMenu(bool isRowClicked);

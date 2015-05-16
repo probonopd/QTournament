@@ -9,6 +9,8 @@
 
 #include <QPainter>
 
+#include <QDateTime>
+
 #include "Tournament.h"
 #include "Match.h"
 #include "DelegateItemLED.h"
@@ -159,7 +161,20 @@ void CourtItemDelegate::paintMatchInfoCell_Selected(QPainter *painter, const QSt
   GuiHelpers::drawFormattedText(painter, row2, txt, Qt::AlignVCenter|Qt::AlignLeft, false, false, 1.0);
 
   // draw a second info line with call times
-  txt = "1. call: XXXXXXXX,   2. call: XXXXXXXXXX,    3. call: XXXXXXXXX";
+  QDateTime startTime = ma.getStartTime();
+  assert(startTime.isValid());
+  txt = tr("Start time: ") + startTime.toString("HH:mm");
+
+  auto callTimeList = ma.getAdditionalCallTimes();
+  if (!(callTimeList.isEmpty()))
+  {
+    txt += ", " + tr("additional calls at ");
+    for (QDateTime call : callTimeList)
+    {
+      txt += call.toString("HH:mm") + ", ";
+    }
+    txt.chop(2);
+  }
   GuiHelpers::drawFormattedText(painter, row3, txt, Qt::AlignVCenter|Qt::AlignLeft, false, false, 1.0);
 }
 

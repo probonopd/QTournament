@@ -143,6 +143,7 @@ void CourtTableView::initContextMenu()
   actAddCourt = new QAction(tr("Add court"), this);
   actUndoCall = new QAction(tr("Undo call"), this);
   actFinishMatch = new QAction(tr("Finish match"), this);
+  actAddCall = new QAction(tr("Repeat call"), this);
 
   // create sub-actions for the walkover-selection
   actWalkoverP1 = new QAction("P1", this);  // this is just a dummy
@@ -153,10 +154,12 @@ void CourtTableView::initContextMenu()
   connect(actWalkoverP1, SIGNAL(triggered(bool)), this, SLOT(onWalkoverP1Triggered()));
   connect(actWalkoverP2, SIGNAL(triggered(bool)), this, SLOT(onWalkoverP2Triggered()));
   connect(actUndoCall, SIGNAL(triggered(bool)), this, SLOT(onActionUndoCallTriggered()));
+  connect(actAddCall, SIGNAL(triggered(bool)), this, SLOT(onActionAddCallTriggered()));
 
   // create the context menu and connect it to the actions
   contextMenu = unique_ptr<QMenu>(new QMenu());
   contextMenu->addAction(actFinishMatch);
+  contextMenu->addAction(actAddCall);
   walkoverSelectionMenu = contextMenu->addMenu(tr("Walkover for..."));
   walkoverSelectionMenu->addAction(actWalkoverP1);
   walkoverSelectionMenu->addAction(actWalkoverP2);
@@ -177,6 +180,13 @@ void CourtTableView::updateContextMenu(bool isRowClicked)
   actUndoCall->setEnabled(isMatchClicked);
   walkoverSelectionMenu->setEnabled(isMatchClicked);
   actFinishMatch->setEnabled(isMatchClicked);
+
+  QList<QDateTime> callTimes;
+  if (ma != nullptr)
+  {
+    callTimes = ma->getAdditionalCallTimes();
+  }
+  actAddCall->setEnabled(isMatchClicked && (callTimes.size() < MAX_NUM_ADD_CALL));
 
   // enable / disable actions that depend on a selected row
   actAddCourt->setEnabled(!isRowClicked);
@@ -262,6 +272,31 @@ void CourtTableView::onActionUndoCallTriggered()
 
   MatchMngr* mm = Tournament::getMatchMngr();
   mm->undoMatchCall(*ma);
+}
+
+//----------------------------------------------------------------------------
+
+void CourtTableView::onActionAddCallTriggered()
+{
+  auto ma = getSelectedMatch();
+  if (ma == nullptr) return;
+
+  QList<QDateTime> callTimes = ma->getAdditionalCallTimes();
+  if (callTimes.size() > MAX_NUM_ADD_CALL) return;
+
+  auto co = ma->getCourt();
+  assert(co != nullptr);
+
+  QString callText = GuiHelpers::prepCall(*ma, *co, callTimes.size() + 1);
+
+  int result = QMessageBox::question(0, tr("Repeat call"), callText);
+
+  if (result == QMessageBox::Yes)
+  {
+    ma->addAddtionalCallTime();
+    return;
+  }
+  QMessageBox::information(this, tr("Repeat call"), tr("Call cancled"));
 }
 
 //----------------------------------------------------------------------------

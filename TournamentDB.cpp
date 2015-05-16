@@ -132,7 +132,9 @@ void TournamentDB::populateTables()
     cols << genForeignKeyClause(MA_ACTUAL_PLAYER2B_REF, TAB_PLAYER);
     cols << MA_RESULT + " VARCHAR(50)";
     cols << genForeignKeyClause(MA_COURT_REF, TAB_COURT);
-    cols << MA_CALL_TIMES + " VARCHAR(50)";
+    cols << MA_START_TIME + " VARCHAR(50)";
+    cols << MA_ADDITIONAL_CALL_TIMES + " VARCHAR(50)";  // up 3 times in seconds since epoch as string
+    cols << MA_FINISH_TIME + " VARCHAR(50)";
     cols << MA_PAIR1_SYMBOLIC_VAL + " INTEGER";
     cols << MA_PAIR2_SYMBOLIC_VAL + " INTEGER";
     cols << MA_WINNER_RANK + " INTEGER";

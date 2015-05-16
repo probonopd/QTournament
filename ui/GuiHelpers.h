@@ -20,7 +20,7 @@ public:
   ~GuiHelpers();
   static QString groupNumToString(int grpNum);
   static QString groupNumToLongString(int grpNum);
-  static QString prepCall(const QTournament::Match& ma, const QTournament::Court& co);
+  static QString prepCall(const QTournament::Match& ma, const QTournament::Court& co, int nCall=0);
 
   static void drawFormattedText(QPainter* painter, QRect r, const QString& s, int alignmentFlags=Qt::AlignVCenter|Qt::AlignLeft,
                                 bool isBold=false, bool isItalics=false, QFont fnt=QFont(), QColor fntColor = QColor(0,0,0),

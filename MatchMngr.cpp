@@ -6,6 +6,9 @@
  */
 
 #include <assert.h>
+
+#include <QDateTime>
+
 #include "MatchMngr.h"
 #include "Tournament.h"
 #include "CatRoundStatus.h"
@@ -1214,7 +1217,11 @@ namespace QTournament {
     // update the category's state to "PLAYING", if necessary
     Tournament::getCatMngr()->updateCatStatusFromMatchStatus(ma.getCategory());
 
-    // TODO: add call time to database
+    // store the call time in the database
+    QDateTime curDateTime = QDateTime::currentDateTimeUtc();
+    uint epochSecs = curDateTime.toTime_t();
+    QString sEpochSecs = QString::number(epochSecs);
+    matchRow.update(MA_START_TIME, sEpochSecs);
 
     return OK;
   }
@@ -1337,7 +1344,12 @@ namespace QTournament {
       specialCat->onRoundCompleted(lastFinishedRoundAfterMatch);
     }
 
-    // TODO: add finish time to database
+    // store the finish time in the database
+    QDateTime curDateTime = QDateTime::currentDateTimeUtc();
+    uint epochSecs = curDateTime.toTime_t();
+    QString sEpochSecs = QString::number(epochSecs);
+    matchRow.update(MA_FINISH_TIME, sEpochSecs);
+
 
     return OK;
   }
@@ -1420,7 +1432,9 @@ namespace QTournament {
     // update the category's state
     Tournament::getCatMngr()->updateCatStatusFromMatchStatus(ma.getCategory());
 
-    // TODO: erase start time from database
+    // erase start time from database
+    matchRow.update(MA_START_TIME, QVariant());
+    matchRow.update(MA_ADDITIONAL_CALL_TIMES, QVariant());
 
     return OK;
   }
