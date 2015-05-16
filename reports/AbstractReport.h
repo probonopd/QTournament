@@ -8,6 +8,7 @@
 #include "TournamentDB.h"
 #include "SimpleReportGenerator.h"
 #include "Match.h"
+#include "MatchGroup.h"
 
 
 namespace QTournament
@@ -52,8 +53,7 @@ namespace QTournament
 
     void prepStyles(upSimpleReport& rep) const;
     void printIntermediateHeader(upSimpleReport& rep, const QString& txt, double skipBefore__MM=SKIP_BEFORE_INTERMEDIATE_HEADER__MM) const;
-    void prepTabsForMatchResults(upSimpleReport& rep) const;
-    void printMatchResult(upSimpleReport& rep, const Match& ma, const QString& continuationString) const;
+    void printMatchList(upSimpleReport& rep, const MatchList& maList, const QString& continuationString, bool withResults=false, bool withGroupColumn=false) const;
     void setHeaderAndFooter(upSimpleReport& rep, const QString& reportName) const;
   };
 

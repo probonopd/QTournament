@@ -82,7 +82,8 @@ HEADERS += \
     ui/GameResultWidget.h \
     ui/DlgMatchResult.h \
     reports/ResultSheets.h \
-    SignalRelay.h
+    SignalRelay.h \
+    reports/ResultsAndNextMatches.h
 
 SOURCES += \
     Category.cpp \
@@ -155,7 +156,8 @@ SOURCES += \
     ui/GameResultWidget.cpp \
     ui/DlgMatchResult.cpp \
     reports/ResultSheets.cpp \
-    SignalRelay.cpp
+    SignalRelay.cpp \
+    reports/ResultsAndNextMatches.cpp
 
 RESOURCES += \
     tournament.qrc

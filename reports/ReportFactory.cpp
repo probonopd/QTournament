@@ -2,6 +2,7 @@
 
 #include "ParticipantsList.h"
 #include "MatchResultList.h"
+#include "ResultsAndNextMatches.h"
 #include "MatchResultList_byGroup.h"
 #include "CatMngr.h"
 #include "CatRoundStatus.h"
@@ -19,6 +20,7 @@ namespace QTournament
   constexpr char ReportFactory::REP__STANDINGS_BY_CATEGORY[];
   constexpr char ReportFactory::REP__INOUTLIST_BY_CATEGORY[];
   constexpr char ReportFactory::REP__RESULTSHEETS[];
+  constexpr char ReportFactory::REP__RESULTS_AND_NEXT_MATCHES[];
 
   ReportFactory::ReportFactory(TournamentDB* _db)
     : db(_db)
@@ -59,6 +61,7 @@ namespace QTournament
       for (int round=1; round <= crs.getFinishedRoundsCount(); ++round)
       {
         result.append(genRepName(REP__RESULTS, cat, round));
+        result.append(genRepName(REP__RESULTS_AND_NEXT_MATCHES, cat, round));
       }
       for (int round : crs.getCurrentlyRunningRoundNumbers())
       {
@@ -191,6 +194,15 @@ namespace QTournament
     {
       int numMatches = intParam1;
       return upAbstractReport(new ResultSheets(db, repName, numMatches));
+    }
+
+    // results and next Matches
+    if (pureRepName == REP__RESULTS_AND_NEXT_MATCHES)
+    {
+      int catId = intParam1;
+      int round = intParam2;
+      Category cat = Tournament::getCatMngr()->getCategoryById(catId);
+      return upAbstractReport(new ResultsAndNextMatches(db, repName, cat, round));
     }
 
     return nullptr;

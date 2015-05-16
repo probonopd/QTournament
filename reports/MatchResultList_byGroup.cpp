@@ -59,59 +59,18 @@ upSimpleReport MatchResultList_ByGroup::regenerateReport() const
   QString repName = cat.getName() + tr(" -- Results of Group ") + QString::number(grpNum);
   setHeaderAndHeadline(result.get(), repName);
 
-  // prepare a tabset for a table with match results
-  SimpleReportLib::TabSet ts;
-  ts.addTab(8.0, SimpleReportLib::TAB_JUSTIFICATION::TAB_RIGHT);   // the match number
-  ts.addTab(12.0, SimpleReportLib::TAB_JUSTIFICATION::TAB_LEFT);   // the players
-  ts.addTab(145, SimpleReportLib::TAB_JUSTIFICATION::TAB_LEFT);   // dummy tab for a column label
-  for (int game=0; game < 5; ++game)
-  {
-    double colonPos = 150 + game*12.0;
-    ts.addTab(colonPos - 1.0,  SimpleReportLib::TAB_JUSTIFICATION::TAB_RIGHT);  // first score
-    ts.addTab(colonPos,  SimpleReportLib::TAB_JUSTIFICATION::TAB_CENTER);  // colon
-    ts.addTab(colonPos + 1.0,  SimpleReportLib::TAB_JUSTIFICATION::TAB_LEFT);  // second score
-  }
-
   for (MatchGroup mg : filteredList)
   {
     int round = mg.getRound();
     printIntermediateHeader(result, tr("Round ") + QString::number(round));
 
-    SimpleReportLib::TableWriter tw(ts);
-    tw.setHeader(0, tr("Match"));
-    tw.setHeader(2, tr("Player"));
-    tw.setHeader(3, tr("Game results"));
-
-    for (Match ma : mg.getMatches())
+    MatchList maList = mg.getMatches();
+    std::sort(maList.begin(), maList.end(), [](Match& ma1, Match& ma2)
     {
-      if (ma.getState() != STAT_MA_FINISHED) continue;
+      return ma1.getMatchNumber() < ma2.getMatchNumber();
+    });
 
-      QStringList rowContent;
-      rowContent << "";  // first column not used
-      rowContent << QString::number(ma.getMatchNumber());
-
-      QString pNames = ma.getPlayerPair1().getDisplayName();
-      pNames += "   :   ";
-      pNames += ma.getPlayerPair2().getDisplayName();
-      rowContent << pNames;
-      rowContent << "";  // a dummy tab for the "Game results" label
-
-      auto ms = ma.getScore();
-      assert(ms != nullptr);
-      for (int i=0; i < ms->getNumGames(); ++i)
-      {
-        auto gs = ms->getGame(i);
-        assert(gs != nullptr);
-
-        tuple<int, int> sc = gs->getScore();
-        rowContent << QString::number(get<0>(sc));
-        rowContent << ":";
-        rowContent << QString::number(get<1>(sc));
-      }
-      tw.appendRow(rowContent);
-    }
-    tw.setNextPageContinuationCaption(tr("Results of round ") + QString::number(round) + tr(" (cont.)"));
-    tw.write(result.get());
+    printMatchList(result, maList, tr("Results of round ") + QString::number(round) + tr(" (cont.)"), true, false);
 
     if (mg.getState() != STAT_MG_FINISHED)
     {

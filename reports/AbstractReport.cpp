@@ -1,3 +1,8 @@
+#include <QObject>
+
+#include "SimpleReportGenerator.h"
+#include "TableWriter.h"
+
 #include "AbstractReport.h"
 
 namespace QTournament
@@ -126,48 +131,85 @@ void AbstractReport::printIntermediateHeader(upSimpleReport& rep, const QString&
 
 //----------------------------------------------------------------------------
 
-void AbstractReport::prepTabsForMatchResults(upSimpleReport& rep) const
+void AbstractReport::printMatchList(upSimpleReport& rep, const MatchList& maList, const QString& continuationString, bool withResults, bool withGroupColumn) const
 {
-  rep->clearAllTabs();
-
-  rep->addTab(10.0, SimpleReportLib::TAB_LEFT);   // Name
-
-  // score tabs for up to five games
+  // prepare a tabset for a table with match results
+  SimpleReportLib::TabSet ts;
+  ts.addTab(8.0, SimpleReportLib::TAB_JUSTIFICATION::TAB_RIGHT);   // the match number
+  ts.addTab(12.0, SimpleReportLib::TAB_JUSTIFICATION::TAB_LEFT);   // the players
+  ts.addTab(135.0, SimpleReportLib::TAB_JUSTIFICATION::TAB_CENTER);   // the group number
+  ts.addTab(145, SimpleReportLib::TAB_JUSTIFICATION::TAB_LEFT);   // dummy tab for a column label
   for (int game=0; game < 5; ++game)
   {
-    double colonPos = 150 + game*10.0;
-    rep->addTab(colonPos - 1.0,  SimpleReportLib::TAB_RIGHT);  // first score
-    rep->addTab(colonPos,  SimpleReportLib::TAB_CENTER);  // colon
-    rep->addTab(colonPos + 1.0,  SimpleReportLib::TAB_LEFT);  // second score
+    double colonPos = 150 + game*12.0;
+    ts.addTab(colonPos - 1.0,  SimpleReportLib::TAB_JUSTIFICATION::TAB_RIGHT);  // first score
+    ts.addTab(colonPos,  SimpleReportLib::TAB_JUSTIFICATION::TAB_CENTER);  // colon
+    ts.addTab(colonPos + 1.0,  SimpleReportLib::TAB_JUSTIFICATION::TAB_LEFT);  // second score
   }
-}
 
-//----------------------------------------------------------------------------
-
-void AbstractReport::printMatchResult(upSimpleReport& rep, const Match& ma, const QString& continuationString) const
-{
-  OBJ_STATE maState = ma.getState();
-  if (maState != STAT_MA_FINISHED) return;
-
-  QString txtLine = QString::number(ma.getMatchNumber()) + "\t";
-  txtLine += ma.getPlayerPair1().getDisplayName();
-  txtLine += "   :   ";
-  txtLine += ma.getPlayerPair2().getDisplayName();
-  txtLine += "\t";
-
-  QString scoreString = (ma.getScore())->toString();
-  scoreString.replace(",", "\t");
-  scoreString.replace(":", "\t:\t");
-  txtLine += scoreString;
-
-  // do we need to start a new page?
-  if (!(rep->hasSpaceForAnotherLine(QString())))
+  // prepare a table for the match results
+  SimpleReportLib::TableWriter tw(ts);
+  tw.setHeader(0, QObject::tr("Match"));
+  tw.setHeader(2, QObject::tr("Players"));
+  if (withResults)
   {
-    // the new page is automatically created by the following call
-    printIntermediateHeader(rep, continuationString);
+    tw.setHeader(4, QObject::tr("Game results"));
   }
 
-  rep->writeLine(txtLine);
+  // print the results of all matches
+  bool usesRoundRobinGroups = false;
+  for (Match ma : maList)
+  {
+    int grpNum = ma.getMatchGroup().getGroupNumber();
+    if (grpNum > 0)
+    {
+      usesRoundRobinGroups = true;
+    }
+
+    QStringList rowContent;
+    rowContent << "";  // first column not used
+    rowContent << QString::number(ma.getMatchNumber());
+
+    QString pNames = ma.getPlayerPair1().getDisplayName();
+    pNames += "   :   ";
+    pNames += ma.getPlayerPair2().getDisplayName();
+    rowContent << pNames;
+
+    if (withGroupColumn && (grpNum > 0))
+    {
+      rowContent << QString::number(grpNum);
+    } else {
+      rowContent << "";
+    }
+
+    rowContent << "";  // a dummy tab for the "Game results" label
+
+    if (withResults)
+    {
+      auto ms = ma.getScore();
+      assert(ms != nullptr);
+      for (int i=0; i < ms->getNumGames(); ++i)
+      {
+        auto gs = ms->getGame(i);
+        assert(gs != nullptr);
+
+        tuple<int, int> sc = gs->getScore();
+        rowContent << QString::number(get<0>(sc));
+        rowContent << ":";
+        rowContent << QString::number(get<1>(sc));
+      }
+    }
+
+    tw.appendRow(rowContent);
+  }
+
+  // if used we round robins, add a column header for the group number
+  if (usesRoundRobinGroups && withGroupColumn)
+  {
+    tw.setHeader(3, QObject::tr("Group"));
+  }
+  tw.setNextPageContinuationCaption(continuationString);
+  tw.write(rep.get());
 }
 
 //----------------------------------------------------------------------------
