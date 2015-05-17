@@ -30,6 +30,7 @@ namespace QTournament
     friend class CatMngr;
     friend class RoundRobinCategory;
     friend class EliminationCategory;
+    friend class PureRoundRobinCategory;
     friend class GenericObjectManager;
     
   public:

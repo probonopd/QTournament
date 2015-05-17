@@ -83,7 +83,8 @@ HEADERS += \
     ui/DlgMatchResult.h \
     reports/ResultSheets.h \
     SignalRelay.h \
-    reports/ResultsAndNextMatches.h
+    reports/ResultsAndNextMatches.h \
+    PureRoundRobinCategory.h
 
 SOURCES += \
     Category.cpp \
@@ -157,7 +158,8 @@ SOURCES += \
     ui/DlgMatchResult.cpp \
     reports/ResultSheets.cpp \
     SignalRelay.cpp \
-    reports/ResultsAndNextMatches.cpp
+    reports/ResultsAndNextMatches.cpp \
+    PureRoundRobinCategory.cpp
 
 RESOURCES += \
     tournament.qrc

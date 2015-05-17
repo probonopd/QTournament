@@ -187,7 +187,7 @@ void AbstractReport::printMatchList(upSimpleReport& rep, const MatchList& maList
     if (withResults)
     {
       auto ms = ma.getScore();
-      assert(ms != nullptr);
+      if (ms == nullptr) continue;
       for (int i=0; i < ms->getNumGames(); ++i)
       {
         auto gs = ms->getGame(i);

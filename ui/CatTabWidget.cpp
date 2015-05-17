@@ -37,11 +37,12 @@ CatTabWidget::CatTabWidget()
   ui.gbSwiss->hide();
   
   // initialize the entries in the drop box
-  ui.cbMatchSystem->addItem(tr("Swiss ladder"), static_cast<int>(SWISS_LADDER));
+  //ui.cbMatchSystem->addItem(tr("Swiss ladder"), static_cast<int>(SWISS_LADDER));
   ui.cbMatchSystem->addItem(tr("Group matches with KO rounds"), static_cast<int>(GROUPS_WITH_KO));
-  ui.cbMatchSystem->addItem(tr("Random matches (for fun tournaments)"), static_cast<int>(RANDOMIZE));
+  //ui.cbMatchSystem->addItem(tr("Random matches (for fun tournaments)"), static_cast<int>(RANDOMIZE));
   ui.cbMatchSystem->addItem(tr("Tree-like ranking system"), static_cast<int>(RANKING));
   ui.cbMatchSystem->addItem(tr("Single Elimination"), static_cast<int>(SINGLE_ELIM));
+  ui.cbMatchSystem->addItem(tr("Round robin matches"), static_cast<int>(ROUND_ROBIN));
 }
 
 //----------------------------------------------------------------------------

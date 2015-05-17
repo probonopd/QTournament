@@ -125,9 +125,10 @@ namespace QTournament
     int sysInt = static_cast<int>(s);
     c.row.update(CAT_SYS, sysInt);
     
-    // if we switch to single elimination categories,
+    // if we switch to single elimination categories or
+    // to the ranking system, we want to
     // prevent draw
-    if (s == SINGLE_ELIM)
+    if ((s == SINGLE_ELIM) || (s == RANKING))
     {
       setCatParam_AllowDraw(c, false);
     }

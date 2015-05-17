@@ -17,6 +17,7 @@
 #include "CatRoundStatus.h"
 #include "BracketGenerator.h"
 #include "ElimCategory.h"
+#include "PureRoundRobinCategory.h"
 
 #include <stdexcept>
 
@@ -542,6 +543,11 @@ namespace QTournament
       return unique_ptr<Category>(new EliminationCategory(db, row, BracketGenerator::BRACKET_RANKING1));
     }
 
+    if (sys == ROUND_ROBIN)
+    {
+      return unique_ptr<Category>(new PureRoundRobinCategory(db, row));
+    }
+
     // THIS IS JUST A HOT FIX UNTIL WE HAVE
     // SPECIALIZED CLASSED FOR ALL MATCH SYSTEMS!!!
     //
@@ -706,7 +712,7 @@ namespace QTournament
     */
   ERR Category::generateGroupMatches(const PlayerPairList& grpMembers, int grpNum, int firstRoundNum, ProgressQueue *progressNotificationQueue) const
   {
-    if (grpNum < 1) return INVALID_GROUP_NUM;
+    if ((grpNum < 1) && (grpNum != GROUP_NUM__ITERATION)) return INVALID_GROUP_NUM;
 
     RoundRobinGenerator rrg;
     auto mm = Tournament::getMatchMngr();

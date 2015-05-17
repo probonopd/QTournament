@@ -320,6 +320,7 @@ namespace QTournament
     RANDOMIZE,
     RANKING,
     SINGLE_ELIM,
+    ROUND_ROBIN,
   };
   
 //----------------------------------------------------------------------------
