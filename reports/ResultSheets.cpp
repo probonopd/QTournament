@@ -149,9 +149,11 @@ void ResultSheets::onMatchSelectionChanged(int newlySelectedMatchId)
 void ResultSheets::printMatchData(upSimpleReport& rep, const Match& ma) const
 {
   QString header = tr("Match Number: ") + QString::number(ma.getMatchNumber());
-  header += ", " + ma.getCategory().getName() + "\t\t\t\t" + tr("Court: ____________");
+  header += "\t\t\t\t" + tr("Court: ____________");
   rep->writeLine(header);
-  rep->skip(3.0);
+
+  header = tr("%1, Round %2").arg(ma.getCategory().getName()).arg(ma.getMatchGroup().getRound());
+  rep->writeLine(header);
 
   // write player name(s)
   PlayerPair pp1 = ma.getPlayerPair1();
