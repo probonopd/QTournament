@@ -201,12 +201,12 @@ void CourtTableView::updateContextMenu(bool isRowClicked)
 
 //----------------------------------------------------------------------------
 
-void CourtTableView::execWalkover(int playerNum) const
+void CourtTableView::execWalkover(int playerNum)
 {
   auto ma = getSelectedMatch();
   if (ma == nullptr) return;
   if ((playerNum != 1) && (playerNum != 2)) return; // shouldn't happen
-  GuiHelpers::execWalkover(*ma, playerNum);
+  GuiHelpers::execWalkover(this, *ma, playerNum);
 }
 
 //----------------------------------------------------------------------------
@@ -289,7 +289,7 @@ void CourtTableView::onActionAddCallTriggered()
 
   QString callText = GuiHelpers::prepCall(*ma, *co, callTimes.size() + 1);
 
-  int result = QMessageBox::question(0, tr("Repeat call"), callText);
+  int result = QMessageBox::question(this, tr("Repeat call"), callText);
 
   if (result == QMessageBox::Yes)
   {

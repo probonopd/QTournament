@@ -133,7 +133,7 @@ void GuiHelpers::drawFormattedText(QPainter *painter, QRect r, const QString &s,
 
 //----------------------------------------------------------------------------
 
-void GuiHelpers::execWalkover(const QTournament::Match& ma, int playerNum)
+void GuiHelpers::execWalkover(QWidget* parent, const QTournament::Match& ma, int playerNum)
 {
   if ((playerNum != 1) && (playerNum != 2)) return; // shouldn't happen
   if (!(ma.isWalkoverPossible())) return;
@@ -150,7 +150,7 @@ void GuiHelpers::execWalkover(const QTournament::Match& ma, int playerNum)
   msg += tr("All games will be 21:0.") + "\n\n";
   msg += tr("WARNING: this step is irrevocable!") + "\n\n";
   msg += tr("Proceed?");
-  int result = QMessageBox::question(0, tr("Confirm walkover"), msg);
+  int result = QMessageBox::question(parent, tr("Confirm walkover"), msg);
   if (result != QMessageBox::Yes)
   {
     return;

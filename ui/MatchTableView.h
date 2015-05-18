@@ -62,7 +62,7 @@ private:
 
   void initContextMenu();
   void updateContextMenu();
-  void execWalkover(int playerNum) const;
+  void execWalkover(int playerNum);
   void execCall(const Match& ma, const Court& co);
 };
 

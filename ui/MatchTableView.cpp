@@ -371,12 +371,12 @@ void MatchTableView::updateContextMenu()
 
 //----------------------------------------------------------------------------
 
-void MatchTableView::execWalkover(int playerNum) const
+void MatchTableView::execWalkover(int playerNum)
 {
   auto ma = getSelectedMatch();
   if (ma == nullptr) return; // shouldn't happen
   if ((playerNum != 1) && (playerNum != 2)) return; // shouldn't happen
-  GuiHelpers::execWalkover(*ma, playerNum);
+  GuiHelpers::execWalkover(this, *ma, playerNum);
 }
 
 //----------------------------------------------------------------------------
@@ -393,13 +393,13 @@ void MatchTableView::execCall(const Match& ma, const Court& co)
     QString msg = tr("An unexpected error occured.\n");
     msg += tr("Sorry, this shouldn't happen.\n");
     msg += tr("The match cannot be started.");
-    QMessageBox::critical(0, tr("Assign match to court"), msg);
+    QMessageBox::critical(this, tr("Assign match to court"), msg);
     return;
   }
 
   // prep the call
   QString call = GuiHelpers::prepCall(ma, co);
-  int result = QMessageBox::question(0, tr("Assign match to court"), call);
+  int result = QMessageBox::question(this, tr("Assign match to court"), call);
 
   if (result == QMessageBox::Yes)
   {
@@ -411,7 +411,7 @@ void MatchTableView::execCall(const Match& ma, const Court& co)
       QString msg = tr("An unexpected error occured.\n");
       msg += tr("Sorry, this shouldn't happen.\n");
       msg += tr("The match cannot be started.");
-      QMessageBox::critical(0, tr("Assign match to court"), msg);
+      QMessageBox::critical(this, tr("Assign match to court"), msg);
     }
     updateSelectionAfterDataChange();
     return;

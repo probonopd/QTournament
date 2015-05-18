@@ -62,7 +62,7 @@ private:
 
   void initContextMenu();
   void updateContextMenu(bool isRowClicked);
-  void execWalkover(int playerNum) const;
+  void execWalkover(int playerNum);
 };
 
 #endif	/* COURTTABLEVIEW_H */
