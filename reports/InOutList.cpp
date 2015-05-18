@@ -114,8 +114,6 @@ upSimpleReport InOutList::regenerateReport() const
     tw.write(result.get());
   }
 
-  return result;
-
   // set header and footer
   setHeaderAndFooter(result, repName);
 
