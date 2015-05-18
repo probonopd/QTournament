@@ -1345,10 +1345,13 @@ namespace QTournament {
     }
 
     // store the finish time in the database
-    QDateTime curDateTime = QDateTime::currentDateTimeUtc();
-    uint epochSecs = curDateTime.toTime_t();
-    QString sEpochSecs = QString::number(epochSecs);
-    matchRow.update(MA_FINISH_TIME, sEpochSecs);
+    if (oldState == STAT_MA_RUNNING)   // match was called normally, so we have a start time
+    {
+      QDateTime curDateTime = QDateTime::currentDateTimeUtc();
+      uint epochSecs = curDateTime.toTime_t();
+      QString sEpochSecs = QString::number(epochSecs);
+      matchRow.update(MA_FINISH_TIME, sEpochSecs);
+    }
 
 
     return OK;
