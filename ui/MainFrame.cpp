@@ -552,16 +552,16 @@ void MainFrame::setupTestScenario(int scenarioID)
     }
   };
 
-  // a scenario with up to 16 players in a ranking1-bracket
+  // a scenario with up to 32 players in a ranking1-bracket
   auto scenario08 = [&]()
   {
     scenario02();
     tmngr->createNewTeam("Ranking Team");
     Category ls = cmngr->getCategory("LS");
 
-    for (int i=0; i < 13; i++)
+    for (int i=0; i < 32; i++)
     {
-      QString lastName = "Ranking" + QString::number(i);
+      QString lastName = "Ranking" + QString::number(i+1);
       pmngr->createNewPlayer("Lady", lastName, F, "Ranking Team");
       Player p = pmngr->getPlayer(i + 7);   // the first six IDs are already used by previous ini-functions above
       ls.addPlayer(p);

@@ -136,7 +136,7 @@ namespace QTournament
     upBracketMatchDataVector result;
 
     // return an empty list in case of invalid arguments
-    if ((numPlayers < 2) || (numPlayers > 16))
+    if ((numPlayers < 2) || (numPlayers > 32))
     {
       return result;
     }
@@ -145,7 +145,7 @@ namespace QTournament
 
     // hard-code the bracket matches according to a
     // given tournament bracket
-    int rawBracketData[36][7] =
+    int rawBracketData_16[36][7] =
     {
       // initialRank1, initialRank2, nextMatchWinner, nextMatchLoser, posWinner, posLoser, depth
       {1,                   16,            10,              9,            1,        1,       4},   // Match 1
@@ -190,20 +190,135 @@ namespace QTournament
       {-27,                -28,            -1,            - 2,            0,        0,       0},   // Match 36
     };
 
-    // convert the hard-coded data into bracket match data entries
-    for (int i=0; i < 36; ++i)
+    int rawBracketData_32[92][7] =
     {
-      upBracketMatchData newBracketMatch = upBracketMatchData(new BracketMatchData);
+      // initialRank1, initialRank2, nextMatchWinner, nextMatchLoser, posWinner, posLoser, depth
+      {1,32,18,17,1,1,6},  // Match 1
+      {16,17,18,17,2,2,6},  // Match 2
+      {8,25,20,19,1,1,6},  // Match 3
+      {9,24,20,19,2,2,6},  // Match 4
+      {4,29,22,21,1,1,6},  // Match 5
+      {13,20,22,21,2,2,6},  // Match 6
+      {5,28,24,23,1,1,6},  // Match 7
+      {12,21,24,23,2,2,6},  // Match 8
+      {22,11,26,25,1,1,6},  // Match 9
+      {27,6,26,25,2,2,6},  // Match 10
+      {19,14,28,27,1,1,6},  // Match 11
+      {30,3,28,27,2,2,6},  // Match 12
+      {23,10,30,29,1,1,6},  // Match 13
+      {26,7,30,29,2,2,6},  // Match 14
+      {18,15,32,31,1,1,6},  // Match 15
+      {31,2,32,31,2,2,6},  // Match 16
+      {-1,-2,33,45,1,1,5},  // Match 17
+      {-1,-2,34,36,1,2,5},  // Match 18
+      {-3,-4,35,45,1,2,5},  // Match 19
+      {-3,-4,34,38,2,2,5},  // Match 20
+      {-5,-6,36,46,1,1,5},  // Match 21
+      {-5,-6,37,33,1,2,5},  // Match 22
+      {-7,-8,38,46,1,2,5},  // Match 23
+      {-7,-8,37,35,2,2,5},  // Match 24
+      {-9,-10,39,47,1,1,5},  // Match 25
+      {-9,-10,40,42,1,2,5},  // Match 26
+      {-11,-12,41,47,1,2,5},  // Match 27
+      {-11,-12,40,44,2,2,5},  // Match 28
+      {-13,-14,42,48,1,1,5},  // Match 29
+      {-13,-14,43,41,1,2,5},  // Match 30
+      {-15,-16,44,48,1,2,5},  // Match 31
+      {-15,-16,43,39,2,2,5},  // Match 32
+      {-17,-22,53,49,1,1,4},  // Match 33
+      {-18,-20,57,65,1,2,4},  // Match 34
+      {-19,-24,53,49,2,2,4},  // Match 35
+      {-21,-18,54,50,1,1,4},  // Match 36
+      {-22,-24,57,66,2,2,4},  // Match 37
+      {-23,-20,54,50,2,2,4},  // Match 38
+      {-25,-32,55,51,1,1,4},  // Match 39
+      {-26,-28,58,63,1,2,4},  // Match 40
+      {-27,-30,55,51,2,2,4},  // Match 41
+      {-29,-26,56,52,1,1,4},  // Match 42
+      {-30,-32,58,64,2,2,4},  // Match 43
+      {-31,-28,56,52,2,2,4},  // Match 44
+      {-17,-19,60,59,1,1,4},  // Match 45
+      {-21,-23,60,59,2,2,4},  // Match 46
+      {-25,-27,62,61,1,1,4},  // Match 47
+      {-29,-31,62,61,2,2,4},  // Match 48
+      {-33,-35,68,67,1,1,3},  // Match 49
+      {-36,-38,68,67,2,2,3},  // Match 50
+      {-39,-41,70,69,1,1,3},  // Match 51
+      {-42,-44,70,69,2,2,3},  // Match 52
+      {-33,-35,63,71,1,1,3},  // Match 53
+      {-36,-38,64,71,1,2,3},  // Match 54
+      {-39,-41,65,72,1,1,3},  // Match 55
+      {-42,-44,66,72,1,2,3},  // Match 56
+      {-34,-37,92,91,1,1,2},  // Match 57
+      {-40,-43,92,91,2,2,2},  // Match 58
+      {-45,-46,78,77,1,1,2},  // Match 59
+      {-45,-46,80,79,1,1,2},  // Match 60
+      {-47,-48,78,77,2,2,2},  // Match 61
+      {-47,-48,80,79,2,2,2},  // Match 62
+      {-53,-40,75,73,1,1,2},  // Match 63
+      {-54,-43,75,73,2,2,2},  // Match 64
+      {-55,-34,76,74,1,1,2},  // Match 65
+      {-56,-37,76,74,2,2,2},  // Match 66
+      {-49,-50,82,81,1,1,1},  // Match 67
+      {-49,-50,84,83,1,1,1},  // Match 68
+      {-51,-52,82,81,2,2,1},  // Match 69
+      {-51,-52,84,83,2,2,1},  // Match 70
+      {-53,-54,86,85,1,1,1},  // Match 71
+      {-55,-56,86,85,2,2,1},  // Match 72
+      {-63,-64,88,87,1,1,1},  // Match 73
+      {-65,-66,88,87,2,2,1},  // Match 74
+      {-63,-64,90,89,1,1,1},  // Match 75
+      {-65,-66,90,89,2,2,1},  // Match 76
+      {-59,-61,-31,-32,0,0,0},  // Match 77
+      {-59,-61,-29,-30,0,0,0},  // Match 78
+      {-60,-62,-27,-28,0,0,0},  // Match 79
+      {-60,-62,-25,-26,0,0,0},  // Match 80
+      {-67,-69,-23,-24,0,0,0},  // Match 81
+      {-67,-69,-21,-22,0,0,0},  // Match 82
+      {-68,-70,-19,-20,0,0,0},  // Match 83
+      {-68,-70,-17,-18,0,0,0},  // Match 84
+      {-71,-72,-15,-16,0,0,0},  // Match 85
+      {-71,-72,-13,-14,0,0,0},  // Match 86
+      {-73,-74,-11,-12,0,0,0},  // Match 87
+      {-73,-74,-9,-10,0,0,0},  // Match 88
+      {-75,-76,-7,-8,0,0,0},  // Match 89
+      {-75,-76,-5,-6,0,0,0},  // Match 90
+      {-57,-58,-3,-4,0,0,0},  // Match 91
+      {-57,-58,-1,-2,0,0,0},  // Match 92
+    };
 
-      newBracketMatch->initialRank_Player1 = rawBracketData[i][0];
-      newBracketMatch->initialRank_Player2 = rawBracketData[i][1];
-      newBracketMatch->nextMatchForWinner = rawBracketData[i][2];
-      newBracketMatch->nextMatchForLoser = rawBracketData[i][3];
-      newBracketMatch->nextMatchPlayerPosForWinner = rawBracketData[i][4];
-      newBracketMatch->nextMatchPlayerPosForLoser = rawBracketData[i][5];
-      newBracketMatch->depthInBracket = rawBracketData[i][6];
+    // convert the hard-coded data into bracket match data entries
+    if (numPlayers <= 16)
+    {
+      for (int i=0; i < 36; ++i)
+      {
+        upBracketMatchData newBracketMatch = upBracketMatchData(new BracketMatchData);
 
-      result.push_back(std::move(newBracketMatch));
+        newBracketMatch->initialRank_Player1 = rawBracketData_16[i][0];
+        newBracketMatch->initialRank_Player2 = rawBracketData_16[i][1];
+        newBracketMatch->nextMatchForWinner = rawBracketData_16[i][2];
+        newBracketMatch->nextMatchForLoser = rawBracketData_16[i][3];
+        newBracketMatch->nextMatchPlayerPosForWinner = rawBracketData_16[i][4];
+        newBracketMatch->nextMatchPlayerPosForLoser = rawBracketData_16[i][5];
+        newBracketMatch->depthInBracket = rawBracketData_16[i][6];
+
+        result.push_back(std::move(newBracketMatch));
+      }
+    } else {
+      for (int i=0; i < 92; ++i)
+      {
+        upBracketMatchData newBracketMatch = upBracketMatchData(new BracketMatchData);
+
+        newBracketMatch->initialRank_Player1 = rawBracketData_32[i][0];
+        newBracketMatch->initialRank_Player2 = rawBracketData_32[i][1];
+        newBracketMatch->nextMatchForWinner = rawBracketData_32[i][2];
+        newBracketMatch->nextMatchForLoser = rawBracketData_32[i][3];
+        newBracketMatch->nextMatchPlayerPosForWinner = rawBracketData_32[i][4];
+        newBracketMatch->nextMatchPlayerPosForLoser = rawBracketData_32[i][5];
+        newBracketMatch->depthInBracket = rawBracketData_32[i][6];
+
+        result.push_back(std::move(newBracketMatch));
+      }
     }
 
     removeUnusedMatches(result, numPlayers);

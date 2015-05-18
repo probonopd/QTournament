@@ -76,8 +76,8 @@ namespace QTournament
     }
 
     // for the bracket mode "ranking1" we may not have more
-    // than 16 players
-    if ((elimMode == BracketGenerator::BRACKET_RANKING1) && (numPairs > 16))
+    // than 32 players
+    if ((elimMode == BracketGenerator::BRACKET_RANKING1) && (numPairs > 32))
     {
       return INVALID_PLAYER_COUNT;
     }
