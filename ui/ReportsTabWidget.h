@@ -27,7 +27,7 @@ public:
   void updateRepPool();
 
 public slots:
-  void onTournamentOpened(Tournament* tnmt);
+  void onTournamentOpened(Tournament* _tnmt);
   void onTournamentClosed();
   void onTreeSelectionChanged();
   void onBtnReloadClicked();
@@ -42,6 +42,7 @@ private:
   void createRootItem();
   void showReport(const QString& repName);
   upSimpleReport curReport;
+  Tournament* tnmt;
 };
 
 #endif // REPORTSTABWIDGET_H

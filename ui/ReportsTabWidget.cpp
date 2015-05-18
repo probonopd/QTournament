@@ -16,7 +16,6 @@ ReportsTabWidget::ReportsTabWidget(QWidget *parent) :
 
   // connect to open / close events for updating our reports tree
   connect(MainFrame::getMainFramePointer(), &MainFrame::tournamentOpened, this, &ReportsTabWidget::onTournamentOpened);
-  connect(MainFrame::getMainFramePointer(), &MainFrame::tournamentClosed, this, &ReportsTabWidget::onTournamentClosed);
 
   // create a root item for the reports tree
   // and initialize the pool of available reports
@@ -68,8 +67,12 @@ void ReportsTabWidget::updateRepPool()
 
 //----------------------------------------------------------------------------
 
-void ReportsTabWidget::onTournamentOpened(Tournament* tnmt)
+void ReportsTabWidget::onTournamentOpened(Tournament* _tnmt)
 {
+  tnmt = _tnmt;
+
+  connect(tnmt, &Tournament::tournamentClosed, this, &ReportsTabWidget::onTournamentClosed);
+
   createRootItem();
   updateRepPool();
 }
@@ -78,6 +81,8 @@ void ReportsTabWidget::onTournamentOpened(Tournament* tnmt)
 
 void ReportsTabWidget::onTournamentClosed()
 {
+  disconnect(tnmt, &Tournament::tournamentClosed, this, &ReportsTabWidget::onTournamentClosed);
+  repPool.clear();
 }
 
 //----------------------------------------------------------------------------

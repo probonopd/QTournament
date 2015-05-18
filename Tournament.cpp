@@ -170,7 +170,7 @@ void Tournament::close()
   delete db;
   db = nullptr;
 
-  SignalRelay::cleanUp();
+  //SignalRelay::cleanUp();
 }
 
 //----------------------------------------------------------------------------

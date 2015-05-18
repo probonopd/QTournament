@@ -59,6 +59,7 @@ MatchTableView::~MatchTableView()
   delete emptyModel;
   delete sortedModel;
   delete itemDelegate;
+  SignalRelay::cleanUp();
 }
 
 //----------------------------------------------------------------------------
