@@ -9,6 +9,9 @@ DlgSeedingEditor::DlgSeedingEditor(QWidget *parent) :
 {
   ui->setupUi(this);
 
+  // set the window title
+  setWindowTitle(tr("Define seeding"));
+
   updateButtons();
 
   ui->sbRangeMin->setValue(2);

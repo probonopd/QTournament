@@ -15,6 +15,9 @@ dlgGroupAssignment::dlgGroupAssignment(Category& _cat)
 {
   ui.setupUi(this);
   cfg = KO_Config(cat.getParameter(GROUP_CONFIG).toString());
+
+  // set the window title
+  setWindowTitle(tr("Group assignment for ") + cat.getName());
   
   // fill all group lists initially with random assignments
   onBtnRandomizeClicked();
