@@ -5,13 +5,9 @@
  * Created on March 24, 2014, 7:13 PM
  */
 
-#include <thread>
-#include <future>
 #include <iostream>
 #include <cassert>
 #include <QMessageBox>
-#include <QtCore/qnamespace.h>
-#include <QProgressDialog>
 
 #include "CatTabWidget.h"
 #include "TournamentDataDefs.h"
@@ -844,48 +840,14 @@ void CatTabWidget::onBtnRunCatClicked()
   /*
    * If we made it to this point, it is safe to apply the settings and write to
    * the database.
-   *
-   * Since this operation might take some time, we display a progress dialog
-   * that is being updated through a queue from an external thread
    */
-  ProgressQueue progQueue;
-  QProgressDialog dlg;
-  dlg.setLabelText(tr("Creating matches..."));
-  dlg.setMinimum(0);
-  dlg.setMaximum(100);
-  dlg.setWindowModality(Qt::WindowModal);
-  dlg.setMinimumDuration(0);
-  dlg.setValue(0);
-
-  promise<ERR> errPromise;
-  auto errFuture = errPromise.get_future();
-  std::thread th1 {
-    // the thread-function itself is only a lambda
-    [&]{
-      ERR e = Tournament::getCatMngr()->startCategory(*selectedCat, ppListList, initialRanking, &progQueue);
-      errPromise.set_value(e);
-    }
-  };
-  while (1)
-  {
-    // wait for at least one update
-    shared_ptr<int> newVal= progQueue.blockingPop();
-    assert(newVal != nullptr);
-
-    // empty the queue by reading all other updates, if available
-    //while (progQueue.hasData()) newVal = progQueue.blockingPop();
-
-    // update the progress bar with the last read value
-    if (*newVal < 0) break;
-    dlg.setValue(*newVal);
-  }
-  th1.join();
-  e = errFuture.get();
-
+  e = Tournament::getCatMngr()->startCategory(*selectedCat, ppListList, initialRanking);
   if (e != OK)  // should never happen
   {
     throw runtime_error("Unexpected error when starting the category");
   }
+
+  QMessageBox::information(this, tr("Start category"), tr("Category successfully started!"));
 }
 
 //----------------------------------------------------------------------------
@@ -946,48 +908,13 @@ void CatTabWidget::handleIntermediateSeedingForSelectedCat()
 
   /*
    * If we made it to this point, we can generate matches for the next round(s)
-   *
-   * Since this operation might take some time, we display a progress dialog
-   * that is being updated through a queue from an external thread
    */
-  ProgressQueue progQueue;
-  QProgressDialog dlgProg;
-  dlgProg.setLabelText(tr("Creating matches..."));
-  dlgProg.setMinimum(0);
-  dlgProg.setMaximum(100);
-  dlgProg.setWindowModality(Qt::WindowModal);
-  dlgProg.setMinimumDuration(0);
-  dlgProg.setValue(0);
-
-  promise<ERR> errPromise;
-  auto errFuture = errPromise.get_future();
-  std::thread th1 {
-    // the thread-function itself is only a lambda
-    [&]{
-      ERR e = Tournament::getCatMngr()->continueWithIntermediateSeeding(*selectedCat, seeding, &progQueue);
-      errPromise.set_value(e);
-    }
-  };
-  while (1)
-  {
-    // wait for at least one update
-    shared_ptr<int> newVal= progQueue.blockingPop();
-    assert(newVal != nullptr);
-
-    // empty the queue by reading all other updates, if available
-    //while (progQueue.hasData()) newVal = progQueue.blockingPop();
-
-    // update the progress bar with the last read value
-    if (*newVal < 0) break;
-    dlgProg.setValue(*newVal);
-  }
-  th1.join();
-  ERR e = errFuture.get();
-
+  ERR e = Tournament::getCatMngr()->continueWithIntermediateSeeding(*selectedCat, seeding);
   if (e != OK)  // should never happen
   {
     throw runtime_error("Unexpected error when applying intermediate seeding");
   }
+  QMessageBox::information(this, tr("Continue category"), tr("Matches successfully generated!"));
 }
 
 //----------------------------------------------------------------------------
