@@ -182,7 +182,10 @@ namespace QTournament
     // new ranking
     if (round <= groupRounds)
     {
-      rm->createUnsortedRankingEntriesForLastRound(*this, &err);
+      // we always want to create ranking entries for all player pairs,
+      // even if some players or complete groups haven't played in this
+      // round at all (happens with different group sizes in one category)
+      rm->createUnsortedRankingEntriesForLastRound(*this, &err, getPlayerPairs());
       if (err != OK) return err;  // shouldn't happen
       rm->sortRankingEntriesForLastRound(*this, &err);
       if (err != OK) return err;  // shouldn't happen

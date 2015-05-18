@@ -219,17 +219,47 @@ namespace QTournament
 
   RankingEntryListList RankingMngr::getSortedRanking(const Category &cat, int round) const
   {
+    // make sure we have ranking entries
+    QVariantList qvl;
+    qvl << RA_CAT_REF << cat.getId();
+    qvl << RA_ROUND << round;
+    RankingEntryList rel = getObjectsByColumnValue<RankingEntry>(rankTab, qvl);
+    if (rel.isEmpty())
+    {
+      return RankingEntryListList();
+    }
+
     RankingEntryListList result;
+
+    // derive a list of all match groups we need to
+    // retrieve
+    //
+    // Note: the list of applicable match groups cannot
+    // be derived from Tournament::getMatchMngr()->getMatchGroupsForCat(cat, lastRound)
+    // because this doesn't fetch group numbers of those
+    // round-robin groups that haven't played in this round.
+    // This effect occurs if we have different group sizes in the category
+    // (i.e., Group 1 has already finished, Group 2 still has to play one round)
+    QList<int> applicableMatchGroupNumbers;
+    for (RankingEntry re : rel)
+    {
+      int grpNum = re.getGroupNumber();
+      if (!(applicableMatchGroupNumbers.contains(grpNum)))
+      {
+        applicableMatchGroupNumbers.append(grpNum);
+      }
+    }
+    std::sort(applicableMatchGroupNumbers.begin(), applicableMatchGroupNumbers.end());
 
     // get separate lists for every match group.
     //
     // In non-round-robin matches, this does no harm because
     // there is only one (artificial) match group in those cases
-    for (MatchGroup mg : Tournament::getMatchMngr()->getMatchGroupsForCat(cat, round))
+    for (int grpNum : applicableMatchGroupNumbers)
     {
       QString where = RA_CAT_REF + " = " + QString::number(cat.getId());
       where += " AND " + RA_ROUND + " = " + QString::number(round);
-      where += " AND " + RA_GRP_NUM + " = " + QString::number(mg.getGroupNumber());
+      where += " AND " + RA_GRP_NUM + " = " + QString::number(grpNum);
       where += " ORDER BY " + RA_GRP_NUM + ", " + RA_RANK + " ASC";
 
       result.append(getObjectsByWhereClause<RankingEntry>(rankTab, where));
@@ -269,10 +299,30 @@ namespace QTournament
     QVariantList qvl;
     qvl << RA_CAT_REF << cat.getId();
     qvl << RA_ROUND << lastRound;
-    if (rankTab.getMatchCountForColumnValue(qvl) < 1)
+    RankingEntryList rel = getObjectsByColumnValue<RankingEntry>(rankTab, qvl);
+    if (rel.isEmpty())
     {
       if (err != nullptr) *err = MISSING_RANKING_ENTRIES;
       return RankingEntryListList();
+    }
+
+    // derive a list of all match groups we need to
+    // sort
+    //
+    // Note: the list of applicable match groups cannot
+    // be derived from Tournament::getMatchMngr()->getMatchGroupsForCat(cat, lastRound)
+    // because this doesn't fetch group numbers of those
+    // round-robin groups that haven't played in this round.
+    // This effect occurs if we have different group sizes in the category
+    // (i.e., Group 1 has already finished, Group 2 still has to play one round)
+    QList<int> applicableMatchGroupNumbers;
+    for (RankingEntry re : rel)
+    {
+      int grpNum = re.getGroupNumber();
+      if (!(applicableMatchGroupNumbers.contains(grpNum)))
+      {
+        applicableMatchGroupNumbers.append(grpNum);
+      }
     }
 
     // get the category-specific comparison function
@@ -287,12 +337,12 @@ namespace QTournament
     // In non-round-robin matches, this does no harm because
     // there is only one (artificial) match group in those cases
     qvl << RA_GRP_NUM << 4242;  // dummy number, just to fill the field
-    for (MatchGroup mg : Tournament::getMatchMngr()->getMatchGroupsForCat(cat, lastRound))
+    for (int grpNum : applicableMatchGroupNumbers)
     {
       // remove last group number
       // and append the current one
       qvl.removeLast();
-      qvl << mg.getGroupNumber();
+      qvl << grpNum;
 
       // get the ranking entries
       RankingEntryList rankList = getObjectsByColumnValue<RankingEntry>(rankTab, qvl);
