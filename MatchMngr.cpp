@@ -1333,6 +1333,15 @@ namespace QTournament {
     // update the category's state to "FINALIZED", if necessary
     Tournament::getCatMngr()->updateCatStatusFromMatchStatus(ma.getCategory());
 
+    // store the finish time in the database
+    if (oldState == STAT_MA_RUNNING)   // match was called normally, so we have a start time
+    {
+      QDateTime curDateTime = QDateTime::currentDateTimeUtc();
+      uint epochSecs = curDateTime.toTime_t();
+      QString sEpochSecs = QString::number(epochSecs);
+      matchRow.update(MA_FINISH_TIME, sEpochSecs);
+    }
+
     // get the round status AFTER the match and check whether
     // we'e just finished a round
     int lastFinishedRoundAfterMatch = ma.getCategory().getRoundStatus().getFinishedRoundsCount();
@@ -1342,15 +1351,7 @@ namespace QTournament {
       // or for generating new matches)
       auto specialCat = ma.getCategory().convertToSpecializedObject();
       specialCat->onRoundCompleted(lastFinishedRoundAfterMatch);
-    }
-
-    // store the finish time in the database
-    if (oldState == STAT_MA_RUNNING)   // match was called normally, so we have a start time
-    {
-      QDateTime curDateTime = QDateTime::currentDateTimeUtc();
-      uint epochSecs = curDateTime.toTime_t();
-      QString sEpochSecs = QString::number(epochSecs);
-      matchRow.update(MA_FINISH_TIME, sEpochSecs);
+      emit roundCompleted(ma.getCategory().getId(), lastFinishedRoundAfterMatch);
     }
 
 

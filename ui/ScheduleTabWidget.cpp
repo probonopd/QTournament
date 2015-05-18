@@ -5,6 +5,7 @@
 #include "GuiHelpers.h"
 #include "Score.h"
 #include "ui/DlgMatchResult.h"
+#include "ui/MainFrame.h"
 
 ScheduleTabWidget::ScheduleTabWidget(QWidget *parent) :
     QDialog(parent),
@@ -16,6 +17,9 @@ ScheduleTabWidget::ScheduleTabWidget(QWidget *parent) :
     ui->mgIdleView->setFilter(MatchGroupTableView::FilterType::IDLE);
     ui->mgStagedView->setFilter(MatchGroupTableView::FilterType::STAGED);
     ui->mgStagedView->sortByColumn(MatchGroupTableModel::STAGE_SEQ_COL_ID, Qt::AscendingOrder);
+
+    // subscribe to the tournament-opened-signal
+    connect(MainFrame::getMainFramePointer(), &MainFrame::tournamentOpened, this, &ScheduleTabWidget::onTournamentOpened);
 
     // react on selection changes in the IDLE match groups view
     connect(ui->mgIdleView->selectionModel(),
@@ -140,6 +144,17 @@ void ScheduleTabWidget::onCourtDoubleClicked(const QModelIndex &index)
 
 //----------------------------------------------------------------------------
 
+void ScheduleTabWidget::onRoundCompleted(int catId, int round)
+{
+  Category cat = Tournament::getCatMngr()->getCategoryById(catId);
+
+  QString txt = tr("Round %1 of category %2 finished!").arg(round).arg(cat.getName());
+
+  QMessageBox::information(this, tr("Round finished"), txt);
+}
+
+//----------------------------------------------------------------------------
+
 void ScheduleTabWidget::askAndStoreMatchResult(const Match &ma)
 {
   // only accept results for running matches
@@ -251,6 +266,27 @@ void ScheduleTabWidget::askAndStoreMatchResult(const Match &ma)
     return;
   }
   QMessageBox::information(this, tr("Assign match to court"), tr("Call cancled, match not started"));
+}
+
+//----------------------------------------------------------------------------
+
+void ScheduleTabWidget::onTournamentOpened(Tournament* _tnmt)
+{
+  tnmt = _tnmt;
+  // connect signals from the Tournament and MatchMngr with my slots
+  connect(_tnmt, &Tournament::tournamentClosed, this, &ScheduleTabWidget::onTournamentClosed);
+  connect(Tournament::getMatchMngr(), SIGNAL(roundCompleted(int,int)), this, SLOT(onRoundCompleted(int,int)));
+}
+
+//----------------------------------------------------------------------------
+
+void ScheduleTabWidget::onTournamentClosed()
+{
+  // disconnect from all signals, because
+  // the sending objects don't exist anymore
+  disconnect(Tournament::getMatchMngr(), SIGNAL(roundCompleted(int,int)), this, SLOT(onRoundCompleted(int,int)));
+  disconnect(tnmt, &Tournament::tournamentClosed, this, &ScheduleTabWidget::onTournamentClosed);
+  tnmt = nullptr;
 }
 
 //----------------------------------------------------------------------------
