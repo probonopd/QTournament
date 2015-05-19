@@ -27,6 +27,9 @@ namespace QTournament
   private:
     Category cat;
     int round;
+
+    int determineBestPossibleRankForPlayerAfterRound(const PlayerPair& pp, int round) const;
+    void printBestCaseList(upSimpleReport& rep) const;
   };
 
 }

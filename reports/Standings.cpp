@@ -55,7 +55,9 @@ upSimpleReport Standings::regenerateReport() const
     MatchMngr* mm = Tournament::getMatchMngr();
     MatchGroupList mgl = mm->getMatchGroupsForCat(cat, round);
     int matchGroupNumber = mgl.at(0).getGroupNumber();
-    if ((matchGroupNumber < 0) && (matchGroupNumber != GROUP_NUM__ITERATION))
+    MATCH_SYSTEM mSys = cat.getMatchSystem();
+    if ((matchGroupNumber < 0) && (matchGroupNumber != GROUP_NUM__ITERATION) &&
+        ((mSys == GROUPS_WITH_KO) || (mSys == SINGLE_ELIM)))
     {
       subHeader = GuiHelpers::groupNumToLongString(mgl.at(0).getGroupNumber());
     }
@@ -95,6 +97,7 @@ upSimpleReport Standings::regenerateReport() const
     tw.setHeader(7, tr("Games"));
     tw.setHeader(10, tr("Points"));
 
+    bool hasAtLeastOneEntry = false;
     for (RankingEntry re : rl)
     {
       QStringList rowContent;
@@ -103,6 +106,7 @@ upSimpleReport Standings::regenerateReport() const
       // skip entries without a valid rank
       int curRank = re.getRank();
       if (curRank == RankingEntry::NO_RANK_ASSIGNED) continue;
+      hasAtLeastOneEntry = true;
 
       rowContent << QString::number(curRank);
 
@@ -132,8 +136,20 @@ upSimpleReport Standings::regenerateReport() const
     }
 
     tw.setNextPageContinuationCaption(tableName + tr(" (cont.)"));
-    tw.write(result.get());
+    if (hasAtLeastOneEntry)
+    {
+      tw.write(result.get());
+    } else {
+      result->writeLine(tr("There are no standings available in this round."));
+    }
     result->skip(3.0);
+  }
+
+  // if we are in ranking matches, print a list of all best-case reachable places
+  if ((cat.getMatchSystem() == RANKING) && (round != cat.getRoundStatus().getTotalRoundsCount()))
+  {
+    printIntermediateHeader(result, tr("Best case reachable places after this round"));
+    printBestCaseList(result);
   }
 
   // set header and footer
@@ -159,6 +175,193 @@ QStringList Standings::getReportLocators() const
 
 //----------------------------------------------------------------------------
 
+int Standings::determineBestPossibleRankForPlayerAfterRound(const PlayerPair& pp, int round) const
+{
+  // we can only determine the best possible final rank if we
+  // are in the RANKING match system
+  if (cat.getMatchSystem() != RANKING)
+  {
+    return -1;
+  }
+
+  // make sure the playerpair is from this category
+  if (*(pp.getCategory(db)) != cat)
+  {
+    return -1;
+  }
+
+  // make sure the round is valid
+  if (round < 1)
+  {
+    return -1;
+  }
+
+  // make sure the round has already been played
+  CatRoundStatus crs = cat.getRoundStatus();
+  if (crs.getFinishedRoundsCount() < round)
+  {
+    return -1;
+  }
+
+  // determine the last FINISHED match that this player has played.
+  // Note: this must not be in this round because the player
+  // could have had a bye
+  unique_ptr<Match> lastMatch = nullptr;
+  int _r = round;
+  MatchMngr* mm = Tournament::getMatchMngr();
+  while ((lastMatch == nullptr) && (_r > 0))
+  {
+    lastMatch = mm->getMatchForPlayerPairAndRound(pp, _r);
+    if ((lastMatch != nullptr) && (lastMatch->getState() != STAT_MA_FINISHED))
+    {
+      lastMatch = nullptr;   // skip all matches that are not finished
+    }
+    --_r;
+  }
+
+  if (lastMatch == nullptr)
+  {
+    // the player had no match yet (or none finished), so the first place is still
+    // possible
+    return 1;
+  }
+
+  // okay, we've found a valid match that is in state FINISHED
+
+  // check if the player already achieved a final rank with this match
+  auto winner = lastMatch->getWinner();
+  int winnerRank = lastMatch->getWinnerRank();
+  int loserRank = lastMatch->getLoserRank();
+  bool isWinner = ((*winner) == pp);
+  if (isWinner && (winnerRank > 0))
+  {
+    return winnerRank;
+  }
+  if (!isWinner && (loserRank > 0))
+  {
+    return loserRank;
+  }
+
+  // no final rank yet. So we have to follow the match tree, assuming
+  // that the player wins all subsequent matches
+
+
+  // a little helper function to get the next match for a match winner
+  int finalRound = crs.getTotalRoundsCount();
+  auto getNextWinnerMatch = [this, &finalRound, &mm](const Match& ma) -> unique_ptr<Match> {
+    if (ma.getWinnerRank() > 0)
+    {
+      return nullptr;  // no next match
+    }
+
+    // maybe we already HAVE winner. then we must search for real
+    // pair IDs
+    if (ma.getState() == STAT_MA_FINISHED)
+    {
+      auto w = ma.getWinner();
+      assert(w != nullptr);
+      int r = ma.getMatchGroup().getRound();
+
+      ++r;
+      unique_ptr<Match> nextMatch = nullptr;
+      while ((nextMatch == nullptr) && (r <= finalRound))
+      {
+        nextMatch = mm->getMatchForPlayerPairAndRound(*w, r);
+        ++r;
+      }
+
+      return nextMatch;   // it's either the match or nullptr to indicate an error
+    }
+
+    // the match is not yet finished, so we need to search for symbolic
+    // player values. In this case, it is the positive ID of our match
+    QString where = QString("%1 = %2 OR %3 = %4").arg(MA_PAIR1_SYMBOLIC_VAL).arg(ma.getId());
+    where = where.arg(MA_PAIR2_SYMBOLIC_VAL).arg(ma.getId());
+
+    TabRow winnerMatchRow = (*db)[TAB_MATCH].getSingleRowByWhereClause(where);  // this query must always yield exactly one match
+
+    return mm->getMatch(winnerMatchRow.getId());
+  };
+
+  //
+  // back to the follow-the-chain-of-matches-algorithm
+  //
+
+  // since the match ma is already finished (see checks above) and there is no
+  // final rank for the player (see check above) there must be a future match for this player
+  // and the match must be identifiable by the pair ID, not by a symbolic name (the symbolic
+  // name should be resolved by now).
+  _r = round + 1;
+  unique_ptr<Match> nextMatch = nullptr;
+  while ((nextMatch == nullptr) && (_r <= finalRound))
+  {
+    nextMatch = mm->getMatchForPlayerPairAndRound(pp, _r);
+    ++_r;
+  }
+
+  if (nextMatch == nullptr)
+  {
+    // this shouldn't happen. There should always be a next match.
+    // I give up.
+    return -1;
+  }
+
+  // no we follow the bracket tree, assuming that the player wins all
+  // subsequent matches. Let's see where it takes us...
+  Match oldNextMatch = *nextMatch;
+  while (nextMatch != nullptr)
+  {
+    oldNextMatch = *nextMatch;
+    nextMatch = getNextWinnerMatch(*nextMatch);
+  }
+
+  // now oldNextMatch holds the final match in the chain of matches
+  winnerRank = oldNextMatch.getWinnerRank();
+
+  // this is either the wanted result or -1 which can then as well
+  // serve as an error indicator
+  return winnerRank;
+}
+
+void Standings::printBestCaseList(upSimpleReport& rep) const
+{
+  if (cat.getMatchSystem() != RANKING)
+  {
+    return;
+  }
+
+  // we print the list for all participating player pairs, sorted
+  // alphabetically
+  PlayerPairList ppList = cat.getPlayerPairs();
+  std::sort(ppList.begin(), ppList.end(), [](PlayerPair& pp1, PlayerPair& pp2)
+  {
+    return pp1.getDisplayName() < pp2.getDisplayName();
+  });
+
+  // prepare a table for the standings
+  SimpleReportLib::TabSet ts;
+  ts.addTab(120, SimpleReportLib::TAB_JUSTIFICATION::TAB_CENTER);  // the best case rank
+
+  SimpleReportLib::TableWriter tw(ts);
+  tw.setHeader(0, tr("Player"));
+  tw.setHeader(1, tr("Best case final place"));
+
+  for (PlayerPair pp : ppList)
+  {
+    QStringList rowContent;
+    rowContent << pp.getDisplayName();
+    int bestCaseRank = determineBestPossibleRankForPlayerAfterRound(pp, round);
+    if (bestCaseRank > 0)
+    {
+      rowContent << QString::number(bestCaseRank);
+    } else {
+      rowContent << "??";   // shouldn't happen
+    }
+    tw.appendRow(rowContent);
+  }
+
+  tw.write(rep.get());
+}
 
 //----------------------------------------------------------------------------
 
