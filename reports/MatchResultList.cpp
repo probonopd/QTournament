@@ -79,7 +79,7 @@ upSimpleReport MatchResultList::regenerateReport() const
     std::sort(ml.begin(), ml.end(), [](Match& m1, Match& m2){
       return (m1.getMatchNumber() < m2.getMatchNumber());
     });
-    printMatchList(result, ml, GuiHelpers::groupNumToLongString(grpNum) + tr(" (cont.)"), true, false);
+    printMatchList(result, ml, PlayerPairList(), GuiHelpers::groupNumToLongString(grpNum) + tr(" (cont.)"), true, false);
     result->skip(3.0);
   }
 

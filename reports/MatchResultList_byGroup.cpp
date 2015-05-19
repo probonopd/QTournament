@@ -70,7 +70,7 @@ upSimpleReport MatchResultList_ByGroup::regenerateReport() const
       return ma1.getMatchNumber() < ma2.getMatchNumber();
     });
 
-    printMatchList(result, maList, tr("Results of round ") + QString::number(round) + tr(" (cont.)"), true, false);
+    printMatchList(result, maList, PlayerPairList(), tr("Results of round ") + QString::number(round) + tr(" (cont.)"), true, false);
 
     if (mg.getState() != STAT_MG_FINISHED)
     {

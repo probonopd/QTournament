@@ -54,7 +54,7 @@ namespace QTournament
 
     void prepStyles(upSimpleReport& rep) const;
     void printIntermediateHeader(upSimpleReport& rep, const QString& txt, double skipBefore__MM=SKIP_BEFORE_INTERMEDIATE_HEADER__MM) const;
-    void printMatchList(upSimpleReport& rep, const MatchList& maList, const QString& continuationString, bool withResults=false, bool withGroupColumn=false) const;
+    void printMatchList(upSimpleReport& rep, const MatchList& maList, const PlayerPairList& byeList, const QString& continuationString, bool withResults=false, bool withGroupColumn=false) const;
     void setHeaderAndFooter(upSimpleReport& rep, const QString& reportName) const;
   };
 

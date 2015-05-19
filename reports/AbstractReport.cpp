@@ -131,7 +131,7 @@ void AbstractReport::printIntermediateHeader(upSimpleReport& rep, const QString&
 
 //----------------------------------------------------------------------------
 
-void AbstractReport::printMatchList(upSimpleReport& rep, const MatchList& maList, const QString& continuationString, bool withResults, bool withGroupColumn) const
+void AbstractReport::printMatchList(upSimpleReport& rep, const MatchList& maList, const PlayerPairList& byeList, const QString& continuationString, bool withResults, bool withGroupColumn) const
 {
   // prepare a tabset for a table with match results
   SimpleReportLib::TabSet ts;
@@ -208,6 +208,39 @@ void AbstractReport::printMatchList(upSimpleReport& rep, const MatchList& maList
   {
     tw.setHeader(3, QObject::tr("Group"));
   }
+
+  // if we have players with a bye, list those players at the bottom of the table
+  if (!(byeList.isEmpty()))
+  {
+    // sort the list alphabetically (and not, e.g., by group)
+    //
+    // we need to do this on a copy of byeList, because byeList is const
+    // and making it non-const would cause trouble when calling this function
+    // with an empty list like "PlayerPairList()".
+    PlayerPairList _byeList{byeList};
+    std::sort(_byeList.begin(), _byeList.end(), [](PlayerPair& pp1, PlayerPair& pp2)
+    {
+      return pp1.getDisplayName() < pp2.getDisplayName();
+    });
+
+    // print two empty rows as delimiter
+    QStringList rowContent;
+    rowContent << "";
+    tw.appendRow(rowContent);
+    tw.appendRow(rowContent);
+
+    // a list of all players having a bye
+    for (PlayerPair pp : _byeList)
+    {
+      rowContent.clear();
+      rowContent << "";  // first column not used
+      rowContent << "---";  // indicates: no match / no match number ==> bye
+
+      rowContent << pp.getDisplayName();
+      tw.appendRow(rowContent);
+    }
+  }
+
   tw.setNextPageContinuationCaption(continuationString);
   tw.write(rep.get());
 }

@@ -48,7 +48,9 @@ upSimpleReport ResultsAndNextMatches::regenerateReport() const
   if (mgl.size() == 1)
   {
     int grpNum = mgl.at(0).getGroupNumber();
-    if ((grpNum < 0) && (grpNum >= GROUP_NUM__L16))
+    MATCH_SYSTEM mSys = cat.getMatchSystem();
+    if ((grpNum < 0) && (grpNum >= GROUP_NUM__L16) &&
+        ((mSys == GROUPS_WITH_KO) || (mSys == SINGLE_ELIM)))
     {
       subHeader = GuiHelpers::groupNumToLongString(mgl.at(0).getGroupNumber());
     }
@@ -116,7 +118,7 @@ void ResultsAndNextMatches::printResultPart(upSimpleReport& rep) const
   std::sort(allMatches.begin(), allMatches.end(), getSortFunction_MatchByGroupAndNumber());
 
   printIntermediateHeader(rep, tr("Results of Round ") + QString::number(round));
-  printMatchList(rep, allMatches, tr("Results of Round ") + QString::number(round) + tr(" (cont.)"), true, true);
+  printMatchList(rep, allMatches, PlayerPairList(), tr("Results of Round ") + QString::number(round) + tr(" (cont.)"), true, true);
 }
 
 //----------------------------------------------------------------------------
@@ -162,7 +164,27 @@ void ResultsAndNextMatches::printNextMatchPart(upSimpleReport& rep) const
   // sort matches by group and number
   std::sort(allMatches.begin(), allMatches.end(), getSortFunction_MatchByGroupAndNumber());
 
-  printMatchList(rep, allMatches, tr("Next Matches") + tr(" (cont.)"), false, true);
+  // determine a list of all players having a bye
+  PlayerPairList byeList;
+  PlayerPairList playingList;
+  for (Match ma : allMatches)
+  {
+    playingList.append(ma.getPlayerPair1());
+    playingList.append(ma.getPlayerPair2());
+  }
+  auto specialCat = cat.convertToSpecializedObject();
+  ERR e;
+  PlayerPairList remainingPlayers = specialCat->getRemainingPlayersAfterRound(round, &e);
+  if (e == OK)
+  {
+    for (PlayerPair pp : remainingPlayers)
+    {
+      if (playingList.contains(pp)) continue;
+      byeList.append(pp);
+    }
+  }
+
+  printMatchList(rep, allMatches, byeList, tr("Next Matches") + tr(" (cont.)"), false, true);
 }
 
 //----------------------------------------------------------------------------
