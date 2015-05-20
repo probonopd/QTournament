@@ -96,7 +96,7 @@ QStringList MatchResultList::getReportLocators() const
   QStringList result;
 
   QString loc = tr("Results::");
-  loc += cat.getName() + "::by round::";
+  loc += cat.getName() + tr("::by round::");
   loc += tr("Round ") + QString::number(round);
 
   result.append(loc);

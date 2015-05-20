@@ -81,8 +81,8 @@ upSimpleReport Standings::regenerateReport() const
 
     // prepare a table for the standings
     SimpleReportLib::TabSet ts;
-    ts.addTab(2, SimpleReportLib::TAB_JUSTIFICATION::TAB_RIGHT);  // the rank
-    ts.addTab(8, SimpleReportLib::TAB_JUSTIFICATION::TAB_LEFT);   // the name
+    ts.addTab(6, SimpleReportLib::TAB_JUSTIFICATION::TAB_RIGHT);  // the rank
+    ts.addTab(10, SimpleReportLib::TAB_JUSTIFICATION::TAB_LEFT);   // the name
     // a pair of three tabs for each matches, games and points
     for (int i=0; i< 3; ++i)
     {
@@ -92,7 +92,8 @@ upSimpleReport Standings::regenerateReport() const
       ts.addTab(colonPos + 1.0,  SimpleReportLib::TAB_LEFT);  // second number
     }
     SimpleReportLib::TableWriter tw(ts);
-    tw.setHeader(0, tr("Player"));
+    tw.setHeader(1, tr("Rank"));
+    tw.setHeader(2, tr("Player"));
     tw.setHeader(4, tr("Matches"));
     tw.setHeader(7, tr("Games"));
     tw.setHeader(10, tr("Points"));

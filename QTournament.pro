@@ -182,6 +182,7 @@ FORMS += \
     ui/GameResultWidget.ui \
     ui/DlgMatchResult.ui
 
+TRANSLATIONS = tournament_de.ts
 
 win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../DatabaseOverlayLib/release/ -lDatabaseOverlayLib
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../DatabaseOverlayLib/debug/ -lDatabaseOverlayLib

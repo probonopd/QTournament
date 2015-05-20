@@ -135,8 +135,8 @@ void AbstractReport::printMatchList(upSimpleReport& rep, const MatchList& maList
 {
   // prepare a tabset for a table with match results
   SimpleReportLib::TabSet ts;
-  ts.addTab(8.0, SimpleReportLib::TAB_JUSTIFICATION::TAB_RIGHT);   // the match number
-  ts.addTab(12.0, SimpleReportLib::TAB_JUSTIFICATION::TAB_LEFT);   // the players
+  ts.addTab(9.5, SimpleReportLib::TAB_JUSTIFICATION::TAB_RIGHT);   // the match number
+  ts.addTab(13.0, SimpleReportLib::TAB_JUSTIFICATION::TAB_LEFT);   // the players
   ts.addTab(135.0, SimpleReportLib::TAB_JUSTIFICATION::TAB_CENTER);   // the group number
   ts.addTab(145, SimpleReportLib::TAB_JUSTIFICATION::TAB_LEFT);   // dummy tab for a column label
   for (int game=0; game < 5; ++game)
@@ -149,7 +149,7 @@ void AbstractReport::printMatchList(upSimpleReport& rep, const MatchList& maList
 
   // prepare a table for the match results
   SimpleReportLib::TableWriter tw(ts);
-  tw.setHeader(0, QObject::tr("Match"));
+  tw.setHeader(1, QObject::tr("Match"));
   tw.setHeader(2, QObject::tr("Players"));
   if (withResults)
   {

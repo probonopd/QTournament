@@ -94,7 +94,7 @@ QStringList MatchResultList_ByGroup::getReportLocators() const
   QStringList result;
 
   QString loc = tr("Results::");
-  loc += cat.getName() + "::by group::";
+  loc += cat.getName() + tr("::by group::");
   loc += tr("Group ") + QString::number(grpNum);
 
   result.append(loc);
