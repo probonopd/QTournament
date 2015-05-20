@@ -1700,12 +1700,12 @@ in current round</source>
     <message>
         <location filename="reports/ResultSheets.cpp" line="151"/>
         <source>Match Number: </source>
-        <translation>Spielnummer</translation>
+        <translation>Spiel: </translation>
     </message>
     <message>
         <location filename="reports/ResultSheets.cpp" line="152"/>
         <source>Court: ____________</source>
-        <translation>Platz: ____________</translation>
+        <translation>Feld: ____________</translation>
     </message>
     <message>
         <location filename="reports/ResultSheets.cpp" line="155"/>
@@ -1713,7 +1713,19 @@ in current round</source>
         <translation>%1, Runde %2</translation>
     </message>
     <message>
-        <location filename="reports/ResultSheets.cpp" line="187"/>
+        <location filename="reports/ResultSheets.cpp" line="177"/>
+        <location filename="reports/ResultSheets.cpp" line="192"/>
+        <source>Winner of Match #</source>
+        <translation>Gewinner Spiel </translation>
+    </message>
+    <message>
+        <location filename="reports/ResultSheets.cpp" line="177"/>
+        <location filename="reports/ResultSheets.cpp" line="192"/>
+        <source>Loser of Match #</source>
+        <translation>Verlierer Spiel </translation>
+    </message>
+    <message>
+        <location filename="reports/ResultSheets.cpp" line="213"/>
         <source>Game:</source>
         <translation>Satz:</translation>
     </message>

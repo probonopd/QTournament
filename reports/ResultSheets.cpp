@@ -156,27 +156,53 @@ void ResultSheets::printMatchData(upSimpleReport& rep, const Match& ma) const
   rep->writeLine(header);
 
   // write player name(s)
-  PlayerPair pp1 = ma.getPlayerPair1();
-  PlayerPair pp2 = ma.getPlayerPair2();
-  QString name1 = pp1.getPlayer1().getDisplayName_FirstNameFirst();
-  QString name2 = pp2.getPlayer1().getDisplayName_FirstNameFirst();
-
-  if (pp1.hasPlayer2())
+  QString name1_Line1;
+  QString name2_Line1;
+  QString name1_Line2;
+  QString name2_Line2;
+  QString team1;
+  QString team2;
+  if (ma.hasPlayerPair1())
   {
-    name1 += " /";
-    name2 += " /";
-    rep->writeLine("\t" + name1 + "\t:\t" + name2, RESULTSHEET_NAME_STYLE);
-    name1 = pp1.getPlayer2().getDisplayName_FirstNameFirst();
-    name2 = pp2.getPlayer2().getDisplayName_FirstNameFirst();
-    rep->writeLine("\t" + name1 + "\t\t" + name2, RESULTSHEET_NAME_STYLE);
+    PlayerPair pp1 = ma.getPlayerPair1();
+    name1_Line1 = pp1.getPlayer1().getDisplayName_FirstNameFirst();
+    team1 = pp1.getDisplayName_Team();
+    if (pp1.hasPlayer2())
+    {
+      name1_Line1 += " /";
+      name1_Line2 = pp1.getPlayer2().getDisplayName_FirstNameFirst();
+    }
   } else {
-    rep->writeLine("\t" + name1 + "\t:\t" + name2, RESULTSHEET_NAME_STYLE);
+    int symbolicName = ma.getSymbolicPlayerPair1Name();
+    name1_Line1 = (symbolicName > 0) ? tr("Winner of Match #") : tr("Loser of Match #");
+    name1_Line1 += QString::number(abs(symbolicName));
+  }
+  if (ma.hasPlayerPair2())
+  {
+    PlayerPair pp2 = ma.getPlayerPair1();
+    name2_Line1 = pp2.getPlayer1().getDisplayName_FirstNameFirst();
+    team2 = pp2.getDisplayName_Team();
+    if (pp2.hasPlayer2())
+    {
+      name2_Line1 += " /";
+      name2_Line2 = pp2.getPlayer2().getDisplayName_FirstNameFirst();
+    }
+  } else {
+    int symbolicName = ma.getSymbolicPlayerPair2Name();
+    name2_Line1 = (symbolicName > 0) ? tr("Winner of Match #") : tr("Loser of Match #");
+    name2_Line1 += QString::number(abs(symbolicName));
+  }
+  rep->writeLine("\t" + name1_Line1 + "\t:\t" + name2_Line1, RESULTSHEET_NAME_STYLE);
+  if (!(name1_Line2.isEmpty()) || !(name2_Line2.isEmpty()))
+  {
+    rep->writeLine("\t" + name1_Line2 + "\t\t" + name2_Line2, RESULTSHEET_NAME_STYLE);
   }
 
   // write the team names
-  QString team1 = pp1.getDisplayName_Team();
-  QString team2 = pp2.getDisplayName_Team();
-  rep->writeLine("\t" + team1 + "\t\t" + team2, RESULTSHEET_TEAM_STYLE);
+  if (!(team1.isEmpty()) || !(team2.isEmpty()))
+  {
+    rep->writeLine("\t" + team1 + "\t\t" + team2, RESULTSHEET_TEAM_STYLE);
+  }
 
   rep->skip(8.0);
 
