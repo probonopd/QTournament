@@ -940,7 +940,7 @@ namespace QTournament {
       // we may, for instance, start matches in round 3 before round 2 is finished.
       // the same assumption holds for elimination rounds
       MATCH_SYSTEM mSys = cat.getMatchSystem();
-      if ((mSys == SINGLE_ELIM) || ((mSys == GROUPS_WITH_KO) && (mg.getGroupNumber() > 0)))
+      if ((mSys == SINGLE_ELIM) || (mSys == RANKING) || ((mSys == GROUPS_WITH_KO) && (mg.getGroupNumber() > 0)))
       {
         return false;
       }
