@@ -179,7 +179,7 @@ void ResultSheets::printMatchData(upSimpleReport& rep, const Match& ma) const
   }
   if (ma.hasPlayerPair2())
   {
-    PlayerPair pp2 = ma.getPlayerPair1();
+    PlayerPair pp2 = ma.getPlayerPair2();
     name2_Line1 = pp2.getPlayer1().getDisplayName_FirstNameFirst();
     team2 = pp2.getDisplayName_Team();
     if (pp2.hasPlayer2())
