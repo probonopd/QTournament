@@ -252,7 +252,9 @@ namespace QTournament
         return PlayerPairList();
       }
     } else {
-      result = getPlayerPairs();
+      // round 0 (before first round)
+      if (err != nullptr) *err = OK;
+      return getPlayerPairs();
     }
 
     // now that we have the survivors of the previous round (or

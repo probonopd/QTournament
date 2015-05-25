@@ -773,6 +773,7 @@ namespace QTournament
     if (bracketType == BracketGenerator::BRACKET_RANKING1)
     {
       // hard-coded values RANKING1
+      if (numPlayers > 16) return 7;
       if (numPlayers > 8) return 5;
       if (numPlayers > 4) return 3;
       if (numPlayers > 2) return 2;
