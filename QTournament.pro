@@ -192,7 +192,7 @@ INCLUDEPATH += $$PWD/../DatabaseOverlayLib
 DEPENDPATH += $$PWD/../DatabaseOverlayLib
 
 win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../build-SimpleReportGenerator-Desktop_Clang-Release/ -lSimpleReportGenerator
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../build-SimpleReportGenerator-Desktop_Clang-Debug/ -lSimpleReportGenerator
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../build-SimpleReportGenerator-Desktop_Qt_MinGW_w64_64bit_MSYS2-Debug/debug -lSimpleReportGenerator
 else:unix:CONFIG(release, debug|release): LIBS += -L$$PWD/../build-SimpleReportGenerator-Desktop_Clang-Release/ -lSimpleReportGenerator
 else:unix:CONFIG(debug, debug|release): LIBS += -L$$PWD/../build-SimpleReportGenerator-Desktop_Clang-Debug/ -lSimpleReportGenerator
 
