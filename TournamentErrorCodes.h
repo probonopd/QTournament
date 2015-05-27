@@ -71,6 +71,7 @@ namespace QTournament
         INVALID_PLAYER_PAIR,
         INVALID_MATCH_LINK,
         INVALID_RANK,
+        PLAYER_ALREADY_IN_MATCHES,
     };
 }
 

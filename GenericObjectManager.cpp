@@ -31,7 +31,7 @@ namespace QTournament
    *    * Except for the new row, all other sequence numbers in the table are correct
    *
    */
-  void GenericObjectManager::fixSeqNumberAfterInsert(const QString& tabName)
+  void GenericObjectManager::fixSeqNumberAfterInsert(const QString& tabName) const
   {
     TabRow r = db->getTab(tabName).getSingleRowByColumnValue(GENERIC_SEQNUM_FIELD_NAME, DB_NULL);
     
@@ -43,7 +43,7 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  void GenericObjectManager::fixSeqNumberAfterDelete(const QString& tabName, int deletedSeqNum)
+  void GenericObjectManager::fixSeqNumberAfterDelete(const QString& tabName, int deletedSeqNum) const
   {
     QString where = GENERIC_SEQNUM_FIELD_NAME + " > ? ORDER BY " + GENERIC_SEQNUM_FIELD_NAME + " ASC";
     

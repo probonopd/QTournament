@@ -400,6 +400,92 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
+  ERR PlayerMngr::canDeletePlayer(const Player &p) const
+  {
+    // first check: see if we can remove the player from all categories
+    CatMngr* cm = Tournament::getCatMngr();
+    auto assignedCats = p.getAssignedCategories();
+    for (Category c : assignedCats)
+    {
+      if (!(c.canRemovePlayer(p)))
+      {
+        return PLAYER_NOT_REMOVABLE_FROM_CATEGORY;
+      }
+    }
+
+    // second check: ensure that there are not existing / planned
+    // matches that involve this player
+    //
+    // step 1: get all player pairs that involve this player
+    QString where = "%1 = %2 OR %3 = %2";
+    where = where.arg(PAIRS_PLAYER1_REF).arg(p.getId()).arg(PAIRS_PLAYER2_REF);
+    DbTab pairTab = (*db)[TAB_PAIRS];
+    PlayerPairList assignedPairs = getObjectsByWhereClause<PlayerPair>(pairTab, where);
+    // note: this list SHOULD be empty, because otherwise we shouldn't be able
+    // to remove the player from the categories (see above)
+
+    // step 2: check if we have any matches that involve one of these pairs
+    //
+    // TODO: skipped this test in favour of an assertion
+    // that there no player pairs at all
+    //assert(assignedPairs.isEmpty());
+    if (!(assignedPairs.isEmpty()))
+    {
+      return PLAYER_ALREADY_IN_MATCHES;
+    }
+
+    // third check: the player may not be referenced as an actual player
+    // (e.g., as a substitue) in any match
+    where = "%1 = %2 OR %3 = %2 OR %4 = %2 OR %5 = %2";
+    where = where.arg(MA_ACTUAL_PLAYER1A_REF).arg(p.getId());
+    where = where.arg(MA_ACTUAL_PLAYER1B_REF).arg(MA_ACTUAL_PLAYER2A_REF).arg(MA_ACTUAL_PLAYER2B_REF);
+    DbTab matchTab = (*db)[TAB_MATCH];
+    MatchList maList = getObjectsByWhereClause<Match>(matchTab, where);
+    if (!(maList.isEmpty()))
+    {
+      return PLAYER_ALREADY_IN_MATCHES;
+    }
+
+    return OK;
+  }
+
+  //----------------------------------------------------------------------------
+
+  ERR PlayerMngr::deletePlayer(const Player &p) const
+  {
+    ERR e = canDeletePlayer(p);
+    if (e != OK)
+    {
+      return e;
+    }
+
+    // remove the player from all categories
+    CatMngr* cm = Tournament::getCatMngr();
+    auto assignedCats = p.getAssignedCategories();
+    for (Category c : assignedCats)
+    {
+      e = c.removePlayer(p);
+      if (e != OK)
+      {
+        return e;   // after the checks before, this shoudln't happen
+      }
+    }
+
+    // there is nothing more to do for us, because there are no more references
+    // to this player. This has been checked by canDeletePlayer() before
+
+    // the actual deletion
+    int oldSeqNum = p.getSeqNum();
+    emit beginDeletePlayer(oldSeqNum);
+    playerTab.deleteRowsByColumnValue("id", p.getId());
+    fixSeqNumberAfterDelete(TAB_PLAYER, oldSeqNum);
+    emit endDeletePlayer();
+
+    return OK;
+  }
+
+  //----------------------------------------------------------------------------
+
 
   //----------------------------------------------------------------------------
 

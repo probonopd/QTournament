@@ -53,6 +53,9 @@ namespace QTournament
 
     static std::function<bool (Player&, Player&)> getPlayerSortFunction_byName();
 
+    ERR canDeletePlayer(const Player& p) const;
+    ERR deletePlayer(const Player& p) const;
+
   private:
     DbTab playerTab;
 
@@ -61,6 +64,8 @@ namespace QTournament
     void endCreatePlayer (int newPlayerSeqNum);
     void playerRenamed (const Player& p);
     void playerStatusChanged(int playerId, int playerSeqNum, OBJ_STATE fromState, OBJ_STATE toState);
+    void beginDeletePlayer(int playerSeqNum) const;
+    void endDeletePlayer() const;
   };
 }
 

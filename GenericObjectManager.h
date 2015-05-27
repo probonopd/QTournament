@@ -22,8 +22,8 @@ namespace QTournament
     TournamentDB* getDatabaseHandle();
     
   protected:
-    void fixSeqNumberAfterInsert(const QString& tabName);
-    void fixSeqNumberAfterDelete(const QString& tabName, int deletedSeqNum);
+    void fixSeqNumberAfterInsert(const QString& tabName) const;
+    void fixSeqNumberAfterDelete(const QString& tabName, int deletedSeqNum) const;
 
   protected:
     TournamentDB* db;
