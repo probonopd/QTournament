@@ -5,7 +5,7 @@
  * Created on August 25, 2014, 8:34 PM
  */
 
-#include <QStack>
+#include <QHash>
 
 #include "SwissLadderCategory.h"
 #include "KO_Config.h"
@@ -74,9 +74,19 @@ namespace QTournament
     // in the past in this category. Keep the list in
     // memory for fast and easy access later on. We'll use
     // this list later to avoid playing the same match twice
-    // in different rounds
+    // in different rounds.
+    //
+    // While we're walking through all matches, count
+    // the number of matches for each player. We need this
+    // value to figure out who is going to have the next
+    // bye in case of an off number of players
     MatchMngr* mm = Tournament::getMatchMngr();
     QStringList pastMatches;
+    QHash<int, int> pairId2matchCount;
+    for (int id : rankedPairs_Int)
+    {
+      pairId2matchCount.insert(id, 0);
+    }
     for (MatchGroup mg : mm->getMatchGroupsForCat(*this))
     {
       for (Match ma : mg.getMatches())
@@ -96,7 +106,38 @@ namespace QTournament
         QString matchString2 = QString("%1,%2").arg(pp2Id).arg(pp1Id);
         pastMatches.append(matchString1);
         pastMatches.append(matchString2);
+
+        // increment the match counter for each player pair
+        int oldCount = pairId2matchCount.take(pp1Id);
+        pairId2matchCount.insert(pp1Id, ++oldCount);
+        oldCount = pairId2matchCount.take(pp2Id);
+        pairId2matchCount.insert(pp2Id, ++oldCount);
       }
+    }
+
+    // if necessary, determine the player with the next bye. This
+    // is basically the lowest ranked player unless this player
+    // already had a bye in a preious round.
+    // In this case, it's the second-to-lowest ranked and so on
+    if ((pairCount % 2) != 0)
+    {
+      int byeIndex = pairCount - 1;   // start with the lowest ranked player
+      while (true)
+      {
+        int byePairId = rankedPairs_Int.at(byeIndex);
+        int matchCount = pairId2matchCount.value(byePairId);
+        if (matchCount == lastRound)  // values identical means: no bye so far
+        {
+          break;
+        }
+        --byeIndex;
+      }
+
+      // remove the found player pair from all lists so that it's
+      // not part of all further algorithms
+      rankedPairs.removeAt(byeIndex);
+      rankedPairs_Int.removeAt(byeIndex);
+      --pairCount;
     }
 
     // a helper function that determines the next
@@ -122,10 +163,8 @@ namespace QTournament
     // playing the same match twice.
     //
     // the algorithm uses two indices: one for the first player, the
-    // other one for the second player. If we found a new match, we
-    // store the values on a local stack to allow some sort of
-    // back-tracking in case we need to change our choice later
-    QStack<QString> newMatches;
+    // other one for the second player.
+    QStringList newMatches;
     int firstIndex = 0;
     int secondIndex = 1;
     while ((pairCount - usedPairs.size()) > 1)   // one pair may be unsed in categories with an odd number of participants
@@ -314,20 +353,29 @@ namespace QTournament
   std::function<bool (RankingEntry& a, RankingEntry& b)> SwissLadderCategory::getLessThanFunction()
   {
     return [](RankingEntry& a, RankingEntry& b) {
-      // first criteria: won matches
+      // first criterion: delta between won and lost matches
       tuple<int, int, int, int> matchStatsA = a.getMatchStats();
       tuple<int, int, int, int> matchStatsB = b.getMatchStats();
-      if ((get<0>(matchStatsA)) > (get<0>(matchStatsB))) return true;
+      int deltaA = get<0>(matchStatsA) - get<2>(matchStatsA);
+      int deltaB = get<0>(matchStatsB) - get<2>(matchStatsB);
+      if (deltaA > deltaB) return true;
+      if (deltaA < deltaB) return false;
 
-      // second criteria: won games
+      // second criteria: delta between won and lost games
       tuple<int, int, int> gameStatsA = a.getGameStats();
       tuple<int, int, int> gameStatsB = b.getGameStats();
-      if ((get<0>(gameStatsA)) > (get<0>(gameStatsB))) return true;
+      deltaA = get<0>(gameStatsA) - get<1>(gameStatsA);
+      deltaB = get<0>(gameStatsB) - get<1>(gameStatsB);
+      if (deltaA > deltaB) return true;
+      if (deltaA < deltaB) return false;
 
-      // third criteria: more points
+      // second criteria: delta between won and lost points
       tuple<int, int> pointStatsA = a.getPointStats();
       tuple<int, int> pointStatsB = b.getPointStats();
-      if ((get<0>(pointStatsA)) > (get<0>(pointStatsB))) return true;
+      deltaA = get<0>(pointStatsA) - get<1>(pointStatsA);
+      deltaB = get<0>(pointStatsB) - get<1>(pointStatsB);
+      if (deltaA > deltaB) return true;
+      if (deltaA < deltaB) return false;
 
       // TODO: add a direct comparison as additional criteria?
 
@@ -342,8 +390,9 @@ namespace QTournament
   {
     RankingMngr* rm = Tournament::getRankingMngr();
     ERR err;
+    PlayerPairList allPairs = getPlayerPairs();
 
-    rm->createUnsortedRankingEntriesForLastRound(*this, &err);
+    rm->createUnsortedRankingEntriesForLastRound(*this, &err, allPairs);
     if (err != OK) return err;  // shouldn't happen
     rm->sortRankingEntriesForLastRound(*this, &err);
     if (err != OK) return err;  // shouldn't happen
