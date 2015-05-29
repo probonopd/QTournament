@@ -18,6 +18,7 @@
 #include "BracketGenerator.h"
 #include "ElimCategory.h"
 #include "PureRoundRobinCategory.h"
+#include "SwissLadderCategory.h"
 
 #include <stdexcept>
 
@@ -546,6 +547,11 @@ namespace QTournament
     if (sys == ROUND_ROBIN)
     {
       return unique_ptr<Category>(new PureRoundRobinCategory(db, row));
+    }
+
+    if (sys == SWISS_LADDER)
+    {
+      return unique_ptr<Category>(new SwissLadderCategory(db, row));
     }
 
     // THIS IS JUST A HOT FIX UNTIL WE HAVE

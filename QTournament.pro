@@ -84,7 +84,8 @@ HEADERS += \
     reports/ResultSheets.h \
     SignalRelay.h \
     reports/ResultsAndNextMatches.h \
-    PureRoundRobinCategory.h
+    PureRoundRobinCategory.h \
+    SwissLadderCategory.h
 
 SOURCES += \
     Category.cpp \
@@ -159,7 +160,8 @@ SOURCES += \
     reports/ResultSheets.cpp \
     SignalRelay.cpp \
     reports/ResultsAndNextMatches.cpp \
-    PureRoundRobinCategory.cpp
+    PureRoundRobinCategory.cpp \
+    SwissLadderCategory.cpp
 
 RESOURCES += \
     tournament.qrc
