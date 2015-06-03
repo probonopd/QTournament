@@ -156,8 +156,8 @@ void ResultSheets::printMatchData(upSimpleReport& rep, const Match& ma) const
   rep->writeLine(header);
 
   // write player name(s)
-  QString name1_Line1;
-  QString name2_Line1;
+  QString name1_Line1 = "??";
+  QString name2_Line1 = "??";
   QString name1_Line2;
   QString name2_Line2;
   QString team1;
@@ -174,8 +174,11 @@ void ResultSheets::printMatchData(upSimpleReport& rep, const Match& ma) const
     }
   } else {
     int symbolicName = ma.getSymbolicPlayerPair1Name();
-    name1_Line1 = (symbolicName > 0) ? tr("Winner of Match #") : tr("Loser of Match #");
-    name1_Line1 += QString::number(abs(symbolicName));
+    if (symbolicName != 0)
+    {
+      name1_Line1 = (symbolicName > 0) ? tr("Winner of Match #") : tr("Loser of Match #");
+      name1_Line1 += QString::number(abs(symbolicName));
+    }
   }
   if (ma.hasPlayerPair2())
   {
@@ -189,8 +192,11 @@ void ResultSheets::printMatchData(upSimpleReport& rep, const Match& ma) const
     }
   } else {
     int symbolicName = ma.getSymbolicPlayerPair2Name();
-    name2_Line1 = (symbolicName > 0) ? tr("Winner of Match #") : tr("Loser of Match #");
-    name2_Line1 += QString::number(abs(symbolicName));
+    if (symbolicName != 0)
+    {
+      name2_Line1 = (symbolicName > 0) ? tr("Winner of Match #") : tr("Loser of Match #");
+      name2_Line1 += QString::number(abs(symbolicName));
+    }
   }
   rep->writeLine("\t" + name1_Line1 + "\t:\t" + name2_Line1, RESULTSHEET_NAME_STYLE);
   if (!(name1_Line2.isEmpty()) || !(name2_Line2.isEmpty()))
