@@ -277,6 +277,10 @@ namespace QTournament {
     matchRow.update(MA_PAIR1_REF, pp1.getPairId());
     matchRow.update(MA_PAIR2_REF, pp2.getPairId());
 
+    // potentially, the player pairs where all that was necessary
+    // to actually promote the match to e.g., WAITING
+    updateMatchStatus(ma);
+
     return OK;
   }
 
@@ -386,7 +390,8 @@ namespace QTournament {
   ERR MatchMngr::canAssignPlayerPairToMatch(const Match &ma, const PlayerPair &pp) const
   {
     // Only allow changing / setting player pairs if we not yet fully configured
-    if (ma.getState() != STAT_MA_INCOMPLETE) return MATCH_NOT_CONFIGURALE_ANYMORE;
+    OBJ_STATE stat = ma.getState();
+    if ((stat != STAT_MA_INCOMPLETE) && (stat != STAT_MA_FUZZY)) return MATCH_NOT_CONFIGURALE_ANYMORE;
 
     // make sure the player pair and the match belong to the same category
     Category requiredCat = ma.getCategory();
@@ -837,12 +842,13 @@ namespace QTournament {
     {
       bool isFuzzy1 = (ma.row[MA_PAIR1_SYMBOLIC_VAL].toInt() != 0);
       bool isFuzzy2 = (ma.row[MA_PAIR2_SYMBOLIC_VAL].toInt() != 0);
+      bool hasMatchNumber = ma.getMatchNumber() > 0;
 
       // we shall never have a symbolic and a real player assignment at the same time
       assert((isFuzzy1 && ma.hasPlayerPair1()) == false);
       assert((isFuzzy2 && ma.hasPlayerPair2()) == false);
 
-      if (isFuzzy1 || isFuzzy2)
+      if (isFuzzy1 || isFuzzy2 || hasMatchNumber)
       {
         ma.setState(STAT_MA_FUZZY);
         curState = STAT_MA_FUZZY;
@@ -850,7 +856,22 @@ namespace QTournament {
       }
     }
 
-    // transition from FUZZY to WAITING is handled in resolveSymbolicNamesAfterFinishedMatch()
+    // transition from FUZZY to WAITING:
+    // if we've resolved all symbolic references of a match, it may be promoted from
+    // FUZZY at least to WAITING, maybe even to READY or BUSY
+    if (curState == STAT_MA_FUZZY)
+    {
+      bool isFixed1 = ((ma.row[MA_PAIR1_SYMBOLIC_VAL].toInt() == 0) && (ma.row[MA_PAIR1_REF].toInt() > 0));
+      bool isFixed2 = ((ma.row[MA_PAIR2_SYMBOLIC_VAL].toInt() == 0) && (ma.row[MA_PAIR2_REF].toInt() > 0));
+      bool hasMatchNumber = ma.getMatchNumber() > 0;
+
+      if (isFixed1 && isFixed2 && hasMatchNumber)
+      {
+        ma.setState(STAT_MA_WAITING);
+        curState = STAT_MA_WAITING;
+        emit matchStatusChanged(ma.getId(), ma.getSeqNum(), STAT_MA_FUZZY, STAT_MA_WAITING);
+      }
+    }
 
     // from WAITING to READY or BUSY
     bool hasPredecessor = hasUnfinishedMandatoryPredecessor(ma);
@@ -1618,6 +1639,10 @@ namespace QTournament {
 
         m.row.update(MA_PAIR1_REF, winnerPair->getPairId());  // set the reference to the winner
         m.row.update(MA_PAIR1_SYMBOLIC_VAL, 0);   // delete symbolic reference
+
+        // emit a faked state change to trigger a display update of the
+        // match in the match tab view
+        emit matchStatusChanged(m.getId(), m.getSeqNum(), stat, stat);
       }
       // find all matches that use the winner of this match as player 2
       // and resolve their symbolic references
@@ -1630,6 +1655,10 @@ namespace QTournament {
 
         m.row.update(MA_PAIR2_REF, winnerPair->getPairId());  // set the reference to the winner
         m.row.update(MA_PAIR2_SYMBOLIC_VAL, 0);   // delete symbolic reference
+
+        // emit a faked state change to trigger a display update of the
+        // match in the match tab view
+        emit matchStatusChanged(m.getId(), m.getSeqNum(), stat, stat);
       }
     }
 
@@ -1646,6 +1675,10 @@ namespace QTournament {
 
         m.row.update(MA_PAIR1_REF, loserPair->getPairId());  // set the reference to the winner
         m.row.update(MA_PAIR1_SYMBOLIC_VAL, 0);   // delete symbolic reference
+
+        // emit a faked state change to trigger a display update of the
+        // match in the match tab view
+        emit matchStatusChanged(m.getId(), m.getSeqNum(), stat, stat);
       }
       // find all matches that use the loser of this match as player 2
       // and resolve their symbolic references
@@ -1658,22 +1691,21 @@ namespace QTournament {
 
         m.row.update(MA_PAIR2_REF, loserPair->getPairId());  // set the reference to the winner
         m.row.update(MA_PAIR2_SYMBOLIC_VAL, 0);   // delete symbolic reference
+
+        // emit a faked state change to trigger a display update of the
+        // match in the match tab view
+        emit matchStatusChanged(m.getId(), m.getSeqNum(), stat, stat);
       }
     }
 
     // if we resolved all symbolic references of a match, it may be promoted from
     // FUZZY at least to WAITING, maybe even to READY or BUSY
-    QVariantList qvl;
-    qvl << GENERIC_STATE_FIELD_NAME << static_cast<int>(STAT_MA_FUZZY);
-    qvl << MA_PAIR1_SYMBOLIC_VAL << 0;
-    qvl << MA_PAIR2_SYMBOLIC_VAL << 0;
-    for (Match m : getObjectsByColumnValue<Match>(matchTab, qvl))
+    QString where = QString("%1 = %2 AND %3 = 0 AND %4 = 0 AND %5 > 0 AND %6 > 0");
+    where = where.arg(GENERIC_STATE_FIELD_NAME).arg(static_cast<int>(STAT_MA_FUZZY));
+    where = where.arg(MA_PAIR1_SYMBOLIC_VAL).arg(MA_PAIR2_SYMBOLIC_VAL);
+    where = where.arg(MA_PAIR1_REF).arg(MA_PAIR2_REF);
+    for (Match m : getObjectsByWhereClause<Match>(matchTab, where))
     {
-      m.setState(STAT_MA_WAITING);
-      emit matchStatusChanged(m.getId(), m.getSeqNum(), STAT_MA_FUZZY, STAT_MA_WAITING);
-
-      // perhaps we can further promote the match from WAITING to READY or BUSY.
-      // to this end, call the "standard" promotion function
       updateMatchStatus(m);
     }
 

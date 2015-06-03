@@ -244,25 +244,26 @@ namespace QTournament
     // if we ever reach this point, newMatches contains a list of
     // strings that define the matches for the next round
     //
-    // let's actually create these matches
+    // let's fill the already prepared, "empty" matches with the
+    // match information from newMatches
     ERR e;
-    auto newMg = mm->createMatchGroup(*this, lastRound+1, GROUP_NUM__ITERATION, &e);
+    auto mg = mm->getMatchGroup(*this, lastRound+1, GROUP_NUM__ITERATION, &e);
+    assert(mg != nullptr);
     assert(e == OK);
-    assert(newMg != nullptr);
-    for (QString matchString : newMatches)
+    assert(mg->getMatches().size() == newMatches.size());
+    int cnt = 0;
+    for (Match ma : mg->getMatches())
     {
+      QString matchString = newMatches.at(cnt);
       int pp1Id = matchString.split(",").at(0).toInt();
       int pp2Id = matchString.split(",").at(1).toInt();
       PlayerPair pp1 = Tournament::getPlayerMngr()->getPlayerPair(pp1Id);
       PlayerPair pp2 = Tournament::getPlayerMngr()->getPlayerPair(pp2Id);
-      auto newMatch = mm->createMatch(*newMg, &e);
-      assert(e == OK);
-      assert(newMatch != nullptr);
 
-      e = mm->setPlayerPairsForMatch(*newMatch, pp1, pp2);
+      e = mm->setPlayerPairsForMatch(ma, pp1, pp2);
       assert(e == OK);
+      ++cnt;
     }
-    mm->closeMatchGroup(*newMg);
 
     return true;
   }
@@ -322,8 +323,32 @@ namespace QTournament
     // double initialization
     if (allGrp.count() != 0) return OK;
 
-    // alright, this is a virgin category. Generate
-    // a first round of matches based on the initial seeding
+    // alright, this is a virgin category.
+    // Assume that we play all possible rounds (very much like a
+    // round-robin) and generate all match groups along with
+    // placeholder matches
+    int nRounds = calcTotalRoundsCount();
+    int nPairs = getPlayerPairs().size();
+    int nMatchesPerRound = nPairs / 2;   // this always rounds down
+
+    for (int r=1; r <= nRounds; ++r)
+    {
+      ERR e;
+      auto mg = mm->createMatchGroup(*this, r, GROUP_NUM__ITERATION, &e);
+      assert(mg != nullptr);
+      assert(e == OK);
+
+      for (int m=0; m < nMatchesPerRound; ++m)
+      {
+        auto ma = mm->createMatch(*mg, &e);
+        assert(ma != nullptr);
+        assert(e == OK);
+      }
+
+      mm->closeMatchGroup(*mg);
+    }
+
+    // Fill the first round of matches based on the initial seeding
     genMatchesForNextRound();
 
     return OK;
