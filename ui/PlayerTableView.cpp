@@ -125,7 +125,8 @@ void PlayerTableView::onContextMenuRequested(const QPoint& pos)
   // players
   actAddPlayer->setEnabled(true);   // always possible
   actEditPlayer->setEnabled(isRowClicked);
-  actShowNextMatchesForPlayer->setEnabled(isRowClicked);
+  //actShowNextMatchesForPlayer->setEnabled(isRowClicked);
+  actShowNextMatchesForPlayer->setEnabled(false);  // not yet implemented
   actRemovePlayer->setEnabled(isRowClicked);
 
   // show the context menu
