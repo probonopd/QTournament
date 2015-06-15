@@ -194,22 +194,13 @@ namespace QTournament
   /**
    * Returns a database object for a player identified by its sequence number
    *
-   * Note: the player must exist, otherwise this method throws an exception!
-   *
    * @param seqNum is the sequence number of the player to look up
    *
-   * @return a Player instance of that player
+   * @return a unique_ptr to a Player instance of that player
    */
-  Player PlayerMngr::getPlayerBySeqNum(int seqNum)
+  unique_ptr<Player> PlayerMngr::getPlayerBySeqNum(int seqNum)
   {
-    try {
-      TabRow r = playerTab.getSingleRowByColumnValue(GENERIC_SEQNUM_FIELD_NAME, seqNum);
-      return Player(db, r);
-    }
-    catch (std::exception e)
-    {
-     throw std::invalid_argument("The player with sequence number " + QString2String(QString::number(seqNum)) + " does not exist");
-    }
+    return getSingleObjectByColumnValue<Player>(playerTab, GENERIC_SEQNUM_FIELD_NAME, seqNum);
   }
 
 
@@ -421,17 +412,20 @@ namespace QTournament
     where = where.arg(PAIRS_PLAYER1_REF).arg(p.getId()).arg(PAIRS_PLAYER2_REF);
     DbTab pairTab = (*db)[TAB_PAIRS];
     PlayerPairList assignedPairs = getObjectsByWhereClause<PlayerPair>(pairTab, where);
-    // note: this list SHOULD be empty, because otherwise we shouldn't be able
-    // to remove the player from the categories (see above)
 
     // step 2: check if we have any matches that involve one of these pairs
-    //
-    // TODO: skipped this test in favour of an assertion
-    // that there no player pairs at all
-    //assert(assignedPairs.isEmpty());
-    if (!(assignedPairs.isEmpty()))
+    DbTab matchTab = (*db)[TAB_MATCH];
+    for (PlayerPair pp : assignedPairs)
     {
-      return PLAYER_ALREADY_IN_MATCHES;
+      int ppId = pp.getPairId();
+      if (ppId < 0) continue;  // player pair in a not-yet-started category
+      where = "%1 = %2 OR %3 = %1";
+      where = where.arg(MA_PAIR1_REF).arg(ppId).arg(MA_PAIR2_REF);
+      MatchList maList = getObjectsByWhereClause<Match>(matchTab, where);
+      if (!(maList.isEmpty()))
+      {
+        return PLAYER_ALREADY_IN_MATCHES;
+      }
     }
 
     // third check: the player may not be referenced as an actual player
@@ -439,11 +433,18 @@ namespace QTournament
     where = "%1 = %2 OR %3 = %2 OR %4 = %2 OR %5 = %2";
     where = where.arg(MA_ACTUAL_PLAYER1A_REF).arg(p.getId());
     where = where.arg(MA_ACTUAL_PLAYER1B_REF).arg(MA_ACTUAL_PLAYER2A_REF).arg(MA_ACTUAL_PLAYER2B_REF);
-    DbTab matchTab = (*db)[TAB_MATCH];
     MatchList maList = getObjectsByWhereClause<Match>(matchTab, where);
     if (!(maList.isEmpty()))
     {
       return PLAYER_ALREADY_IN_MATCHES;
+    }
+
+    // at this point, we have pairs but no matches yet. this means
+    // that the player is assigned to a doubles/mixed partner in a
+    // not yet started category
+    if (!(assignedPairs.isEmpty()))
+    {
+      return PLAYER_ALREADY_PAIRED;
     }
 
     return OK;
@@ -482,6 +483,13 @@ namespace QTournament
     emit endDeletePlayer();
 
     return OK;
+  }
+
+  //----------------------------------------------------------------------------
+
+  int PlayerMngr::getTotalPlayerCount() const
+  {
+    return playerTab.length();
   }
 
   //----------------------------------------------------------------------------

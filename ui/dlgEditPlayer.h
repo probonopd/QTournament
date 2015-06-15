@@ -18,7 +18,7 @@ class DlgEditPlayer : public QDialog
 {
   Q_OBJECT
 public:
-  DlgEditPlayer (Player* _selectedPlayer = 0);
+  DlgEditPlayer (QWidget *parent, Player* _selectedPlayer = nullptr);
   virtual ~DlgEditPlayer ();
   QString getFirstName();
   QString getLastName();

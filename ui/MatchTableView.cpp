@@ -92,8 +92,8 @@ void MatchTableView::onTournamentOpened(Tournament* _tnmt)
   horizontalHeader()->resizeSections(QHeaderView::ResizeToContents);
   verticalHeader()->resizeSections(QHeaderView::ResizeToContents);
 
-  horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-  verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+  //horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+  //verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 }
 
 //----------------------------------------------------------------------------

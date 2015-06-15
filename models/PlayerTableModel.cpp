@@ -23,6 +23,8 @@ PlayerTableModel::PlayerTableModel(TournamentDB* _db)
   connect(Tournament::getPlayerMngr(), &PlayerMngr::endCreatePlayer, this, &PlayerTableModel::onEndCreatePlayer, Qt::DirectConnection);
   connect(Tournament::getPlayerMngr(), &PlayerMngr::playerRenamed, this, &PlayerTableModel::onPlayerRenamed, Qt::DirectConnection);
   connect(Tournament::getPlayerMngr(), &PlayerMngr::playerStatusChanged, this, &PlayerTableModel::onPlayerStatusChanged, Qt::DirectConnection);
+  connect(Tournament::getPlayerMngr(), &PlayerMngr::beginDeletePlayer, this, &PlayerTableModel::onBeginDeletePlayer, Qt::DirectConnection);
+  connect(Tournament::getPlayerMngr(), &PlayerMngr::endDeletePlayer, this, &PlayerTableModel::onEndDeletePlayer, Qt::DirectConnection);
 }
 
 //----------------------------------------------------------------------------
@@ -52,39 +54,40 @@ QVariant PlayerTableModel::data(const QModelIndex& index, int role) const
     if (role != Qt::DisplayRole)
       return QVariant();
     
-    Player p = Tournament::getPlayerMngr()->getPlayerBySeqNum(index.row());
+    auto p = Tournament::getPlayerMngr()->getPlayerBySeqNum(index.row());
+    // no check for a nullptr here, the call above MUST succeed
     
     // first column: name
     if (index.column() == 0)
     {
-      return p.getDisplayName();
+      return p->getDisplayName();
     }
     
     // second column: sex
     if (index.column() == 1)
     {
-      return ((p.getSex() == M) ? QString("♂") : QString("♀"));
+      return ((p->getSex() == M) ? QString("♂") : QString("♀"));
     }
     
     // third column: team name
     if (index.column() == 2)
     {
-      return p.getTeam().getName();
+      return p->getTeam().getName();
     }
     
     // fourth column: assigned categories
     if (index.column() == 3)
     {
       QString result = "";
-      QList<Category> assignedCats = p.getAssignedCategories();
+      QList<Category> assignedCats = p->getAssignedCategories();
       for (int i=0; i < assignedCats.count(); i++)
       {
-	result += assignedCats.at(i).getName() + ", ";
+        result += assignedCats.at(i).getName() + ", ";
       }
       
       if (assignedCats.count() > 0)
       {
-	result = result.left(result.length() - 2);
+        result = result.left(result.length() - 2);
       }
       
       return result;
@@ -171,6 +174,20 @@ void PlayerTableModel::onPlayerStatusChanged(int playerId, int playerSeqNum)
   QModelIndex startIdx = createIndex(playerSeqNum, 0);
   QModelIndex endIdx = createIndex(playerSeqNum, COLUMN_COUNT-1);
   emit dataChanged(startIdx, endIdx);
+}
+
+//----------------------------------------------------------------------------
+
+void PlayerTableModel::onBeginDeletePlayer(int playerSeqNum)
+{
+  beginRemoveRows(QModelIndex(), playerSeqNum, playerSeqNum);
+}
+
+//----------------------------------------------------------------------------
+
+void PlayerTableModel::onEndDeletePlayer()
+{
+  emit endRemoveRows();
 }
 
 //----------------------------------------------------------------------------

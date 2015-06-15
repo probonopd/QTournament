@@ -9,6 +9,10 @@
 #define	PLAYERMNGR_H
 
 #include <functional>
+#include <memory>
+
+#include <QList>
+#include <QObject>
 
 #include "TournamentDB.h"
 #include "Team.h"
@@ -19,9 +23,6 @@
 #include "DbTab.h"
 #include "GenericObjectManager.h"
 #include "Match.h"
-
-#include <QList>
-#include <QObject>
 
 
 using namespace dbOverlay;
@@ -40,7 +41,7 @@ namespace QTournament
     Player getPlayer(const QString& firstName, const QString& lastName);
     QList<Player> getAllPlayers();
     ERR renamePlayer (Player& p, const QString& newFirst, const QString& newLast);
-    Player getPlayerBySeqNum(int seqNum);
+    unique_ptr<Player> getPlayerBySeqNum(int seqNum);
     bool hasPlayer(int id);
     Player getPlayer(int id);
     PlayerPair getPlayerPair(int id);
@@ -55,6 +56,8 @@ namespace QTournament
 
     ERR canDeletePlayer(const Player& p) const;
     ERR deletePlayer(const Player& p) const;
+
+    int getTotalPlayerCount() const;
 
   private:
     DbTab playerTab;

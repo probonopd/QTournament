@@ -8,11 +8,13 @@
 #ifndef PLAYERTABLEVIEW_H
 #define	PLAYERTABLEVIEW_H
 
-#include "Tournament.h"
-#include "delegates/PlayerItemDelegate.h"
+#include <memory>
 
 #include <QTableView>
 #include <QSortFilterProxyModel>
+
+#include "Tournament.h"
+#include "delegates/PlayerItemDelegate.h"
 
 using namespace QTournament;
 
@@ -23,11 +25,19 @@ class PlayerTableView : public QTableView
 public:
   PlayerTableView (QWidget* parent);
   virtual ~PlayerTableView ();
+  unique_ptr<Player> getSelectedPlayer() const;
   
 public slots:
   void onTournamentClosed();
   void onTournamentOpened(Tournament* tnmt);
   QModelIndex mapToSource(const QModelIndex& proxyIndex);
+  void onAddPlayerTriggered();
+  void onEditPlayerTriggered();
+  void onRemovePlayerTriggered();
+  void onShowNextMatchesForPlayerTriggered();
+
+private slots:
+  void onContextMenuRequested(const QPoint& pos);
   
 private:
   Tournament* tnmt;
@@ -35,6 +45,14 @@ private:
   QSortFilterProxyModel* sortedModel;
   PlayerItemDelegate* itemDelegate;
 
+  unique_ptr<QMenu> contextMenu;
+  QAction* actAddPlayer;
+  QAction* actEditPlayer;
+  QAction* actRemovePlayer;
+  QAction* actShowNextMatchesForPlayer;
+
+
+  void initContextMenu();
 };
 
 #endif	/* PLAYERTABLEVIEW_H */

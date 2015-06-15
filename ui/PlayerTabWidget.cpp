@@ -8,12 +8,20 @@
 #include <QMessageBox>
 
 #include "PlayerTabWidget.h"
-#include "dlgEditPlayer.h"
+#include "MainFrame.h"
 
 PlayerTabWidget::PlayerTabWidget()
 :QWidget()
 {
   ui.setupUi(this);
+
+  // prepare a label with the total number of players
+  onPlayerCountChanged();
+
+  // subscribe to the tournament-opened- and -closed-signal
+  auto mf = MainFrame::getMainFramePointer();
+  connect(mf, SIGNAL(tournamentOpened(Tournament*)), this, SLOT(onTournamentOpened()), Qt::DirectConnection);
+  connect(mf, SIGNAL(tournamentClosed()), this, SLOT(onTournamentClosed()), Qt::DirectConnection);
 }
 
 //----------------------------------------------------------------------------
@@ -26,148 +34,53 @@ PlayerTabWidget::~PlayerTabWidget()
 
 void PlayerTabWidget::onCreatePlayerClicked()
 {
-  DlgEditPlayer dlg;
-  
-  dlg.setModal(true);
-  int result = dlg.exec();
-  
-  if (result != QDialog::Accepted)
-  {
-    return;
-  }
-  
-  // we can be sure that all selected data in the dialog
-  // is valid. That has been checked before the dialog
-  // returns with "Accept". So we can directly step
-  // into the creation of the new player
-  ERR e = Tournament::getPlayerMngr()->createNewPlayer(
-                                                       dlg.getFirstName(),
-                                                       dlg.getLastName(),
-                                                       dlg.getSex(),
-                                                       dlg.getTeam().getName()
-                                                       );
-  
-  if (e != OK)
-  {
-    QString msg = tr("Something went wrong when inserting the player. This shouldn't happen.");
-    msg += tr("For the records: error code = ") + QString::number(static_cast<int>(e));
-    QMessageBox::warning(this, tr("WTF??"), msg);
-    return;
-  }
-  Player p = Tournament::getPlayerMngr()->getPlayer(dlg.getFirstName(), dlg.getLastName());
-  
-  // assign the player to the selected categories
-  //
-  // we can be sure that all selected categories in the dialog
-  // are valid. That has been checked upon creation of the "selectable"
-  // category entries. So we can directly step
-  // into the assignment of the categories
-  CatMngr* cmngr = Tournament::getCatMngr();
-  
-  QHash<Category, bool> catSelection = dlg.getCategoryCheckState();
-  QHash<Category, bool>::const_iterator it = catSelection.constBegin();
-  
-  while (it != catSelection.constEnd()) {
-    if (it.value()) {
-      Category cat = it.key();
-      ERR e = cmngr->addPlayerToCategory(p, cat);
-      
-      if (e != OK) {
-	QString msg = tr("Something went wrong when adding the player to a category. This shouldn't happen.");
-	msg += tr("For the records: error code = ") + QString::number(static_cast<int> (e));
-	QMessageBox::warning(this, tr("WTF??"), msg);
-      }
-    }
-    ++it;
-  }
-  
+  ui.playerView->onAddPlayerTriggered();
 }
 
 //----------------------------------------------------------------------------
 
 void PlayerTabWidget::onPlayerDoubleClicked(const QModelIndex& index)
 {
-  if (!(index.isValid()))
-  {
-    return;
-  }
+  ui.playerView->onEditPlayerTriggered();
+}
 
-  auto sourceIndex = ui.playerView->mapToSource(index);
-  
-  Player selectedPlayer = Tournament::getPlayerMngr()->getPlayerBySeqNum(sourceIndex.row());
-  
-  DlgEditPlayer dlg(&selectedPlayer);
-  
-  dlg.setModal(true);
-  int result = dlg.exec();
-  
-  if (result != QDialog::Accepted)
-  {
-    return;
-  }
-  
-  //
-  // apply the changes, if any
-  //
-  
-  // name changes
-  if (dlg.hasNameChange())
-  {
-    ERR e = selectedPlayer.rename(dlg.getFirstName(), dlg.getLastName());
+//----------------------------------------------------------------------------
 
-    if (e != OK)
-    {
-      QString msg = tr("Something went wrong when renaming the player. This shouldn't happen.");
-      msg += tr("For the records: error code = ") + QString::number(static_cast<int> (e));
-      QMessageBox::warning(this, tr("WTF??"), msg);
-    }
-  }
-  
-  // category changes
-  CatMngr* cmngr = Tournament::getCatMngr();
-  
-  QHash<Category, bool> catSelection = dlg.getCategoryCheckState();
-  QHash<Category, bool>::const_iterator it = catSelection.constBegin();
-  while (it != catSelection.constEnd()) {
-    Category cat = it.key();
-    bool isAlreadyInCat = cat.hasPlayer(selectedPlayer);
-    bool isCatSelected = it.value();
-    
-    if (isAlreadyInCat && !isCatSelected) {    // remove player from category
-      ERR e = cmngr->removePlayerFromCategory(selectedPlayer, cat);
-      
-      if (e != OK) {
-	QString msg = tr("Something went wrong when removing the player from a category. This shouldn't happen.");
-	msg += tr("For the records: error code = ") + QString::number(static_cast<int> (e));
-	QMessageBox::warning(this, tr("WTF??"), msg);
-      }
-    }
-    
-    if (!isAlreadyInCat && isCatSelected) {    // add player to category
-      ERR e = cmngr->addPlayerToCategory(selectedPlayer, cat);
-      
-      if (e != OK) {
-	QString msg = tr("Something went wrong when adding the player to a category. This shouldn't happen.");
-	msg += tr("For the records: error code = ") + QString::number(static_cast<int> (e));
-	QMessageBox::warning(this, tr("WTF??"), msg);
-      }
-    }
-    ++it;
-  }
-  
-  // Team changes
-  TeamMngr* tmngr = Tournament::getTeamMngr();
-  Team newTeam = dlg.getTeam();
-  if (newTeam != selectedPlayer.getTeam())
+void PlayerTabWidget::onPlayerCountChanged()
+{
+  PlayerMngr* pm = Tournament::getPlayerMngr();
+  if (pm == nullptr)
   {
-    ERR e = tmngr->changeTeamAssigment(selectedPlayer, newTeam);
-
-    if (e != OK) {
-      QString msg = tr("Something went wrong when changing the player's team assignment. This shouldn't happen.");
-      msg += tr("For the records: error code = ") + QString::number(static_cast<int> (e));
-      QMessageBox::warning(this, tr("WTF??"), msg);
-    }
+    ui.laPlayerCount->setText(QString()); // no tournament started / opem
+  } else {
+    QString txt = QString::number(pm->getTotalPlayerCount());
+    txt += tr(" players in tournament");
+    ui.laPlayerCount->setText(txt);
   }
+}
+
+//----------------------------------------------------------------------------
+
+void PlayerTabWidget::onTournamentOpened()
+{
+  // connect to all events that modify the number of players
+  PlayerMngr* pm = Tournament::getPlayerMngr();
+  if (pm == nullptr) return;
+  connect(pm, SIGNAL(endCreatePlayer(int)), this, SLOT(onPlayerCountChanged()));
+  connect(pm, SIGNAL(endDeletePlayer()), this, SLOT(onPlayerCountChanged()));
+  onPlayerCountChanged();
+}
+
+//----------------------------------------------------------------------------
+
+void PlayerTabWidget::onTournamentClosed()
+{
+  // disconnect all signals
+  PlayerMngr* pm = Tournament::getPlayerMngr();
+  if (pm == nullptr) return;
+  disconnect(pm, SIGNAL(endCreatePlayer(int)), this, SLOT(onPlayerCountChanged()));
+  disconnect(pm, SIGNAL(endDeletePlayer()), this, SLOT(onPlayerCountChanged()));
+  onPlayerCountChanged();
 }
 
 //----------------------------------------------------------------------------

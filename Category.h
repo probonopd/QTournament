@@ -31,6 +31,7 @@ namespace QTournament
     friend class RoundRobinCategory;
     friend class EliminationCategory;
     friend class PureRoundRobinCategory;
+    friend class SwissLadderCategory;
     friend class GenericObjectManager;
     
   public:

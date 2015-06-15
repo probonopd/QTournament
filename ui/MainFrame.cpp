@@ -37,6 +37,13 @@ MainFrame::MainFrame()
   enableControls(false);
   
   testFileName = QDir().absoluteFilePath("tournamentTestFile.tdb");
+
+  // prepare an action to toggle the test-menu's visibility
+  scToggleTestMenuVisibility = new QShortcut(QKeySequence(Qt::CTRL + Qt::ALT + Qt::Key_T), this);
+  scToggleTestMenuVisibility->setContext(Qt::ApplicationShortcut);
+  connect(scToggleTestMenuVisibility, SIGNAL(activated()), this, SLOT(onToggleTestMenuVisibility()));
+  isTestMenuVisible = true;
+  onToggleTestMenuVisibility();
 }
 
 //----------------------------------------------------------------------------
@@ -559,7 +566,7 @@ void MainFrame::setupTestScenario(int scenarioID)
     tmngr->createNewTeam("Ranking Team");
     Category ls = cmngr->getCategory("LS");
 
-    for (int i=0; i < 17; i++)
+    for (int i=0; i < 25; i++)
     {
       QString lastName = "Ranking" + QString::number(i+1);
       pmngr->createNewPlayer("Lady", lastName, F, "Ranking Team");
@@ -567,7 +574,7 @@ void MainFrame::setupTestScenario(int scenarioID)
       ls.addPlayer(p);
     }
 
-    ls.setMatchSystem(RANKING);
+    ls.setMatchSystem(SWISS_LADDER);
   };
 
   switch (scenarioID)
@@ -680,6 +687,19 @@ MainFrame* MainFrame::getMainFramePointer()
 void MainFrame::onCurrentTabChanged(int newCurrentTab)
 {
 
+}
+
+void MainFrame::onToggleTestMenuVisibility()
+{
+  ui.menubar->clear();
+  ui.menubar->addMenu(ui.menuTournament);
+
+  if (!isTestMenuVisible)
+  {
+    ui.menubar->addMenu(ui.menuTesting);
+  }
+
+  isTestMenuVisible = !isTestMenuVisible;
 }
 
 //----------------------------------------------------------------------------
