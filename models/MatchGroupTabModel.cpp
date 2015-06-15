@@ -52,6 +52,13 @@ QVariant MatchGroupTableModel::data(const QModelIndex& index, int role) const
       //return QVariant();
       return QString("Invalid row: " + QString::number(index.row()));
 
+    // center content
+    if (role == Qt::TextAlignmentRole)
+    {
+      return Qt::AlignCenter;
+    }
+
+    // skip all other requests except for the actual content
     if (role != Qt::DisplayRole)
       return QVariant();
     
@@ -126,7 +133,7 @@ QVariant MatchGroupTableModel::headerData(int section, Qt::Orientation orientati
       return tr("Group");
     }
     if (section == 3) {
-      return tr("Number of matches");
+      return tr("Matches");
     }
     if (section == STATE_COL_ID) {
       return tr("State");
