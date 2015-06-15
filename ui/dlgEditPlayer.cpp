@@ -13,7 +13,8 @@
 
 #include "dlgEditPlayer.h"
 
-DlgEditPlayer::DlgEditPlayer(Player* _selectedPlayer)
+DlgEditPlayer::DlgEditPlayer(QWidget* parent, Player* _selectedPlayer)
+  :QDialog(parent)
 {
   ui.setupUi(this);
   selectedPlayer = (_selectedPlayer != NULL) ? _selectedPlayer : NULL;
