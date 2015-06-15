@@ -52,39 +52,39 @@ QVariant PlayerTableModel::data(const QModelIndex& index, int role) const
     if (role != Qt::DisplayRole)
       return QVariant();
     
-    Player p = Tournament::getPlayerMngr()->getPlayerBySeqNum(index.row());
+    auto p = Tournament::getPlayerMngr()->getPlayerBySeqNum(index.row());
     
     // first column: name
     if (index.column() == 0)
     {
-      return p.getDisplayName();
+      return p->getDisplayName();
     }
     
     // second column: sex
     if (index.column() == 1)
     {
-      return ((p.getSex() == M) ? QString("♂") : QString("♀"));
+      return ((p->getSex() == M) ? QString("♂") : QString("♀"));
     }
     
     // third column: team name
     if (index.column() == 2)
     {
-      return p.getTeam().getName();
+      return p->getTeam().getName();
     }
     
     // fourth column: assigned categories
     if (index.column() == 3)
     {
       QString result = "";
-      QList<Category> assignedCats = p.getAssignedCategories();
+      QList<Category> assignedCats = p->getAssignedCategories();
       for (int i=0; i < assignedCats.count(); i++)
       {
-	result += assignedCats.at(i).getName() + ", ";
+        result += assignedCats.at(i).getName() + ", ";
       }
       
       if (assignedCats.count() > 0)
       {
-	result = result.left(result.length() - 2);
+        result = result.left(result.length() - 2);
       }
       
       return result;

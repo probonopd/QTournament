@@ -82,6 +82,18 @@ namespace QTournament
     }
 
     template<class T>
+    unique_ptr<T> getSingleObjectByColumnValue(const DbTab& objectTab, const QString& colName, const QVariant& val) const
+    {
+      try
+      {
+        TabRow r = objectTab.getSingleRowByColumnValue(colName, val);
+        return unique_ptr<T>(new T(db, r));
+      } catch (std::exception e) {
+      }
+      return nullptr;
+    }
+
+    template<class T>
     unique_ptr<T> getSingleObjectByWhereClause(const DbTab& objectTab, const QString& where, const QVariantList& args=QVariantList()) const
     {
       try

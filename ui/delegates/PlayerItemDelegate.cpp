@@ -44,7 +44,7 @@ void PlayerItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& op
   {
     row = (proxy->mapToSource(index)).row();
   }
-  Player p = Tournament::getPlayerMngr()->getPlayerBySeqNum(row);
+  auto p = Tournament::getPlayerMngr()->getPlayerBySeqNum(row);
   
   // Paint the background, either in the selection color or in a color related
   // to the participant's sex
@@ -53,7 +53,7 @@ void PlayerItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& op
   {
     bgColor = option.palette.color(QPalette::Highlight);
   } else {
-    if (p.getSex() == F) bgColor = QColor(PLAYER_ITEM_FEMALE_BG_COL);
+    if (p->getSex() == F) bgColor = QColor(PLAYER_ITEM_FEMALE_BG_COL);
   }
   painter->fillRect(option.rect, bgColor);
   
@@ -63,11 +63,11 @@ void PlayerItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& op
   if (index.column() == 0)
   {
     // draw a status indicator ("LED light")
-    DelegateItemLED{}(painter, r, PLAYER_ITEM_MARGIN, PLAYER_ITEM_STAT_INDICATOR_SIZE, p.getState());
+    DelegateItemLED{}(painter, r, PLAYER_ITEM_MARGIN, PLAYER_ITEM_STAT_INDICATOR_SIZE, p->getState());
 
     // draw the name
     r.adjust(2 * PLAYER_ITEM_MARGIN + PLAYER_ITEM_STAT_INDICATOR_SIZE, 0, 0, 0);
-    QString txt = p.getDisplayName();
+    QString txt = p->getDisplayName();
     painter->drawText(r, Qt::AlignVCenter|Qt::AlignLeft, txt);
   } else {
     painter->drawText(option.rect, Qt::AlignCenter, index.data(Qt::DisplayRole).toString());
