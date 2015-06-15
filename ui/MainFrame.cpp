@@ -37,6 +37,13 @@ MainFrame::MainFrame()
   enableControls(false);
   
   testFileName = QDir().absoluteFilePath("tournamentTestFile.tdb");
+
+  // prepare an action to toggle the test-menu's visibility
+  scToggleTestMenuVisibility = new QShortcut(QKeySequence(Qt::CTRL + Qt::ALT + Qt::Key_T), this);
+  scToggleTestMenuVisibility->setContext(Qt::ApplicationShortcut);
+  connect(scToggleTestMenuVisibility, SIGNAL(activated()), this, SLOT(onToggleTestMenuVisibility()));
+  isTestMenuVisible = true;
+  onToggleTestMenuVisibility();
 }
 
 //----------------------------------------------------------------------------
@@ -680,6 +687,19 @@ MainFrame* MainFrame::getMainFramePointer()
 void MainFrame::onCurrentTabChanged(int newCurrentTab)
 {
 
+}
+
+void MainFrame::onToggleTestMenuVisibility()
+{
+  ui.menubar->clear();
+  ui.menubar->addMenu(ui.menuTournament);
+
+  if (!isTestMenuVisible)
+  {
+    ui.menubar->addMenu(ui.menuTesting);
+  }
+
+  isTestMenuVisible = !isTestMenuVisible;
 }
 
 //----------------------------------------------------------------------------

@@ -8,6 +8,8 @@
 #ifndef _MAINFRAME_H
 #define	_MAINFRAME_H
 
+#include <QShortcut>
+
 #include "ui_MainFrame.h"
 #include "Tournament.h"
 
@@ -34,6 +36,9 @@ private:
   void closeCurrentTournament();
   
   static MainFrame* mainFramePointer;
+
+  QShortcut* scToggleTestMenuVisibility;
+  bool isTestMenuVisible;
   
 
 public slots:
@@ -49,6 +54,9 @@ public slots:
   void setupScenario07();
   void setupScenario08();
   void onCurrentTabChanged(int newCurrentTab);
+
+private slots:
+  void onToggleTestMenuVisibility();
 
 signals:
   void tournamentOpened (Tournament* tnmt);
