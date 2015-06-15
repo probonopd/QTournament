@@ -23,6 +23,8 @@ PlayerTableModel::PlayerTableModel(TournamentDB* _db)
   connect(Tournament::getPlayerMngr(), &PlayerMngr::endCreatePlayer, this, &PlayerTableModel::onEndCreatePlayer, Qt::DirectConnection);
   connect(Tournament::getPlayerMngr(), &PlayerMngr::playerRenamed, this, &PlayerTableModel::onPlayerRenamed, Qt::DirectConnection);
   connect(Tournament::getPlayerMngr(), &PlayerMngr::playerStatusChanged, this, &PlayerTableModel::onPlayerStatusChanged, Qt::DirectConnection);
+  connect(Tournament::getPlayerMngr(), &PlayerMngr::beginDeletePlayer, this, &PlayerTableModel::onBeginDeletePlayer, Qt::DirectConnection);
+  connect(Tournament::getPlayerMngr(), &PlayerMngr::endDeletePlayer, this, &PlayerTableModel::onEndDeletePlayer, Qt::DirectConnection);
 }
 
 //----------------------------------------------------------------------------
@@ -172,6 +174,20 @@ void PlayerTableModel::onPlayerStatusChanged(int playerId, int playerSeqNum)
   QModelIndex startIdx = createIndex(playerSeqNum, 0);
   QModelIndex endIdx = createIndex(playerSeqNum, COLUMN_COUNT-1);
   emit dataChanged(startIdx, endIdx);
+}
+
+//----------------------------------------------------------------------------
+
+void PlayerTableModel::onBeginDeletePlayer(int playerSeqNum)
+{
+  beginRemoveRows(QModelIndex(), playerSeqNum, playerSeqNum);
+}
+
+//----------------------------------------------------------------------------
+
+void PlayerTableModel::onEndDeletePlayer()
+{
+  emit endRemoveRows();
 }
 
 //----------------------------------------------------------------------------

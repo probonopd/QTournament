@@ -41,6 +41,8 @@ public slots:
   void onPlayerRenamed(const Player& p);
   void onTeamRenamed(int teamSeqNum);
   void onPlayerStatusChanged(int playerId, int playerSeqNum);
+  void onBeginDeletePlayer(int playerSeqNum);
+  void onEndDeletePlayer();
 
 };
 

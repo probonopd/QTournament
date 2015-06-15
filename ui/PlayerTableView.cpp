@@ -277,7 +277,49 @@ void PlayerTableView::onEditPlayerTriggered()
 
 void PlayerTableView::onRemovePlayerTriggered()
 {
+  auto p = getSelectedPlayer();
+  if (p == nullptr) return;
 
+  auto pm = Tournament::getPlayerMngr();
+
+  // can the player be deleted at all?
+  ERR err = pm->canDeletePlayer(*p);
+
+  // player is still paired in a not-yet-started
+  // category
+  if (err == PLAYER_ALREADY_PAIRED)
+  {
+    QString msg = tr("The player can't be removed from all categories.\n");
+    msg += tr("Please make sure that the player is not assigned to any\n");
+    msg += tr("partners in doubles or mixed categories!");
+    QMessageBox::critical(this, tr("Delete player"), msg);
+    return;
+  }
+
+  // player in started category
+  if ((err != OK) && (err != PLAYER_ALREADY_PAIRED))
+  {
+    QString msg = tr("The player can't be deleted anymore. The player is\n");
+    msg += tr("most likely already involved/scheduled in matches.");
+    QMessageBox::critical(this, tr("Delete player"), msg);
+    return;
+  }
+
+  // okay, the player can be deleted. Get a confirmation
+  QString msg = tr("Note: this will remove the player from all categories\n");
+  msg += tr("and from the whole tournament.\n\n");
+  msg += tr("This step is irrevocable!\n\n");
+  msg += tr("Proceed?");
+  int result = QMessageBox::question(this, tr("Delete player"), msg);
+  if (result != QMessageBox::Yes) return;
+
+  // we can actually delete the player. Let's go!
+  err = pm->deletePlayer(*p);
+  if (err != OK) {
+    QString msg = tr("Something went wrong when deleting the player. This shouldn't happen.\n\n");
+    msg += tr("For the records: error code = ") + QString::number(static_cast<int> (err));
+    QMessageBox::warning(this, tr("WTF??"), msg);
+  }
 }
 
 //----------------------------------------------------------------------------
