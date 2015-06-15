@@ -954,7 +954,9 @@ in current round</source>
         <source>        versus
 
 </source>
-        <translation>        gegen</translation>
+        <translation>        gegen
+
+</translation>
     </message>
     <message>
         <location filename="ui/GuiHelpers.cpp" line="102"/>
