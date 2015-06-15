@@ -57,6 +57,8 @@ namespace QTournament
     ERR canDeletePlayer(const Player& p) const;
     ERR deletePlayer(const Player& p) const;
 
+    int getTotalPlayerCount() const;
+
   private:
     DbTab playerTab;
 

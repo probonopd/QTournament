@@ -25,6 +25,9 @@ private:
 public slots:
   void onCreatePlayerClicked();
   void onPlayerDoubleClicked(const QModelIndex& index);
+  void onPlayerCountChanged();
+  void onTournamentOpened();
+  void onTournamentClosed();
 };
 
 #endif	/* _PLAYERTABWIDGET_H */
