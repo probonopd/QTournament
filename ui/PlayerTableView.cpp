@@ -131,6 +131,34 @@ void PlayerTableView::onContextMenuRequested(const QPoint& pos)
 
 //----------------------------------------------------------------------------
 
+void PlayerTableView::onAddPlayerTriggered()
+{
+
+}
+
+//----------------------------------------------------------------------------
+
+void PlayerTableView::onEditPlayerTriggered()
+{
+
+}
+
+//----------------------------------------------------------------------------
+
+void PlayerTableView::onRemovePlayerTriggered()
+{
+
+}
+
+//----------------------------------------------------------------------------
+
+void PlayerTableView::onShowNextMatchesForPlayerTriggered()
+{
+
+}
+
+//----------------------------------------------------------------------------
+
 void PlayerTableView::initContextMenu()
 {
   // prepare all actions
@@ -147,6 +175,12 @@ void PlayerTableView::initContextMenu()
   contextMenu->addAction(actShowNextMatchesForPlayer);
   contextMenu->addSeparator();
   contextMenu->addAction(actRemovePlayer);
+
+  // connect actions and slots
+  connect(actAddPlayer, SIGNAL(triggered(bool)), this, SLOT(onAddPlayerTriggered()));
+  connect(actEditPlayer, SIGNAL(triggered(bool)), this, SLOT(onEditPlayerTriggered()));
+  connect(actShowNextMatchesForPlayer, SIGNAL(triggered(bool)), this, SLOT(onShowNextMatchesForPlayerTriggered()));
+  connect(actRemovePlayer, SIGNAL(triggered(bool)), this, SLOT(onRemovePlayerTriggered()));
 }
 
 //----------------------------------------------------------------------------

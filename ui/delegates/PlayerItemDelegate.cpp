@@ -45,6 +45,7 @@ void PlayerItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& op
     row = (proxy->mapToSource(index)).row();
   }
   auto p = Tournament::getPlayerMngr()->getPlayerBySeqNum(row);
+  // no check for a nullptr here, the call above MUST succeed
   
   // Paint the background, either in the selection color or in a color related
   // to the participant's sex

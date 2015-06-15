@@ -53,6 +53,7 @@ QVariant PlayerTableModel::data(const QModelIndex& index, int role) const
       return QVariant();
     
     auto p = Tournament::getPlayerMngr()->getPlayerBySeqNum(index.row());
+    // no check for a nullptr here, the call above MUST succeed
     
     // first column: name
     if (index.column() == 0)

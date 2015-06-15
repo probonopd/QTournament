@@ -31,6 +31,10 @@ public slots:
   void onTournamentClosed();
   void onTournamentOpened(Tournament* tnmt);
   QModelIndex mapToSource(const QModelIndex& proxyIndex);
+  void onAddPlayerTriggered();
+  void onEditPlayerTriggered();
+  void onRemovePlayerTriggered();
+  void onShowNextMatchesForPlayerTriggered();
 
 private slots:
   void onContextMenuRequested(const QPoint& pos);

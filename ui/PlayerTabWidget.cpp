@@ -95,6 +95,7 @@ void PlayerTabWidget::onPlayerDoubleClicked(const QModelIndex& index)
   auto sourceIndex = ui.playerView->mapToSource(index);
   
   auto selectedPlayer = Tournament::getPlayerMngr()->getPlayerBySeqNum(sourceIndex.row());
+  if (selectedPlayer == nullptr) return;
   
   DlgEditPlayer dlg(selectedPlayer.get());
   
