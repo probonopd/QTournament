@@ -147,6 +147,11 @@ void DlgEditPlayer::initFromPlayerData()
 void DlgEditPlayer::initTeamList()
 {
   QList<Team> allTeams = Tournament::getTeamMngr()->getAllTeams();
+
+  // Sort the list aphabetically
+  std::sort(allTeams.begin(), allTeams.end(), [](Team& t1, Team& t2) {
+    return (t1.getName() < t2.getName());
+  });
   
   ui.cbTeams->clear();
   
