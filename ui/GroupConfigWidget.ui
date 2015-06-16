@@ -196,6 +196,9 @@
       <layout class="QHBoxLayout" name="horizontalLayout_6">
        <item>
         <widget class="QPushButton" name="btnAutoConf">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
          <property name="text">
           <string>Auto Group Config</string>
          </property>

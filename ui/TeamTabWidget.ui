@@ -32,9 +32,6 @@
       </layout>
      </item>
      <item>
-      <widget class="QColumnView" name="columnView"/>
-     </item>
-     <item>
       <widget class="TeamListView" name="teamList"/>
      </item>
     </layout>
