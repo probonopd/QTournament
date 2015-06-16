@@ -209,22 +209,6 @@
        </widget>
       </item>
       <item>
-       <widget class="QGroupBox" name="gbSwiss">
-        <property name="title">
-         <string>Settings for Swiss Ladder</string>
-        </property>
-        <layout class="QVBoxLayout" name="verticalLayout_5">
-         <item>
-          <widget class="QLabel" name="label_4">
-           <property name="text">
-            <string>TextLabel</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-      </item>
-      <item>
        <widget class="QGroupBox" name="gbRandom">
         <property name="title">
          <string>Settings for Random Matches</string>
@@ -321,6 +305,9 @@ for each round</string>
          </item>
          <item>
           <widget class="QPushButton" name="btnRandomizeRemaining">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
            <property name="text">
             <string>Random ---&gt;</string>
            </property>
@@ -328,6 +315,9 @@ for each round</string>
          </item>
          <item>
           <widget class="QPushButton" name="btnRandomizeAll">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
            <property name="text">
             <string>&lt;--- Randomize All ---&gt;</string>
            </property>
@@ -335,6 +325,9 @@ for each round</string>
          </item>
          <item>
           <widget class="QCheckBox" name="cbAvoidSameTeam">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
            <property name="text">
             <string>Avoid same team pairs</string>
            </property>

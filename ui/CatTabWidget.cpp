@@ -30,7 +30,6 @@ CatTabWidget::CatTabWidget()
   
   // hide unused settings groups
   ui.gbGroups->hide();
-  ui.gbSwiss->hide();
   
   // initialize the entries in the drop box
   ui.cbMatchSystem->addItem(tr("Swiss ladder"), static_cast<int>(SWISS_LADDER));
@@ -82,7 +81,6 @@ void CatTabWidget::updateControls()
   {
     ui.gbGeneric->setEnabled(false);
     ui.gbGroups->hide();
-    ui.gbSwiss->hide();
     ui.gbRandom->hide();
     return;
   }
@@ -107,7 +105,6 @@ void CatTabWidget::updateControls()
   if (ms == GROUPS_WITH_KO)
   {
     ui.gbGroups->show();
-    ui.gbSwiss->hide();
     ui.gbRandom->hide();
     
     // read the current group settings from the database and
@@ -115,22 +112,14 @@ void CatTabWidget::updateControls()
     KO_Config cfg = KO_Config(selectedCat.getParameter_string(GROUP_CONFIG));
     ui.grpCfgWidget->applyConfig(cfg);
   }
-  else if (ms == SWISS_LADDER)
-  {
-    ui.gbGroups->hide();
-    ui.gbSwiss->show();
-    ui.gbRandom->hide();
-  }
   else if (ms == RANDOMIZE)
   {
     ui.gbGroups->hide();
-    ui.gbSwiss->hide();
     ui.gbRandom->show();
   }
   else
   {
     ui.gbGroups->hide();
-    ui.gbSwiss->hide();
     ui.gbRandom->hide();
   }
   
@@ -177,7 +166,7 @@ void CatTabWidget::updateControls()
   // In the latter case, we need the second player for the
   // match for 3rd place
   bool enableDrawCheckbox = true;
-  if (selectedCat.getMatchSystem() == SINGLE_ELIM)
+  if ((ms == SINGLE_ELIM) || (ms == RANKING))
   {
     enableDrawCheckbox = false;
   }
@@ -187,6 +176,10 @@ void CatTabWidget::updateControls()
     if (cfg.getStartLevel() == FINAL) enableDrawCheckbox = false;
   }
   ui.cbDraw->setEnabled(enableDrawCheckbox);
+
+  // FIX ME / TO DO: playing "draw" is not yet implemented, so for now
+  // we hardwire the checkbox to disabled.
+  ui.cbDraw->setEnabled(false);
   
   // the score spinboxes
   int drawScore = selectedCat.getParameter(DRAW_SCORE).toInt();
@@ -206,6 +199,11 @@ void CatTabWidget::updateControls()
     ui.sbDrawScore->hide();
   }
   
+  // FIX ME / TO DO: playing "draw" is not yet implemented, so for now
+  // we hardwire the checkbox to "hidden".
+  ui.sbDrawScore->hide();
+  ui.sbWinScore->hide();
+
   // group box for configuring player pairs
   if (mt == SINGLES)
   {
@@ -219,7 +217,6 @@ void CatTabWidget::updateControls()
   // disable controls if editing is no longer permitted
   // because the category is no longer in state CONFIG
   ui.gbGroups->setEnabled(isEditEnabled);
-  ui.gbSwiss->setEnabled(isEditEnabled);
   ui.gbRandom->setEnabled(isEditEnabled);
 
   // change the label of the "run" button and enable or
