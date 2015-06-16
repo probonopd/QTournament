@@ -98,7 +98,7 @@ void AbstractReport::prepStyles(upSimpleReport& rep) const
 
   // player names in result sheets: 3 mm, bold
   style = rep->createChildTextStyle(RESULTSHEET_NAME_STYLE);
-  style->setFontSize_MM(3.0);
+  style->setFontSize_MM(2.9);
   style->setBoldState(true);
 
   // team names in result sheets: 2 mm, italic
