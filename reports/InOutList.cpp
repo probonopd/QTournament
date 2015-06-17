@@ -40,13 +40,13 @@ upSimpleReport InOutList::regenerateReport() const
   PlayerPairList inList = specialCat->getRemainingPlayersAfterRound(round, &err);
   if (err != OK)
   {
-    result->writeLine(tr("An error occurred during report generation"));
+    result->writeLine(tr("An error occurred during report generation."));
     return result;
   }
   PlayerPairList outList = specialCat->getEliminatedPlayersAfterRound(round, &err);
   if (err != OK)
   {
-    result->writeLine(tr("An error occurred during report generation"));
+    result->writeLine(tr("An error occurred during report generation."));
     return result;
   }
 

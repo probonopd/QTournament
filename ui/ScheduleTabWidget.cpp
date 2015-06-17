@@ -268,7 +268,7 @@ void ScheduleTabWidget::askAndStoreMatchResult(const Match &ma)
     ui->tvMatches->updateSelectionAfterDataChange();
     return;
   }
-  QMessageBox::information(this, tr("Assign match to court"), tr("Call cancled, match not started"));
+  QMessageBox::information(this, tr("Assign match to court"), tr("Call cancled, match not started."));
 }
 
 //----------------------------------------------------------------------------

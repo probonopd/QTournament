@@ -208,7 +208,7 @@ void MatchTableView::onContextMenuRequested(const QPoint& pos)
     if (e != OK)
     {
       QMessageBox::warning(this, tr("Call match"),
-                           tr("Match can't be called on the selected court"));
+                           tr("Match can't be called on the selected court."));
       return;
     }
 
@@ -255,7 +255,7 @@ void MatchTableView::onMatchDoubleClicked(const QModelIndex& index)
   auto nextCourt = cm->autoSelectNextUnusedCourt(&err, false);
   if (err == ONLY_MANUAL_COURT_AVAIL)
   {
-    QString msg = tr("There are no free courts for automatic match assignment available right now,\n");
+    QString msg = tr("There are no free courts for automatic match assignment available right now.\n");
     msg += tr("However, there is at least one free court for manual match assignment.\n\n");
     msg += tr("Use this court for running the match?");
     int result = QMessageBox::question(this, tr("Assign match to court"), msg);

@@ -11,366 +11,368 @@
     <message>
         <location filename="ui/CatTabWidget.ui" line="20"/>
         <source>Category Selection</source>
-        <translation type="unfinished"></translation>
+        <translation>Liste der Disziplinen</translation>
     </message>
     <message>
         <location filename="ui/CatTabWidget.ui" line="30"/>
         <source>Add Category</source>
-        <translation type="unfinished"></translation>
+        <translation>Disziplin hinzufügen</translation>
     </message>
     <message>
         <location filename="ui/CatTabWidget.ui" line="37"/>
         <source>Run</source>
-        <translation type="unfinished"></translation>
+        <translation>Disziplin starten</translation>
     </message>
     <message>
         <location filename="ui/CatTabWidget.ui" line="60"/>
         <source>Generic Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Allgemeine Einstellungen</translation>
     </message>
     <message>
         <location filename="ui/CatTabWidget.ui" line="79"/>
         <source>Type:</source>
-        <translation type="unfinished"></translation>
+        <translation>Typ:</translation>
     </message>
     <message>
         <location filename="ui/CatTabWidget.ui" line="86"/>
         <source>Singles</source>
-        <translation type="unfinished"></translation>
+        <translation>Einzel</translation>
     </message>
     <message>
         <location filename="ui/CatTabWidget.ui" line="96"/>
         <source>Doubles</source>
-        <translation type="unfinished"></translation>
+        <translation>Doppel</translation>
     </message>
     <message>
         <location filename="ui/CatTabWidget.ui" line="106"/>
         <source>Mixed</source>
-        <translation type="unfinished"></translation>
+        <translation>Mixed</translation>
     </message>
     <message>
         <location filename="ui/CatTabWidget.ui" line="126"/>
         <source>Sex:</source>
-        <translation type="unfinished"></translation>
+        <translation>Geschlecht:</translation>
     </message>
     <message>
         <location filename="ui/CatTabWidget.ui" line="133"/>
         <source>Men</source>
-        <translation type="unfinished"></translation>
+        <translation>Herren</translation>
     </message>
     <message>
         <location filename="ui/CatTabWidget.ui" line="143"/>
         <source>Ladies</source>
-        <translation type="unfinished"></translation>
+        <translation>Damen</translation>
     </message>
     <message>
         <location filename="ui/CatTabWidget.ui" line="153"/>
         <source>Don&apos;t Care</source>
-        <translation type="unfinished"></translation>
+        <translation>Egal</translation>
     </message>
     <message>
         <location filename="ui/CatTabWidget.ui" line="164"/>
         <source>Allow Draw</source>
-        <translation type="unfinished"></translation>
+        <translation>Unentschieden erlauben</translation>
     </message>
     <message>
         <location filename="ui/CatTabWidget.ui" line="174"/>
         <source>Winner Score: </source>
-        <translation type="unfinished"></translation>
+        <translation>Siegpunkte: </translation>
     </message>
     <message>
         <location filename="ui/CatTabWidget.ui" line="187"/>
         <source>Draw Score: </source>
-        <translation type="unfinished"></translation>
+        <translation>Unentschieden: </translation>
     </message>
     <message>
         <location filename="ui/CatTabWidget.ui" line="202"/>
         <source>Settings for Group Matches</source>
-        <translation type="unfinished"></translation>
+        <translation>Einstellungen f. Gruppenspiele</translation>
     </message>
     <message>
         <location filename="ui/CatTabWidget.ui" line="214"/>
-        <source>Settings for Swiss Ladder</source>
-        <translation type="unfinished"></translation>
+        <source>Settings for Random Matches</source>
+        <oldsource>Settings for Swiss Ladder</oldsource>
+        <translation>Einstellungen f. Zufallsspiele</translation>
     </message>
     <message>
         <location filename="ui/CatTabWidget.ui" line="220"/>
-        <source>TextLabel</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="ui/CatTabWidget.ui" line="230"/>
-        <source>Settings for Random Matches</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="ui/CatTabWidget.ui" line="236"/>
         <source>New, random partners
 for each round</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
-        <location filename="ui/CatTabWidget.ui" line="250"/>
+        <location filename="ui/CatTabWidget.ui" line="234"/>
         <source>Players / Pairs</source>
-        <translation type="unfinished"></translation>
+        <translation>Spieler und Paarungen</translation>
     </message>
     <message>
-        <location filename="ui/CatTabWidget.ui" line="278"/>
+        <location filename="ui/CatTabWidget.ui" line="262"/>
         <source>Pair ---&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>Paarung ---&gt;</translation>
     </message>
     <message>
-        <location filename="ui/CatTabWidget.ui" line="285"/>
+        <location filename="ui/CatTabWidget.ui" line="269"/>
         <source>&lt;--- Split</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;--- Auflösen</translation>
     </message>
     <message>
-        <location filename="ui/CatTabWidget.ui" line="325"/>
+        <location filename="ui/CatTabWidget.ui" line="312"/>
         <source>Random ---&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>Zufällige Paarungen</translation>
+    </message>
+    <message>
+        <location filename="ui/CatTabWidget.ui" line="322"/>
+        <source>&lt;--- Randomize All ---&gt;</source>
+        <translation>&lt;--- Alle Verwürfeln ---&gt;</translation>
     </message>
     <message>
         <location filename="ui/CatTabWidget.ui" line="332"/>
-        <source>&lt;--- Randomize All ---&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="ui/CatTabWidget.ui" line="339"/>
         <source>Avoid same team pairs</source>
-        <translation type="unfinished"></translation>
+        <translation>Gleiche Teams vermeiden</translation>
     </message>
     <message>
-        <location filename="ui/CatTabWidget.cpp" line="37"/>
+        <location filename="ui/CatTabWidget.cpp" line="35"/>
+        <source>Swiss ladder</source>
+        <translation>Schweizer Leiter</translation>
+    </message>
+    <message>
+        <location filename="ui/CatTabWidget.cpp" line="36"/>
         <source>Group matches with KO rounds</source>
-        <translation type="unfinished"></translation>
+        <translation>Gruppenspiele mit Einzel-KO</translation>
+    </message>
+    <message>
+        <location filename="ui/CatTabWidget.cpp" line="38"/>
+        <source>Tree-like ranking system</source>
+        <translation>Ranglistensystem</translation>
     </message>
     <message>
         <location filename="ui/CatTabWidget.cpp" line="39"/>
-        <source>Tree-like ranking system</source>
-        <translation type="unfinished"></translation>
+        <source>Single Elimination</source>
+        <translation>Einzel-KO</translation>
     </message>
     <message>
         <location filename="ui/CatTabWidget.cpp" line="40"/>
-        <source>Single Elimination</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="ui/CatTabWidget.cpp" line="41"/>
         <source>Round robin matches</source>
-        <translation type="unfinished"></translation>
+        <translation>Jeder gegen jeden</translation>
     </message>
     <message>
-        <location filename="ui/CatTabWidget.cpp" line="424"/>
+        <location filename="ui/CatTabWidget.cpp" line="421"/>
         <source>Need exactly two selected players for pairing!</source>
-        <translation type="unfinished"></translation>
+        <translation>Es müssen genau zwei Spieler ausgewählt werden!</translation>
     </message>
     <message>
-        <location filename="ui/CatTabWidget.cpp" line="424"/>
-        <location filename="ui/CatTabWidget.cpp" line="436"/>
-        <location filename="ui/CatTabWidget.cpp" line="444"/>
+        <location filename="ui/CatTabWidget.cpp" line="421"/>
+        <location filename="ui/CatTabWidget.cpp" line="433"/>
+        <location filename="ui/CatTabWidget.cpp" line="441"/>
         <source>Pairing impossible</source>
-        <translation type="unfinished"></translation>
+        <translation>Paarung kann nicht angelegt werden</translation>
     </message>
     <message>
-        <location filename="ui/CatTabWidget.cpp" line="436"/>
+        <location filename="ui/CatTabWidget.cpp" line="433"/>
         <source>These two players can&apos;t be paired for this category!</source>
-        <translation type="unfinished"></translation>
+        <translation>Diese beiden Spieler können in dieser Disziplin keine Doppelpaarung bilden!</translation>
     </message>
     <message>
-        <location filename="ui/CatTabWidget.cpp" line="444"/>
+        <location filename="ui/CatTabWidget.cpp" line="441"/>
         <source>Something went wrong during pairing. This shouldn&apos;t happen. For the records: Error code = </source>
-        <translation type="unfinished"></translation>
+        <translation>Beim Bilden der Paarung ist etwas schiefgelaufen. Das sollte nicht passieren. Fürs Protokoll: Fehlercode = </translation>
     </message>
     <message>
-        <location filename="ui/CatTabWidget.cpp" line="473"/>
+        <location filename="ui/CatTabWidget.cpp" line="470"/>
         <source>Something went wrong during splitting. This shouldn&apos;t happen. For the records: Error code = </source>
-        <translation type="unfinished"></translation>
+        <translation>Beim Auflösen der Doppelpaarung ist etwas schiefgelaufen. Das sollte nicht passieren. Fürs Protokoll: Fehlercode = </translation>
     </message>
     <message>
-        <location filename="ui/CatTabWidget.cpp" line="473"/>
+        <location filename="ui/CatTabWidget.cpp" line="470"/>
         <source>Splitting impossible</source>
-        <translation type="unfinished"></translation>
+        <translation>Paarung kann nicht aufgelöst werden</translation>
     </message>
     <message>
-        <location filename="ui/CatTabWidget.cpp" line="502"/>
-        <location filename="ui/CatTabWidget.cpp" line="528"/>
-        <location filename="ui/CatTabWidget.cpp" line="580"/>
+        <location filename="ui/CatTabWidget.cpp" line="499"/>
+        <location filename="ui/CatTabWidget.cpp" line="525"/>
+        <location filename="ui/CatTabWidget.cpp" line="577"/>
         <source>Error</source>
-        <translation type="unfinished"></translation>
+        <translation>Fehler</translation>
     </message>
     <message>
-        <location filename="ui/CatTabWidget.cpp" line="502"/>
+        <location filename="ui/CatTabWidget.cpp" line="499"/>
         <source>Could change match type. Error number = </source>
-        <translation type="unfinished"></translation>
+        <translation>Konnte den Spieltyp nicht ändern. Fehlercode = </translation>
     </message>
     <message>
-        <location filename="ui/CatTabWidget.cpp" line="528"/>
-        <location filename="ui/CatTabWidget.cpp" line="580"/>
+        <location filename="ui/CatTabWidget.cpp" line="525"/>
+        <location filename="ui/CatTabWidget.cpp" line="577"/>
         <source>Could change sex. Error number = </source>
-        <translation type="unfinished"></translation>
+        <translation>Konnte das Geschlecht nicht ändern. Fehlercode = </translation>
     </message>
     <message>
-        <location filename="ui/CatTabWidget.cpp" line="549"/>
+        <location filename="ui/CatTabWidget.cpp" line="546"/>
         <source>Please deactivate &apos;Don&apos;t care&apos; by selecting a specific sex!</source>
-        <translation type="unfinished"></translation>
+        <translation>Bitte &quot;Egal&quot; durch die Auswahl von &quot;Herren&quot; oder &quot;Damen&quot; deaktivieren!</translation>
     </message>
     <message>
-        <location filename="ui/CatTabWidget.cpp" line="550"/>
+        <location filename="ui/CatTabWidget.cpp" line="547"/>
         <source>Change category sex</source>
-        <translation type="unfinished"></translation>
+        <translation>Disziplin ändern</translation>
     </message>
     <message>
-        <location filename="ui/CatTabWidget.cpp" line="600"/>
+        <location filename="ui/CatTabWidget.cpp" line="597"/>
         <source>New Category </source>
-        <translation type="unfinished"></translation>
+        <translation>Neue Disziplin </translation>
     </message>
     <message>
-        <location filename="ui/CatTabWidget.cpp" line="684"/>
-        <location filename="ui/CatTabWidget.cpp" line="689"/>
-        <location filename="ui/CatTabWidget.cpp" line="694"/>
-        <location filename="ui/CatTabWidget.cpp" line="698"/>
-        <location filename="ui/CatTabWidget.cpp" line="707"/>
-        <location filename="ui/CatTabWidget.cpp" line="736"/>
-        <location filename="ui/CatTabWidget.cpp" line="760"/>
-        <location filename="ui/CatTabWidget.cpp" line="807"/>
-        <location filename="ui/CatTabWidget.cpp" line="840"/>
-        <location filename="ui/CatTabWidget.cpp" line="875"/>
+        <location filename="ui/CatTabWidget.cpp" line="681"/>
+        <location filename="ui/CatTabWidget.cpp" line="686"/>
+        <location filename="ui/CatTabWidget.cpp" line="691"/>
+        <location filename="ui/CatTabWidget.cpp" line="695"/>
+        <location filename="ui/CatTabWidget.cpp" line="704"/>
+        <location filename="ui/CatTabWidget.cpp" line="733"/>
+        <location filename="ui/CatTabWidget.cpp" line="757"/>
+        <location filename="ui/CatTabWidget.cpp" line="804"/>
+        <location filename="ui/CatTabWidget.cpp" line="837"/>
+        <location filename="ui/CatTabWidget.cpp" line="872"/>
         <source>Run Category</source>
-        <translation type="unfinished"></translation>
+        <translation>Disziplin starten</translation>
     </message>
     <message>
-        <location filename="ui/CatTabWidget.cpp" line="685"/>
+        <location filename="ui/CatTabWidget.cpp" line="682"/>
         <source>This category has already been started (STAT != Config)</source>
-        <translation type="unfinished"></translation>
+        <translation>Dieses Disziplin wurde bereits gestartet!</translation>
     </message>
     <message>
-        <location filename="ui/CatTabWidget.cpp" line="690"/>
+        <location filename="ui/CatTabWidget.cpp" line="687"/>
         <source>This category has unpaired players!
 Please pair all players before starting the matches.</source>
-        <translation type="unfinished"></translation>
+        <translation>Diese Disziplin hat Spieler ohne Partner!
+Bitte allen Spielern Doppelpartner zuordnen.</translation>
     </message>
     <message>
-        <location filename="ui/CatTabWidget.cpp" line="695"/>
+        <location filename="ui/CatTabWidget.cpp" line="692"/>
         <source>The setup for the round robin phase and the KO rounds are invalid!</source>
-        <translation type="unfinished"></translation>
+        <translation>Die Einstellungen für die Gruppen- und die KO-Phase sind ungültig!</translation>
     </message>
     <message>
-        <location filename="ui/CatTabWidget.cpp" line="699"/>
-        <location filename="ui/CatTabWidget.cpp" line="708"/>
-        <source>Uncaptured error. Category has no valid configuration and can&apos;t be started</source>
-        <translation type="unfinished"></translation>
+        <location filename="ui/CatTabWidget.cpp" line="696"/>
+        <location filename="ui/CatTabWidget.cpp" line="705"/>
+        <source>Uncaptured error. Category has no valid configuration and can&apos;t be started.</source>
+        <oldsource>Uncaptured error. Category has no valid configuration and can&apos;t be started</oldsource>
+        <translation>Unerwarteter Fehler. Die Einstellungen für diese Diszplin sind üngültig. Die Disziplin kann nicht gestartet werden.</translation>
     </message>
     <message>
-        <location filename="ui/CatTabWidget.cpp" line="736"/>
+        <location filename="ui/CatTabWidget.cpp" line="733"/>
         <source>Can&apos;t read group assignments.
 Operation cancelled.</source>
-        <translation type="unfinished"></translation>
+        <translation>Die Gruppenzuordnungen konnten nicht gelesen werden.
+Vorgang abgebrochen.</translation>
     </message>
     <message>
-        <location filename="ui/CatTabWidget.cpp" line="760"/>
-        <location filename="ui/CatTabWidget.cpp" line="912"/>
+        <location filename="ui/CatTabWidget.cpp" line="757"/>
+        <location filename="ui/CatTabWidget.cpp" line="909"/>
         <source>Can&apos;t read seeding.
 Operation cancelled.</source>
-        <translation type="unfinished"></translation>
+        <translation>Die Setzliste konnte nicht gelesen werden.
+Vorgang abgebrochen.</translation>
+    </message>
+    <message>
+        <location filename="ui/CatTabWidget.cpp" line="775"/>
+        <source>Something is wrong with the group assignment. This shouldn&apos;t happen.
+Fault:</source>
+        <translation>Irgendetwas ist bei den Gruppenzuordnungen schiefgelaufen. Das sollte nicht passieren.
+Fehlercode:</translation>
     </message>
     <message>
         <location filename="ui/CatTabWidget.cpp" line="778"/>
-        <source>Something is wrong with the group assignment. This shouldn&apos;t happen.
-Fault:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="ui/CatTabWidget.cpp" line="781"/>
         <source>Category state not valid for group assignments (STAT != FROZEN)</source>
-        <translation type="unfinished"></translation>
+        <translation>Der Disziplin kann aktuell keine Gruppenzuordnung zugewiesen werden</translation>
     </message>
     <message>
-        <location filename="ui/CatTabWidget.cpp" line="785"/>
+        <location filename="ui/CatTabWidget.cpp" line="782"/>
         <source>This category needs no group assignments</source>
-        <translation type="unfinished"></translation>
+        <translation>Diese Disziplin benötigt keine Gruppenzuordnungen.</translation>
     </message>
     <message>
-        <location filename="ui/CatTabWidget.cpp" line="789"/>
+        <location filename="ui/CatTabWidget.cpp" line="786"/>
         <source>The configuration of the groups and the KO rounds is invalid.</source>
-        <translation type="unfinished"></translation>
+        <translation>Ungültige Konfiguration der Gruppen- und KO-Phase.</translation>
     </message>
     <message>
-        <location filename="ui/CatTabWidget.cpp" line="793"/>
+        <location filename="ui/CatTabWidget.cpp" line="790"/>
         <source>The number of assigned groups doesn&apos;t match the number of required groups.</source>
-        <translation type="unfinished"></translation>
+        <translation>Die Anzahl der zugeordneten Gruppen entspricht nicht der Anzahl der benötigten Gruppen.</translation>
     </message>
     <message>
-        <location filename="ui/CatTabWidget.cpp" line="797"/>
+        <location filename="ui/CatTabWidget.cpp" line="794"/>
         <source>The number of assigned players doesn&apos;t match the number of players in the category.</source>
-        <translation type="unfinished"></translation>
+        <translation>Die Anzahl der zugeordneten Spieler entspricht nicht der Anzahl der Spieler in dieser Disziplin.</translation>
     </message>
     <message>
-        <location filename="ui/CatTabWidget.cpp" line="801"/>
+        <location filename="ui/CatTabWidget.cpp" line="798"/>
         <source>There are invalid players in the group assignments.</source>
-        <translation type="unfinished"></translation>
+        <translation>Die Gruppenzuordnung enthält ungültige Spieler.</translation>
     </message>
     <message>
-        <location filename="ui/CatTabWidget.cpp" line="805"/>
-        <location filename="ui/CatTabWidget.cpp" line="838"/>
+        <location filename="ui/CatTabWidget.cpp" line="802"/>
+        <location filename="ui/CatTabWidget.cpp" line="835"/>
         <source>Don&apos;t now...</source>
-        <translation type="unfinished"></translation>
+        <translation>Keine Ahnung...</translation>
     </message>
     <message>
-        <location filename="ui/CatTabWidget.cpp" line="819"/>
+        <location filename="ui/CatTabWidget.cpp" line="816"/>
         <source>Something is wrong with the initial ranking. This shouldn&apos;t happen.
 Fault:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui/CatTabWidget.cpp" line="822"/>
+        <location filename="ui/CatTabWidget.cpp" line="819"/>
         <source>Category state not valid for setting the initial ranking (STAT != FROZEN)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui/CatTabWidget.cpp" line="826"/>
+        <location filename="ui/CatTabWidget.cpp" line="823"/>
         <source>This category needs no initial ranking.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui/CatTabWidget.cpp" line="830"/>
+        <location filename="ui/CatTabWidget.cpp" line="827"/>
         <source>The number of player in the initial ranking doesn&apos;t match the number of players in the category.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui/CatTabWidget.cpp" line="834"/>
+        <location filename="ui/CatTabWidget.cpp" line="831"/>
         <source>There are invalid players in the initial ranking.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui/CatTabWidget.cpp" line="857"/>
+        <location filename="ui/CatTabWidget.cpp" line="854"/>
         <source>Start category</source>
-        <translation type="unfinished"></translation>
+        <translation>Disziplin starten</translation>
     </message>
     <message>
-        <location filename="ui/CatTabWidget.cpp" line="857"/>
+        <location filename="ui/CatTabWidget.cpp" line="854"/>
         <source>Category successfully started!</source>
-        <translation type="unfinished"></translation>
+        <translation>Disziplin erfolgreich gestartet!</translation>
     </message>
     <message>
-        <location filename="ui/CatTabWidget.cpp" line="876"/>
+        <location filename="ui/CatTabWidget.cpp" line="873"/>
         <source>Uncaptured error. Category has no valid configuration and can&apos;t be started.
 Expect data corruption for this category.</source>
-        <translation type="unfinished"></translation>
+        <translation>Unerwarteter Fehler. Die Disziplin hat keine gültige Konfiguration und kann nicht gestartet werden.
+Die internen Daten zu dieser Disziplin sind vermutlich defekt.</translation>
     </message>
     <message>
-        <location filename="ui/CatTabWidget.cpp" line="912"/>
+        <location filename="ui/CatTabWidget.cpp" line="909"/>
         <source>Intermediate Seeding</source>
-        <translation type="unfinished"></translation>
+        <translation>Setzliste definieren</translation>
     </message>
     <message>
-        <location filename="ui/CatTabWidget.cpp" line="924"/>
+        <location filename="ui/CatTabWidget.cpp" line="921"/>
         <source>Continue category</source>
-        <translation type="unfinished"></translation>
+        <translation>Disziplin fortsetzen</translation>
     </message>
     <message>
-        <location filename="ui/CatTabWidget.cpp" line="924"/>
+        <location filename="ui/CatTabWidget.cpp" line="921"/>
         <source>Matches successfully generated!</source>
-        <translation type="unfinished"></translation>
+        <translation>Spiele erfolgreich erzeugt!</translation>
     </message>
 </context>
 <context>
@@ -378,46 +380,53 @@ Expect data corruption for this category.</source>
     <message>
         <location filename="models/CatTableModel.cpp" line="181"/>
         <source>Name</source>
-        <translation type="unfinished">Name</translation>
+        <translation>Name</translation>
     </message>
     <message>
         <location filename="models/CatTableModel.cpp" line="185"/>
         <source>Finished rounds</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Gespielte
+Runden</translation>
     </message>
     <message>
         <location filename="models/CatTableModel.cpp" line="189"/>
         <source>Current round</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Laufende
+Runde</translation>
     </message>
     <message>
         <location filename="models/CatTableModel.cpp" line="193"/>
         <source>Total matches
 in current round</source>
-        <translation type="unfinished"></translation>
+        <translation>Anzahl Spiele
+in laufener Runde</translation>
     </message>
     <message>
         <location filename="models/CatTableModel.cpp" line="197"/>
         <source>Unfinished matches
 in current round</source>
-        <translation type="unfinished"></translation>
+        <translation>Unfertige Spiele
+in laufender Runde</translation>
     </message>
     <message>
         <location filename="models/CatTableModel.cpp" line="201"/>
         <source>Running matches
 in current round</source>
-        <translation type="unfinished"></translation>
+        <translation>Laufende Spiele
+in laufender Runde</translation>
     </message>
     <message>
         <location filename="models/CatTableModel.cpp" line="205"/>
         <source>Waiting matches
 in current round</source>
-        <translation type="unfinished"></translation>
+        <translation>Wartende Spiele
+in laufender Runde</translation>
     </message>
     <message>
         <location filename="models/CatTableModel.cpp" line="209"/>
         <source>Total rounds</source>
-        <translation type="unfinished"></translation>
+        <translation>Runden
+insgesamt</translation>
     </message>
 </context>
 <context>
@@ -428,27 +437,27 @@ in current round</source>
         <location filename="ui/CatTableView.cpp" line="161"/>
         <location filename="ui/CatTableView.cpp" line="168"/>
         <source>Rename category</source>
-        <translation type="unfinished"></translation>
+        <translation>Disziplin umbenennen</translation>
     </message>
     <message>
         <location filename="ui/CatTableView.cpp" line="135"/>
         <source>Enter new category name:</source>
-        <translation type="unfinished"></translation>
+        <translation>Neuen Disziplinnamen eingeben:</translation>
     </message>
     <message>
         <location filename="ui/CatTableView.cpp" line="145"/>
         <source>The new name may not be empty!</source>
-        <translation type="unfinished"></translation>
+        <translation>Der neue Name darf nicht leer sein!</translation>
     </message>
     <message>
         <location filename="ui/CatTableView.cpp" line="161"/>
         <source>The name you entered is invalid (e.g., too long)</source>
-        <translation type="unfinished"></translation>
+        <translation>Der neue Name ist ungültig (z. B. zu lang)</translation>
     </message>
     <message>
         <location filename="ui/CatTableView.cpp" line="168"/>
         <source>A category of this name already exists</source>
-        <translation type="unfinished"></translation>
+        <translation>Eine Disziplin dieses Namens gibt es bereits</translation>
     </message>
 </context>
 <context>
@@ -456,54 +465,54 @@ in current round</source>
     <message>
         <location filename="ui/delegates/CourtItemDelegate.cpp" line="69"/>
         <source>(free)</source>
-        <translation type="unfinished"></translation>
+        <translation>(frei)</translation>
     </message>
     <message>
         <location filename="ui/delegates/CourtItemDelegate.cpp" line="73"/>
         <source>(free, manual match assignment only)</source>
-        <translation type="unfinished"></translation>
+        <translation>(frei, nur manuelle Spielzuweisung)</translation>
     </message>
     <message>
         <location filename="ui/delegates/CourtItemDelegate.cpp" line="77"/>
         <source>(disabled)</source>
-        <translation type="unfinished"></translation>
+        <translation>(deaktiviert)</translation>
     </message>
     <message>
         <location filename="ui/delegates/CourtItemDelegate.cpp" line="151"/>
         <location filename="ui/delegates/CourtItemDelegate.cpp" line="192"/>
         <source>Winner</source>
-        <translation type="unfinished"></translation>
+        <translation>Gewinner</translation>
     </message>
     <message>
         <location filename="ui/delegates/CourtItemDelegate.cpp" line="151"/>
         <location filename="ui/delegates/CourtItemDelegate.cpp" line="192"/>
         <source>Loser</source>
-        <translation type="unfinished"></translation>
+        <translation>Verlierer</translation>
     </message>
     <message>
         <location filename="ui/delegates/CourtItemDelegate.cpp" line="156"/>
         <source>Match number:</source>
-        <translation type="unfinished"></translation>
+        <translation>Spielnummer:</translation>
     </message>
     <message>
         <location filename="ui/delegates/CourtItemDelegate.cpp" line="158"/>
         <source>Category:</source>
-        <translation type="unfinished"></translation>
+        <translation>Disziplin:</translation>
     </message>
     <message>
         <location filename="ui/delegates/CourtItemDelegate.cpp" line="160"/>
         <source>Round: </source>
-        <translation type="unfinished"></translation>
+        <translation>Runde:</translation>
     </message>
     <message>
         <location filename="ui/delegates/CourtItemDelegate.cpp" line="166"/>
         <source>Start time: </source>
-        <translation type="unfinished"></translation>
+        <translation>Aufrufzeit:</translation>
     </message>
     <message>
         <location filename="ui/delegates/CourtItemDelegate.cpp" line="171"/>
         <source>additional calls at </source>
-        <translation type="unfinished"></translation>
+        <translation>Weitere Aufrufe um </translation>
     </message>
 </context>
 <context>
@@ -511,12 +520,12 @@ in current round</source>
     <message>
         <location filename="models/CourtTabModel.cpp" line="93"/>
         <source>Court</source>
-        <translation type="unfinished"></translation>
+        <translation>Feld</translation>
     </message>
     <message>
         <location filename="models/CourtTabModel.cpp" line="96"/>
         <source>Match</source>
-        <translation type="unfinished">Nummer</translation>
+        <translation>Spiel</translation>
     </message>
 </context>
 <context>
@@ -525,79 +534,79 @@ in current round</source>
         <location filename="ui/CourtTableView.cpp" line="143"/>
         <location filename="ui/CourtTableView.cpp" line="247"/>
         <source>Add court</source>
-        <translation type="unfinished"></translation>
+        <translation>Feld hinzufügen</translation>
     </message>
     <message>
         <location filename="ui/CourtTableView.cpp" line="144"/>
         <source>Undo call</source>
-        <translation type="unfinished"></translation>
+        <translation>Aufruf rückgängig machen</translation>
     </message>
     <message>
         <location filename="ui/CourtTableView.cpp" line="145"/>
         <source>Finish match</source>
-        <translation type="unfinished"></translation>
+        <translation>Spiel beenden</translation>
     </message>
     <message>
         <location filename="ui/CourtTableView.cpp" line="146"/>
         <location filename="ui/CourtTableView.cpp" line="292"/>
         <location filename="ui/CourtTableView.cpp" line="299"/>
         <source>Repeat call</source>
-        <translation type="unfinished"></translation>
+        <translation>Wiederholter Aufruf</translation>
     </message>
     <message>
         <location filename="ui/CourtTableView.cpp" line="163"/>
         <source>Walkover for...</source>
-        <translation type="unfinished"></translation>
+        <translation>Geht kampflos an...</translation>
     </message>
     <message>
         <location filename="ui/CourtTableView.cpp" line="248"/>
         <source>Something went wrong, error code = </source>
-        <translation type="unfinished"></translation>
+        <translation>Irgendwas ging schief, Fehlercode = </translation>
     </message>
     <message>
         <location filename="ui/CourtTableView.cpp" line="299"/>
         <source>Call cancled</source>
-        <translation type="unfinished"></translation>
+        <translation>Aufruf abgebrochen</translation>
     </message>
 </context>
 <context>
     <name>DlgEditPlayer</name>
     <message>
-        <location filename="ui/dlgEditPlayer.cpp" line="64"/>
-        <location filename="ui/dlgEditPlayer.cpp" line="71"/>
-        <location filename="ui/dlgEditPlayer.cpp" line="78"/>
-        <location filename="ui/dlgEditPlayer.cpp" line="95"/>
-        <location filename="ui/dlgEditPlayer.cpp" line="103"/>
+        <location filename="ui/dlgEditPlayer.cpp" line="65"/>
+        <location filename="ui/dlgEditPlayer.cpp" line="72"/>
+        <location filename="ui/dlgEditPlayer.cpp" line="79"/>
+        <location filename="ui/dlgEditPlayer.cpp" line="96"/>
+        <location filename="ui/dlgEditPlayer.cpp" line="104"/>
         <source>Error in player data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui/dlgEditPlayer.cpp" line="64"/>
+        <location filename="ui/dlgEditPlayer.cpp" line="65"/>
         <source>The first name may not be empty!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui/dlgEditPlayer.cpp" line="71"/>
+        <location filename="ui/dlgEditPlayer.cpp" line="72"/>
         <source>The last name may not be empty!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui/dlgEditPlayer.cpp" line="78"/>
+        <location filename="ui/dlgEditPlayer.cpp" line="79"/>
         <source>Please select a valid sex for the player!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui/dlgEditPlayer.cpp" line="95"/>
+        <location filename="ui/dlgEditPlayer.cpp" line="96"/>
         <source>A player of that name already exists!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui/dlgEditPlayer.cpp" line="103"/>
+        <location filename="ui/dlgEditPlayer.cpp" line="104"/>
         <source>Please select a valid team!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui/dlgEditPlayer.cpp" line="156"/>
+        <location filename="ui/dlgEditPlayer.cpp" line="162"/>
         <source>&lt;Please select&gt;</source>
         <translation type="unfinished"></translation>
     </message>
@@ -627,32 +636,32 @@ in current round</source>
     <message>
         <location filename="ui/DlgMatchResult.ui" line="149"/>
         <source>This match is a draw!</source>
-        <translation type="unfinished"></translation>
+        <translation>Dieses Spiel endete unentschieden!</translation>
     </message>
     <message>
         <location filename="ui/DlgMatchResult.ui" line="161"/>
         <source>Cancel</source>
-        <translation type="unfinished"></translation>
+        <translation>Abbruch</translation>
     </message>
     <message>
         <location filename="ui/DlgMatchResult.ui" line="168"/>
         <source>Okay</source>
-        <translation type="unfinished"></translation>
+        <translation>Okay</translation>
     </message>
     <message>
         <location filename="ui/DlgMatchResult.cpp" line="24"/>
         <source>Match Number: </source>
-        <translation type="unfinished">Spielnummer</translation>
+        <translation>Spielnummer:</translation>
     </message>
     <message>
         <location filename="ui/DlgMatchResult.cpp" line="155"/>
         <source>Winner: </source>
-        <translation type="unfinished"></translation>
+        <translation>Gewinner:</translation>
     </message>
     <message>
         <location filename="ui/DlgMatchResult.cpp" line="157"/>
         <source>Loser: </source>
-        <translation type="unfinished"></translation>
+        <translation>Verlierer:</translation>
     </message>
 </context>
 <context>
@@ -695,12 +704,12 @@ in current round</source>
     <message>
         <location filename="ui/DlgSeedingEditor.ui" line="182"/>
         <source>Cancel</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Abbruch</translation>
     </message>
     <message>
         <location filename="ui/DlgSeedingEditor.ui" line="189"/>
         <source>Okay</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Okay</translation>
     </message>
     <message>
         <location filename="ui/DlgSeedingEditor.cpp" line="13"/>
@@ -733,12 +742,12 @@ in current round</source>
     <message>
         <location filename="ui/DlgTournamentSettings.ui" line="96"/>
         <source>Cancel</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Abbruch</translation>
     </message>
     <message>
         <location filename="ui/DlgTournamentSettings.ui" line="103"/>
         <source>Okay</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Okay</translation>
     </message>
 </context>
 <context>
@@ -769,7 +778,7 @@ in current round</source>
     <message>
         <location filename="ui/GroupAssignmentListWidget.cpp" line="61"/>
         <source>Group </source>
-        <translation type="unfinished">Gruppe </translation>
+        <translation>Gruppe </translation>
     </message>
 </context>
 <context>
@@ -782,42 +791,42 @@ in current round</source>
     <message>
         <location filename="ui/GroupConfigWidget.ui" line="26"/>
         <source>KO rounds start with</source>
-        <translation type="unfinished"></translation>
+        <translation>KO-Runde startet mit</translation>
     </message>
     <message>
         <location filename="ui/GroupConfigWidget.ui" line="43"/>
         <source>Final</source>
-        <translation type="unfinished"></translation>
+        <translation>Finale</translation>
     </message>
     <message>
         <location filename="ui/GroupConfigWidget.ui" line="48"/>
         <source>Semi Finals</source>
-        <translation type="unfinished">Halbfinale</translation>
+        <translation>Halbfinale</translation>
     </message>
     <message>
         <location filename="ui/GroupConfigWidget.ui" line="53"/>
         <source>Quarter Finals</source>
-        <translation type="unfinished">Viertelfinale</translation>
+        <translation>Viertelfinale</translation>
     </message>
     <message>
         <location filename="ui/GroupConfigWidget.ui" line="58"/>
         <source>Round of 16</source>
-        <translation type="unfinished"></translation>
+        <translation>Achtelfinale</translation>
     </message>
     <message>
         <location filename="ui/GroupConfigWidget.ui" line="66"/>
         <source>Second in group qualifies</source>
-        <translation type="unfinished"></translation>
+        <translation>Gruppenzweiter kommt weiter</translation>
     </message>
     <message>
         <location filename="ui/GroupConfigWidget.ui" line="86"/>
         <source>Groups</source>
-        <translation type="unfinished"></translation>
+        <translation>Gruppenanzahl</translation>
     </message>
     <message>
         <location filename="ui/GroupConfigWidget.ui" line="96"/>
         <source>Group size</source>
-        <translation type="unfinished"></translation>
+        <translation>Gruppengröße</translation>
     </message>
     <message>
         <location filename="ui/GroupConfigWidget.ui" line="140"/>
@@ -825,44 +834,44 @@ in current round</source>
         <location filename="ui/GroupConfigWidget.ui" line="175"/>
         <location filename="ui/GroupConfigWidget.ui" line="189"/>
         <source>0</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="ui/GroupConfigWidget.ui" line="147"/>
         <location filename="ui/GroupConfigWidget.ui" line="168"/>
         <source>Sum:</source>
-        <translation type="unfinished"></translation>
+        <translation>Summe:</translation>
     </message>
     <message>
         <location filename="ui/GroupConfigWidget.ui" line="161"/>
         <location filename="ui/GroupConfigWidget.ui" line="182"/>
         <source>Required:</source>
-        <translation type="unfinished"></translation>
+        <translation>Erforderlich:</translation>
     </message>
     <message>
-        <location filename="ui/GroupConfigWidget.ui" line="200"/>
+        <location filename="ui/GroupConfigWidget.ui" line="203"/>
         <source>Auto Group Config</source>
-        <translation type="unfinished"></translation>
+        <translation>Automatische Konfiguration</translation>
     </message>
     <message>
-        <location filename="ui/GroupConfigWidget.ui" line="209"/>
+        <location filename="ui/GroupConfigWidget.ui" line="212"/>
         <source>TextLabel</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="ui/GroupConfigWidget.cpp" line="155"/>
         <source>The configuration is </source>
-        <translation type="unfinished"></translation>
+        <translation>Die Konfiguration ist </translation>
     </message>
     <message>
         <location filename="ui/GroupConfigWidget.cpp" line="158"/>
         <source>VALID</source>
-        <translation type="unfinished"></translation>
+        <translation>GÜLTIG</translation>
     </message>
     <message>
         <location filename="ui/GroupConfigWidget.cpp" line="160"/>
         <source>INVALID</source>
-        <translation type="unfinished"></translation>
+        <translation>UNGÜLTIG</translation>
     </message>
 </context>
 <context>
@@ -1013,32 +1022,32 @@ in current round</source>
     <message>
         <location filename="ui/MainFrame.ui" line="39"/>
         <source>Teams</source>
-        <translation type="unfinished"></translation>
+        <translation>Teams</translation>
     </message>
     <message>
         <location filename="ui/MainFrame.ui" line="45"/>
         <source>Players</source>
-        <translation type="unfinished">Spieler</translation>
+        <translation>Spieler</translation>
     </message>
     <message>
         <location filename="ui/MainFrame.ui" line="51"/>
         <source>Categories</source>
-        <translation type="unfinished">Disziplinen</translation>
+        <translation>Disziplinen</translation>
     </message>
     <message>
         <location filename="ui/MainFrame.ui" line="56"/>
         <source>Scheduler</source>
-        <translation type="unfinished"></translation>
+        <translation>Spielplanung</translation>
     </message>
     <message>
         <location filename="ui/MainFrame.ui" line="61"/>
         <source>Reports</source>
-        <translation type="unfinished"></translation>
+        <translation>Dokumente</translation>
     </message>
     <message>
         <location filename="ui/MainFrame.ui" line="92"/>
         <source>Testing</source>
-        <translation type="unfinished"></translation>
+        <translation>Tests</translation>
     </message>
     <message>
         <location filename="ui/MainFrame.ui" line="110"/>
@@ -1111,64 +1120,64 @@ in current round</source>
         <translation>Turnier</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="69"/>
-        <location filename="ui/MainFrame.cpp" line="104"/>
+        <location filename="ui/MainFrame.cpp" line="76"/>
+        <location filename="ui/MainFrame.cpp" line="111"/>
         <source>New tournament</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="ui/MainFrame.cpp" line="69"/>
-        <source>Something went wrong; no new tournament created.</source>
-        <translation type="unfinished"></translation>
+        <translation>Neues Tournier</translation>
     </message>
     <message>
         <location filename="ui/MainFrame.cpp" line="76"/>
-        <location filename="ui/MainFrame.cpp" line="122"/>
+        <source>Something went wrong; no new tournament created.</source>
+        <translation>Irgendwas ist schiefgelaufen. Es wurde kein neues Turnier angelegt.</translation>
+    </message>
+    <message>
+        <location filename="ui/MainFrame.cpp" line="83"/>
+        <location filename="ui/MainFrame.cpp" line="129"/>
         <source>QTournament Files (*.tdb)</source>
-        <translation type="unfinished"></translation>
+        <translation>Turnierdateien (*.tdb)</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="104"/>
+        <location filename="ui/MainFrame.cpp" line="111"/>
         <source>Could not delete </source>
-        <translation type="unfinished"></translation>
+        <translation>Fehler beim Löschen von </translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="104"/>
+        <location filename="ui/MainFrame.cpp" line="111"/>
         <source>, no new tournament created.</source>
-        <translation type="unfinished"></translation>
+        <translation>, daher wurde kein neues Turnier angelegt.</translation>
     </message>
 </context>
 <context>
     <name>MatchGroupTableModel</name>
     <message>
-        <location filename="models/MatchGroupTabModel.cpp" line="120"/>
+        <location filename="models/MatchGroupTabModel.cpp" line="127"/>
         <source>Category</source>
-        <translation type="unfinished"></translation>
+        <translation>Disziplin</translation>
     </message>
     <message>
-        <location filename="models/MatchGroupTabModel.cpp" line="123"/>
+        <location filename="models/MatchGroupTabModel.cpp" line="130"/>
         <source>Round</source>
-        <translation type="unfinished"></translation>
+        <translation>Runde</translation>
     </message>
     <message>
-        <location filename="models/MatchGroupTabModel.cpp" line="126"/>
+        <location filename="models/MatchGroupTabModel.cpp" line="133"/>
         <source>Group</source>
-        <translation type="unfinished">Gruppe</translation>
+        <translation>Gruppe</translation>
     </message>
     <message>
-        <location filename="models/MatchGroupTabModel.cpp" line="129"/>
-        <source>Number of matches</source>
-        <translation type="unfinished"></translation>
+        <location filename="models/MatchGroupTabModel.cpp" line="136"/>
+        <source>Matches</source>
+        <translation>Spiele</translation>
     </message>
     <message>
-        <location filename="models/MatchGroupTabModel.cpp" line="132"/>
+        <location filename="models/MatchGroupTabModel.cpp" line="139"/>
         <source>State</source>
-        <translation type="unfinished"></translation>
+        <translation>Zustand</translation>
     </message>
     <message>
-        <location filename="models/MatchGroupTabModel.cpp" line="135"/>
+        <location filename="models/MatchGroupTabModel.cpp" line="142"/>
         <source>StageSeqNum</source>
-        <translation type="unfinished"></translation>
+        <translation>SeqNummer</translation>
     </message>
 </context>
 <context>
@@ -1176,12 +1185,12 @@ in current round</source>
     <message>
         <location filename="ui/delegates/MatchItemDelegate.cpp" line="60"/>
         <source>Winner</source>
-        <translation type="unfinished"></translation>
+        <translation>Gewinner</translation>
     </message>
     <message>
         <location filename="ui/delegates/MatchItemDelegate.cpp" line="60"/>
         <source>Loser</source>
-        <translation type="unfinished"></translation>
+        <translation>Verlierer</translation>
     </message>
 </context>
 <context>
@@ -1189,42 +1198,42 @@ in current round</source>
     <message>
         <location filename="models/MatchTabModel.cpp" line="69"/>
         <source>Winner</source>
-        <translation type="unfinished"></translation>
+        <translation>Gewinner</translation>
     </message>
     <message>
         <location filename="models/MatchTabModel.cpp" line="69"/>
         <source>Loser</source>
-        <translation type="unfinished"></translation>
+        <translation>Verlierer</translation>
     </message>
     <message>
         <location filename="models/MatchTabModel.cpp" line="118"/>
         <source>Number</source>
-        <translation type="unfinished"></translation>
+        <translation>Nummer</translation>
     </message>
     <message>
         <location filename="models/MatchTabModel.cpp" line="121"/>
         <source>Match</source>
-        <translation type="unfinished">Nummer</translation>
+        <translation>Spiel</translation>
     </message>
     <message>
         <location filename="models/MatchTabModel.cpp" line="124"/>
         <source>Category</source>
-        <translation type="unfinished"></translation>
+        <translation>Disziplin</translation>
     </message>
     <message>
         <location filename="models/MatchTabModel.cpp" line="127"/>
         <source>Round</source>
-        <translation type="unfinished"></translation>
+        <translation>Runde</translation>
     </message>
     <message>
         <location filename="models/MatchTabModel.cpp" line="130"/>
         <source>Group</source>
-        <translation type="unfinished">Gruppe</translation>
+        <translation>Gruppe</translation>
     </message>
     <message>
         <location filename="models/MatchTabModel.cpp" line="133"/>
         <source>State</source>
-        <translation type="unfinished"></translation>
+        <translation>Zustand</translation>
     </message>
 </context>
 <context>
@@ -1232,29 +1241,32 @@ in current round</source>
     <message>
         <location filename="ui/MatchTableView.cpp" line="210"/>
         <source>Call match</source>
-        <translation type="unfinished"></translation>
+        <translation>Spielaufruf</translation>
     </message>
     <message>
         <location filename="ui/MatchTableView.cpp" line="211"/>
-        <source>Match can&apos;t be called on the selected court</source>
-        <translation type="unfinished"></translation>
+        <source>Match can&apos;t be called on the selected court.</source>
+        <oldsource>Match can&apos;t be called on the selected court</oldsource>
+        <translation>Das Spiel konnte nicht auf dem ausgewählten Feld aufgerufen werden.</translation>
     </message>
     <message>
         <location filename="ui/MatchTableView.cpp" line="246"/>
         <source>This match cannot be started at this point in time.
 </source>
-        <translation type="unfinished"></translation>
+        <translation>Das Spiel kann momentan nicht aufgerufen werden.
+</translation>
     </message>
     <message>
         <location filename="ui/MatchTableView.cpp" line="247"/>
         <source>It&apos;s probably waiting for all players to become available or 
 </source>
-        <translation type="unfinished"></translation>
+        <translation>Vermutlich sind noch nicht alle Spieler verfügbar oder 
+</translation>
     </message>
     <message>
         <location filename="ui/MatchTableView.cpp" line="248"/>
         <source>for matches in earlier rounds to be finished first.</source>
-        <translation type="unfinished"></translation>
+        <translation>Spiele aus vorherigen Runden müssen zunächst abgeschlossen werden.</translation>
     </message>
     <message>
         <location filename="ui/MatchTableView.cpp" line="249"/>
@@ -1266,25 +1278,30 @@ in current round</source>
         <location filename="ui/MatchTableView.cpp" line="414"/>
         <location filename="ui/MatchTableView.cpp" line="419"/>
         <source>Assign match to court</source>
-        <translation type="unfinished"></translation>
+        <translation>Spielaufruf</translation>
     </message>
     <message>
         <location filename="ui/MatchTableView.cpp" line="258"/>
-        <source>There are no free courts for automatic match assignment available right now,
+        <source>There are no free courts for automatic match assignment available right now.
 </source>
-        <translation type="unfinished"></translation>
+        <oldsource>There are no free courts for automatic match assignment available right now,
+</oldsource>
+        <translation>Momentan sind keine Felder für eine automatische Spielzuordnung erfügbar.
+</translation>
     </message>
     <message>
         <location filename="ui/MatchTableView.cpp" line="259"/>
         <source>However, there is at least one free court for manual match assignment.
 
 </source>
-        <translation type="unfinished"></translation>
+        <translation>Allerdings gibt es mindestens ein freies Feld für manuelle Spielzuweisung.
+
+</translation>
     </message>
     <message>
         <location filename="ui/MatchTableView.cpp" line="260"/>
         <source>Use this court for running the match?</source>
-        <translation type="unfinished"></translation>
+        <translation>Soll das Spiel auf diesem Feld aufgerufen werden?</translation>
     </message>
     <message>
         <location filename="ui/MatchTableView.cpp" line="270"/>
@@ -1292,7 +1309,8 @@ in current round</source>
         <location filename="ui/MatchTableView.cpp" line="411"/>
         <source>An unexpected error occured.
 </source>
-        <translation type="unfinished"></translation>
+        <translation>Es ist ein unerwarteter Fehler aufgetreten.
+</translation>
     </message>
     <message>
         <location filename="ui/MatchTableView.cpp" line="271"/>
@@ -1300,45 +1318,47 @@ in current round</source>
         <location filename="ui/MatchTableView.cpp" line="412"/>
         <source>Sorry, this shouldn&apos;t happen.
 </source>
-        <translation type="unfinished"></translation>
+        <translation>Das sollte nicht vorkommen.
+</translation>
     </message>
     <message>
         <location filename="ui/MatchTableView.cpp" line="272"/>
         <location filename="ui/MatchTableView.cpp" line="395"/>
         <location filename="ui/MatchTableView.cpp" line="413"/>
         <source>The match cannot be started.</source>
-        <translation type="unfinished"></translation>
+        <translation>Das Spiel kann leider nicht aufgerufen werden.</translation>
     </message>
     <message>
         <location filename="ui/MatchTableView.cpp" line="280"/>
         <source>The match cannot be started since there is no
 </source>
-        <translation type="unfinished"></translation>
+        <translation>Das Spiel kann nicht aufgerufen werden, weil
+</translation>
     </message>
     <message>
         <location filename="ui/MatchTableView.cpp" line="281"/>
         <source>free court available right now.</source>
-        <translation type="unfinished"></translation>
+        <translation>momentan kein freies Feld verfügbar ist.</translation>
     </message>
     <message>
         <location filename="ui/MatchTableView.cpp" line="299"/>
         <source>Postpone</source>
-        <translation type="unfinished"></translation>
+        <translation>Zurückstellen</translation>
     </message>
     <message>
         <location filename="ui/MatchTableView.cpp" line="307"/>
         <source>Walkover for...</source>
-        <translation type="unfinished"></translation>
+        <translation>Geht kampflos an...</translation>
     </message>
     <message>
         <location filename="ui/MatchTableView.cpp" line="312"/>
         <source>Call match on court...</source>
-        <translation type="unfinished"></translation>
+        <translation>Spielaufruf auf Feld...</translation>
     </message>
     <message>
         <location filename="ui/MatchTableView.cpp" line="419"/>
         <source>Call cancled, match not started</source>
-        <translation type="unfinished"></translation>
+        <translation>Aufruf abgebrochen, Spiel nicht gestartet</translation>
     </message>
 </context>
 <context>
@@ -1351,76 +1371,183 @@ in current round</source>
     <message>
         <location filename="ui/PlayerTabWidget.ui" line="24"/>
         <source>Add Player</source>
-        <translation type="unfinished"></translation>
+        <translation>Spieler hinzufügen</translation>
     </message>
     <message>
-        <location filename="ui/PlayerTabWidget.ui" line="35"/>
-        <source>PushButton</source>
-        <translation type="unfinished"></translation>
+        <location filename="ui/PlayerTabWidget.ui" line="50"/>
+        <source>TextLabel</source>
+        <translation></translation>
     </message>
     <message>
-        <location filename="ui/PlayerTabWidget.cpp" line="52"/>
-        <source>Something went wrong when inserting the player. This shouldn&apos;t happen.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="ui/PlayerTabWidget.cpp" line="53"/>
-        <location filename="ui/PlayerTabWidget.cpp" line="77"/>
-        <location filename="ui/PlayerTabWidget.cpp" line="121"/>
-        <location filename="ui/PlayerTabWidget.cpp" line="141"/>
-        <location filename="ui/PlayerTabWidget.cpp" line="151"/>
-        <location filename="ui/PlayerTabWidget.cpp" line="167"/>
-        <source>For the records: error code = </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="ui/PlayerTabWidget.cpp" line="54"/>
-        <location filename="ui/PlayerTabWidget.cpp" line="78"/>
-        <location filename="ui/PlayerTabWidget.cpp" line="122"/>
-        <location filename="ui/PlayerTabWidget.cpp" line="142"/>
-        <location filename="ui/PlayerTabWidget.cpp" line="152"/>
-        <location filename="ui/PlayerTabWidget.cpp" line="168"/>
-        <source>WTF??</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="ui/PlayerTabWidget.cpp" line="76"/>
-        <location filename="ui/PlayerTabWidget.cpp" line="150"/>
-        <source>Something went wrong when adding the player to a category. This shouldn&apos;t happen.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="ui/PlayerTabWidget.cpp" line="120"/>
-        <source>Something went wrong when renaming the player. This shouldn&apos;t happen.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="ui/PlayerTabWidget.cpp" line="140"/>
-        <source>Something went wrong when removing the player from a category. This shouldn&apos;t happen.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="ui/PlayerTabWidget.cpp" line="166"/>
-        <source>Something went wrong when changing the player&apos;s team assignment. This shouldn&apos;t happen.</source>
-        <translation type="unfinished"></translation>
+        <location filename="ui/PlayerTabWidget.cpp" line="57"/>
+        <source> players in tournament</source>
+        <translation type="unfinished"> Spieler gemeldet</translation>
     </message>
 </context>
 <context>
     <name>PlayerTableModel</name>
     <message>
-        <location filename="models/PlayerTableModel.cpp" line="108"/>
+        <location filename="models/PlayerTableModel.cpp" line="111"/>
         <source>Name</source>
-        <translation type="unfinished">Name</translation>
+        <translation>Name</translation>
     </message>
     <message>
-        <location filename="models/PlayerTableModel.cpp" line="116"/>
+        <location filename="models/PlayerTableModel.cpp" line="119"/>
         <source>Team Name</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Team</translation>
     </message>
     <message>
-        <location filename="models/PlayerTableModel.cpp" line="120"/>
+        <location filename="models/PlayerTableModel.cpp" line="123"/>
         <source>Categories</source>
-        <translation type="unfinished">Disziplinen</translation>
+        <translation>Disziplinen</translation>
+    </message>
+</context>
+<context>
+    <name>PlayerTableView</name>
+    <message>
+        <location filename="ui/PlayerTableView.cpp" line="163"/>
+        <source>Something went wrong when inserting the player. This shouldn&apos;t happen.</source>
+        <translation>Beim Einfügen des Spielers ist etwas schiefgelaufen. Das sollte nicht passieren.</translation>
+    </message>
+    <message>
+        <location filename="ui/PlayerTableView.cpp" line="164"/>
+        <location filename="ui/PlayerTableView.cpp" line="188"/>
+        <location filename="ui/PlayerTableView.cpp" line="225"/>
+        <location filename="ui/PlayerTableView.cpp" line="245"/>
+        <location filename="ui/PlayerTableView.cpp" line="255"/>
+        <location filename="ui/PlayerTableView.cpp" line="271"/>
+        <location filename="ui/PlayerTableView.cpp" line="321"/>
+        <source>For the records: error code = </source>
+        <translation>Fürs Protokoll: Fehlercode = </translation>
+    </message>
+    <message>
+        <location filename="ui/PlayerTableView.cpp" line="165"/>
+        <location filename="ui/PlayerTableView.cpp" line="189"/>
+        <location filename="ui/PlayerTableView.cpp" line="226"/>
+        <location filename="ui/PlayerTableView.cpp" line="246"/>
+        <location filename="ui/PlayerTableView.cpp" line="256"/>
+        <location filename="ui/PlayerTableView.cpp" line="272"/>
+        <location filename="ui/PlayerTableView.cpp" line="322"/>
+        <source>WTF??</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="ui/PlayerTableView.cpp" line="187"/>
+        <location filename="ui/PlayerTableView.cpp" line="254"/>
+        <source>Something went wrong when adding the player to a category. This shouldn&apos;t happen.</source>
+        <translation>Beim Zuordnen des Spielers zur Disziplin ist etwas schiefgelaufen. Das sollte nicht passieren.</translation>
+    </message>
+    <message>
+        <location filename="ui/PlayerTableView.cpp" line="224"/>
+        <source>Something went wrong when renaming the player. This shouldn&apos;t happen.</source>
+        <translation>Beim Umbenennen des Spielers ist etwas schiefgelaufen. Das sollte nicht passieren.</translation>
+    </message>
+    <message>
+        <location filename="ui/PlayerTableView.cpp" line="244"/>
+        <source>Something went wrong when removing the player from a category. This shouldn&apos;t happen.</source>
+        <translation>Beim Entfernen des Spielers aus der Disziplin ist etwas schiefgelaufen. Das sollte nicht passieren.</translation>
+    </message>
+    <message>
+        <location filename="ui/PlayerTableView.cpp" line="270"/>
+        <source>Something went wrong when changing the player&apos;s team assignment. This shouldn&apos;t happen.</source>
+        <translation>Beim Ändern der Teamzuordnung ist etwas schiefgelaufen. Das sollte nicht passieren.</translation>
+    </message>
+    <message>
+        <location filename="ui/PlayerTableView.cpp" line="293"/>
+        <source>The player can&apos;t be removed from all categories.
+</source>
+        <translation>Der Spiele konnte nicht aus allen Disziplinen entfernt werden.
+</translation>
+    </message>
+    <message>
+        <location filename="ui/PlayerTableView.cpp" line="294"/>
+        <source>Please make sure that the player is not assigned to any
+</source>
+        <translation>Bitte sicherstellen, dass der Spieler keinem Doppel- oder
+</translation>
+    </message>
+    <message>
+        <location filename="ui/PlayerTableView.cpp" line="295"/>
+        <source>partners in doubles or mixed categories!</source>
+        <translation>Mixedpartner zugeordnet ist!</translation>
+    </message>
+    <message>
+        <location filename="ui/PlayerTableView.cpp" line="296"/>
+        <location filename="ui/PlayerTableView.cpp" line="305"/>
+        <location filename="ui/PlayerTableView.cpp" line="314"/>
+        <source>Delete player</source>
+        <translation>Spieler löschen</translation>
+    </message>
+    <message>
+        <location filename="ui/PlayerTableView.cpp" line="303"/>
+        <source>The player can&apos;t be deleted anymore. The player is
+</source>
+        <translation>Der Spieler kann nicht mehr gelöscht werden. Der Spieler ist
+</translation>
+    </message>
+    <message>
+        <location filename="ui/PlayerTableView.cpp" line="304"/>
+        <source>most likely already involved/scheduled in matches.</source>
+        <translation>bereits für Spiele eingeplant bzw. hat schon gespielt.</translation>
+    </message>
+    <message>
+        <location filename="ui/PlayerTableView.cpp" line="310"/>
+        <source>Note: this will remove the player from all categories
+</source>
+        <translation>Hinweis: der Spieler wird aus allen Disziplinen und
+</translation>
+    </message>
+    <message>
+        <location filename="ui/PlayerTableView.cpp" line="311"/>
+        <source>and from the whole tournament.
+
+</source>
+        <translation>dem gesamten Turnier gelöscht.
+
+</translation>
+    </message>
+    <message>
+        <location filename="ui/PlayerTableView.cpp" line="312"/>
+        <source>This step is irrevocable!
+
+</source>
+        <translation>Dieser Schritt ist unumkehrbar!
+
+</translation>
+    </message>
+    <message>
+        <location filename="ui/PlayerTableView.cpp" line="313"/>
+        <source>Proceed?</source>
+        <translation>Ausführen?</translation>
+    </message>
+    <message>
+        <location filename="ui/PlayerTableView.cpp" line="320"/>
+        <source>Something went wrong when deleting the player. This shouldn&apos;t happen.
+
+</source>
+        <translation>Beim Löschen des Spielers ist etwas schiefgelaufen. Das sollte nicht passieren.
+
+</translation>
+    </message>
+    <message>
+        <location filename="ui/PlayerTableView.cpp" line="338"/>
+        <source>Add Player...</source>
+        <translation>Spieler hinzufügen...</translation>
+    </message>
+    <message>
+        <location filename="ui/PlayerTableView.cpp" line="339"/>
+        <source>Edit Player...</source>
+        <translation>Spieler bearbeiten...</translation>
+    </message>
+    <message>
+        <location filename="ui/PlayerTableView.cpp" line="340"/>
+        <source>Remove Player...</source>
+        <translation>Spieler löschen...</translation>
+    </message>
+    <message>
+        <location filename="ui/PlayerTableView.cpp" line="341"/>
+        <source>Show next Matches...</source>
+        <translation>Nächste Spiele anzeigen...</translation>
     </message>
 </context>
 <context>
@@ -1456,7 +1583,8 @@ in current round</source>
     <message>
         <location filename="reports/InOutList.cpp" line="43"/>
         <location filename="reports/InOutList.cpp" line="49"/>
-        <source>An error occurred during report generation</source>
+        <source>An error occurred during report generation.</source>
+        <oldsource>An error occurred during report generation</oldsource>
         <translation>Bei der Erstellung der Seite trat ein Fehler auf.</translation>
     </message>
     <message>
@@ -1668,7 +1796,8 @@ in current round</source>
     </message>
     <message>
         <location filename="reports/ParticipantsList.cpp" line="257"/>
-        <source>No players have been assigned to this category yet</source>
+        <source>No players have been assigned to this category yet.</source>
+        <oldsource>No players have been assigned to this category yet</oldsource>
         <translation>Dieser Disziplin wurden noch keine Spieler zugeordnet.</translation>
     </message>
 </context>
@@ -1715,19 +1844,19 @@ in current round</source>
         <translation>%1, Runde %2</translation>
     </message>
     <message>
-        <location filename="reports/ResultSheets.cpp" line="177"/>
-        <location filename="reports/ResultSheets.cpp" line="192"/>
+        <location filename="reports/ResultSheets.cpp" line="179"/>
+        <location filename="reports/ResultSheets.cpp" line="197"/>
         <source>Winner of Match #</source>
         <translation>Gewinner Spiel </translation>
     </message>
     <message>
-        <location filename="reports/ResultSheets.cpp" line="177"/>
-        <location filename="reports/ResultSheets.cpp" line="192"/>
+        <location filename="reports/ResultSheets.cpp" line="179"/>
+        <location filename="reports/ResultSheets.cpp" line="197"/>
         <source>Loser of Match #</source>
         <translation>Verlierer Spiel </translation>
     </message>
     <message>
-        <location filename="reports/ResultSheets.cpp" line="213"/>
+        <location filename="reports/ResultSheets.cpp" line="219"/>
         <source>Game:</source>
         <translation>Satz:</translation>
     </message>
@@ -1884,12 +2013,12 @@ in current round</source>
     <message>
         <location filename="ui/ReportsTabWidget.ui" line="30"/>
         <source>Reload All</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktualisieren</translation>
     </message>
     <message>
         <location filename="ui/ReportsTabWidget.cpp" line="139"/>
         <source>Reports</source>
-        <translation type="unfinished"></translation>
+        <translation>Dokumente</translation>
     </message>
 </context>
 <context>
@@ -1902,126 +2031,133 @@ in current round</source>
     <message>
         <location filename="ui/ScheduleTabWidget.ui" line="26"/>
         <source>Staged match groups:</source>
-        <translation type="unfinished"></translation>
+        <translation>Gewählte Spielgruppen:</translation>
     </message>
     <message>
         <location filename="ui/ScheduleTabWidget.ui" line="33"/>
         <source>Add all --&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>Anhängen --&gt;</translation>
     </message>
     <message>
         <location filename="ui/ScheduleTabWidget.ui" line="66"/>
         <source>^^</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="ui/ScheduleTabWidget.ui" line="73"/>
         <source>vv</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="ui/ScheduleTabWidget.ui" line="82"/>
         <source>Available match groups:</source>
-        <translation type="unfinished"></translation>
+        <translation>Verfügbare Spielgruppen:</translation>
     </message>
     <message>
         <location filename="ui/ScheduleTabWidget.ui" line="118"/>
         <source>Next matches:</source>
-        <translation type="unfinished"></translation>
+        <translation>Nächste Spiele:</translation>
     </message>
     <message>
         <location filename="ui/ScheduleTabWidget.ui" line="142"/>
         <source>Running matches:</source>
-        <translation type="unfinished"></translation>
+        <translation>Laufende Spiele:</translation>
     </message>
     <message>
-        <location filename="ui/ScheduleTabWidget.cpp" line="151"/>
+        <location filename="ui/ScheduleTabWidget.cpp" line="154"/>
         <source>Round %1 of category %2 finished!</source>
-        <translation type="unfinished"></translation>
+        <translation>Runde %1 der Disziplin %2 abgeschlossen!</translation>
     </message>
     <message>
-        <location filename="ui/ScheduleTabWidget.cpp" line="153"/>
+        <location filename="ui/ScheduleTabWidget.cpp" line="156"/>
         <source>Round finished</source>
-        <translation type="unfinished"></translation>
+        <translation>Runde abgeschlossen</translation>
     </message>
     <message>
-        <location filename="ui/ScheduleTabWidget.cpp" line="178"/>
+        <location filename="ui/ScheduleTabWidget.cpp" line="181"/>
         <source>Please confirm:
 
 </source>
-        <translation type="unfinished"></translation>
+        <translation>Bitte bestätigen:
+
+</translation>
     </message>
     <message>
-        <location filename="ui/ScheduleTabWidget.cpp" line="182"/>
+        <location filename="ui/ScheduleTabWidget.cpp" line="185"/>
         <source>Result: </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="ui/ScheduleTabWidget.cpp" line="188"/>
-        <location filename="ui/ScheduleTabWidget.cpp" line="196"/>
-        <source>WINNER: </source>
-        <translation type="unfinished"></translation>
+        <translation>Ergebnis: </translation>
     </message>
     <message>
         <location filename="ui/ScheduleTabWidget.cpp" line="191"/>
         <location filename="ui/ScheduleTabWidget.cpp" line="199"/>
+        <source>WINNER: </source>
+        <translation>GEWINNER: </translation>
+    </message>
+    <message>
+        <location filename="ui/ScheduleTabWidget.cpp" line="194"/>
+        <location filename="ui/ScheduleTabWidget.cpp" line="202"/>
         <source>LOSER: </source>
-        <translation type="unfinished"></translation>
+        <translation>VERLIERER: </translation>
     </message>
     <message>
-        <location filename="ui/ScheduleTabWidget.cpp" line="204"/>
+        <location filename="ui/ScheduleTabWidget.cpp" line="207"/>
         <source>The match result is DRAW</source>
-        <translation type="unfinished"></translation>
+        <translation>Das Spiel endet UNENTSCHIEDEN</translation>
     </message>
     <message>
-        <location filename="ui/ScheduleTabWidget.cpp" line="208"/>
+        <location filename="ui/ScheduleTabWidget.cpp" line="211"/>
         <source>Please confirm match result</source>
-        <translation type="unfinished"></translation>
+        <translation>Bitte Spielergebnis bestätigen</translation>
     </message>
     <message>
-        <location filename="ui/ScheduleTabWidget.cpp" line="228"/>
-        <location filename="ui/ScheduleTabWidget.cpp" line="243"/>
+        <location filename="ui/ScheduleTabWidget.cpp" line="231"/>
+        <location filename="ui/ScheduleTabWidget.cpp" line="246"/>
         <source>Next Match</source>
-        <translation type="unfinished"></translation>
+        <translation>Nächstes Spiel</translation>
     </message>
     <message>
-        <location filename="ui/ScheduleTabWidget.cpp" line="228"/>
+        <location filename="ui/ScheduleTabWidget.cpp" line="231"/>
         <source>Start the next available match on the free court?</source>
-        <translation type="unfinished"></translation>
+        <translation>Das nächste Spiel auf dem freien Feld aufrufen?</translation>
     </message>
     <message>
-        <location filename="ui/ScheduleTabWidget.cpp" line="242"/>
+        <location filename="ui/ScheduleTabWidget.cpp" line="245"/>
         <source>The match cannot be started on this court. Please start the next match manually.</source>
-        <translation type="unfinished"></translation>
+        <translation>Das Spiel kann nicht auf diesem Feld gestartet werden. Bitte das Spiel manuell aufrufen.</translation>
     </message>
     <message>
-        <location filename="ui/ScheduleTabWidget.cpp" line="251"/>
-        <location filename="ui/ScheduleTabWidget.cpp" line="263"/>
-        <location filename="ui/ScheduleTabWidget.cpp" line="268"/>
+        <location filename="ui/ScheduleTabWidget.cpp" line="254"/>
+        <location filename="ui/ScheduleTabWidget.cpp" line="266"/>
+        <location filename="ui/ScheduleTabWidget.cpp" line="271"/>
         <source>Assign match to court</source>
-        <translation type="unfinished"></translation>
+        <translation>Spielaufruf</translation>
     </message>
     <message>
-        <location filename="ui/ScheduleTabWidget.cpp" line="260"/>
+        <location filename="ui/ScheduleTabWidget.cpp" line="263"/>
         <source>An unexpected error occured.
 </source>
-        <translation type="unfinished"></translation>
+        <translation>Ein unerwarteter Fehler ist aufgetreten.</translation>
     </message>
     <message>
-        <location filename="ui/ScheduleTabWidget.cpp" line="261"/>
+        <location filename="ui/ScheduleTabWidget.cpp" line="264"/>
         <source>Sorry, this shouldn&apos;t happen.
 </source>
-        <translation type="unfinished"></translation>
+        <translation>Das sollte nicht passieren.
+</translation>
     </message>
     <message>
-        <location filename="ui/ScheduleTabWidget.cpp" line="262"/>
+        <location filename="ui/ScheduleTabWidget.cpp" line="265"/>
         <source>The match cannot be started.</source>
+        <translation>Das Spiel konnte nicht gestartet werden.</translation>
+    </message>
+    <message>
+        <location filename="ui/ScheduleTabWidget.cpp" line="271"/>
+        <source>Call cancled, match not started.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui/ScheduleTabWidget.cpp" line="268"/>
         <source>Call cancled, match not started</source>
-        <translation type="unfinished"></translation>
+        <translation type="vanished">Aufruf abgebrochen, Spiel nicht gestartet.</translation>
     </message>
 </context>
 <context>
@@ -2029,12 +2165,12 @@ in current round</source>
     <message>
         <location filename="ui/TeamTabWidget.ui" line="24"/>
         <source>Create new team</source>
-        <translation type="unfinished"></translation>
+        <translation>Neues Team anlegen</translation>
     </message>
     <message>
         <location filename="ui/TeamTabWidget.cpp" line="35"/>
         <source>New Team </source>
-        <translation type="unfinished"></translation>
+        <translation>Neues Team </translation>
     </message>
 </context>
 <context>
@@ -2042,42 +2178,42 @@ in current round</source>
     <message>
         <location filename="ui/dlgEditPlayer.ui" line="14"/>
         <source>Edit Player Data</source>
-        <translation type="unfinished"></translation>
+        <translation>Spielerdaten bearbeiten</translation>
     </message>
     <message>
         <location filename="ui/dlgEditPlayer.ui" line="22"/>
         <source>Personal Data</source>
-        <translation type="unfinished"></translation>
+        <translation>Persönliche Daten</translation>
     </message>
     <message>
         <location filename="ui/dlgEditPlayer.ui" line="43"/>
         <source>First name:</source>
-        <translation type="unfinished"></translation>
+        <translation>Vorname:</translation>
     </message>
     <message>
         <location filename="ui/dlgEditPlayer.ui" line="72"/>
         <source>Last name:</source>
-        <translation type="unfinished"></translation>
+        <translation>Nachname:</translation>
     </message>
     <message>
         <location filename="ui/dlgEditPlayer.ui" line="101"/>
         <source>Team:</source>
-        <translation type="unfinished"></translation>
+        <translation>Team:</translation>
     </message>
     <message>
         <location filename="ui/dlgEditPlayer.ui" line="130"/>
         <source>Male</source>
-        <translation type="unfinished"></translation>
+        <translation>Herr</translation>
     </message>
     <message>
         <location filename="ui/dlgEditPlayer.ui" line="137"/>
         <source>Female</source>
-        <translation type="unfinished"></translation>
+        <translation>Dame</translation>
     </message>
     <message>
         <location filename="ui/dlgEditPlayer.ui" line="151"/>
         <source>Categories</source>
-        <translation type="unfinished">Disziplinen</translation>
+        <translation>Disziplinen</translation>
     </message>
 </context>
 <context>
@@ -2090,17 +2226,17 @@ in current round</source>
     <message>
         <location filename="ui/dlgGroupAssignment.ui" line="40"/>
         <source>Swap Players</source>
-        <translation type="unfinished"></translation>
+        <translation>Spieler tauschen</translation>
     </message>
     <message>
         <location filename="ui/dlgGroupAssignment.ui" line="60"/>
         <source>Randomize Everything</source>
-        <translation type="unfinished"></translation>
+        <translation>Alles verwürfeln</translation>
     </message>
     <message>
         <location filename="ui/dlgGroupAssignment.cpp" line="20"/>
         <source>Group assignment for </source>
-        <translation type="unfinished"></translation>
+        <translation>Gruppenzuordnung für </translation>
     </message>
 </context>
 </TS>

@@ -693,7 +693,7 @@ void CatTabWidget::onBtnRunCatClicked()
   } else if (e != OK)
   {
     QMessageBox::critical(this, tr("Run Category"),
-	    tr("Uncaptured error. Category has no valid configuration and can't be started"));
+      tr("Uncaptured error. Category has no valid configuration and can't be started."));
   }
   
   if (e != OK) return;
@@ -702,7 +702,7 @@ void CatTabWidget::onBtnRunCatClicked()
   if (e != OK)   // after the checks above, this should never be true
   {
     QMessageBox::critical(this, tr("Run Category"),
-	    tr("Uncaptured error. Category has no valid configuration and can't be started"));
+      tr("Uncaptured error. Category has no valid configuration and can't be started."));
   }
   
   /**
