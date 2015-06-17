@@ -22,14 +22,12 @@ int main(int argc, char *argv[])
   QApplication app(argc, argv);
   
   QTranslator qtTranslator;
-  qDebug() << qtTranslator.load("qt_" + QLocale::system().name(),
+  qtTranslator.load("qt_" + QLocale::system().name(),
                     QLibraryInfo::location(QLibraryInfo::TranslationsPath));
   app.installTranslator(&qtTranslator);
   
   QTranslator tournamentTranslator;
-  qDebug() << QLocale::system().name();
-  qDebug() << app.applicationDirPath();
-  qDebug() << tournamentTranslator.load(app.applicationDirPath() + "/tournament_" + QLocale::system().name());
+  tournamentTranslator.load(app.applicationDirPath() + "/tournament_" + QLocale::system().name());
   app.installTranslator(&tournamentTranslator);
   
   MainFrame w;
