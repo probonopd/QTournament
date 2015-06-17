@@ -944,7 +944,7 @@ insgesamt</translation>
     <message>
         <location filename="ui/GuiHelpers.cpp" line="89"/>
         <source>call for </source>
-        <translation>Aufruf für</translation>
+        <translation type="unfinished">Aufruf für </translation>
     </message>
     <message>
         <location filename="ui/GuiHelpers.cpp" line="92"/>
@@ -966,6 +966,12 @@ insgesamt</translation>
         <translation>        gegen
 
 </translation>
+    </message>
+    <message>
+        <location filename="ui/GuiHelpers.cpp" line="92"/>
+        <location filename="ui/GuiHelpers.cpp" line="98"/>
+        <source> on court number </source>
+        <translation> auf Spielfeld </translation>
     </message>
     <message>
         <location filename="ui/GuiHelpers.cpp" line="102"/>

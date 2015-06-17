@@ -89,13 +89,13 @@ QString GuiHelpers::prepCall(const QTournament::Match &ma, const QTournament::Co
     call += tr("call for ");
   }
 
-  call += tr("match number ") + QString::number(ma.getMatchNumber()) + " on court number " + QString::number(co.getNumber());
+  call += tr("match number ") + QString::number(ma.getMatchNumber()) + tr(" on court number ") + QString::number(co.getNumber());
   call += "\n\n";
   call += ma.getCategory().getName() + ",\n\n";
   call += ma.getPlayerPair1().getCallName(tr("and")) + "\n\n";
   call += tr("        versus\n\n");
   call += ma.getPlayerPair2().getCallName(tr("and")) + ",\n\n";
-  call += tr("match number ") + QString::number(ma.getMatchNumber()) + " on court number " + QString::number(co.getNumber());
+  call += tr("match number ") + QString::number(ma.getMatchNumber()) + tr(" on court number ") + QString::number(co.getNumber());
   if (nCall > 0)
   {
     call += "\n\n";
