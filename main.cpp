@@ -8,7 +8,9 @@
 #include <QApplication>
 #include <QTranslator>
 #include <QLibraryInfo>
-//#include <qt4/QtCore/qtranslator.h>
+
+#include <QDebug>
+#include <QFile>
 
 #include "ui/MainFrame.h"
 
@@ -20,12 +22,14 @@ int main(int argc, char *argv[])
   QApplication app(argc, argv);
   
   QTranslator qtTranslator;
-  qtTranslator.load("qt_" + QLocale::system().name(),
+  qDebug() << qtTranslator.load("qt_" + QLocale::system().name(),
                     QLibraryInfo::location(QLibraryInfo::TranslationsPath));
   app.installTranslator(&qtTranslator);
   
   QTranslator tournamentTranslator;
-  tournamentTranslator.load("tournament_" + QLocale::system().name());
+  qDebug() << QLocale::system().name();
+  qDebug() << app.applicationDirPath();
+  qDebug() << tournamentTranslator.load(app.applicationDirPath() + "/tournament_" + QLocale::system().name());
   app.installTranslator(&tournamentTranslator);
   
   MainFrame w;
