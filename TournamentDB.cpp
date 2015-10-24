@@ -146,7 +146,7 @@ void TournamentDB::populateTables()
     cols << RA_ROUND + " INTEGER";
     cols << genForeignKeyClause(RA_PAIR_REF, TAB_PAIRS);
     cols << genForeignKeyClause(RA_CAT_REF, TAB_CATEGORY);  // this eases searching in the tab. theoretically, the category could be derived from the player pair
-    cols << RA_GRP_NUM << " INTEGER";   // this eases searching in the tab. theoretically, the group number could be derived from the player pair
+    cols << RA_GRP_NUM + " INTEGER";   // this eases searching in the tab. theoretically, the group number could be derived from the player pair
     cols << RA_GAMES_WON  + " INTEGER";
     cols << RA_GAMES_LOST  + " INTEGER";
     cols << RA_MATCHES_WON  + " INTEGER";
@@ -156,6 +156,18 @@ void TournamentDB::populateTables()
     cols << RA_POINTS_LOST  + " INTEGER";
     cols << RA_RANK  + " INTEGER";
     tableCreationHelper(TAB_RANKING, cols);
+
+    // Generate a table with bracket visualization data
+    cols.clear();
+    cols << genForeignKeyClause(BV_MATCH_REF, TAB_MATCH);
+    cols << genForeignKeyClause(BV_CAT_REF, TAB_CATEGORY);
+    cols << BV_PAGE + " INTEGER";
+    cols << BV_GRID_X0 + " INTEGER";
+    cols << BV_GRID_Y0 + " INTEGER";
+    cols << BV_SPAN_Y + " INTEGER";
+    cols << BV_ORIENTATION + " INTEGER";
+    cols << BV_TERMINATOR + " INTEGER";
+    tableCreationHelper(TAB_BRACKET_VIS, cols);
 }
 
 void TournamentDB::populateViews()

@@ -12,8 +12,8 @@
 
 namespace QTournament
 {
-#define DB_VERSION 1
-#define MIN_REQUIRED_DB_VERSION 1
+#define DB_VERSION 2
+#define MIN_REQUIRED_DB_VERSION 2
 
 //----------------------------------------------------------------------------
 
@@ -210,7 +210,19 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  
+#define TAB_BRACKET_VIS QString("BracketVisualization")
+#define BV_MATCH_REF QString("MatchRefId")
+#define BV_CAT_REF QString("CategoryRefId")
+#define BV_PAGE QString("PageNumber")
+#define BV_GRID_X0 QString("GridX0")
+#define BV_GRID_Y0 QString("GridY0")
+#define BV_SPAN_Y QString("SpanY")
+#define BV_ORIENTATION QString("Orientation")
+#define BV_TERMINATOR QString("Terminator")
+//#define BV_ QString("")
+//#define BV_ QString("")
+//#define BV_ QString("")
+
 //----------------------------------------------------------------------------
 
   

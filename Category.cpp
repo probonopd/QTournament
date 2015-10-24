@@ -21,6 +21,7 @@
 #include "SwissLadderCategory.h"
 
 #include <stdexcept>
+#include <algorithm>
 
 namespace QTournament
 {
@@ -820,12 +821,26 @@ namespace QTournament
         final.nextMatchForWinner = -1;
         final.depthInBracket = 0;
 
+        final.page = 0;
+        final.x0 = 1;
+        final.y0 = 0;
+        final.ySpan = 2;
+        final.orientation = BracketMatchData::VIS_ORIENTATION_RIGHT;
+        final.terminator = BracketMatchData::VIS_TERMINATOR_OUTWARDS;
+
         // match for third place
         BracketMatchData thirdPlaceMatch;
         thirdPlaceMatch.setInitialRanks(3, 4);
         thirdPlaceMatch.nextMatchForLoser = -4;
         thirdPlaceMatch.nextMatchForWinner = -3;
         thirdPlaceMatch.depthInBracket = 0;
+
+        thirdPlaceMatch.page = 0;
+        thirdPlaceMatch.x0 = 2;
+        thirdPlaceMatch.y0 = 1;
+        thirdPlaceMatch.ySpan = 2;
+        final.orientation = BracketMatchData::VIS_ORIENTATION_LEFT;
+        final.terminator = BracketMatchData::VIS_TERMINATOR_OUTWARDS;
 
         // replace all previously generated matches with these two
         bmdl.clear();
@@ -851,6 +866,12 @@ namespace QTournament
     QHash<int, int> bracket2Match;
     for (BracketMatchData bmd : bmdl)
     {
+      // skip unused matches
+      if (bmd.matchDeleted)
+      {
+        continue;
+      }
+
       // do we have to start a new round / group?
       if (bmd.depthInBracket != curDepth)
       {
@@ -913,8 +934,14 @@ namespace QTournament
     };
 
     // fill the empty matches with the right values
-    for (BracketMatchData bmd : bmdl)
+    for (const BracketMatchData& bmd : bmdl)
     {
+      // skip unused matches
+      if (bmd.matchDeleted)
+      {
+        continue;
+      }
+
       // "zero" is invalid for initialRank!
       assert(bmd.initialRank_Player1 != 0);
       assert(bmd.initialRank_Player2 != 0);
@@ -996,6 +1023,28 @@ namespace QTournament
 
       if (progressNotificationQueue != nullptr) progressNotificationQueue->step();
     }
+
+    // copy visualization info to the database
+    auto tabVis = db->getTab(TAB_BRACKET_VIS);
+    for (BracketMatchData bmd : bmdl)
+    {
+      QVariantList qvl;
+      qvl << BV_CAT_REF << getId();
+      qvl << BV_PAGE << bmd.page;
+      qvl << BV_GRID_X0 << bmd.x0;
+      qvl << BV_GRID_Y0 << bmd.y0;
+      qvl << BV_SPAN_Y << bmd.ySpan;
+      qvl << BV_ORIENTATION << bmd.orientation;
+      qvl << BV_TERMINATOR << bmd.terminator;
+
+      if (!(bmd.matchDeleted))
+      {
+        int matchId = bracket2Match.value(bmd.getBracketMatchId());
+        qvl << BV_MATCH_REF << matchId;
+      }
+      tabVis.insertRow(qvl);
+    }
+
 
     return OK;
   }
