@@ -34,7 +34,7 @@ MatchResultList_ByGroup::MatchResultList_ByGroup(TournamentDB* _db, const QStrin
 
 //----------------------------------------------------------------------------
 
-upSimpleReport MatchResultList_ByGroup::regenerateReport() const
+upSimpleReport MatchResultList_ByGroup::regenerateReport()
 {
   // collect the match groups with the requested match group number and
   // search in all rounds

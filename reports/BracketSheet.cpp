@@ -15,7 +15,7 @@ namespace QTournament
 
 
 BracketSheet::BracketSheet(TournamentDB* _db, const QString& _name, const Category& _cat)
-  :AbstractReport(_db, _name), cat(_cat), tabVis(_db->getTab(TAB_BRACKET_VIS))
+  :AbstractReport(_db, _name), cat(_cat), tabVis(_db->getTab(TAB_BRACKET_VIS)), rawReport(nullptr)
 {
   // make sure the requested category has bracket visualization data
   if (tabVis.getMatchCountForColumnValue(BV_CAT_REF, cat.getId()) == 0)
@@ -26,23 +26,13 @@ BracketSheet::BracketSheet(TournamentDB* _db, const QString& _name, const Catego
 
 //----------------------------------------------------------------------------
 
-upSimpleReport BracketSheet::regenerateReport() const
+upSimpleReport BracketSheet::regenerateReport()
 {
-  upSimpleReport result = createEmptyReport_Landscape();
-
-  setHeaderAndHeadline(result.get(), "Bracket");
+  upSimpleReport rep = createEmptyReport_Landscape();
+  rawReport = rep.get();
 
   // determine the conversion factor between "grid units" and "paper units" (millimeter)
-  double xFac;
-  double yFac;
-  tie(xFac, yFac) = determineGridSize(result);
-
-  // a helper lambda to convert between grid units and millimeters
-  auto grid2MM = [&](int gridX, int gridY) {
-    double x = gridX * xFac + DEFAULT_MARGIN__MM;
-    double y = gridY * yFac + DEFAULT_MARGIN__MM;
-    return make_tuple(x, y);
-  };
+  determineGridSize();
 
   // two helper-lambdas for drawing horizontal and vertical lines
   // using grid units instead of millimeters
@@ -50,13 +40,13 @@ upSimpleReport BracketSheet::regenerateReport() const
     double x0;
     double y0;
     tie(x0, y0) = grid2MM(gridX0, gridY0);
-    result->drawHorLine(x0, y0, gridXLen * xFac);
+    rep->drawHorLine(x0, y0, gridXLen * xFac);
   };
   auto drawVertLine = [&](int gridX0, int gridY0, int gridYLen) {
     double x0;
     double y0;
     tie(x0, y0) = grid2MM(gridX0, gridY0);
-    result->drawVertLine(x0, y0, gridYLen * yFac);
+    rep->drawVertLine(x0, y0, gridYLen * yFac);
   };
 
   // loop over all bracket elements and draw them one by one
@@ -86,11 +76,43 @@ upSimpleReport BracketSheet::regenerateReport() const
     {
       drawHorLine(x0 + xLen, y0 + spanY / 2, xLen);
     }
+    if (terminator == BracketMatchData::VIS_TERMINATOR_INWARDS)
+    {
+      drawHorLine(x0 + xLen, y0 + spanY / 2, -xLen);
+    }
+
+    //
+    // Decorate the bracket with match data, if existing
+    //
+
+    // is there a match connected to this bracket element?
+    QVariant _matchId = r[BV_MATCH_REF];
+    if (_matchId.isNull()) {
+      ++it;
+      continue;
+    }
+    auto ma = Tournament::getMatchMngr()->getMatch(_matchId.toInt());
+
+    // draw names of the first player pair
+    if (ma->hasPlayerPair1())
+    {
+      PlayerPair pp = ma->getPlayerPair1();
+      drawBracketTextItem(x0, y0, spanY, orientation, pp.getDisplayName(), BRACKET_TEXT_ELEMENT::PAIR1);
+    }
+
+    // draw names of the second player pair
+    if (ma->hasPlayerPair2())
+    {
+      PlayerPair pp = ma->getPlayerPair2();
+      drawBracketTextItem(x0, y0, spanY, orientation, pp.getDisplayName(), BRACKET_TEXT_ELEMENT::PAIR2);
+    }
+
 
     ++it;
   }
 
-  return result;
+  rawReport == nullptr;
+  return rep;
 }
 
 //----------------------------------------------------------------------------
@@ -113,9 +135,9 @@ QStringList BracketSheet::getReportLocators() const
  * @brief BracketSheet::determineGridSize calculates the size of one grid unit
  * in millimeters, depending on the extends of bracket
  *
- * @return a tupple of <xWidth, yWidth> containing the size of one grid unit in millimeters
+ * @return none. This directly manipulates the private members xFac and yFac
  */
-tuple<double, double> BracketSheet::determineGridSize(const upSimpleReport& rep) const
+void BracketSheet::determineGridSize()
 {
   // determine the maximum extends of the bracket for this category
   // by searching through all bracket visualisation entries
@@ -148,14 +170,59 @@ tuple<double, double> BracketSheet::determineGridSize(const upSimpleReport& rep)
     ++it;
   }
 
-  double xGridUnit = rep->getUsablePageWidth() / maxX;
-  double yGridUnit = rep->getUsablePageHeight() / maxY;
-
-  return make_tuple(xGridUnit, yGridUnit);
+  xFac = rawReport->getUsablePageWidth() / maxX;
+  yFac = rawReport->getUsablePageHeight() / maxY;
 }
 
 //----------------------------------------------------------------------------
 
+tuple<double, double> BracketSheet::grid2MM(int gridX, int gridY) const
+{
+  double x = gridX * xFac + DEFAULT_MARGIN__MM;
+  double y = gridY * yFac + DEFAULT_MARGIN__MM;
+
+  return make_tuple(x, y);
+}
+
+//----------------------------------------------------------------------------
+
+void BracketSheet::drawBracketTextItem(int bracketX0, int bracketY0, int ySpan, int orientation, QString txt, BracketSheet::BRACKET_TEXT_ELEMENT item)
+{
+  double x0;
+  double y0;
+
+  if (item == BRACKET_TEXT_ELEMENT::PAIR1)
+  {
+    if (orientation == BracketMatchData::VIS_ORIENTATION_LEFT)
+    {
+      --bracketX0;
+    }
+
+    tie(x0, y0) = grid2MM(bracketX0, bracketY0);
+
+    // shift the text above the line
+    y0 -= 2 + GAP_LINE_TXT__MM;   // FIX ME: "2" is the default font height in mm
+
+    // separate the text a bit from other lines or elements on the left
+    x0 += GAP_LINE_TXT__MM;
+  }
+
+  if (item == BRACKET_TEXT_ELEMENT::PAIR2)
+  {
+    if (orientation == BracketMatchData::VIS_ORIENTATION_LEFT)
+    {
+      --bracketX0;
+    }
+
+    tie(x0, y0) = grid2MM(bracketX0, bracketY0 + ySpan);
+
+    // shift the text above the line
+    y0 -= 2 + GAP_LINE_TXT__MM;   // FIX ME: "2" is the default font height in mm
+    x0 += GAP_LINE_TXT__MM;
+  }
+
+  rawReport->drawText(x0, y0, txt);
+}
 
 //----------------------------------------------------------------------------
 

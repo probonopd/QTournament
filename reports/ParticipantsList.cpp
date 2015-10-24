@@ -32,7 +32,7 @@ ParticipantsList::~ParticipantsList()
 
 //----------------------------------------------------------------------------
 
-upSimpleReport ParticipantsList::regenerateReport() const
+upSimpleReport ParticipantsList::regenerateReport()
 {
   PlayerMngr* pm = Tournament::getPlayerMngr();
   PlayerList pl = pm->getAllPlayers();

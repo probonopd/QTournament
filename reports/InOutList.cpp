@@ -27,7 +27,7 @@ InOutList::InOutList(TournamentDB* _db, const QString& _name, const Category& _c
 
 //----------------------------------------------------------------------------
 
-upSimpleReport InOutList::regenerateReport() const
+upSimpleReport InOutList::regenerateReport()
 {
   QString repName = cat.getName() + " -- " + tr("Knocked-out players after round ") + QString::number(round);
   upSimpleReport result = createEmptyReport_Portrait();

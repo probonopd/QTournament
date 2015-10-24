@@ -24,7 +24,7 @@ ResultSheets::ResultSheets(TournamentDB* _db, const QString& _name, int _numMatc
 
 //----------------------------------------------------------------------------
 
-upSimpleReport ResultSheets::regenerateReport() const
+upSimpleReport ResultSheets::regenerateReport()
 {
   upSimpleReport result = createEmptyReport_Portrait();
 

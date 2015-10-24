@@ -39,7 +39,7 @@ namespace QTournament
     AbstractReport(TournamentDB* _db, const QString& _name);
     virtual ~AbstractReport();
 
-    virtual upSimpleReport regenerateReport() const { throw std::runtime_error("Unimplemented Method: regenerateReport"); };
+    virtual upSimpleReport regenerateReport() { throw std::runtime_error("Unimplemented Method: regenerateReport"); };
     virtual QStringList getReportLocators() const { throw std::runtime_error("Unimplemented Method: getReportLocators"); };
 
     upSimpleReport createEmptyReport_Portrait() const;

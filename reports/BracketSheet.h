@@ -6,6 +6,8 @@
 
 #include <QObject>
 
+#include "SimpleReportGenerator.h"
+
 #include "reports/AbstractReport.h"
 #include "Tournament.h"
 #include "TournamentDB.h"
@@ -19,17 +21,32 @@ namespace QTournament
   {
     Q_OBJECT
 
+    enum class BRACKET_TEXT_ELEMENT {
+      PAIR1,
+      PAIR2,
+      INITIAL_RANK,
+    };
+
   public:
     BracketSheet(TournamentDB* _db, const QString& _name, const Category& _cat);
 
-    virtual upSimpleReport regenerateReport() const override;
+    virtual upSimpleReport regenerateReport() override;
     virtual QStringList getReportLocators() const override;
+
+    static constexpr double GAP_LINE_TXT__MM = 1.0;
 
   private:
     Category cat;
     DbTab tabVis;
 
-    tuple<double, double> determineGridSize(const upSimpleReport& rep) const;
+    SimpleReportLib::SimpleReportGenerator* rawReport;  // raw pointer, only to be used during regenerateReport! (BAAAD style)
+    double xFac;
+    double yFac;
+
+    void determineGridSize();
+    tuple<double, double> grid2MM(int gridX, int gridY) const;
+    void drawBracketTextItem(int bracketX0, int bracketY0, int ySpan, int orientation, QString txt, BRACKET_TEXT_ELEMENT item);
+
 
   };
 

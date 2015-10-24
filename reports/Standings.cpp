@@ -27,7 +27,7 @@ Standings::Standings(TournamentDB* _db, const QString& _name, const Category& _c
 
 //----------------------------------------------------------------------------
 
-upSimpleReport Standings::regenerateReport() const
+upSimpleReport Standings::regenerateReport()
 {
   // retrieve the ranking(s) for this round
   RankingMngr* rm = Tournament::getRankingMngr();
