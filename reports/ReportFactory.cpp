@@ -9,6 +9,7 @@
 #include "Standings.h"
 #include "InOutList.h"
 #include "ResultSheets.h"
+#include "BracketSheet.h"
 
 namespace QTournament
 {
@@ -21,6 +22,7 @@ namespace QTournament
   constexpr char ReportFactory::REP__INOUTLIST_BY_CATEGORY[];
   constexpr char ReportFactory::REP__RESULTSHEETS[];
   constexpr char ReportFactory::REP__RESULTS_AND_NEXT_MATCHES[];
+  constexpr char ReportFactory::REP__BRACKET[];
 
   ReportFactory::ReportFactory(TournamentDB* _db)
     : db(_db)
@@ -114,6 +116,18 @@ namespace QTournament
       }
     }
 
+    // we brute-force check all categories for the availability
+    // of tournament bracket visualization data
+    DbTab tabVis = db->getTab(TAB_BRACKET_VIS);
+    for (Category cat : cm->getAllCategories())
+    {
+      int catId = cat.getId();
+      if (tabVis.getMatchCountForColumnValue(BV_CAT_REF, catId) > 0)
+      {
+        result.append(genRepName(REP__BRACKET, cat, 0));
+      }
+    }
+
     // we can always generate result sheets
     result.append(genRepName(REP__RESULTSHEETS, 1, 0));
     result.append(genRepName(REP__RESULTSHEETS, 4, 0));
@@ -204,6 +218,14 @@ namespace QTournament
       int round = intParam2;
       Category cat = Tournament::getCatMngr()->getCategoryById(catId);
       return upAbstractReport(new ResultsAndNextMatches(db, repName, cat, round));
+    }
+
+    // brackets
+    if (pureRepName == REP__BRACKET)
+    {
+      int catId = intParam1;
+      Category cat = Tournament::getCatMngr()->getCategoryById(catId);
+      return upAbstractReport(new BracketSheet(db, repName, cat));
     }
 
     return nullptr;

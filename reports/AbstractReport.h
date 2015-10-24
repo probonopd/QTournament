@@ -43,6 +43,7 @@ namespace QTournament
     virtual QStringList getReportLocators() const { throw std::runtime_error("Unimplemented Method: getReportLocators"); };
 
     upSimpleReport createEmptyReport_Portrait() const;
+    upSimpleReport createEmptyReport_Landscape() const;
 
     QString getName() const;
     void setHeaderAndHeadline(SimpleReportLib::SimpleReportGenerator* rep, const QString& headline, const QString& subHead=QString()) const;
