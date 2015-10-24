@@ -2,6 +2,7 @@
 #define BRACKETSHEET_H
 
 #include <functional>
+#include <tuple>
 
 #include <QObject>
 
@@ -27,6 +28,8 @@ namespace QTournament
   private:
     Category cat;
     DbTab tabVis;
+
+    tuple<double, double> determineGridSize(const upSimpleReport& rep) const;
 
   };
 

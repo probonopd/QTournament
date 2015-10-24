@@ -575,6 +575,21 @@ void MainFrame::setupTestScenario(int scenarioID)
     }
 
     ls.setMatchSystem(MATCH_SYSTEM::RANKING);
+
+    // run the category
+    unique_ptr<Category> specialCat = ls.convertToSpecializedObject();
+    ERR e = cmngr->freezeConfig(ls);
+    assert(e == OK);
+
+    // prepare an empty list for the not-required initial group assignment
+    QList<PlayerPairList> ppListList;
+
+    // prepare a list for the (faked) initial ranking
+    PlayerPairList initialRanking = ls.getPlayerPairs();
+
+    // actually run the category
+    e = cmngr->startCategory(ls, ppListList, initialRanking);
+    assert(e == OK);
   };
 
   switch (scenarioID)
