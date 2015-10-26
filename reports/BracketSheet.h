@@ -24,8 +24,13 @@ namespace QTournament
     enum class BRACKET_TEXT_ELEMENT {
       PAIR1,
       PAIR2,
-      INITIAL_RANK,
+      INITIAL_RANK1,
+      INITIAL_RANK2,
+      SCORE,
+      MATCH_NUM,
     };
+
+    static constexpr char BRACKET_STYLE[] = "BracketText";
 
   public:
     BracketSheet(TournamentDB* _db, const QString& _name, const Category& _cat);
@@ -44,6 +49,7 @@ namespace QTournament
     double yFac;
 
     void determineGridSize();
+    void setupTextStyle();
     tuple<double, double> grid2MM(int gridX, int gridY) const;
     void drawBracketTextItem(int bracketX0, int bracketY0, int ySpan, int orientation, QString txt, BRACKET_TEXT_ELEMENT item);
 

@@ -1036,6 +1036,18 @@ namespace QTournament
       qvl << BV_SPAN_Y << bmd.ySpan;
       qvl << BV_ORIENTATION << bmd.orientation;
       qvl << BV_TERMINATOR << bmd.terminator;
+      if ((bmd.initialRank_Player1 > 0) && (bmd.initialRank_Player1 != BracketMatchData::UNUSED_PLAYER))
+      {
+        qvl << BV_INITIAL_RANK1 << bmd.initialRank_Player1;
+      } else {
+        qvl << BV_INITIAL_RANK1 << -1;
+      }
+      if ((bmd.initialRank_Player2 > 0) && (bmd.initialRank_Player2 != BracketMatchData::UNUSED_PLAYER))
+      {
+        qvl << BV_INITIAL_RANK2 << bmd.initialRank_Player2;
+      } else {
+        qvl << BV_INITIAL_RANK2 << -1;
+      }
 
       if (!(bmd.matchDeleted))
       {

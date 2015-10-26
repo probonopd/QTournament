@@ -167,6 +167,10 @@ void TournamentDB::populateTables()
     cols << BV_SPAN_Y + " INTEGER";
     cols << BV_ORIENTATION + " INTEGER";
     cols << BV_TERMINATOR + " INTEGER";
+    cols << BV_INITIAL_RANK1 + " INTEGER";
+    cols << BV_INITIAL_RANK2 + " INTEGER";
+    cols << genForeignKeyClause(BV_PAIR1_REF, TAB_PAIRS);
+    cols << genForeignKeyClause(BV_PAIR2_REF, TAB_PAIRS);
     tableCreationHelper(TAB_BRACKET_VIS, cols);
 }
 

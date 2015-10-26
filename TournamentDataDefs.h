@@ -219,8 +219,10 @@ namespace QTournament
 #define BV_SPAN_Y QString("SpanY")
 #define BV_ORIENTATION QString("Orientation")
 #define BV_TERMINATOR QString("Terminator")
-//#define BV_ QString("")
-//#define BV_ QString("")
+#define BV_INITIAL_RANK1 QString("InitialRank1")
+#define BV_INITIAL_RANK2 QString("InitialRank2")
+#define BV_PAIR1_REF QString("PlayerPair1RefId")
+#define BV_PAIR2_REF QString("PlayerPair2RefId")
 //#define BV_ QString("")
 
 //----------------------------------------------------------------------------
