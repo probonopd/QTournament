@@ -9,6 +9,7 @@
 #include "SimpleReportGenerator.h"
 
 #include "reports/AbstractReport.h"
+#include "BracketVisData.h"
 #include "Tournament.h"
 #include "TournamentDB.h"
 #include "TournamentDataDefs.h"
@@ -42,7 +43,6 @@ namespace QTournament
 
   private:
     Category cat;
-    DbTab tabVis;
 
     SimpleReportLib::SimpleReportGenerator* rawReport;  // raw pointer, only to be used during regenerateReport! (BAAAD style)
     double xFac;
@@ -51,7 +51,7 @@ namespace QTournament
     void determineGridSize();
     void setupTextStyle();
     tuple<double, double> grid2MM(int gridX, int gridY) const;
-    void drawBracketTextItem(int bracketX0, int bracketY0, int ySpan, int orientation, QString txt, BRACKET_TEXT_ELEMENT item);
+    void drawBracketTextItem(int bracketX0, int bracketY0, int ySpan, BRACKET_ORIENTATION orientation, QString txt, BRACKET_TEXT_ELEMENT item);
 
 
   };

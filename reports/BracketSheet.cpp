@@ -17,10 +17,11 @@ namespace QTournament
 
 
 BracketSheet::BracketSheet(TournamentDB* _db, const QString& _name, const Category& _cat)
-  :AbstractReport(_db, _name), cat(_cat), tabVis(_db->getTab(TAB_BRACKET_VIS)), rawReport(nullptr)
+  :AbstractReport(_db, _name), cat(_cat), rawReport(nullptr)
 {
   // make sure the requested category has bracket visualization data
-  if (tabVis.getMatchCountForColumnValue(BV_CAT_REF, cat.getId()) == 0)
+  auto bvd = BracketVisData::getExisting(cat);
+  if (bvd == nullptr)
   {
     throw std::runtime_error("Requested bracket report for a category without bracket visualization data!");
   }
@@ -30,7 +31,28 @@ BracketSheet::BracketSheet(TournamentDB* _db, const QString& _name, const Catego
 
 upSimpleReport BracketSheet::regenerateReport()
 {
-  upSimpleReport rep = createEmptyReport_Landscape();
+  // get the handle of the overall bracket visualization data
+  auto bvd = BracketVisData::getExisting(cat);
+  if (bvd == nullptr)
+  {
+    auto result = createEmptyReport_Portrait();
+    setHeaderAndHeadline(result.get(), "Tournament Bracket");
+    result->writeLine(tr("No visualization data available for this category."));
+    return result;
+  }
+
+  BRACKET_PAGE_ORIENTATION pgOrientation;
+  BRACKET_LABEL_POS labelPos;
+
+  // get the orientation of the first page
+  //
+  // FIX: as of today, all pages in a report must have the same orientation!
+  // Even if the orientation information in the database changes from page to page,
+  // the report will still use the same orientation as for the first page.
+  tie(pgOrientation, labelPos) = bvd->getPageInfo(0);
+
+  // initialize the report's first page
+  upSimpleReport rep = (pgOrientation == BRACKET_PAGE_ORIENTATION::LANDSCAPE) ? createEmptyReport_Landscape() : createEmptyReport_Portrait();
   rawReport = rep.get();
 
   // determine the conversion factor between "grid units" and "paper units" (millimeter)
@@ -54,95 +76,99 @@ upSimpleReport BracketSheet::regenerateReport()
     rep->drawVertLine(x0, y0, gridYLen * yFac);
   };
 
-  // loop over all bracket elements and draw them one by one
-  DbTab::CachingRowIterator it = tabVis.getRowsByColumnValue(BV_CAT_REF, cat.getId());
-  while (!(it.isEnd()))
+  // loop over all pages and bracket elements and draw them one by one
+  for (int idxPage=0; idxPage < bvd->getNumPages(); ++idxPage)
   {
-    TabRow r = *it;
-    int x0 = r[BV_GRID_X0].toInt();
-    int y0 = r[BV_GRID_Y0].toInt();
-    int spanY = r[BV_SPAN_Y].toInt();
-    int orientation = r[BV_ORIENTATION].toInt();
-    int terminator = r[BV_TERMINATOR].toInt();
-
-    int xLen = -1;
-    if (orientation == BracketMatchData::VIS_ORIENTATION_RIGHT)
+    if (idxPage > 0)
     {
-      xLen = 1;
+      rep->startNextPage();
     }
 
-    // draw the "open rectangle"
-    drawHorLine(x0, y0, xLen);
-    drawHorLine(x0, y0 + spanY, xLen);
-    drawVertLine(x0 + xLen, y0, spanY);
-
-    // draw the terminator, if any
-    if (terminator == BracketMatchData::VIS_TERMINATOR_OUTWARDS)
+    for (const BracketVisElement& el : bvd->getVisElements(idxPage))
     {
-      drawHorLine(x0 + xLen, y0 + spanY / 2, xLen);
-    }
-    if (terminator == BracketMatchData::VIS_TERMINATOR_INWARDS)
-    {
-      drawHorLine(x0 + xLen, y0 + spanY / 2, -xLen);
-    }
+      int x0 = el.getGridX0();
+      int y0 = el.getGridY0();
+      int spanY = el.getSpanY();
+      BRACKET_ORIENTATION orientation = el.getOrientation();
+      BRACKET_TERMINATOR terminator = el.getTerminator();
 
-    // draw the initial rank, if any
-    int iniRank = r[BV_INITIAL_RANK1].toInt();
-    if (iniRank > 0)
-    {
-      drawBracketTextItem(x0, y0, spanY, orientation,
-                          QString::number(iniRank) + ".",
-                          BRACKET_TEXT_ELEMENT::INITIAL_RANK1);
-    }
-    iniRank = r[BV_INITIAL_RANK2].toInt();
-    if (iniRank > 0)
-    {
-      drawBracketTextItem(x0, y0, spanY, orientation,
-                          QString::number(iniRank) + ".",
-                          BRACKET_TEXT_ELEMENT::INITIAL_RANK2);
-    }
+      int xLen = -1;
+      if (orientation == BRACKET_ORIENTATION::RIGHT)
+      {
+        xLen = 1;
+      }
 
-    //
-    // Decorate the bracket with match data, if existing
-    //
+      // draw the "open rectangle"
+      drawHorLine(x0, y0, xLen);
+      drawHorLine(x0, y0 + spanY, xLen);
+      drawVertLine(x0 + xLen, y0, spanY);
 
-    // is there a match connected to this bracket element?
-    QVariant _matchId = r[BV_MATCH_REF];
-    if (_matchId.isNull()) {
-      ++it;
-      continue;
-    }
-    auto ma = Tournament::getMatchMngr()->getMatch(_matchId.toInt());
+      // draw the terminator, if any
+      if (terminator == BRACKET_TERMINATOR::OUTWARDS)
+      {
+        drawHorLine(x0 + xLen, y0 + spanY / 2, xLen);
+      }
+      if (terminator == BRACKET_TERMINATOR::INWARDS)
+      {
+        drawHorLine(x0 + xLen, y0 + spanY / 2, -xLen);
+      }
 
-    // print the names of the first player pair
-    if (ma->hasPlayerPair1())
-    {
-      PlayerPair pp = ma->getPlayerPair1();
-      drawBracketTextItem(x0, y0, spanY, orientation, pp.getDisplayName(), BRACKET_TEXT_ELEMENT::PAIR1);
-    }
+      // draw the initial rank, if any
+      int iniRank = el.getInitialRank1();
+      if (iniRank > 0)
+      {
+        drawBracketTextItem(x0, y0, spanY, orientation,
+                            QString::number(iniRank) + ".",
+                            BRACKET_TEXT_ELEMENT::INITIAL_RANK1);
+      }
+      iniRank = el.getInitialRank2();
+      if (iniRank > 0)
+      {
+        drawBracketTextItem(x0, y0, spanY, orientation,
+                            QString::number(iniRank) + ".",
+                            BRACKET_TEXT_ELEMENT::INITIAL_RANK2);
+      }
 
-    // print the names of the second player pair
-    if (ma->hasPlayerPair2())
-    {
-      PlayerPair pp = ma->getPlayerPair2();
-      drawBracketTextItem(x0, y0, spanY, orientation, pp.getDisplayName(), BRACKET_TEXT_ELEMENT::PAIR2);
-    }
+      //
+      // Decorate the bracket with match data, if existing
+      //
 
-    // print match number or result, if any
-    OBJ_STATE stat = ma->getState();
-    int matchNum = ma->getMatchNumber();
-    if (stat == STAT_MA_FINISHED)
-    {
-      auto score = ma->getScore();
-      drawBracketTextItem(x0, y0, spanY, orientation, score->toString(), BRACKET_TEXT_ELEMENT::SCORE);
-    }
-    else if (matchNum > 0)
-    {
-      QString s = QString::number(matchNum);
-      drawBracketTextItem(x0, y0, spanY, orientation, s, BRACKET_TEXT_ELEMENT::MATCH_NUM);
-    }
+      // is there a match connected to this bracket element?
+      auto ma = el.getLinkedMatch();
+      if (ma == nullptr)
+      {
+        continue;
+      }
 
-    ++it;
+      // print the names of the first player pair
+      if (ma->hasPlayerPair1())
+      {
+        PlayerPair pp = ma->getPlayerPair1();
+        drawBracketTextItem(x0, y0, spanY, orientation, pp.getDisplayName(), BRACKET_TEXT_ELEMENT::PAIR1);
+      }
+
+      // print the names of the second player pair
+      if (ma->hasPlayerPair2())
+      {
+        PlayerPair pp = ma->getPlayerPair2();
+        drawBracketTextItem(x0, y0, spanY, orientation, pp.getDisplayName(), BRACKET_TEXT_ELEMENT::PAIR2);
+      }
+
+      // print match number or result, if any
+      OBJ_STATE stat = ma->getState();
+      int matchNum = ma->getMatchNumber();
+      if (stat == STAT_MA_FINISHED)
+      {
+        auto score = ma->getScore();
+        drawBracketTextItem(x0, y0, spanY, orientation, score->toString(), BRACKET_TEXT_ELEMENT::SCORE);
+      }
+      else if (matchNum > 0)
+      {
+        QString s = QString::number(matchNum);
+        drawBracketTextItem(x0, y0, spanY, orientation, s, BRACKET_TEXT_ELEMENT::MATCH_NUM);
+      }
+
+    }
   }
 
   rawReport == nullptr;
@@ -175,33 +201,31 @@ void BracketSheet::determineGridSize()
 {
   // determine the maximum extends of the bracket for this category
   // by searching through all bracket visualisation entries
-  int catId = cat.getId();
+  // get the handle of the overall bracket visualization data
+  auto bvd = BracketVisData::getExisting(cat);
+  assert(bvd != nullptr);
   int maxX = -1;
   int maxY = -1;
-  DbTab::CachingRowIterator it = tabVis.getRowsByColumnValue(BV_CAT_REF, catId);
-  while (!(it.isEnd()))
+  for (const BracketVisElement& el : bvd->getVisElements())
   {
-    TabRow r = *it;
-    int x = r[BV_GRID_X0].toInt();
-    int y = r[BV_GRID_Y0].toInt();
-    int spanY = r[BV_SPAN_Y].toInt();
-    int orientation = r[BV_ORIENTATION].toInt();
-    int terminator = r[BV_TERMINATOR].toInt();
+    int x = el.getGridX0();
+    int y = el.getGridY0();
+    int spanY = el.getSpanY();
+    BRACKET_ORIENTATION orientation = el.getOrientation();
+    BRACKET_TERMINATOR terminator = el.getTerminator();
 
-    if (orientation == BracketMatchData::VIS_ORIENTATION_RIGHT)
+    if (orientation == BRACKET_ORIENTATION::RIGHT)
     {
       ++x;  // reserve space to the right for the bracket itself
     }
 
-    if (terminator == BracketMatchData::VIS_TERMINATOR_OUTWARDS)
+    if (terminator == BRACKET_TERMINATOR::OUTWARDS)
     {
       ++x;  // reserve space for the terminator-line
     }
 
     if (x > maxX) maxX = x;
     if ((y + spanY) > maxY) maxY = y + spanY;
-
-    ++it;
   }
 
   xFac = rawReport->getUsablePageWidth() / maxX;
@@ -235,7 +259,7 @@ tuple<double, double> BracketSheet::grid2MM(int gridX, int gridY) const
 
 //----------------------------------------------------------------------------
 
-void BracketSheet::drawBracketTextItem(int bracketX0, int bracketY0, int ySpan, int orientation, QString txt, BracketSheet::BRACKET_TEXT_ELEMENT item)
+void BracketSheet::drawBracketTextItem(int bracketX0, int bracketY0, int ySpan, BRACKET_ORIENTATION orientation, QString txt, BracketSheet::BRACKET_TEXT_ELEMENT item)
 {
   // get the text style for bracket text
   auto style = rawReport->getTextStyle(BRACKET_STYLE);
@@ -248,7 +272,7 @@ void BracketSheet::drawBracketTextItem(int bracketX0, int bracketY0, int ySpan, 
   SimpleReportLib::HOR_TXT_ALIGNMENT align = SimpleReportLib::LEFT;
 
   // adjust the top-left corner of the bracket, if necessary
-  if (orientation == BracketMatchData::VIS_ORIENTATION_LEFT)
+  if (orientation == BRACKET_ORIENTATION::LEFT)
   {
     --bracketX0;
   }
@@ -292,7 +316,7 @@ void BracketSheet::drawBracketTextItem(int bracketX0, int bracketY0, int ySpan, 
     // undo the x0-adjustment, because the initial rank is always
     // at the "open end" of the bracket, and the "open end" is the
     // original x0,y0-pair
-    if (orientation == BracketMatchData::VIS_ORIENTATION_LEFT)
+    if (orientation == BRACKET_ORIENTATION::LEFT)
     {
       x0 += xFac;
     }
@@ -300,19 +324,19 @@ void BracketSheet::drawBracketTextItem(int bracketX0, int bracketY0, int ySpan, 
     // add a little gap between the line and the text. Depending
     // on the bracket orientation we have to add or subtract
     // from the x0-value
-    x0 += (orientation == BracketMatchData::VIS_ORIENTATION_LEFT) ? GAP_LINE_TXT__MM : -GAP_LINE_TXT__MM;
+    x0 += (orientation == BRACKET_ORIENTATION::LEFT) ? GAP_LINE_TXT__MM : -GAP_LINE_TXT__MM;
 
     y0 = yTextTop;
     align = SimpleReportLib::RIGHT;
   }
   if (item == BRACKET_TEXT_ELEMENT::INITIAL_RANK2)
   {
-    if (orientation == BracketMatchData::VIS_ORIENTATION_LEFT)
+    if (orientation == BRACKET_ORIENTATION::LEFT)
     {
       x0 += xFac;
     }
 
-    x0 += (orientation == BracketMatchData::VIS_ORIENTATION_LEFT) ? GAP_LINE_TXT__MM : -GAP_LINE_TXT__MM;
+    x0 += (orientation == BRACKET_ORIENTATION::LEFT) ? GAP_LINE_TXT__MM : -GAP_LINE_TXT__MM;
 
     y0 = yTextBottom;
     align = SimpleReportLib::RIGHT;

@@ -8,7 +8,7 @@ QT       += sql widgets
 
 TARGET = QTournament
 TEMPLATE = app
-QMAKE_CXXFLAGS += -std=c++11 -Wno-unused-parameter -O0
+QMAKE_CXXFLAGS += -std=c++14 -Wno-unused-parameter -O0
 
 HEADERS += \
     Category.h \
@@ -86,7 +86,8 @@ HEADERS += \
     reports/ResultsAndNextMatches.h \
     PureRoundRobinCategory.h \
     SwissLadderCategory.h \
-    reports/BracketSheet.h
+    reports/BracketSheet.h \
+    reports/BracketVisData.h
 
 SOURCES += \
     Category.cpp \
@@ -163,7 +164,8 @@ SOURCES += \
     reports/ResultsAndNextMatches.cpp \
     PureRoundRobinCategory.cpp \
     SwissLadderCategory.cpp \
-    reports/BracketSheet.cpp
+    reports/BracketSheet.cpp \
+    reports/BracketVisData.cpp
 
 RESOURCES += \
     tournament.qrc

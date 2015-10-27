@@ -26,14 +26,15 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  upBracketMatchDataVector BracketGenerator::genBracket__SingleElim(int numPlayers) const
+  tuple<upBracketMatchDataVector, RawBracketVisDataDef> BracketGenerator::genBracket__SingleElim(int numPlayers) const
   {
     upBracketMatchDataVector result;
+    RawBracketVisDataDef visResult;
 
     // return an empty list in case of invalid arguments
     if (numPlayers < 2)
     {
-      return result;
+      return make_tuple(upBracketMatchDataVector(), visResult);
     }
 
     BracketMatchData::resetBracketMatchId();
@@ -126,19 +127,20 @@ namespace QTournament
 
     removeUnusedMatches(result, numPlayers);
 
-    return result;
+    return make_tuple(std::move(result), visResult);
   }
 
 //----------------------------------------------------------------------------
 
-  upBracketMatchDataVector BracketGenerator::genBracket__Ranking1(int numPlayers) const
+  tuple<upBracketMatchDataVector, RawBracketVisDataDef> BracketGenerator::genBracket__Ranking1(int numPlayers) const
   {
     upBracketMatchDataVector result;
+    RawBracketVisDataDef visResult;
 
     // return an empty list in case of invalid arguments
     if ((numPlayers < 2) || (numPlayers > 32))
     {
-      return result;
+      return make_tuple(upBracketMatchDataVector(), visResult);
     }
 
     BracketMatchData::resetBracketMatchId();
@@ -190,49 +192,49 @@ namespace QTournament
       {-27,                -28,            -1,            - 2,            0,        0,       0},   // Match 36
     };
 
-    int bracketVisData_16[36][6] =
+    int bracketVisData_16[36][9] =
     {
-      // page, grid x0, grid y0, y-span, orientation, terminator      || orientation: -1= left, 1=right; terminator: 1=outwards, -1=inwards
-      {0, 5, 0, 2, 1, 0},    // Match 1
-      {0, 5, 4, 2, 1, 0},    // Match 2
-      {0, 5, 8, 2, 1, 0},    // Match 3
-      {0, 5, 12, 2, 1, 0},   // Match 4
-      {0, 5, 16, 2, 1, 0},   // Match 5
-      {0, 5, 20, 2, 1, 0},   // Match 6
-      {0, 5, 24, 2, 1, 0},   // Match 7
-      {0, 5, 28, 2, 1, 0},   // Match 8
+      // page, grid x0, grid y0, y-span, yPageBreakSpan, nextPage, orientation, terminator, terminatorOffsetY      || orientation: -1= left, 1=right; terminator: 1=outwards, -1=inwards
+      {0, 5, 0, 2, 0, 0, 1, 0, 0},    // Match 1
+      {0, 5, 4, 2, 0, 0, 1, 0, 0},    // Match 2
+      {0, 5, 8, 2, 0, 0, 1, 0, 0},    // Match 3
+      {0, 5, 12, 2, 0, 0, 1, 0, 0},   // Match 4
+      {0, 5, 16, 2, 0, 0, 1, 0, 0},   // Match 5
+      {0, 5, 20, 2, 0, 0, 1, 0, 0},   // Match 6
+      {0, 5, 24, 2, 0, 0, 1, 0, 0},   // Match 7
+      {0, 5, 28, 2, 0, 0, 1, 0, 0},   // Match 8
 
-      {0, 5, 1, 4, -1, 0},   // Match 9
-      {0, 6, 1, 4, 1, 0},    // Match 10
-      {0, 5, 9, 4, -1, 0},   // Match 11
-      {0, 6, 9, 4, 1, 0},    // Match 12
-      {0, 5, 17, 4, -1, 0},  // Match 13
-      {0, 6, 17, 4, 1, 0},   // Match 14
-      {0, 5, 25, 4, -1, 0},  // Match 15
-      {0, 6, 25, 4, 1, 0},   // Match 16
+      {0, 5, 1, 4, 0, 0, -1, 0, 0},   // Match 9
+      {0, 6, 1, 4, 0, 0, 1, 0, 0},    // Match 10
+      {0, 5, 9, 4, 0, 0, -1, 0, 0},   // Match 11
+      {0, 6, 9, 4, 0, 0, 1, 0, 0},    // Match 12
+      {0, 5, 17, 4, 0, 0, -1, 0, 0},  // Match 13
+      {0, 6, 17, 4, 0, 0, 1, 0, 0},   // Match 14
+      {0, 5, 25, 4, 0, 0, -1, 0, 0},  // Match 15
+      {0, 6, 25, 4, 0, 0, 1, 0, 0},   // Match 16
 
-      {0, 4, 3, 4, -1, 0},   // Match 17
-      {0, 4, 11, 4, -1, 0},  // Match 18
-      {0, 4, 19, 4, -1, 0},  // Match 19
-      {0, 4, 27, 4, -1, 0},  // Match 20
+      {0, 4, 3, 4, 0, 0, -1, 0, 0},   // Match 17
+      {0, 4, 11, 4, 0, 0, -1, 0, 0},  // Match 18
+      {0, 4, 19, 4, 0, 0, -1, 0, 0},  // Match 19
+      {0, 4, 27, 4, 0, 0, -1, 0, 0},  // Match 20
 
-      {0, 8, 34, 2, 1, 0},   // Match 21
-      {0, 8, 38, 2, 1, 0},   // Match 22
-      {0, 2, 34, 2, 1, 0},   // Match 23
-      {0, 2, 38, 2, 1, 0},   // Match 24
-      {0, 3, 4, 8, -1, 0},   // Match 25
-      {0, 3, 20, 8, -1, 0},  // Match 26
-      {0, 7, 3, 8, 1, 0},    // Match 27
-      {0, 7, 19, 8, 1, 0},   // Match 28
+      {0, 8, 34, 2, 0, 0, 1, 0, 0},   // Match 21
+      {0, 8, 38, 2, 0, 0, 1, 0, 0},   // Match 22
+      {0, 2, 34, 2, 0, 0, 1, 0, 0},   // Match 23
+      {0, 2, 38, 2, 0, 0, 1, 0, 0},   // Match 24
+      {0, 3, 4, 8, 0, 0, -1, 0, 0},   // Match 25
+      {0, 3, 20, 8, 0, 0, -1, 0, 0},  // Match 26
+      {0, 7, 3, 8, 0, 0, 1, 0, 0},    // Match 27
+      {0, 7, 19, 8, 0, 0, 1, 0, 0},   // Match 28
 
-      {0, 8, 35, 4, -1, 1},  // Match 29
-      {0, 9, 35, 4, 1, 1},   // Match 30
-      {0, 2, 35, 4, -1, 1},  // Match 31
-      {0, 3, 35, 4, 1, 1},   // Match 32
-      {0, 2, 30, 2, -1, 1},  // Match 33
-      {0, 2, 8, 16, -1, 1},  // Match 34
-      {0, 9, 29, 2, 1, 1},   // Match 35
-      {0, 8, 7, 16, 1, 1},  // Match 36
+      {0, 8, 35, 4, 0, 0, -1, 1, 0},  // Match 29
+      {0, 9, 35, 4, 0, 0, 1, 1, 0},   // Match 30
+      {0, 2, 35, 4, 0, 0, -1, 1, 0},  // Match 31
+      {0, 3, 35, 4, 0, 0, 1, 1, 0},   // Match 32
+      {0, 2, 30, 2, 0, 0, -1, 1, 0},  // Match 33
+      {0, 2, 8, 16, 0, 0, -1, 1, 0},  // Match 34
+      {0, 9, 29, 2, 0, 0, 1, 1, 0},   // Match 35
+      {0, 8, 7, 16, 0, 0, 1, 1, 0},   // Match 36
     };
 
     int rawBracketData_32[92][7] =
@@ -335,6 +337,7 @@ namespace QTournament
     // convert the hard-coded data into bracket match data entries
     if (numPlayers <= 16)
     {
+      // the bracket matches as such
       for (int i=0; i < 36; ++i)
       {
         upBracketMatchData newBracketMatch = upBracketMatchData(new BracketMatchData);
@@ -347,16 +350,17 @@ namespace QTournament
         newBracketMatch->nextMatchPlayerPosForLoser = rawBracketData_16[i][5];
         newBracketMatch->depthInBracket = rawBracketData_16[i][6];
 
-        // visualization data
-        newBracketMatch->page = bracketVisData_16[i][0];
-        newBracketMatch->x0 = bracketVisData_16[i][1];
-        newBracketMatch->y0 = bracketVisData_16[i][2];
-        newBracketMatch->ySpan = bracketVisData_16[i][3];
-        newBracketMatch->orientation = bracketVisData_16[i][4];
-        newBracketMatch->terminator = bracketVisData_16[i][5];
-
         result.push_back(std::move(newBracketMatch));
       }
+
+      // the visualization data
+      visResult.addPage(BRACKET_PAGE_ORIENTATION::LANDSCAPE, BRACKET_LABEL_POS::BOTTOM_LEFT);
+      for (int i=0; i < 36; ++i)
+      {
+        RawBracketVisElement el{bracketVisData_16[i]};
+        visResult.addElement(el);
+      }
+
     } else {
       for (int i=0; i < 92; ++i)
       {
@@ -376,24 +380,25 @@ namespace QTournament
 
     removeUnusedMatches(result, numPlayers);
 
-    return result;
+    return make_tuple(std::move(result), visResult);
   }
 
 
 //----------------------------------------------------------------------------
 
-  BracketMatchDataList BracketGenerator::getBracketMatches(int numPlayers) const
+  tuple<BracketMatchDataList, RawBracketVisDataDef> BracketGenerator::getBracketMatches(int numPlayers) const
   {
-    if (numPlayers < 2) return BracketMatchDataList();
+    if (numPlayers < 2) return make_tuple(BracketMatchDataList(), RawBracketVisDataDef());
 
     upBracketMatchDataVector upResult;
+    RawBracketVisDataDef visResult;
     switch (bracketType)
     {
     case BRACKET_SINGLE_ELIM:
-      upResult = genBracket__SingleElim(numPlayers);
+      tie(upResult, visResult) = genBracket__SingleElim(numPlayers);
       break;
     case BRACKET_RANKING1:
-      upResult = genBracket__Ranking1(numPlayers);
+      tie(upResult, visResult) = genBracket__Ranking1(numPlayers);
       break;
     default:
       throw std::runtime_error("TODO: Unimplemented bracket type!");
@@ -403,7 +408,7 @@ namespace QTournament
     BracketMatchDataList result;
     for_each(upResult.begin(), upResult.end(), [&result](upBracketMatchData& b){result.push_back(*b);});
 
-    return result;
+    return make_tuple(result, visResult);
   }
 
 //----------------------------------------------------------------------------

@@ -107,7 +107,7 @@ namespace QTournament
 #define CAT_WIN_SCORE QString("WinScore")
 #define CAT_DRAW_SCORE QString("DrawScore")
 #define CAT_GROUP_CONFIG QString("GroupConfig")
-//#define CAT_ QString("")
+#define CAT_BRACKET_VIS_DATA QString("BracketVisData")
 //#define CAT_ QString("")
 //#define CAT_ QString("")
 //#define CAT_ QString("")

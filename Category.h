@@ -72,6 +72,7 @@ namespace QTournament
     PlayerPairList getEliminatedPlayersAfterRound(int round, ERR *err) const;
     int getMaxNumGamesInRound(int round) const;
     bool isDrawAllowedInRound(int round) const;
+    QString getBracketVisDataString() const;
 
     
     virtual ~Category() {};

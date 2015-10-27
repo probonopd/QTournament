@@ -30,6 +30,7 @@ namespace QTournament
   CourtTableModel* Tournament::courtMod = nullptr;
   RankingMngr* Tournament::rm = nullptr;
   ReportFactory* Tournament::repFab = nullptr;
+  TournamentDB* Tournament::db = nullptr;
 
 /**
  * Constructor for a new, empty tournament file
@@ -279,6 +280,13 @@ RankingMngr* Tournament::getRankingMngr()
 ReportFactory* Tournament::getReportFactory()
 {
   return repFab;
+}
+
+//----------------------------------------------------------------------------
+
+TournamentDB*Tournament::getDatabaseHandle()
+{
+  return db;
 }
 
 //----------------------------------------------------------------------------

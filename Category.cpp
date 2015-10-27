@@ -789,7 +789,9 @@ namespace QTournament
 
     // generate the bracket data for the player list
     BracketGenerator gen{bracketMode};
-    BracketMatchDataList bmdl = gen.getBracketMatches(seeding.size());
+    BracketMatchDataList bmdl;
+    RawBracketVisDataDef visDataDef;
+    tie(bmdl, visDataDef) = gen.getBracketMatches(seeding.size());
 
     //
     // handle a special corner case here:
@@ -821,12 +823,15 @@ namespace QTournament
         final.nextMatchForWinner = -1;
         final.depthInBracket = 0;
 
-        final.page = 0;
-        final.x0 = 1;
-        final.y0 = 0;
-        final.ySpan = 2;
-        final.orientation = BracketMatchData::VIS_ORIENTATION_RIGHT;
-        final.terminator = BracketMatchData::VIS_TERMINATOR_OUTWARDS;
+        RawBracketVisElement visFinal;
+        visFinal.page = 0;
+        visFinal.gridX0 = 2;
+        visFinal.gridY0 = 0;
+        visFinal.ySpan = 2;
+        visFinal.yPageBreakSpan = 0;
+        visFinal.orientation = BRACKET_ORIENTATION::RIGHT;
+        visFinal.terminator = BRACKET_TERMINATOR::OUTWARDS;
+        visFinal.terminatorOffsetY = 0;
 
         // match for third place
         BracketMatchData thirdPlaceMatch;
@@ -835,17 +840,25 @@ namespace QTournament
         thirdPlaceMatch.nextMatchForWinner = -3;
         thirdPlaceMatch.depthInBracket = 0;
 
-        thirdPlaceMatch.page = 0;
-        thirdPlaceMatch.x0 = 2;
-        thirdPlaceMatch.y0 = 1;
-        thirdPlaceMatch.ySpan = 2;
-        final.orientation = BracketMatchData::VIS_ORIENTATION_LEFT;
-        final.terminator = BracketMatchData::VIS_TERMINATOR_OUTWARDS;
+        RawBracketVisElement visThird;
+        visThird.page = 0;
+        visThird.gridX0 = 2;
+        visThird.gridY0 = 1;
+        visThird.ySpan = 2;
+        visThird.yPageBreakSpan = 0;
+        visThird.orientation = BRACKET_ORIENTATION::LEFT;
+        visThird.terminator = BRACKET_TERMINATOR::OUTWARDS;
+        visThird.terminatorOffsetY = 0;
 
         // replace all previously generated matches with these two
         bmdl.clear();
         bmdl.push_back(final);
         bmdl.push_back(thirdPlaceMatch);
+
+        visDataDef.clear();
+        visDataDef.addPage(BRACKET_PAGE_ORIENTATION::LANDSCAPE, BRACKET_LABEL_POS::TOP_LEFT);
+        visDataDef.addElement(visFinal);
+        visDataDef.addElement(visThird);
       }
     }
 
@@ -1024,37 +1037,34 @@ namespace QTournament
       if (progressNotificationQueue != nullptr) progressNotificationQueue->step();
     }
 
+    //
     // copy visualization info to the database
-    auto tabVis = db->getTab(TAB_BRACKET_VIS);
-    for (BracketMatchData bmd : bmdl)
+    //
+
+    // create a new visualization entry
+    upBracketVisData bvd;
+    for (int i=0; i < visDataDef.getNumPages(); ++i)
     {
-      QVariantList qvl;
-      qvl << BV_CAT_REF << getId();
-      qvl << BV_PAGE << bmd.page;
-      qvl << BV_GRID_X0 << bmd.x0;
-      qvl << BV_GRID_Y0 << bmd.y0;
-      qvl << BV_SPAN_Y << bmd.ySpan;
-      qvl << BV_ORIENTATION << bmd.orientation;
-      qvl << BV_TERMINATOR << bmd.terminator;
-      if ((bmd.initialRank_Player1 > 0) && (bmd.initialRank_Player1 != BracketMatchData::UNUSED_PLAYER))
+      BRACKET_PAGE_ORIENTATION orientation;
+      BRACKET_LABEL_POS lp;
+      tie(orientation, lp) = visDataDef.getPageInfo(i);
+
+      if (i == 0)
       {
-        qvl << BV_INITIAL_RANK1 << bmd.initialRank_Player1;
-      } else {
-        qvl << BV_INITIAL_RANK1 << -1;
-      }
-      if ((bmd.initialRank_Player2 > 0) && (bmd.initialRank_Player2 != BracketMatchData::UNUSED_PLAYER))
-      {
-        qvl << BV_INITIAL_RANK2 << bmd.initialRank_Player2;
-      } else {
-        qvl << BV_INITIAL_RANK2 << -1;
+        bvd = BracketVisData::createNew(*this, orientation, lp);
       }
 
-      if (!(bmd.matchDeleted))
+      assert(bvd != nullptr);
+
+      if (i > 0)
       {
-        int matchId = bracket2Match.value(bmd.getBracketMatchId());
-        qvl << BV_MATCH_REF << matchId;
+        bvd->addPage(orientation, lp);
       }
-      tabVis.insertRow(qvl);
+    }
+    for (int i=0; i < visDataDef.getNumElements(); ++i)
+    {
+      RawBracketVisElement el = visDataDef.getElement(i);
+      bvd->addElement(el);
     }
 
 
@@ -1257,6 +1267,13 @@ namespace QTournament
 
     // default value, should never be reached
     return false;
+  }
+
+  //----------------------------------------------------------------------------
+
+  QString Category::getBracketVisDataString() const
+  {
+    return row[CAT_BRACKET_VIS_DATA].toString();
   }
 
   //----------------------------------------------------------------------------
