@@ -147,12 +147,36 @@ upSimpleReport BracketSheet::regenerateReport()
           PlayerPair pp = ma->getPlayerPair1();
           drawBracketTextItem(x0, y0, spanY, orientation, pp.getDisplayName(), BRACKET_TEXT_ELEMENT::PAIR1);
         }
+        // is there a "symbolic" player1 name like "winner of match xxx"?
+        else
+        {
+          int symbName = ma->getSymbolicPlayerPair1Name();
+          if (symbName < 0)   // process only loser; we don't need to print "Winner of #xxx", because that's indicated by the graph
+          {
+            QString txt = "(%1 #%2)";
+            txt = txt.arg(tr("Loser"));
+            txt = txt.arg(-symbName);
+            drawBracketTextItem(x0, y0, spanY, orientation, txt, BRACKET_TEXT_ELEMENT::PAIR1);
+          }
+        }
 
         // print the names of the second player pair
         if (ma->hasPlayerPair2())
         {
           PlayerPair pp = ma->getPlayerPair2();
           drawBracketTextItem(x0, y0, spanY, orientation, pp.getDisplayName(), BRACKET_TEXT_ELEMENT::PAIR2);
+        }
+        // is there a "symbolic" player1 name like "winner of match xxx"?
+        else
+        {
+          int symbName = ma->getSymbolicPlayerPair2Name();
+          if (symbName < 0)   // process only loser; we don't need to print "Winner of #xxx", because that's indicated by the graph
+          {
+            QString txt = "(%1 #%2)";
+            txt = txt.arg(tr("Loser"));
+            txt = txt.arg(-symbName);
+            drawBracketTextItem(x0, y0, spanY, orientation, txt, BRACKET_TEXT_ELEMENT::PAIR2);
+          }
         }
 
         // print match number or result, if any
@@ -165,7 +189,7 @@ upSimpleReport BracketSheet::regenerateReport()
         }
         else if (matchNum > 0)
         {
-          QString s = QString::number(matchNum);
+          QString s = "#" + QString::number(matchNum);
           drawBracketTextItem(x0, y0, spanY, orientation, s, BRACKET_TEXT_ELEMENT::MATCH_NUM);
         }
       }   // end of: match data existing

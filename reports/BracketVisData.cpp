@@ -346,6 +346,9 @@ unique_ptr<PlayerPair> BracketVisData::getParentPlayerPairForElement(const Brack
 //----------------------------------------------------------------------------
 
 
+//----------------------------------------------------------------------------
+
+
 //
 // BracketVisElement
 //
