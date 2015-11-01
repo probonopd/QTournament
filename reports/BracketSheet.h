@@ -29,9 +29,13 @@ namespace QTournament
       INITIAL_RANK2,
       SCORE,
       MATCH_NUM,
+      WINNER_RANK,
+      TERMINATOR_NAME
     };
 
     static constexpr char BRACKET_STYLE[] = "BracketText";
+    static constexpr char BRACKET_STYLE_ITALICS[] = "BracketTextItalics";
+    static constexpr char BRACKET_STYLE_BOLD[] = "BracketTextBold";
 
   public:
     BracketSheet(TournamentDB* _db, const QString& _name, const Category& _cat);
@@ -51,9 +55,9 @@ namespace QTournament
     void determineGridSize();
     void setupTextStyle();
     tuple<double, double> grid2MM(int gridX, int gridY) const;
-    void drawBracketTextItem(int bracketX0, int bracketY0, int ySpan, BRACKET_ORIENTATION orientation, QString txt, BRACKET_TEXT_ELEMENT item);
+    void drawBracketTextItem(int bracketX0, int bracketY0, int ySpan, BRACKET_ORIENTATION orientation, QString txt, BRACKET_TEXT_ELEMENT item, const QString& styleNameOverride="");
 
-    QString determinePlayerPairDisplayText(const BracketVisElement& el, int pos) const;
+    tuple<QString, bool> determinePlayerPairDisplayText(const BracketVisElement& el, int pos) const;
   };
 
 }

@@ -14,6 +14,8 @@ namespace QTournament
 {
 
   constexpr char BracketSheet::BRACKET_STYLE[];
+  constexpr char BracketSheet::BRACKET_STYLE_ITALICS[];
+  constexpr char BracketSheet::BRACKET_STYLE_BOLD[];
 
 
 BracketSheet::BracketSheet(TournamentDB* _db, const QString& _name, const Category& _cat)
@@ -136,10 +138,15 @@ upSimpleReport BracketSheet::regenerateReport()
       //
       // print the actual or symbolic player names, if any
       //
-      drawBracketTextItem(x0, y0, spanY, orientation,
-                          determinePlayerPairDisplayText(el, 1), BRACKET_TEXT_ELEMENT::PAIR1);
-      drawBracketTextItem(x0, y0, spanY, orientation,
-                          determinePlayerPairDisplayText(el, 2), BRACKET_TEXT_ELEMENT::PAIR2);
+      QString pairName;
+      bool isSymbolic;
+      tie(pairName, isSymbolic) = determinePlayerPairDisplayText(el, 1);
+      drawBracketTextItem(x0, y0, spanY, orientation, pairName, BRACKET_TEXT_ELEMENT::PAIR1,
+                          (isSymbolic ? BRACKET_STYLE_ITALICS: ""));
+
+      tie(pairName, isSymbolic) = determinePlayerPairDisplayText(el, 2);
+      drawBracketTextItem(x0, y0, spanY, orientation, pairName, BRACKET_TEXT_ELEMENT::PAIR2,
+                          (isSymbolic ? BRACKET_STYLE_ITALICS: ""));
 
       //
       // Decorate the bracket with match data, if existing
@@ -162,11 +169,25 @@ upSimpleReport BracketSheet::regenerateReport()
           QString s = "#" + QString::number(matchNum);
           drawBracketTextItem(x0, y0, spanY, orientation, s, BRACKET_TEXT_ELEMENT::MATCH_NUM);
         }
+
+        // print final rank for winner, if any
+        int winRank = ma->getWinnerRank();
+        if ((terminator != BRACKET_TERMINATOR::NONE) && (winRank > 0))
+        {
+          QString txt = QString::number(winRank) + ". " + tr("Place");
+          drawBracketTextItem(x0, y0, spanY, orientation, txt, BRACKET_TEXT_ELEMENT::WINNER_RANK);
+
+          // if the match is finished, print the winner's name as well
+          if (stat == STAT_MA_FINISHED)
+          {
+            drawBracketTextItem(x0, y0, spanY, orientation, ma->getWinner()->getDisplayName(), BRACKET_TEXT_ELEMENT::TERMINATOR_NAME);
+          }
+        }
       }
     }
   }
 
-  rawReport == nullptr;
+  rawReport = nullptr;
   return rep;
 }
 
@@ -232,14 +253,28 @@ void BracketSheet::determineGridSize()
 void BracketSheet::setupTextStyle()
 {
   // check if the text style for bracket text already exists
-  auto style = rawReport->getTextStyle(BRACKET_STYLE);
-  if (style == nullptr)
+  auto baseStyle = rawReport->getTextStyle(BRACKET_STYLE);
+  if (baseStyle == nullptr)
   {
-    style = rawReport->createChildTextStyle(BRACKET_STYLE);
+    baseStyle = rawReport->createChildTextStyle(BRACKET_STYLE);
   }
 
   // set the text size as 40% of the y grid size
-  style->setFontSize_MM(yFac * 0.4);
+  baseStyle->setFontSize_MM(yFac * 0.4);
+
+  // create childs in italics and bold as well
+  auto childStyle = rawReport->getTextStyle(BRACKET_STYLE_ITALICS);
+  if (childStyle == nullptr)
+  {
+    childStyle = rawReport->createChildTextStyle(BRACKET_STYLE_ITALICS, BRACKET_STYLE);
+  }
+  childStyle->setItalicsState(true);
+  childStyle = rawReport->getTextStyle(BRACKET_STYLE_BOLD);
+  if (childStyle == nullptr)
+  {
+    childStyle = rawReport->createChildTextStyle(BRACKET_STYLE_BOLD, BRACKET_STYLE);
+  }
+  childStyle->setBoldState(true);
 }
 
 //----------------------------------------------------------------------------
@@ -254,10 +289,17 @@ tuple<double, double> BracketSheet::grid2MM(int gridX, int gridY) const
 
 //----------------------------------------------------------------------------
 
-void BracketSheet::drawBracketTextItem(int bracketX0, int bracketY0, int ySpan, BRACKET_ORIENTATION orientation, QString txt, BracketSheet::BRACKET_TEXT_ELEMENT item)
+void BracketSheet::drawBracketTextItem(int bracketX0, int bracketY0, int ySpan, BRACKET_ORIENTATION orientation, QString txt, BracketSheet::BRACKET_TEXT_ELEMENT item, const QString& styleNameOverride)
 {
-  // get the text style for bracket text
+  // get the default text style for bracket text
   auto style = rawReport->getTextStyle(BRACKET_STYLE);
+
+  // apply a different text style, if requested by the user
+  if (!(styleNameOverride.isEmpty()))
+  {
+    style = rawReport->getTextStyle(styleNameOverride);
+  }
+
   assert(style != nullptr);  // the style must have been created before!
   double txtHeight = style->getFontSize_MM();
 
@@ -337,13 +379,35 @@ void BracketSheet::drawBracketTextItem(int bracketX0, int bracketY0, int ySpan, 
     align = SimpleReportLib::RIGHT;
   }
 
+  if ((item == BRACKET_TEXT_ELEMENT::WINNER_RANK) || (item == BRACKET_TEXT_ELEMENT::TERMINATOR_NAME))
+  {
+    // default: calculate position for winner rank
+    x0 += (orientation == BRACKET_ORIENTATION::RIGHT) ? xFac : -xFac;
+    y0 = yTextCenter + txtHeight + GAP_LINE_TXT__MM;
+
+    // move up by text height plus 2 x gap if winner name
+    if (item == BRACKET_TEXT_ELEMENT::TERMINATOR_NAME)
+    {
+      y0 -= txtHeight + 2 * GAP_LINE_TXT__MM;
+    }
+
+    // ranks are printed in bold text
+    if ((item == BRACKET_TEXT_ELEMENT::WINNER_RANK) && (styleNameOverride.isEmpty()))
+    {
+      style = rawReport->getTextStyle(BRACKET_STYLE_BOLD);
+    }
+
+    x0 += xFac / 2.0;
+    align = SimpleReportLib::CENTER;
+  }
+
   // actually draw the text
   rawReport->drawText(x0, y0, txt, style, align);
 }
 
 //----------------------------------------------------------------------------
 
-QString BracketSheet::determinePlayerPairDisplayText(const BracketVisElement& el, int pos) const
+tuple<QString, bool> BracketSheet::determinePlayerPairDisplayText(const BracketVisElement& el, int pos) const
 {
   assert(el.getCategoryId() == cat.getId());
   assert((pos > 0) && (pos < 3));
@@ -360,7 +424,7 @@ QString BracketSheet::determinePlayerPairDisplayText(const BracketVisElement& el
     if (foundPlayerPair)
     {
       PlayerPair pp = (pos == 1) ? ma->getPlayerPair1() : ma->getPlayerPair2();
-      return pp.getDisplayName();
+      return make_tuple(pp.getDisplayName(), false);
     }
 
     // case 1b: there is symbolic name like "loser of match xxx"
@@ -370,21 +434,21 @@ QString BracketSheet::determinePlayerPairDisplayText(const BracketVisElement& el
       QString txt = "(%1 #%2)";
       txt = txt.arg(tr("Loser"));
       txt = txt.arg(-symbName);
-      return txt;
+      return make_tuple(txt, true);
     }
 
-    return "";  // nothing to display for this match
+    return make_tuple("", false);  // nothing to display for this match
   }
 
   // case 2: we have fixed, static player pair references stored for this bracket element
   auto pp = el.getLinkedPlayerPair(pos);
   if (pp != nullptr)
   {
-    return pp->getDisplayName();
+    return make_tuple(pp->getDisplayName(), false);
   }
 
   // case 3, default: the branch is unused, so we label it with "--"
-  return "--";
+  return make_tuple("--", false);
 }
 
 //----------------------------------------------------------------------------
