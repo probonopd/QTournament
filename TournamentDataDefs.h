@@ -223,6 +223,15 @@ namespace QTournament
 #define BV_INITIAL_RANK2 QString("InitialRank2")
 #define BV_PAIR1_REF QString("PlayerPair1RefId")
 #define BV_PAIR2_REF QString("PlayerPair2RefId")
+#define BV_Y_PAGEBREAK_SPAN QString("PagebreakOffsetY")
+#define BV_NEXT_PAGE_NUM QString("NextPageNum")
+#define BV_TERMINATOR_OFFSET_Y QString("TerminatorOffset")
+#define BV_ELEMENT_ID QString("BracketElementId")
+#define BV_NEXT_WINNER_MATCH QString("NextWinnerMatch")
+#define BV_NEXT_LOSER_MATCH QString("NextLoserMatch")
+#define BV_NEXT_MATCH_POS_FOR_WINNER QString("NextMatchPosForWinner")
+#define BV_NEXT_MATCH_POS_FOR_LOSER QString("NextMatchPosForLoser")
+//#define BV_ QString("")
 //#define BV_ QString("")
 
 //----------------------------------------------------------------------------

@@ -337,9 +337,12 @@ namespace QTournament
     // convert the hard-coded data into bracket match data entries
     if (numPlayers <= 16)
     {
-      // the bracket matches as such
+      // prepare the container for the visualization data
+      visResult.addPage(BRACKET_PAGE_ORIENTATION::LANDSCAPE, BRACKET_LABEL_POS::BOTTOM_LEFT);
+
       for (int i=0; i < 36; ++i)
       {
+        // prepare the bracket matches as such
         upBracketMatchData newBracketMatch = upBracketMatchData(new BracketMatchData);
 
         newBracketMatch->initialRank_Player1 = rawBracketData_16[i][0];
@@ -350,17 +353,19 @@ namespace QTournament
         newBracketMatch->nextMatchPlayerPosForLoser = rawBracketData_16[i][5];
         newBracketMatch->depthInBracket = rawBracketData_16[i][6];
 
-        result.push_back(std::move(newBracketMatch));
-      }
-
-      // the visualization data
-      visResult.addPage(BRACKET_PAGE_ORIENTATION::LANDSCAPE, BRACKET_LABEL_POS::BOTTOM_LEFT);
-      for (int i=0; i < 36; ++i)
-      {
+        // prepare the visualization data
         RawBracketVisElement el{bracketVisData_16[i]};
+        el.initialRank1 = (newBracketMatch->initialRank_Player1 > 0) ? newBracketMatch->initialRank_Player1 : -1;
+        el.initialRank2 = (newBracketMatch->initialRank_Player2 > 0) ? newBracketMatch->initialRank_Player2 : -1;
+        el.nextMatchForWinner = newBracketMatch->nextMatchForWinner;
+        el.nextMatchForLoser = newBracketMatch->nextMatchForLoser;
+        el.nextMatchPlayerPosForWinner = newBracketMatch->nextMatchPlayerPosForWinner;
+        el.nextMatchPlayerPosForLoser = newBracketMatch->nextMatchPlayerPosForLoser;
+
+        // store both in different containers
+        result.push_back(std::move(newBracketMatch));
         visResult.addElement(el);
       }
-
     } else {
       for (int i=0; i < 92; ++i)
       {

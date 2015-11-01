@@ -1064,9 +1064,27 @@ namespace QTournament
     for (int i=0; i < visDataDef.getNumElements(); ++i)
     {
       RawBracketVisElement el = visDataDef.getElement(i);
-      bvd->addElement(el);
+      bvd->addElement(i + 1, el);    // bracket match IDs are 1-based, not 0-based!
     }
 
+    // link actual matches to the bracket elements
+    for (int i=0; i < visDataDef.getNumElements(); ++i)
+    {
+      if (bracket2Match.keys().contains(i+1))    // bracket match IDs are 1-based, not 0-based!
+      {
+        int maId = bracket2Match.value(i+1);     // bracket match IDs are 1-based, not 0-based!
+        auto ma = Tournament::getMatchMngr()->getMatch(maId);
+
+        auto bracketElement = bvd->getVisElement(i+1);   // bracket match IDs are 1-based, not 0-based!
+        assert(bracketElement != nullptr);
+
+        assert(bracketElement->linkToMatch(*ma));
+      }
+    }
+
+    // fill empty bracket matches with names as good as possible
+    // for now
+    bvd->fillMissingPlayerNames();
 
     return OK;
   }

@@ -41,6 +41,10 @@ upSimpleReport BracketSheet::regenerateReport()
     return result;
   }
 
+  // update/fill potentially missing names in the bracket
+  bvd->fillMissingPlayerNames();
+
+
   BRACKET_PAGE_ORIENTATION pgOrientation;
   BRACKET_LABEL_POS labelPos;
 
@@ -135,37 +139,53 @@ upSimpleReport BracketSheet::regenerateReport()
 
       // is there a match connected to this bracket element?
       auto ma = el.getLinkedMatch();
-      if (ma == nullptr)
+      if (ma != nullptr)
       {
-        continue;
-      }
+        // print the names of the first player pair
+        if (ma->hasPlayerPair1())
+        {
+          PlayerPair pp = ma->getPlayerPair1();
+          drawBracketTextItem(x0, y0, spanY, orientation, pp.getDisplayName(), BRACKET_TEXT_ELEMENT::PAIR1);
+        }
 
-      // print the names of the first player pair
-      if (ma->hasPlayerPair1())
-      {
-        PlayerPair pp = ma->getPlayerPair1();
-        drawBracketTextItem(x0, y0, spanY, orientation, pp.getDisplayName(), BRACKET_TEXT_ELEMENT::PAIR1);
-      }
+        // print the names of the second player pair
+        if (ma->hasPlayerPair2())
+        {
+          PlayerPair pp = ma->getPlayerPair2();
+          drawBracketTextItem(x0, y0, spanY, orientation, pp.getDisplayName(), BRACKET_TEXT_ELEMENT::PAIR2);
+        }
 
-      // print the names of the second player pair
-      if (ma->hasPlayerPair2())
-      {
-        PlayerPair pp = ma->getPlayerPair2();
-        drawBracketTextItem(x0, y0, spanY, orientation, pp.getDisplayName(), BRACKET_TEXT_ELEMENT::PAIR2);
-      }
+        // print match number or result, if any
+        OBJ_STATE stat = ma->getState();
+        int matchNum = ma->getMatchNumber();
+        if (stat == STAT_MA_FINISHED)
+        {
+          auto score = ma->getScore();
+          drawBracketTextItem(x0, y0, spanY, orientation, score->toString(), BRACKET_TEXT_ELEMENT::SCORE);
+        }
+        else if (matchNum > 0)
+        {
+          QString s = QString::number(matchNum);
+          drawBracketTextItem(x0, y0, spanY, orientation, s, BRACKET_TEXT_ELEMENT::MATCH_NUM);
+        }
+      }   // end of: match data existing
 
-      // print match number or result, if any
-      OBJ_STATE stat = ma->getState();
-      int matchNum = ma->getMatchNumber();
-      if (stat == STAT_MA_FINISHED)
+      // what to do without match data
+      else
       {
-        auto score = ma->getScore();
-        drawBracketTextItem(x0, y0, spanY, orientation, score->toString(), BRACKET_TEXT_ELEMENT::SCORE);
-      }
-      else if (matchNum > 0)
-      {
-        QString s = QString::number(matchNum);
-        drawBracketTextItem(x0, y0, spanY, orientation, s, BRACKET_TEXT_ELEMENT::MATCH_NUM);
+        // is there a fixed player1 name?
+        auto pp = el.getLinkedPlayerPair(1);
+        if (pp != nullptr)
+        {
+          drawBracketTextItem(x0, y0, spanY, orientation, pp->getDisplayName(), BRACKET_TEXT_ELEMENT::PAIR1);
+        }
+
+        // is there a fixed player2 name?
+        pp = el.getLinkedPlayerPair(2);
+        if (pp != nullptr)
+        {
+          drawBracketTextItem(x0, y0, spanY, orientation, pp->getDisplayName(), BRACKET_TEXT_ELEMENT::PAIR2);
+        }
       }
 
     }
@@ -282,7 +302,7 @@ void BracketSheet::drawBracketTextItem(int bracketX0, int bracketY0, int ySpan, 
   tie(x0, yTextTop) = grid2MM(bracketX0, bracketY0);
   yTextTop -= txtHeight * 1.1 + GAP_LINE_TXT__MM;
   double yTextBottom = yTextTop + yFac * ySpan;
-  double yTextCenter = (yTextTop + yTextBottom) / 2.0;
+  double yTextCenter = (yTextTop + yTextBottom + txtHeight) / 2.0;
 
   //
   // adjust x0,y0 depending on the text item

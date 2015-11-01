@@ -169,6 +169,14 @@ void TournamentDB::populateTables()
     cols << BV_TERMINATOR + " INTEGER";
     cols << BV_INITIAL_RANK1 + " INTEGER";
     cols << BV_INITIAL_RANK2 + " INTEGER";
+    cols << BV_Y_PAGEBREAK_SPAN + " INTEGER";
+    cols << BV_NEXT_PAGE_NUM + " INTEGER";
+    cols << BV_TERMINATOR_OFFSET_Y + " INTEGER";
+    cols << BV_ELEMENT_ID + " INTEGER";
+    cols << BV_NEXT_MATCH_POS_FOR_WINNER + " INTEGER";
+    cols << BV_NEXT_MATCH_POS_FOR_LOSER + " INTEGER";
+    cols << BV_NEXT_LOSER_MATCH + " INTEGER";
+    cols << BV_NEXT_WINNER_MATCH + " INTEGER";
     cols << genForeignKeyClause(BV_PAIR1_REF, TAB_PAIRS);
     cols << genForeignKeyClause(BV_PAIR2_REF, TAB_PAIRS);
     tableCreationHelper(TAB_BRACKET_VIS, cols);

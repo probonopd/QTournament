@@ -90,6 +90,17 @@ QTournament::BracketVisElementList BracketVisData::getVisElements(int idxPage)
 
 //----------------------------------------------------------------------------
 
+QTournament::upBracketVisElement BracketVisData::getVisElement(int idx) const
+{
+  QVariantList qvl;
+  qvl << BV_CAT_REF << cat.getId();
+  qvl << BV_ELEMENT_ID << idx;
+
+  return getSingleObjectByColumnValue<BracketVisElement>(visTab, qvl);
+}
+
+//----------------------------------------------------------------------------
+
 void BracketVisData::addPage(BRACKET_PAGE_ORIENTATION pageOrientation, BRACKET_LABEL_POS labelOnPagePosition) const
 {
   // convert the parameters into a comma-sep. string
@@ -115,7 +126,7 @@ void BracketVisData::addPage(BRACKET_PAGE_ORIENTATION pageOrientation, BRACKET_L
 
 //----------------------------------------------------------------------------
 
-void BracketVisData::addElement(const RawBracketVisElement& el)
+void BracketVisData::addElement(int idx, const RawBracketVisElement& el)
 {
   QVariantList qvl;
 
@@ -127,12 +138,99 @@ void BracketVisData::addElement(const RawBracketVisElement& el)
   qvl << BV_SPAN_Y << el.ySpan;
   qvl << BV_ORIENTATION << static_cast<int>(el.orientation);
   qvl << BV_TERMINATOR << static_cast<int>(el.terminator);
-
-  // FIX ME
-  qvl << BV_INITIAL_RANK1 << 42;
-  qvl << BV_INITIAL_RANK1 << 23;
-
+  qvl << BV_Y_PAGEBREAK_SPAN << el.yPageBreakSpan;
+  qvl << BV_NEXT_PAGE_NUM << el.nextPageNum;
+  qvl << BV_TERMINATOR_OFFSET_Y << el.terminatorOffsetY;
+  qvl << BV_ELEMENT_ID << idx;
+  qvl << BV_INITIAL_RANK1 << el.initialRank1;
+  qvl << BV_INITIAL_RANK2 << el.initialRank2;
+  qvl << BV_NEXT_WINNER_MATCH << el.nextMatchForWinner;
+  qvl << BV_NEXT_LOSER_MATCH << el.nextMatchForLoser;
+  qvl << BV_NEXT_MATCH_POS_FOR_WINNER << el.nextMatchPlayerPosForWinner;
+  qvl << BV_NEXT_MATCH_POS_FOR_LOSER << el.nextMatchPlayerPosForLoser;
   visTab.insertRow(qvl);
+}
+
+//----------------------------------------------------------------------------
+
+/**
+ * @brief Inserts player names (as PlayerPair ref) in bracket matches that do not have a corresponding "real" match
+ *
+ * Fills as many gaps as currentlt possible. Has to be called repeatedly as the tournamen progresses (e.g., every time
+ * a bracket view / report is created).
+ *
+ */
+void BracketVisData::fillMissingPlayerNames() const
+{
+  int catId = cat.getId();
+
+  // get the seeding list once, we need it later...
+  PlayerPairList seeding = Tournament::getCatMngr()->getSeeding(cat);
+
+  bool hasModifications = true;
+  while (hasModifications)   // repeat until we find no more changes to make
+  {
+    hasModifications = false;
+
+    //
+    // Check 1: fill-in names for initial matches (from seeding list)
+    //
+    QString where;
+    where = "%1=%2 AND %3 IS NULL AND %4>0 AND %5>0 AND %6 IS NULL AND %7 IS NULL";
+    where = where.arg(BV_CAT_REF);
+    where = where.arg(catId);
+    where = where.arg(BV_MATCH_REF);
+    where = where.arg(BV_INITIAL_RANK1, BV_INITIAL_RANK2);
+    where = where.arg(BV_PAIR1_REF, BV_PAIR2_REF);
+    for (BracketVisElement el : getObjectsByWhereClause<BracketVisElement>(visTab, where))
+    {
+      int iniRank = el.getInitialRank1();
+      if (iniRank <= seeding.size())
+      {
+        el.linkToPlayerPair(seeding.at(iniRank - 1), 1);
+        hasModifications = true;
+      }
+      iniRank = el.getInitialRank2();
+      if (iniRank <= seeding.size())
+      {
+        el.linkToPlayerPair(seeding.at(iniRank - 1), 2);
+        hasModifications = true;
+      }
+    }
+
+    //
+    // Check 2: fill-in names for intermediate matches that lack both player names
+    //
+    where = "%1=%2 AND %3 IS NULL AND %4<=0 AND %5<=0 AND %6 IS NULL AND %7 IS NULL";
+    where = where.arg(BV_CAT_REF);  // %1
+    where = where.arg(catId);       // %2
+    where = where.arg(BV_MATCH_REF);  // %3
+    where = where.arg(BV_INITIAL_RANK1, BV_INITIAL_RANK2);  // %4, %5
+    where = where.arg(BV_PAIR1_REF, BV_PAIR2_REF);   // %6, %7
+
+    for (BracketVisElement el : getObjectsByWhereClause<BracketVisElement>(visTab, where))
+    {
+      // Pair 1:
+      // is there any match pointing to this bracket element
+      // as winner or loser?
+      auto parentElem = getParentPlayerPairForElement(el, 1);
+      if(parentElem != nullptr)
+      {
+        el.linkToPlayerPair(*parentElem, 1);
+        hasModifications = true;
+      }
+
+      // Pair 2:
+      // is there any match pointing to this bracket element
+      // as winner or loser?
+      parentElem = getParentPlayerPairForElement(el, 2);
+      if(parentElem != nullptr)
+      {
+        el.linkToPlayerPair(*parentElem, 2);
+        hasModifications = true;
+      }
+    }
+  }
 }
 
 //----------------------------------------------------------------------------
@@ -140,6 +238,70 @@ void BracketVisData::addElement(const RawBracketVisElement& el)
 BracketVisData::BracketVisData(TournamentDB* _db, const Category& _cat)
 : GenericObjectManager(_db), visTab((*db)[TAB_BRACKET_VIS]), cat(_cat)
 {
+}
+
+unique_ptr<PlayerPair> BracketVisData::getParentPlayerPairForElement(const BracketVisElement& el, int pos) const
+{
+  // check parameter range
+  if ((pos != 1) && (pos != 2)) return nullptr;
+
+  // check element validity
+  if (el.getCategoryId() != cat.getId()) return nullptr;
+
+  int elemId = el.getBracketElementId();
+
+  // search for a bracket element that uses this element as next winner / loser match
+  QString where = "%1=%2 AND ((%3=%4 AND %5=%6) OR (%7=%4 AND %8=%6))";
+  where = where.arg(BV_CAT_REF);                    // %1
+  where = where.arg(cat.getId());               // %2
+  where = where.arg(BV_NEXT_WINNER_MATCH);          // %3
+  where = where.arg(elemId);                      // %4
+  where = where.arg(BV_NEXT_MATCH_POS_FOR_WINNER);  // %5
+  where = where.arg(pos);                           // %6
+  where = where.arg(BV_NEXT_LOSER_MATCH);           // %7
+  where = where.arg(BV_NEXT_MATCH_POS_FOR_LOSER);   // %8
+  auto parentElem = getSingleObjectByWhereClause<BracketVisElement>(visTab, where);
+
+  // case 1: no parent
+  if (parentElem == nullptr) return nullptr;
+
+  // case 2: parent has a match assigned
+  auto ma = parentElem->getLinkedMatch();
+  if (ma != nullptr)
+  {
+    // case 2a: match is not finished, winner and loser are unknown
+    if (ma->getState() != STAT_MA_FINISHED) return nullptr;
+
+    // case 2b: match is finished, winner and loser are determined
+    if (parentElem->getNextBracketElementForWinner() == elemId)
+    {
+      // case 2b.1: the winner of "parent" will go to "elem"
+      assert(parentElem->getNextBracketElementPosForWinner() == pos);
+      return ma->getWinner();
+    }
+
+    // case 2b.2: the loser or "parent" will go to "elem"
+    assert(parentElem->getNextBracketElementForLoser() == elemId);
+    assert(parentElem->getNextBracketElementPosForLoser() == pos);
+    return ma->getLoser();
+  }
+
+  // case 3: no assigned match for parent, but exactly one assigned player pair
+  // AND "elem" is the "winner child" of "parent"
+  assert(ma == nullptr);
+  bool hasFixedPair1 = parentElem->getLinkedPlayerPair(1) != nullptr;
+  bool hasFixedPair2 = parentElem->getLinkedPlayerPair(2) != nullptr;
+  if (hasFixedPair1 ^ hasFixedPair2)    // exclusive OR... only one pair is allowed
+  {
+    if (parentElem->getNextBracketElementForWinner() == elemId)
+    {
+      assert(parentElem->getNextBracketElementPosForWinner() == pos);
+      return (hasFixedPair1) ? parentElem->getLinkedPlayerPair(1) : parentElem->getLinkedPlayerPair(2);
+    }
+  }
+
+  // default: don't know or can't decide
+  return nullptr;
 }
 
 //----------------------------------------------------------------------------
@@ -199,6 +361,65 @@ unique_ptr<Match> BracketVisElement::getLinkedMatch() const
 
 //----------------------------------------------------------------------------
 
+Category BracketVisElement::getLinkedCategory() const
+{
+  int catId = row[BV_CAT_REF].toInt();
+  return Tournament::getCatMngr()->getCategoryById(catId);
+}
+
+//----------------------------------------------------------------------------
+
+unique_ptr<PlayerPair> BracketVisElement::getLinkedPlayerPair(int pos) const
+{
+  if ((pos != 1) && (pos != 2)) return false;
+
+  QVariant _pairId;
+  if (pos == 1) _pairId = row[BV_PAIR1_REF];
+  else _pairId = row[BV_PAIR2_REF];
+
+  if (_pairId.isNull()) return nullptr;
+
+  return make_unique<PlayerPair>(db, _pairId.toInt());
+}
+
+//----------------------------------------------------------------------------
+
+bool BracketVisElement::linkToMatch(const Match& ma) const
+{
+  Category myCat = getLinkedCategory();
+  if (ma.getCategory() != myCat) return false;
+
+  row.update(BV_MATCH_REF, ma.getId());
+  return true;
+}
+
+//----------------------------------------------------------------------------
+
+bool BracketVisElement::linkToPlayerPair(const PlayerPair& pp, int pos) const
+{
+  if ((pos != 1) && (pos != 2)) return false;
+
+  Category myCat = getLinkedCategory();
+  auto ppCat = pp.getCategory(db);
+  if (ppCat == nullptr) return false;
+
+  if ((*ppCat) != myCat) return false;
+
+  int pairId = pp.getPairId();
+  if (pairId <= 0) return false;
+
+  if (pos == 1)
+  {
+    row.update(BV_PAIR1_REF, pairId);
+  } else {
+    row.update(BV_PAIR2_REF, pairId);
+  }
+
+  return true;
+}
+
+//----------------------------------------------------------------------------
+
 BracketVisElement::BracketVisElement(TournamentDB* _db, int rowId)
   :GenericDatabaseObject(_db, TAB_BRACKET_VIS, rowId)
 {
@@ -211,6 +432,12 @@ BracketVisElement::BracketVisElement(TournamentDB* _db, TabRow row)
   :GenericDatabaseObject(_db, row)
 {
 
+}
+
+//----------------------------------------------------------------------------
+
+unique_ptr<PlayerPair> BracketVisElement::getParentPlayerPair(int pos) const
+{
 }
 
 //----------------------------------------------------------------------------
