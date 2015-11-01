@@ -134,6 +134,14 @@ upSimpleReport BracketSheet::regenerateReport()
       }
 
       //
+      // print the actual or symbolic player names, if any
+      //
+      drawBracketTextItem(x0, y0, spanY, orientation,
+                          determinePlayerPairDisplayText(el, 1), BRACKET_TEXT_ELEMENT::PAIR1);
+      drawBracketTextItem(x0, y0, spanY, orientation,
+                          determinePlayerPairDisplayText(el, 2), BRACKET_TEXT_ELEMENT::PAIR2);
+
+      //
       // Decorate the bracket with match data, if existing
       //
 
@@ -141,44 +149,6 @@ upSimpleReport BracketSheet::regenerateReport()
       auto ma = el.getLinkedMatch();
       if (ma != nullptr)
       {
-        // print the names of the first player pair
-        if (ma->hasPlayerPair1())
-        {
-          PlayerPair pp = ma->getPlayerPair1();
-          drawBracketTextItem(x0, y0, spanY, orientation, pp.getDisplayName(), BRACKET_TEXT_ELEMENT::PAIR1);
-        }
-        // is there a "symbolic" player1 name like "winner of match xxx"?
-        else
-        {
-          int symbName = ma->getSymbolicPlayerPair1Name();
-          if (symbName < 0)   // process only loser; we don't need to print "Winner of #xxx", because that's indicated by the graph
-          {
-            QString txt = "(%1 #%2)";
-            txt = txt.arg(tr("Loser"));
-            txt = txt.arg(-symbName);
-            drawBracketTextItem(x0, y0, spanY, orientation, txt, BRACKET_TEXT_ELEMENT::PAIR1);
-          }
-        }
-
-        // print the names of the second player pair
-        if (ma->hasPlayerPair2())
-        {
-          PlayerPair pp = ma->getPlayerPair2();
-          drawBracketTextItem(x0, y0, spanY, orientation, pp.getDisplayName(), BRACKET_TEXT_ELEMENT::PAIR2);
-        }
-        // is there a "symbolic" player1 name like "winner of match xxx"?
-        else
-        {
-          int symbName = ma->getSymbolicPlayerPair2Name();
-          if (symbName < 0)   // process only loser; we don't need to print "Winner of #xxx", because that's indicated by the graph
-          {
-            QString txt = "(%1 #%2)";
-            txt = txt.arg(tr("Loser"));
-            txt = txt.arg(-symbName);
-            drawBracketTextItem(x0, y0, spanY, orientation, txt, BRACKET_TEXT_ELEMENT::PAIR2);
-          }
-        }
-
         // print match number or result, if any
         OBJ_STATE stat = ma->getState();
         int matchNum = ma->getMatchNumber();
@@ -192,26 +162,7 @@ upSimpleReport BracketSheet::regenerateReport()
           QString s = "#" + QString::number(matchNum);
           drawBracketTextItem(x0, y0, spanY, orientation, s, BRACKET_TEXT_ELEMENT::MATCH_NUM);
         }
-      }   // end of: match data existing
-
-      // what to do without match data
-      else
-      {
-        // is there a fixed player1 name?
-        auto pp = el.getLinkedPlayerPair(1);
-        if (pp != nullptr)
-        {
-          drawBracketTextItem(x0, y0, spanY, orientation, pp->getDisplayName(), BRACKET_TEXT_ELEMENT::PAIR1);
-        }
-
-        // is there a fixed player2 name?
-        pp = el.getLinkedPlayerPair(2);
-        if (pp != nullptr)
-        {
-          drawBracketTextItem(x0, y0, spanY, orientation, pp->getDisplayName(), BRACKET_TEXT_ELEMENT::PAIR2);
-        }
       }
-
     }
   }
 
@@ -389,6 +340,55 @@ void BracketSheet::drawBracketTextItem(int bracketX0, int bracketY0, int ySpan, 
   // actually draw the text
   rawReport->drawText(x0, y0, txt, style, align);
 }
+
+//----------------------------------------------------------------------------
+
+QString BracketSheet::determinePlayerPairDisplayText(const BracketVisElement& el, int pos) const
+{
+  assert(el.getCategoryId() == cat.getId());
+  assert((pos > 0) && (pos < 3));
+
+  // is there a match connected to this bracket element?
+  auto ma = el.getLinkedMatch();
+
+  // case 1: there is valid match linked to this bracket element
+  if (ma != nullptr)
+  {
+    // case 1a: the match has valid player pairs
+    // in this case, return their display name
+    bool foundPlayerPair = (pos == 1) ? ma->hasPlayerPair1() : ma->hasPlayerPair2();
+    if (foundPlayerPair)
+    {
+      PlayerPair pp = (pos == 1) ? ma->getPlayerPair1() : ma->getPlayerPair2();
+      return pp.getDisplayName();
+    }
+
+    // case 1b: there is symbolic name like "loser of match xxx"
+    int symbName = (pos == 1) ? ma->getSymbolicPlayerPair1Name() : ma->getSymbolicPlayerPair2Name();
+    if (symbName < 0)   // process only loser; we don't need to print "Winner of #xxx", because that's indicated by the graph
+    {
+      QString txt = "(%1 #%2)";
+      txt = txt.arg(tr("Loser"));
+      txt = txt.arg(-symbName);
+      return txt;
+    }
+
+    return "";  // nothing to display for this match
+  }
+
+  // case 2: we have fixed, static player pair references stored for this bracket element
+  auto pp = el.getLinkedPlayerPair(pos);
+  if (pp != nullptr)
+  {
+    return pp->getDisplayName();
+  }
+
+  // case 3, default: the branch is unused, so we label it with "--"
+  return "--";
+}
+
+//----------------------------------------------------------------------------
+
 
 //----------------------------------------------------------------------------
 

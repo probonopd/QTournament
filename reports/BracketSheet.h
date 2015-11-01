@@ -53,7 +53,7 @@ namespace QTournament
     tuple<double, double> grid2MM(int gridX, int gridY) const;
     void drawBracketTextItem(int bracketX0, int bracketY0, int ySpan, BRACKET_ORIENTATION orientation, QString txt, BRACKET_TEXT_ELEMENT item);
 
-
+    QString determinePlayerPairDisplayText(const BracketVisElement& el, int pos) const;
   };
 
 }
