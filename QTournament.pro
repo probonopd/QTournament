@@ -8,7 +8,14 @@ QT       += sql widgets
 
 TARGET = QTournament
 TEMPLATE = app
-QMAKE_CXXFLAGS += -std=c++14 -Wno-unused-parameter -O0
+QMAKE_CXXFLAGS += -std=c++14 -Wno-unused-parameter
+
+# Optimization level O3 for release
+QMAKE_CXXFLAGS_RELEASE -= -O2
+QMAKE_CXXFLAGS_RELEASE += -O3
+
+# Optimization level O1 for debug
+QMAKE_CXXFLAGS_DEBUG += -O1
 
 HEADERS += \
     Category.h \

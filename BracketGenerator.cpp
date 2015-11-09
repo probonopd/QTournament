@@ -338,7 +338,7 @@ namespace QTournament
     if (numPlayers <= 16)
     {
       // prepare the container for the visualization data
-      visResult.addPage(BRACKET_PAGE_ORIENTATION::LANDSCAPE, BRACKET_LABEL_POS::BOTTOM_LEFT);
+      visResult.addPage(BRACKET_PAGE_ORIENTATION::LANDSCAPE, BRACKET_LABEL_POS::TOP_LEFT);
 
       for (int i=0; i < 36; ++i)
       {

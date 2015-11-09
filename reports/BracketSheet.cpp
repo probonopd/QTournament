@@ -4,6 +4,7 @@
 
 #include "BracketSheet.h"
 #include "SimpleReportGenerator.h"
+#include "TextStyle.h"
 
 #include "ui/GuiHelpers.h"
 #include "Match.h"
@@ -187,6 +188,10 @@ upSimpleReport BracketSheet::regenerateReport()
     }
   }
 
+  // decorate all pages with labels, if necessary
+  printHeaderAndFooterOnAllPages();
+
+  // done. Reset the internal raw pointer and return the unique_ptr to the caller
   rawReport = nullptr;
   return rep;
 }
@@ -253,7 +258,7 @@ void BracketSheet::determineGridSize()
 void BracketSheet::setupTextStyle()
 {
   // check if the text style for bracket text already exists
-  auto baseStyle = rawReport->getTextStyle(BRACKET_STYLE);
+  SimpleReportLib::TextStyle* baseStyle = rawReport->getTextStyle(BRACKET_STYLE);
   if (baseStyle == nullptr)
   {
     baseStyle = rawReport->createChildTextStyle(BRACKET_STYLE);
@@ -289,7 +294,7 @@ tuple<double, double> BracketSheet::grid2MM(int gridX, int gridY) const
 
 //----------------------------------------------------------------------------
 
-void BracketSheet::drawBracketTextItem(int bracketX0, int bracketY0, int ySpan, BRACKET_ORIENTATION orientation, QString txt, BracketSheet::BRACKET_TEXT_ELEMENT item, const QString& styleNameOverride)
+void BracketSheet::drawBracketTextItem(int bracketX0, int bracketY0, int ySpan, BRACKET_ORIENTATION orientation, QString txt, BracketSheet::BRACKET_TEXT_ELEMENT item, const QString& styleNameOverride) const
 {
   // get the default text style for bracket text
   auto style = rawReport->getTextStyle(BRACKET_STYLE);
@@ -315,8 +320,8 @@ void BracketSheet::drawBracketTextItem(int bracketX0, int bracketY0, int ySpan, 
   }
 
   // pre-calculate the y-positions of text elements
-  double yTextTop;
-  tie(x0, yTextTop) = grid2MM(bracketX0, bracketY0);
+  tie(x0, y0) = grid2MM(bracketX0, bracketY0);
+  double yTextTop = y0;
   yTextTop -= txtHeight * 1.1 + GAP_LINE_TXT__MM;
   double yTextBottom = yTextTop + yFac * ySpan;
   double yTextCenter = (yTextTop + yTextBottom + txtHeight) / 2.0;
@@ -449,6 +454,105 @@ tuple<QString, bool> BracketSheet::determinePlayerPairDisplayText(const BracketV
 
   // case 3, default: the branch is unused, so we label it with "--"
   return make_tuple("--", false);
+}
+
+void BracketSheet::printHeaderAndFooterOnAllPages() const
+{
+  // get the handle of the overall bracket visualization data
+  auto bvd = BracketVisData::getExisting(cat);
+  if (bvd == nullptr) return;
+
+  assert(bvd->getNumPages() == rawReport->getPageCount());
+
+  // prepare the elements of the label: headline, organizer name, date
+  QString headline = cat.getName() + " -- " + tr("Bracket");
+  QString org = cfg[CFG_KEY_TNMT_ORGA].toString() + " -- " + cfg[CFG_KEY_TNMT_NAME].toString();
+  QString dat = tr("As of %1, %2");
+  dat = dat.arg(SimpleReportLib::HeaderFooterStrings::TOKEN_CURDATE);
+  dat = dat.arg(SimpleReportLib::HeaderFooterStrings::TOKEN_CURTIME);
+  SimpleReportLib::HeaderFooterStrings::substTokensInPlace(dat, -1, -1);
+
+  // prepare the styles for the text elements
+  auto headlineStyle = rawReport->getTextStyle(HEADLINE_STYLE);
+  assert(headlineStyle != nullptr);
+  auto orgStyle = rawReport->getTextStyle(SimpleReportLib::SimpleReportGenerator::DEFAULT_HEADER_STYLE_NAME);
+  assert(orgStyle != nullptr);
+
+  // loop over all pages to check if and where to print a label
+  for (int pg=0; pg < rawReport->getPageCount(); ++pg)
+  {
+    BRACKET_PAGE_ORIENTATION orientation;
+    BRACKET_LABEL_POS labelPos;
+    tie(orientation, labelPos) = bvd->getPageInfo(pg);
+
+    if (labelPos == BRACKET_LABEL_POS::NONE) continue;
+
+    // determine text alignment and base point
+    double x0 = DEFAULT_MARGIN__MM;
+    double y0 = DEFAULT_MARGIN__MM;
+    SimpleReportLib::HOR_TXT_ALIGNMENT align = SimpleReportLib::LEFT;
+    if ((labelPos == BRACKET_LABEL_POS::TOP_RIGHT) || (labelPos == BRACKET_LABEL_POS::BOTTOM_RIGHT))
+    {
+      align = SimpleReportLib::RIGHT;
+      x0 = rawReport->getPageWidth() - DEFAULT_MARGIN__MM;
+    }
+    if ((labelPos == BRACKET_LABEL_POS::BOTTOM_LEFT) || (labelPos == BRACKET_LABEL_POS::BOTTOM_RIGHT))
+    {
+      y0 = rawReport->getPageHeight() - DEFAULT_MARGIN__MM;
+
+      // subtract the height for three lines of text
+      double txtHeight = headlineStyle->getFontSize_MM();  // headline height
+      txtHeight += orgStyle->getFontSize_MM();      // orga line height
+      txtHeight += rawReport->getTextStyle()->getFontSize_MM();   // date line height
+
+      // add factor for line space
+      txtHeight *= 1.1;
+
+      // shift the text's base position up by txtHeight
+      y0 -= txtHeight;
+    }
+
+    //
+    // actually print the text
+    //
+    // for top-aligned text the sequence is: org, headline, date
+    // for bottom aligned text the sequence is: headline, date, org
+    //
+
+    if ((labelPos == BRACKET_LABEL_POS::TOP_LEFT) || (labelPos == BRACKET_LABEL_POS::TOP_RIGHT))
+    {
+      y0 -= orgStyle->getFontSize_MM();
+
+      // org
+      QRectF bb = rawReport->drawText(x0, y0, org, orgStyle, align);
+      y0 += bb.height() * 2.0;
+
+      // headline
+      bb = rawReport->drawText(x0, y0, headline, headlineStyle, align);
+      y0 += bb.height() * 1.1;
+
+      // date
+      rawReport->drawText(x0, y0, dat, "", align);
+    }
+
+    if ((labelPos == BRACKET_LABEL_POS::BOTTOM_LEFT) || (labelPos == BRACKET_LABEL_POS::BOTTOM_RIGHT))
+    {
+      // headline
+      QRectF bb = rawReport->drawText(x0, y0, headline, headlineStyle, align);
+      y0 += bb.height() * 1.1;
+
+      // date
+      bb = rawReport->drawText(x0, y0, dat, "", align);
+      y0 += bb.height() * 1.1;
+
+      // org
+      rawReport->drawText(x0, y0, org, orgStyle, align);
+    }
+
+
+    // determine text base point
+
+  }
 }
 
 //----------------------------------------------------------------------------
