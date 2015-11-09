@@ -56,8 +56,10 @@ namespace QTournament
     void setupTextStyle();
     tuple<double, double> grid2MM(int gridX, int gridY) const;
     void drawBracketTextItem(int bracketX0, int bracketY0, int ySpan, BRACKET_ORIENTATION orientation, QString txt, BRACKET_TEXT_ELEMENT item, const QString& styleNameOverride="") const;
+    void drawTruncatedPlayerNameOnBracketLine(int bracketLineX0, int bracketLineY0, BRACKET_ORIENTATION orientation, const PlayerPair& pp) const;
 
-    tuple<QString, bool> determinePlayerPairDisplayText(const BracketVisElement& el, int pos) const;
+    QString determineSymbolicPlayerPairDisplayText(const BracketVisElement& el, int pos) const;
+    int determineEffectivePlayerPairId(const BracketVisElement& el, int pos) const;
     void printHeaderAndFooterOnAllPages() const;
   };
 

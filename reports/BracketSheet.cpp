@@ -139,15 +139,26 @@ upSimpleReport BracketSheet::regenerateReport()
       //
       // print the actual or symbolic player names, if any
       //
-      QString pairName;
-      bool isSymbolic;
-      tie(pairName, isSymbolic) = determinePlayerPairDisplayText(el, 1);
-      drawBracketTextItem(x0, y0, spanY, orientation, pairName, BRACKET_TEXT_ELEMENT::PAIR1,
-                          (isSymbolic ? BRACKET_STYLE_ITALICS: ""));
-
-      tie(pairName, isSymbolic) = determinePlayerPairDisplayText(el, 2);
-      drawBracketTextItem(x0, y0, spanY, orientation, pairName, BRACKET_TEXT_ELEMENT::PAIR2,
-                          (isSymbolic ? BRACKET_STYLE_ITALICS: ""));
+      int ppId = determineEffectivePlayerPairId(el, 1);
+      if (ppId < 0)
+      {
+        QString symbName = determineSymbolicPlayerPairDisplayText(el, 1);
+        drawBracketTextItem(x0, y0, spanY, orientation, symbName, BRACKET_TEXT_ELEMENT::PAIR1,
+                            BRACKET_STYLE_ITALICS);
+      } else {
+        PlayerPair pp = Tournament::getPlayerMngr()->getPlayerPair(ppId);
+        drawTruncatedPlayerNameOnBracketLine(x0, y0, orientation, pp);
+      }
+      ppId = determineEffectivePlayerPairId(el, 2);
+      if (ppId < 0)
+      {
+        QString symbName = determineSymbolicPlayerPairDisplayText(el, 2);
+        drawBracketTextItem(x0, y0, spanY, orientation, symbName, BRACKET_TEXT_ELEMENT::PAIR2,
+                            BRACKET_STYLE_ITALICS);
+      } else {
+        PlayerPair pp = Tournament::getPlayerMngr()->getPlayerPair(ppId);
+        drawTruncatedPlayerNameOnBracketLine(x0, y0 + spanY, orientation, pp);
+      }
 
       //
       // Decorate the bracket with match data, if existing
@@ -324,7 +335,7 @@ void BracketSheet::drawBracketTextItem(int bracketX0, int bracketY0, int ySpan, 
   double yTextTop = y0;
   yTextTop -= txtHeight * 1.1 + GAP_LINE_TXT__MM;
   double yTextBottom = yTextTop + yFac * ySpan;
-  double yTextCenter = (yTextTop + yTextBottom + txtHeight) / 2.0;
+  double yTextCenter = GAP_LINE_TXT__MM + (yTextTop + yTextBottom + txtHeight) / 2.0;
 
   //
   // adjust x0,y0 depending on the text item
@@ -412,7 +423,90 @@ void BracketSheet::drawBracketTextItem(int bracketX0, int bracketY0, int ySpan, 
 
 //----------------------------------------------------------------------------
 
-tuple<QString, bool> BracketSheet::determinePlayerPairDisplayText(const BracketVisElement& el, int pos) const
+void BracketSheet::drawTruncatedPlayerNameOnBracketLine(int bracketLineX0, int bracketLineY0, BRACKET_ORIENTATION orientation, const PlayerPair& pp) const
+{
+  // get the default text style for bracket text
+  auto style = rawReport->getTextStyle(BRACKET_STYLE);
+  double txtHeight = style->getFontSize_MM();
+
+  // adjust the top-left corner of the bracket, if necessary
+  if (orientation == BRACKET_ORIENTATION::LEFT)
+  {
+    --bracketLineX0;
+  }
+
+  // calc the base point of the bracket line
+  double lineX0;
+  double lineY0;
+  tie(lineX0, lineY0) = grid2MM(bracketLineX0, bracketLineY0);
+
+  // prepare a possible postfix for player1's name in
+  // case we are in doubles or mixed
+  QString p1Postfix = (pp.hasPlayer2()) ? " / " : QString();
+
+  // a little helper function that truncates a player name
+  // until it fits on a bracket line
+  auto truncPlayerName = [&](const Player& _p, const QString& postfix) {
+    int fullLen = _p.getDisplayName().length();
+    QString truncName;
+    double maxWidth = xFac - 2 * GAP_LINE_TXT__MM;
+    for (int len = fullLen; len > 3; --len)
+    {
+      truncName = _p.getDisplayName(len) + postfix;
+      double width = rawReport->getTextDimensions_MM(truncName, style).width();
+      if (width <= maxWidth) break;    // xFac equals the line length
+    }
+
+    return truncName;
+  };
+
+  // truncate player1's name until it fits on
+  // a bracket line and actually draw it
+  QString p1TruncName = truncPlayerName(pp.getPlayer1(), p1Postfix);
+  double textY0 = lineY0 - txtHeight * 1.1 - GAP_LINE_TXT__MM;
+  rawReport->drawText(lineX0 + GAP_LINE_TXT__MM, textY0, p1TruncName, style);
+
+  // truncate player2's name until it fits on
+  // a bracket line and actually draw it
+  if (pp.hasPlayer2())
+  {
+    QString p2TruncName = truncPlayerName(pp.getPlayer2(), QString());
+    textY0 = lineY0 + txtHeight * 0.1;
+    rawReport->drawText(lineX0 + GAP_LINE_TXT__MM, textY0, p2TruncName, style);
+  }
+
+}
+
+//----------------------------------------------------------------------------
+
+QString BracketSheet::determineSymbolicPlayerPairDisplayText(const BracketVisElement& el, int pos) const
+{
+  assert(el.getCategoryId() == cat.getId());
+  assert((pos > 0) && (pos < 3));
+
+  // is there a symbolic name?
+  auto ma = el.getLinkedMatch();
+  if (ma != nullptr)
+  {
+    int symbName = (pos == 1) ? ma->getSymbolicPlayerPair1Name() : ma->getSymbolicPlayerPair2Name();
+    if (symbName < 0)   // process only loser; we don't need to print "Winner of #xxx", because that's indicated by the graph
+    {
+      QString txt = "(%1 #%2)";
+      txt = txt.arg(tr("Loser"));
+      txt = txt.arg(-symbName);
+      return txt;
+    }
+
+    return QString();  // nothing to display for this match
+  }
+
+  // default: the branch is unused, so we label it with "--"
+  return "--";
+}
+
+//----------------------------------------------------------------------------
+
+int BracketSheet::determineEffectivePlayerPairId(const BracketVisElement& el, int pos) const
 {
   assert(el.getCategoryId() == cat.getId());
   assert((pos > 0) && (pos < 3));
@@ -429,32 +523,23 @@ tuple<QString, bool> BracketSheet::determinePlayerPairDisplayText(const BracketV
     if (foundPlayerPair)
     {
       PlayerPair pp = (pos == 1) ? ma->getPlayerPair1() : ma->getPlayerPair2();
-      return make_tuple(pp.getDisplayName(), false);
+      return pp.getPairId();
     }
 
-    // case 1b: there is symbolic name like "loser of match xxx"
-    int symbName = (pos == 1) ? ma->getSymbolicPlayerPair1Name() : ma->getSymbolicPlayerPair2Name();
-    if (symbName < 0)   // process only loser; we don't need to print "Winner of #xxx", because that's indicated by the graph
-    {
-      QString txt = "(%1 #%2)";
-      txt = txt.arg(tr("Loser"));
-      txt = txt.arg(-symbName);
-      return make_tuple(txt, true);
-    }
-
-    return make_tuple("", false);  // nothing to display for this match
+    return -1;  // nothing found for this match
   }
 
   // case 2: we have fixed, static player pair references stored for this bracket element
   auto pp = el.getLinkedPlayerPair(pos);
   if (pp != nullptr)
   {
-    return make_tuple(pp->getDisplayName(), false);
+    return pp->getPairId();
   }
 
-  // case 3, default: the branch is unused, so we label it with "--"
-  return make_tuple("--", false);
+  return -1;   // no player pair at all
 }
+
+//----------------------------------------------------------------------------
 
 void BracketSheet::printHeaderAndFooterOnAllPages() const
 {

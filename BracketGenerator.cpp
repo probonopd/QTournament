@@ -367,6 +367,9 @@ namespace QTournament
         visResult.addElement(el);
       }
     } else {
+      // prepare the container for the visualization data
+      visResult.addPage(BRACKET_PAGE_ORIENTATION::LANDSCAPE, BRACKET_LABEL_POS::TOP_LEFT);
+
       for (int i=0; i < 92; ++i)
       {
         upBracketMatchData newBracketMatch = upBracketMatchData(new BracketMatchData);
