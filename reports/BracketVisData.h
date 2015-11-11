@@ -121,6 +121,8 @@ namespace QTournament
     int getGridX0() const {return row[BV_GRID_X0].toInt();}
     int getGridY0() const {return row[BV_GRID_Y0].toInt();}
     int getSpanY() const {return row[BV_SPAN_Y].toInt();}
+    int getYPageBreakSpan() const {return row[BV_Y_PAGEBREAK_SPAN].toInt();}
+    int getNextPageNum() const {return row[BV_NEXT_PAGE_NUM].toInt();}
 
     BRACKET_ORIENTATION getOrientation() const {return static_cast<BRACKET_ORIENTATION>(row[BV_ORIENTATION].toInt());}
     BRACKET_TERMINATOR getTerminator() const {return  static_cast<BRACKET_TERMINATOR>(row[BV_TERMINATOR].toInt());}

@@ -256,6 +256,12 @@ void BracketSheet::determineGridSize()
       ++x;  // reserve space for the terminator-line
     }
 
+    // reduce the spanY in case the bracket element spans multiple pages
+    if (el.getYPageBreakSpan() > 0)
+    {
+      spanY = el.getYPageBreakSpan();
+    }
+
     if (x > maxX) maxX = x;
     if ((y + spanY) > maxY) maxY = y + spanY;
   }
@@ -571,6 +577,8 @@ void BracketSheet::printHeaderAndFooterOnAllPages() const
     tie(orientation, labelPos) = bvd->getPageInfo(pg);
 
     if (labelPos == BRACKET_LABEL_POS::NONE) continue;
+
+    rawReport->setActivePage(pg);
 
     // determine text alignment and base point
     double x0 = DEFAULT_MARGIN__MM;

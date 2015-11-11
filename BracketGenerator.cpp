@@ -334,6 +334,103 @@ namespace QTournament
       {-57,-58,-1,-2,0,0,0},  // Match 92
     };
 
+    int bracketVisData_32[92][9] =
+    {
+      // page, grid x0, grid y0, y-span, yPageBreakSpan, nextPage, orientation, terminator, terminatorOffsetY      || orientation: -1= left, 1=right; terminator: 1=outwards, -1=inwards
+      {0, 7, 0, 2, 0, 0, 1, 0, 0},
+      {0, 7, 4, 2, 0, 0, 1, 0, 0},
+      {0, 7, 8, 2, 0, 0, 1, 0, 0},
+      {0, 7, 12, 2, 0, 0, 1, 0, 0},
+      {0, 7, 16, 2, 0, 0, 1, 0, 0},
+      {0, 7, 20, 2, 0, 0, 1, 0, 0},
+      {0, 7, 24, 2, 0, 0, 1, 0, 0},
+      {0, 7, 28, 2, 0, 0, 1, 0, 0},
+      {1, 7, 0, 2, 0, 0, 1, 0, 0},
+      {1, 7, 4, 2, 0, 0, 1, 0, 0},
+      {1, 7, 8, 2, 0, 0, 1, 0, 0},
+      {1, 7, 12, 2, 0, 0, 1, 0, 0},
+      {1, 7, 16, 2, 0, 0, 1, 0, 0},
+      {1, 7, 20, 2, 0, 0, 1, 0, 0},
+      {1, 7, 24, 2, 0, 0, 1, 0, 0},
+      {1, 7, 28, 2, 0, 0, 1, 0, 0},
+      {0, 7, 1, 4, 0, 0, -1, 0, 0},
+      {0, 8, 1, 4, 0, 0, 1, 0, 0},
+      {0, 7, 9, 4, 0, 0, -1, 0, 0},
+      {0, 8, 9, 4, 0, 0, 1, 0, 0},
+      {0, 7, 17, 4, 0, 0, -1, 0, 0},
+      {0, 8, 17, 4, 0, 0, 1, 0, 0},
+      {0, 7, 25, 4, 0, 0, -1, 0, 0},
+      {0, 8, 25, 4, 0, 0, 1, 0, 0},
+      {1, 7, 1, 4, 0, 0, -1, 0, 0},
+      {1, 8, 1, 4, 0, 0, 1, 0, 0},
+      {1, 7, 9, 4, 0, 0, -1, 0, 0},
+      {1, 8, 9, 4, 0, 0, 1, 0, 0},
+      {1, 7, 17, 4, 0, 0, -1, 0, 0},
+      {1, 8, 17, 4, 0, 0, 1, 0, 0},
+      {1, 7, 25, 4, 0, 0, -1, 0, 0},
+      {1, 8, 25, 4, 0, 0, 1, 0, 0},
+      {0, 6, 3, 4, 0, 0, -1, 0, 0},
+      {0, 9, 3, 8, 0, 0, 1, 0, 0},
+      {0, 6, 11, 4, 0, 0, -1, 0, 0},
+      {0, 6, 19, 4, 0, 0, -1, 0, 0},
+      {0, 9, 19, 8, 0, 0, 1, 0, 0},
+      {0, 6, 27, 4, 0, 0, -1, 0, 0},
+      {1, 6, 3, 4, 0, 0, -1, 0, 0},
+      {1, 9, 3, 8, 0, 0, 1, 0, 0},
+      {1, 6, 11, 4, 0, 0, -1, 0, 0},
+      {1, 6, 19, 4, 0, 0, -1, 0, 0},
+      {1, 9, 19, 8, 0, 0, 1, 0, 0},
+      {1, 6, 27, 4, 0, 0, -1, 0, 0},
+      {2, 3, 21, 2, 0, 0, 1, 0, 0},
+      {2, 3, 25, 2, 0, 0, 1, 0, 0},
+      {2, 3, 29, 2, 0, 0, 1, 0, 0},
+      {2, 3, 33, 2, 0, 0, 1, 0, 0},
+      {2, 3, 0, 2, 0, 0, 1, 0, 0},
+      {2, 3, 4, 2, 0, 0, 1, 0, 0},
+      {2, 3, 8, 2, 0, 0, 1, 0, 0},
+      {2, 3, 12, 2, 0, 0, 1, 0, 0},
+      {0, 5, 4, 8, 0, 0, -1, 0, 0},
+      {0, 5, 20, 8, 0, 0, -1, 0, 0},
+      {1, 5, 4, 8, 0, 0, -1, 0, 0},
+      {1, 5, 20, 8, 0, 0, -1, 0, 0},
+      {0, 10, 7, 16, 0, 0, 1, 0, 0},
+      {1, 10, 7, 16, 0, 0, 1, 0, 0},
+      {2, 3, 22, 4, 0, 0, -1, 0, 0},
+      {2, 4, 22, 4, 0, 0, 1, 0, 0},
+      {2, 3, 30, 4, 0, 0, -1, 0, 0},
+      {2, 4, 30, 4, 0, 0, 1, 0, 0},
+      {0, 4, 8, 6, 0, 0, -1, 0, 0},
+      {0, 4, 24, 6, 0, 0, -1, 0, 0},
+      {1, 4, 8, 6, 0, 0, -1, 0, 0},
+      {1, 4, 24, 6, 0, 0, -1, 0, 0},
+      {2, 3, 1, 4, 0, 0, -1, 0, 0},
+      {2, 4, 1, 4, 0, 0, 1, 0, 0},
+      {2, 3, 9, 4, 0, 0, -1, 0, 0},
+      {2, 4, 9, 4, 0, 0, 1, 0, 0},
+      {2, 10, 14, 2, 0, 0, 1, 0, 0},
+      {2, 10, 18, 2, 0, 0, 1, 0, 0},
+      {2, 10, 4, 2, 0, 0, 1, 0, 0},
+      {2, 10, 8, 2, 0, 0, 1, 0, 0},
+      {0, 3, 10, 16, 0, 0, -1, 0, 0},
+      {1, 3, 10, 16, 0, 0, -1, 0, 0},
+      {2, 10, 27, 2, 0, 0, -1, 1, 0},
+      {2, 2, 24, 8, 0, 0, -1, 1, 0},
+      {2, 11, 27, 2, 0, 0, 1, 1, 0},
+      {2, 5, 24, 8, 0, 0, 1, 1, 0},
+      {2, 3, 15, 2, 0, 0, -1, 1, 0},
+      {2, 2, 3, 8, 0, 0, -1, 1, 0},
+      {2, 4, 15, 2, 0, 0, 1, 1, 0},
+      {2, 5, 3, 8, 0, 0, 1, 1, 0},
+      {2, 10, 15, 4, 0, 0, -1, 1, 0},
+      {2, 11, 15, 4, 0, 0, 1, 0, 0},
+      {2, 10, 5, 4, 0, 0, -1, 1, 0},
+      {2, 11, 5, 4, 0, 0, 1, 0, 0},
+      {1, 2, 28, 2, 0, 0, -1, 1, 0},
+      {0, 2, 15, 32, 16, 1, -1, 1, -4},
+      {1, 10, 29, 2, 0, 0, 1, 1, 0},
+      {0, 11, 15, 32, 16, 1, 1, -1, -4},
+    };
+
     // convert the hard-coded data into bracket match data entries
     if (numPlayers <= 16)
     {
@@ -369,9 +466,12 @@ namespace QTournament
     } else {
       // prepare the container for the visualization data
       visResult.addPage(BRACKET_PAGE_ORIENTATION::LANDSCAPE, BRACKET_LABEL_POS::TOP_LEFT);
+      visResult.addPage(BRACKET_PAGE_ORIENTATION::LANDSCAPE, BRACKET_LABEL_POS::NONE);
+      visResult.addPage(BRACKET_PAGE_ORIENTATION::LANDSCAPE, BRACKET_LABEL_POS::NONE);
 
       for (int i=0; i < 92; ++i)
       {
+        // prepare the bracket matches as such
         upBracketMatchData newBracketMatch = upBracketMatchData(new BracketMatchData);
 
         newBracketMatch->initialRank_Player1 = rawBracketData_32[i][0];
@@ -382,7 +482,18 @@ namespace QTournament
         newBracketMatch->nextMatchPlayerPosForLoser = rawBracketData_32[i][5];
         newBracketMatch->depthInBracket = rawBracketData_32[i][6];
 
+        // prepare the visualization data
+        RawBracketVisElement el{bracketVisData_32[i]};
+        el.initialRank1 = (newBracketMatch->initialRank_Player1 > 0) ? newBracketMatch->initialRank_Player1 : -1;
+        el.initialRank2 = (newBracketMatch->initialRank_Player2 > 0) ? newBracketMatch->initialRank_Player2 : -1;
+        el.nextMatchForWinner = newBracketMatch->nextMatchForWinner;
+        el.nextMatchForLoser = newBracketMatch->nextMatchForLoser;
+        el.nextMatchPlayerPosForWinner = newBracketMatch->nextMatchPlayerPosForWinner;
+        el.nextMatchPlayerPosForLoser = newBracketMatch->nextMatchPlayerPosForLoser;
+
+        // store both in different containers
         result.push_back(std::move(newBracketMatch));
+        visResult.addElement(el);
       }
     }
 
