@@ -126,6 +126,7 @@ namespace QTournament
 
     BRACKET_ORIENTATION getOrientation() const {return static_cast<BRACKET_ORIENTATION>(row[BV_ORIENTATION].toInt());}
     BRACKET_TERMINATOR getTerminator() const {return  static_cast<BRACKET_TERMINATOR>(row[BV_TERMINATOR].toInt());}
+    int getTerminatorOffset() const {return row[BV_TERMINATOR_OFFSET_Y].toInt();}
 
     int getInitialRank1() const {return row[BV_INITIAL_RANK1].toInt();}
     int getInitialRank2() const {return row[BV_INITIAL_RANK2].toInt();}

@@ -83,19 +83,29 @@ upSimpleReport BracketSheet::regenerateReport()
     rep->drawVertLine(x0, y0, gridYLen * yFac);
   };
 
-  // loop over all pages and bracket elements and draw them one by one
+  // create all pages in advance
+  //
+  // we need this later to continue a bracket on page 1 although we're
+  // currently painting the bracket elements for page 0, for instance
   for (int idxPage=0; idxPage < bvd->getNumPages(); ++idxPage)
   {
     if (idxPage > 0)
     {
       rep->startNextPage();
     }
+  }
+
+  // loop over all pages and bracket elements and draw them one by one
+  for (int idxPage=0; idxPage < bvd->getNumPages(); ++idxPage)
+  {
+    rawReport->setActivePage(idxPage);
 
     for (const BracketVisElement& el : bvd->getVisElements(idxPage))
     {
       int x0 = el.getGridX0();
       int y0 = el.getGridY0();
       int spanY = el.getSpanY();
+      int yPageBreakSpan = el.getYPageBreakSpan();
       BRACKET_ORIENTATION orientation = el.getOrientation();
       BRACKET_TERMINATOR terminator = el.getTerminator();
 
@@ -105,19 +115,50 @@ upSimpleReport BracketSheet::regenerateReport()
         xLen = 1;
       }
 
-      // draw the "open rectangle"
+      // if the element spans multiple pages, adjust the "span"
+      // value accordingly
+      if (yPageBreakSpan > 0)
+      {
+        spanY = yPageBreakSpan;
+      }
+
+      // draw the "open rectangle", but draw the bottom horizontal
+      // line only if we don't have a page break
       drawHorLine(x0, y0, xLen);
-      drawHorLine(x0, y0 + spanY, xLen);
       drawVertLine(x0 + xLen, y0, spanY);
+      if (yPageBreakSpan == 0) drawHorLine(x0, y0 + spanY, xLen);
+
+      // restore the original spanY value for the further steps
+      if (yPageBreakSpan != 0)
+      {
+        spanY = el.getSpanY();
+      }
+
+      // if we have a bracket element that spans multiple pages,
+      // draw the lines on the second page
+      if (yPageBreakSpan != 0)
+      {
+        // jump to the continuation page
+        rawReport->setActivePage(el.getNextPageNum());
+
+        // draw the remaining part of the bracket element
+        int remainingYSpan = spanY - yPageBreakSpan;
+        drawVertLine(x0 + xLen, 0, remainingYSpan);
+        drawHorLine(x0, remainingYSpan, xLen);
+
+        // return to our current page
+        rawReport->setActivePage(idxPage);
+      }
 
       // draw the terminator, if any
+      int termOffset = el.getTerminatorOffset();
       if (terminator == BRACKET_TERMINATOR::OUTWARDS)
       {
-        drawHorLine(x0 + xLen, y0 + spanY / 2, xLen);
+        drawHorLine(x0 + xLen, y0 + spanY / 2 + termOffset, xLen);
       }
       if (terminator == BRACKET_TERMINATOR::INWARDS)
       {
-        drawHorLine(x0 + xLen, y0 + spanY / 2, -xLen);
+        drawHorLine(x0 + xLen, y0 + spanY / 2 + termOffset, -xLen);
       }
 
       // draw the initial rank, if any
@@ -186,14 +227,29 @@ upSimpleReport BracketSheet::regenerateReport()
         int winRank = ma->getWinnerRank();
         if ((terminator != BRACKET_TERMINATOR::NONE) && (winRank > 0))
         {
+          // add an offset to x0 in case we have inwards offsets
+          int tmpX0 = x0;
+          if (terminator == BRACKET_TERMINATOR::INWARDS)
+          {
+            if (orientation == BRACKET_ORIENTATION::LEFT)
+            {
+              ++x0;
+            } else {
+              --x0;
+            }
+          }
+
           QString txt = QString::number(winRank) + ". " + tr("Place");
-          drawBracketTextItem(x0, y0, spanY, orientation, txt, BRACKET_TEXT_ELEMENT::WINNER_RANK);
+          drawBracketTextItem(x0, y0 + termOffset, spanY, orientation, txt, BRACKET_TEXT_ELEMENT::WINNER_RANK);
 
           // if the match is finished, print the winner's name as well
           if (stat == STAT_MA_FINISHED)
           {
-            drawBracketTextItem(x0, y0, spanY, orientation, ma->getWinner()->getDisplayName(), BRACKET_TEXT_ELEMENT::TERMINATOR_NAME);
+            drawBracketTextItem(x0, y0 + termOffset, spanY, orientation, ma->getWinner()->getDisplayName(), BRACKET_TEXT_ELEMENT::TERMINATOR_NAME);
           }
+
+          // restore the original x0
+          x0 = tmpX0;
         }
       }
     }

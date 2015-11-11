@@ -471,7 +471,7 @@ RawBracketVisElement::RawBracketVisElement(int visData[9])
   case 1:
     terminator = BRACKET_TERMINATOR::OUTWARDS;
     break;
-  case -11:
+  case -1:
     terminator = BRACKET_TERMINATOR::INWARDS;
     break;
   default:
