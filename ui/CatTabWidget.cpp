@@ -13,6 +13,7 @@
 #include "TournamentDataDefs.h"
 #include "dlgGroupAssignment.h"
 #include "DlgSeedingEditor.h"
+#include "PlayerMngr.h"
 
 CatTabWidget::CatTabWidget()
 {
@@ -60,6 +61,7 @@ void CatTabWidget::onCatModelChanged()
   connect(Tournament::getCatMngr(), &CatMngr::playerRemovedFromCategory, this, &CatTabWidget::onPlayerRemovedFromCategory);
   connect(Tournament::getCatMngr(), &CatMngr::categoryStatusChanged, this, &CatTabWidget::onCatStateChanged);
   connect(Tournament::getPlayerMngr(), &PlayerMngr::playerRenamed, this, &CatTabWidget::onPlayerRenamed);
+  connect(Tournament::getPlayerMngr(), SIGNAL(playerStatusChanged(int,int,OBJ_STATE,OBJ_STATE)), this, SLOT(onPlayerStateChanged(int,int,OBJ_STATE,OBJ_STATE)));
 
   updateControls();
   updatePairs();
@@ -292,13 +294,13 @@ void CatTabWidget::updatePairs()
     
     if (pp.hasPlayer2())
     {
-      QString itemLabel = QString("%1. %2").arg(nextPairedItemCount).arg(pp.getDisplayName());
+      QString itemLabel = QString("%1. %2").arg(nextPairedItemCount).arg(pp.getDisplayName(0, true));
       QListWidgetItem* item = new QListWidgetItem(itemLabel);
       item->setData(Qt::UserRole, pp.getPairId());
       ui.lwPaired->addItem(item);
       ++nextPairedItemCount;
     } else {
-      QString itemLabel = QString("%1. %2").arg(nextUnPairedItemCount).arg(pp.getDisplayName());
+      QString itemLabel = QString("%1. %2").arg(nextUnPairedItemCount).arg(pp.getDisplayName(0, true));
       QListWidgetItem* item = new QListWidgetItem(itemLabel);
       item->setData(Qt::UserRole, pp.getPlayer1().getId());
       ui.lwUnpaired->addItem(item);
@@ -675,6 +677,7 @@ void CatTabWidget::onBtnRunCatClicked()
     return;
   }
   
+  // pre-test category-specific conditions
   ERR e = selectedCat->canFreezeConfig();
   if (e == CONFIG_ALREADY_FROZEN)
   {
@@ -699,11 +702,18 @@ void CatTabWidget::onBtnRunCatClicked()
   if (e != OK) return;
   
   e = Tournament::getCatMngr()->freezeConfig(*selectedCat);
-  if (e != OK)   // after the checks above, this should never be true
+  // after we checked for category-specific errors above, we can only see general errors here
+  if (e == NOT_ALL_PLAYERS_REGISTERED)
   {
     QMessageBox::critical(this, tr("Run Category"),
-	    tr("Uncaptured error. Category has no valid configuration and can't be started"));
+      tr("Some players in this category have not yet registered."));
+  } else if (e != OK)
+  {
+    QMessageBox::critical(this, tr("Run Category"),
+      tr("Uncaptured error. Category has no valid configuration and can't be started"));
   }
+
+  if (e != OK) return;
   
   /**
    * Now the category is in status FROZEN.
@@ -930,6 +940,32 @@ void CatTabWidget::handleIntermediateSeedingForSelectedCat()
 void CatTabWidget::onCatStateChanged(const Category &c, const OBJ_STATE fromState, const OBJ_STATE toState)
 {
   updateControls();
+}
+
+//----------------------------------------------------------------------------
+
+void CatTabWidget::onPlayerStateChanged(int playerId, int seqNum, const OBJ_STATE fromState, const OBJ_STATE toState)
+{
+  // is a category selected?
+  if (!(ui.catTableView->hasCategorySelected())) return;
+
+  // is the affected player in the currently selected category?
+  // if not, there is nothing to do for us
+  auto selectedCat = ui.catTableView->getSelectedCategory();
+  Player pl = Tournament::getPlayerMngr()->getPlayer(playerId);
+  if (!(selectedCat.hasPlayer(pl))) return;
+
+  // okay, the changed player is obviously part of the currently selected,
+  // displayed category
+
+  // if a player changes from/to WAIT_FOR_REGISTRATION, we brute-force rebuild the list widgets
+  // because we need to change the item label of the affected players for
+  // adding or removing the paranthesis around the player names
+  if (((fromState == STAT_PL_IDLE) && (toState == STAT_PL_WAIT_FOR_REGISTRATION)) ||
+      ((fromState == STAT_PL_WAIT_FOR_REGISTRATION) && (toState == STAT_PL_IDLE)))
+  {
+    updatePairs();
+  }
 }
 
 //----------------------------------------------------------------------------

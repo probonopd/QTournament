@@ -116,18 +116,26 @@ void PlayerTableView::onContextMenuRequested(const QPoint& pos)
   QPoint globalPos = viewport()->mapToGlobal(pos);
 
   // resolve the click coordinates to the table row
-  int clickedRow = rowAt(pos.y());
-  int clickedCol = columnAt(pos.x());
-  bool isRowClicked = ((clickedRow >= 0) && (clickedCol >= 0));
+  //int clickedRow = rowAt(pos.y());
+  //int clickedCol = columnAt(pos.x());
+  //bool isRowClicked = ((clickedRow >= 0) && (clickedCol >= 0));
 
-  // if no row is clicked, we may only add a player.
+  // get the player status for enabling / disabling state-dependent actions
+  auto selPlayer = getSelectedPlayer();
+  bool isPlayerClicked = (selPlayer != nullptr);
+  OBJ_STATE plStat = STAT_CO_DISABLED;   // an arbitrary, dummy default value that has nothing to do with players
+  if (isPlayerClicked) plStat = selPlayer->getState();
+
+  // if no player is clicked, we may only add a player.
   // in other cases, we may also try to edit or delete
   // players
   actAddPlayer->setEnabled(true);   // always possible
-  actEditPlayer->setEnabled(isRowClicked);
-  //actShowNextMatchesForPlayer->setEnabled(isRowClicked);
+  actEditPlayer->setEnabled(isPlayerClicked);
+  //actShowNextMatchesForPlayer->setEnabled(isPlayerClicked);
   actShowNextMatchesForPlayer->setEnabled(false);  // not yet implemented
-  actRemovePlayer->setEnabled(isRowClicked);
+  actRemovePlayer->setEnabled(isPlayerClicked);
+  actRegister->setEnabled(isPlayerClicked & (plStat == STAT_PL_WAIT_FOR_REGISTRATION));
+  actUnregister->setEnabled(isPlayerClicked & (plStat == STAT_PL_IDLE));
 
   // show the context menu
   QAction* selectedItem = contextMenu->exec(globalPos);
@@ -332,6 +340,46 @@ void PlayerTableView::onShowNextMatchesForPlayerTriggered()
 
 //----------------------------------------------------------------------------
 
+void PlayerTableView::onRegisterPlayerTriggered()
+{
+  auto selectedPlayer = getSelectedPlayer();
+  if (selectedPlayer == nullptr) return;
+
+  // remove the "wait for registration"-flag
+  ERR err;
+  auto pm = Tournament::getPlayerMngr();
+  err = pm->setWaitForRegistration(*selectedPlayer, false);
+
+  if (err != OK)   // this shouldn't happen
+  {
+    QString msg = tr("Something went wrong during player registration. This shouldn't happen.\n\n");
+    msg += tr("For the records: error code = ") + QString::number(static_cast<int> (err));
+    QMessageBox::warning(this, tr("WTF??"), msg);
+  }
+}
+
+//----------------------------------------------------------------------------
+
+void PlayerTableView::onUnregisterPlayerTriggered()
+{
+  auto selectedPlayer = getSelectedPlayer();
+  if (selectedPlayer == nullptr) return;
+
+  // set the "wait for registration"-flag
+  ERR err;
+  auto pm = Tournament::getPlayerMngr();
+  err = pm->setWaitForRegistration(*selectedPlayer, true);
+
+  if (err == OK) return; // no error
+
+  QString msg = tr("The player is already assigned to matches\n");
+  msg += tr("and/or currently running categories.\n\n");
+  msg += tr("Can't undo the player registration.");
+  QMessageBox::warning(this, tr("Player unregister failed"), msg);
+}
+
+//----------------------------------------------------------------------------
+
 void PlayerTableView::initContextMenu()
 {
   // prepare all actions
@@ -339,9 +387,14 @@ void PlayerTableView::initContextMenu()
   actEditPlayer = new QAction(tr("Edit Player..."), this);
   actRemovePlayer = new QAction(tr("Remove Player..."), this);
   actShowNextMatchesForPlayer = new QAction(tr("Show next Matches..."), this);
+  actRegister = new QAction(tr("Register"), this);
+  actUnregister = new QAction(tr("Undo registration"), this);
 
   // create the context menu and connect it to the actions
   contextMenu = unique_ptr<QMenu>(new QMenu());
+  contextMenu->addAction(actRegister);
+  contextMenu->addAction(actUnregister);
+  contextMenu->addSeparator();
   contextMenu->addAction(actAddPlayer);
   contextMenu->addAction(actEditPlayer);
   contextMenu->addSeparator();
@@ -354,6 +407,8 @@ void PlayerTableView::initContextMenu()
   connect(actEditPlayer, SIGNAL(triggered(bool)), this, SLOT(onEditPlayerTriggered()));
   connect(actShowNextMatchesForPlayer, SIGNAL(triggered(bool)), this, SLOT(onShowNextMatchesForPlayerTriggered()));
   connect(actRemovePlayer, SIGNAL(triggered(bool)), this, SLOT(onRemovePlayerTriggered()));
+  connect(actRegister, SIGNAL(triggered(bool)), this, SLOT(onRegisterPlayerTriggered()));
+  connect(actUnregister, SIGNAL(triggered(bool)), this, SLOT(onUnregisterPlayerTriggered()));
 }
 
 //----------------------------------------------------------------------------

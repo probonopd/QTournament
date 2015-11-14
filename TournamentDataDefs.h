@@ -294,6 +294,7 @@ namespace QTournament
   enum OBJ_STATE {
     STAT_PL_IDLE,
     STAT_PL_PLAYING,
+    STAT_PL_WAIT_FOR_REGISTRATION,  // player has to report to match control before considered "ready"
     STAT_CAT_CONFIG,
     STAT_CAT_FROZEN,  // intermediate state in which the category can be configured for the first round
     STAT_CAT_IDLE,
