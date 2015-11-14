@@ -47,6 +47,9 @@ private:
 
   void initContextMenu();
 
+  void handleIntermediateSeedingForSelectedCat();
+  bool unfreezeAndCleanup(unique_ptr<Category> selectedCat);
+
 signals:
   void catModelChanged();
 
