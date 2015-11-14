@@ -29,10 +29,23 @@ public slots:
   void onTournamentClosed();
   void onTournamentOpened(Tournament* tnmt);
   void onCategoryDoubleClicked(const QModelIndex& index);
+  void onAddCategory();
+  void onRemoveCategory();
+  void onRunCategory();
   
+private slots:
+  void onContextMenuRequested(const QPoint& pos);
+
 private:
   Tournament* tnmt;
   QStringListModel* emptyModel;
+
+  unique_ptr<QMenu> contextMenu;
+  QAction* actAddCategory;
+  QAction* actRunCategory;
+  QAction* actRemoveCategory;
+
+  void initContextMenu();
 
 signals:
   void catModelChanged();

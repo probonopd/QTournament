@@ -14,6 +14,8 @@
 #include <QtWidgets/qmessagebox.h>
 #include "ui/delegates/CatItemDelegate.h"
 
+#include "CatMngr.h"
+
 CategoryTableView::CategoryTableView(QWidget* parent)
 :QTableView(parent)
 {
@@ -23,9 +25,17 @@ CategoryTableView::CategoryTableView(QWidget* parent)
   
   connect(MainFrame::getMainFramePointer(), &MainFrame::tournamentOpened, this, &CategoryTableView::onTournamentOpened);
 
+  // handle context menu requests
+  setContextMenuPolicy(Qt::CustomContextMenu);
+  connect(this, SIGNAL(customContextMenuRequested(const QPoint&)),
+          this, SLOT(onContextMenuRequested(const QPoint&)));
+
   // define a delegate for drawing the category items
   auto itemDelegate = new CatItemDelegate(this);
   setItemDelegate(itemDelegate);
+
+  // prep the context menu
+  initContextMenu();
 }
 
 //----------------------------------------------------------------------------
@@ -172,6 +182,119 @@ void CategoryTableView::onCategoryDoubleClicked(const QModelIndex& index)
   }
 }
 
+//----------------------------------------------------------------------------
+
+void CategoryTableView::onAddCategory()
+{
+
+}
+
+//----------------------------------------------------------------------------
+
+void CategoryTableView::onRemoveCategory()
+{
+  if (!(hasCategorySelected())) return;
+
+  Category cat = getSelectedCategory();
+  CatMngr* cm = Tournament::getCatMngr();
+
+  // can the category be deleted at all?
+  ERR err = cm->canDeleteCategory(cat);
+
+  // category is already beyond config state
+  if (err == CATEGORY_NOT_CONFIGURALE_ANYMORE)
+  {
+    QString msg = tr("The has already been started.\n");
+    msg += tr("Running categories cannot be deleted anymore.");
+    QMessageBox::critical(this, tr("Delete category"), msg);
+    return;
+  }
+
+  // not all players removable
+  if (err == PLAYER_NOT_REMOVABLE_FROM_CATEGORY)
+  {
+    QString msg = tr("Cannot remove all players from the category.\n");
+    msg += tr("The category cannot be deleted.");
+    QMessageBox::critical(this, tr("Delete category"), msg);
+    return;
+  }
+
+  // okay, the category can be deleted. Get a confirmation
+  QString msg = tr("Note: this will remove all player assignments from this category\n");
+  msg += tr("and the category from the whole tournament.\n\n");
+  msg += tr("This step is irrevocable!\n\n");
+  msg += tr("Proceed?");
+  int result = QMessageBox::question(this, tr("Delete category"), msg);
+  if (result != QMessageBox::Yes) return;
+
+  // we can actually delete the category. Let's go!
+  err = cm->deleteCategory(cat);
+  if (err != OK) {
+    QString msg = tr("Something went wrong when deleting the category. This shouldn't happen.\n\n");
+    msg += tr("For the records: error code = ") + QString::number(static_cast<int> (err));
+    QMessageBox::warning(this, tr("WTF??"), msg);
+  }
+}
+
+//----------------------------------------------------------------------------
+
+void CategoryTableView::onRunCategory()
+{
+
+}
+
+//----------------------------------------------------------------------------
+
+void CategoryTableView::onContextMenuRequested(const QPoint& pos)
+{
+  // map from scroll area coordinates to global widget coordinates
+  QPoint globalPos = viewport()->mapToGlobal(pos);
+
+  // resolve the click coordinates to the table row
+  int clickedRow = rowAt(pos.y());
+  int clickedCol = columnAt(pos.x());
+  bool isCellClicked = ((clickedRow >= 0) && (clickedCol >= 0));
+
+  // check if we have a valid category selection and
+  // determine the state of the selected category
+  OBJ_STATE catState = STAT_CO_DISABLED;   // an arbitrary, dummy default... not related to categories
+  if (hasCategorySelected())
+  {
+    Category cat = getSelectedCategory();
+    catState = cat.getState();
+  }
+
+  // enable / disable selection-specific actions
+  actAddCategory->setEnabled(true);   // always possible
+  actRunCategory->setEnabled(isCellClicked && (catState == STAT_CAT_CONFIG));
+  actRemoveCategory->setEnabled(isCellClicked && (catState == STAT_CAT_CONFIG));
+
+  // show the context menu
+  QAction* selectedItem = contextMenu->exec(globalPos);
+}
+
+//----------------------------------------------------------------------------
+
+void CategoryTableView::initContextMenu()
+{
+  // prepare all action
+  actAddCategory = new QAction(tr("Add category"), this);
+  actRunCategory = new QAction(tr("Run category..."), this);
+  actRemoveCategory = new QAction(tr("Remove category..."), this);
+
+  // create the context menu and connect it to the actions
+  contextMenu = unique_ptr<QMenu>(new QMenu());
+  contextMenu->addAction(actAddCategory);
+  contextMenu->addSeparator();
+  contextMenu->addAction(actRunCategory);
+  contextMenu->addSeparator();
+  contextMenu->addAction(actRemoveCategory);
+
+  // connect signals and slots
+  connect(actAddCategory, SIGNAL(triggered(bool)), this, SLOT(onAddCategory()));
+  connect(actRunCategory, SIGNAL(triggered(bool)), this, SLOT(onRunCategory()));
+  connect(actRemoveCategory, SIGNAL(triggered(bool)), this, SLOT(onRemoveCategory()));
+}
 //----------------------------------------------------------------------------
     
 
