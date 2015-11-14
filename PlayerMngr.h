@@ -52,6 +52,8 @@ namespace QTournament
 
     PlayerList determineActualPlayersForMatch(const Match& ma) const;
 
+    ERR setWaitForRegistration(const Player& p, bool waitForPlayerRegistration) const;
+
     static std::function<bool (Player&, Player&)> getPlayerSortFunction_byName();
 
     ERR canDeletePlayer(const Player& p) const;
@@ -66,7 +68,7 @@ namespace QTournament
     void beginCreatePlayer ();
     void endCreatePlayer (int newPlayerSeqNum);
     void playerRenamed (const Player& p);
-    void playerStatusChanged(int playerId, int playerSeqNum, OBJ_STATE fromState, OBJ_STATE toState);
+    void playerStatusChanged(int playerId, int playerSeqNum, OBJ_STATE fromState, OBJ_STATE toState) const;
     void beginDeletePlayer(int playerSeqNum) const;
     void endDeletePlayer() const;
   };
