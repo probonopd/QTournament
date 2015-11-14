@@ -568,10 +568,10 @@ void MainFrame::setupTestScenario(int scenarioID)
     Category ld = cmngr->getCategory("LD");
 
     int evenPlayerId = -1;
-    for (int i=0; i < 20; i++)   // must be an even number, for doubles!
+    for (int i=0; i < 28; i++)   // must be an even number, for doubles!
     {
-      QString lastName = "Rankinglxyjvylxcj" + QString::number(i+1);
-      pmngr->createNewPlayer("Ladylxckv", lastName, F, "Ranking Team");
+      QString lastName = "Ranking" + QString::number(i+1);
+      pmngr->createNewPlayer("Lady", lastName, F, "Ranking Team");
       Player p = pmngr->getPlayer(i + 7);   // the first six IDs are already used by previous ini-functions above
       ls.addPlayer(p);
       ld.addPlayer(p);

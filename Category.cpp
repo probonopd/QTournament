@@ -1038,54 +1038,56 @@ namespace QTournament
     }
 
     //
-    // copy visualization info to the database
+    // copy visualization info (if available) to the database
     //
 
-    // create a new visualization entry
-    upBracketVisData bvd;
-    for (int i=0; i < visDataDef.getNumPages(); ++i)
+    if ((visDataDef.getNumPages() > 0) && (visDataDef.getNumElements() > 0))
     {
-      BRACKET_PAGE_ORIENTATION orientation;
-      BRACKET_LABEL_POS lp;
-      tie(orientation, lp) = visDataDef.getPageInfo(i);
-
-      if (i == 0)
+      // create a new visualization entry
+      upBracketVisData bvd;
+      for (int i=0; i < visDataDef.getNumPages(); ++i)
       {
-        bvd = BracketVisData::createNew(*this, orientation, lp);
+        BRACKET_PAGE_ORIENTATION orientation;
+        BRACKET_LABEL_POS lp;
+        tie(orientation, lp) = visDataDef.getPageInfo(i);
+
+        if (i == 0)
+        {
+          bvd = BracketVisData::createNew(*this, orientation, lp);
+        }
+
+        assert(bvd != nullptr);
+
+        if (i > 0)
+        {
+          bvd->addPage(orientation, lp);
+        }
+      }
+      for (int i=0; i < visDataDef.getNumElements(); ++i)
+      {
+        RawBracketVisElement el = visDataDef.getElement(i);
+        bvd->addElement(i + 1, el);    // bracket match IDs are 1-based, not 0-based!
       }
 
-      assert(bvd != nullptr);
-
-      if (i > 0)
+      // link actual matches to the bracket elements
+      for (int i=0; i < visDataDef.getNumElements(); ++i)
       {
-        bvd->addPage(orientation, lp);
+        if (bracket2Match.keys().contains(i+1))    // bracket match IDs are 1-based, not 0-based!
+        {
+          int maId = bracket2Match.value(i+1);     // bracket match IDs are 1-based, not 0-based!
+          auto ma = Tournament::getMatchMngr()->getMatch(maId);
+
+          auto bracketElement = bvd->getVisElement(i+1);   // bracket match IDs are 1-based, not 0-based!
+          assert(bracketElement != nullptr);
+
+          assert(bracketElement->linkToMatch(*ma));
+        }
       }
+
+      // fill empty bracket matches with names as good as possible
+      // for now
+      bvd->fillMissingPlayerNames();
     }
-    for (int i=0; i < visDataDef.getNumElements(); ++i)
-    {
-      RawBracketVisElement el = visDataDef.getElement(i);
-      bvd->addElement(i + 1, el);    // bracket match IDs are 1-based, not 0-based!
-    }
-
-    // link actual matches to the bracket elements
-    for (int i=0; i < visDataDef.getNumElements(); ++i)
-    {
-      if (bracket2Match.keys().contains(i+1))    // bracket match IDs are 1-based, not 0-based!
-      {
-        int maId = bracket2Match.value(i+1);     // bracket match IDs are 1-based, not 0-based!
-        auto ma = Tournament::getMatchMngr()->getMatch(maId);
-
-        auto bracketElement = bvd->getVisElement(i+1);   // bracket match IDs are 1-based, not 0-based!
-        assert(bracketElement != nullptr);
-
-        assert(bracketElement->linkToMatch(*ma));
-      }
-    }
-
-    // fill empty bracket matches with names as good as possible
-    // for now
-    bvd->fillMissingPlayerNames();
-
     return OK;
   }
 

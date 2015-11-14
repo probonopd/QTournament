@@ -15,7 +15,7 @@ QMAKE_CXXFLAGS_RELEASE -= -O2
 QMAKE_CXXFLAGS_RELEASE += -O3
 
 # Optimization level O1 for debug
-QMAKE_CXXFLAGS_DEBUG += -O1
+QMAKE_CXXFLAGS_DEBUG += -O0
 
 HEADERS += \
     Category.h \
@@ -199,7 +199,7 @@ TRANSLATIONS = tournament_de.ts
 
 win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../build-DatabaseOverlayLib-Desktop_Qt_MinGW_w64_64bit_MSYS2-Release/release/ -lDatabaseOverlayLib
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../build-DatabaseOverlayLib-Desktop_Qt_MinGW_w64_64bit_MSYS2-Debug/debug/ -lDatabaseOverlayLib
-else:unix:!macx: LIBS += -L$$PWD/../DatabaseOverlayLib/ -lDatabaseOverlayLib
+else:unix:!macx: LIBS += -L$$PWD/../build-DatabaseOverlayLib-Desktop_GCC-Debug/ -lDatabaseOverlayLib
 
 INCLUDEPATH += $$PWD/../DatabaseOverlayLib
 DEPENDPATH += $$PWD/../DatabaseOverlayLib
