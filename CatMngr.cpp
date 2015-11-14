@@ -650,6 +650,17 @@ namespace QTournament
     unique_ptr<Category> specialObj = c.convertToSpecializedObject();
     ERR e = specialObj->canFreezeConfig();
     if (e != OK) return e;
+
+    // one additional check that is common for all categories:
+    // none of the assigned player is allowed to be in state
+    // WAIT_FOR_REGISTRATION
+    for (const Player& pl : c.getAllPlayersInCategory())
+    {
+      if (pl.getState() == STAT_PL_WAIT_FOR_REGISTRATION)
+      {
+        return NOT_ALL_PLAYERS_REGISTERED;
+      }
+    }
     
     // Okax, we're good to go
     //
