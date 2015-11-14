@@ -47,6 +47,7 @@ namespace QTournament
     QHash<Category, CAT_ADD_STATE> getAllCategoryAddStates(const Player& p);
     static std::function<bool (Category&, Category&)> getCategorySortFunction_byName();
     PlayerPairList getSeeding(const Category& c) const;
+    ERR canDeleteCategory(const Category& cat) const;
 
     // setters
     ERR setMatchType(Category& c, MATCH_TYPE t);
@@ -57,12 +58,13 @@ namespace QTournament
     // modifications
     ERR renameCategory(Category& c, const QString& newName);
     ERR addPlayerToCategory(const Player& p, const Category& c);
-    ERR removePlayerFromCategory(const Player& p, const Category& c);
+    ERR removePlayerFromCategory(const Player& p, const Category& c) const;
+    ERR deleteCategory(const Category& cat) const;
 
     // pairing
     ERR pairPlayers(const Category c, const Player& p1, const Player& p2);
-    ERR splitPlayers(const Category c, const Player& p1, const Player& p2);
-    ERR splitPlayers(const Category c, int pairId);
+    ERR splitPlayers(const Category c, const Player& p1, const Player& p2) const;
+    ERR splitPlayers(const Category c, int pairId) const;
 
     // freezing, starting, updating while running
     ERR freezeConfig(const Category& c);
@@ -74,12 +76,14 @@ namespace QTournament
 
   signals:
     void playersPaired(const Category c, const Player& p1, const Player& p2);
-    void playersSplit(const Category c, const Player& p1, const Player& p2);
+    void playersSplit(const Category c, const Player& p1, const Player& p2) const;
     void playerAddedToCategory(const Player& p, const Category& c);
-    void playerRemovedFromCategory(const Player& p, const Category& c);
+    void playerRemovedFromCategory(const Player& p, const Category& c) const;
     void beginCreateCategory();
     void endCreateCategory(int newCatSeqNum);
     void categoryStatusChanged(const Category& c, const OBJ_STATE fromState, const OBJ_STATE toState);
+    void beginDeleteCategory(int catSeqNum) const;
+    void endDeleteCategory() const;
 
   private:
     DbTab catTab;

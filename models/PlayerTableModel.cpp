@@ -141,7 +141,7 @@ void PlayerTableModel::onBeginCreatePlayer()
 
 void PlayerTableModel::onEndCreatePlayer(int newPlayerSeqNum)
 {
-  emit endInsertRows();
+  endInsertRows();
 }
 
 //----------------------------------------------------------------------------
@@ -187,7 +187,7 @@ void PlayerTableModel::onBeginDeletePlayer(int playerSeqNum)
 
 void PlayerTableModel::onEndDeletePlayer()
 {
-  emit endRemoveRows();
+  endRemoveRows();
 }
 
 //----------------------------------------------------------------------------

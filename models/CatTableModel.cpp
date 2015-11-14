@@ -19,6 +19,8 @@ CategoryTableModel::CategoryTableModel(TournamentDB* _db)
 {
   connect(Tournament::getCatMngr(), &CatMngr::beginCreateCategory, this, &CategoryTableModel::onBeginCreateCategory, Qt::DirectConnection);
   connect(Tournament::getCatMngr(), &CatMngr::endCreateCategory, this, &CategoryTableModel::onEndCreateCategory, Qt::DirectConnection);
+  connect(Tournament::getCatMngr(), SIGNAL(beginDeleteCategory(int)), this, SLOT(onBeginDeleteCategory(int)), Qt::DirectConnection);
+  connect(Tournament::getCatMngr(), SIGNAL(endDeleteCategory(int)), this, SLOT(onEndDeleteCategory(int)), Qt::DirectConnection);
 }
 
 //----------------------------------------------------------------------------
@@ -230,6 +232,18 @@ void CategoryTableModel::onEndCreateCategory(int newCatSeqNum)
 }
 
 //----------------------------------------------------------------------------
+
+void CategoryTableModel::onBeginDeleteCategory(int catSeqNum)
+{
+  beginRemoveRows(QModelIndex(), catSeqNum, catSeqNum);
+}
+
+//----------------------------------------------------------------------------
+
+void CategoryTableModel::onEndDeleteCategory()
+{
+  endRemoveRows();
+}
 
 //----------------------------------------------------------------------------
 

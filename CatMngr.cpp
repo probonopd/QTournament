@@ -5,9 +5,6 @@
  * Created on 18. Februar 2014, 14:04
  */
 
-#include "CatMngr.h"
-#include "TournamentErrorCodes.h"
-#include "TournamentDataDefs.h"
 #include <stdexcept>
 #include <QtCore/qdebug.h>
 #include <QtCore/qjsonarray.h>
@@ -18,6 +15,10 @@
 #include "Tournament.h"
 #include "KO_Config.h"
 #include "CatRoundStatus.h"
+#include "CatMngr.h"
+#include "TournamentErrorCodes.h"
+#include "TournamentDataDefs.h"
+#include "TournamentDB.h"
 
 using namespace dbOverlay;
 
@@ -324,7 +325,7 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  ERR CatMngr::removePlayerFromCategory(const Player& p, const Category& c)
+  ERR CatMngr::removePlayerFromCategory(const Player& p, const Category& c) const
   {
     if (!(c.canRemovePlayer(p)))
     {
@@ -358,6 +359,42 @@ namespace QTournament
     
     emit playerRemovedFromCategory(p, c);
     
+    return OK;
+  }
+
+  //----------------------------------------------------------------------------
+
+  ERR CatMngr::deleteCategory(const Category& cat) const
+  {
+    ERR e = canDeleteCategory(cat);
+    if (e != OK) return e;
+
+    // remove all players from the category
+    PlayerList allPlayers = cat.getAllPlayersInCategory();
+    for (const Player& pl : allPlayers)
+    {
+      e = removePlayerFromCategory(pl, cat);
+      if (e != OK)
+      {
+        return e;   // after all the checks before, this shouldn't happen
+      }
+    }
+
+    // a few checks for the cowards
+    int catId = cat.getId();
+    assert(db->getTab(TAB_P2C).getMatchCountForColumnValue(P2C_CAT_REF, catId) == 0);
+    assert(db->getTab(TAB_PAIRS).getMatchCountForColumnValue(PAIRS_CAT_REF, catId) == 0);
+    assert(db->getTab(TAB_MATCH_GROUP).getMatchCountForColumnValue(MG_CAT_REF, catId) == 0);
+    assert(db->getTab(TAB_RANKING).getMatchCountForColumnValue(RA_CAT_REF, catId) == 0);
+    assert(db->getTab(TAB_BRACKET_VIS).getMatchCountForColumnValue(BV_CAT_REF, catId) == 0);
+
+    // the actual deletion
+    int oldSeqNum = cat.getSeqNum();
+    emit beginDeleteCategory(oldSeqNum);
+    catTab.deleteRowsByColumnValue("id", cat.getId());
+    fixSeqNumberAfterDelete(TAB_CATEGORY, oldSeqNum);
+    emit endDeleteCategory();
+
     return OK;
   }
 
@@ -569,7 +606,7 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  ERR CatMngr::splitPlayers(const Category c, const Player& p1, const Player& p2)
+  ERR CatMngr::splitPlayers(const Category c, const Player& p1, const Player& p2) const
   {
     // all pre-conditions for splitting two players are checked
     // in the category. If this check is positive, we can start
@@ -601,7 +638,7 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  ERR CatMngr::splitPlayers(const Category c, int pairId)
+  ERR CatMngr::splitPlayers(const Category c, int pairId) const
   {
     DbTab pairsTab = db->getTab(TAB_PAIRS);
     PlayerMngr* pmngr = Tournament::getPlayerMngr();
@@ -932,6 +969,29 @@ namespace QTournament
     qvl << c.getId();
 
     return getObjectsByWhereClause<PlayerPair>(pairTab, where, qvl);
+  }
+
+  //----------------------------------------------------------------------------
+
+  ERR CatMngr::canDeleteCategory(const Category& cat) const
+  {
+    // check 1: the category must be in state CONFIG
+    if (cat.getState() != STAT_CAT_CONFIG)
+    {
+      return CATEGORY_NOT_CONFIGURALE_ANYMORE;
+    }
+
+    // check 2: all players must be removable from this category
+    for (const Player& pl : cat.getAllPlayersInCategory())
+    {
+      if (!(cat.canRemovePlayer(pl)))
+      {
+        return PLAYER_NOT_REMOVABLE_FROM_CATEGORY;
+      }
+    }
+
+    // okay, we're good to go
+    return OK;
   }
 
 //----------------------------------------------------------------------------
