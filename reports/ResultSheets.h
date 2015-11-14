@@ -21,7 +21,7 @@ namespace QTournament
   public:
     ResultSheets(TournamentDB* _db, const QString& _name, int _numMatches);
 
-    virtual upSimpleReport regenerateReport() const override;
+    virtual upSimpleReport regenerateReport() override;
     virtual QStringList getReportLocators() const override;
 
   public slots:

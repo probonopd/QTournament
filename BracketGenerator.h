@@ -5,10 +5,12 @@
 #include <memory>
 #include <functional>
 #include <vector>
+#include <tuple>
 
 #include <QList>
 
 #include "Tournament.h"
+#include "reports/BracketVisData.h"
 
 namespace QTournament
 {
@@ -40,8 +42,11 @@ namespace QTournament
 
     int depthInBracket;  // 0 = finals, 1 = semifinals, 2 = quarterfinals, 3 = last 16, ...
 
+    // a tag that indicates a deleted match
+    bool matchDeleted = false;
+
     static void resetBracketMatchId();
-    int getBracketMatchId();
+    int getBracketMatchId() const;
     void setInitialRanks(int initialRank_P1, int initialRank_P2);
     void setNextMatchForWinner(BracketMatchData& nextBracketMatch, int posInNextMatch);
     void setNextMatchForLoser(BracketMatchData& nextBracketMatch, int posInNextMatch);
@@ -54,7 +59,8 @@ namespace QTournament
   };
 
   typedef unique_ptr<BracketMatchData> upBracketMatchData;
-  typedef QList<BracketMatchData> BracketMatchDataList;
+  //typedef QList<BracketMatchData> BracketMatchDataList;
+  typedef vector<BracketMatchData> BracketMatchDataList;
   typedef std::vector<upBracketMatchData> upBracketMatchDataVector;
 
   class BracketGenerator
@@ -67,15 +73,15 @@ namespace QTournament
     BracketGenerator();
     BracketGenerator(int type);
 
-    BracketMatchDataList getBracketMatches(int numPlayers) const;
+    tuple<BracketMatchDataList, RawBracketVisDataDef> getBracketMatches(int numPlayers) const;
     static std::function<bool (BracketMatchData&, BracketMatchData&)> getBracketMatchSortFunction_earlyRoundsFirst();
     static std::function<bool (upBracketMatchData&, upBracketMatchData&)> getBracketMatchSortFunction_up_earlyRoundsFirst();
     int getNumRounds(int numPlayers) const;
 
   private:
     int bracketType;
-    upBracketMatchDataVector genBracket__SingleElim(int numPlayers) const;
-    upBracketMatchDataVector genBracket__Ranking1(int numPlayers) const;
+    tuple<upBracketMatchDataVector, RawBracketVisDataDef> genBracket__SingleElim(int numPlayers) const;
+    tuple<upBracketMatchDataVector, RawBracketVisDataDef> genBracket__Ranking1(int numPlayers) const;
     void removeUnusedMatches(upBracketMatchDataVector& bracketMatches, int numPlayers) const;  // modifies the list IN PLACE!!
   };
 

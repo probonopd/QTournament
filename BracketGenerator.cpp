@@ -26,14 +26,15 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  upBracketMatchDataVector BracketGenerator::genBracket__SingleElim(int numPlayers) const
+  tuple<upBracketMatchDataVector, RawBracketVisDataDef> BracketGenerator::genBracket__SingleElim(int numPlayers) const
   {
     upBracketMatchDataVector result;
+    RawBracketVisDataDef visResult;
 
     // return an empty list in case of invalid arguments
     if (numPlayers < 2)
     {
-      return result;
+      return make_tuple(upBracketMatchDataVector(), visResult);
     }
 
     BracketMatchData::resetBracketMatchId();
@@ -126,19 +127,20 @@ namespace QTournament
 
     removeUnusedMatches(result, numPlayers);
 
-    return result;
+    return make_tuple(std::move(result), visResult);
   }
 
 //----------------------------------------------------------------------------
 
-  upBracketMatchDataVector BracketGenerator::genBracket__Ranking1(int numPlayers) const
+  tuple<upBracketMatchDataVector, RawBracketVisDataDef> BracketGenerator::genBracket__Ranking1(int numPlayers) const
   {
     upBracketMatchDataVector result;
+    RawBracketVisDataDef visResult;
 
     // return an empty list in case of invalid arguments
     if ((numPlayers < 2) || (numPlayers > 32))
     {
-      return result;
+      return make_tuple(upBracketMatchDataVector(), visResult);
     }
 
     BracketMatchData::resetBracketMatchId();
@@ -188,6 +190,51 @@ namespace QTournament
       {-25,                -26,            -5,             -6,            0,        0,       0},   // Match 34
       {-27,                -28,            -3,             -4,            0,        0,       0},   // Match 35
       {-27,                -28,            -1,            - 2,            0,        0,       0},   // Match 36
+    };
+
+    int bracketVisData_16[36][9] =
+    {
+      // page, grid x0, grid y0, y-span, yPageBreakSpan, nextPage, orientation, terminator, terminatorOffsetY      || orientation: -1= left, 1=right; terminator: 1=outwards, -1=inwards
+      {0, 5, 0, 2, 0, 0, 1, 0, 0},    // Match 1
+      {0, 5, 4, 2, 0, 0, 1, 0, 0},    // Match 2
+      {0, 5, 8, 2, 0, 0, 1, 0, 0},    // Match 3
+      {0, 5, 12, 2, 0, 0, 1, 0, 0},   // Match 4
+      {0, 5, 16, 2, 0, 0, 1, 0, 0},   // Match 5
+      {0, 5, 20, 2, 0, 0, 1, 0, 0},   // Match 6
+      {0, 5, 24, 2, 0, 0, 1, 0, 0},   // Match 7
+      {0, 5, 28, 2, 0, 0, 1, 0, 0},   // Match 8
+
+      {0, 5, 1, 4, 0, 0, -1, 0, 0},   // Match 9
+      {0, 6, 1, 4, 0, 0, 1, 0, 0},    // Match 10
+      {0, 5, 9, 4, 0, 0, -1, 0, 0},   // Match 11
+      {0, 6, 9, 4, 0, 0, 1, 0, 0},    // Match 12
+      {0, 5, 17, 4, 0, 0, -1, 0, 0},  // Match 13
+      {0, 6, 17, 4, 0, 0, 1, 0, 0},   // Match 14
+      {0, 5, 25, 4, 0, 0, -1, 0, 0},  // Match 15
+      {0, 6, 25, 4, 0, 0, 1, 0, 0},   // Match 16
+
+      {0, 4, 3, 4, 0, 0, -1, 0, 0},   // Match 17
+      {0, 4, 11, 4, 0, 0, -1, 0, 0},  // Match 18
+      {0, 4, 19, 4, 0, 0, -1, 0, 0},  // Match 19
+      {0, 4, 27, 4, 0, 0, -1, 0, 0},  // Match 20
+
+      {0, 8, 34, 2, 0, 0, 1, 0, 0},   // Match 21
+      {0, 8, 38, 2, 0, 0, 1, 0, 0},   // Match 22
+      {0, 2, 34, 2, 0, 0, 1, 0, 0},   // Match 23
+      {0, 2, 38, 2, 0, 0, 1, 0, 0},   // Match 24
+      {0, 3, 4, 8, 0, 0, -1, 0, 0},   // Match 25
+      {0, 3, 20, 8, 0, 0, -1, 0, 0},  // Match 26
+      {0, 7, 3, 8, 0, 0, 1, 0, 0},    // Match 27
+      {0, 7, 19, 8, 0, 0, 1, 0, 0},   // Match 28
+
+      {0, 8, 35, 4, 0, 0, -1, 1, 0},  // Match 29
+      {0, 9, 35, 4, 0, 0, 1, 1, 0},   // Match 30
+      {0, 2, 35, 4, 0, 0, -1, 1, 0},  // Match 31
+      {0, 3, 35, 4, 0, 0, 1, 1, 0},   // Match 32
+      {0, 2, 30, 2, 0, 0, -1, 1, 0},  // Match 33
+      {0, 2, 8, 16, 0, 0, -1, 1, 0},  // Match 34
+      {0, 9, 29, 2, 0, 0, 1, 1, 0},   // Match 35
+      {0, 8, 7, 16, 0, 0, 1, 1, 0},   // Match 36
     };
 
     int rawBracketData_32[92][7] =
@@ -287,11 +334,112 @@ namespace QTournament
       {-57,-58,-1,-2,0,0,0},  // Match 92
     };
 
+    int bracketVisData_32[92][9] =
+    {
+      // page, grid x0, grid y0, y-span, yPageBreakSpan, nextPage, orientation, terminator, terminatorOffsetY      || orientation: -1= left, 1=right; terminator: 1=outwards, -1=inwards
+      {0, 7, 0, 2, 0, 0, 1, 0, 0},
+      {0, 7, 4, 2, 0, 0, 1, 0, 0},
+      {0, 7, 8, 2, 0, 0, 1, 0, 0},
+      {0, 7, 12, 2, 0, 0, 1, 0, 0},
+      {0, 7, 16, 2, 0, 0, 1, 0, 0},
+      {0, 7, 20, 2, 0, 0, 1, 0, 0},
+      {0, 7, 24, 2, 0, 0, 1, 0, 0},
+      {0, 7, 28, 2, 0, 0, 1, 0, 0},
+      {1, 7, 0, 2, 0, 0, 1, 0, 0},
+      {1, 7, 4, 2, 0, 0, 1, 0, 0},
+      {1, 7, 8, 2, 0, 0, 1, 0, 0},
+      {1, 7, 12, 2, 0, 0, 1, 0, 0},
+      {1, 7, 16, 2, 0, 0, 1, 0, 0},
+      {1, 7, 20, 2, 0, 0, 1, 0, 0},
+      {1, 7, 24, 2, 0, 0, 1, 0, 0},
+      {1, 7, 28, 2, 0, 0, 1, 0, 0},
+      {0, 7, 1, 4, 0, 0, -1, 0, 0},
+      {0, 8, 1, 4, 0, 0, 1, 0, 0},
+      {0, 7, 9, 4, 0, 0, -1, 0, 0},
+      {0, 8, 9, 4, 0, 0, 1, 0, 0},
+      {0, 7, 17, 4, 0, 0, -1, 0, 0},
+      {0, 8, 17, 4, 0, 0, 1, 0, 0},
+      {0, 7, 25, 4, 0, 0, -1, 0, 0},
+      {0, 8, 25, 4, 0, 0, 1, 0, 0},
+      {1, 7, 1, 4, 0, 0, -1, 0, 0},
+      {1, 8, 1, 4, 0, 0, 1, 0, 0},
+      {1, 7, 9, 4, 0, 0, -1, 0, 0},
+      {1, 8, 9, 4, 0, 0, 1, 0, 0},
+      {1, 7, 17, 4, 0, 0, -1, 0, 0},
+      {1, 8, 17, 4, 0, 0, 1, 0, 0},
+      {1, 7, 25, 4, 0, 0, -1, 0, 0},
+      {1, 8, 25, 4, 0, 0, 1, 0, 0},
+      {0, 6, 3, 4, 0, 0, -1, 0, 0},
+      {0, 9, 3, 8, 0, 0, 1, 0, 0},
+      {0, 6, 11, 4, 0, 0, -1, 0, 0},
+      {0, 6, 19, 4, 0, 0, -1, 0, 0},
+      {0, 9, 19, 8, 0, 0, 1, 0, 0},
+      {0, 6, 27, 4, 0, 0, -1, 0, 0},
+      {1, 6, 3, 4, 0, 0, -1, 0, 0},
+      {1, 9, 3, 8, 0, 0, 1, 0, 0},
+      {1, 6, 11, 4, 0, 0, -1, 0, 0},
+      {1, 6, 19, 4, 0, 0, -1, 0, 0},
+      {1, 9, 19, 8, 0, 0, 1, 0, 0},
+      {1, 6, 27, 4, 0, 0, -1, 0, 0},
+      {2, 3, 19, 2, 0, 0, 1, 0, 0},
+      {2, 3, 23, 2, 0, 0, 1, 0, 0},
+      {2, 3, 27, 2, 0, 0, 1, 0, 0},
+      {2, 3, 31, 2, 0, 0, 1, 0, 0},
+      {2, 3, 0, 2, 0, 0, 1, 0, 0},
+      {2, 3, 4, 2, 0, 0, 1, 0, 0},
+      {2, 3, 8, 2, 0, 0, 1, 0, 0},
+      {2, 3, 12, 2, 0, 0, 1, 0, 0},
+      {0, 5, 4, 8, 0, 0, -1, 0, 0},
+      {0, 5, 20, 8, 0, 0, -1, 0, 0},
+      {1, 5, 4, 8, 0, 0, -1, 0, 0},
+      {1, 5, 20, 8, 0, 0, -1, 0, 0},
+      {0, 10, 7, 16, 0, 0, 1, 0, 0},
+      {1, 10, 7, 16, 0, 0, 1, 0, 0},
+      {2, 3, 20, 4, 0, 0, -1, 0, 0},
+      {2, 4, 20, 4, 0, 0, 1, 0, 0},
+      {2, 3, 28, 4, 0, 0, -1, 0, 0},
+      {2, 4, 28, 4, 0, 0, 1, 0, 0},
+      {0, 4, 8, 6, 0, 0, -1, 0, 0},
+      {0, 4, 24, 6, 0, 0, -1, 0, 0},
+      {1, 4, 8, 6, 0, 0, -1, 0, 0},
+      {1, 4, 24, 6, 0, 0, -1, 0, 0},
+      {2, 3, 1, 4, 0, 0, -1, 0, 0},
+      {2, 4, 1, 4, 0, 0, 1, 0, 0},
+      {2, 3, 9, 4, 0, 0, -1, 0, 0},
+      {2, 4, 9, 4, 0, 0, 1, 0, 0},
+      {2, 9, 10, 2, 0, 0, 1, 0, 0},
+      {2, 9, 14, 2, 0, 0, 1, 0, 0},
+      {2, 9, 0, 2, 0, 0, 1, 0, 0},
+      {2, 9, 4, 2, 0, 0, 1, 0, 0},
+      {0, 3, 10, 16, 0, 0, -1, 0, 0},
+      {1, 3, 10, 16, 0, 0, -1, 0, 0},
+      {2, 9, 21, 2, 0, 0, -1, 1, 0},
+      {2, 2, 22, 8, 0, 0, -1, 1, 0},
+      {2, 10, 21, 2, 0, 0, 1, 1, 0},
+      {2, 5, 22, 8, 0, 0, 1, 1, 0},
+      {2, 3, 15, 2, 0, 0, -1, 1, 0},
+      {2, 2, 3, 8, 0, 0, -1, 1, 0},
+      {2, 4, 15, 2, 0, 0, 1, 1, 0},
+      {2, 5, 3, 8, 0, 0, 1, 1, 0},
+      {2, 9, 11, 4, 0, 0, -1, 1, 0},
+      {2, 10, 11, 4, 0, 0, 1, 1, 0},
+      {2, 9, 1, 4, 0, 0, -1, 1, 0},
+      {2, 10, 1, 4, 0, 0, 1, 1, 0},
+      {1, 2, 28, 2, 0, 0, -1, 1, 0},
+      {0, 2, 15, 32, 16, 1, -1, 1, -4},
+      {1, 10, 29, 2, 0, 0, 1, 1, 0},
+      {0, 11, 15, 32, 16, 1, 1, -1, -4},
+    };
+
     // convert the hard-coded data into bracket match data entries
     if (numPlayers <= 16)
     {
+      // prepare the container for the visualization data
+      visResult.addPage(BRACKET_PAGE_ORIENTATION::LANDSCAPE, BRACKET_LABEL_POS::TOP_LEFT);
+
       for (int i=0; i < 36; ++i)
       {
+        // prepare the bracket matches as such
         upBracketMatchData newBracketMatch = upBracketMatchData(new BracketMatchData);
 
         newBracketMatch->initialRank_Player1 = rawBracketData_16[i][0];
@@ -302,11 +450,28 @@ namespace QTournament
         newBracketMatch->nextMatchPlayerPosForLoser = rawBracketData_16[i][5];
         newBracketMatch->depthInBracket = rawBracketData_16[i][6];
 
+        // prepare the visualization data
+        RawBracketVisElement el{bracketVisData_16[i]};
+        el.initialRank1 = (newBracketMatch->initialRank_Player1 > 0) ? newBracketMatch->initialRank_Player1 : -1;
+        el.initialRank2 = (newBracketMatch->initialRank_Player2 > 0) ? newBracketMatch->initialRank_Player2 : -1;
+        el.nextMatchForWinner = newBracketMatch->nextMatchForWinner;
+        el.nextMatchForLoser = newBracketMatch->nextMatchForLoser;
+        el.nextMatchPlayerPosForWinner = newBracketMatch->nextMatchPlayerPosForWinner;
+        el.nextMatchPlayerPosForLoser = newBracketMatch->nextMatchPlayerPosForLoser;
+
+        // store both in different containers
         result.push_back(std::move(newBracketMatch));
+        visResult.addElement(el);
       }
     } else {
+      // prepare the container for the visualization data
+      visResult.addPage(BRACKET_PAGE_ORIENTATION::LANDSCAPE, BRACKET_LABEL_POS::TOP_LEFT);
+      visResult.addPage(BRACKET_PAGE_ORIENTATION::LANDSCAPE, BRACKET_LABEL_POS::NONE);
+      visResult.addPage(BRACKET_PAGE_ORIENTATION::LANDSCAPE, BRACKET_LABEL_POS::NONE);
+
       for (int i=0; i < 92; ++i)
       {
+        // prepare the bracket matches as such
         upBracketMatchData newBracketMatch = upBracketMatchData(new BracketMatchData);
 
         newBracketMatch->initialRank_Player1 = rawBracketData_32[i][0];
@@ -317,30 +482,42 @@ namespace QTournament
         newBracketMatch->nextMatchPlayerPosForLoser = rawBracketData_32[i][5];
         newBracketMatch->depthInBracket = rawBracketData_32[i][6];
 
+        // prepare the visualization data
+        RawBracketVisElement el{bracketVisData_32[i]};
+        el.initialRank1 = (newBracketMatch->initialRank_Player1 > 0) ? newBracketMatch->initialRank_Player1 : -1;
+        el.initialRank2 = (newBracketMatch->initialRank_Player2 > 0) ? newBracketMatch->initialRank_Player2 : -1;
+        el.nextMatchForWinner = newBracketMatch->nextMatchForWinner;
+        el.nextMatchForLoser = newBracketMatch->nextMatchForLoser;
+        el.nextMatchPlayerPosForWinner = newBracketMatch->nextMatchPlayerPosForWinner;
+        el.nextMatchPlayerPosForLoser = newBracketMatch->nextMatchPlayerPosForLoser;
+
+        // store both in different containers
         result.push_back(std::move(newBracketMatch));
+        visResult.addElement(el);
       }
     }
 
     removeUnusedMatches(result, numPlayers);
 
-    return result;
+    return make_tuple(std::move(result), visResult);
   }
 
 
 //----------------------------------------------------------------------------
 
-  BracketMatchDataList BracketGenerator::getBracketMatches(int numPlayers) const
+  tuple<BracketMatchDataList, RawBracketVisDataDef> BracketGenerator::getBracketMatches(int numPlayers) const
   {
-    if (numPlayers < 2) return BracketMatchDataList();
+    if (numPlayers < 2) return make_tuple(BracketMatchDataList(), RawBracketVisDataDef());
 
     upBracketMatchDataVector upResult;
+    RawBracketVisDataDef visResult;
     switch (bracketType)
     {
     case BRACKET_SINGLE_ELIM:
-      upResult = genBracket__SingleElim(numPlayers);
+      tie(upResult, visResult) = genBracket__SingleElim(numPlayers);
       break;
     case BRACKET_RANKING1:
-      upResult = genBracket__Ranking1(numPlayers);
+      tie(upResult, visResult) = genBracket__Ranking1(numPlayers);
       break;
     default:
       throw std::runtime_error("TODO: Unimplemented bracket type!");
@@ -348,9 +525,9 @@ namespace QTournament
 
     // convert unique_ptrs to standard objects that are easier to handle
     BracketMatchDataList result;
-    for_each(upResult.begin(), upResult.end(), [&result](upBracketMatchData& b){result.append(*b);});
+    for_each(upResult.begin(), upResult.end(), [&result](upBracketMatchData& b){result.push_back(*b);});
 
-    return result;
+    return make_tuple(result, visResult);
   }
 
 //----------------------------------------------------------------------------
@@ -412,6 +589,14 @@ namespace QTournament
       while (i != bracketMatches.end())
       {
         upBracketMatchData& bmd = *i;
+
+        // skip deleted matches
+        if (bmd->matchDeleted)
+        {
+          ++i;
+          continue;
+        }
+
         if ((bmd->initialRank_Player1 > numPlayers) && (bmd->initialRank_Player2 > numPlayers))
         {
           if (bmd->nextMatchForWinner > 0)
@@ -422,8 +607,12 @@ namespace QTournament
           {
             updatePlayer(bmd->nextMatchForLoser, bmd->nextMatchPlayerPosForLoser, BracketMatchData::UNUSED_PLAYER);
           }
-          // actually delete the element from the match list
-          i = bracketMatches.erase(i);
+          // tag the match as deleted
+          //
+          // note: we may not actually delete the element from the match list because otherwise we
+          // lose the visualization information
+          //i = bracketMatches.erase(i);
+          bmd->matchDeleted = true;
           matchesChanged = true;
         } else {
           ++i;
@@ -436,6 +625,14 @@ namespace QTournament
       while (i != bracketMatches.end())
       {
         upBracketMatchData& bmd = *i;
+
+        // skip deleted matches
+        if (bmd->matchDeleted)
+        {
+          ++i;
+          continue;
+        }
+
         if (bmd->initialRank_Player1 > numPlayers)
         {
           // player 1 does not exist, this means that player 2 wins automatically;
@@ -473,7 +670,12 @@ namespace QTournament
           // Otherwise we would lose this ranking information.
           if (bmd->nextMatchForWinner >= 0)
           {
-            i = bracketMatches.erase(i);
+            // tag the match as deleted
+            //
+            // note: we may not actually delete the element from the match list because otherwise we
+            // lose the visualization information
+            //i = bracketMatches.erase(i);
+            bmd->matchDeleted = true;
           } else {
             ++i;
           }
@@ -523,7 +725,12 @@ namespace QTournament
           // Otherwise we would lose this ranking information.
           if (bmd->nextMatchForWinner >= 0)
           {
-            i = bracketMatches.erase(i);
+            // tag the match as deleted
+            //
+            // note: we may not actually delete the element from the match list because otherwise we
+            // lose the visualization information
+            //i = bracketMatches.erase(i);
+            bmd->matchDeleted = true;
           } else {
             ++i;
           }
@@ -543,6 +750,14 @@ namespace QTournament
       while (i != bracketMatches.end())
       {
         upBracketMatchData& bmd = *i;
+
+        // skip deleted matches
+        if (bmd->matchDeleted)
+        {
+          ++i;
+          continue;
+        }
+
         if ((bmd->initialRank_Player1 == BracketMatchData::UNUSED_PLAYER) && (bmd->initialRank_Player2 < 0))
         {
           int prevMatchId = -(bmd->initialRank_Player2);
@@ -556,7 +771,12 @@ namespace QTournament
             (*prevMatch)->nextMatchForLoser = winnerRank;
           }
 
-          i = bracketMatches.erase(i);
+          // tag the match as deleted
+          //
+          // note: we may not actually delete the element from the match list because otherwise we
+          // lose the visualization information
+          //i = bracketMatches.erase(i);
+          bmd->matchDeleted = true;
           matchesChanged = true;
           continue;
         }
@@ -574,7 +794,12 @@ namespace QTournament
             (*prevMatch)->nextMatchForLoser = winnerRank;
           }
 
-          i = bracketMatches.erase(i);
+          // tag the match as deleted
+          //
+          // note: we may not actually delete the element from the match list because otherwise we
+          // lose the visualization information
+          //i = bracketMatches.erase(i);
+          bmd->matchDeleted = true;
           matchesChanged = true;
           continue;
         }
@@ -587,6 +812,13 @@ namespace QTournament
     while (i != bracketMatches.end())
     {
       upBracketMatchData& bmd = *i;
+      // skip deleted matches
+      if (bmd->matchDeleted)
+      {
+        ++i;
+        continue;
+      }
+
       assert(bmd->initialRank_Player1 != BracketMatchData::UNUSED_PLAYER);
       assert(bmd->initialRank_Player2 != BracketMatchData::UNUSED_PLAYER);
       ++i;
@@ -599,36 +831,7 @@ namespace QTournament
 
   std::function<bool (BracketMatchData&, BracketMatchData&)> BracketGenerator::getBracketMatchSortFunction_earlyRoundsFirst()
   {
-    return [](BracketMatchData& bmd1, BracketMatchData& bmd2) {
-      // initial note:
-      // std::sort now seems to provide invalid bmd2 reference that
-      // cause a SIGSEGV. Using the debugger I could trace it down to
-      // stl_algo.h using an invalid value for the last element of the
-      // vector, although std:sort was called with a correct value.
-      // std::sort seems to go beyond the last element and that causes
-      // a SIGSEGV.
-      //
-      // weird.
-      //
-      // changing the compiler or the optimization settings didn't help.
-      //
-      // as workaround, i test the validity of bmd1 and bmd2 first
-      int depth1;
-      int depth2;
-      try
-      {
-        // this is madness: being a reference, bmd1 or bmd2 can't be null
-        // by definition! however, i encountered bmd1 being a null reference
-        // during debugging
-        if (&bmd1 == nullptr) return false;
-        if (&bmd2 == nullptr) return false;
-        depth1 = bmd1.depthInBracket;
-        depth2 = bmd2.depthInBracket;
-      } catch (std::exception& e)
-      {
-        return false;    // invalid pointer, return some arbitrary value
-      }
-
+    return [](const BracketMatchData& bmd1, const BracketMatchData& bmd2) {
       // if matches are at the same depth level,
       // than matches with end in a final rank should be played
       // later.
@@ -637,7 +840,7 @@ namespace QTournament
       // rank should be played later
 
 
-      if (depth1 == depth2)
+      if (bmd1.depthInBracket == bmd2.depthInBracket)
       {
         int rank1 = bmd1.nextMatchForWinner;
         int rank2 = bmd2.nextMatchForWinner;
@@ -667,7 +870,7 @@ namespace QTournament
       // if we made it to this point, we can be sure
       // that the matches are at different depths, so
       // the depth is the only sorting criteria
-      return depth1 > depth2;
+      return bmd1.depthInBracket > bmd2.depthInBracket;
     };
   }
 
@@ -816,7 +1019,7 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  int BracketMatchData::getBracketMatchId()
+  int BracketMatchData::getBracketMatchId() const
   {
     return bracketMatchId;
   }

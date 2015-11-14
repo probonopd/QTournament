@@ -51,6 +51,20 @@ upSimpleReport AbstractReport::createEmptyReport_Portrait() const
 
 //----------------------------------------------------------------------------
 
+upSimpleReport AbstractReport::createEmptyReport_Landscape() const
+{
+  SimpleReportLib::SimpleReportGenerator* rawResult = new SimpleReportLib::SimpleReportGenerator(
+        A4_HEIGHT__MM, A4_WIDTH__MM, DEFAULT_MARGIN__MM);
+  rawResult->startNextPage();
+
+  upSimpleReport result = upSimpleReport(rawResult);
+  prepStyles(result);
+
+  return result;
+}
+
+//----------------------------------------------------------------------------
+
 QString AbstractReport::getName() const
 {
   return name;

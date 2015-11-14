@@ -54,11 +54,12 @@ namespace QTournament
     static CourtMngr* getCourtMngr();
     static RankingMngr* getRankingMngr();
     static ReportFactory* getReportFactory();
+    static TournamentDB* getDatabaseHandle();
     void close();
     ~Tournament();
 
   private:
-    TournamentDB* db;
+    static TournamentDB* db;
     static TeamMngr* tm;
     static CatMngr* cm;
     static PlayerMngr* pm;

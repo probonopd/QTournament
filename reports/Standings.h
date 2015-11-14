@@ -21,7 +21,7 @@ namespace QTournament
   public:
     Standings(TournamentDB* _db, const QString& _name, const Category& _cat, int _round);
 
-    virtual upSimpleReport regenerateReport() const override;
+    virtual upSimpleReport regenerateReport() override;
     virtual QStringList getReportLocators() const override;
 
   private:
