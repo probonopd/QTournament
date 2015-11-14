@@ -675,6 +675,7 @@ void CatTabWidget::onBtnRunCatClicked()
     return;
   }
   
+  // pre-test category-specific conditions
   ERR e = selectedCat->canFreezeConfig();
   if (e == CONFIG_ALREADY_FROZEN)
   {
@@ -699,11 +700,18 @@ void CatTabWidget::onBtnRunCatClicked()
   if (e != OK) return;
   
   e = Tournament::getCatMngr()->freezeConfig(*selectedCat);
-  if (e != OK)   // after the checks above, this should never be true
+  // after we checked for category-specific errors above, we can only see general errors here
+  if (e == NOT_ALL_PLAYERS_REGISTERED)
   {
     QMessageBox::critical(this, tr("Run Category"),
-	    tr("Uncaptured error. Category has no valid configuration and can't be started"));
+      tr("Some players in this category have not yet registered."));
+  } else if (e != OK)
+  {
+    QMessageBox::critical(this, tr("Run Category"),
+      tr("Uncaptured error. Category has no valid configuration and can't be started"));
   }
+
+  if (e != OK) return;
   
   /**
    * Now the category is in status FROZEN.
