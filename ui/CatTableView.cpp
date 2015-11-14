@@ -186,7 +186,17 @@ void CategoryTableView::onCategoryDoubleClicked(const QModelIndex& index)
 
 void CategoryTableView::onAddCategory()
 {
+  // try to create new categories using a
+  // canonical name until it finally succeeds
+  ERR e = NAME_EXISTS;
+  int cnt = 0;
+  while (e != OK)
+  {
+    QString newCatName = tr("New Category ") + QString::number(cnt);
 
+    e = Tournament::getCatMngr()->createNewCategory(newCatName);
+    ++cnt;
+  }
 }
 
 //----------------------------------------------------------------------------
