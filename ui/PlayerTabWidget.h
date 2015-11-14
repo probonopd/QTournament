@@ -11,6 +11,8 @@
 #include "ui_PlayerTabWidget.h"
 
 #include <QObject>
+#include <QMenu>
+#include <QAction>
 
 class PlayerTabWidget : public QWidget
 {
@@ -21,13 +23,21 @@ public:
   
 private:
   Ui::PlayerTabWidget ui;
-  
+
+  unique_ptr<QMenu> registrationMenu;
+  QAction* actRegisterAll;
+  QAction* actUnregisterAll;
+
+  void initRegistrationMenu();
+
 public slots:
   void onCreatePlayerClicked();
   void onPlayerDoubleClicked(const QModelIndex& index);
   void onPlayerCountChanged();
   void onTournamentOpened();
   void onTournamentClosed();
+  void onRegisterAllTriggered();
+  void onUnregisterAllTriggered();
 };
 
 #endif	/* _PLAYERTABWIDGET_H */
