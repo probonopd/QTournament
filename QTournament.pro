@@ -92,7 +92,9 @@ HEADERS += \
     SignalRelay.h \
     reports/ResultsAndNextMatches.h \
     PureRoundRobinCategory.h \
-    SwissLadderCategory.h
+    SwissLadderCategory.h \
+    reports/BracketSheet.h \
+    reports/BracketVisData.h
 
 SOURCES += \
     Category.cpp \
@@ -168,7 +170,9 @@ SOURCES += \
     SignalRelay.cpp \
     reports/ResultsAndNextMatches.cpp \
     PureRoundRobinCategory.cpp \
-    SwissLadderCategory.cpp
+    SwissLadderCategory.cpp \
+    reports/BracketSheet.cpp \
+    reports/BracketVisData.cpp
 
 RESOURCES += \
     tournament.qrc
@@ -195,7 +199,7 @@ TRANSLATIONS = tournament_de.ts
 
 win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../build-DatabaseOverlayLib-Desktop_Qt_MinGW_w64_64bit_MSYS2-Release/release/ -lDatabaseOverlayLib
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../build-DatabaseOverlayLib-Desktop_Qt_MinGW_w64_64bit_MSYS2-Debug/debug/ -lDatabaseOverlayLib
-else:unix:!macx: LIBS += -L$$PWD/../DatabaseOverlayLib/ -lDatabaseOverlayLib
+else:unix:!macx: LIBS += -L$$PWD/../build-DatabaseOverlayLib-Desktop_GCC-Debug/ -lDatabaseOverlayLib
 
 INCLUDEPATH += $$PWD/../DatabaseOverlayLib
 DEPENDPATH += $$PWD/../DatabaseOverlayLib
