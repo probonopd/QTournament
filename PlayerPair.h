@@ -58,6 +58,7 @@ namespace QTournament
   } ;
   
   typedef QList<PlayerPair> PlayerPairList;
+  typedef unique_ptr<PlayerPair> upPlayerPair;
 
 }
 #endif	/* PLAYERPAIR_H */

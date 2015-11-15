@@ -46,6 +46,7 @@ namespace QTournament
     Player getPlayer(int id);
     unique_ptr<Player> getPlayer_up(int id) const;
     PlayerPair getPlayerPair(int id);
+    upPlayerPair getPlayerPair_up(int pairId) const;
 
     ERR canAcquirePlayerPairsForMatch(const Match& ma);
     ERR acquirePlayerPairsForMatch(const Match& ma);

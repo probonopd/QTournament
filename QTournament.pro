@@ -103,7 +103,8 @@ HEADERS += \
     ui/commonCommands/cmdBulkAddPlayerToCat.h \
     ui/commonCommands/cmdBulkRemovePlayersFromCat.h \
     ui/commonCommands/cmdMoveOrCopyPlayerToCategory.h \
-    ui/MenuGenerator.h
+    ui/MenuGenerator.h \
+    ui/commonCommands/cmdMoveOrCopyPairToCategory.h
 
 SOURCES += \
     Category.cpp \
@@ -190,7 +191,8 @@ SOURCES += \
     ui/commonCommands/cmdBulkAddPlayerToCat.cpp \
     ui/commonCommands/cmdBulkRemovePlayersFromCat.cpp \
     ui/commonCommands/cmdMoveOrCopyPlayerToCategory.cpp \
-    ui/MenuGenerator.cpp
+    ui/MenuGenerator.cpp \
+    ui/commonCommands/cmdMoveOrCopyPairToCategory.cpp
 
 RESOURCES += \
     tournament.qrc

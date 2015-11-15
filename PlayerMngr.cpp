@@ -241,7 +241,10 @@ namespace QTournament
   PlayerPair PlayerMngr::getPlayerPair(int id)
   {
     TabRow r = (*db)[TAB_PAIRS][id];
+
+    return PlayerPair(db, r);
     
+    /*
     Player p1(db, r[PAIRS_PLAYER1_REF].toInt());
     
     QVariant _id2 = r[PAIRS_PLAYER2_REF];
@@ -255,6 +258,22 @@ namespace QTournament
     Player p2(db, _id2.toInt());
     
     return PlayerPair(p1, p2, id);
+    */
+  }
+
+//----------------------------------------------------------------------------
+
+  upPlayerPair PlayerMngr::getPlayerPair_up(int pairId) const
+  {
+    DbTab pairsTab = (*db)[TAB_PAIRS];
+    if (pairsTab.getMatchCountForColumnValue("id", pairId) != 1)
+    {
+      return nullptr;
+    }
+
+    TabRow r = (*db)[TAB_PAIRS][pairId];
+
+    return upPlayerPair(new PlayerPair(db, r));
   }
 
 //----------------------------------------------------------------------------

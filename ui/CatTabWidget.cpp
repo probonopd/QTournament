@@ -21,6 +21,7 @@
 #include "ui/commonCommands/cmdBulkAddPlayerToCat.h"
 #include "ui/commonCommands/cmdBulkRemovePlayersFromCat.h"
 #include "ui/commonCommands/cmdMoveOrCopyPlayerToCategory.h"
+#include "ui/commonCommands/cmdMoveOrCopyPairToCategory.h"
 #include "MenuGenerator.h"
 
 CatTabWidget::CatTabWidget()
@@ -54,6 +55,8 @@ CatTabWidget::CatTabWidget()
   // tell the list widgets to emit signals if a context menu is requested
   ui.lwUnpaired->setContextMenuPolicy(Qt::CustomContextMenu);
   connect(ui.lwUnpaired, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(onUnpairedContextMenuRequested(QPoint)));
+  ui.lwPaired->setContextMenuPolicy(Qt::CustomContextMenu);
+  connect(ui.lwPaired, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(onPairedContextMenuRequested(QPoint)));
 }
 
 //----------------------------------------------------------------------------
@@ -337,6 +340,10 @@ void CatTabWidget::updatePairs()
 
 void CatTabWidget::initContextMenu()
 {
+  //
+  // The context menu for the list widget for the UNPAIRED players
+  //
+
   // prepare the actions
   actRemovePlayer = new QAction(tr("Remove this player from category"), this);
   actRegister = new QAction(tr("Register"), this);
@@ -366,6 +373,28 @@ void CatTabWidget::initContextMenu()
   connect(actUnregister, SIGNAL(triggered(bool)), this, SLOT(onUnregisterPlayer()));
   connect(actAddPlayer, SIGNAL(triggered(bool)), this, SLOT(onAddPlayerToCat()));
   connect(actBulkRemovePlayers, SIGNAL(triggered(bool)), this, SLOT(onBulkRemovePlayersFromCat()));
+
+
+  //
+  // The context menu for the list widget for the PAIRED players
+  //
+
+  // prepare the actions
+  actSplitPair = new QAction(tr("Split"), this);
+
+  // create the context menu and connect it to the actions
+  lwPairsContextMenu = unique_ptr<QMenu>(new QMenu());
+  listOfCats_CopyPairSubmenu = make_unique<QMenu>();
+  listOfCats_CopyPairSubmenu->setTitle(tr("Copy pair to"));
+  listOfCats_MovePairSubmenu = make_unique<QMenu>();
+  listOfCats_MovePairSubmenu->setTitle(tr("Move pair to"));
+  lwPairsContextMenu->addAction(actSplitPair);
+  lwPairsContextMenu->addSeparator();
+  lwPairsContextMenu->addMenu(listOfCats_CopyPairSubmenu.get());
+  lwPairsContextMenu->addMenu(listOfCats_MovePairSubmenu.get());
+
+  // connect signals and slots
+  connect(actSplitPair, SIGNAL(triggered(bool)), this, SLOT(onBtnSplitClicked()));
 }
 
 //----------------------------------------------------------------------------
@@ -382,6 +411,22 @@ upPlayer CatTabWidget::lwUnpaired_getSelectedPlayer() const
   int playerId = selItem->data(Qt::UserRole).toInt();
 
   return Tournament::getPlayerMngr()->getPlayer_up(playerId);
+}
+
+//----------------------------------------------------------------------------
+
+unique_ptr<PlayerPair> CatTabWidget::lwPaired_getSelectedPair() const
+{
+  // we can only handle exactly one selected item
+  if (ui.lwPaired->selectedItems().length() != 1)
+  {
+    return nullptr;
+  }
+
+  auto selItem = ui.lwPaired->selectedItems().at(0);
+  int pairId = selItem->data(Qt::UserRole).toInt();
+
+  return Tournament::getPlayerMngr()->getPlayerPair_up(pairId);
 }
 
 //----------------------------------------------------------------------------
@@ -865,6 +910,62 @@ void CatTabWidget::onUnpairedContextMenuRequested(const QPoint& pos)
 
 //----------------------------------------------------------------------------
 
+void CatTabWidget::onPairedContextMenuRequested(const QPoint& pos)
+{
+  // map from scroll area coordinates to global widget coordinates
+  QPoint globalPos = ui.lwPaired->viewport()->mapToGlobal(pos);
+
+  // determine if there is an item under the mouse
+  auto selItem = ui.lwPaired->itemAt(pos);
+  upPlayerPair selPair;
+  if (selItem != nullptr)
+  {
+    // clear old selection and select item under the mouse
+    ui.lwPaired->clearSelection();
+    selItem->setSelected(true);
+
+    int selPairId = selItem->data(Qt::UserRole).toInt();
+    selPair = Tournament::getPlayerMngr()->getPlayerPair_up(selPairId);
+  }
+
+  // we have no actions that are useful without a selected
+  // pair. So if nothing is selected, we can quit here
+  if (selPair == nullptr)
+  {
+    return;
+  }
+
+  // rebuild dynamic submenus
+  MenuGenerator::allCategories(listOfCats_CopyPairSubmenu.get());
+  MenuGenerator::allCategories(listOfCats_MovePairSubmenu.get());
+
+  // show the context menu
+  QAction* selectedItem = lwPairsContextMenu->exec(globalPos);
+
+  // check if one of the dynamically generated submenus was selected
+  //
+  // Actions belonging to these menus have a non-empty user data
+  if ((selectedItem == nullptr) || (selectedItem->data().isNull()))
+  {
+    // no selection or manually created action, noting more to do here
+    return;
+  }
+
+  //
+  // manually trigger the reaction associated with the menu item
+  //
+  if (MenuGenerator::isActionInMenu(listOfCats_CopyPairSubmenu.get(), selectedItem))
+  {
+    onCopyOrMovePair(*selPair, selectedItem->data().toInt(), false);
+  }
+  if (MenuGenerator::isActionInMenu(listOfCats_MovePairSubmenu.get(), selectedItem))
+  {
+    onCopyOrMovePair(*selPair, selectedItem->data().toInt(), true);
+  }
+}
+
+//----------------------------------------------------------------------------
+
 void CatTabWidget::onRegisterPlayer()
 {
   auto selPlayer = lwUnpaired_getSelectedPlayer();
@@ -900,6 +1001,24 @@ void CatTabWidget::onCopyOrMovePlayer(int targetCatId, bool isMove)
   auto targetCat = Tournament::getCatMngr()->getCategoryById(targetCatId);
 
   cmdMoveOrCopyPlayerToCategory cmd{this, *selPlayer,
+        ui.catTableView->getSelectedCategory(),
+        targetCat, isMove};
+
+  cmd.exec();
+}
+
+//----------------------------------------------------------------------------
+
+void CatTabWidget::onCopyOrMovePair(const PlayerPair& selPair, int targetCatId, bool isMove)
+{
+  if (!(ui.catTableView->hasCategorySelected()))
+  {
+    return;
+  }
+
+  auto targetCat = Tournament::getCatMngr()->getCategoryById(targetCatId);
+
+  cmdMoveOrCopyPairToCategory cmd{this, selPair,
         ui.catTableView->getSelectedCategory(),
         targetCat, isMove};
 
