@@ -17,6 +17,7 @@
 #include "Player.h"
 #include "ui/commonCommands/cmdRegisterPlayer.h"
 #include "ui/commonCommands/cmdUnregisterPlayer.h"
+#include "ui/commonCommands/cmdRemovePlayerFromCategory.h"
 
 CatTabWidget::CatTabWidget()
 {
@@ -748,7 +749,15 @@ void CatTabWidget::onPlayerStateChanged(int playerId, int seqNum, const OBJ_STAT
 
 void CatTabWidget::onRemovePlayerFromCat()
 {
+  auto selPlayer = lwUnpaired_getSelectedPlayer();
+  if (selPlayer == nullptr) return;
 
+  // the following call must always succeed... if no category
+  // was selected there was no player to trigger the context menu on
+  auto selCat = ui.catTableView->getSelectedCategory();
+
+  cmdRemovePlayerFromCategory cmd{this, *selPlayer, selCat};
+  cmd.exec();
 }
 
 //----------------------------------------------------------------------------

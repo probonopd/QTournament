@@ -97,7 +97,8 @@ HEADERS += \
     reports/BracketVisData.h \
     ui/commonCommands/AbstractCommand.h \
     ui/commonCommands/cmdRegisterPlayer.h \
-    ui/commonCommands/cmdUnregisterPlayer.h
+    ui/commonCommands/cmdUnregisterPlayer.h \
+    ui/commonCommands/cmdRemovePlayerFromCategory.h
 
 SOURCES += \
     Category.cpp \
@@ -178,7 +179,8 @@ SOURCES += \
     reports/BracketVisData.cpp \
     ui/commonCommands/AbstractCommand.cpp \
     ui/commonCommands/cmdRegisterPlayer.cpp \
-    ui/commonCommands/cmdUnregisterPlayer.cpp
+    ui/commonCommands/cmdUnregisterPlayer.cpp \
+    ui/commonCommands/cmdRemovePlayerFromCategory.cpp
 
 RESOURCES += \
     tournament.qrc
