@@ -15,6 +15,7 @@
 #include "ui/delegates/CatItemDelegate.h"
 #include "ui/DlgSeedingEditor.h"
 #include "ui/dlgGroupAssignment.h"
+#include "ui/commonCommands/cmdBulkAddPlayerToCat.h"
 
 #include "CatMngr.h"
 
@@ -482,6 +483,26 @@ void CategoryTableView::onCloneCategory()
 
 //----------------------------------------------------------------------------
 
+void CategoryTableView::onAddPlayers()
+{
+  if (!(hasCategorySelected()))
+  {
+    return;
+  }
+
+  cmdBulkAddPlayerToCategory cmd{this, getSelectedCategory()};
+  cmd.exec();
+}
+
+//----------------------------------------------------------------------------
+
+void CategoryTableView::onRemovePlayers()
+{
+
+}
+
+//----------------------------------------------------------------------------
+
 void CategoryTableView::handleIntermediateSeedingForSelectedCat()
 {
   if (!(hasCategorySelected())) return;
@@ -582,6 +603,9 @@ void CategoryTableView::onContextMenuRequested(const QPoint& pos)
   actRunCategory->setEnabled(isCellClicked &&
                              ((catState == STAT_CAT_CONFIG) || (catState == STAT_CAT_WAIT_FOR_INTERMEDIATE_SEEDING)));
   actRemoveCategory->setEnabled(isCellClicked && (catState == STAT_CAT_CONFIG));
+  actCloneCategory->setEnabled(isCellClicked);
+  actAddPlayer->setEnabled(isCellClicked);
+  actRemovePlayer->setEnabled(isCellClicked);
 
   // show the context menu
   QAction* selectedItem = contextMenu->exec(globalPos);
@@ -596,6 +620,8 @@ void CategoryTableView::initContextMenu()
   actCloneCategory = new QAction(tr("Clone"), this);
   actRunCategory = new QAction(tr("Run..."), this);
   actRemoveCategory = new QAction(tr("Remove..."), this);
+  actAddPlayer = new QAction(tr("Add player(s)..."), this);
+  actRemovePlayer = new QAction(tr("Remove player(s) from category..."), this);
 
   // create the context menu and connect it to the actions
   contextMenu = unique_ptr<QMenu>(new QMenu());
@@ -605,12 +631,17 @@ void CategoryTableView::initContextMenu()
   contextMenu->addAction(actRunCategory);
   contextMenu->addSeparator();
   contextMenu->addAction(actRemoveCategory);
+  contextMenu->addSeparator();
+  contextMenu->addAction(actAddPlayer);
+  contextMenu->addAction(actRemovePlayer);
 
   // connect signals and slots
   connect(actAddCategory, SIGNAL(triggered(bool)), this, SLOT(onAddCategory()));
   connect(actCloneCategory, SIGNAL(triggered(bool)), this, SLOT(onCloneCategory()));
   connect(actRunCategory, SIGNAL(triggered(bool)), this, SLOT(onRunCategory()));
   connect(actRemoveCategory, SIGNAL(triggered(bool)), this, SLOT(onRemoveCategory()));
+  connect(actAddPlayer, SIGNAL(triggered(bool)), this, SLOT(onAddPlayers()));
+  connect(actRemovePlayer, SIGNAL(triggered(bool)), this, SLOT(onRemovePlayers()));
 }
 //----------------------------------------------------------------------------
     

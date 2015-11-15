@@ -33,6 +33,8 @@ public slots:
   void onRemoveCategory();
   void onRunCategory();
   void onCloneCategory();
+  void onAddPlayers();
+  void onRemovePlayers();
   
 private slots:
   void onContextMenuRequested(const QPoint& pos);
@@ -46,6 +48,8 @@ private:
   QAction* actCloneCategory;
   QAction* actRunCategory;
   QAction* actRemoveCategory;
+  QAction* actAddPlayer;
+  QAction* actRemovePlayer;
 
   void initContextMenu();
 
