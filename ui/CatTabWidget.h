@@ -8,6 +8,9 @@
 #ifndef _CATTABWIDGET_H
 #define	_CATTABWIDGET_H
 
+#include <QMenu>
+#include <QAction>
+
 #include "ui_CatTabWidget.h"
 
 class CatTabWidget : public QDialog
@@ -22,6 +25,14 @@ private:
   void updatePairs();
   int unpairedPlayerId1;
   int unpairedPlayerId2;
+
+  unique_ptr<QMenu> lwUnpairedContextMenu;
+  QAction* actRemovePlayer;
+  QAction* actRegister;
+  QAction* actUnregister;
+
+  void initContextMenu();
+  upPlayer lwUnpaired_getSelectedPlayer() const;
 
 public slots:
   void onCatModelChanged();
@@ -45,6 +56,10 @@ public slots:
   void onPlayerRenamed(const Player& p);
   void onCatStateChanged(const Category& c, const OBJ_STATE fromState, const OBJ_STATE toState);
   void onPlayerStateChanged(int playerId, int seqNum, const OBJ_STATE fromState, const OBJ_STATE toState);
+  void onRemovePlayerFromCat();
+  void onUnpairedContextMenuRequested(const QPoint& pos);
+  void onRegisterPlayer();
+  void onUnregisterPlayer();
 } ;
 
 #endif	/* _CATTABWIDGET_H */

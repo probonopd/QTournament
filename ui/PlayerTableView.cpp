@@ -10,6 +10,8 @@
 #include "PlayerTableView.h"
 #include "MainFrame.h"
 #include "dlgEditPlayer.h"
+#include "ui/commonCommands/cmdRegisterPlayer.h"
+#include "ui/commonCommands/cmdUnregisterPlayer.h"
 
 PlayerTableView::PlayerTableView(QWidget* parent)
 :QTableView(parent)
@@ -346,16 +348,8 @@ void PlayerTableView::onRegisterPlayerTriggered()
   if (selectedPlayer == nullptr) return;
 
   // remove the "wait for registration"-flag
-  ERR err;
-  auto pm = Tournament::getPlayerMngr();
-  err = pm->setWaitForRegistration(*selectedPlayer, false);
-
-  if (err != OK)   // this shouldn't happen
-  {
-    QString msg = tr("Something went wrong during player registration. This shouldn't happen.\n\n");
-    msg += tr("For the records: error code = ") + QString::number(static_cast<int> (err));
-    QMessageBox::warning(this, tr("WTF??"), msg);
-  }
+  cmdRegisterPlayer cmd{this, *selectedPlayer};
+  cmd.exec();
 }
 
 //----------------------------------------------------------------------------
@@ -365,17 +359,9 @@ void PlayerTableView::onUnregisterPlayerTriggered()
   auto selectedPlayer = getSelectedPlayer();
   if (selectedPlayer == nullptr) return;
 
-  // set the "wait for registration"-flag
-  ERR err;
-  auto pm = Tournament::getPlayerMngr();
-  err = pm->setWaitForRegistration(*selectedPlayer, true);
-
-  if (err == OK) return; // no error
-
-  QString msg = tr("The player is already assigned to matches\n");
-  msg += tr("and/or currently running categories.\n\n");
-  msg += tr("Can't undo the player registration.");
-  QMessageBox::warning(this, tr("Player unregister failed"), msg);
+  // remove the "wait for registration"-flag
+  cmdUnregisterPlayer cmd{this, *selectedPlayer};
+  cmd.exec();
 }
 
 //----------------------------------------------------------------------------

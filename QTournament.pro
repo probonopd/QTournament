@@ -94,7 +94,10 @@ HEADERS += \
     PureRoundRobinCategory.h \
     SwissLadderCategory.h \
     reports/BracketSheet.h \
-    reports/BracketVisData.h
+    reports/BracketVisData.h \
+    ui/commonCommands/AbstractCommand.h \
+    ui/commonCommands/cmdRegisterPlayer.h \
+    ui/commonCommands/cmdUnregisterPlayer.h
 
 SOURCES += \
     Category.cpp \
@@ -172,7 +175,10 @@ SOURCES += \
     PureRoundRobinCategory.cpp \
     SwissLadderCategory.cpp \
     reports/BracketSheet.cpp \
-    reports/BracketVisData.cpp
+    reports/BracketVisData.cpp \
+    ui/commonCommands/AbstractCommand.cpp \
+    ui/commonCommands/cmdRegisterPlayer.cpp \
+    ui/commonCommands/cmdUnregisterPlayer.cpp
 
 RESOURCES += \
     tournament.qrc

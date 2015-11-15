@@ -14,6 +14,9 @@
 #include "dlgGroupAssignment.h"
 #include "DlgSeedingEditor.h"
 #include "PlayerMngr.h"
+#include "Player.h"
+#include "ui/commonCommands/cmdRegisterPlayer.h"
+#include "ui/commonCommands/cmdUnregisterPlayer.h"
 
 CatTabWidget::CatTabWidget()
 {
@@ -39,6 +42,13 @@ CatTabWidget::CatTabWidget()
   ui.cbMatchSystem->addItem(tr("Tree-like ranking system"), static_cast<int>(RANKING));
   ui.cbMatchSystem->addItem(tr("Single Elimination"), static_cast<int>(SINGLE_ELIM));
   ui.cbMatchSystem->addItem(tr("Round robin matches"), static_cast<int>(ROUND_ROBIN));
+
+  // setup the context menu(s)
+  initContextMenu();
+
+  // tell the list widgets to emit signals if a context menu is requested
+  ui.lwUnpaired->setContextMenuPolicy(Qt::CustomContextMenu);
+  connect(ui.lwUnpaired, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(onUnpairedContextMenuRequested(QPoint)));
 }
 
 //----------------------------------------------------------------------------
@@ -315,6 +325,44 @@ void CatTabWidget::updatePairs()
   } else {
     ui.grpCfgWidget->setRequiredPlayersCount(ui.lwPaired->count());
   }
+}
+
+//----------------------------------------------------------------------------
+
+void CatTabWidget::initContextMenu()
+{
+  // prepare the actions
+  actRemovePlayer = new QAction(tr("Remove from category"), this);
+  actRegister = new QAction(tr("Register"), this);
+  actUnregister = new QAction(tr("Undo registration"), this);
+
+  // create the context menu and connect it to the actions
+  lwUnpairedContextMenu = unique_ptr<QMenu>(new QMenu());
+  lwUnpairedContextMenu->addAction(actRegister);
+  lwUnpairedContextMenu->addAction(actUnregister);
+  lwUnpairedContextMenu->addSeparator();
+  lwUnpairedContextMenu->addAction(actRemovePlayer);
+
+  // connect signals and slots
+  connect(actRemovePlayer, SIGNAL(triggered(bool)), this, SLOT(onRemovePlayerFromCat()));
+  connect(actRegister, SIGNAL(triggered(bool)), this, SLOT(onRegisterPlayer()));
+  connect(actUnregister, SIGNAL(triggered(bool)), this, SLOT(onUnregisterPlayer()));
+}
+
+//----------------------------------------------------------------------------
+
+upPlayer CatTabWidget::lwUnpaired_getSelectedPlayer() const
+{
+  // we can only handle exactly one selected item
+  if (ui.lwUnpaired->selectedItems().length() != 1)
+  {
+    return nullptr;
+  }
+
+  auto selItem = ui.lwUnpaired->selectedItems().at(0);
+  int playerId = selItem->data(Qt::UserRole).toInt();
+
+  return Tournament::getPlayerMngr()->getPlayer_up(playerId);
 }
 
 //----------------------------------------------------------------------------
@@ -694,6 +742,67 @@ void CatTabWidget::onPlayerStateChanged(int playerId, int seqNum, const OBJ_STAT
   {
     updatePairs();
   }
+}
+
+//----------------------------------------------------------------------------
+
+void CatTabWidget::onRemovePlayerFromCat()
+{
+
+}
+
+//----------------------------------------------------------------------------
+
+void CatTabWidget::onUnpairedContextMenuRequested(const QPoint& pos)
+{
+  // map from scroll area coordinates to global widget coordinates
+  QPoint globalPos = ui.lwUnpaired->viewport()->mapToGlobal(pos);
+
+  // determine if there is an item under the mouse
+  auto selItem = ui.lwUnpaired->itemAt(pos);
+  upPlayer selPlayer;
+  OBJ_STATE plStat = STAT_CO_DISABLED;   // arbitrary, non player-related, dummy default
+  if (selItem != nullptr)
+  {
+    // clear old selection and select item under the mouse
+    ui.lwUnpaired->clearSelection();
+    selItem->setSelected(true);
+
+    selPlayer = lwUnpaired_getSelectedPlayer();
+    plStat = selPlayer->getState();
+  }
+
+  bool isPlayerClicked = (selPlayer != nullptr);
+
+  // enable / disable selection-specific actions
+  actRemovePlayer->setEnabled(isPlayerClicked);
+  actRegister->setEnabled(plStat == STAT_PL_WAIT_FOR_REGISTRATION);
+  actUnregister->setEnabled(plStat == STAT_PL_IDLE);
+
+  // show the context menu
+  lwUnpairedContextMenu->exec(globalPos);
+}
+
+//----------------------------------------------------------------------------
+
+void CatTabWidget::onRegisterPlayer()
+{
+  auto selPlayer = lwUnpaired_getSelectedPlayer();
+  if (selPlayer == nullptr) return;
+
+  cmdRegisterPlayer cmd{this, *selPlayer};
+  cmd.exec();
+}
+
+//----------------------------------------------------------------------------
+
+void CatTabWidget::onUnregisterPlayer()
+{
+  auto selPlayer = lwUnpaired_getSelectedPlayer();
+  if (selPlayer == nullptr) return;
+
+  cmdUnregisterPlayer cmd{this, *selPlayer};
+  cmd.exec();
 }
 
 //----------------------------------------------------------------------------

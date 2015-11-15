@@ -229,6 +229,13 @@ namespace QTournament
     return Player(db, id);
   }
 
+  //----------------------------------------------------------------------------
+
+  unique_ptr<Player> PlayerMngr::getPlayer_up(int id) const
+  {
+    return getSingleObjectByColumnValue<Player>(playerTab, "id", id);
+  }
+
 //----------------------------------------------------------------------------
 
   PlayerPair PlayerMngr::getPlayerPair(int id)
