@@ -228,7 +228,8 @@ void CatTabWidget::updateControls()
     ui.lwPaired->setEnabled(false);
   } else {
     ui.gbPairButtons->setEnabled(true && isEditEnabled);
-    ui.lwPaired->setEnabled(true && isEditEnabled);
+    ui.lwPaired->setEnabled(true);
+    ui.lwPaired->setSelectionMode(isEditEnabled ? QListWidget::SingleSelection : QListWidget::NoSelection);
   }
 
   // disable controls if editing is no longer permitted
