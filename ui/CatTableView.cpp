@@ -568,9 +568,19 @@ void CategoryTableView::onContextMenuRequested(const QPoint& pos)
     catState = cat.getState();
   }
 
+  // set the label of the "run" action depending
+  // on the category state
+  if (catState == STAT_CAT_WAIT_FOR_INTERMEDIATE_SEEDING)
+  {
+    actRunCategory->setText(tr("Continue..."));
+  } else {
+    actRunCategory->setText(tr("Run..."));
+  }
+
   // enable / disable selection-specific actions
   actAddCategory->setEnabled(true);   // always possible
-  actRunCategory->setEnabled(isCellClicked && (catState == STAT_CAT_CONFIG));
+  actRunCategory->setEnabled(isCellClicked &&
+                             ((catState == STAT_CAT_CONFIG) || (catState == STAT_CAT_WAIT_FOR_INTERMEDIATE_SEEDING)));
   actRemoveCategory->setEnabled(isCellClicked && (catState == STAT_CAT_CONFIG));
 
   // show the context menu
