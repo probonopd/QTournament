@@ -28,9 +28,13 @@ private:
 
   unique_ptr<QMenu> lwUnpairedContextMenu;
   QAction* actRemovePlayer;
+  QAction* actBulkRemovePlayers;
   QAction* actAddPlayer;
   QAction* actRegister;
   QAction* actUnregister;
+
+  unique_ptr<QMenu> listOfCats_CopyPlayerSubmenu;
+  unique_ptr<QMenu> listOfCats_MovePlayerSubmenu;
 
   void initContextMenu();
   upPlayer lwUnpaired_getSelectedPlayer() const;
@@ -58,10 +62,12 @@ public slots:
   void onCatStateChanged(const Category& c, const OBJ_STATE fromState, const OBJ_STATE toState);
   void onPlayerStateChanged(int playerId, int seqNum, const OBJ_STATE fromState, const OBJ_STATE toState);
   void onRemovePlayerFromCat();
+  void onBulkRemovePlayersFromCat();
   void onAddPlayerToCat();
   void onUnpairedContextMenuRequested(const QPoint& pos);
   void onRegisterPlayer();
   void onUnregisterPlayer();
+  void onCopyOrMovePlayer(int targetCatId, bool isMove);
 } ;
 
 #endif	/* _CATTABWIDGET_H */

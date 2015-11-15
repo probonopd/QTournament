@@ -29,6 +29,9 @@ public:
   ~DlgSelectPlayer();
   PlayerList getSelectedPlayers() const;
 
+public slots:
+  virtual int exec() override;
+
 private:
   Ui::DlgSelectPlayer *ui;
   DLG_CONTEXT ctxt;

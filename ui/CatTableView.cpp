@@ -16,6 +16,7 @@
 #include "ui/DlgSeedingEditor.h"
 #include "ui/dlgGroupAssignment.h"
 #include "ui/commonCommands/cmdBulkAddPlayerToCat.h"
+#include "ui/commonCommands/cmdBulkRemovePlayersFromCat.h"
 
 #include "CatMngr.h"
 
@@ -498,7 +499,13 @@ void CategoryTableView::onAddPlayers()
 
 void CategoryTableView::onRemovePlayers()
 {
+  if (!(hasCategorySelected()))
+  {
+    return;
+  }
 
+  cmdBulkRemovePlayersFromCategory cmd{this, getSelectedCategory()};
+  cmd.exec();
 }
 
 //----------------------------------------------------------------------------

@@ -100,7 +100,10 @@ HEADERS += \
     ui/commonCommands/cmdUnregisterPlayer.h \
     ui/commonCommands/cmdRemovePlayerFromCategory.h \
     ui/DlgSelectPlayer.h \
-    ui/commonCommands/cmdBulkAddPlayerToCat.h
+    ui/commonCommands/cmdBulkAddPlayerToCat.h \
+    ui/commonCommands/cmdBulkRemovePlayersFromCat.h \
+    ui/commonCommands/cmdMoveOrCopyPlayerToCategory.h \
+    ui/MenuGenerator.h
 
 SOURCES += \
     Category.cpp \
@@ -184,7 +187,10 @@ SOURCES += \
     ui/commonCommands/cmdUnregisterPlayer.cpp \
     ui/commonCommands/cmdRemovePlayerFromCategory.cpp \
     ui/DlgSelectPlayer.cpp \
-    ui/commonCommands/cmdBulkAddPlayerToCat.cpp
+    ui/commonCommands/cmdBulkAddPlayerToCat.cpp \
+    ui/commonCommands/cmdBulkRemovePlayersFromCat.cpp \
+    ui/commonCommands/cmdMoveOrCopyPlayerToCategory.cpp \
+    ui/MenuGenerator.cpp
 
 RESOURCES += \
     tournament.qrc

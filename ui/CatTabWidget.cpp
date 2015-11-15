@@ -19,6 +19,9 @@
 #include "ui/commonCommands/cmdUnregisterPlayer.h"
 #include "ui/commonCommands/cmdRemovePlayerFromCategory.h"
 #include "ui/commonCommands/cmdBulkAddPlayerToCat.h"
+#include "ui/commonCommands/cmdBulkRemovePlayersFromCat.h"
+#include "ui/commonCommands/cmdMoveOrCopyPlayerToCategory.h"
+#include "MenuGenerator.h"
 
 CatTabWidget::CatTabWidget()
 {
@@ -334,25 +337,34 @@ void CatTabWidget::updatePairs()
 void CatTabWidget::initContextMenu()
 {
   // prepare the actions
-  actRemovePlayer = new QAction(tr("Remove from category"), this);
+  actRemovePlayer = new QAction(tr("Remove this player from category"), this);
   actRegister = new QAction(tr("Register"), this);
   actUnregister = new QAction(tr("Undo registration"), this);
   actAddPlayer = new QAction(tr("Add player(s)..."), this);
+  actBulkRemovePlayers = new QAction(tr("Remove player(s)..."), this);
 
   // create the context menu and connect it to the actions
   lwUnpairedContextMenu = unique_ptr<QMenu>(new QMenu());
+  listOfCats_CopyPlayerSubmenu = make_unique<QMenu>();
+  listOfCats_CopyPlayerSubmenu->setTitle(tr("Copy player to"));
+  listOfCats_MovePlayerSubmenu = make_unique<QMenu>();
+  listOfCats_MovePlayerSubmenu->setTitle(tr("Move player to"));
   lwUnpairedContextMenu->addAction(actRegister);
   lwUnpairedContextMenu->addAction(actUnregister);
   lwUnpairedContextMenu->addSeparator();
+  lwUnpairedContextMenu->addMenu(listOfCats_CopyPlayerSubmenu.get());
+  lwUnpairedContextMenu->addMenu(listOfCats_MovePlayerSubmenu.get());
   lwUnpairedContextMenu->addAction(actRemovePlayer);
   lwUnpairedContextMenu->addSeparator();
   lwUnpairedContextMenu->addAction(actAddPlayer);
+  lwUnpairedContextMenu->addAction(actBulkRemovePlayers);
 
   // connect signals and slots
   connect(actRemovePlayer, SIGNAL(triggered(bool)), this, SLOT(onRemovePlayerFromCat()));
   connect(actRegister, SIGNAL(triggered(bool)), this, SLOT(onRegisterPlayer()));
   connect(actUnregister, SIGNAL(triggered(bool)), this, SLOT(onUnregisterPlayer()));
   connect(actAddPlayer, SIGNAL(triggered(bool)), this, SLOT(onAddPlayerToCat()));
+  connect(actBulkRemovePlayers, SIGNAL(triggered(bool)), this, SLOT(onBulkRemovePlayersFromCat()));
 }
 
 //----------------------------------------------------------------------------
@@ -767,6 +779,19 @@ void CatTabWidget::onRemovePlayerFromCat()
 
 //----------------------------------------------------------------------------
 
+void CatTabWidget::onBulkRemovePlayersFromCat()
+{
+  if (!(ui.catTableView->hasCategorySelected()))
+  {
+    return;
+  }
+
+  cmdBulkRemovePlayersFromCategory cmd{this, ui.catTableView->getSelectedCategory()};
+  cmd.exec();
+}
+
+//----------------------------------------------------------------------------
+
 void CatTabWidget::onAddPlayerToCat()
 {
   if (!(ui.catTableView->hasCategorySelected()))
@@ -801,13 +826,40 @@ void CatTabWidget::onUnpairedContextMenuRequested(const QPoint& pos)
 
   bool isPlayerClicked = (selPlayer != nullptr);
 
+  // rebuild dynamic submenus
+  MenuGenerator::allCategories(listOfCats_CopyPlayerSubmenu.get());
+  MenuGenerator::allCategories(listOfCats_MovePlayerSubmenu.get());
+
   // enable / disable selection-specific actions
   actRemovePlayer->setEnabled(isPlayerClicked);
   actRegister->setEnabled(plStat == STAT_PL_WAIT_FOR_REGISTRATION);
   actUnregister->setEnabled(plStat == STAT_PL_IDLE);
+  listOfCats_CopyPlayerSubmenu->setEnabled(isPlayerClicked);
+  listOfCats_MovePlayerSubmenu->setEnabled(isPlayerClicked);
 
   // show the context menu
-  lwUnpairedContextMenu->exec(globalPos);
+  QAction* selectedItem = lwUnpairedContextMenu->exec(globalPos);
+
+  // check if one of the dynamically generated submenus was selected
+  //
+  // Actions belonging to these menus have a non-empty user data
+  if ((selectedItem == nullptr) || (selectedItem->data().isNull()))
+  {
+    // no selection or manually created action, noting more to do here
+    return;
+  }
+
+  //
+  // manually trigger the reaction associated with the menu item
+  //
+  if (MenuGenerator::isActionInMenu(listOfCats_CopyPlayerSubmenu.get(), selectedItem))
+  {
+    onCopyOrMovePlayer(selectedItem->data().toInt(), false);
+  }
+  if (MenuGenerator::isActionInMenu(listOfCats_MovePlayerSubmenu.get(), selectedItem))
+  {
+    onCopyOrMovePlayer(selectedItem->data().toInt(), true);
+  }
 }
 
 //----------------------------------------------------------------------------
@@ -829,6 +881,27 @@ void CatTabWidget::onUnregisterPlayer()
   if (selPlayer == nullptr) return;
 
   cmdUnregisterPlayer cmd{this, *selPlayer};
+  cmd.exec();
+}
+
+//----------------------------------------------------------------------------
+
+void CatTabWidget::onCopyOrMovePlayer(int targetCatId, bool isMove)
+{
+  auto selPlayer = lwUnpaired_getSelectedPlayer();
+  if (selPlayer == nullptr) return;
+
+  if (!(ui.catTableView->hasCategorySelected()))
+  {
+    return;
+  }
+
+  auto targetCat = Tournament::getCatMngr()->getCategoryById(targetCatId);
+
+  cmdMoveOrCopyPlayerToCategory cmd{this, *selPlayer,
+        ui.catTableView->getSelectedCategory(),
+        targetCat, isMove};
+
   cmd.exec();
 }
 

@@ -1,6 +1,7 @@
 #include <exception>
 
 #include <QListWidgetItem>
+#include <QMessageBox>
 
 #include "DlgSelectPlayer.h"
 #include "ui_DlgSelectPlayer.h"
@@ -89,6 +90,22 @@ PlayerList DlgSelectPlayer::getSelectedPlayers() const
   }
 
   return result;
+}
+
+//----------------------------------------------------------------------------
+
+int DlgSelectPlayer::exec()
+{
+  // throw an error if we have an empty list
+  if (ui->lwPlayers->count() == 0)
+  {
+    QString msg = tr("There no players available for this operation.");
+    QMessageBox::warning(parentWidget(), tr("Select player(s)"), msg);
+    return QDialog::Rejected;
+  }
+
+  // proceed with normal execution
+  return QDialog::exec();
 }
 
 //----------------------------------------------------------------------------
