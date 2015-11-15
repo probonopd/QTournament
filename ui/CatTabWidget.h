@@ -28,6 +28,7 @@ private:
 
   unique_ptr<QMenu> lwUnpairedContextMenu;
   QAction* actRemovePlayer;
+  QAction* actAddPlayer;
   QAction* actRegister;
   QAction* actUnregister;
 
@@ -57,6 +58,7 @@ public slots:
   void onCatStateChanged(const Category& c, const OBJ_STATE fromState, const OBJ_STATE toState);
   void onPlayerStateChanged(int playerId, int seqNum, const OBJ_STATE fromState, const OBJ_STATE toState);
   void onRemovePlayerFromCat();
+  void onAddPlayerToCat();
   void onUnpairedContextMenuRequested(const QPoint& pos);
   void onRegisterPlayer();
   void onUnregisterPlayer();

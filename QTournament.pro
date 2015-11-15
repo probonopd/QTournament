@@ -98,7 +98,9 @@ HEADERS += \
     ui/commonCommands/AbstractCommand.h \
     ui/commonCommands/cmdRegisterPlayer.h \
     ui/commonCommands/cmdUnregisterPlayer.h \
-    ui/commonCommands/cmdRemovePlayerFromCategory.h
+    ui/commonCommands/cmdRemovePlayerFromCategory.h \
+    ui/DlgSelectPlayer.h \
+    ui/commonCommands/cmdBulkAddPlayerToCat.h
 
 SOURCES += \
     Category.cpp \
@@ -180,7 +182,9 @@ SOURCES += \
     ui/commonCommands/AbstractCommand.cpp \
     ui/commonCommands/cmdRegisterPlayer.cpp \
     ui/commonCommands/cmdUnregisterPlayer.cpp \
-    ui/commonCommands/cmdRemovePlayerFromCategory.cpp
+    ui/commonCommands/cmdRemovePlayerFromCategory.cpp \
+    ui/DlgSelectPlayer.cpp \
+    ui/commonCommands/cmdBulkAddPlayerToCat.cpp
 
 RESOURCES += \
     tournament.qrc
@@ -201,7 +205,8 @@ FORMS += \
     ui/DlgSeedingEditor.ui \
     ui/DlgTournamentSettings.ui \
     ui/GameResultWidget.ui \
-    ui/DlgMatchResult.ui
+    ui/DlgMatchResult.ui \
+    ui/DlgSelectPlayer.ui
 
 TRANSLATIONS = tournament_de.ts
 

@@ -18,6 +18,7 @@
 #include "ui/commonCommands/cmdRegisterPlayer.h"
 #include "ui/commonCommands/cmdUnregisterPlayer.h"
 #include "ui/commonCommands/cmdRemovePlayerFromCategory.h"
+#include "ui/commonCommands/cmdBulkAddPlayerToCat.h"
 
 CatTabWidget::CatTabWidget()
 {
@@ -336,6 +337,7 @@ void CatTabWidget::initContextMenu()
   actRemovePlayer = new QAction(tr("Remove from category"), this);
   actRegister = new QAction(tr("Register"), this);
   actUnregister = new QAction(tr("Undo registration"), this);
+  actAddPlayer = new QAction(tr("Add player(s)..."), this);
 
   // create the context menu and connect it to the actions
   lwUnpairedContextMenu = unique_ptr<QMenu>(new QMenu());
@@ -343,11 +345,14 @@ void CatTabWidget::initContextMenu()
   lwUnpairedContextMenu->addAction(actUnregister);
   lwUnpairedContextMenu->addSeparator();
   lwUnpairedContextMenu->addAction(actRemovePlayer);
+  lwUnpairedContextMenu->addSeparator();
+  lwUnpairedContextMenu->addAction(actAddPlayer);
 
   // connect signals and slots
   connect(actRemovePlayer, SIGNAL(triggered(bool)), this, SLOT(onRemovePlayerFromCat()));
   connect(actRegister, SIGNAL(triggered(bool)), this, SLOT(onRegisterPlayer()));
   connect(actUnregister, SIGNAL(triggered(bool)), this, SLOT(onUnregisterPlayer()));
+  connect(actAddPlayer, SIGNAL(triggered(bool)), this, SLOT(onAddPlayerToCat()));
 }
 
 //----------------------------------------------------------------------------
@@ -757,6 +762,19 @@ void CatTabWidget::onRemovePlayerFromCat()
   auto selCat = ui.catTableView->getSelectedCategory();
 
   cmdRemovePlayerFromCategory cmd{this, *selPlayer, selCat};
+  cmd.exec();
+}
+
+//----------------------------------------------------------------------------
+
+void CatTabWidget::onAddPlayerToCat()
+{
+  if (!(ui.catTableView->hasCategorySelected()))
+  {
+    return;
+  }
+
+  cmdBulkAddPlayerToCategory cmd{this, ui.catTableView->getSelectedCategory()};
   cmd.exec();
 }
 
