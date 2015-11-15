@@ -34,9 +34,10 @@ namespace QTournament
 
     // creation of categories
     ERR createNewCategory (const QString& catName);
+    ERR cloneCategory(const Category& src, const QString& catNamePostfix);
 
     // boolean queries
-    bool hasCategory (const QString& catName);
+    bool hasCategory (const QString& catName) const;
 
     // getters
     Category getCategory(const QString& name);
@@ -75,12 +76,12 @@ namespace QTournament
     ERR continueWithIntermediateSeeding(const Category& c, const PlayerPairList& seeding, ProgressQueue* progressNotificationQueue=nullptr);
 
   signals:
-    void playersPaired(const Category c, const Player& p1, const Player& p2);
+    void playersPaired(const Category c, const Player& p1, const Player& p2) const;
     void playersSplit(const Category c, const Player& p1, const Player& p2) const;
-    void playerAddedToCategory(const Player& p, const Category& c);
+    void playerAddedToCategory(const Player& p, const Category& c) const;
     void playerRemovedFromCategory(const Player& p, const Category& c) const;
-    void beginCreateCategory();
-    void endCreateCategory(int newCatSeqNum);
+    void beginCreateCategory() const;
+    void endCreateCategory(int newCatSeqNum) const;
     void categoryStatusChanged(const Category& c, const OBJ_STATE fromState, const OBJ_STATE toState);
     void beginDeleteCategory(int catSeqNum) const;
     void endDeleteCategory() const;

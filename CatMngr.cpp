@@ -71,9 +71,94 @@ namespace QTournament
     return OK;
   }
 
+  //----------------------------------------------------------------------------
+
+  ERR CatMngr::cloneCategory(const Category& src, const QString& catNamePostfix)
+  {
+    if (catNamePostfix.isEmpty())
+    {
+      return INVALID_NAME;
+    }
+
+    // set an arbitrarily chosen maximum of 10 characters for the postfix
+    if (catNamePostfix.length() > 10)
+    {
+      return INVALID_NAME;
+    }
+
+    // try create a new category until we've found a valid name
+    int cnt = 0;
+    ERR err;
+    QString dstCatName;
+    do
+    {
+      ++cnt;
+
+      // create the clone name as a combination of source name, a postfix
+      // and a number. Make sure the destination name does not exceed the
+      // maximum name length
+      QString trimmedSrcCatName = src.getName();
+      do
+      {
+        dstCatName = trimmedSrcCatName + " - " + catNamePostfix + " " + QString::number(cnt);
+        trimmedSrcCatName.chop(1);
+      } while (dstCatName.length() > MAX_NAME_LEN);
+
+      // try to actually create the category
+      err = createNewCategory(dstCatName);
+    } while ((err == NAME_EXISTS) && (cnt < 100));   // a maximum limit of 100 retries
+
+    // did we succeed?
+    if (err != OK)
+    {
+      return err;   // give up
+    }
+    Category clone = getCategory(dstCatName);
+
+    // copy the settings fromt the source category to clone
+    assert(clone.setMatchSystem(src.getMatchSystem()) == OK);
+    assert(clone.setMatchType(src.getMatchType()) == OK);
+    assert(clone.setSex(src.getSex()) == OK);
+    assert(setCatParam_AllowDraw(clone, src.getParameter_bool(ALLOW_DRAW)));
+    assert(setCatParam_Score(clone, src.getParameter_int(WIN_SCORE), false));
+    setCatParam_Score(clone, src.getParameter_int(DRAW_SCORE), true);  // no assert here; setting draw score may fail if draw is not allowed
+    KO_Config ko{src.getParameter_string(GROUP_CONFIG)};
+    assert(clone.setParameter(GROUP_CONFIG, ko.toString()));
+
+    // Do not copy the BracketVisData here, because the clone is still in
+    // CONFIG and BracketVisData is created when starting the cat
+
+    // assign the players to the category
+    for (const Player& pl : src.getAllPlayersInCategory())
+    {
+      err = addPlayerToCategory(pl, clone);
+      if (err != OK)
+      {
+        return err;   // shouldn't happen
+      }
+    }
+
+    // pair players, if applicable
+    if (src.getMatchType() != SINGLES)
+    {
+      for (const PlayerPair& pp : src.getPlayerPairs())
+      {
+        if (!(pp.hasPlayer2())) continue;
+
+        err = pairPlayers(clone, pp.getPlayer1(), pp.getPlayer2());
+        if (err != OK)
+        {
+          return err;   // shouldn't happen
+        }
+      }
+    }
+
+    return OK;
+  }
+
 //----------------------------------------------------------------------------
 
-  bool CatMngr::hasCategory(const QString& catName)
+  bool CatMngr::hasCategory(const QString& catName) const
   {
     return (catTab.getMatchCountForColumnValue(GENERIC_NAME_FIELD_NAME, catName) > 0);
   }
@@ -503,7 +588,9 @@ namespace QTournament
     }
 
     // no draw matches in elimination categories
-    if ((c.getMatchSystem() == SINGLE_ELIM) && (allowDraw))
+    MATCH_SYSTEM msys = c.getMatchSystem();
+    bool isElimCat = ((msys == SINGLE_ELIM) || (msys == RANKING));
+    if (isElimCat && allowDraw)
     {
       return false;
     }
@@ -560,7 +647,7 @@ namespace QTournament
     {
       if (newScore >= winScore)
       {
-	return false;
+        return false;
       }
       
       c.row.update(CAT_DRAW_SCORE, newScore);

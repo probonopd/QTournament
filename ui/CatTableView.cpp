@@ -453,6 +453,35 @@ void CategoryTableView::onRunCategory()
 
 //----------------------------------------------------------------------------
 
+void CategoryTableView::onCloneCategory()
+{
+  if (!(hasCategorySelected())) return;
+
+  Category cat = getSelectedCategory();
+  CatMngr* cm = Tournament::getCatMngr();
+
+  ERR err = cm->cloneCategory(cat, tr("Clone"));
+  if (err == OK) return;
+
+  if ((err == INVALID_NAME) || (err == NAME_EXISTS))
+  {
+    QString msg = tr("Cloning the category failed due to\n");
+    msg += tr("issues defining the clone's name.\n\n");
+    msg += tr("No clone has been created.");
+    QMessageBox::warning(this, tr("Clone category"), msg);
+
+    return;
+  }
+
+  QString msg = tr("Cloning the category partially failed.\n");
+  msg += tr("A new category has been created but not all\n");
+  msg += tr("settings, players and/or pairs could be copied to the clone.");
+  QMessageBox::warning(this, tr("Clone category"), msg);
+
+}
+
+//----------------------------------------------------------------------------
+
 void CategoryTableView::handleIntermediateSeedingForSelectedCat()
 {
   if (!(hasCategorySelected())) return;
@@ -553,13 +582,15 @@ void CategoryTableView::onContextMenuRequested(const QPoint& pos)
 void CategoryTableView::initContextMenu()
 {
   // prepare all action
-  actAddCategory = new QAction(tr("Add category"), this);
-  actRunCategory = new QAction(tr("Run category..."), this);
-  actRemoveCategory = new QAction(tr("Remove category..."), this);
+  actAddCategory = new QAction(tr("Add new"), this);
+  actCloneCategory = new QAction(tr("Clone"), this);
+  actRunCategory = new QAction(tr("Run..."), this);
+  actRemoveCategory = new QAction(tr("Remove..."), this);
 
   // create the context menu and connect it to the actions
   contextMenu = unique_ptr<QMenu>(new QMenu());
   contextMenu->addAction(actAddCategory);
+  contextMenu->addAction(actCloneCategory);
   contextMenu->addSeparator();
   contextMenu->addAction(actRunCategory);
   contextMenu->addSeparator();
@@ -567,6 +598,7 @@ void CategoryTableView::initContextMenu()
 
   // connect signals and slots
   connect(actAddCategory, SIGNAL(triggered(bool)), this, SLOT(onAddCategory()));
+  connect(actCloneCategory, SIGNAL(triggered(bool)), this, SLOT(onCloneCategory()));
   connect(actRunCategory, SIGNAL(triggered(bool)), this, SLOT(onRunCategory()));
   connect(actRemoveCategory, SIGNAL(triggered(bool)), this, SLOT(onRemoveCategory()));
 }
