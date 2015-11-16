@@ -5,16 +5,15 @@
  * Created on March 18, 2014, 8:00 PM
  */
 
-#include <QtWidgets/qmessagebox.h>
-//#include <QtGui/qwidget.h>
-#include <QtCore/qnamespace.h>
+#include <QMessageBox>
+#include <QRadioButton>
 
 #include "Tournament.h"
 
 #include "dlgEditPlayer.h"
 
 DlgEditPlayer::DlgEditPlayer(QWidget* parent, Player* _selectedPlayer)
-  :QDialog(parent)
+  :QDialog(parent), sexPreset(M), presetCatId(-1)
 {
   ui.setupUi(this);
   selectedPlayer = (_selectedPlayer != NULL) ? _selectedPlayer : NULL;
@@ -27,6 +26,22 @@ DlgEditPlayer::DlgEditPlayer(QWidget* parent, Player* _selectedPlayer)
     selectedPlayer = _selectedPlayer;
     initFromPlayerData();
   }
+}
+
+//----------------------------------------------------------------------------
+
+DlgEditPlayer::DlgEditPlayer(QWidget *parent, SEX _sexPreset, const Category &_catPreset)
+:QDialog(parent), _hasNameChange(true), selectedPlayer(nullptr),
+  sexPreset(_sexPreset), presetCatId(_catPreset.getId())
+{
+  ui.setupUi(this);
+
+  initTeamList();
+
+  // apply the presets
+  ui.rbFemale->setChecked(sexPreset == F);
+  ui.rbMale->setChecked(sexPreset == M);
+  onSexSelectionChanged(presetCatId);
 }
 
 //----------------------------------------------------------------------------
@@ -206,7 +221,7 @@ Team DlgEditPlayer::getTeam()
 
 //----------------------------------------------------------------------------
 
-void DlgEditPlayer::onSexSelectionChanged()
+void DlgEditPlayer::onSexSelectionChanged(int preselectCatId)
 {
   // we assume that the change of a player
   // can't be changed after creation.
@@ -217,12 +232,12 @@ void DlgEditPlayer::onSexSelectionChanged()
   //
   QHash<Category,CAT_ADD_STATE> catStatus = Tournament::getCatMngr()->getAllCategoryAddStates(getSex());
   
-  updateCatList(catStatus);
+  updateCatList(catStatus, preselectCatId);
 }
 
 //----------------------------------------------------------------------------
 
-void DlgEditPlayer::updateCatList(QHash<Category,CAT_ADD_STATE> catStatus)
+void DlgEditPlayer::updateCatList(QHash<Category,CAT_ADD_STATE> catStatus, int preselectCatId)
 {
   ui.catList->clear();
   QHash<Category,CAT_ADD_STATE>::const_iterator it;
@@ -231,12 +246,14 @@ void DlgEditPlayer::updateCatList(QHash<Category,CAT_ADD_STATE> catStatus)
   {
     CAT_ADD_STATE stat = (*it);
     QListWidgetItem* item = new QListWidgetItem(it.key().getName());
-    item->setData(Qt::UserRole, it.key().getId());
+    int catId = it.key().getId();
+    item->setData(Qt::UserRole, catId);
     
     if (stat == CAN_JOIN)
     {
       item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
-      item->setCheckState(Qt::Unchecked);
+      //item->setCheckState(Qt::Unchecked);
+      item->setCheckState((catId == preselectCatId) ? Qt::Checked : Qt::Unchecked);
     }
     if (stat == WRONG_SEX)
     {

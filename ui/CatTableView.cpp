@@ -17,6 +17,7 @@
 #include "ui/dlgGroupAssignment.h"
 #include "ui/commonCommands/cmdBulkAddPlayerToCat.h"
 #include "ui/commonCommands/cmdBulkRemovePlayersFromCat.h"
+#include "ui/commonCommands/cmdCreateNewPlayerInCat.h"
 
 #include "CatMngr.h"
 
@@ -510,6 +511,19 @@ void CategoryTableView::onRemovePlayers()
 
 //----------------------------------------------------------------------------
 
+void CategoryTableView::onCreatePlayer()
+{
+  if (!(hasCategorySelected()))
+  {
+    return;
+  }
+
+  cmdCreateNewPlayerInCat cmd{this, getSelectedCategory()};
+  cmd.exec();
+}
+
+//----------------------------------------------------------------------------
+
 void CategoryTableView::handleIntermediateSeedingForSelectedCat()
 {
   if (!(hasCategorySelected())) return;
@@ -590,10 +604,12 @@ void CategoryTableView::onContextMenuRequested(const QPoint& pos)
   // check if we have a valid category selection and
   // determine the state of the selected category
   OBJ_STATE catState = STAT_CO_DISABLED;   // an arbitrary, dummy default... not related to categories
+  bool canAddPlayers = false;
   if (hasCategorySelected())
   {
     Category cat = getSelectedCategory();
     catState = cat.getState();
+    canAddPlayers = cat.canAddPlayers();
   }
 
   // set the label of the "run" action depending
@@ -611,8 +627,9 @@ void CategoryTableView::onContextMenuRequested(const QPoint& pos)
                              ((catState == STAT_CAT_CONFIG) || (catState == STAT_CAT_WAIT_FOR_INTERMEDIATE_SEEDING)));
   actRemoveCategory->setEnabled(isCellClicked && (catState == STAT_CAT_CONFIG));
   actCloneCategory->setEnabled(isCellClicked);
-  actAddPlayer->setEnabled(isCellClicked);
+  actAddPlayer->setEnabled(canAddPlayers);
   actRemovePlayer->setEnabled(isCellClicked);
+  actCreateNewPlayerInCat->setEnabled(canAddPlayers);   // TODO: this could be too restrictive for future purposes (e.g., random matches)
 
   // show the context menu
   QAction* selectedItem = contextMenu->exec(globalPos);
@@ -627,8 +644,9 @@ void CategoryTableView::initContextMenu()
   actCloneCategory = new QAction(tr("Clone"), this);
   actRunCategory = new QAction(tr("Run..."), this);
   actRemoveCategory = new QAction(tr("Remove..."), this);
-  actAddPlayer = new QAction(tr("Add player(s)..."), this);
+  actAddPlayer = new QAction(tr("Add existing player(s)..."), this);
   actRemovePlayer = new QAction(tr("Remove player(s) from category..."), this);
+  actCreateNewPlayerInCat = new QAction(tr("Create new player in this category..."), this);
 
   // create the context menu and connect it to the actions
   contextMenu = unique_ptr<QMenu>(new QMenu());
@@ -640,6 +658,7 @@ void CategoryTableView::initContextMenu()
   contextMenu->addAction(actRemoveCategory);
   contextMenu->addSeparator();
   contextMenu->addAction(actAddPlayer);
+  contextMenu->addAction(actCreateNewPlayerInCat);
   contextMenu->addAction(actRemovePlayer);
 
   // connect signals and slots
@@ -649,6 +668,7 @@ void CategoryTableView::initContextMenu()
   connect(actRemoveCategory, SIGNAL(triggered(bool)), this, SLOT(onRemoveCategory()));
   connect(actAddPlayer, SIGNAL(triggered(bool)), this, SLOT(onAddPlayers()));
   connect(actRemovePlayer, SIGNAL(triggered(bool)), this, SLOT(onRemovePlayers()));
+  connect(actCreateNewPlayerInCat, SIGNAL(triggered(bool)), this, SLOT(onCreatePlayer()));
 }
 //----------------------------------------------------------------------------
     

@@ -104,7 +104,9 @@ HEADERS += \
     ui/commonCommands/cmdBulkRemovePlayersFromCat.h \
     ui/commonCommands/cmdMoveOrCopyPlayerToCategory.h \
     ui/MenuGenerator.h \
-    ui/commonCommands/cmdMoveOrCopyPairToCategory.h
+    ui/commonCommands/cmdMoveOrCopyPairToCategory.h \
+    ui/DlgPickPlayerSex.h \
+    ui/commonCommands/cmdCreateNewPlayerInCat.h
 
 SOURCES += \
     Category.cpp \
@@ -192,7 +194,9 @@ SOURCES += \
     ui/commonCommands/cmdBulkRemovePlayersFromCat.cpp \
     ui/commonCommands/cmdMoveOrCopyPlayerToCategory.cpp \
     ui/MenuGenerator.cpp \
-    ui/commonCommands/cmdMoveOrCopyPairToCategory.cpp
+    ui/commonCommands/cmdMoveOrCopyPairToCategory.cpp \
+    ui/DlgPickPlayerSex.cpp \
+    ui/commonCommands/cmdCreateNewPlayerInCat.cpp
 
 RESOURCES += \
     tournament.qrc
@@ -214,7 +218,8 @@ FORMS += \
     ui/DlgTournamentSettings.ui \
     ui/GameResultWidget.ui \
     ui/DlgMatchResult.ui \
-    ui/DlgSelectPlayer.ui
+    ui/DlgSelectPlayer.ui \
+    ui/DlgPickPlayerSex.ui
 
 TRANSLATIONS = tournament_de.ts
 

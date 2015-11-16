@@ -35,6 +35,7 @@ public slots:
   void onCloneCategory();
   void onAddPlayers();
   void onRemovePlayers();
+  void onCreatePlayer();
   
 private slots:
   void onContextMenuRequested(const QPoint& pos);
@@ -50,6 +51,7 @@ private:
   QAction* actRemoveCategory;
   QAction* actAddPlayer;
   QAction* actRemovePlayer;
+  QAction* actCreateNewPlayerInCat;
 
   void initContextMenu();
 
