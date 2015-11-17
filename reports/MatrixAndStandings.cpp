@@ -10,6 +10,7 @@
 #include "ui/GuiHelpers.h"
 #include "RankingMngr.h"
 #include "RankingEntry.h"
+#include "reports/commonReportElements/plotStandings.h"
 
 namespace QTournament
 {
@@ -33,6 +34,19 @@ MartixAndStandings::MartixAndStandings(TournamentDB* _db, const QString& _name, 
   {
     throw std::runtime_error("Requested matrix and standings report for invalid match type.");
   }
+
+  // if we are in GROUPS_WITH_KO make sure that "round" is still in
+  // round-robin-phase
+  if (msys == GROUPS_WITH_KO)
+  {
+    KO_Config cfg = KO_Config(cat.getParameter_string(GROUP_CONFIG));
+    int numGroupRounds = cfg.getNumRounds();
+    if (crs.getFinishedRoundsCount() > numGroupRounds)
+    {
+      throw std::runtime_error("Requested matrix and standings report for elimination phase of category.");
+    }
+
+  }
 }
 
 //----------------------------------------------------------------------------
@@ -43,7 +57,7 @@ upSimpleReport MartixAndStandings::regenerateReport()
   RankingMngr* rm = Tournament::getRankingMngr();
   RankingEntryListList rll = rm->getSortedRanking(cat, round);
 
-  QString repName = cat.getName() + " -- " + tr("Standings after round ") + QString::number(round);
+  QString repName = cat.getName() + " -- " + tr("Matrix and standings after round ") + QString::number(round);
   upSimpleReport result = createEmptyReport_Portrait();
 
   // return an empty report if we have no standings yet
@@ -57,110 +71,27 @@ upSimpleReport MartixAndStandings::regenerateReport()
   // an internal marker if we are in round-robin matches or not
   bool isRoundRobin = (rll.size() > 1);
 
-  // if we are in a "special round" like semi-finals, etc.
-  // create a suitable sub-headline
-  QString subHeader;
-  if (!isRoundRobin)
-  {
-    MatchMngr* mm = Tournament::getMatchMngr();
-    MatchGroupList mgl = mm->getMatchGroupsForCat(cat, round);
-    int matchGroupNumber = mgl.at(0).getGroupNumber();
-    MATCH_SYSTEM mSys = cat.getMatchSystem();
-    if ((matchGroupNumber < 0) && (matchGroupNumber != GROUP_NUM__ITERATION) &&
-        ((mSys == GROUPS_WITH_KO) || (mSys == SINGLE_ELIM)))
-    {
-      subHeader = GuiHelpers::groupNumToLongString(mgl.at(0).getGroupNumber());
-    }
-  }
-  setHeaderAndHeadline(result.get(), repName, subHeader);
+  setHeaderAndHeadline(result.get(), repName);
 
   // dump all rankings to the report
   for (RankingEntryList rl : rll)
   {
-    QString tableName = tr("Standings in category ") + cat.getName() + tr(" after round ") + QString::number(round);
+    result->writeLine("(Matrix goes here)");
+    result->skip(3.0);
+
+    QString tableName = cat.getName();
     if (isRoundRobin)
     {
       // determine the group number
       // and print an intermediate header
       RankingEntry re = rl.at(0);
-      QString hdr = tr("Group ") + QString::number(re.getGroupNumber());
-      printIntermediateHeader(result, hdr);
-
-      tableName += ", " + tr("Group ") + QString::number(re.getGroupNumber());
+      QString tableName = tr("Group ") + QString::number(re.getGroupNumber());
     }
 
-    // prepare a table for the standings
-    SimpleReportLib::TabSet ts;
-    ts.addTab(6, SimpleReportLib::TAB_JUSTIFICATION::TAB_RIGHT);  // the rank
-    ts.addTab(10, SimpleReportLib::TAB_JUSTIFICATION::TAB_LEFT);   // the name
-    // a pair of three tabs for each matches, games and points
-    for (int i=0; i< 3; ++i)
-    {
-      double colonPos = 120 + i*30.0;
-      ts.addTab(colonPos - 1.0,  SimpleReportLib::TAB_RIGHT);  // first number
-      ts.addTab(colonPos,  SimpleReportLib::TAB_CENTER);  // colon
-      ts.addTab(colonPos + 1.0,  SimpleReportLib::TAB_LEFT);  // second number
-    }
-    SimpleReportLib::TableWriter tw(ts);
-    tw.setHeader(1, tr("Rank"));
-    tw.setHeader(2, tr("Player"));
-    tw.setHeader(4, tr("Matches"));
-    tw.setHeader(7, tr("Games"));
-    tw.setHeader(10, tr("Points"));
+    plotStandings elem{result.get(), rl, tableName};
+    elem.plot();
 
-    bool hasAtLeastOneEntry = false;
-    for (RankingEntry re : rl)
-    {
-      QStringList rowContent;
-      rowContent << "";   // first column is unused
-
-      // skip entries without a valid rank
-      int curRank = re.getRank();
-      if (curRank == RankingEntry::NO_RANK_ASSIGNED) continue;
-      hasAtLeastOneEntry = true;
-
-      rowContent << QString::number(curRank);
-
-      auto pp = re.getPlayerPair();
-      rowContent << ((pp != nullptr) ? (*pp).getDisplayName() : "??");
-
-      if (pp != nullptr)
-      {
-        // TODO: this doesn't work if draw matches are allowed!
-        auto matchStats = re.getMatchStats();
-        rowContent << QString::number(get<0>(matchStats));
-        rowContent << ":";
-        rowContent << QString::number(get<2>(matchStats));
-
-        auto gameStats = re.getGameStats();
-        rowContent << QString::number(get<0>(gameStats));
-        rowContent << ":";
-        rowContent << QString::number(get<1>(gameStats));
-
-        auto pointStats = re.getPointStats();
-        rowContent << QString::number(get<0>(pointStats));
-        rowContent << ":";
-        rowContent << QString::number(get<1>(pointStats));
-      }
-
-      tw.appendRow(rowContent);
-    }
-
-    tw.setNextPageContinuationCaption(tableName + tr(" (cont.)"));
-    if (hasAtLeastOneEntry)
-    {
-      tw.write(result.get());
-    } else {
-      result->writeLine(tr("There are no standings available in this round."));
-    }
     result->skip(3.0);
-  }
-
-  // if we are in ranking matches, print a list of all best-case reachable places
-  if ((cat.getMatchSystem() == RANKING) && (round != cat.getRoundStatus().getTotalRoundsCount()))
-  {
-    printIntermediateHeader(result, tr("Best case reachable places after this round"));
-    printBestCaseList(result);
   }
 
   // set header and footer
@@ -175,7 +106,7 @@ QStringList MartixAndStandings::getReportLocators() const
 {
   QStringList result;
 
-  QString loc = tr("Standings::");
+  QString loc = tr("Matrix and Standings::");
   loc += cat.getName() + "::";
   loc += tr("after round ") + QString::number(round);
 
@@ -186,193 +117,6 @@ QStringList MartixAndStandings::getReportLocators() const
 
 //----------------------------------------------------------------------------
 
-int MartixAndStandings::determineBestPossibleRankForPlayerAfterRound(const PlayerPair& pp, int round) const
-{
-  // we can only determine the best possible final rank if we
-  // are in the RANKING match system
-  if (cat.getMatchSystem() != RANKING)
-  {
-    return -1;
-  }
-
-  // make sure the playerpair is from this category
-  if (*(pp.getCategory(db)) != cat)
-  {
-    return -1;
-  }
-
-  // make sure the round is valid
-  if (round < 1)
-  {
-    return -1;
-  }
-
-  // make sure the round has already been played
-  CatRoundStatus crs = cat.getRoundStatus();
-  if (crs.getFinishedRoundsCount() < round)
-  {
-    return -1;
-  }
-
-  // determine the last FINISHED match that this player has played.
-  // Note: this must not be in this round because the player
-  // could have had a bye
-  unique_ptr<Match> lastMatch = nullptr;
-  int _r = round;
-  MatchMngr* mm = Tournament::getMatchMngr();
-  while ((lastMatch == nullptr) && (_r > 0))
-  {
-    lastMatch = mm->getMatchForPlayerPairAndRound(pp, _r);
-    if ((lastMatch != nullptr) && (lastMatch->getState() != STAT_MA_FINISHED))
-    {
-      lastMatch = nullptr;   // skip all matches that are not finished
-    }
-    --_r;
-  }
-
-  if (lastMatch == nullptr)
-  {
-    // the player had no match yet (or none finished), so the first place is still
-    // possible
-    return 1;
-  }
-
-  // okay, we've found a valid match that is in state FINISHED
-
-  // check if the player already achieved a final rank with this match
-  auto winner = lastMatch->getWinner();
-  int winnerRank = lastMatch->getWinnerRank();
-  int loserRank = lastMatch->getLoserRank();
-  bool isWinner = ((*winner) == pp);
-  if (isWinner && (winnerRank > 0))
-  {
-    return winnerRank;
-  }
-  if (!isWinner && (loserRank > 0))
-  {
-    return loserRank;
-  }
-
-  // no final rank yet. So we have to follow the match tree, assuming
-  // that the player wins all subsequent matches
-
-
-  // a little helper function to get the next match for a match winner
-  int finalRound = crs.getTotalRoundsCount();
-  auto getNextWinnerMatch = [this, &finalRound, &mm](const Match& ma) -> unique_ptr<Match> {
-    if (ma.getWinnerRank() > 0)
-    {
-      return nullptr;  // no next match
-    }
-
-    // maybe we already HAVE winner. then we must search for real
-    // pair IDs
-    if (ma.getState() == STAT_MA_FINISHED)
-    {
-      auto w = ma.getWinner();
-      assert(w != nullptr);
-      int r = ma.getMatchGroup().getRound();
-
-      ++r;
-      unique_ptr<Match> nextMatch = nullptr;
-      while ((nextMatch == nullptr) && (r <= finalRound))
-      {
-        nextMatch = mm->getMatchForPlayerPairAndRound(*w, r);
-        ++r;
-      }
-
-      return nextMatch;   // it's either the match or nullptr to indicate an error
-    }
-
-    // the match is not yet finished, so we need to search for symbolic
-    // player values. In this case, it is the positive ID of our match
-    QString where = QString("%1 = %2 OR %3 = %4").arg(MA_PAIR1_SYMBOLIC_VAL).arg(ma.getId());
-    where = where.arg(MA_PAIR2_SYMBOLIC_VAL).arg(ma.getId());
-
-    TabRow winnerMatchRow = (*db)[TAB_MATCH].getSingleRowByWhereClause(where);  // this query must always yield exactly one match
-
-    return mm->getMatch(winnerMatchRow.getId());
-  };
-
-  //
-  // back to the follow-the-chain-of-matches-algorithm
-  //
-
-  // since the match ma is already finished (see checks above) and there is no
-  // final rank for the player (see check above) there must be a future match for this player
-  // and the match must be identifiable by the pair ID, not by a symbolic name (the symbolic
-  // name should be resolved by now).
-  _r = round + 1;
-  unique_ptr<Match> nextMatch = nullptr;
-  while ((nextMatch == nullptr) && (_r <= finalRound))
-  {
-    nextMatch = mm->getMatchForPlayerPairAndRound(pp, _r);
-    ++_r;
-  }
-
-  if (nextMatch == nullptr)
-  {
-    // this shouldn't happen. There should always be a next match.
-    // I give up.
-    return -1;
-  }
-
-  // no we follow the bracket tree, assuming that the player wins all
-  // subsequent matches. Let's see where it takes us...
-  Match oldNextMatch = *nextMatch;
-  while (nextMatch != nullptr)
-  {
-    oldNextMatch = *nextMatch;
-    nextMatch = getNextWinnerMatch(*nextMatch);
-  }
-
-  // now oldNextMatch holds the final match in the chain of matches
-  winnerRank = oldNextMatch.getWinnerRank();
-
-  // this is either the wanted result or -1 which can then as well
-  // serve as an error indicator
-  return winnerRank;
-}
-
-void MartixAndStandings::printBestCaseList(upSimpleReport& rep) const
-{
-  if (cat.getMatchSystem() != RANKING)
-  {
-    return;
-  }
-
-  // we print the list for all participating player pairs, sorted
-  // alphabetically
-  PlayerPairList ppList = cat.getPlayerPairs();
-  std::sort(ppList.begin(), ppList.end(), [](PlayerPair& pp1, PlayerPair& pp2)
-  {
-    return pp1.getDisplayName() < pp2.getDisplayName();
-  });
-
-  // prepare a table for the standings
-  SimpleReportLib::TabSet ts;
-  ts.addTab(120, SimpleReportLib::TAB_JUSTIFICATION::TAB_CENTER);  // the best case rank
-
-  SimpleReportLib::TableWriter tw(ts);
-  tw.setHeader(0, tr("Player"));
-  tw.setHeader(1, tr("Best case final place"));
-
-  for (PlayerPair pp : ppList)
-  {
-    QStringList rowContent;
-    rowContent << pp.getDisplayName();
-    int bestCaseRank = determineBestPossibleRankForPlayerAfterRound(pp, round);
-    if (bestCaseRank > 0)
-    {
-      rowContent << QString::number(bestCaseRank);
-    } else {
-      rowContent << "??";   // shouldn't happen
-    }
-    tw.appendRow(rowContent);
-  }
-
-  tw.write(rep.get());
-}
 
 //----------------------------------------------------------------------------
 

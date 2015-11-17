@@ -34,6 +34,7 @@ namespace QTournament
     static constexpr char REP__RESULTSHEETS[] = "ResultSheets";
     static constexpr char REP__RESULTS_AND_NEXT_MATCHES[] = "ResultsAndNextMatches";
     static constexpr char REP__BRACKET[] = "Bracket";
+    static constexpr char REP__MATRIX_AND_STANDINGS[] = "MatrixAndStandings";
 
   private:
     TournamentDB* db;

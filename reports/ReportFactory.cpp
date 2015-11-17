@@ -10,6 +10,7 @@
 #include "InOutList.h"
 #include "ResultSheets.h"
 #include "BracketSheet.h"
+#include "MatrixAndStandings.h"
 
 namespace QTournament
 {
@@ -23,6 +24,7 @@ namespace QTournament
   constexpr char ReportFactory::REP__RESULTSHEETS[];
   constexpr char ReportFactory::REP__RESULTS_AND_NEXT_MATCHES[];
   constexpr char ReportFactory::REP__BRACKET[];
+  constexpr char ReportFactory::REP__MATRIX_AND_STANDINGS[];
 
   ReportFactory::ReportFactory(TournamentDB* _db)
     : db(_db)
@@ -80,6 +82,25 @@ namespace QTournament
           int grpNum = mg.getGroupNumber();
           if (grpNum < 0) continue;
           result.append(genRepName(REP__RESULTS_BY_GROUP, cat, grpNum));
+        }
+      }
+
+      // generate matrix-and-result sheets for all round-robin and group matches
+      MATCH_SYSTEM msys = cat.getMatchSystem();
+      if (msys == GROUPS_WITH_KO)
+      {
+        KO_Config cfg = KO_Config(cat.getParameter_string(GROUP_CONFIG));
+        int numGroupRounds = cfg.getNumRounds();
+        for (int round = 1; round <= numGroupRounds; ++round)
+        {
+          result.append(genRepName(REP__MATRIX_AND_STANDINGS, cat, round));
+        }
+      }
+      if (msys == ROUND_ROBIN)
+      {
+        for (int round = 1; round <= crs.getFinishedRoundsCount(); ++round)
+        {
+          result.append(genRepName(REP__MATRIX_AND_STANDINGS, cat, round));
         }
       }
     }
@@ -226,6 +247,15 @@ namespace QTournament
       int catId = intParam1;
       Category cat = Tournament::getCatMngr()->getCategoryById(catId);
       return upAbstractReport(new BracketSheet(db, repName, cat));
+    }
+
+    // matrix with standings
+    if (pureRepName == REP__MATRIX_AND_STANDINGS)
+    {
+      int catId = intParam1;
+      int round = intParam2;
+      Category cat = Tournament::getCatMngr()->getCategoryById(catId);
+      return upAbstractReport(new MartixAndStandings(db, repName, cat, round));
     }
 
     return nullptr;
