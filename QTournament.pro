@@ -109,7 +109,8 @@ HEADERS += \
     ui/commonCommands/cmdCreateNewPlayerInCat.h \
     reports/commonReportElements/AbstractReportElement.h \
     reports/commonReportElements/plotStandings.h \
-    reports/MatrixAndStandings.h
+    reports/MatrixAndStandings.h \
+    reports/commonReportElements/MatchMatrix.h
 
 SOURCES += \
     Category.cpp \
@@ -202,7 +203,8 @@ SOURCES += \
     ui/commonCommands/cmdCreateNewPlayerInCat.cpp \
     reports/commonReportElements/AbstractReportElement.cpp \
     reports/commonReportElements/plotStandings.cpp \
-    reports/MatrixAndStandings.cpp
+    reports/MatrixAndStandings.cpp \
+    reports/commonReportElements/MatchMatrix.cpp
 
 RESOURCES += \
     tournament.qrc

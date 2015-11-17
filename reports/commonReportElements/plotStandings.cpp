@@ -12,7 +12,7 @@ plotStandings::plotStandings(SimpleReportGenerator* _rep, const RankingEntryList
 
 //----------------------------------------------------------------------------
 
-void plotStandings::plot(const QPointF& topLeft)
+QRectF plotStandings::plot(const QPointF& topLeft)
 {
   // prepare a table for the standings
   SimpleReportLib::TabSet ts;
@@ -78,4 +78,6 @@ void plotStandings::plot(const QPointF& topLeft)
   } else {
     rep->writeLine(tr("There are no standings available in this round."));
   }
+
+  return QRectF();
 }

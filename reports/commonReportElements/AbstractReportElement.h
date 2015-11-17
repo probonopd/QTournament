@@ -12,7 +12,7 @@ class AbstractReportElement
 
 public:
   AbstractReportElement(SimpleReportGenerator* _rep);
-  virtual void plot(const QPointF& topLeft = QPointF(-1, -1)) = 0;
+  virtual QRectF plot(const QPointF& topLeft = QPointF(-1, -1)) = 0;
   virtual ~AbstractReportElement() {}
 
 protected:

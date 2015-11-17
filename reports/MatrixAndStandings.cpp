@@ -11,6 +11,7 @@
 #include "RankingMngr.h"
 #include "RankingEntry.h"
 #include "reports/commonReportElements/plotStandings.h"
+#include "reports/commonReportElements/MatchMatrix.h"
 
 namespace QTournament
 {
@@ -76,17 +77,19 @@ upSimpleReport MartixAndStandings::regenerateReport()
   // dump all rankings to the report
   for (RankingEntryList rl : rll)
   {
-    result->writeLine("(Matrix goes here)");
-    result->skip(3.0);
-
     QString tableName = cat.getName();
+    int grpNum = -1;
     if (isRoundRobin)
     {
       // determine the group number
       // and print an intermediate header
       RankingEntry re = rl.at(0);
-      QString tableName = tr("Group ") + QString::number(re.getGroupNumber());
+      grpNum = re.getGroupNumber();
+      QString tableName = tr("Group ") + QString::number(grpNum);
     }
+
+    MatchMatrix matrix{result.get(), tableName, cat, grpNum};
+    matrix.plot();
 
     plotStandings elem{result.get(), rl, tableName};
     elem.plot();

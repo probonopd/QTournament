@@ -13,7 +13,7 @@ class plotStandings : public AbstractReportElement, public QObject
 {
 public:
   plotStandings(SimpleReportGenerator* _rep, const RankingEntryList& _rel, const QString& tabName);
-  virtual void plot(const QPointF& topLeft = QPointF(-1, -1)) override;
+  virtual QRectF plot(const QPointF& topLeft = QPointF(-1, -1)) override;
 
 protected:
   RankingEntryList rel;
