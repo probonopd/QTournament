@@ -34,6 +34,7 @@ private:
   QAction* actUnregister;
   unique_ptr<QMenu> listOfCats_CopyPlayerSubmenu;
   unique_ptr<QMenu> listOfCats_MovePlayerSubmenu;
+  QAction* actCreateNewPlayerInCat;
 
   unique_ptr<QMenu> lwPairsContextMenu;
   QAction* actSplitPair;
@@ -75,6 +76,7 @@ public slots:
   void onUnregisterPlayer();
   void onCopyOrMovePlayer(int targetCatId, bool isMove);
   void onCopyOrMovePair(const PlayerPair& selPair, int targetCatId, bool isMove);
+  void onCreatePlayer();
 } ;
 
 #endif	/* _CATTABWIDGET_H */
