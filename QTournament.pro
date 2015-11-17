@@ -106,7 +106,10 @@ HEADERS += \
     ui/MenuGenerator.h \
     ui/commonCommands/cmdMoveOrCopyPairToCategory.h \
     ui/DlgPickPlayerSex.h \
-    ui/commonCommands/cmdCreateNewPlayerInCat.h
+    ui/commonCommands/cmdCreateNewPlayerInCat.h \ #\
+    reports/commonReportElements/AbstractReportElement.h \
+    reports/commonReportElements/plotStandings.h
+    #reports/MatrixAndStandings.h
 
 SOURCES += \
     Category.cpp \
@@ -196,7 +199,10 @@ SOURCES += \
     ui/MenuGenerator.cpp \
     ui/commonCommands/cmdMoveOrCopyPairToCategory.cpp \
     ui/DlgPickPlayerSex.cpp \
-    ui/commonCommands/cmdCreateNewPlayerInCat.cpp
+    ui/commonCommands/cmdCreateNewPlayerInCat.cpp \ #\
+    reports/commonReportElements/AbstractReportElement.cpp \
+    reports/commonReportElements/plotStandings.cpp
+    #reports/MatrixAndStandings.cpp
 
 RESOURCES += \
     tournament.qrc

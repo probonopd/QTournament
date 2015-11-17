@@ -2,7 +2,7 @@
 
 #include <QList>
 
-#include "Standings.h"
+#include "MatrixAndStandings.h"
 #include "SimpleReportGenerator.h"
 #include "TableWriter.h"
 
@@ -10,25 +10,34 @@
 #include "ui/GuiHelpers.h"
 #include "RankingMngr.h"
 #include "RankingEntry.h"
-#include "reports/commonReportElements/plotStandings.h"
 
 namespace QTournament
 {
 
 
-Standings::Standings(TournamentDB* _db, const QString& _name, const Category& _cat, int _round)
+MartixAndStandings::MartixAndStandings(TournamentDB* _db, const QString& _name, const Category& _cat, int _round)
   :AbstractReport(_db, _name), cat(_cat), round(_round)
 {
   // make sure that the requested round is already finished
   CatRoundStatus crs = cat.getRoundStatus();
-  if (round <= crs.getFinishedRoundsCount()) return; // okay, we're in one of the finished rounds
+  if (round <= crs.getFinishedRoundsCount())
+  {
+    return; // okay, we're in one of the finished rounds
+  } else {
+    throw std::runtime_error("Requested matrix and standings report for unfinished round.");
+  }
 
-  throw std::runtime_error("Requested standings report for unfinished round.");
+  // make sure this category is eligible for a matrix view
+  MATCH_SYSTEM msys = cat.getMatchSystem();
+  if ((msys != GROUPS_WITH_KO) && (msys != ROUND_ROBIN))
+  {
+    throw std::runtime_error("Requested matrix and standings report for invalid match type.");
+  }
 }
 
 //----------------------------------------------------------------------------
 
-upSimpleReport Standings::regenerateReport()
+upSimpleReport MartixAndStandings::regenerateReport()
 {
   // retrieve the ranking(s) for this round
   RankingMngr* rm = Tournament::getRankingMngr();
@@ -80,10 +89,70 @@ upSimpleReport Standings::regenerateReport()
       tableName += ", " + tr("Group ") + QString::number(re.getGroupNumber());
     }
 
-    // plot the actual standings table
-    plotStandings table{result.get(), rl, tableName};
-    table.plot();
+    // prepare a table for the standings
+    SimpleReportLib::TabSet ts;
+    ts.addTab(6, SimpleReportLib::TAB_JUSTIFICATION::TAB_RIGHT);  // the rank
+    ts.addTab(10, SimpleReportLib::TAB_JUSTIFICATION::TAB_LEFT);   // the name
+    // a pair of three tabs for each matches, games and points
+    for (int i=0; i< 3; ++i)
+    {
+      double colonPos = 120 + i*30.0;
+      ts.addTab(colonPos - 1.0,  SimpleReportLib::TAB_RIGHT);  // first number
+      ts.addTab(colonPos,  SimpleReportLib::TAB_CENTER);  // colon
+      ts.addTab(colonPos + 1.0,  SimpleReportLib::TAB_LEFT);  // second number
+    }
+    SimpleReportLib::TableWriter tw(ts);
+    tw.setHeader(1, tr("Rank"));
+    tw.setHeader(2, tr("Player"));
+    tw.setHeader(4, tr("Matches"));
+    tw.setHeader(7, tr("Games"));
+    tw.setHeader(10, tr("Points"));
 
+    bool hasAtLeastOneEntry = false;
+    for (RankingEntry re : rl)
+    {
+      QStringList rowContent;
+      rowContent << "";   // first column is unused
+
+      // skip entries without a valid rank
+      int curRank = re.getRank();
+      if (curRank == RankingEntry::NO_RANK_ASSIGNED) continue;
+      hasAtLeastOneEntry = true;
+
+      rowContent << QString::number(curRank);
+
+      auto pp = re.getPlayerPair();
+      rowContent << ((pp != nullptr) ? (*pp).getDisplayName() : "??");
+
+      if (pp != nullptr)
+      {
+        // TODO: this doesn't work if draw matches are allowed!
+        auto matchStats = re.getMatchStats();
+        rowContent << QString::number(get<0>(matchStats));
+        rowContent << ":";
+        rowContent << QString::number(get<2>(matchStats));
+
+        auto gameStats = re.getGameStats();
+        rowContent << QString::number(get<0>(gameStats));
+        rowContent << ":";
+        rowContent << QString::number(get<1>(gameStats));
+
+        auto pointStats = re.getPointStats();
+        rowContent << QString::number(get<0>(pointStats));
+        rowContent << ":";
+        rowContent << QString::number(get<1>(pointStats));
+      }
+
+      tw.appendRow(rowContent);
+    }
+
+    tw.setNextPageContinuationCaption(tableName + tr(" (cont.)"));
+    if (hasAtLeastOneEntry)
+    {
+      tw.write(result.get());
+    } else {
+      result->writeLine(tr("There are no standings available in this round."));
+    }
     result->skip(3.0);
   }
 
@@ -102,7 +171,7 @@ upSimpleReport Standings::regenerateReport()
 
 //----------------------------------------------------------------------------
 
-QStringList Standings::getReportLocators() const
+QStringList MartixAndStandings::getReportLocators() const
 {
   QStringList result;
 
@@ -117,7 +186,7 @@ QStringList Standings::getReportLocators() const
 
 //----------------------------------------------------------------------------
 
-int Standings::determineBestPossibleRankForPlayerAfterRound(const PlayerPair& pp, int round) const
+int MartixAndStandings::determineBestPossibleRankForPlayerAfterRound(const PlayerPair& pp, int round) const
 {
   // we can only determine the best possible final rank if we
   // are in the RANKING match system
@@ -265,7 +334,7 @@ int Standings::determineBestPossibleRankForPlayerAfterRound(const PlayerPair& pp
   return winnerRank;
 }
 
-void Standings::printBestCaseList(upSimpleReport& rep) const
+void MartixAndStandings::printBestCaseList(upSimpleReport& rep) const
 {
   if (cat.getMatchSystem() != RANKING)
   {
