@@ -75,6 +75,7 @@ upSimpleReport MartixAndStandings::regenerateReport()
   setHeaderAndHeadline(result.get(), repName);
 
   // dump all rankings to the report
+  int cnt=0;
   for (RankingEntryList rl : rll)
   {
     QString tableName = cat.getName();
@@ -89,12 +90,20 @@ upSimpleReport MartixAndStandings::regenerateReport()
     }
 
     MatchMatrix matrix{result.get(), tableName, cat, grpNum};
-    matrix.plot();
+    auto plotRect = matrix.plot();
+    result->skip(plotRect.size().height() + 3.0);
 
     plotStandings elem{result.get(), rl, tableName};
     elem.plot();
 
-    result->skip(3.0);
+    if ((cnt % 2) == 0)
+    {
+      result->skip(10);
+    } else {
+      result->startNextPage();
+    }
+
+    ++cnt;
   }
 
   // set header and footer
