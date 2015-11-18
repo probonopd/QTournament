@@ -1,10 +1,13 @@
 #ifndef MATCHMATRIX_H
 #define MATCHMATRIX_H
 
+#include <memory>
+
 #include <QObject>
 
 #include "AbstractReportElement.h"
 #include "Category.h"
+#include "Match.h"
 
 using namespace QTournament;
 
@@ -27,16 +30,22 @@ private:
   QSizeF cellSize;
 };
 
+//----------------------------------------------------------------------------
+
 class MatchMatrix : public AbstractReportElement, public QObject
 {
 public:
-  MatchMatrix(SimpleReportGenerator* _rep, const QString& tabName, const Category& _cat, int _grpNum=-1);
+  MatchMatrix(SimpleReportGenerator* _rep, const QString& tabName, const Category& _cat, int _round, int _grpNum = -1);
   virtual QRectF plot(const QPointF& topLeft = QPointF(-1, -1)) override;
 
 protected:
   QString tableName;
   Category cat;
+  int round;
   int grpNum;
+
+  upMatch getMatchForCell(const PlayerPairList& ppList, int row, int col) const;
+  QStringList getSortedMatchScoreStrings(const Match& ma, const PlayerPair& ppRow, const PlayerPair& ppCol) const;
 };
 
 #endif // MATCHMATRIX_H

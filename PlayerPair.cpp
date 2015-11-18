@@ -150,25 +150,26 @@ namespace QTournament {
       p2Name = p2.getDisplayName(maxLen);
       OBJ_STATE p2Stat = p2.getState();
 
-      result = "%1 / %2";
+      result = "%2 / %1";
       if (unregisteredPlayersInBrackets)
       {
         if ((p1Stat == STAT_PL_WAIT_FOR_REGISTRATION) && (p2Stat == STAT_PL_WAIT_FOR_REGISTRATION))
         {
-          result = "(%1 / %2)";
+          result = "(%2 / %1)";
         } else if (p1Stat == STAT_PL_WAIT_FOR_REGISTRATION)
         {
-          result = "(%1) / %2";
+          result = "(%2) / %1";
         } else if (p2Stat == STAT_PL_WAIT_FOR_REGISTRATION)
         {
-          result = "%1 / (%2)";
+          result = "%2 / (%1)";
         }
       }
+      result = result.arg(p2Name);
     } else {
       result = (unregisteredPlayersInBrackets && (p1Stat == STAT_PL_WAIT_FOR_REGISTRATION)) ? "(%1)" : "%1";
     }
 
-    result = result.arg(p1.getDisplayName(maxLen)).arg(p2Name);
+    result = result.arg(p1.getDisplayName(maxLen));
 
     return result;
   }

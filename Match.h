@@ -70,6 +70,8 @@ namespace QTournament
 
   };
 
+  typedef unique_ptr<Match> upMatch;
+
 }
 #endif	/* MATCH_H */
 

@@ -73,6 +73,7 @@ upSimpleReport MartixAndStandings::regenerateReport()
   bool isRoundRobin = (rll.size() > 1);
 
   setHeaderAndHeadline(result.get(), repName);
+  result->skip(10.0);
 
   // dump all rankings to the report
   int cnt=0;
@@ -86,10 +87,10 @@ upSimpleReport MartixAndStandings::regenerateReport()
       // and print an intermediate header
       RankingEntry re = rl.at(0);
       grpNum = re.getGroupNumber();
-      QString tableName = tr("Group ") + QString::number(grpNum);
+      tableName = tr("Group ") + QString::number(grpNum);
     }
 
-    MatchMatrix matrix{result.get(), tableName, cat, grpNum};
+    MatchMatrix matrix{result.get(), tableName, cat, round, grpNum};
     auto plotRect = matrix.plot();
     result->skip(plotRect.size().height() + 3.0);
 
@@ -98,8 +99,8 @@ upSimpleReport MartixAndStandings::regenerateReport()
 
     if ((cnt % 2) == 0)
     {
-      result->skip(10);
-    } else {
+      result->skip(20);
+    } else if (cnt < (rll.length() - 1)){
       result->startNextPage();
     }
 
