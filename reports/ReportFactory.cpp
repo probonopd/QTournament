@@ -62,7 +62,7 @@ namespace QTournament
       }
 
       CatRoundStatus crs = cat.getRoundStatus();
-      result.append(genRepName(REP__RESULTS_AND_NEXT_MATCHES, cat, 0));   // llist of initial matches
+      result.append(genRepName(REP__RESULTS_AND_NEXT_MATCHES, cat, 0));   // list of initial matches
       for (int round=1; round <= crs.getFinishedRoundsCount(); ++round)
       {
         result.append(genRepName(REP__RESULTS, cat, round));
@@ -87,18 +87,27 @@ namespace QTournament
 
       // generate matrix-and-result sheets for all round-robin and group matches
       MATCH_SYSTEM msys = cat.getMatchSystem();
+      int numFinishedRounds = crs.getFinishedRoundsCount();
       if (msys == GROUPS_WITH_KO)
       {
+        // initial matches
+        result.append(genRepName(REP__MATRIX_AND_STANDINGS, cat, 0));
+
+        // a matrix for each finished round of the round-robin phase
         KO_Config cfg = KO_Config(cat.getParameter_string(GROUP_CONFIG));
         int numGroupRounds = cfg.getNumRounds();
-        for (int round = 1; round <= numGroupRounds; ++round)
+        for (int round = 1; ((round <= numGroupRounds) && (round <= numFinishedRounds)); ++round)
         {
           result.append(genRepName(REP__MATRIX_AND_STANDINGS, cat, round));
         }
       }
       if (msys == ROUND_ROBIN)
       {
-        for (int round = 1; round <= crs.getFinishedRoundsCount(); ++round)
+        // initial matches
+        result.append(genRepName(REP__MATRIX_AND_STANDINGS, cat, 0));
+
+        // a matrix for each finished round
+        for (int round = 1; round <= numFinishedRounds; ++round)
         {
           result.append(genRepName(REP__MATRIX_AND_STANDINGS, cat, round));
         }

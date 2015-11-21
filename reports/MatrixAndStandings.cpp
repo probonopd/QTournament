@@ -12,6 +12,7 @@
 #include "RankingEntry.h"
 #include "reports/commonReportElements/plotStandings.h"
 #include "reports/commonReportElements/MatchMatrix.h"
+#include "MatchMngr.h"
 
 namespace QTournament
 {
@@ -20,17 +21,10 @@ namespace QTournament
 MartixAndStandings::MartixAndStandings(TournamentDB* _db, const QString& _name, const Category& _cat, int _round)
   :AbstractReport(_db, _name), cat(_cat), round(_round)
 {
-  // make sure that the requested round is already finished
+  MATCH_SYSTEM msys = cat.getMatchSystem();
   CatRoundStatus crs = cat.getRoundStatus();
-  if (round <= crs.getFinishedRoundsCount())
-  {
-    return; // okay, we're in one of the finished rounds
-  } else {
-    throw std::runtime_error("Requested matrix and standings report for unfinished round.");
-  }
 
   // make sure this category is eligible for a matrix view
-  MATCH_SYSTEM msys = cat.getMatchSystem();
   if ((msys != GROUPS_WITH_KO) && (msys != ROUND_ROBIN))
   {
     throw std::runtime_error("Requested matrix and standings report for invalid match type.");
@@ -46,7 +40,23 @@ MartixAndStandings::MartixAndStandings(TournamentDB* _db, const QString& _name, 
     {
       throw std::runtime_error("Requested matrix and standings report for elimination phase of category.");
     }
+  }
 
+  if (round == 0)
+  {
+    return;   // matrix for initial matches
+  }
+
+  // make sure that the requested round is already finished
+  if (round > crs.getFinishedRoundsCount())
+  {
+    throw std::runtime_error("Requested matrix and standings report for unfinished round.");
+  }
+
+  // make the round is valid at all
+  if (round < 0)
+  {
+    throw std::runtime_error("Requested matrix and standings report for invalid round.");
   }
 }
 
@@ -56,52 +66,75 @@ upSimpleReport MartixAndStandings::regenerateReport()
 {
   // retrieve the ranking(s) for this round
   RankingMngr* rm = Tournament::getRankingMngr();
-  RankingEntryListList rll = rm->getSortedRanking(cat, round);
+  RankingEntryListList rll;
+  if (round > 0) rll = rm->getSortedRanking(cat, round);
 
-  QString repName = cat.getName() + " -- " + tr("Matrix and standings after round ") + QString::number(round);
-  upSimpleReport result = createEmptyReport_Portrait();
-
-  // return an empty report if we have no standings yet
-  if (rll.isEmpty() || ((rll.size() == 1) && (rll.at(0).size() == 0)))
+  QString repName = cat.getName() + " -- ";
+  if (round == 0)
   {
-    setHeaderAndHeadline(result.get(), repName);
-    result->writeLine(tr("There are no standings for this round yet."));
-    return result;
+    repName += tr("Initial matches");
+  } else {
+    repName += tr("Match matrix and standings after round ") + QString::number(round);
+  }
+  upSimpleReport result = createEmptyReport_Portrait();
+  setHeaderAndHeadline(result.get(), repName);
+  result->skip((round == 0) ? 15 : 5);
+
+  // determine the number of match groups
+  MATCH_SYSTEM msys = cat.getMatchSystem();
+  int nGroups = 1;  // round robin
+  if (msys == GROUPS_WITH_KO)
+  {
+    KO_Config cfg = cat.getParameter_string(GROUP_CONFIG);
+    nGroups = cfg.getNumGroups();
   }
 
-  // an internal marker if we are in round-robin matches or not
-  bool isRoundRobin = (rll.size() > 1);
-
-  setHeaderAndHeadline(result.get(), repName);
-  result->skip(10.0);
-
-  // dump all rankings to the report
+  // plot the matrix and, if applicable, the standings
   int cnt=0;
-  for (RankingEntryList rl : rll)
+  QString catName = cat.getName();
+  for (int grpNum = 1; grpNum <= nGroups; ++grpNum)
   {
-    QString tableName = cat.getName();
-    int grpNum = -1;
-    if (isRoundRobin)
+    QString tableName = catName;
+    if (msys == GROUPS_WITH_KO)
     {
-      // determine the group number
-      // and print an intermediate header
-      RankingEntry re = rl.at(0);
-      grpNum = re.getGroupNumber();
       tableName = tr("Group ") + QString::number(grpNum);
     }
 
-    MatchMatrix matrix{result.get(), tableName, cat, round, grpNum};
+    // plot the matrix
+    MatchMatrix matrix{result.get(), tableName, cat, round, (msys == ROUND_ROBIN) ? -1 : grpNum};
     auto plotRect = matrix.plot();
     result->skip(plotRect.size().height() + 3.0);
 
-    plotStandings elem{result.get(), rl, tableName};
-    elem.plot();
+    // plot the standing, if available
+    if (round > 0)
+    {
+      if (rll.isEmpty() || ((rll.size() == 1) && (rll.at(0).size() == 0)))
+      {
+        result->writeLine(tr("There are no standings for this round yet."));
+      } else {
+        // the ranking for this group and print it
+        for (const RankingEntryList& rl : rll)
+        {
+          // skip empty entries (there shouldn't be any, but anyway...)
+          if (rl.isEmpty()) continue;
 
+          // skip entries belong to the wrong group
+          if ((msys == GROUPS_WITH_KO) && (rl.at(0).getGroupNumber() != grpNum)) continue;
+
+          // okay, we found the right entry
+          plotStandings elem{result.get(), rl, tableName};
+          elem.plot();
+        }
+      }
+    }
+
+    // start a new page after every second matrix
     if ((cnt % 2) == 0)
     {
-      result->skip(20);
-    } else if (cnt < (rll.length() - 1)){
+      result->skip((round == 0) ? 30 : 10);
+    } else if (cnt < (nGroups - 1)){
       result->startNextPage();
+      result->skip(10);
     }
 
     ++cnt;
@@ -121,7 +154,12 @@ QStringList MartixAndStandings::getReportLocators() const
 
   QString loc = tr("Matrix and Standings::");
   loc += cat.getName() + "::";
-  loc += tr("after round ") + QString::number(round);
+  if (round > 0)
+  {
+    loc += tr("after round ") + QString::number(round);
+  } else {
+    loc += tr("initial matches");
+  }
 
   result.append(loc);
 

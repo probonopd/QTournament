@@ -10,7 +10,7 @@
 MatchMatrix::MatchMatrix(SimpleReportGenerator* _rep, const QString& tabName, const Category& _cat, int _round, int _grpNum)
   :AbstractReportElement(_rep), tableName(tabName), cat(_cat), round(_round), grpNum(_grpNum)
 {
-  if (round < 1)
+  if (round < 0)
   {
     throw invalid_argument("Requested match matrix for invalid round number (too low)");
   }
@@ -38,6 +38,11 @@ MatchMatrix::MatchMatrix(SimpleReportGenerator* _rep, const QString& tabName, co
     {
       throw invalid_argument("Requested match matrix an invalid group number");
     }
+  }
+
+  if (round == 0)
+  {
+    return;   // matrix for initial matches
   }
 
   CatRoundStatus crs = cat.getRoundStatus();
