@@ -141,11 +141,19 @@ QRectF MatchMatrix::plot(const QPointF& topLeft)
       {
         // shrink the cell to virtually add some margin
         // between match number and grid line
-        cell.adjust(0, MATCH_NUMBER_MARGIN__MM, -MATCH_NUMBER_MARGIN__MM, 0);
+        cell.adjust(0, GAP_TEXT_TO_GRID__MM, -GAP_TEXT_TO_GRID__MM, 0);
       }
 
-      // plot the contents
-      rep->drawText(cell, posInCell, txtBasePoint, txt, style);
+      // prepare the player names for multiline headers
+      if (cct == CELL_CONTENT_TYPE::HEADER)
+      {
+        PlayerPair pp = ppList.at(r + c - 1);  // either r or c is guaranteed to be 0
+        txt = getTruncatedPlayerNames(pp, style, cell.width() - 2 * GAP_TEXT_TO_GRID__MM);
+      }
+
+      // plot the contents. Call the "multiline"-function even although we
+      // sometime have only one line of text. That doesn't do any harm-.
+      rep->drawMultilineText(cell, posInCell, txtBasePoint, txt, CENTER, 0.15 * style->getFontSize_MM(), style);
 
       // draw the "mirrored" match result, if applicable
       //
@@ -161,19 +169,19 @@ QRectF MatchMatrix::plot(const QPointF& topLeft)
           QString sc2 = gameScore.split(" : ").at(1);
           if (sc2.endsWith(",")) sc2.chop(1);
 
-          QString s = "%1 : %2,\n";
+          QString s = "%1 : %2\n";
           swappedScore += s.arg(sc2).arg(sc1);
         }
-        swappedScore.chop(2);
+        swappedScore.chop(1);
         auto mirroredCell = grid.getCell(c, r);
-        rep->drawText(mirroredCell, posInCell, txtBasePoint, swappedScore, style);
+        rep->drawMultilineText(mirroredCell, posInCell, txtBasePoint, swappedScore, CENTER, 0.15 * style->getFontSize_MM(), style);
       }
 
       // draw the "mirrored" match number
       if (cct == CELL_CONTENT_TYPE::MATCH_NUMBER)
       {
         auto mirroredCell = grid.getCell(c, r);
-        mirroredCell.adjust(0, MATCH_NUMBER_MARGIN__MM, -MATCH_NUMBER_MARGIN__MM, 0);
+        mirroredCell.adjust(0, GAP_TEXT_TO_GRID__MM, -GAP_TEXT_TO_GRID__MM, 0);
         rep->drawText(mirroredCell, posInCell, txtBasePoint, txt, style);
       }
     }
@@ -319,15 +327,67 @@ tuple<MatchMatrix::CELL_CONTENT_TYPE, QString> MatchMatrix::getCellContent(const
       QString txt;
       for (const QString& l : scList)
       {
-        txt += l + ",\n";
+        txt += l + "\n";
       }
-      txt.chop(2);
+      txt.chop(1);
 
       return make_tuple(CELL_CONTENT_TYPE::SCORE, txt);
     }
   }
 
   return make_tuple(CELL_CONTENT_TYPE::EMPTY, QString());
+}
+
+//----------------------------------------------------------------------------
+
+QString MatchMatrix::getTruncatedPlayerNames(const PlayerPair& pp, const TextStyle* style, double maxWidth) const
+{
+  // a little helper function that truncates a string
+  // until it fits to a maximum width
+  auto truncStringToWidth = [&](const QString& src, const QString& postfix) {
+    int fullLen = src.length();
+    QString truncString = src;
+    for (int len = fullLen; len > 3; --len)  // keep at least three characters
+    {
+      double width = rep->getTextDimensions_MM(truncString + postfix, style).width();
+      if (width <= maxWidth) break;
+      truncString.chop(1);
+    }
+
+    return truncString + postfix;
+  };
+
+  // a little helper function that truncates a player name
+  // until it fits to a maximum width
+  auto truncPlayerName = [&](const Player& _p, const QString& postfix) {
+    int fullLen = _p.getDisplayName().length();
+    QString truncName;
+    for (int len = fullLen; len > 3; --len)
+    {
+      truncName = _p.getDisplayName(len) + postfix;
+      double width = rep->getTextDimensions_MM(truncName, style).width();
+      if (width <= maxWidth) break;
+    }
+
+    return truncName;
+  };
+
+  QString result;
+  if (pp.hasPlayer2())
+  {
+    // doubles or mixed; one full name per line
+    result = truncPlayerName(pp.getPlayer1(), " /");
+    result += "\n";
+    result += truncPlayerName(pp.getPlayer2(), QString());
+  } else {
+    // singles; one line for last name, one for first name
+    Player p = pp.getPlayer1();
+    result = truncStringToWidth(p.getLastName(), ",");
+    result += "\n";
+    result += truncStringToWidth(p.getFirstName(), QString());
+  }
+
+  return result;
 }
 
 //----------------------------------------------------------------------------

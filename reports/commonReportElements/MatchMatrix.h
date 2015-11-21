@@ -44,7 +44,7 @@ public:
     EMPTY
   };
 
-  static constexpr double MATCH_NUMBER_MARGIN__MM = 1.0;
+  static constexpr double GAP_TEXT_TO_GRID__MM = 1.0;
 
   MatchMatrix(SimpleReportGenerator* _rep, const QString& tabName, const Category& _cat, int _round, int _grpNum = -1);
   virtual QRectF plot(const QPointF& topLeft = QPointF(-1, -1)) override;
@@ -58,6 +58,7 @@ protected:
   upMatch getMatchForCell(const PlayerPairList& ppList, int row, int col, int maxRound) const;
   QStringList getSortedMatchScoreStrings(const Match& ma, const PlayerPair& ppRow, const PlayerPair& ppCol) const;
   tuple<CELL_CONTENT_TYPE, QString> getCellContent(const PlayerPairList& ppList, int row, int col, int maxRound) const;
+  QString getTruncatedPlayerNames(const PlayerPair& pp, const TextStyle* style, double maxWidth) const;
 };
 
 #endif // MATCHMATRIX_H

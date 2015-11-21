@@ -15,7 +15,7 @@ QMAKE_CXXFLAGS_RELEASE -= -O2
 QMAKE_CXXFLAGS_RELEASE += -O3
 
 # Optimization level O1 for debug
-QMAKE_CXXFLAGS_DEBUG += -O0
+#QMAKE_CXXFLAGS_DEBUG += -O0
 
 HEADERS += \
     Category.h \
