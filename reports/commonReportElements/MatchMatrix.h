@@ -2,6 +2,7 @@
 #define MATCHMATRIX_H
 
 #include <memory>
+#include <tuple>
 
 #include <QObject>
 
@@ -35,6 +36,16 @@ private:
 class MatchMatrix : public AbstractReportElement, public QObject
 {
 public:
+  enum class CELL_CONTENT_TYPE {
+    TITLE,
+    HEADER,
+    SCORE,
+    MATCH_NUMBER,
+    EMPTY
+  };
+
+  static constexpr double MATCH_NUMBER_MARGIN__MM = 1.0;
+
   MatchMatrix(SimpleReportGenerator* _rep, const QString& tabName, const Category& _cat, int _round, int _grpNum = -1);
   virtual QRectF plot(const QPointF& topLeft = QPointF(-1, -1)) override;
 
@@ -44,8 +55,9 @@ protected:
   int round;
   int grpNum;
 
-  upMatch getMatchForCell(const PlayerPairList& ppList, int row, int col) const;
+  upMatch getMatchForCell(const PlayerPairList& ppList, int row, int col, int maxRound) const;
   QStringList getSortedMatchScoreStrings(const Match& ma, const PlayerPair& ppRow, const PlayerPair& ppCol) const;
+  tuple<CELL_CONTENT_TYPE, QString> getCellContent(const PlayerPairList& ppList, int row, int col, int maxRound) const;
 };
 
 #endif // MATCHMATRIX_H

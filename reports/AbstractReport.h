@@ -35,6 +35,7 @@ namespace QTournament
     static constexpr char RESULTSHEET_NAME_STYLE[] = "ResultSheet_Name";
     static constexpr char RESULTSHEET_TEAM_STYLE[] = "ResultSheet_Team";
     static constexpr char RESULTSHEET_GAMELABEL_STYLE[] = "ResultSheet_GameLabel";
+    static constexpr char BOLD_STYLE[] = "Bold";
 
     AbstractReport(TournamentDB* _db, const QString& _name);
     virtual ~AbstractReport();
