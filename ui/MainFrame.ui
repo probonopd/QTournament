@@ -73,17 +73,29 @@
      <x>0</x>
      <y>0</y>
      <width>1017</width>
-     <height>21</height>
+     <height>19</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuTournament">
     <property name="title">
      <string>Tournament</string>
     </property>
+    <widget class="QMenu" name="menuExternal_player_database">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="title">
+      <string>External player database</string>
+     </property>
+     <addaction name="actionNewExtDatabase"/>
+     <addaction name="actionSelectExtDatabase"/>
+    </widget>
     <addaction name="actionNew"/>
     <addaction name="actionOpen"/>
     <addaction name="separator"/>
     <addaction name="actionSettings"/>
+    <addaction name="separator"/>
+    <addaction name="menuExternal_player_database"/>
     <addaction name="separator"/>
     <addaction name="action_Quit"/>
    </widget>
@@ -116,6 +128,9 @@
    </property>
   </action>
   <action name="actionSettings">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>&amp;Settings...</string>
    </property>
@@ -168,6 +183,16 @@
   <action name="actionScenario08">
    <property name="text">
     <string>Scenario08</string>
+   </property>
+  </action>
+  <action name="actionNewExtDatabase">
+   <property name="text">
+    <string>New...</string>
+   </property>
+  </action>
+  <action name="actionSelectExtDatabase">
+   <property name="text">
+    <string>Select...</string>
    </property>
   </action>
  </widget>
@@ -413,6 +438,38 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>actionNewExtDatabase</sender>
+   <signal>triggered()</signal>
+   <receiver>MainFrame</receiver>
+   <slot>onNewExternalPlayerDatabase()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>508</x>
+     <y>379</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionSelectExtDatabase</sender>
+   <signal>triggered()</signal>
+   <receiver>MainFrame</receiver>
+   <slot>onSelectExternalPlayerDatabase()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>508</x>
+     <y>379</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>newTournament()</slot>
@@ -427,5 +484,7 @@
   <slot>setupScenario06()</slot>
   <slot>setupScenario07()</slot>
   <slot>setupScenario08()</slot>
+  <slot>onNewExternalPlayerDatabase()</slot>
+  <slot>onSelectExternalPlayerDatabase()</slot>
  </slots>
 </ui>

@@ -87,8 +87,11 @@ namespace QTournament
     ERR openConfiguredExternalPlayerDatabase();
     void closeExternalPlayerDatabase();
 
-    // importing players
+    // importing and exporting players
     unique_ptr<Player> importPlayerFromExternalDatabase(ERR* err, int extPlayerId, SEX sexOverride = DONT_CARE) const;
+    ERR exportPlayerToExternalDatabase(int playerId) const;
+    ERR exportPlayerToExternalDatabase(const Player& p) const;
+    ERR syncAllPlayersToExternalDatabase();
 
 
   private:

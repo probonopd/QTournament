@@ -54,6 +54,8 @@ public slots:
   void setupScenario07();
   void setupScenario08();
   void onCurrentTabChanged(int newCurrentTab);
+  void onNewExternalPlayerDatabase();
+  void onSelectExternalPlayerDatabase();
 
 private slots:
   void onToggleTestMenuVisibility();

@@ -35,7 +35,8 @@ namespace QTournament
     QString getLastname() const;
     QString getFirstname() const;
     QString getDisplayName() const;
-    int getId();
+    inline int getId() const { return id; }
+    inline SEX getSex() const { return sex; }
 
   protected:
     int id;
@@ -57,13 +58,16 @@ namespace QTournament
     virtual void populateTables();
     virtual void populateViews();
 
-    ExternalPlayerDatabaseEntryList searchForMatchingPlayers(const QString& substring) const;
+    ExternalPlayerDatabaseEntryList searchForMatchingPlayers(const QString& substring);
     upExternalPlayerDatabaseEntry getPlayer(int id);
-    upExternalPlayerDatabaseEntry storeNewPlayer(const ExternalPlayerDatabaseEntry& newPlayer) const;
+    upExternalPlayerDatabaseEntry getPlayer(const QString& fname, const QString& lname);
+    upExternalPlayerDatabaseEntry storeNewPlayer(const ExternalPlayerDatabaseEntry& newPlayer);
+    bool hasPlayer(const QString& fname, const QString& lname);
+    bool updatePlayerSexIfUndefined(int extPlayerId, SEX newSex);
 
   private:
     ExternalPlayerDB(QString fName, bool createNew);
-    DbTab playerTab;
+    upExternalPlayerDatabaseEntry row2upEntry(const TabRow& r) const;
   };
   typedef unique_ptr<ExternalPlayerDB> upExternalPlayerDB;
 }

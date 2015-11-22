@@ -1,6 +1,8 @@
 
 #include <exception>
 
+#include <assert.h>
+
 #include "ExternalPlayerDB.h"
 #include "KeyValueTab.h"
 #include "TournamentDataDefs.h"
@@ -11,10 +13,21 @@ namespace QTournament
 {
 
   ExternalPlayerDB::ExternalPlayerDB(QString fName, bool createNew)
-    : GenericDatabase(fName, createNew), playerTab(getTab(TAB_EPD_PLAYER))
+    : GenericDatabase(fName, createNew)
   {
     populateTables();
     populateViews();
+  }
+
+  //----------------------------------------------------------------------------
+
+  upExternalPlayerDatabaseEntry ExternalPlayerDB::row2upEntry(const TabRow& r) const
+  {
+    ExternalPlayerDatabaseEntry* entry = new ExternalPlayerDatabaseEntry(
+          r.getId(), r[EPD_PL_FNAME].toString(), r[EPD_PL_LNAME].toString(),
+          r[EPD_PL_SEX].isNull() ? DONT_CARE : static_cast<SEX>(r[EPD_PL_SEX].toInt()));
+
+    return upExternalPlayerDatabaseEntry(entry);
   }
 
   //----------------------------------------------------------------------------
@@ -94,7 +107,7 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  ExternalPlayerDatabaseEntryList ExternalPlayerDB::searchForMatchingPlayers(const QString& substring) const
+  ExternalPlayerDatabaseEntryList ExternalPlayerDB::searchForMatchingPlayers(const QString& substring)
   {
     // we need at least three characters for searching
     QString s = substring.trimmed();
@@ -106,21 +119,117 @@ namespace QTournament
     where += "ORDER BY " + EPD_PL_LNAME + " ASC, " + EPD_PL_FNAME + " ASC";
 
     // search for names matching this pattern
+    DbTab playerTab = getTab(TAB_EPD_PLAYER);
     DbTab::CachingRowIterator it = playerTab.getRowsByWhereClause(where);
     ExternalPlayerDatabaseEntryList result;
     while (!(it.isEnd()))
     {
-      TabRow r = *it;
-      ExternalPlayerDatabaseEntry entry{r.getId(), r[EPD_PL_FNAME].toString(),
-            r[EPD_PL_LNAME].toString(),
-            r[EPD_PL_SEX].isNull() ? DONT_CARE : static_cast<SEX>(r[EPD_PL_SEX].toInt())};
+      auto tmp = row2upEntry(*it);
 
-      result.push_back(entry);
+      result.push_back(*tmp);   // the QList creates a copy internally
 
       ++it;
+
+      // the object behind tmp is automatically deleted
+      // when we leave this scope.
      }
       return result;
     }
+
+  //----------------------------------------------------------------------------
+
+  upExternalPlayerDatabaseEntry ExternalPlayerDB::getPlayer(int id)
+  {
+    DbTab playerTab = getTab(TAB_EPD_PLAYER);
+    if (playerTab.getMatchCountForColumnValue("id", id) != 1)
+    {
+      return nullptr;
+    }
+
+    TabRow r = playerTab[id];
+
+    return row2upEntry(r);
+  }
+
+  //----------------------------------------------------------------------------
+
+  upExternalPlayerDatabaseEntry ExternalPlayerDB::getPlayer(const QString& fname, const QString& lname)
+  {
+    QString where = "? = ? AND ? = ?";
+    QVariantList params;
+    params << EPD_PL_FNAME;
+    params << fname.trimmed();
+    params << EPD_PL_LNAME;
+    params << lname.trimmed();
+
+    DbTab playerTab = getTab(TAB_EPD_PLAYER);
+    if (playerTab.getMatchCountForWhereClause(where, params) != 1)
+    {
+      return nullptr;
+    }
+
+    TabRow r = playerTab.getSingleRowByWhereClause(where);
+
+    return row2upEntry(r);
+  }
+
+  //----------------------------------------------------------------------------
+
+  upExternalPlayerDatabaseEntry ExternalPlayerDB::storeNewPlayer(const ExternalPlayerDatabaseEntry& newPlayer)
+  {
+    if (hasPlayer(newPlayer.getFirstname(), newPlayer.getLastname()))
+    {
+      return nullptr;
+    }
+
+    QVariantList qvl;
+    qvl << EPD_PL_FNAME << newPlayer.getFirstname();
+    qvl << EPD_PL_LNAME << newPlayer.getLastname();
+
+    if (newPlayer.getSex() != DONT_CARE)
+    {
+      qvl << EPD_PL_SEX << static_cast<int>(newPlayer.getSex());
+    }
+
+    DbTab playerTab = getTab(TAB_EPD_PLAYER);
+    int newId = playerTab.insertRow(qvl);
+    assert(newId > 0);
+
+    return getPlayer(newId);
+  }
+
+  //----------------------------------------------------------------------------
+
+  bool ExternalPlayerDB::hasPlayer(const QString& fname, const QString& lname)
+  {
+    auto tmp = getPlayer(fname, lname);
+
+    return (tmp != nullptr);
+  }
+
+  //----------------------------------------------------------------------------
+
+  bool ExternalPlayerDB::updatePlayerSexIfUndefined(int extPlayerId, SEX newSex)
+  {
+    // only permit updates with a defined sey
+    if (newSex == DONT_CARE) return false;
+
+    // check for a valid player ID
+    auto pl = getPlayer(extPlayerId);
+    if (pl == nullptr) return false;
+
+    // no modification if the player's sex is already defined
+    if (pl->getSex() != DONT_CARE) return false;
+
+    // update the player entry
+    DbTab playerTab = getTab(TAB_EPD_PLAYER);
+    playerTab[extPlayerId].update(EPD_PL_SEX, static_cast<int>(newSex));
+
+    return true;
+  }
+
+  //----------------------------------------------------------------------------
+
 
   //----------------------------------------------------------------------------
 

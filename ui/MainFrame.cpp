@@ -154,6 +154,8 @@ void MainFrame::openTournament()
 void MainFrame::enableControls(bool doEnable)
 {
   ui.centralwidget->setEnabled(doEnable);
+  ui.actionSettings->setEnabled(doEnable);
+  ui.menuExternal_player_database->setEnabled(doEnable);
 }
 
 //----------------------------------------------------------------------------
@@ -734,6 +736,86 @@ void MainFrame::onCurrentTabChanged(int newCurrentTab)
   if (selectedTabWidget == ui.tabReports)
   {
     ui.tabReports->onReloadRequested();
+  }
+}
+
+//----------------------------------------------------------------------------
+
+void MainFrame::onNewExternalPlayerDatabase()
+{
+  // ask for the file name
+  QFileDialog fDlg{this};
+  fDlg.setAcceptMode(QFileDialog::AcceptSave);
+  fDlg.setNameFilter(tr("QTournament Player Database (*.pdb)"));
+  int result = fDlg.exec();
+
+  if (result != QDialog::Accepted)
+  {
+    return;
+  }
+
+  // get the filename and fix the extension, if necessary
+  QString filename = fDlg.selectedFiles().at(0);
+  QString ext = filename.right(4).toLower();
+  if (ext != ".pdb") filename += ".pdb";
+
+  // if the file exists, delete it.
+  // the user has consented to the deletion in the
+  // dialog
+  if (QFile::exists(filename))
+  {
+    bool removeResult =  QFile::remove(filename);
+
+    if (!removeResult)
+    {
+      QMessageBox::warning(this, tr("New player database"), tr("Could not delete ") + filename + tr(", no new database created."));
+      return;
+    }
+  }
+
+  // actually create and actiate the new database
+  PlayerMngr* pm = Tournament::getPlayerMngr();
+  ERR e = pm->setExternalPlayerDatabase(filename, true);
+  if (e != OK)
+  {
+    QMessageBox::warning(this, tr("New player database"), tr("Could not create ") + filename);
+    return;
+  }
+}
+
+//----------------------------------------------------------------------------
+
+void MainFrame::onSelectExternalPlayerDatabase()
+{
+  // ask for the file name
+  QFileDialog fDlg{this};
+  fDlg.setAcceptMode(QFileDialog::AcceptOpen);
+  fDlg.setFileMode(QFileDialog::ExistingFile);
+  fDlg.setNameFilter(tr("QTournament Player Database (*.pdb)"));
+  int result = fDlg.exec();
+
+  if (result != QDialog::Accepted)
+  {
+    return;
+  }
+
+  // get the filename
+  QString filename = fDlg.selectedFiles().at(0);
+
+  // open and activate the database
+  PlayerMngr* pm = Tournament::getPlayerMngr();
+  ERR e = pm->setExternalPlayerDatabase(filename, false);
+  if (e != OK)
+  {
+    QString msg = tr("Could not open ") + filename + "\n\n";
+    if (pm->hasExternalPlayerDatabaseOpen())
+    {
+      msg += "Database not changed.";
+    } else  {
+      msg += "No player database active.";
+    }
+    QMessageBox::warning(this, tr("Select player database"), msg);
+    return;
   }
 }
 

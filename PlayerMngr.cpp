@@ -584,6 +584,64 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
+  ERR PlayerMngr::exportPlayerToExternalDatabase(int playerId) const
+  {
+    auto p = getPlayer_up(playerId);
+    if (p == nullptr)
+    {
+      return INVALID_ID;
+    }
+
+    return exportPlayerToExternalDatabase(*p);
+  }
+
+  //----------------------------------------------------------------------------
+
+  ERR PlayerMngr::exportPlayerToExternalDatabase(const Player& p) const
+  {
+    if (extPlayerDb == nullptr)
+    {
+      return EPD__NOT_OPENED;
+    }
+
+    auto extPlayer = extPlayerDb->getPlayer(p.getFirstName(), p.getLastName());
+    if (extPlayer == nullptr)
+    {
+      // create a new player
+      ExternalPlayerDatabaseEntry entry{p.getFirstName(), p.getLastName(), p.getSex()};
+      auto newPlayer = extPlayerDb->storeNewPlayer(entry);
+
+      return (newPlayer == nullptr) ? EPD__CREATION_FAILED : OK;
+    }
+
+    // update existing player, if applicable
+    if (extPlayer->getSex() == DONT_CARE)
+    {
+      extPlayerDb->updatePlayerSexIfUndefined(extPlayer->getId(), p.getSex());
+    }
+
+    return OK;
+  }
+
+  //----------------------------------------------------------------------------
+
+  ERR PlayerMngr::syncAllPlayersToExternalDatabase()
+  {
+    if (extPlayerDb == nullptr)
+    {
+      return EPD__NOT_OPENED;
+    }
+
+    for (const Player& p : getAllPlayers())
+    {
+      exportPlayerToExternalDatabase(p);
+    }
+
+    return OK;
+  }
+
+  //----------------------------------------------------------------------------
+
   ERR PlayerMngr::canDeletePlayer(const Player &p) const
   {
     // first check: see if we can remove the player from all categories
