@@ -184,9 +184,18 @@ void ReportsTabWidget::showReport(const QString& repName)
 
 //----------------------------------------------------------------------------
 
-void ReportsTabWidget::onBtnReloadClicked()
+void ReportsTabWidget::onReloadRequested()
 {
+  // refresh the list of available reports
   updateRepPool();
+
+  // if we currently have a report displayed,
+  // regenerate this report because the underlying data
+  // might have changed in the meantime
+  if (curReport != nullptr)
+  {
+    onTreeSelectionChanged();
+  }
 }
 
 //----------------------------------------------------------------------------
