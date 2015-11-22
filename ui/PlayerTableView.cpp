@@ -12,6 +12,8 @@
 #include "dlgEditPlayer.h"
 #include "ui/commonCommands/cmdRegisterPlayer.h"
 #include "ui/commonCommands/cmdUnregisterPlayer.h"
+#include "ui/commonCommands/cmdImportSinglePlayerFromExternalDatabase.h"
+#include "ui/commonCommands/cmdExportPlayerToExternalDatabase.h"
 
 PlayerTableView::PlayerTableView(QWidget* parent)
 :QTableView(parent)
@@ -138,6 +140,11 @@ void PlayerTableView::onContextMenuRequested(const QPoint& pos)
   actRemovePlayer->setEnabled(isPlayerClicked);
   actRegister->setEnabled(isPlayerClicked & (plStat == STAT_PL_WAIT_FOR_REGISTRATION));
   actUnregister->setEnabled(isPlayerClicked & (plStat == STAT_PL_IDLE));
+
+  bool hasExtDb = Tournament::getPlayerMngr()->hasExternalPlayerDatabaseOpen();
+  actImportFromExtDatabase->setEnabled(hasExtDb);
+  actSyncAllToExtDatabase->setEnabled(hasExtDb);
+  actExportToExtDatabase->setEnabled(isPlayerClicked && hasExtDb);
 
   // show the context menu
   QAction* selectedItem = contextMenu->exec(globalPos);
@@ -366,6 +373,50 @@ void PlayerTableView::onUnregisterPlayerTriggered()
 
 //----------------------------------------------------------------------------
 
+void PlayerTableView::onImportFromExtDatabase()
+{
+  cmdImportSinglePlayerFromExternalDatabase cmd{this};
+
+  cmd.exec();
+}
+
+//----------------------------------------------------------------------------
+
+void PlayerTableView::onExportToExtDatabase()
+{
+  // check if any player is selected
+  auto selPlayer = getSelectedPlayer();
+  if (selPlayer == nullptr)
+  {
+    QMessageBox::warning(this, tr("Export player"), tr("No player selected!"));
+    return;
+  }
+
+  cmdExportPlayerToExternalDatabase cmd{this, *selPlayer};
+  if (cmd.exec() == OK)
+  {
+    QMessageBox::information(this, tr("Export player"), tr("Player data successfully exported."));
+  }
+}
+
+//----------------------------------------------------------------------------
+
+void PlayerTableView::onSyncAllToExtDatabase()
+{
+  PlayerMngr* pm = Tournament::getPlayerMngr();
+
+  ERR err = pm->syncAllPlayersToExternalDatabase();
+  if (err != OK)
+  {
+    QMessageBox::warning(this, tr("Sync players"), tr("No database open!"));
+    return;
+  }
+
+  QMessageBox::information(this, tr("Sync players"), tr("Player data successfully synced."));
+}
+
+//----------------------------------------------------------------------------
+
 void PlayerTableView::initContextMenu()
 {
   // prepare all actions
@@ -375,6 +426,9 @@ void PlayerTableView::initContextMenu()
   actShowNextMatchesForPlayer = new QAction(tr("Show next Matches..."), this);
   actRegister = new QAction(tr("Register"), this);
   actUnregister = new QAction(tr("Undo registration"), this);
+  actImportFromExtDatabase = new QAction(tr("Import player..."), this);
+  actExportToExtDatabase = new QAction(tr("Export selected player..."), this);
+  actSyncAllToExtDatabase = new QAction(tr("Sync all players to database"), this);
 
   // create the context menu and connect it to the actions
   contextMenu = unique_ptr<QMenu>(new QMenu());
@@ -387,6 +441,10 @@ void PlayerTableView::initContextMenu()
   contextMenu->addAction(actShowNextMatchesForPlayer);
   contextMenu->addSeparator();
   contextMenu->addAction(actRemovePlayer);
+  contextMenu->addSeparator();
+  contextMenu->addAction(actExportToExtDatabase);
+  contextMenu->addAction(actImportFromExtDatabase);
+  contextMenu->addAction(actSyncAllToExtDatabase);
 
   // connect actions and slots
   connect(actAddPlayer, SIGNAL(triggered(bool)), this, SLOT(onAddPlayerTriggered()));
@@ -395,6 +453,9 @@ void PlayerTableView::initContextMenu()
   connect(actRemovePlayer, SIGNAL(triggered(bool)), this, SLOT(onRemovePlayerTriggered()));
   connect(actRegister, SIGNAL(triggered(bool)), this, SLOT(onRegisterPlayerTriggered()));
   connect(actUnregister, SIGNAL(triggered(bool)), this, SLOT(onUnregisterPlayerTriggered()));
+  connect(actExportToExtDatabase, SIGNAL(triggered(bool)), this, SLOT(onExportToExtDatabase()));
+  connect(actImportFromExtDatabase, SIGNAL(triggered(bool)), this, SLOT(onImportFromExtDatabase()));
+  connect(actSyncAllToExtDatabase, SIGNAL(triggered(bool)), this, SLOT(onSyncAllToExtDatabase()));
 }
 
 //----------------------------------------------------------------------------

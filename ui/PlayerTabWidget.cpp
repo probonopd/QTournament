@@ -30,6 +30,11 @@ PlayerTabWidget::PlayerTabWidget()
 
   // initialize the external database popup menu
   initExternalDatabaseMenu();
+
+  // react on selection changes in the player list table
+  connect(ui.playerView->selectionModel(),
+    SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
+    SLOT(onPlayerSelectionChanged(QItemSelection,QItemSelection)));
 }
 
 //----------------------------------------------------------------------------
@@ -204,35 +209,14 @@ void PlayerTabWidget::onImportFromExtDatabase()
 
 void PlayerTabWidget::onExportToExtDatabase()
 {
-  // check if any player is selected
-  auto selPlayer = ui.playerView->getSelectedPlayer();
-  if (selPlayer == nullptr)
-  {
-    QMessageBox::warning(this, tr("Export player"), tr("No player selected!"));
-    return;
-  }
-
-  cmdExportPlayerToExternalDatabase cmd{this, *selPlayer};
-  if (cmd.exec() == OK)
-  {
-    QMessageBox::information(this, tr("Export player"), tr("Player data successfully exported."));
-  }
+  ui.playerView->onExportToExtDatabase();
 }
 
 //----------------------------------------------------------------------------
 
 void PlayerTabWidget::onSyncAllToExtDatabase()
 {
-  PlayerMngr* pm = Tournament::getPlayerMngr();
-
-  ERR err = pm->syncAllPlayersToExternalDatabase();
-  if (err != OK)
-  {
-    QMessageBox::warning(this, tr("Sync players"), tr("No database open!"));
-    return;
-  }
-
-  QMessageBox::information(this, tr("Sync players"), tr("Player data successfully synced."));
+  ui.playerView->onSyncAllToExtDatabase();
 }
 
 //----------------------------------------------------------------------------
@@ -241,6 +225,16 @@ void PlayerTabWidget::onExternalDatabaseChanged()
 {
   PlayerMngr* pm = Tournament::getPlayerMngr();
   ui.btnExtDatabase->setEnabled(pm->hasExternalPlayerDatabaseOpen());
+  onPlayerSelectionChanged(QItemSelection(), QItemSelection());
+}
+
+//----------------------------------------------------------------------------
+
+void PlayerTabWidget::onPlayerSelectionChanged(const QItemSelection&, const QItemSelection&)
+{
+  auto selPlayer = ui.playerView->getSelectedPlayer();
+
+  actExportToExtDatabase->setEnabled(selPlayer != nullptr);
 }
 
 //----------------------------------------------------------------------------

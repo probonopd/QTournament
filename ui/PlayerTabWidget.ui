@@ -119,5 +119,6 @@
  <slots>
   <slot>onPlayerDoubleClicked(QModelIndex)</slot>
   <slot>onCreatePlayerClicked()</slot>
+  <slot>onPlayerClicked(QModelIndex)</slot>
  </slots>
 </ui>

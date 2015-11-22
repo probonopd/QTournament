@@ -37,6 +37,9 @@ public slots:
   void onShowNextMatchesForPlayerTriggered();
   void onRegisterPlayerTriggered();
   void onUnregisterPlayerTriggered();
+  void onImportFromExtDatabase();
+  void onExportToExtDatabase();
+  void onSyncAllToExtDatabase();
 
 private slots:
   void onContextMenuRequested(const QPoint& pos);
@@ -54,7 +57,9 @@ private:
   QAction* actShowNextMatchesForPlayer;
   QAction* actRegister;
   QAction* actUnregister;
-
+  QAction* actImportFromExtDatabase;
+  QAction* actExportToExtDatabase;
+  QAction* actSyncAllToExtDatabase;
 
   void initContextMenu();
 };

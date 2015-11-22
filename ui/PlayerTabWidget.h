@@ -48,6 +48,7 @@ public slots:
   void onExportToExtDatabase();
   void onSyncAllToExtDatabase();
   void onExternalDatabaseChanged();
+  void onPlayerSelectionChanged(const QItemSelection &, const QItemSelection &);
 };
 
 #endif	/* _PLAYERTABWIDGET_H */
