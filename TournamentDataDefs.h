@@ -12,8 +12,8 @@
 
 namespace QTournament
 {
-#define DB_VERSION 1
-#define MIN_REQUIRED_DB_VERSION 1
+#define DB_VERSION 2
+#define MIN_REQUIRED_DB_VERSION 2
 
 //----------------------------------------------------------------------------
 
@@ -107,7 +107,7 @@ namespace QTournament
 #define CAT_WIN_SCORE QString("WinScore")
 #define CAT_DRAW_SCORE QString("DrawScore")
 #define CAT_GROUP_CONFIG QString("GroupConfig")
-//#define CAT_ QString("")
+#define CAT_BRACKET_VIS_DATA QString("BracketVisData")
 //#define CAT_ QString("")
 //#define CAT_ QString("")
 //#define CAT_ QString("")
@@ -210,7 +210,30 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  
+#define TAB_BRACKET_VIS QString("BracketVisualization")
+#define BV_MATCH_REF QString("MatchRefId")
+#define BV_CAT_REF QString("CategoryRefId")
+#define BV_PAGE QString("PageNumber")
+#define BV_GRID_X0 QString("GridX0")
+#define BV_GRID_Y0 QString("GridY0")
+#define BV_SPAN_Y QString("SpanY")
+#define BV_ORIENTATION QString("Orientation")
+#define BV_TERMINATOR QString("Terminator")
+#define BV_INITIAL_RANK1 QString("InitialRank1")
+#define BV_INITIAL_RANK2 QString("InitialRank2")
+#define BV_PAIR1_REF QString("PlayerPair1RefId")
+#define BV_PAIR2_REF QString("PlayerPair2RefId")
+#define BV_Y_PAGEBREAK_SPAN QString("PagebreakOffsetY")
+#define BV_NEXT_PAGE_NUM QString("NextPageNum")
+#define BV_TERMINATOR_OFFSET_Y QString("TerminatorOffset")
+#define BV_ELEMENT_ID QString("BracketElementId")
+#define BV_NEXT_WINNER_MATCH QString("NextWinnerMatch")
+#define BV_NEXT_LOSER_MATCH QString("NextLoserMatch")
+#define BV_NEXT_MATCH_POS_FOR_WINNER QString("NextMatchPosForWinner")
+#define BV_NEXT_MATCH_POS_FOR_LOSER QString("NextMatchPosForLoser")
+//#define BV_ QString("")
+//#define BV_ QString("")
+
 //----------------------------------------------------------------------------
 
   
@@ -271,6 +294,7 @@ namespace QTournament
   enum OBJ_STATE {
     STAT_PL_IDLE,
     STAT_PL_PLAYING,
+    STAT_PL_WAIT_FOR_REGISTRATION,  // player has to report to match control before considered "ready"
     STAT_CAT_CONFIG,
     STAT_CAT_FROZEN,  // intermediate state in which the category can be configured for the first round
     STAT_CAT_IDLE,

@@ -21,7 +21,7 @@ namespace QTournament
   public:
     MatchResultList_ByGroup(TournamentDB* _db, const QString& _name, const Category& _cat, int _grpNum);
 
-    virtual upSimpleReport regenerateReport() const override;
+    virtual upSimpleReport regenerateReport() override;
     virtual QStringList getReportLocators() const override;
 
   private:

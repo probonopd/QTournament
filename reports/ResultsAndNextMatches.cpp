@@ -38,7 +38,7 @@ ResultsAndNextMatches::ResultsAndNextMatches(TournamentDB* _db, const QString& _
 
 //----------------------------------------------------------------------------
 
-upSimpleReport ResultsAndNextMatches::regenerateReport() const
+upSimpleReport ResultsAndNextMatches::regenerateReport()
 {
   MatchMngr* mm = Tournament::getMatchMngr();
 

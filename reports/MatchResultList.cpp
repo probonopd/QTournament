@@ -32,7 +32,7 @@ MatchResultList::MatchResultList(TournamentDB* _db, const QString& _name, const 
 
 //----------------------------------------------------------------------------
 
-upSimpleReport MatchResultList::regenerateReport() const
+upSimpleReport MatchResultList::regenerateReport()
 {
   // collect the numbers of all match groups in this round
   MatchMngr* mm = Tournament::getMatchMngr();

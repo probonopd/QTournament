@@ -21,6 +21,7 @@
 #include "SwissLadderCategory.h"
 
 #include <stdexcept>
+#include <algorithm>
 
 namespace QTournament
 {
@@ -788,7 +789,9 @@ namespace QTournament
 
     // generate the bracket data for the player list
     BracketGenerator gen{bracketMode};
-    BracketMatchDataList bmdl = gen.getBracketMatches(seeding.size());
+    BracketMatchDataList bmdl;
+    RawBracketVisDataDef visDataDef;
+    tie(bmdl, visDataDef) = gen.getBracketMatches(seeding.size());
 
     //
     // handle a special corner case here:
@@ -820,6 +823,16 @@ namespace QTournament
         final.nextMatchForWinner = -1;
         final.depthInBracket = 0;
 
+        RawBracketVisElement visFinal;
+        visFinal.page = 0;
+        visFinal.gridX0 = 2;
+        visFinal.gridY0 = 0;
+        visFinal.ySpan = 2;
+        visFinal.yPageBreakSpan = 0;
+        visFinal.orientation = BRACKET_ORIENTATION::RIGHT;
+        visFinal.terminator = BRACKET_TERMINATOR::OUTWARDS;
+        visFinal.terminatorOffsetY = 0;
+
         // match for third place
         BracketMatchData thirdPlaceMatch;
         thirdPlaceMatch.setInitialRanks(3, 4);
@@ -827,10 +840,25 @@ namespace QTournament
         thirdPlaceMatch.nextMatchForWinner = -3;
         thirdPlaceMatch.depthInBracket = 0;
 
+        RawBracketVisElement visThird;
+        visThird.page = 0;
+        visThird.gridX0 = 2;
+        visThird.gridY0 = 1;
+        visThird.ySpan = 2;
+        visThird.yPageBreakSpan = 0;
+        visThird.orientation = BRACKET_ORIENTATION::LEFT;
+        visThird.terminator = BRACKET_TERMINATOR::OUTWARDS;
+        visThird.terminatorOffsetY = 0;
+
         // replace all previously generated matches with these two
         bmdl.clear();
         bmdl.push_back(final);
         bmdl.push_back(thirdPlaceMatch);
+
+        visDataDef.clear();
+        visDataDef.addPage(BRACKET_PAGE_ORIENTATION::LANDSCAPE, BRACKET_LABEL_POS::TOP_LEFT);
+        visDataDef.addElement(visFinal);
+        visDataDef.addElement(visThird);
       }
     }
 
@@ -851,6 +879,12 @@ namespace QTournament
     QHash<int, int> bracket2Match;
     for (BracketMatchData bmd : bmdl)
     {
+      // skip unused matches
+      if (bmd.matchDeleted)
+      {
+        continue;
+      }
+
       // do we have to start a new round / group?
       if (bmd.depthInBracket != curDepth)
       {
@@ -913,8 +947,14 @@ namespace QTournament
     };
 
     // fill the empty matches with the right values
-    for (BracketMatchData bmd : bmdl)
+    for (const BracketMatchData& bmd : bmdl)
     {
+      // skip unused matches
+      if (bmd.matchDeleted)
+      {
+        continue;
+      }
+
       // "zero" is invalid for initialRank!
       assert(bmd.initialRank_Player1 != 0);
       assert(bmd.initialRank_Player2 != 0);
@@ -997,6 +1037,57 @@ namespace QTournament
       if (progressNotificationQueue != nullptr) progressNotificationQueue->step();
     }
 
+    //
+    // copy visualization info (if available) to the database
+    //
+
+    if ((visDataDef.getNumPages() > 0) && (visDataDef.getNumElements() > 0))
+    {
+      // create a new visualization entry
+      upBracketVisData bvd;
+      for (int i=0; i < visDataDef.getNumPages(); ++i)
+      {
+        BRACKET_PAGE_ORIENTATION orientation;
+        BRACKET_LABEL_POS lp;
+        tie(orientation, lp) = visDataDef.getPageInfo(i);
+
+        if (i == 0)
+        {
+          bvd = BracketVisData::createNew(*this, orientation, lp);
+        }
+
+        assert(bvd != nullptr);
+
+        if (i > 0)
+        {
+          bvd->addPage(orientation, lp);
+        }
+      }
+      for (int i=0; i < visDataDef.getNumElements(); ++i)
+      {
+        RawBracketVisElement el = visDataDef.getElement(i);
+        bvd->addElement(i + 1, el);    // bracket match IDs are 1-based, not 0-based!
+      }
+
+      // link actual matches to the bracket elements
+      for (int i=0; i < visDataDef.getNumElements(); ++i)
+      {
+        if (bracket2Match.keys().contains(i+1))    // bracket match IDs are 1-based, not 0-based!
+        {
+          int maId = bracket2Match.value(i+1);     // bracket match IDs are 1-based, not 0-based!
+          auto ma = Tournament::getMatchMngr()->getMatch(maId);
+
+          auto bracketElement = bvd->getVisElement(i+1);   // bracket match IDs are 1-based, not 0-based!
+          assert(bracketElement != nullptr);
+
+          assert(bracketElement->linkToMatch(*ma));
+        }
+      }
+
+      // fill empty bracket matches with names as good as possible
+      // for now
+      bvd->fillMissingPlayerNames();
+    }
     return OK;
   }
 
@@ -1196,6 +1287,13 @@ namespace QTournament
 
     // default value, should never be reached
     return false;
+  }
+
+  //----------------------------------------------------------------------------
+
+  QString Category::getBracketVisDataString() const
+  {
+    return row[CAT_BRACKET_VIS_DATA].toString();
   }
 
   //----------------------------------------------------------------------------

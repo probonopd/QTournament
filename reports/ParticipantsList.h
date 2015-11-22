@@ -26,7 +26,7 @@ namespace QTournament
     ParticipantsList(TournamentDB* _db, const QString& _name, int _sortCriterion=SORT_BY_NAME);
     virtual ~ParticipantsList();
 
-    virtual upSimpleReport regenerateReport() const override;
+    virtual upSimpleReport regenerateReport() override;
     virtual QStringList getReportLocators() const override;
 
   private:

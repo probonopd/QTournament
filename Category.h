@@ -35,42 +35,50 @@ namespace QTournament
     friend class GenericObjectManager;
     
   public:
+    // getters
     QString getName() const;
-    ERR rename(const QString& newName);
     MATCH_TYPE getMatchType() const;
-    ERR setMatchType(MATCH_TYPE t);
     MATCH_SYSTEM getMatchSystem() const;
-    ERR setMatchSystem(MATCH_SYSTEM s);
     SEX getSex() const;
-    ERR setSex(SEX s);
-    bool canAddPlayers() const;
-    bool hasPlayer(const Player& p) const;
-    ERR addPlayer(const Player& p);
-    bool canRemovePlayer(const Player& p) const;
-    ERR removePlayer(const Player& p);
     CAT_ADD_STATE getAddState(const SEX s) const;
     CAT_ADD_STATE getAddState(const Player& p) const;
     QVariant getParameter(CAT_PARAMETER) const;
     int getParameter_int(CAT_PARAMETER) const;
     bool getParameter_bool(CAT_PARAMETER) const;
     QString getParameter_string(CAT_PARAMETER) const;
-    bool setParameter(CAT_PARAMETER p, const QVariant& v);
     PlayerPairList getPlayerPairs(int grp = GRP_NUM__NOT_ASSIGNED) const;
     int getDatabasePlayerPairCount(int grp = GRP_NUM__NOT_ASSIGNED) const;
     QList<Player> getAllPlayersInCategory() const;
+    Player getPartner(const Player& p) const;
+    unique_ptr<Category> convertToSpecializedObject() const;
+    int getGroupNumForPredecessorRound(const int grpNum) const;
+    CatRoundStatus getRoundStatus() const;
+    PlayerPairList getEliminatedPlayersAfterRound(int round, ERR *err) const;
+    int getMaxNumGamesInRound(int round) const;
+    QString getBracketVisDataString() const;
+
+    // setters
+    ERR setMatchType(MATCH_TYPE t);
+    ERR setMatchSystem(MATCH_SYSTEM s);
+    ERR setSex(SEX s);
+    bool setParameter(CAT_PARAMETER p, const QVariant& v);
+
+    // modifications
+    ERR rename(const QString& newName);
+    ERR addPlayer(const Player& p);
+    ERR removePlayer(const Player& p);
+
+    // boolean and other queries
+    bool canAddPlayers() const;
+    bool hasPlayer(const Player& p) const;
+    bool canRemovePlayer(const Player& p) const;
     bool isPaired(const Player& p) const;
     ERR canPairPlayers(const Player& p1, const Player& p2) const;
     ERR canSplitPlayers(const Player& p1, const Player& p2) const;
-    Player getPartner(const Player& p) const;
     bool hasUnpairedPlayers() const;
-    unique_ptr<Category> convertToSpecializedObject() const;
     ERR canApplyGroupAssignment(QList<PlayerPairList> grpCfg);
     ERR canApplyInitialRanking(PlayerPairList seed);
-    int getGroupNumForPredecessorRound(const int grpNum) const;
-    CatRoundStatus getRoundStatus() const;
     bool hasMatchesInState(OBJ_STATE stat, int round=-1) const;
-    PlayerPairList getEliminatedPlayersAfterRound(int round, ERR *err) const;
-    int getMaxNumGamesInRound(int round) const;
     bool isDrawAllowedInRound(int round) const;
 
     

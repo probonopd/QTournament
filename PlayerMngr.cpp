@@ -15,6 +15,7 @@
 #include "HelperFunc.h"
 #include "TeamMngr.h"
 #include "Tournament.h"
+#include "CatMngr.h"
 
 using namespace dbOverlay;
 
@@ -228,12 +229,22 @@ namespace QTournament
     return Player(db, id);
   }
 
+  //----------------------------------------------------------------------------
+
+  unique_ptr<Player> PlayerMngr::getPlayer_up(int id) const
+  {
+    return getSingleObjectByColumnValue<Player>(playerTab, "id", id);
+  }
+
 //----------------------------------------------------------------------------
 
   PlayerPair PlayerMngr::getPlayerPair(int id)
   {
     TabRow r = (*db)[TAB_PAIRS][id];
+
+    return PlayerPair(db, r);
     
+    /*
     Player p1(db, r[PAIRS_PLAYER1_REF].toInt());
     
     QVariant _id2 = r[PAIRS_PLAYER2_REF];
@@ -247,6 +258,22 @@ namespace QTournament
     Player p2(db, _id2.toInt());
     
     return PlayerPair(p1, p2, id);
+    */
+  }
+
+//----------------------------------------------------------------------------
+
+  upPlayerPair PlayerMngr::getPlayerPair_up(int pairId) const
+  {
+    DbTab pairsTab = (*db)[TAB_PAIRS];
+    if (pairsTab.getMatchCountForColumnValue("id", pairId) != 1)
+    {
+      return nullptr;
+    }
+
+    TabRow r = (*db)[TAB_PAIRS][pairId];
+
+    return upPlayerPair(new PlayerPair(db, r));
   }
 
 //----------------------------------------------------------------------------
@@ -365,6 +392,62 @@ namespace QTournament
     //
 
     return result;
+  }
+
+  //----------------------------------------------------------------------------
+
+  ERR PlayerMngr::setWaitForRegistration(const Player& p, bool waitForPlayerRegistration) const
+  {
+    // A player can be set to "Wait For Registration" if and only if:
+    //  * The player is currently idle; and
+    //  * The player is only assigned to categories in state "CONFIG" or "FINISHED"
+    //
+    // A player can be released from "Wait For Registration" at any time. The player
+    // always changes to state "IDLE". However, it is not guaranteed that the player is
+    // in IDLE after calling this method, because we don't change the player state at all if
+    // it was in a different state than WAIT_FOR_REGISTRATION (e.g., PLAYING)
+
+    OBJ_STATE plStat = p.getState();
+
+    // easiest case first: un-set "wait for registration"
+    if (waitForPlayerRegistration == false)
+    {
+      // if the player wasn't in wait state, return directly without error
+      if (plStat != STAT_PL_WAIT_FOR_REGISTRATION) return OK;
+
+      // switch to IDLE
+      p.setState(STAT_PL_IDLE);
+      emit playerStatusChanged(p.getId(), p.getSeqNum(), STAT_PL_WAIT_FOR_REGISTRATION, STAT_PL_IDLE);
+      return OK;
+    }
+
+    // second case: enable "wait for registration"
+
+    // there is nothing to do for us if the player is already in wait state
+    if (plStat == STAT_PL_WAIT_FOR_REGISTRATION) return OK;
+
+    // if the player isn't IDLE, we can't switch to "wait for registration"
+    if (plStat != STAT_PL_IDLE)
+    {
+      return PLAYER_ALREADY_IN_MATCHES;
+    }
+
+    // okay, the player is idle and shall be switched to "wait state".
+    // make sure that all assigned categories are either in CONFIG or FINISHED
+    for (const Category& cat : p.getAssignedCategories())
+    {
+      OBJ_STATE catStat = cat.getState();
+      if ((catStat != STAT_CAT_CONFIG) && (catStat != STAT_CAT_FINALIZED))
+      {
+        return PLAYER_ALREADY_IN_MATCHES;
+      }
+    }
+
+    // all checks passed ==> we can switch the player to "wait for registration"
+    p.setState(STAT_PL_WAIT_FOR_REGISTRATION);
+    emit playerStatusChanged(p.getId(), p.getSeqNum(), STAT_PL_IDLE, STAT_PL_WAIT_FOR_REGISTRATION);
+
+    return OK;
   }
 
   //----------------------------------------------------------------------------

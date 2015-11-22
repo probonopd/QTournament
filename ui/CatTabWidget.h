@@ -8,6 +8,9 @@
 #ifndef _CATTABWIDGET_H
 #define	_CATTABWIDGET_H
 
+#include <QMenu>
+#include <QAction>
+
 #include "ui_CatTabWidget.h"
 
 class CatTabWidget : public QDialog
@@ -22,8 +25,25 @@ private:
   void updatePairs();
   int unpairedPlayerId1;
   int unpairedPlayerId2;
-  bool unfreezeAndCleanup(unique_ptr<Category> selectedCat);
-  void handleIntermediateSeedingForSelectedCat();
+
+  unique_ptr<QMenu> lwUnpairedContextMenu;
+  QAction* actRemovePlayer;
+  QAction* actBulkRemovePlayers;
+  QAction* actAddPlayer;
+  QAction* actRegister;
+  QAction* actUnregister;
+  unique_ptr<QMenu> listOfCats_CopyPlayerSubmenu;
+  unique_ptr<QMenu> listOfCats_MovePlayerSubmenu;
+  QAction* actCreateNewPlayerInCat;
+
+  unique_ptr<QMenu> lwPairsContextMenu;
+  QAction* actSplitPair;
+  unique_ptr<QMenu> listOfCats_CopyPairSubmenu;
+  unique_ptr<QMenu> listOfCats_MovePairSubmenu;
+
+  void initContextMenu();
+  upPlayer lwUnpaired_getSelectedPlayer() const;
+  unique_ptr<PlayerPair> lwPaired_getSelectedPair() const;
 
 public slots:
   void onCatModelChanged();
@@ -46,6 +66,17 @@ public slots:
   void onPlayerRemovedFromCategory(const Player& p, const Category& c);
   void onPlayerRenamed(const Player& p);
   void onCatStateChanged(const Category& c, const OBJ_STATE fromState, const OBJ_STATE toState);
+  void onPlayerStateChanged(int playerId, int seqNum, const OBJ_STATE fromState, const OBJ_STATE toState);
+  void onRemovePlayerFromCat();
+  void onBulkRemovePlayersFromCat();
+  void onAddPlayerToCat();
+  void onUnpairedContextMenuRequested(const QPoint& pos);
+  void onPairedContextMenuRequested(const QPoint& pos);
+  void onRegisterPlayer();
+  void onUnregisterPlayer();
+  void onCopyOrMovePlayer(int targetCatId, bool isMove);
+  void onCopyOrMovePair(const PlayerPair& selPair, int targetCatId, bool isMove);
+  void onCreatePlayer();
 } ;
 
 #endif	/* _CATTABWIDGET_H */

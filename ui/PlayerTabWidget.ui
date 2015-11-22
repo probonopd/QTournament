@@ -29,6 +29,13 @@
          </property>
         </widget>
        </item>
+       <item>
+        <widget class="QToolButton" name="btnRegistration">
+         <property name="text">
+          <string>Registration</string>
+         </property>
+        </widget>
+       </item>
       </layout>
      </item>
      <item>

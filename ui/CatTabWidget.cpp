@@ -13,6 +13,17 @@
 #include "TournamentDataDefs.h"
 #include "dlgGroupAssignment.h"
 #include "DlgSeedingEditor.h"
+#include "PlayerMngr.h"
+#include "Player.h"
+#include "ui/commonCommands/cmdRegisterPlayer.h"
+#include "ui/commonCommands/cmdUnregisterPlayer.h"
+#include "ui/commonCommands/cmdRemovePlayerFromCategory.h"
+#include "ui/commonCommands/cmdBulkAddPlayerToCat.h"
+#include "ui/commonCommands/cmdBulkRemovePlayersFromCat.h"
+#include "ui/commonCommands/cmdMoveOrCopyPlayerToCategory.h"
+#include "ui/commonCommands/cmdMoveOrCopyPairToCategory.h"
+#include "ui/commonCommands/cmdCreateNewPlayerInCat.h"
+#include "MenuGenerator.h"
 
 CatTabWidget::CatTabWidget()
 {
@@ -38,6 +49,15 @@ CatTabWidget::CatTabWidget()
   ui.cbMatchSystem->addItem(tr("Tree-like ranking system"), static_cast<int>(RANKING));
   ui.cbMatchSystem->addItem(tr("Single Elimination"), static_cast<int>(SINGLE_ELIM));
   ui.cbMatchSystem->addItem(tr("Round robin matches"), static_cast<int>(ROUND_ROBIN));
+
+  // setup the context menu(s)
+  initContextMenu();
+
+  // tell the list widgets to emit signals if a context menu is requested
+  ui.lwUnpaired->setContextMenuPolicy(Qt::CustomContextMenu);
+  connect(ui.lwUnpaired, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(onUnpairedContextMenuRequested(QPoint)));
+  ui.lwPaired->setContextMenuPolicy(Qt::CustomContextMenu);
+  connect(ui.lwPaired, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(onPairedContextMenuRequested(QPoint)));
 }
 
 //----------------------------------------------------------------------------
@@ -60,6 +80,7 @@ void CatTabWidget::onCatModelChanged()
   connect(Tournament::getCatMngr(), &CatMngr::playerRemovedFromCategory, this, &CatTabWidget::onPlayerRemovedFromCategory);
   connect(Tournament::getCatMngr(), &CatMngr::categoryStatusChanged, this, &CatTabWidget::onCatStateChanged);
   connect(Tournament::getPlayerMngr(), &PlayerMngr::playerRenamed, this, &CatTabWidget::onPlayerRenamed);
+  connect(Tournament::getPlayerMngr(), SIGNAL(playerStatusChanged(int,int,OBJ_STATE,OBJ_STATE)), this, SLOT(onPlayerStateChanged(int,int,OBJ_STATE,OBJ_STATE)));
 
   updateControls();
   updatePairs();
@@ -211,7 +232,8 @@ void CatTabWidget::updateControls()
     ui.lwPaired->setEnabled(false);
   } else {
     ui.gbPairButtons->setEnabled(true && isEditEnabled);
-    ui.lwPaired->setEnabled(true && isEditEnabled);
+    ui.lwPaired->setEnabled(true);
+    ui.lwPaired->setSelectionMode(isEditEnabled ? QListWidget::SingleSelection : QListWidget::NoSelection);
   }
 
   // disable controls if editing is no longer permitted
@@ -292,13 +314,13 @@ void CatTabWidget::updatePairs()
     
     if (pp.hasPlayer2())
     {
-      QString itemLabel = QString("%1. %2").arg(nextPairedItemCount).arg(pp.getDisplayName());
+      QString itemLabel = QString("%1. %2").arg(nextPairedItemCount).arg(pp.getDisplayName(0, true));
       QListWidgetItem* item = new QListWidgetItem(itemLabel);
       item->setData(Qt::UserRole, pp.getPairId());
       ui.lwPaired->addItem(item);
       ++nextPairedItemCount;
     } else {
-      QString itemLabel = QString("%1. %2").arg(nextUnPairedItemCount).arg(pp.getDisplayName());
+      QString itemLabel = QString("%1. %2").arg(nextUnPairedItemCount).arg(pp.getDisplayName(0, true));
       QListWidgetItem* item = new QListWidgetItem(itemLabel);
       item->setData(Qt::UserRole, pp.getPlayer1().getId());
       ui.lwUnpaired->addItem(item);
@@ -313,6 +335,102 @@ void CatTabWidget::updatePairs()
   } else {
     ui.grpCfgWidget->setRequiredPlayersCount(ui.lwPaired->count());
   }
+}
+
+//----------------------------------------------------------------------------
+
+void CatTabWidget::initContextMenu()
+{
+  //
+  // The context menu for the list widget for the UNPAIRED players
+  //
+
+  // prepare the actions
+  actRemovePlayer = new QAction(tr("Remove this player from category"), this);
+  actRegister = new QAction(tr("Register"), this);
+  actUnregister = new QAction(tr("Undo registration"), this);
+  actAddPlayer = new QAction(tr("Add player(s)..."), this);
+  actBulkRemovePlayers = new QAction(tr("Remove player(s)..."), this);
+  actCreateNewPlayerInCat = new QAction(tr("Create new player in this category..."), this);
+
+  // create the context menu and connect it to the actions
+  lwUnpairedContextMenu = unique_ptr<QMenu>(new QMenu());
+  listOfCats_CopyPlayerSubmenu = make_unique<QMenu>();
+  listOfCats_CopyPlayerSubmenu->setTitle(tr("Copy player to"));
+  listOfCats_MovePlayerSubmenu = make_unique<QMenu>();
+  listOfCats_MovePlayerSubmenu->setTitle(tr("Move player to"));
+  lwUnpairedContextMenu->addAction(actRegister);
+  lwUnpairedContextMenu->addAction(actUnregister);
+  lwUnpairedContextMenu->addSeparator();
+  lwUnpairedContextMenu->addMenu(listOfCats_CopyPlayerSubmenu.get());
+  lwUnpairedContextMenu->addMenu(listOfCats_MovePlayerSubmenu.get());
+  lwUnpairedContextMenu->addAction(actRemovePlayer);
+  lwUnpairedContextMenu->addSeparator();
+  lwUnpairedContextMenu->addAction(actAddPlayer);
+  lwUnpairedContextMenu->addAction(actCreateNewPlayerInCat);
+  lwUnpairedContextMenu->addAction(actBulkRemovePlayers);
+
+  // connect signals and slots
+  connect(actRemovePlayer, SIGNAL(triggered(bool)), this, SLOT(onRemovePlayerFromCat()));
+  connect(actRegister, SIGNAL(triggered(bool)), this, SLOT(onRegisterPlayer()));
+  connect(actUnregister, SIGNAL(triggered(bool)), this, SLOT(onUnregisterPlayer()));
+  connect(actAddPlayer, SIGNAL(triggered(bool)), this, SLOT(onAddPlayerToCat()));
+  connect(actBulkRemovePlayers, SIGNAL(triggered(bool)), this, SLOT(onBulkRemovePlayersFromCat()));
+  connect(actCreateNewPlayerInCat, SIGNAL(triggered(bool)), this, SLOT(onCreatePlayer()));
+
+
+  //
+  // The context menu for the list widget for the PAIRED players
+  //
+
+  // prepare the actions
+  actSplitPair = new QAction(tr("Split"), this);
+
+  // create the context menu and connect it to the actions
+  lwPairsContextMenu = unique_ptr<QMenu>(new QMenu());
+  listOfCats_CopyPairSubmenu = make_unique<QMenu>();
+  listOfCats_CopyPairSubmenu->setTitle(tr("Copy pair to"));
+  listOfCats_MovePairSubmenu = make_unique<QMenu>();
+  listOfCats_MovePairSubmenu->setTitle(tr("Move pair to"));
+  lwPairsContextMenu->addAction(actSplitPair);
+  lwPairsContextMenu->addSeparator();
+  lwPairsContextMenu->addMenu(listOfCats_CopyPairSubmenu.get());
+  lwPairsContextMenu->addMenu(listOfCats_MovePairSubmenu.get());
+
+  // connect signals and slots
+  connect(actSplitPair, SIGNAL(triggered(bool)), this, SLOT(onBtnSplitClicked()));
+}
+
+//----------------------------------------------------------------------------
+
+upPlayer CatTabWidget::lwUnpaired_getSelectedPlayer() const
+{
+  // we can only handle exactly one selected item
+  if (ui.lwUnpaired->selectedItems().length() != 1)
+  {
+    return nullptr;
+  }
+
+  auto selItem = ui.lwUnpaired->selectedItems().at(0);
+  int playerId = selItem->data(Qt::UserRole).toInt();
+
+  return Tournament::getPlayerMngr()->getPlayer_up(playerId);
+}
+
+//----------------------------------------------------------------------------
+
+unique_ptr<PlayerPair> CatTabWidget::lwPaired_getSelectedPair() const
+{
+  // we can only handle exactly one selected item
+  if (ui.lwPaired->selectedItems().length() != 1)
+  {
+    return nullptr;
+  }
+
+  auto selItem = ui.lwPaired->selectedItems().at(0);
+  int pairId = selItem->data(Qt::UserRole).toInt();
+
+  return Tournament::getPlayerMngr()->getPlayerPair_up(pairId);
 }
 
 //----------------------------------------------------------------------------
@@ -588,18 +706,7 @@ void CatTabWidget::onDontCareClicked()
 
 void CatTabWidget::onBtnAddCatClicked()
 {
-  // try to create new categories using a
-  // canonical name until it finally succeeds
-  ERR e = NAME_EXISTS;
-  int cnt = 0;
-  while (e != OK)
-  {
-    QString newCatName = tr("New Category ") + QString::number(cnt);
-    
-    e = Tournament::getCatMngr()->createNewCategory(newCatName);
-    cnt++;
-  }
-
+  ui.catTableView->onAddCategory();
 }
 
 //----------------------------------------------------------------------------
@@ -663,263 +770,10 @@ void CatTabWidget::onPlayerRenamed(const Player& p)
 
 void CatTabWidget::onBtnRunCatClicked()
 {
-  if (!(ui.catTableView->hasCategorySelected())) return;
-  
-  unique_ptr<Category> selectedCat = ui.catTableView->getSelectedCategory().convertToSpecializedObject();
-
-  // branch here to another function if the button was pressed to
-  // continue a category that's waiting in state STAT_CAT_WAIT_FOR_INTERMEDIATE_SEEDING
-  if (selectedCat->getState() == STAT_CAT_WAIT_FOR_INTERMEDIATE_SEEDING)
-  {
-    handleIntermediateSeedingForSelectedCat();
-    return;
-  }
-  
-  ERR e = selectedCat->canFreezeConfig();
-  if (e == CONFIG_ALREADY_FROZEN)
-  {
-    QMessageBox::critical(this, tr("Run Category"),
-	    tr("This category has already been started (STAT != Config)"));
-  }
-  else if (e == UNPAIRED_PLAYERS)
-  {
-    QMessageBox::critical(this, tr("Run Category"),
-	    tr("This category has unpaired players!\nPlease pair all players before starting the matches."));
-  }
-  else if (e == INVALID_KO_CONFIG)
-  {
-    QMessageBox::critical(this, tr("Run Category"),
-	    tr("The setup for the round robin phase and the KO rounds are invalid!"));
-  } else if (e != OK)
-  {
-    QMessageBox::critical(this, tr("Run Category"),
-      tr("Uncaptured error. Category has no valid configuration and can't be started."));
-  }
-  
-  if (e != OK) return;
-  
-  e = Tournament::getCatMngr()->freezeConfig(*selectedCat);
-  if (e != OK)   // after the checks above, this should never be true
-  {
-    QMessageBox::critical(this, tr("Run Category"),
-      tr("Uncaptured error. Category has no valid configuration and can't be started."));
-  }
-  
-  /**
-   * Now the category is in status FROZEN.
-   * 
-   * Execute all GUI activities necessary for actually running the category
-   * but DO NOT MODIFY THE DATABASE until everything is confirmed by the user
-   * 
-   */
-  
-  // show the dialog for the initial group assignments, if necessary
-  QList<PlayerPairList> ppListList;
-  if (selectedCat->needsGroupInitialization())
-  {
-    dlgGroupAssignment dlg(*selectedCat);
-    dlg.setModal(true);
-    int result = dlg.exec();
-
-    if (result != QDialog::Accepted)
-    {
-      unfreezeAndCleanup(std::move(selectedCat));
-      return;
-    }
-
-    ppListList = dlg.getGroupAssignments();
-    if (ppListList.isEmpty())
-    {
-      QMessageBox::warning(this, tr("Run Category"), tr("Can't read group assignments.\nOperation cancelled."));
-      unfreezeAndCleanup(std::move(selectedCat));
-      return;
-    }
-  }
-
-  // check if we need a seeded ranking, e.g. for single / double elimination rounds
-  PlayerPairList initialRanking;
-  if (selectedCat->needsInitialRanking())
-  {
-    DlgSeedingEditor dlg;
-    dlg.initSeedingList(selectedCat->getPlayerPairs());
-    dlg.setModal(true);
-    int result = dlg.exec();
-
-    if (result != QDialog::Accepted)
-    {
-      unfreezeAndCleanup(std::move(selectedCat));
-      return;
-    }
-
-    initialRanking = dlg.getSeeding();
-    if (initialRanking.isEmpty())
-    {
-      QMessageBox::warning(this, tr("Run Category"), tr("Can't read seeding.\nOperation cancelled."));
-      unfreezeAndCleanup(std::move(selectedCat));
-      return;
-    }
-  }
-
-  /*
-   * If we made it to this point, the user accepted all configuration details
-   * for the selected category.
-   *
-   * Let's do a final check before we actually apply the settings and write to
-   * the database.
-   */
-  if (ppListList.count() != 0)
-  {
-    ERR e = selectedCat->canApplyGroupAssignment(ppListList);
-    if (e != OK)
-    {
-      QString msg = tr("Something is wrong with the group assignment. This shouldn't happen.\nFault:");
-      if (e == CATEGORY_NOT_YET_FROZEN)
-      {
-        msg += tr("Category state not valid for group assignments (STAT != FROZEN)");
-      }
-      else if (e == CATEGORY_NEEDS_NO_GROUP_ASSIGNMENTS)
-      {
-        msg += tr("This category needs no group assignments");
-      }
-      else if (e == INVALID_KO_CONFIG)
-      {
-        msg += tr("The configuration of the groups and the KO rounds is invalid.");
-      }
-      else if (e == INVALID_GROUP_NUM)
-      {
-        msg += tr("The number of assigned groups doesn't match the number of required groups.");
-      }
-      else if (e == INVALID_PLAYER_COUNT)
-      {
-        msg += tr("The number of assigned players doesn't match the number of players in the category.");
-      }
-      else if (e == PLAYER_ALREADY_IN_CATEGORY)
-      {
-        msg += tr("There are invalid players in the group assignments.");
-      }
-      else
-      {
-        msg += tr("Don't now...");
-      }
-      QMessageBox::warning(this, tr("Run Category"), msg);
-
-      unfreezeAndCleanup(std::move(selectedCat));
-      return;
-    }
-  }
-
-  if (initialRanking.count() != 0)
-  {
-    ERR e = selectedCat->canApplyInitialRanking(initialRanking);
-    if (e != OK)
-    {
-      QString msg = tr("Something is wrong with the initial ranking. This shouldn't happen.\nFault:");
-      if (e == CATEGORY_NOT_YET_FROZEN)
-      {
-        msg += tr("Category state not valid for setting the initial ranking (STAT != FROZEN)");
-      }
-      else if (e == CATEGORY_NEEDS_NO_SEEDING)
-      {
-        msg += tr("This category needs no initial ranking.");
-      }
-      else if (e == INVALID_PLAYER_COUNT)
-      {
-        msg += tr("The number of player in the initial ranking doesn't match the number of players in the category.");
-      }
-      else if (e == PLAYER_ALREADY_IN_CATEGORY)
-      {
-        msg += tr("There are invalid players in the initial ranking.");
-      }
-      else
-      {
-        msg += tr("Don't now...");
-      }
-      QMessageBox::warning(this, tr("Run Category"), msg);
-
-      unfreezeAndCleanup(std::move(selectedCat));
-      return;
-    }
-  }
-
-  /*
-   * If we made it to this point, it is safe to apply the settings and write to
-   * the database.
-   */
-  e = Tournament::getCatMngr()->startCategory(*selectedCat, ppListList, initialRanking);
-  if (e != OK)  // should never happen
-  {
-    throw runtime_error("Unexpected error when starting the category");
-  }
-
-  QMessageBox::information(this, tr("Start category"), tr("Category successfully started!"));
+  ui.catTableView->onRunCategory();
 }
 
 //----------------------------------------------------------------------------
-
-/*
- * NOTE: this method deletes the object that the parameter points to!
- * Do not use the provided pointer anymore after calling this function!
- */
-bool CatTabWidget::unfreezeAndCleanup(unique_ptr<Category> selectedCat)
-{
-  if (selectedCat == 0) return false;
-  if (selectedCat->getState() != STAT_CAT_FROZEN) return false;
-
-  // undo all database changes that happened during freezing
-  ERR e = Tournament::getCatMngr()->unfreezeConfig(*selectedCat);
-  if (e != OK) // this should never be true
-  {
-    QMessageBox::critical(this, tr("Run Category"),
-            tr("Uncaptured error. Category has no valid configuration and can't be started.\nExpect data corruption for this category."));
-  }
-
-  // clean-up and return
-  return OK;
-}
-
-//----------------------------------------------------------------------------
-
-void CatTabWidget::handleIntermediateSeedingForSelectedCat()
-{
-  if (!(ui.catTableView->hasCategorySelected())) return;
-  unique_ptr<Category> selectedCat = ui.catTableView->getSelectedCategory().convertToSpecializedObject();
-  if (selectedCat == nullptr) return;
-
-  if (selectedCat->getState() != STAT_CAT_WAIT_FOR_INTERMEDIATE_SEEDING)
-  {
-    return;
-  }
-
-  PlayerPairList seedCandidates = selectedCat->getPlayerPairsForIntermediateSeeding();
-  if (seedCandidates.isEmpty()) return;
-
-  DlgSeedingEditor dlg;
-  dlg.initSeedingList(seedCandidates);
-  dlg.setModal(true);
-  int result = dlg.exec();
-
-  if (result != QDialog::Accepted)
-  {
-    return;
-  }
-
-  PlayerPairList seeding = dlg.getSeeding();
-  if (seeding.isEmpty())
-  {
-    QMessageBox::warning(this, tr("Intermediate Seeding"), tr("Can't read seeding.\nOperation cancelled."));
-    return;
-  }
-
-  /*
-   * If we made it to this point, we can generate matches for the next round(s)
-   */
-  ERR e = Tournament::getCatMngr()->continueWithIntermediateSeeding(*selectedCat, seeding);
-  if (e != OK)  // should never happen
-  {
-    throw runtime_error("Unexpected error when applying intermediate seeding");
-  }
-  QMessageBox::information(this, tr("Continue category"), tr("Matches successfully generated!"));
-}
 
 //----------------------------------------------------------------------------
 
@@ -930,6 +784,266 @@ void CatTabWidget::handleIntermediateSeedingForSelectedCat()
 void CatTabWidget::onCatStateChanged(const Category &c, const OBJ_STATE fromState, const OBJ_STATE toState)
 {
   updateControls();
+}
+
+//----------------------------------------------------------------------------
+
+void CatTabWidget::onPlayerStateChanged(int playerId, int seqNum, const OBJ_STATE fromState, const OBJ_STATE toState)
+{
+  // is a category selected?
+  if (!(ui.catTableView->hasCategorySelected())) return;
+
+  // is the affected player in the currently selected category?
+  // if not, there is nothing to do for us
+  auto selectedCat = ui.catTableView->getSelectedCategory();
+  Player pl = Tournament::getPlayerMngr()->getPlayer(playerId);
+  if (!(selectedCat.hasPlayer(pl))) return;
+
+  // okay, the changed player is obviously part of the currently selected,
+  // displayed category
+
+  // if a player changes from/to WAIT_FOR_REGISTRATION, we brute-force rebuild the list widgets
+  // because we need to change the item label of the affected players for
+  // adding or removing the paranthesis around the player names
+  if (((fromState == STAT_PL_IDLE) && (toState == STAT_PL_WAIT_FOR_REGISTRATION)) ||
+      ((fromState == STAT_PL_WAIT_FOR_REGISTRATION) && (toState == STAT_PL_IDLE)))
+  {
+    updatePairs();
+  }
+}
+
+//----------------------------------------------------------------------------
+
+void CatTabWidget::onRemovePlayerFromCat()
+{
+  auto selPlayer = lwUnpaired_getSelectedPlayer();
+  if (selPlayer == nullptr) return;
+
+  // the following call must always succeed... if no category
+  // was selected there was no player to trigger the context menu on
+  auto selCat = ui.catTableView->getSelectedCategory();
+
+  cmdRemovePlayerFromCategory cmd{this, *selPlayer, selCat};
+  cmd.exec();
+}
+
+//----------------------------------------------------------------------------
+
+void CatTabWidget::onBulkRemovePlayersFromCat()
+{
+  if (!(ui.catTableView->hasCategorySelected()))
+  {
+    return;
+  }
+
+  cmdBulkRemovePlayersFromCategory cmd{this, ui.catTableView->getSelectedCategory()};
+  cmd.exec();
+}
+
+//----------------------------------------------------------------------------
+
+void CatTabWidget::onAddPlayerToCat()
+{
+  if (!(ui.catTableView->hasCategorySelected()))
+  {
+    return;
+  }
+
+  cmdBulkAddPlayerToCategory cmd{this, ui.catTableView->getSelectedCategory()};
+  cmd.exec();
+}
+
+//----------------------------------------------------------------------------
+
+void CatTabWidget::onUnpairedContextMenuRequested(const QPoint& pos)
+{
+  // map from scroll area coordinates to global widget coordinates
+  QPoint globalPos = ui.lwUnpaired->viewport()->mapToGlobal(pos);
+
+  // determine if there is an item under the mouse
+  auto selItem = ui.lwUnpaired->itemAt(pos);
+  upPlayer selPlayer;
+  OBJ_STATE plStat = STAT_CO_DISABLED;   // arbitrary, non player-related, dummy default
+  if (selItem != nullptr)
+  {
+    // clear old selection and select item under the mouse
+    ui.lwUnpaired->clearSelection();
+    selItem->setSelected(true);
+
+    selPlayer = lwUnpaired_getSelectedPlayer();
+    plStat = selPlayer->getState();
+  }
+
+  bool isPlayerClicked = (selPlayer != nullptr);
+  bool hasCatSelected = ui.catTableView->hasCategorySelected();
+
+  // rebuild dynamic submenus
+  MenuGenerator::allCategories(listOfCats_CopyPlayerSubmenu.get());
+  MenuGenerator::allCategories(listOfCats_MovePlayerSubmenu.get());
+
+  // enable / disable selection-specific actions
+  actRemovePlayer->setEnabled(isPlayerClicked);
+  actRegister->setEnabled(plStat == STAT_PL_WAIT_FOR_REGISTRATION);
+  actUnregister->setEnabled(plStat == STAT_PL_IDLE);
+  listOfCats_CopyPlayerSubmenu->setEnabled(isPlayerClicked);
+  listOfCats_MovePlayerSubmenu->setEnabled(isPlayerClicked);
+  actCreateNewPlayerInCat->setEnabled(hasCatSelected);
+  actAddPlayer->setEnabled(hasCatSelected);
+  actBulkRemovePlayers->setEnabled(hasCatSelected);
+
+  // show the context menu
+  QAction* selectedItem = lwUnpairedContextMenu->exec(globalPos);
+
+  // check if one of the dynamically generated submenus was selected
+  //
+  // Actions belonging to these menus have a non-empty user data
+  if ((selectedItem == nullptr) || (selectedItem->data().isNull()))
+  {
+    // no selection or manually created action, noting more to do here
+    return;
+  }
+
+  //
+  // manually trigger the reaction associated with the menu item
+  //
+  if (MenuGenerator::isActionInMenu(listOfCats_CopyPlayerSubmenu.get(), selectedItem))
+  {
+    onCopyOrMovePlayer(selectedItem->data().toInt(), false);
+  }
+  if (MenuGenerator::isActionInMenu(listOfCats_MovePlayerSubmenu.get(), selectedItem))
+  {
+    onCopyOrMovePlayer(selectedItem->data().toInt(), true);
+  }
+}
+
+//----------------------------------------------------------------------------
+
+void CatTabWidget::onPairedContextMenuRequested(const QPoint& pos)
+{
+  // map from scroll area coordinates to global widget coordinates
+  QPoint globalPos = ui.lwPaired->viewport()->mapToGlobal(pos);
+
+  // determine if there is an item under the mouse
+  auto selItem = ui.lwPaired->itemAt(pos);
+  upPlayerPair selPair;
+  if (selItem != nullptr)
+  {
+    // clear old selection and select item under the mouse
+    ui.lwPaired->clearSelection();
+    selItem->setSelected(true);
+
+    int selPairId = selItem->data(Qt::UserRole).toInt();
+    selPair = Tournament::getPlayerMngr()->getPlayerPair_up(selPairId);
+  }
+
+  // we have no actions that are useful without a selected
+  // pair. So if nothing is selected, we can quit here
+  if (selPair == nullptr)
+  {
+    return;
+  }
+
+  // rebuild dynamic submenus
+  MenuGenerator::allCategories(listOfCats_CopyPairSubmenu.get());
+  MenuGenerator::allCategories(listOfCats_MovePairSubmenu.get());
+
+  // show the context menu
+  QAction* selectedItem = lwPairsContextMenu->exec(globalPos);
+
+  // check if one of the dynamically generated submenus was selected
+  //
+  // Actions belonging to these menus have a non-empty user data
+  if ((selectedItem == nullptr) || (selectedItem->data().isNull()))
+  {
+    // no selection or manually created action, noting more to do here
+    return;
+  }
+
+  //
+  // manually trigger the reaction associated with the menu item
+  //
+  if (MenuGenerator::isActionInMenu(listOfCats_CopyPairSubmenu.get(), selectedItem))
+  {
+    onCopyOrMovePair(*selPair, selectedItem->data().toInt(), false);
+  }
+  if (MenuGenerator::isActionInMenu(listOfCats_MovePairSubmenu.get(), selectedItem))
+  {
+    onCopyOrMovePair(*selPair, selectedItem->data().toInt(), true);
+  }
+}
+
+//----------------------------------------------------------------------------
+
+void CatTabWidget::onRegisterPlayer()
+{
+  auto selPlayer = lwUnpaired_getSelectedPlayer();
+  if (selPlayer == nullptr) return;
+
+  cmdRegisterPlayer cmd{this, *selPlayer};
+  cmd.exec();
+}
+
+//----------------------------------------------------------------------------
+
+void CatTabWidget::onUnregisterPlayer()
+{
+  auto selPlayer = lwUnpaired_getSelectedPlayer();
+  if (selPlayer == nullptr) return;
+
+  cmdUnregisterPlayer cmd{this, *selPlayer};
+  cmd.exec();
+}
+
+//----------------------------------------------------------------------------
+
+void CatTabWidget::onCopyOrMovePlayer(int targetCatId, bool isMove)
+{
+  auto selPlayer = lwUnpaired_getSelectedPlayer();
+  if (selPlayer == nullptr) return;
+
+  if (!(ui.catTableView->hasCategorySelected()))
+  {
+    return;
+  }
+
+  auto targetCat = Tournament::getCatMngr()->getCategoryById(targetCatId);
+
+  cmdMoveOrCopyPlayerToCategory cmd{this, *selPlayer,
+        ui.catTableView->getSelectedCategory(),
+        targetCat, isMove};
+
+  cmd.exec();
+}
+
+//----------------------------------------------------------------------------
+
+void CatTabWidget::onCopyOrMovePair(const PlayerPair& selPair, int targetCatId, bool isMove)
+{
+  if (!(ui.catTableView->hasCategorySelected()))
+  {
+    return;
+  }
+
+  auto targetCat = Tournament::getCatMngr()->getCategoryById(targetCatId);
+
+  cmdMoveOrCopyPairToCategory cmd{this, selPair,
+        ui.catTableView->getSelectedCategory(),
+        targetCat, isMove};
+
+  cmd.exec();
+}
+
+//----------------------------------------------------------------------------
+
+void CatTabWidget::onCreatePlayer()
+{
+  if (!(ui.catTableView->hasCategorySelected()))
+  {
+    return;
+  }
+
+  cmdCreateNewPlayerInCat cmd{this, ui.catTableView->getSelectedCategory()};
+  cmd.exec();
 }
 
 //----------------------------------------------------------------------------

@@ -559,22 +559,60 @@ void MainFrame::setupTestScenario(int scenarioID)
     }
   };
 
-  // a scenario with up to 32 players in a ranking1-bracket
+  // a scenario with up to 10 players in a ranking1-bracket
   auto scenario08 = [&]()
   {
     scenario02();
     tmngr->createNewTeam("Ranking Team");
     Category ls = cmngr->getCategory("LS");
+    Category ld = cmngr->getCategory("LD");
 
-    for (int i=0; i < 25; i++)
+    int evenPlayerId = -1;
+    for (int i=0; i < 28; i++)   // must be an even number, for doubles!
     {
       QString lastName = "Ranking" + QString::number(i+1);
       pmngr->createNewPlayer("Lady", lastName, F, "Ranking Team");
       Player p = pmngr->getPlayer(i + 7);   // the first six IDs are already used by previous ini-functions above
       ls.addPlayer(p);
+      ld.addPlayer(p);
+
+      // pair every two players
+      if ((i % 2) == 0)
+      {
+        evenPlayerId = p.getId();
+      } else {
+        Player evenPlayer = pmngr->getPlayer(evenPlayerId);
+        cmngr->pairPlayers(ld, p, evenPlayer);
+      }
     }
 
-    ls.setMatchSystem(SWISS_LADDER);
+    ls.setMatchSystem(MATCH_SYSTEM::RANKING);
+    ld.setMatchSystem(MATCH_SYSTEM::RANKING);
+
+    // freeze the LS category
+    ERR e = cmngr->freezeConfig(ls);
+    assert(e == OK);
+
+    // prepare an empty list for the not-required initial group assignment
+    QList<PlayerPairList> ppListList;
+
+    // prepare a list for the (faked) initial ranking
+    PlayerPairList initialRanking = ls.getPlayerPairs();
+
+    // actually run the category
+    e = cmngr->startCategory(ls, ppListList, initialRanking);
+    assert(e == OK);
+
+    // freeze the LD category
+    e = cmngr->freezeConfig(ld);
+    assert(e == OK);
+
+    // prepare a list for the (faked) initial ranking
+    initialRanking = ld.getPlayerPairs();
+
+    // actually run the category
+    e = cmngr->startCategory(ld, ppListList, initialRanking);
+    assert(e == OK);
   };
 
   switch (scenarioID)

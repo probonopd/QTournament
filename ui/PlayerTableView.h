@@ -35,6 +35,8 @@ public slots:
   void onEditPlayerTriggered();
   void onRemovePlayerTriggered();
   void onShowNextMatchesForPlayerTriggered();
+  void onRegisterPlayerTriggered();
+  void onUnregisterPlayerTriggered();
 
 private slots:
   void onContextMenuRequested(const QPoint& pos);
@@ -50,6 +52,8 @@ private:
   QAction* actEditPlayer;
   QAction* actRemovePlayer;
   QAction* actShowNextMatchesForPlayer;
+  QAction* actRegister;
+  QAction* actUnregister;
 
 
   void initContextMenu();

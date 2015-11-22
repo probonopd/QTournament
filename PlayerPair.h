@@ -25,7 +25,7 @@ namespace QTournament
     bool hasPlayer2() const;
     Player getPlayer1() const;
     Player getPlayer2() const;
-    QString getDisplayName(int maxLen = 0) const;
+    QString getDisplayName(int maxLen = 0, bool unregisteredPlayersInBrackets=false) const;
     QString getDisplayName_FirstNameFirst() const;
     QString getDisplayName_Team(int maxLen = 0) const;
     QString getCallName(const QString &sepString) const;
@@ -58,6 +58,7 @@ namespace QTournament
   } ;
   
   typedef QList<PlayerPair> PlayerPairList;
+  typedef unique_ptr<PlayerPair> upPlayerPair;
 
 }
 #endif	/* PLAYERPAIR_H */

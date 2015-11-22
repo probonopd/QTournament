@@ -115,7 +115,7 @@ namespace QTournament {
 
 //----------------------------------------------------------------------------
 
-  QString PlayerPair::getDisplayName(int maxLen) const
+  QString PlayerPair::getDisplayName(int maxLen, bool unregisteredPlayersInBrackets) const
   {
     if (maxLen < 0)
     {
@@ -127,6 +127,13 @@ namespace QTournament {
       throw std::invalid_argument("Max len for display name too short!");
     }
     
+    // prepare strings for the player names and for the result
+    QString result;
+
+    Player p1 = getPlayer1();
+    OBJ_STATE p1Stat = p1.getState();
+
+    QString p2Name;
     if (hasPlayer2())
     {
       // reserve space for " / " if we have two players
@@ -135,14 +142,36 @@ namespace QTournament {
       // and cut the max len in half
       if ((maxLen % 2) != 0)
       {
-	maxLen -= 1;
+        maxLen -= 1;
       }
       maxLen = maxLen / 2;
-      
-      return getPlayer1().getDisplayName(maxLen) + " / " + getPlayer2().getDisplayName(maxLen);
+
+      Player p2 = getPlayer2();
+      p2Name = p2.getDisplayName(maxLen);
+      OBJ_STATE p2Stat = p2.getState();
+
+      result = "%2 / %1";
+      if (unregisteredPlayersInBrackets)
+      {
+        if ((p1Stat == STAT_PL_WAIT_FOR_REGISTRATION) && (p2Stat == STAT_PL_WAIT_FOR_REGISTRATION))
+        {
+          result = "(%2 / %1)";
+        } else if (p1Stat == STAT_PL_WAIT_FOR_REGISTRATION)
+        {
+          result = "(%2) / %1";
+        } else if (p2Stat == STAT_PL_WAIT_FOR_REGISTRATION)
+        {
+          result = "%2 / (%1)";
+        }
+      }
+      result = result.arg(p2Name);
+    } else {
+      result = (unregisteredPlayersInBrackets && (p1Stat == STAT_PL_WAIT_FOR_REGISTRATION)) ? "(%1)" : "%1";
     }
-    
-    return getPlayer1().getDisplayName(maxLen);
+
+    result = result.arg(p1.getDisplayName(maxLen));
+
+    return result;
   }
 
 //----------------------------------------------------------------------------

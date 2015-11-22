@@ -47,19 +47,26 @@ void PlayerItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& op
   auto p = Tournament::getPlayerMngr()->getPlayerBySeqNum(row);
   // no check for a nullptr here, the call above MUST succeed
   
+  // use a gray text color if the player is state "WAIT_FOR_REGISTRATION"
+  OBJ_STATE plStat = p->getState();
+  QColor txtColor{(plStat == STAT_PL_WAIT_FOR_REGISTRATION) ? Qt::darkGray : Qt::black};
+
   // Paint the background, either in the selection color or in a color related
   // to the participant's sex
   QColor bgColor = QColor(PLAYER_ITEM_MALE_BG_COL);
   if(option.state & QStyle::State_Selected)
   {
     bgColor = option.palette.color(QPalette::Highlight);
+
+    // use light gray for selected players in state WAIT_FOR_REGISTRATION
+    if (plStat == STAT_PL_WAIT_FOR_REGISTRATION) txtColor = QColor(Qt::lightGray);
   } else {
     if (p->getSex() == F) bgColor = QColor(PLAYER_ITEM_FEMALE_BG_COL);
   }
   painter->fillRect(option.rect, bgColor);
   
   QRect r = option.rect;
-  
+
   // paint logic for the first column, the name
   if (index.column() == 0)
   {
@@ -69,9 +76,15 @@ void PlayerItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& op
     // draw the name
     r.adjust(2 * PLAYER_ITEM_MARGIN + PLAYER_ITEM_STAT_INDICATOR_SIZE, 0, 0, 0);
     QString txt = p->getDisplayName();
+    painter->save();
+    painter->setPen(txtColor);
     painter->drawText(r, Qt::AlignVCenter|Qt::AlignLeft, txt);
+    painter->restore();
   } else {
+    painter->save();
+    painter->setPen(txtColor);
     painter->drawText(option.rect, Qt::AlignCenter, index.data(Qt::DisplayRole).toString());
+    painter->restore();
   }
  
   

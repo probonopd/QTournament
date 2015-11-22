@@ -5,9 +5,6 @@
  * Created on 18. Februar 2014, 14:04
  */
 
-#include "CatMngr.h"
-#include "TournamentErrorCodes.h"
-#include "TournamentDataDefs.h"
 #include <stdexcept>
 #include <QtCore/qdebug.h>
 #include <QtCore/qjsonarray.h>
@@ -18,6 +15,10 @@
 #include "Tournament.h"
 #include "KO_Config.h"
 #include "CatRoundStatus.h"
+#include "CatMngr.h"
+#include "TournamentErrorCodes.h"
+#include "TournamentDataDefs.h"
+#include "TournamentDB.h"
 
 using namespace dbOverlay;
 
@@ -70,9 +71,94 @@ namespace QTournament
     return OK;
   }
 
+  //----------------------------------------------------------------------------
+
+  ERR CatMngr::cloneCategory(const Category& src, const QString& catNamePostfix)
+  {
+    if (catNamePostfix.isEmpty())
+    {
+      return INVALID_NAME;
+    }
+
+    // set an arbitrarily chosen maximum of 10 characters for the postfix
+    if (catNamePostfix.length() > 10)
+    {
+      return INVALID_NAME;
+    }
+
+    // try create a new category until we've found a valid name
+    int cnt = 0;
+    ERR err;
+    QString dstCatName;
+    do
+    {
+      ++cnt;
+
+      // create the clone name as a combination of source name, a postfix
+      // and a number. Make sure the destination name does not exceed the
+      // maximum name length
+      QString trimmedSrcCatName = src.getName();
+      do
+      {
+        dstCatName = trimmedSrcCatName + " - " + catNamePostfix + " " + QString::number(cnt);
+        trimmedSrcCatName.chop(1);
+      } while (dstCatName.length() > MAX_NAME_LEN);
+
+      // try to actually create the category
+      err = createNewCategory(dstCatName);
+    } while ((err == NAME_EXISTS) && (cnt < 100));   // a maximum limit of 100 retries
+
+    // did we succeed?
+    if (err != OK)
+    {
+      return err;   // give up
+    }
+    Category clone = getCategory(dstCatName);
+
+    // copy the settings fromt the source category to clone
+    assert(clone.setMatchSystem(src.getMatchSystem()) == OK);
+    assert(clone.setMatchType(src.getMatchType()) == OK);
+    assert(clone.setSex(src.getSex()) == OK);
+    assert(setCatParam_AllowDraw(clone, src.getParameter_bool(ALLOW_DRAW)));
+    assert(setCatParam_Score(clone, src.getParameter_int(WIN_SCORE), false));
+    setCatParam_Score(clone, src.getParameter_int(DRAW_SCORE), true);  // no assert here; setting draw score may fail if draw is not allowed
+    KO_Config ko{src.getParameter_string(GROUP_CONFIG)};
+    assert(clone.setParameter(GROUP_CONFIG, ko.toString()));
+
+    // Do not copy the BracketVisData here, because the clone is still in
+    // CONFIG and BracketVisData is created when starting the cat
+
+    // assign the players to the category
+    for (const Player& pl : src.getAllPlayersInCategory())
+    {
+      err = addPlayerToCategory(pl, clone);
+      if (err != OK)
+      {
+        return err;   // shouldn't happen
+      }
+    }
+
+    // pair players, if applicable
+    if (src.getMatchType() != SINGLES)
+    {
+      for (const PlayerPair& pp : src.getPlayerPairs())
+      {
+        if (!(pp.hasPlayer2())) continue;
+
+        err = pairPlayers(clone, pp.getPlayer1(), pp.getPlayer2());
+        if (err != OK)
+        {
+          return err;   // shouldn't happen
+        }
+      }
+    }
+
+    return OK;
+  }
+
 //----------------------------------------------------------------------------
 
-  bool CatMngr::hasCategory(const QString& catName)
+  bool CatMngr::hasCategory(const QString& catName) const
   {
     return (catTab.getMatchCountForColumnValue(GENERIC_NAME_FIELD_NAME, catName) > 0);
   }
@@ -324,7 +410,7 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  ERR CatMngr::removePlayerFromCategory(const Player& p, const Category& c)
+  ERR CatMngr::removePlayerFromCategory(const Player& p, const Category& c) const
   {
     if (!(c.canRemovePlayer(p)))
     {
@@ -358,6 +444,42 @@ namespace QTournament
     
     emit playerRemovedFromCategory(p, c);
     
+    return OK;
+  }
+
+  //----------------------------------------------------------------------------
+
+  ERR CatMngr::deleteCategory(const Category& cat) const
+  {
+    ERR e = canDeleteCategory(cat);
+    if (e != OK) return e;
+
+    // remove all players from the category
+    PlayerList allPlayers = cat.getAllPlayersInCategory();
+    for (const Player& pl : allPlayers)
+    {
+      e = removePlayerFromCategory(pl, cat);
+      if (e != OK)
+      {
+        return e;   // after all the checks before, this shouldn't happen
+      }
+    }
+
+    // a few checks for the cowards
+    int catId = cat.getId();
+    assert(db->getTab(TAB_P2C).getMatchCountForColumnValue(P2C_CAT_REF, catId) == 0);
+    assert(db->getTab(TAB_PAIRS).getMatchCountForColumnValue(PAIRS_CAT_REF, catId) == 0);
+    assert(db->getTab(TAB_MATCH_GROUP).getMatchCountForColumnValue(MG_CAT_REF, catId) == 0);
+    assert(db->getTab(TAB_RANKING).getMatchCountForColumnValue(RA_CAT_REF, catId) == 0);
+    assert(db->getTab(TAB_BRACKET_VIS).getMatchCountForColumnValue(BV_CAT_REF, catId) == 0);
+
+    // the actual deletion
+    int oldSeqNum = cat.getSeqNum();
+    emit beginDeleteCategory(oldSeqNum);
+    catTab.deleteRowsByColumnValue("id", cat.getId());
+    fixSeqNumberAfterDelete(TAB_CATEGORY, oldSeqNum);
+    emit endDeleteCategory();
+
     return OK;
   }
 
@@ -466,7 +588,9 @@ namespace QTournament
     }
 
     // no draw matches in elimination categories
-    if ((c.getMatchSystem() == SINGLE_ELIM) && (allowDraw))
+    MATCH_SYSTEM msys = c.getMatchSystem();
+    bool isElimCat = ((msys == SINGLE_ELIM) || (msys == RANKING));
+    if (isElimCat && allowDraw)
     {
       return false;
     }
@@ -523,7 +647,7 @@ namespace QTournament
     {
       if (newScore >= winScore)
       {
-	return false;
+        return false;
       }
       
       c.row.update(CAT_DRAW_SCORE, newScore);
@@ -569,7 +693,7 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  ERR CatMngr::splitPlayers(const Category c, const Player& p1, const Player& p2)
+  ERR CatMngr::splitPlayers(const Category c, const Player& p1, const Player& p2) const
   {
     // all pre-conditions for splitting two players are checked
     // in the category. If this check is positive, we can start
@@ -601,7 +725,7 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  ERR CatMngr::splitPlayers(const Category c, int pairId)
+  ERR CatMngr::splitPlayers(const Category c, int pairId) const
   {
     DbTab pairsTab = db->getTab(TAB_PAIRS);
     PlayerMngr* pmngr = Tournament::getPlayerMngr();
@@ -650,6 +774,17 @@ namespace QTournament
     unique_ptr<Category> specialObj = c.convertToSpecializedObject();
     ERR e = specialObj->canFreezeConfig();
     if (e != OK) return e;
+
+    // one additional check that is common for all categories:
+    // none of the assigned player is allowed to be in state
+    // WAIT_FOR_REGISTRATION
+    for (const Player& pl : c.getAllPlayersInCategory())
+    {
+      if (pl.getState() == STAT_PL_WAIT_FOR_REGISTRATION)
+      {
+        return NOT_ALL_PLAYERS_REGISTERED;
+      }
+    }
     
     // Okax, we're good to go
     //
@@ -921,6 +1056,29 @@ namespace QTournament
     qvl << c.getId();
 
     return getObjectsByWhereClause<PlayerPair>(pairTab, where, qvl);
+  }
+
+  //----------------------------------------------------------------------------
+
+  ERR CatMngr::canDeleteCategory(const Category& cat) const
+  {
+    // check 1: the category must be in state CONFIG
+    if (cat.getState() != STAT_CAT_CONFIG)
+    {
+      return CATEGORY_NOT_CONFIGURALE_ANYMORE;
+    }
+
+    // check 2: all players must be removable from this category
+    for (const Player& pl : cat.getAllPlayersInCategory())
+    {
+      if (!(cat.canRemovePlayer(pl)))
+      {
+        return PLAYER_NOT_REMOVABLE_FROM_CATEGORY;
+      }
+    }
+
+    // okay, we're good to go
+    return OK;
   }
 
 //----------------------------------------------------------------------------

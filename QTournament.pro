@@ -8,7 +8,14 @@ QT       += sql widgets
 
 TARGET = QTournament
 TEMPLATE = app
-QMAKE_CXXFLAGS += -std=c++11 -Wno-unused-parameter -O2
+QMAKE_CXXFLAGS += -std=c++14 -Wno-unused-parameter
+
+# Optimization level O3 for release
+QMAKE_CXXFLAGS_RELEASE -= -O2
+QMAKE_CXXFLAGS_RELEASE += -O3
+
+# Optimization level O1 for debug
+#QMAKE_CXXFLAGS_DEBUG += -O0
 
 HEADERS += \
     Category.h \
@@ -85,7 +92,25 @@ HEADERS += \
     SignalRelay.h \
     reports/ResultsAndNextMatches.h \
     PureRoundRobinCategory.h \
-    SwissLadderCategory.h
+    SwissLadderCategory.h \
+    reports/BracketSheet.h \
+    reports/BracketVisData.h \
+    ui/commonCommands/AbstractCommand.h \
+    ui/commonCommands/cmdRegisterPlayer.h \
+    ui/commonCommands/cmdUnregisterPlayer.h \
+    ui/commonCommands/cmdRemovePlayerFromCategory.h \
+    ui/DlgSelectPlayer.h \
+    ui/commonCommands/cmdBulkAddPlayerToCat.h \
+    ui/commonCommands/cmdBulkRemovePlayersFromCat.h \
+    ui/commonCommands/cmdMoveOrCopyPlayerToCategory.h \
+    ui/MenuGenerator.h \
+    ui/commonCommands/cmdMoveOrCopyPairToCategory.h \
+    ui/DlgPickPlayerSex.h \
+    ui/commonCommands/cmdCreateNewPlayerInCat.h \
+    reports/commonReportElements/AbstractReportElement.h \
+    reports/commonReportElements/plotStandings.h \
+    reports/MatrixAndStandings.h \
+    reports/commonReportElements/MatchMatrix.h
 
 SOURCES += \
     Category.cpp \
@@ -161,7 +186,25 @@ SOURCES += \
     SignalRelay.cpp \
     reports/ResultsAndNextMatches.cpp \
     PureRoundRobinCategory.cpp \
-    SwissLadderCategory.cpp
+    SwissLadderCategory.cpp \
+    reports/BracketSheet.cpp \
+    reports/BracketVisData.cpp \
+    ui/commonCommands/AbstractCommand.cpp \
+    ui/commonCommands/cmdRegisterPlayer.cpp \
+    ui/commonCommands/cmdUnregisterPlayer.cpp \
+    ui/commonCommands/cmdRemovePlayerFromCategory.cpp \
+    ui/DlgSelectPlayer.cpp \
+    ui/commonCommands/cmdBulkAddPlayerToCat.cpp \
+    ui/commonCommands/cmdBulkRemovePlayersFromCat.cpp \
+    ui/commonCommands/cmdMoveOrCopyPlayerToCategory.cpp \
+    ui/MenuGenerator.cpp \
+    ui/commonCommands/cmdMoveOrCopyPairToCategory.cpp \
+    ui/DlgPickPlayerSex.cpp \
+    ui/commonCommands/cmdCreateNewPlayerInCat.cpp \
+    reports/commonReportElements/AbstractReportElement.cpp \
+    reports/commonReportElements/plotStandings.cpp \
+    reports/MatrixAndStandings.cpp \
+    reports/commonReportElements/MatchMatrix.cpp
 
 RESOURCES += \
     tournament.qrc
@@ -182,13 +225,15 @@ FORMS += \
     ui/DlgSeedingEditor.ui \
     ui/DlgTournamentSettings.ui \
     ui/GameResultWidget.ui \
-    ui/DlgMatchResult.ui
+    ui/DlgMatchResult.ui \
+    ui/DlgSelectPlayer.ui \
+    ui/DlgPickPlayerSex.ui
 
 TRANSLATIONS = tournament_de.ts
 
 win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../build-DatabaseOverlayLib-Desktop_Qt_MinGW_w64_64bit_MSYS2-Release/release/ -lDatabaseOverlayLib
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../build-DatabaseOverlayLib-Desktop_Qt_MinGW_w64_64bit_MSYS2-Debug/debug/ -lDatabaseOverlayLib
-else:unix:!macx: LIBS += -L$$PWD/../DatabaseOverlayLib/ -lDatabaseOverlayLib
+else:unix:!macx: LIBS += -L$$PWD/../build-DatabaseOverlayLib-Desktop_GCC-Debug/ -lDatabaseOverlayLib
 
 INCLUDEPATH += $$PWD/../DatabaseOverlayLib
 DEPENDPATH += $$PWD/../DatabaseOverlayLib

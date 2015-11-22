@@ -14,6 +14,7 @@ namespace QTournament
   constexpr char AbstractReport::RESULTSHEET_NAME_STYLE[];
   constexpr char AbstractReport::RESULTSHEET_TEAM_STYLE[];
   constexpr char AbstractReport::RESULTSHEET_GAMELABEL_STYLE[];
+  constexpr char AbstractReport::BOLD_STYLE[];
 
 AbstractReport::AbstractReport(TournamentDB* _db, const QString& _name)
   :db(_db), name(_name), cfg(KeyValueTab::getTab(db, TAB_CFG))
@@ -41,6 +42,20 @@ upSimpleReport AbstractReport::createEmptyReport_Portrait() const
 {
   SimpleReportLib::SimpleReportGenerator* rawResult = new SimpleReportLib::SimpleReportGenerator(
         A4_WIDTH__MM, A4_HEIGHT__MM, DEFAULT_MARGIN__MM);
+  rawResult->startNextPage();
+
+  upSimpleReport result = upSimpleReport(rawResult);
+  prepStyles(result);
+
+  return result;
+}
+
+//----------------------------------------------------------------------------
+
+upSimpleReport AbstractReport::createEmptyReport_Landscape() const
+{
+  SimpleReportLib::SimpleReportGenerator* rawResult = new SimpleReportLib::SimpleReportGenerator(
+        A4_HEIGHT__MM, A4_WIDTH__MM, DEFAULT_MARGIN__MM);
   rawResult->startNextPage();
 
   upSimpleReport result = upSimpleReport(rawResult);
@@ -81,6 +96,10 @@ void AbstractReport::prepStyles(upSimpleReport& rep) const
   auto style = rep->getTextStyle();
   style->setFontname(QLatin1Literal("Arial"));
   style->setFontSize_MM(2.0);
+
+  // bold font
+  style = rep->createChildTextStyle(BOLD_STYLE);
+  style->setBoldState(true);
 
   // headlines: 4 mm, bold
   style = rep->createChildTextStyle(HEADLINE_STYLE);

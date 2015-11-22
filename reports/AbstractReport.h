@@ -35,14 +35,16 @@ namespace QTournament
     static constexpr char RESULTSHEET_NAME_STYLE[] = "ResultSheet_Name";
     static constexpr char RESULTSHEET_TEAM_STYLE[] = "ResultSheet_Team";
     static constexpr char RESULTSHEET_GAMELABEL_STYLE[] = "ResultSheet_GameLabel";
+    static constexpr char BOLD_STYLE[] = "Bold";
 
     AbstractReport(TournamentDB* _db, const QString& _name);
     virtual ~AbstractReport();
 
-    virtual upSimpleReport regenerateReport() const { throw std::runtime_error("Unimplemented Method: regenerateReport"); };
+    virtual upSimpleReport regenerateReport() { throw std::runtime_error("Unimplemented Method: regenerateReport"); };
     virtual QStringList getReportLocators() const { throw std::runtime_error("Unimplemented Method: getReportLocators"); };
 
     upSimpleReport createEmptyReport_Portrait() const;
+    upSimpleReport createEmptyReport_Landscape() const;
 
     QString getName() const;
     void setHeaderAndHeadline(SimpleReportLib::SimpleReportGenerator* rep, const QString& headline, const QString& subHead=QString()) const;

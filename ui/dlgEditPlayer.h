@@ -19,6 +19,7 @@ class DlgEditPlayer : public QDialog
   Q_OBJECT
 public:
   DlgEditPlayer (QWidget *parent, Player* _selectedPlayer = nullptr);
+  DlgEditPlayer (QWidget *parent, SEX _sexPreset, const Category& _catPreset);
   virtual ~DlgEditPlayer ();
   QString getFirstName();
   QString getLastName();
@@ -33,13 +34,16 @@ private:
   void initFromPlayerData();
   void initTeamList();
   bool _hasNameChange;
-  void updateCatList(QHash<Category, CAT_ADD_STATE> catStatus);
+  void updateCatList(QHash<Category, CAT_ADD_STATE> catStatus, int preselectCatId = -1);
+
+  SEX sexPreset;
+  int presetCatId = -1;
 
 public slots:
   virtual void done (int result);
   
 private slots:
-  void onSexSelectionChanged();
+  void onSexSelectionChanged(int preselectCatId = -1);
 };
 
 #endif	/* _DLGEDITPLAYER_H */

@@ -45,6 +45,8 @@ public:
 public slots:
     void onBeginCreateCategory();
     void onEndCreateCategory(int newCatSeqNum);
+    void onBeginDeleteCategory(int catSeqNum);
+    void onEndDeleteCategory();
 
 };
 

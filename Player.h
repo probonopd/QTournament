@@ -8,6 +8,10 @@
 #ifndef PLAYER_H
 #define	PLAYER_H
 
+#include <memory>
+
+#include <QList>
+
 #include "GenericDatabaseObject.h"
 #include "GenericObjectManager.h"
 #include "TournamentDB.h"
@@ -16,7 +20,6 @@
 #include "Team.h"
 //#include "Category.h"
 
-#include <QList>
 
 namespace QTournament
 {
@@ -44,6 +47,7 @@ namespace QTournament
   };
 
   typedef QList<Player> PlayerList;
+  typedef unique_ptr<Player> upPlayer;
 
 }
 #endif	/* TEAM_H */

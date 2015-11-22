@@ -44,13 +44,17 @@ namespace QTournament
     unique_ptr<Player> getPlayerBySeqNum(int seqNum);
     bool hasPlayer(int id);
     Player getPlayer(int id);
+    unique_ptr<Player> getPlayer_up(int id) const;
     PlayerPair getPlayerPair(int id);
+    upPlayerPair getPlayerPair_up(int pairId) const;
 
     ERR canAcquirePlayerPairsForMatch(const Match& ma);
     ERR acquirePlayerPairsForMatch(const Match& ma);
     ERR releasePlayerPairsAfterMatch(const Match& ma);
 
     PlayerList determineActualPlayersForMatch(const Match& ma) const;
+
+    ERR setWaitForRegistration(const Player& p, bool waitForPlayerRegistration) const;
 
     static std::function<bool (Player&, Player&)> getPlayerSortFunction_byName();
 
@@ -66,7 +70,7 @@ namespace QTournament
     void beginCreatePlayer ();
     void endCreatePlayer (int newPlayerSeqNum);
     void playerRenamed (const Player& p);
-    void playerStatusChanged(int playerId, int playerSeqNum, OBJ_STATE fromState, OBJ_STATE toState);
+    void playerStatusChanged(int playerId, int playerSeqNum, OBJ_STATE fromState, OBJ_STATE toState) const;
     void beginDeletePlayer(int playerSeqNum) const;
     void endDeletePlayer() const;
   };
