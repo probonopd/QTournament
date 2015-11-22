@@ -28,7 +28,13 @@ private:
   QAction* actRegisterAll;
   QAction* actUnregisterAll;
 
+  unique_ptr<QMenu> extDatabaseMenu;
+  QAction* actImportFromExtDatabase;
+  QAction* actExportToExtDatabase;
+  QAction* actSyncAllToExtDatabase;
+
   void initRegistrationMenu();
+  void initExternalDatabaseMenu();
 
 public slots:
   void onCreatePlayerClicked();
@@ -38,6 +44,10 @@ public slots:
   void onTournamentClosed();
   void onRegisterAllTriggered();
   void onUnregisterAllTriggered();
+  void onImportFromExtDatabase();
+  void onExportToExtDatabase();
+  void onSyncAllToExtDatabase();
+  void onExternalDatabaseChanged();
 };
 
 #endif	/* _PLAYERTABWIDGET_H */

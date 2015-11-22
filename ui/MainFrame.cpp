@@ -147,6 +147,32 @@ void MainFrame::openTournament()
   tnmt = new Tournament(filename);
   emit tournamentOpened(tnmt);
   enableControls(true);
+
+  // open the external player database file, if configured
+  PlayerMngr* pm = Tournament::getPlayerMngr();
+  if (pm->hasExternalPlayerDatabaseConfigured())
+  {
+    ERR err = pm->openConfiguredExternalPlayerDatabase();
+
+    if (err == OK) return;
+
+    QString msg;
+    switch (err)
+    {
+    case EPD__NOT_FOUND:
+      msg = tr("Could not find the player database\n\n");
+      msg += pm->getExternalDatabaseName() + "\n\n";
+      msg += tr("Please make sure the file exists and is valid.");
+      break;
+
+    default:
+      msg = tr("The player database\n\n");
+      msg += pm->getExternalDatabaseName() + "\n\n";
+      msg += tr("is invalid.");
+    }
+
+    QMessageBox::warning(this, "Open player database", msg);
+  }
 }
 
 //----------------------------------------------------------------------------
@@ -165,6 +191,10 @@ void MainFrame::closeCurrentTournament()
   // close the tournament
   if (tnmt != nullptr)
   {
+    // disconnect from the external player database, if any
+    PlayerMngr* pm = Tournament::getPlayerMngr();
+    pm->closeExternalPlayerDatabase();
+
     // this emits a signal to inform everyone that the
     // current tournament is about to die
     tnmt->close();

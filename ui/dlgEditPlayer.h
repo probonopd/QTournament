@@ -11,6 +11,7 @@
 #include "ui_dlgEditPlayer.h"
 
 #include "Player.h"
+#include "ExternalPlayerDB.h"
 
 using namespace QTournament;
 
@@ -20,6 +21,7 @@ class DlgEditPlayer : public QDialog
 public:
   DlgEditPlayer (QWidget *parent, Player* _selectedPlayer = nullptr);
   DlgEditPlayer (QWidget *parent, SEX _sexPreset, const Category& _catPreset);
+  DlgEditPlayer (QWidget *parent, const ExternalPlayerDatabaseEntry& nameAndSexPreset);
   virtual ~DlgEditPlayer ();
   QString getFirstName();
   QString getLastName();

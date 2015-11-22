@@ -30,6 +30,16 @@
         </widget>
        </item>
        <item>
+        <widget class="QToolButton" name="btnExtDatabase">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="text">
+          <string>Player Database</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QToolButton" name="btnRegistration">
          <property name="text">
           <string>Registration</string>

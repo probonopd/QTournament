@@ -111,7 +111,10 @@ HEADERS += \
     reports/commonReportElements/plotStandings.h \
     reports/MatrixAndStandings.h \
     reports/commonReportElements/MatchMatrix.h \
-    ExternalPlayerDB.h
+    ExternalPlayerDB.h \
+    ui/commonCommands/cmdImportSinglePlayerFromExternalDatabase.h \
+    ui/DlgImportPlayer.h \
+    ui/commonCommands/cmdExportPlayerToExternalDatabase.h
 
 SOURCES += \
     Category.cpp \
@@ -206,7 +209,10 @@ SOURCES += \
     reports/commonReportElements/plotStandings.cpp \
     reports/MatrixAndStandings.cpp \
     reports/commonReportElements/MatchMatrix.cpp \
-    ExternalPlayerDB.cpp
+    ExternalPlayerDB.cpp \
+    ui/commonCommands/cmdImportSinglePlayerFromExternalDatabase.cpp \
+    ui/DlgImportPlayer.cpp \
+    ui/commonCommands/cmdExportPlayerToExternalDatabase.cpp
 
 RESOURCES += \
     tournament.qrc
@@ -229,7 +235,8 @@ FORMS += \
     ui/GameResultWidget.ui \
     ui/DlgMatchResult.ui \
     ui/DlgSelectPlayer.ui \
-    ui/DlgPickPlayerSex.ui
+    ui/DlgPickPlayerSex.ui \
+    ui/DlgImportPlayer.ui
 
 TRANSLATIONS = tournament_de.ts
 

@@ -46,6 +46,26 @@ DlgEditPlayer::DlgEditPlayer(QWidget *parent, SEX _sexPreset, const Category &_c
 
 //----------------------------------------------------------------------------
 
+DlgEditPlayer::DlgEditPlayer(QWidget* parent, const ExternalPlayerDatabaseEntry& nameAndSexPreset)
+  :QDialog(parent), _hasNameChange(true), selectedPlayer(nullptr), sexPreset(M), presetCatId(-1)
+{
+  ui.setupUi(this);
+
+  initTeamList();
+
+  // apply the preset from the external database
+  ui.leFirstName->setText(nameAndSexPreset.getFirstname());
+  ui.leLastName->setText(nameAndSexPreset.getLastname());
+  if (nameAndSexPreset.getSex() != DONT_CARE)
+  {
+    ui.rbFemale->setChecked(nameAndSexPreset.getSex() == F);
+    ui.rbMale->setChecked(nameAndSexPreset.getSex() == M);
+    onSexSelectionChanged();
+  }
+}
+
+//----------------------------------------------------------------------------
+
 DlgEditPlayer::~DlgEditPlayer()
 {
 }

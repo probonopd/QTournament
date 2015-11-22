@@ -500,6 +500,18 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
+  QString PlayerMngr::getExternalDatabaseName() const
+  {
+    if (!(hasExternalPlayerDatabaseConfigured()))
+    {
+      return QString();
+    }
+
+    return cfg.getString(CFG_KEY_EXT_PLAYER_DB);
+  }
+
+  //----------------------------------------------------------------------------
+
   ERR PlayerMngr::setExternalPlayerDatabase(const QString& fname, bool createNew)
   {
     upExternalPlayerDB extDb;
@@ -527,6 +539,8 @@ namespace QTournament
     // the new filename
     extPlayerDb = std::move(extDb);
     cfg.set(CFG_KEY_EXT_PLAYER_DB, fname);
+
+    emit externalPlayerDatabaseChanged();
 
     return OK;
   }
@@ -556,6 +570,8 @@ namespace QTournament
     // this operation automatically calls the destructor
     // of the underlying database object
     extPlayerDb.reset(nullptr);
+
+    emit externalPlayerDatabaseChanged();
   }
 
   //----------------------------------------------------------------------------
@@ -572,10 +588,20 @@ namespace QTournament
       return nullptr;
     }
 
-    // TODO: add the actual import
+    // check the ID's validity
+    auto extPlayer = extPlayerDb->getPlayer(extPlayerId);
+    if (extPlayer == nullptr)
+    {
+      if (err != nullptr)
+      {
+        *err = INVALID_ID;
+      }
+    }
+
+    // TODO: remove this function?
     if (err != nullptr)
     {
-      *err = EPD__NOT_OPENED;
+      *err = OK;
     }
 
     return nullptr;

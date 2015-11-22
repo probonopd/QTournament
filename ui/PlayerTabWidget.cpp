@@ -9,6 +9,8 @@
 
 #include "PlayerTabWidget.h"
 #include "MainFrame.h"
+#include "ui/commonCommands/cmdImportSinglePlayerFromExternalDatabase.h"
+#include "ui/commonCommands/cmdExportPlayerToExternalDatabase.h"
 
 PlayerTabWidget::PlayerTabWidget()
 :QWidget()
@@ -25,6 +27,9 @@ PlayerTabWidget::PlayerTabWidget()
 
   // initialize the registration popup menu
   initRegistrationMenu();
+
+  // initialize the external database popup menu
+  initExternalDatabaseMenu();
 }
 
 //----------------------------------------------------------------------------
@@ -51,6 +56,32 @@ void PlayerTabWidget::initRegistrationMenu()
   // assign the menu to the tool button
   ui.btnRegistration->setMenu(registrationMenu.get());
   ui.btnRegistration->setPopupMode(QToolButton::InstantPopup);
+}
+
+//----------------------------------------------------------------------------
+
+void PlayerTabWidget::initExternalDatabaseMenu()
+{
+  // prepare actions
+  actImportFromExtDatabase = new QAction(tr("Import player..."), this);
+  actExportToExtDatabase = new QAction(tr("Export selected player..."), this);
+  actSyncAllToExtDatabase = new QAction(tr("Sync all players to database"), this);
+
+  // create the context menu and connect it to the actions
+  extDatabaseMenu = unique_ptr<QMenu>(new QMenu());
+  extDatabaseMenu->addAction(actImportFromExtDatabase);
+  extDatabaseMenu->addSeparator();
+  extDatabaseMenu->addAction(actExportToExtDatabase);
+  extDatabaseMenu->addAction(actSyncAllToExtDatabase);
+
+  // connect actions and slots
+  connect(actImportFromExtDatabase, SIGNAL(triggered(bool)), this, SLOT(onImportFromExtDatabase()));
+  connect(actExportToExtDatabase, SIGNAL(triggered(bool)), this, SLOT(onExportToExtDatabase()));
+  connect(actSyncAllToExtDatabase, SIGNAL(triggered(bool)), this, SLOT(onSyncAllToExtDatabase()));
+
+  // assign the menu to the tool button
+  ui.btnExtDatabase->setMenu(extDatabaseMenu.get());
+  ui.btnExtDatabase->setPopupMode(QToolButton::InstantPopup);
 }
 
 //----------------------------------------------------------------------------
@@ -91,6 +122,10 @@ void PlayerTabWidget::onTournamentOpened()
   if (pm == nullptr) return;
   connect(pm, SIGNAL(endCreatePlayer(int)), this, SLOT(onPlayerCountChanged()));
   connect(pm, SIGNAL(endDeletePlayer()), this, SLOT(onPlayerCountChanged()));
+
+  // connect to the "external player database changed" signel emitted by the player manager
+  connect(pm, SIGNAL(externalPlayerDatabaseChanged()), this, SLOT(onExternalDatabaseChanged()), Qt::DirectConnection);
+
   onPlayerCountChanged();
 }
 
@@ -103,6 +138,8 @@ void PlayerTabWidget::onTournamentClosed()
   if (pm == nullptr) return;
   disconnect(pm, SIGNAL(endCreatePlayer(int)), this, SLOT(onPlayerCountChanged()));
   disconnect(pm, SIGNAL(endDeletePlayer()), this, SLOT(onPlayerCountChanged()));
+  disconnect(pm, SIGNAL(externalPlayerDatabaseChanged()), this, SLOT(onExternalDatabaseChanged()));
+
   onPlayerCountChanged();
 }
 
@@ -152,6 +189,58 @@ void PlayerTabWidget::onUnregisterAllTriggered()
 
     QMessageBox::information(this, "Unregister all", msg);
   }
+}
+
+//----------------------------------------------------------------------------
+
+void PlayerTabWidget::onImportFromExtDatabase()
+{
+  cmdImportSinglePlayerFromExternalDatabase cmd{this};
+
+  cmd.exec();
+}
+
+//----------------------------------------------------------------------------
+
+void PlayerTabWidget::onExportToExtDatabase()
+{
+  // check if any player is selected
+  auto selPlayer = ui.playerView->getSelectedPlayer();
+  if (selPlayer == nullptr)
+  {
+    QMessageBox::warning(this, tr("Export player"), tr("No player selected!"));
+    return;
+  }
+
+  cmdExportPlayerToExternalDatabase cmd{this, *selPlayer};
+  if (cmd.exec() == OK)
+  {
+    QMessageBox::information(this, tr("Export player"), tr("Player data successfully exported."));
+  }
+}
+
+//----------------------------------------------------------------------------
+
+void PlayerTabWidget::onSyncAllToExtDatabase()
+{
+  PlayerMngr* pm = Tournament::getPlayerMngr();
+
+  ERR err = pm->syncAllPlayersToExternalDatabase();
+  if (err != OK)
+  {
+    QMessageBox::warning(this, tr("Sync players"), tr("No database open!"));
+    return;
+  }
+
+  QMessageBox::information(this, tr("Sync players"), tr("Player data successfully synced."));
+}
+
+//----------------------------------------------------------------------------
+
+void PlayerTabWidget::onExternalDatabaseChanged()
+{
+  PlayerMngr* pm = Tournament::getPlayerMngr();
+  ui.btnExtDatabase->setEnabled(pm->hasExternalPlayerDatabaseOpen());
 }
 
 //----------------------------------------------------------------------------

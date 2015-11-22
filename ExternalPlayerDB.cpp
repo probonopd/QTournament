@@ -50,6 +50,8 @@ namespace QTournament
     auto cfg = KeyValueTab::getTab(result.get(), TAB_EPD_CFG);
     cfg.set(CFG_KEY_EPD_DB_VERSION, EXT_PLAYER_DB_VERSION);
 
+    result->setLogLevel(1);
+
     return result;
   }
 
@@ -61,7 +63,7 @@ namespace QTournament
     upExternalPlayerDB result;
     try
     {
-      auto rawPointer = new ExternalPlayerDB(fname, true);
+      auto rawPointer = new ExternalPlayerDB(fname, false);
       result = upExternalPlayerDB(rawPointer);
     }
     catch (exception e)
@@ -76,6 +78,8 @@ namespace QTournament
     {
       return nullptr;
     }
+
+    result->setLogLevel(1);
 
     return result;
   }

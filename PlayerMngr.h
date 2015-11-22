@@ -81,6 +81,7 @@ namespace QTournament
     bool hasExternalPlayerDatabaseOpen() const;
     bool hasExternalPlayerDatabaseConfigured() const;
     ExternalPlayerDB* getExternalPlayerDatabaseHandle() const;
+    QString getExternalDatabaseName() const;
 
     // creation, opening, closing
     ERR setExternalPlayerDatabase(const QString& fname, bool createNew);
@@ -105,6 +106,7 @@ namespace QTournament
     void playerStatusChanged(int playerId, int playerSeqNum, OBJ_STATE fromState, OBJ_STATE toState) const;
     void beginDeletePlayer(int playerSeqNum) const;
     void endDeletePlayer() const;
+    void externalPlayerDatabaseChanged();
   };
 }
 
