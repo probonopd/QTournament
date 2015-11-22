@@ -30,7 +30,7 @@ public slots:
   void onTournamentOpened(Tournament* _tnmt);
   void onTournamentClosed();
   void onTreeSelectionChanged();
-  void onBtnReloadClicked();
+  void onReloadRequested();
 
 private:
   Ui::ReportsTabWidget *ui;

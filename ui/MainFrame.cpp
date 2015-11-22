@@ -724,8 +724,20 @@ MainFrame* MainFrame::getMainFramePointer()
 
 void MainFrame::onCurrentTabChanged(int newCurrentTab)
 {
+  if (newCurrentTab < 0) return;
 
+  // get the newly selected tab widget
+  auto selectedTabWidget = ui.mainTab->currentWidget();
+  if (selectedTabWidget == nullptr) return;
+
+  // check if the new tab is the reports tab
+  if (selectedTabWidget == ui.tabReports)
+  {
+    ui.tabReports->onReloadRequested();
+  }
 }
+
+//----------------------------------------------------------------------------
 
 void MainFrame::onToggleTestMenuVisibility()
 {
