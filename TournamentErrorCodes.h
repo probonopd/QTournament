@@ -73,6 +73,12 @@ namespace QTournament
         INVALID_RANK,
         PLAYER_ALREADY_IN_MATCHES,
         NOT_ALL_PLAYERS_REGISTERED,
+        EPD__NOT_FOUND,
+        EPD__NOT_OPENED,
+        EPD__NOT_CONFIGURED,
+        EPD__CREATION_FAILED,
+        EPD__NO_SEX_FOR_PLAYER_DEFINED,
+        EPD__INVALID_DATABASE_NAME
     };
 }
 

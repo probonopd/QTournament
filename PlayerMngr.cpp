@@ -474,6 +474,116 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
+  bool PlayerMngr::hasExternalPlayerDatabaseOpen() const
+  {
+    return (extPlayerDb != nullptr);
+  }
+
+  //----------------------------------------------------------------------------
+
+  bool PlayerMngr::hasExternalPlayerDatabaseConfigured() const
+  {
+    if (!(cfg.hasKey(CFG_KEY_EXT_PLAYER_DB)))
+    {
+      return false;
+    }
+
+    return (!(cfg.getString(CFG_KEY_EXT_PLAYER_DB).isEmpty()));
+  }
+
+  //----------------------------------------------------------------------------
+
+  ExternalPlayerDB*PlayerMngr::getExternalPlayerDatabaseHandle() const
+  {
+    return ((extPlayerDb == nullptr) ? nullptr : extPlayerDb.get());
+  }
+
+  //----------------------------------------------------------------------------
+
+  ERR PlayerMngr::setExternalPlayerDatabase(const QString& fname, bool createNew)
+  {
+    upExternalPlayerDB extDb;
+
+    if (fname.isEmpty()) return EPD__INVALID_DATABASE_NAME;
+
+    // try to create the new database
+    if (createNew)
+    {
+      extDb = ExternalPlayerDB::createNew(fname);
+      if (extDb == nullptr) return EPD__CREATION_FAILED;
+    }
+    // try to open an existing database
+    else
+    {
+      extDb = ExternalPlayerDB::openExisting(fname);
+      if (extDb == nullptr) return EPD__NOT_FOUND;
+    }
+
+    // close the old database, if open
+    closeExternalPlayerDatabase();
+
+    // store the pointer to the new database and
+    // overwrite the database config key with
+    // the new filename
+    extPlayerDb = std::move(extDb);
+    cfg.set(CFG_KEY_EXT_PLAYER_DB, fname);
+
+    return OK;
+  }
+
+  //----------------------------------------------------------------------------
+
+  ERR PlayerMngr::openConfiguredExternalPlayerDatabase()
+  {
+    if (!(hasExternalPlayerDatabaseConfigured()))
+    {
+      return EPD__NOT_CONFIGURED;
+    }
+
+    QString playerDbName = cfg.getString(CFG_KEY_EXT_PLAYER_DB);
+
+    return setExternalPlayerDatabase(playerDbName, false);
+  }
+
+  //----------------------------------------------------------------------------
+
+  void PlayerMngr::closeExternalPlayerDatabase()
+  {
+    if (extPlayerDb == nullptr) return;
+
+    extPlayerDb->close();
+
+    // this operation automatically calls the destructor
+    // of the underlying database object
+    extPlayerDb.reset(nullptr);
+  }
+
+  //----------------------------------------------------------------------------
+
+  unique_ptr<Player> PlayerMngr::importPlayerFromExternalDatabase(ERR* err, int extPlayerId, SEX sexOverride) const
+  {
+    if (extPlayerDb == nullptr)
+    {
+      if (err != nullptr)
+      {
+        *err = EPD__NOT_OPENED;
+      }
+
+      return nullptr;
+    }
+
+    // TODO: add the actual import
+    if (err != nullptr)
+    {
+      *err = EPD__NOT_OPENED;
+    }
+
+    return nullptr;
+
+  }
+
+  //----------------------------------------------------------------------------
+
   ERR PlayerMngr::canDeletePlayer(const Player &p) const
   {
     // first check: see if we can remove the player from all categories

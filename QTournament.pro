@@ -110,7 +110,8 @@ HEADERS += \
     reports/commonReportElements/AbstractReportElement.h \
     reports/commonReportElements/plotStandings.h \
     reports/MatrixAndStandings.h \
-    reports/commonReportElements/MatchMatrix.h
+    reports/commonReportElements/MatchMatrix.h \
+    ExternalPlayerDB.h
 
 SOURCES += \
     Category.cpp \
@@ -204,7 +205,8 @@ SOURCES += \
     reports/commonReportElements/AbstractReportElement.cpp \
     reports/commonReportElements/plotStandings.cpp \
     reports/MatrixAndStandings.cpp \
-    reports/commonReportElements/MatchMatrix.cpp
+    reports/commonReportElements/MatchMatrix.cpp \
+    ExternalPlayerDB.cpp
 
 RESOURCES += \
     tournament.qrc

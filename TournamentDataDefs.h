@@ -48,7 +48,7 @@ namespace QTournament
 #define CFG_KEY_TNMT_NAME QString("TournamentName")
 #define CFG_KEY_TNMT_ORGA QString("OrganizingClub")
 #define CFG_KEY_USE_TEAMS QString("UseTeams")
-//#define CFG_KEY_ QString("")
+#define CFG_KEY_EXT_PLAYER_DB QString("ExternalPlayerDatabase")
 //#define CFG_KEY_ QString("")
 //#define CFG_KEY_ QString("")
 //#define CFG_KEY_ QString("")
