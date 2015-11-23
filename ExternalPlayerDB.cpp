@@ -159,15 +159,12 @@ namespace QTournament
 
   upExternalPlayerDatabaseEntry ExternalPlayerDB::getPlayer(const QString& fname, const QString& lname)
   {
-    QString where = "? = ? AND ? = ?";
-    QVariantList params;
-    params << EPD_PL_FNAME;
-    params << fname.trimmed();
-    params << EPD_PL_LNAME;
-    params << lname.trimmed();
+    QString where = "%1 = '%2' AND %3 = '%4'";
+    where = where.arg(EPD_PL_FNAME).arg(fname);
+    where = where.arg(EPD_PL_LNAME).arg(lname);
 
     DbTab playerTab = getTab(TAB_EPD_PLAYER);
-    if (playerTab.getMatchCountForWhereClause(where, params) != 1)
+    if (playerTab.getMatchCountForWhereClause(where) != 1)
     {
       return nullptr;
     }
