@@ -114,7 +114,8 @@ HEADERS += \
     ExternalPlayerDB.h \
     ui/commonCommands/cmdImportSinglePlayerFromExternalDatabase.h \
     ui/DlgImportPlayer.h \
-    ui/commonCommands/cmdExportPlayerToExternalDatabase.h
+    ui/commonCommands/cmdExportPlayerToExternalDatabase.h \
+    ui/commonCommands/cmdCreatePlayerFromDialog.h
 
 SOURCES += \
     Category.cpp \
@@ -212,7 +213,8 @@ SOURCES += \
     ExternalPlayerDB.cpp \
     ui/commonCommands/cmdImportSinglePlayerFromExternalDatabase.cpp \
     ui/DlgImportPlayer.cpp \
-    ui/commonCommands/cmdExportPlayerToExternalDatabase.cpp
+    ui/commonCommands/cmdExportPlayerToExternalDatabase.cpp \
+    ui/commonCommands/cmdCreatePlayerFromDialog.cpp
 
 RESOURCES += \
     tournament.qrc

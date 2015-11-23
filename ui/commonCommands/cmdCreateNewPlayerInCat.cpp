@@ -5,6 +5,7 @@
 #include "cmdCreateNewPlayerInCat.h"
 #include "ui/dlgEditPlayer.h"
 #include "ui/DlgPickPlayerSex.h"
+#include "cmdCreatePlayerFromDialog.h"
 
 cmdCreateNewPlayerInCat::cmdCreateNewPlayerInCat(QWidget* p, const Category& _cat)
   :AbstractCommand(p), cat(_cat)
@@ -45,58 +46,11 @@ ERR cmdCreateNewPlayerInCat::exec()
     return INVALID_SEX;
   }
 
-  // show a dialog for creating a new player
+  // prepare a dialog for creating a new player
   DlgEditPlayer dlgCreate{parentWidget, selectedSex, cat};
-  if (dlgCreate.exec() != QDialog::Accepted)
-  {
-    return OK;
-  }
 
-  // we can be sure that all selected data in the dialog
-  // is valid. That has been checked before the dialog
-  // returns with "Accept". So we can directly step
-  // into the creation of the new player
-  ERR e = Tournament::getPlayerMngr()->createNewPlayer(
-                                                       dlgCreate.getFirstName(),
-                                                       dlgCreate.getLastName(),
-                                                       dlgCreate.getSex(),
-                                                       dlgCreate.getTeam().getName()
-                                                       );
-
-  if (e != OK)
-  {
-    QString msg = tr("Something went wrong when inserting the player. This shouldn't happen.");
-    msg += tr("For the records: error code = ") + QString::number(static_cast<int>(e));
-    QMessageBox::warning(parentWidget, tr("WTF??"), msg);
-    return e;
-  }
-  Player p = Tournament::getPlayerMngr()->getPlayer(dlgCreate.getFirstName(), dlgCreate.getLastName());
-
-  // assign the player to the selected categories
-  //
-  // we can be sure that all selected categories in the dialog
-  // are valid. That has been checked upon creation of the "selectable"
-  // category entries. So we can directly step
-  // into the assignment of the categories
-  CatMngr* cmngr = Tournament::getCatMngr();
-
-  QHash<Category, bool> catSelection = dlgCreate.getCategoryCheckState();
-  QHash<Category, bool>::const_iterator it = catSelection.constBegin();
-
-  while (it != catSelection.constEnd()) {
-    if (it.value()) {
-      Category cat = it.key();
-      ERR e = cmngr->addPlayerToCategory(p, cat);
-
-      if (e != OK) {
-        QString msg = tr("Something went wrong when adding the player to a category. This shouldn't happen.");
-        msg += tr("For the records: error code = ") + QString::number(static_cast<int> (e));
-        QMessageBox::warning(parentWidget, tr("WTF??"), msg);
-      }
-    }
-    ++it;
-  }
-
-  return OK;
+  // let an external command do the rest of the work
+  cmdCreatePlayerFromDialog cmd{parentWidget, &dlgCreate};
+  return cmd.exec();
 }
 
