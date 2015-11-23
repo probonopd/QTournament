@@ -12,6 +12,8 @@
 #include "ui/commonCommands/cmdImportSinglePlayerFromExternalDatabase.h"
 #include "ui/commonCommands/cmdExportPlayerToExternalDatabase.h"
 #include "DlgBulkImportToExtDb.h"
+#include "ExternalPlayerDB.h"
+#include "DlgPickPlayerSex.h"
 
 PlayerTabWidget::PlayerTabWidget()
 :QWidget()
@@ -263,21 +265,140 @@ void PlayerTabWidget::onImportCSV()
   QString csv = dlg.getText();
   if (csv.isEmpty())
   {
-    QString msg = tr("No text proided.");
+    QString msg = tr("No text provided.");
     QMessageBox::warning(this, "Import CSV data", msg);
     return;
   }
-  int newCnt;
-  int skipCnt;
+  QList<int> newPlayerIds;
+  QList<int> skippedPlayerIds;
   int errorCnt;
-  tie(newCnt, skipCnt, errorCnt) = pm->getExternalPlayerDatabaseHandle()->bulkImportCSV(csv);
+  tie(newPlayerIds, skippedPlayerIds, errorCnt) = pm->getExternalPlayerDatabaseHandle()->bulkImportCSV(csv);
 
-  QString msg = tr("Import results:\n\n");
-  msg += tr("\t%1 names imported\n");
-  msg += tr("\t%2 names already existing and skipped\n");
-  msg += tr("\t%3 line with errors and ignored\n");
-  msg = msg.arg(newCnt).arg(skipCnt).arg(errorCnt);
-  QMessageBox::information(this, "Import CSV data", msg);
+  // do we actually have valid names in the list?
+  bool hasValidNames = ((newPlayerIds.length() + skippedPlayerIds.length()) > 0);
+
+  // did the user request an import to the tournament as well?
+  if (dlg.getTargetTeamId() > 0)
+  {
+    // stop here if don't have any valid names
+    if (!hasValidNames)
+    {
+      QString msg = tr("No valid names for the import to the\n");
+      msg += tr("external database and to the tournament found.");
+      QMessageBox::warning(this, "Import CSV data", msg);
+      return;
+    }
+
+    TeamMngr* tm = Tournament::getTeamMngr();
+    CatMngr* cm = Tournament::getCatMngr();
+
+    // get the team for adding the players to. The dialog
+    // guarantees that the ID is valid
+    int targetTeamId = dlg.getTargetTeamId();
+    Team targetTeam = tm->getTeamById(targetTeamId);
+    QString targetTeamName = targetTeam.getName();
+
+    // shall the players be added to a category as well?
+    unique_ptr<Category> targetCat;
+    if (dlg.getTargetCatId() > 0)
+    {
+      // The dialog guarantees that the ID is valid
+      targetCat = cm->getCategory(dlg.getTargetCatId());
+    }
+
+    // add the players one by one
+    QList<int> validExtPlayerIds{newPlayerIds};
+    validExtPlayerIds.append(skippedPlayerIds);
+    int dupeCnt = 0;
+    int skipCnt = 0;
+    int notAddedToCatCnt = 0;
+    auto extDb = pm->getExternalPlayerDatabaseHandle();
+    for (int extId : validExtPlayerIds)
+    {
+      auto extPlayer = extDb->getPlayer(extId);
+      if (extPlayer == nullptr) continue;  // shouldn't happen
+
+      // make sure the player has a valid sex assigned
+      SEX playerSex = extPlayer->getSex();
+      if (playerSex == DONT_CARE)
+      {
+        DlgPickPlayerSex dlg{this, extPlayer->getFirstname() + " " + extPlayer->getLastname()};
+        if (dlg.exec() != QDialog::Accepted)
+        {
+          skipCnt;
+          continue;
+        }
+
+        // update the database
+        playerSex = dlg.getSelectedSex();
+        extDb->updatePlayerSexIfUndefined(extId, playerSex);
+      }
+
+      // try to add the player to the tournament
+      ERR err = pm->createNewPlayer(extPlayer->getFirstname(), extPlayer->getLastname(), playerSex, targetTeamName);
+      if (err == NAME_EXISTS)
+      {
+        ++dupeCnt;
+      }
+      else if (err != OK)
+      {
+        // some other error occured and the player
+        // has not been added to the tournament
+        ++skipCnt;
+        continue;
+      }
+
+      // at this point, we can be sure the player
+      // is in the tournament.
+      // Add the player to a category as well?
+      if (targetCat != nullptr)
+      {
+        Player newPlayer = pm->getPlayer(extPlayer->getFirstname(), extPlayer->getLastname());
+        err = cm->addPlayerToCategory(newPlayer, *targetCat);
+        if ((err != OK) && (err != PLAYER_ALREADY_IN_CATEGORY))
+        {
+          ++notAddedToCatCnt;
+        }
+      }
+    }
+
+    // show a summary
+    QString msg = tr("Import results:\n\n");
+    msg += tr("\t%1 valid names found\n");
+    msg += tr("\t\t%2 newly imported\n");
+    msg += tr("\t\t%3 already existing in the player database\n");
+    msg += tr("\t%4 players newly added to the tournament\n");
+    msg += tr("\t%5 players were already in the tournament before the import\n");
+    if (targetCat != nullptr)
+    {
+      msg += tr("\tOf %1 valid players, %6 were added to category %7 and %8 not.");
+    }
+    msg += tr("\t%9 lines contained errors were ignored\n");
+    msg = msg.arg(validExtPlayerIds.length());
+    msg = msg.arg(newPlayerIds.length());
+    msg = msg.arg(skippedPlayerIds.length());
+    msg = msg.arg(validExtPlayerIds.length() - dupeCnt - skipCnt);
+    msg = msg.arg(dupeCnt);
+    if (targetCat != nullptr)
+    {
+      msg = msg.arg(validExtPlayerIds.length() - notAddedToCatCnt);
+      msg = msg.arg(targetCat->getName());
+      msg = msg.arg(notAddedToCatCnt);
+    }
+    msg = msg.arg(errorCnt);
+    QMessageBox::information(this, "Import CSV data", msg);
+  }
+  else
+  {
+    // the user chose to simply import players to the external
+    // database, not to the tournament. Display a short import summary
+    QString msg = tr("Import results:\n\n");
+    msg += tr("\t%1 names imported\n");
+    msg += tr("\t%2 names already existing and skipped\n");
+    msg += tr("\t%3 line with errors and ignored\n");
+    msg = msg.arg(newPlayerIds.length()).arg(skippedPlayerIds.length()).arg(errorCnt);
+    QMessageBox::information(this, "Import CSV data", msg);
+  }
 }
 
 //----------------------------------------------------------------------------

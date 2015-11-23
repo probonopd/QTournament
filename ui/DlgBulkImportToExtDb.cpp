@@ -4,6 +4,11 @@
 
 #include "DlgBulkImportToExtDb.h"
 #include "ui_DlgBulkImportToExtDb.h"
+#include "Tournament.h"
+#include "TeamMngr.h"
+#include "CatMngr.h"
+
+using namespace QTournament;
 
 DlgBulkImportToExtDb::DlgBulkImportToExtDb(QWidget *parent) :
   QDialog(parent),
@@ -11,18 +16,141 @@ DlgBulkImportToExtDb::DlgBulkImportToExtDb(QWidget *parent) :
 {
   ui->setupUi(this);
 
-  // prepare a new text document and assign
-  // it to the text edit widget
-  //doc = make_unique<QTextDocument>(this);
-  //ui->textEdit->setDocument(doc.get());  // the text edit doesn't take ownership
+  initDropBoxes();
 }
+
+//----------------------------------------------------------------------------
 
 DlgBulkImportToExtDb::~DlgBulkImportToExtDb()
 {
   delete ui;
 }
 
+//----------------------------------------------------------------------------
+
 QString DlgBulkImportToExtDb::getText() const
 {
   return ui->textEdit->document()->toPlainText();
+}
+
+//----------------------------------------------------------------------------
+
+int DlgBulkImportToExtDb::getTargetTeamId() const
+{
+  if (ui->cbAddToTournament->isChecked())
+  {
+    // this value is guaranteed to be valid, otherwise
+    // the user couldn't have clicked the "import" button
+    return ui->cbTeam->currentData().toInt();
+  }
+
+  return -1;
+}
+
+//----------------------------------------------------------------------------
+
+int DlgBulkImportToExtDb::getTargetCatId() const
+{
+  if (ui->cbAddToCat->isChecked())
+  {
+    // this value is guaranteed to be valid, otherwise
+    // the user couldn't have clicked the "import" button
+    return ui->cbCat->currentData().toInt();
+  }
+
+  return -1;
+}
+
+//----------------------------------------------------------------------------
+
+void DlgBulkImportToExtDb::initDropBoxes()
+{
+  // prepare a list of all teams
+  ui->cbTeam->clear();
+  TeamMngr* tm = Tournament::getTeamMngr();
+  auto teamList = tm->getAllTeams();
+  std::sort(teamList.begin(), teamList.end(), [](Team& t1, Team& t2) {
+    return t1.getName() < t2.getName();
+  });
+  ui->cbTeam->addItem(tr("<Select team>"), -1);
+  for (const Team& team : teamList)
+  {
+    ui->cbTeam->addItem(team.getName(), team.getId());
+  }
+
+  // prepare a list of all categories
+  // that can potentially joined by new players
+  ui->cbCat->clear();
+  CatMngr* cm = Tournament::getCatMngr();
+  auto catList = cm->getAllCategories();
+  std::sort(catList.begin(), catList.end(), [](Category& c1, Category& c2) {
+    return c1.getName() < c2.getName();
+  });
+  ui->cbCat->addItem(tr("<Select category>"), -1);
+  for (const Category& cat : catList)
+  {
+    if (!(cat.canAddPlayers())) continue;
+    ui->cbCat->addItem(cat.getName(), cat.getId());
+  }
+}
+
+//----------------------------------------------------------------------------
+
+void DlgBulkImportToExtDb::onTournamentAddStateChanged()
+{
+  bool isOn = ui->cbAddToTournament->isChecked();
+
+  ui->cbTeam->setEnabled(isOn);
+  ui->cbAddToCat->setEnabled(isOn);
+
+  updateImportButton();
+}
+
+//----------------------------------------------------------------------------
+
+void DlgBulkImportToExtDb::onCategoryAddStateChanged()
+{
+  bool isOn = ui->cbAddToCat->isChecked();
+  ui->cbCat->setEnabled(isOn);
+
+  updateImportButton();
+}
+
+//----------------------------------------------------------------------------
+
+void DlgBulkImportToExtDb::onTeamSelectionChanged()
+{
+  updateImportButton();
+}
+
+//----------------------------------------------------------------------------
+
+void DlgBulkImportToExtDb::onCatSelectionChanged()
+{
+  updateImportButton();
+}
+
+void DlgBulkImportToExtDb::updateImportButton()
+{
+  bool doTeamImport = ui->cbAddToTournament->isChecked();
+  bool hasValidTeam = (ui->cbTeam->currentData().toInt() > 0);
+  bool doCatImport = ui->cbAddToCat->isChecked();
+  bool hasValidCat = (ui->cbCat->currentData().toInt() > 0);
+
+  bool permitImport = false;
+
+  if (!doTeamImport && !doCatImport)
+  {
+    permitImport = true;
+  }
+  else if (doTeamImport && !doCatImport && hasValidTeam)
+  {
+    permitImport = true;
+  }
+  else if (doTeamImport && hasValidTeam && doCatImport && hasValidCat)
+  {
+    permitImport = true;
+  }
+
+  ui->btnImport->setEnabled(permitImport);
 }

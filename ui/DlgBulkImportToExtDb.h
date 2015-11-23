@@ -20,10 +20,19 @@ public:
   explicit DlgBulkImportToExtDb(QWidget *parent = 0);
   ~DlgBulkImportToExtDb();
   QString getText() const;
+  int getTargetTeamId() const;
+  int getTargetCatId() const;
 
 private:
   Ui::DlgBulkImportToExtDb *ui;
-  unique_ptr<QTextDocument> doc;
+  void initDropBoxes();
+
+private slots:
+  void onTournamentAddStateChanged();
+  void onCategoryAddStateChanged();
+  void onTeamSelectionChanged();
+  void onCatSelectionChanged();
+  void updateImportButton();
 };
 
 #endif // DLGBULKIMPORTTOEXTDB_H

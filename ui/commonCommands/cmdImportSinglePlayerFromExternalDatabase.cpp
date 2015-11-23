@@ -59,7 +59,7 @@ ERR cmdImportSinglePlayerFromExternalDatabase::exec()
   upExternalPlayerDatabaseEntry finalPlayerData;
   if (extPlayer->getSex() == DONT_CARE)
   {
-    DlgPickPlayerSex dlgPickSex{parentWidget};
+    DlgPickPlayerSex dlgPickSex{parentWidget, extPlayer->getFirstname() + " " + extPlayer->getLastname()};
     if (dlgPickSex.exec() != QDialog::Accepted)
     {
       return OK;

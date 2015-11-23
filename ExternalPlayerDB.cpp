@@ -233,11 +233,11 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  tuple<int, int, int> ExternalPlayerDB::bulkImportCSV(const QString& csv)
+  tuple<QList<int>, QList<int>, int> ExternalPlayerDB::bulkImportCSV(const QString& csv)
   {
-    int newCnt = 0;
-    int skipCnt = 0;
     int errorCnt = 0;
+    QList<int> newExtPlayerIds;
+    QList<int> skippedPlayerIds;
 
     for (QString line : csv.split("\n"))
     {
@@ -278,9 +278,10 @@ namespace QTournament
       }
 
       // check if the player name already exists
-      if (hasPlayer(fName, lName))
+      auto existingPlayer = getPlayer(fName, lName);
+      if (existingPlayer != nullptr)
       {
-        ++skipCnt;
+        skippedPlayerIds.push_back(existingPlayer->getId());
         continue;
       }
 
@@ -289,10 +290,10 @@ namespace QTournament
       auto newPlayer = storeNewPlayer(entry);
       if (newPlayer == nullptr) ++errorCnt;
 
-      ++newCnt;
+      newExtPlayerIds.push_back(newPlayer->getId());
     }
 
-    return make_tuple(newCnt, skipCnt, errorCnt);
+    return make_tuple(newExtPlayerIds, skippedPlayerIds, errorCnt);
   }
 
   //----------------------------------------------------------------------------

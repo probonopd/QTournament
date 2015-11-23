@@ -27,6 +27,45 @@
       <widget class="QPlainTextEdit" name="textEdit"/>
      </item>
      <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <item>
+        <widget class="QCheckBox" name="cbAddToTournament">
+         <property name="text">
+          <string>also add all valid players to the tournament</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="cbTeam">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_3">
+       <item>
+        <widget class="QCheckBox" name="cbAddToCat">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="text">
+          <string>also add all valid player to this category:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="cbCat">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
       <layout class="QHBoxLayout" name="horizontalLayout">
        <item>
         <widget class="QPushButton" name="btnCancel">
@@ -38,7 +77,7 @@
        <item>
         <widget class="QPushButton" name="btnImport">
          <property name="text">
-          <string>Import to database</string>
+          <string>Import</string>
          </property>
         </widget>
        </item>
@@ -82,5 +121,75 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>cbAddToTournament</sender>
+   <signal>stateChanged(int)</signal>
+   <receiver>DlgBulkImportToExtDb</receiver>
+   <slot>onTournamentAddStateChanged()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>185</x>
+     <y>485</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>362</x>
+     <y>283</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cbAddToCat</sender>
+   <signal>stateChanged(int)</signal>
+   <receiver>DlgBulkImportToExtDb</receiver>
+   <slot>onCategoryAddStateChanged()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>185</x>
+     <y>515</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>362</x>
+     <y>283</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cbCat</sender>
+   <signal>currentIndexChanged(int)</signal>
+   <receiver>DlgBulkImportToExtDb</receiver>
+   <slot>onCatSelectionChanged()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>540</x>
+     <y>515</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>362</x>
+     <y>283</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cbTeam</sender>
+   <signal>currentIndexChanged(int)</signal>
+   <receiver>DlgBulkImportToExtDb</receiver>
+   <slot>onTeamSelectionChanged()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>540</x>
+     <y>485</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>362</x>
+     <y>283</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
+ <slots>
+  <slot>onTournamentAddStateChanged()</slot>
+  <slot>onCategoryAddStateChanged()</slot>
+  <slot>onCatSelectionChanged()</slot>
+  <slot>onTeamSelectionChanged()</slot>
+ </slots>
 </ui>

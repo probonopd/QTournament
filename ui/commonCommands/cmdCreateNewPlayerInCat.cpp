@@ -28,7 +28,7 @@ ERR cmdCreateNewPlayerInCat::exec()
   }
 
   // show a dialog for selecting the new player's sex
-  DlgPickPlayerSex dlgSex{parentWidget};
+  DlgPickPlayerSex dlgSex{parentWidget, QString()};
   if (dlgSex.exec() != QDialog::Accepted)
   {
     return OK;

@@ -1,13 +1,19 @@
 #include "DlgPickPlayerSex.h"
 #include "ui_DlgPickPlayerSex.h"
 
-DlgPickPlayerSex::DlgPickPlayerSex(QWidget *parent) :
+DlgPickPlayerSex::DlgPickPlayerSex(QWidget *parent, const QString& playerName) :
   QDialog(parent),
   ui(new Ui::DlgPickPlayerSex)
 {
   ui->setupUi(this);
 
-
+  if (playerName.isEmpty())
+  {
+    ui->lblHeadline->setVisible(false);
+    ui->lblName->setVisible(false);
+  } else {
+    ui->lblName->setText(playerName);
+  }
 }
 
 DlgPickPlayerSex::~DlgPickPlayerSex()

@@ -16,7 +16,7 @@ class DlgPickPlayerSex : public QDialog
   Q_OBJECT
 
 public:
-  explicit DlgPickPlayerSex(QWidget *parent = 0);
+  explicit DlgPickPlayerSex(QWidget *parent, const QString& playerName);
   ~DlgPickPlayerSex();
   SEX getSelectedSex();
 
