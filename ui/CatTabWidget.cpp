@@ -352,6 +352,7 @@ void CatTabWidget::initContextMenu()
   actAddPlayer = new QAction(tr("Add player(s)..."), this);
   actBulkRemovePlayers = new QAction(tr("Remove player(s)..."), this);
   actCreateNewPlayerInCat = new QAction(tr("Create new player in this category..."), this);
+  actImportPlayerToCat = new QAction(tr("Import player to this category..."), this);
 
   // create the context menu and connect it to the actions
   lwUnpairedContextMenu = unique_ptr<QMenu>(new QMenu());
@@ -368,6 +369,7 @@ void CatTabWidget::initContextMenu()
   lwUnpairedContextMenu->addSeparator();
   lwUnpairedContextMenu->addAction(actAddPlayer);
   lwUnpairedContextMenu->addAction(actCreateNewPlayerInCat);
+  lwUnpairedContextMenu->addAction(actImportPlayerToCat);
   lwUnpairedContextMenu->addAction(actBulkRemovePlayers);
 
   // connect signals and slots
@@ -377,6 +379,7 @@ void CatTabWidget::initContextMenu()
   connect(actAddPlayer, SIGNAL(triggered(bool)), this, SLOT(onAddPlayerToCat()));
   connect(actBulkRemovePlayers, SIGNAL(triggered(bool)), this, SLOT(onBulkRemovePlayersFromCat()));
   connect(actCreateNewPlayerInCat, SIGNAL(triggered(bool)), this, SLOT(onCreatePlayer()));
+  connect(actImportPlayerToCat, SIGNAL(triggered(bool)), this, SLOT(onImportPlayer()));
 
 
   //
@@ -875,7 +878,14 @@ void CatTabWidget::onUnpairedContextMenuRequested(const QPoint& pos)
   }
 
   bool isPlayerClicked = (selPlayer != nullptr);
+
   bool hasCatSelected = ui.catTableView->hasCategorySelected();
+  bool canAddPlayers = false;
+  if (hasCatSelected)
+  {
+    Category cat = ui.catTableView->getSelectedCategory();
+    canAddPlayers = cat.canAddPlayers();
+  }
 
   // rebuild dynamic submenus
   MenuGenerator::allCategories(listOfCats_CopyPlayerSubmenu.get());
@@ -887,8 +897,9 @@ void CatTabWidget::onUnpairedContextMenuRequested(const QPoint& pos)
   actUnregister->setEnabled(plStat == STAT_PL_IDLE);
   listOfCats_CopyPlayerSubmenu->setEnabled(isPlayerClicked);
   listOfCats_MovePlayerSubmenu->setEnabled(isPlayerClicked);
-  actCreateNewPlayerInCat->setEnabled(hasCatSelected);
-  actAddPlayer->setEnabled(hasCatSelected);
+  actCreateNewPlayerInCat->setEnabled(hasCatSelected && canAddPlayers);
+  actAddPlayer->setEnabled(canAddPlayers);
+  actImportPlayerToCat->setEnabled(canAddPlayers && Tournament::getPlayerMngr()->hasExternalPlayerDatabaseOpen());
   actBulkRemovePlayers->setEnabled(hasCatSelected);
 
   // show the context menu
@@ -1038,6 +1049,11 @@ void CatTabWidget::onCopyOrMovePair(const PlayerPair& selPair, int targetCatId, 
 void CatTabWidget::onCreatePlayer()
 {
   ui.catTableView->onCreatePlayer();
+}
+
+void CatTabWidget::onImportPlayer()
+{
+  ui.catTableView->onImportPlayer();
 }
 
 //----------------------------------------------------------------------------
