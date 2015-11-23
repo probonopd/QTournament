@@ -11,11 +11,12 @@ using namespace QTournament;
 class cmdImportSinglePlayerFromExternalDatabase : public AbstractCommand, public QObject
 {
 public:
-  cmdImportSinglePlayerFromExternalDatabase(QWidget* p);
+  cmdImportSinglePlayerFromExternalDatabase(QWidget* p, int _preselectedCatId=-1);
   virtual ERR exec() override;
   virtual ~cmdImportSinglePlayerFromExternalDatabase() {}
 
 protected:
+  int preselectedCatId;
 };
 
 #endif // CMDIMPORTSINGLEPLAYERFROMEXTERNALDATABASE_H

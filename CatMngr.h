@@ -8,6 +8,11 @@
 #ifndef CATMNGR_H
 #define	CATMNGR_H
 
+#include <memory>
+
+#include <QList>
+#include <QHash>
+
 #include "TournamentDataDefs.h"
 #include "TournamentErrorCodes.h"
 #include "DbTab.h"
@@ -15,9 +20,6 @@
 #include "Category.h"
 #include "PlayerPair.h"
 #include "ThreadSafeQueue.h"
-
-#include <QList>
-#include <QHash>
 
 using namespace dbOverlay;
 
@@ -41,6 +43,7 @@ namespace QTournament
 
     // getters
     Category getCategory(const QString& name);
+    unique_ptr<Category> getCategory(int id);
     Category getCategoryById(int id);
     Category getCategoryBySeqNum(int seqNum);
     QList<Category> getAllCategories();

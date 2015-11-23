@@ -18,6 +18,7 @@
 #include "ui/commonCommands/cmdBulkAddPlayerToCat.h"
 #include "ui/commonCommands/cmdBulkRemovePlayersFromCat.h"
 #include "ui/commonCommands/cmdCreateNewPlayerInCat.h"
+#include "ui/commonCommands/cmdImportSinglePlayerFromExternalDatabase.h"
 
 #include "CatMngr.h"
 
@@ -524,6 +525,19 @@ void CategoryTableView::onCreatePlayer()
 
 //----------------------------------------------------------------------------
 
+void CategoryTableView::onImportPlayer()
+{
+  if (!(hasCategorySelected()))
+  {
+    return;
+  }
+
+  cmdImportSinglePlayerFromExternalDatabase cmd{this, getSelectedCategory().getId()};
+  cmd.exec();
+}
+
+//----------------------------------------------------------------------------
+
 void CategoryTableView::handleIntermediateSeedingForSelectedCat()
 {
   if (!(hasCategorySelected())) return;
@@ -628,6 +642,7 @@ void CategoryTableView::onContextMenuRequested(const QPoint& pos)
   actRemoveCategory->setEnabled(isCellClicked && (catState == STAT_CAT_CONFIG));
   actCloneCategory->setEnabled(isCellClicked);
   actAddPlayer->setEnabled(canAddPlayers);
+  actImportPlayerToCat->setEnabled(canAddPlayers && Tournament::getPlayerMngr()->hasExternalPlayerDatabaseOpen());
   actRemovePlayer->setEnabled(isCellClicked);
   actCreateNewPlayerInCat->setEnabled(canAddPlayers);   // TODO: this could be too restrictive for future purposes (e.g., random matches)
 
@@ -647,6 +662,7 @@ void CategoryTableView::initContextMenu()
   actAddPlayer = new QAction(tr("Add existing player(s)..."), this);
   actRemovePlayer = new QAction(tr("Remove player(s) from category..."), this);
   actCreateNewPlayerInCat = new QAction(tr("Create new player in this category..."), this);
+  actImportPlayerToCat = new QAction(tr("Import player to this category..."), this);
 
   // create the context menu and connect it to the actions
   contextMenu = unique_ptr<QMenu>(new QMenu());
@@ -659,6 +675,7 @@ void CategoryTableView::initContextMenu()
   contextMenu->addSeparator();
   contextMenu->addAction(actAddPlayer);
   contextMenu->addAction(actCreateNewPlayerInCat);
+  contextMenu->addAction(actImportPlayerToCat);
   contextMenu->addAction(actRemovePlayer);
 
   // connect signals and slots
@@ -669,6 +686,7 @@ void CategoryTableView::initContextMenu()
   connect(actAddPlayer, SIGNAL(triggered(bool)), this, SLOT(onAddPlayers()));
   connect(actRemovePlayer, SIGNAL(triggered(bool)), this, SLOT(onRemovePlayers()));
   connect(actCreateNewPlayerInCat, SIGNAL(triggered(bool)), this, SLOT(onCreatePlayer()));
+  connect(actImportPlayerToCat, SIGNAL(triggered(bool)), this, SLOT(onImportPlayer()));
 }
 //----------------------------------------------------------------------------
     

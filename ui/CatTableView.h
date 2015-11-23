@@ -36,6 +36,7 @@ public slots:
   void onAddPlayers();
   void onRemovePlayers();
   void onCreatePlayer();
+  void onImportPlayer();
   
 private slots:
   void onContextMenuRequested(const QPoint& pos);
@@ -52,6 +53,7 @@ private:
   QAction* actAddPlayer;
   QAction* actRemovePlayer;
   QAction* actCreateNewPlayerInCat;
+  QAction* actImportPlayerToCat;
 
   void initContextMenu();
 

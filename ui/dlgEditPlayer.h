@@ -21,7 +21,7 @@ class DlgEditPlayer : public QDialog
 public:
   DlgEditPlayer (QWidget *parent, Player* _selectedPlayer = nullptr);
   DlgEditPlayer (QWidget *parent, SEX _sexPreset, const Category& _catPreset);
-  DlgEditPlayer (QWidget *parent, const ExternalPlayerDatabaseEntry& nameAndSexPreset);
+  DlgEditPlayer (QWidget *parent, const ExternalPlayerDatabaseEntry& nameAndSexPreset, int _presetCatId=-1);
   virtual ~DlgEditPlayer ();
   QString getFirstName();
   QString getLastName();

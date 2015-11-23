@@ -1037,13 +1037,7 @@ void CatTabWidget::onCopyOrMovePair(const PlayerPair& selPair, int targetCatId, 
 
 void CatTabWidget::onCreatePlayer()
 {
-  if (!(ui.catTableView->hasCategorySelected()))
-  {
-    return;
-  }
-
-  cmdCreateNewPlayerInCat cmd{this, ui.catTableView->getSelectedCategory()};
-  cmd.exec();
+  ui.catTableView->onCreatePlayer();
 }
 
 //----------------------------------------------------------------------------

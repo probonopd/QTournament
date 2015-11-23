@@ -46,8 +46,8 @@ DlgEditPlayer::DlgEditPlayer(QWidget *parent, SEX _sexPreset, const Category &_c
 
 //----------------------------------------------------------------------------
 
-DlgEditPlayer::DlgEditPlayer(QWidget* parent, const ExternalPlayerDatabaseEntry& nameAndSexPreset)
-  :QDialog(parent), _hasNameChange(true), selectedPlayer(nullptr), sexPreset(M), presetCatId(-1)
+DlgEditPlayer::DlgEditPlayer(QWidget* parent, const ExternalPlayerDatabaseEntry& nameAndSexPreset, int _presetCatId)
+  :QDialog(parent), _hasNameChange(true), selectedPlayer(nullptr), sexPreset(M), presetCatId(_presetCatId)
 {
   ui.setupUi(this);
 
@@ -60,7 +60,7 @@ DlgEditPlayer::DlgEditPlayer(QWidget* parent, const ExternalPlayerDatabaseEntry&
   {
     ui.rbFemale->setChecked(nameAndSexPreset.getSex() == F);
     ui.rbMale->setChecked(nameAndSexPreset.getSex() == M);
-    onSexSelectionChanged();
+    onSexSelectionChanged(presetCatId);
   }
 }
 

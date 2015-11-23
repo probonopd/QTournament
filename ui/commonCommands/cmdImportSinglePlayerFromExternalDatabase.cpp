@@ -8,8 +8,8 @@
 #include "ui/dlgEditPlayer.h"
 #include "cmdCreatePlayerFromDialog.h"
 
-cmdImportSinglePlayerFromExternalDatabase::cmdImportSinglePlayerFromExternalDatabase(QWidget* p)
-  :AbstractCommand(p)
+cmdImportSinglePlayerFromExternalDatabase::cmdImportSinglePlayerFromExternalDatabase(QWidget* p, int _preselectedCatId)
+  :AbstractCommand(p), preselectedCatId(_preselectedCatId)
 {
 
 }
@@ -74,10 +74,32 @@ ERR cmdImportSinglePlayerFromExternalDatabase::exec()
     finalPlayerData = std::move(extPlayer);
   }
 
+  // make sure the player's sex fits to a possibly preselected
+  // category
+  if (preselectedCatId > 0)
+  {
+    CatMngr* cm = Tournament::getCatMngr();
+    auto cat = cm->getCategory(preselectedCatId);
+
+    // was the provided ID valid? If not, invalidate it
+    if (cat == nullptr) preselectedCatId = -1;
+
+    // may we add a player of the selected sex to this category?
+    SEX selSex = finalPlayerData->getSex();
+    if (cat->getAddState(selSex) != CAN_JOIN)
+    {
+      QString msg = tr("%1 cannot be added to this category.");
+      msg = msg.arg((selSex == M) ? "A male player" : "A female player");
+      QMessageBox::warning(parentWidget, tr("Import player"), msg);
+      return INVALID_SEX;
+    }
+  }
+
+
   // now we have all player details, so we can prepare
   // the insert-player-dialog to allow the user the
   // selection of a team and possible category assignments
-  DlgEditPlayer dlgCreate{parentWidget, *finalPlayerData};
+  DlgEditPlayer dlgCreate{parentWidget, *finalPlayerData, preselectedCatId};
 
   // let an external command do the rest of the work
   cmdCreatePlayerFromDialog cmd{parentWidget, &dlgCreate};

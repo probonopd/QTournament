@@ -188,6 +188,13 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
+  unique_ptr<Category> CatMngr::getCategory(int id)
+  {
+    return getSingleObjectByColumnValue<Category>(catTab, "id", id);
+  }
+
+//----------------------------------------------------------------------------
+
   /**
    * Returns a list of all categories
    *
