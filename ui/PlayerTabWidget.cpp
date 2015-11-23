@@ -11,6 +11,7 @@
 #include "MainFrame.h"
 #include "ui/commonCommands/cmdImportSinglePlayerFromExternalDatabase.h"
 #include "ui/commonCommands/cmdExportPlayerToExternalDatabase.h"
+#include "DlgBulkImportToExtDb.h"
 
 PlayerTabWidget::PlayerTabWidget()
 :QWidget()
@@ -71,6 +72,7 @@ void PlayerTabWidget::initExternalDatabaseMenu()
   actImportFromExtDatabase = new QAction(tr("Import player..."), this);
   actExportToExtDatabase = new QAction(tr("Export selected player..."), this);
   actSyncAllToExtDatabase = new QAction(tr("Sync all players to database"), this);
+  actImportCSV = new QAction(tr("Import CSV data to database"), this);
 
   // create the context menu and connect it to the actions
   extDatabaseMenu = unique_ptr<QMenu>(new QMenu());
@@ -78,11 +80,14 @@ void PlayerTabWidget::initExternalDatabaseMenu()
   extDatabaseMenu->addSeparator();
   extDatabaseMenu->addAction(actExportToExtDatabase);
   extDatabaseMenu->addAction(actSyncAllToExtDatabase);
+  extDatabaseMenu->addSeparator();
+  extDatabaseMenu->addAction(actImportCSV);
 
   // connect actions and slots
   connect(actImportFromExtDatabase, SIGNAL(triggered(bool)), this, SLOT(onImportFromExtDatabase()));
   connect(actExportToExtDatabase, SIGNAL(triggered(bool)), this, SLOT(onExportToExtDatabase()));
   connect(actSyncAllToExtDatabase, SIGNAL(triggered(bool)), this, SLOT(onSyncAllToExtDatabase()));
+  connect(actImportCSV, SIGNAL(triggered(bool)), this, SLOT(onImportCSV()));
 
   // assign the menu to the tool button
   ui.btnExtDatabase->setMenu(extDatabaseMenu.get());
@@ -235,6 +240,44 @@ void PlayerTabWidget::onPlayerSelectionChanged(const QItemSelection&, const QIte
   auto selPlayer = ui.playerView->getSelectedPlayer();
 
   actExportToExtDatabase->setEnabled(selPlayer != nullptr);
+}
+
+//----------------------------------------------------------------------------
+
+void PlayerTabWidget::onImportCSV()
+{
+  PlayerMngr* pm = Tournament::getPlayerMngr();
+  if (!(pm->hasExternalPlayerDatabaseOpen()))
+  {
+    return;
+  }
+
+  // display a dialog for data input
+  DlgBulkImportToExtDb dlg{this};
+  if (dlg.exec() != QDialog::Accepted)
+  {
+    return;
+  }
+
+  // trigger the bulk import and display results
+  QString csv = dlg.getText();
+  if (csv.isEmpty())
+  {
+    QString msg = tr("No text proided.");
+    QMessageBox::warning(this, "Import CSV data", msg);
+    return;
+  }
+  int newCnt;
+  int skipCnt;
+  int errorCnt;
+  tie(newCnt, skipCnt, errorCnt) = pm->getExternalPlayerDatabaseHandle()->bulkImportCSV(csv);
+
+  QString msg = tr("Import results:\n\n");
+  msg += tr("\t%1 names imported\n");
+  msg += tr("\t%2 names already existing and skipped\n");
+  msg += tr("\t%3 line with errors and ignored\n");
+  msg = msg.arg(newCnt).arg(skipCnt).arg(errorCnt);
+  QMessageBox::information(this, "Import CSV data", msg);
 }
 
 //----------------------------------------------------------------------------

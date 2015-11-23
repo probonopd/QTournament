@@ -3,6 +3,8 @@
 
 #include <assert.h>
 
+#include <QStringList>
+
 #include "ExternalPlayerDB.h"
 #include "KeyValueTab.h"
 #include "TournamentDataDefs.h"
@@ -227,6 +229,70 @@ namespace QTournament
     playerTab[extPlayerId].update(EPD_PL_SEX, static_cast<int>(newSex));
 
     return true;
+  }
+
+  //----------------------------------------------------------------------------
+
+  tuple<int, int, int> ExternalPlayerDB::bulkImportCSV(const QString& csv)
+  {
+    int newCnt = 0;
+    int skipCnt = 0;
+    int errorCnt = 0;
+
+    for (QString line : csv.split("\n"))
+    {
+      // ignore empty lines
+      line = line.trimmed();
+      if (line.isEmpty()) continue;
+
+      // ignore lines with less than to fields
+      QStringList col = line.split(",");
+      if (col.length() < 2)
+      {
+        ++errorCnt;
+        continue;
+      }
+
+      // get the name information
+      QString lName = col[0].trimmed();
+      QString fName = col[1].trimmed();
+      if ((lName.isEmpty()) || (fName.isEmpty()))
+      {
+        ++errorCnt;
+        continue;
+      }
+
+      // get the player's sex, if provided
+      SEX sex = DONT_CARE;
+      if (col.length() > 2)
+      {
+        QString s = col[2].trimmed();
+        if (s.toLower() == "m") sex = M;
+        if (s.toLower() == "f") sex = F;
+        if ((!(s.isEmpty())) && (sex == DONT_CARE))
+        {
+          // the provided value couldn't be recognized
+          ++errorCnt;
+          continue;
+        }
+      }
+
+      // check if the player name already exists
+      if (hasPlayer(fName, lName))
+      {
+        ++skipCnt;
+        continue;
+      }
+
+      // actually create the new entry
+      ExternalPlayerDatabaseEntry entry{fName, lName, sex};
+      auto newPlayer = storeNewPlayer(entry);
+      if (newPlayer == nullptr) ++errorCnt;
+
+      ++newCnt;
+    }
+
+    return make_tuple(newCnt, skipCnt, errorCnt);
   }
 
   //----------------------------------------------------------------------------

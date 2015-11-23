@@ -115,7 +115,8 @@ HEADERS += \
     ui/commonCommands/cmdImportSinglePlayerFromExternalDatabase.h \
     ui/DlgImportPlayer.h \
     ui/commonCommands/cmdExportPlayerToExternalDatabase.h \
-    ui/commonCommands/cmdCreatePlayerFromDialog.h
+    ui/commonCommands/cmdCreatePlayerFromDialog.h \
+    ui/DlgBulkImportToExtDb.h
 
 SOURCES += \
     Category.cpp \
@@ -214,7 +215,8 @@ SOURCES += \
     ui/commonCommands/cmdImportSinglePlayerFromExternalDatabase.cpp \
     ui/DlgImportPlayer.cpp \
     ui/commonCommands/cmdExportPlayerToExternalDatabase.cpp \
-    ui/commonCommands/cmdCreatePlayerFromDialog.cpp
+    ui/commonCommands/cmdCreatePlayerFromDialog.cpp \
+    ui/DlgBulkImportToExtDb.cpp
 
 RESOURCES += \
     tournament.qrc
@@ -238,7 +240,8 @@ FORMS += \
     ui/DlgMatchResult.ui \
     ui/DlgSelectPlayer.ui \
     ui/DlgPickPlayerSex.ui \
-    ui/DlgImportPlayer.ui
+    ui/DlgImportPlayer.ui \
+    ui/DlgBulkImportToExtDb.ui
 
 TRANSLATIONS = tournament_de.ts
 

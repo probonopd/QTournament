@@ -64,6 +64,7 @@ namespace QTournament
     upExternalPlayerDatabaseEntry storeNewPlayer(const ExternalPlayerDatabaseEntry& newPlayer);
     bool hasPlayer(const QString& fname, const QString& lname);
     bool updatePlayerSexIfUndefined(int extPlayerId, SEX newSex);
+    tuple<int, int, int> bulkImportCSV(const QString& csv);
 
   private:
     ExternalPlayerDB(QString fName, bool createNew);
