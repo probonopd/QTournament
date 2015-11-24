@@ -37,7 +37,7 @@ ERR cmdExportPlayerToExternalDatabase::exec()
 
   default:
     msg = tr("An undefined error occurred. The player has not\n");
-    msg += tr("exported to the external database");
+    msg += tr("been exported to the external database");
   }
 
   QMessageBox::warning(parentWidget, tr("Export player"), msg);

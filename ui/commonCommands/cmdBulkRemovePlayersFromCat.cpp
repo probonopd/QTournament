@@ -32,7 +32,7 @@ ERR cmdBulkRemovePlayersFromCategory::exec()
     {
       QString msg = tr("Could not remove player\n\n");
       msg += "     " + pl.getDisplayName_FirstNameFirst() + "\n\n";
-      msg += "from the category.";
+      msg += tr("from the category.");
       QMessageBox::warning(parentWidget, tr("Remove players from category"), msg);
     }
   }

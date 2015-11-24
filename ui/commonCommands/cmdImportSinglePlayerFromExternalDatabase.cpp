@@ -89,7 +89,7 @@ ERR cmdImportSinglePlayerFromExternalDatabase::exec()
     if (cat->getAddState(selSex) != CAN_JOIN)
     {
       QString msg = tr("%1 cannot be added to this category.");
-      msg = msg.arg((selSex == M) ? "A male player" : "A female player");
+      msg = msg.arg((selSex == M) ? tr("A male player") : tr("A female player"));
       QMessageBox::warning(parentWidget, tr("Import player"), msg);
       return INVALID_SEX;
     }

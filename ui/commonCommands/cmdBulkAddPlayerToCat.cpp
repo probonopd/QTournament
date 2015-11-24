@@ -42,7 +42,7 @@ ERR cmdBulkAddPlayerToCategory::exec()
     {
       QString msg = tr("Could not add player\n\n");
       msg += "     " + pl.getDisplayName_FirstNameFirst() + "\n\n";
-      msg += "to the category.";
+      msg += tr("to the category.");
       QMessageBox::warning(parentWidget, tr("Add players to category"), msg);
     }
   }

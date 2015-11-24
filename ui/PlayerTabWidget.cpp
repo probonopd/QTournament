@@ -160,7 +160,7 @@ void PlayerTabWidget::onTournamentClosed()
 void PlayerTabWidget::onRegisterAllTriggered()
 {
   QString msg = tr("Do you really want to set all players\n");
-  msg += "to \"registered\"?";
+  msg += tr("to \"registered\"?");
   int result = QMessageBox::question(this, tr("Register all"), msg);
   if (result != QMessageBox::Yes) return;
 
@@ -177,7 +177,7 @@ void PlayerTabWidget::onRegisterAllTriggered()
 void PlayerTabWidget::onUnregisterAllTriggered()
 {
   QString msg = tr("Do you really want to set all players\n");
-  msg += "to \"wait for registration\"?";
+  msg += tr("to \"wait for registration\"?");
   int result = QMessageBox::question(this, tr("Unregister all"), msg);
   if (result != QMessageBox::Yes) return;
 

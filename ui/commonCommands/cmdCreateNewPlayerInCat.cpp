@@ -40,7 +40,7 @@ ERR cmdCreateNewPlayerInCat::exec()
   if (cat.getAddState(selectedSex) != CAN_JOIN)
   {
     QString msg = tr("Can't add a %1 to the category.");
-    msg = msg.arg((selectedSex == M) ? "male player" : "female player");
+    msg = msg.arg((selectedSex == M) ? tr("male player") : tr("female player"));
     QMessageBox::warning(parentWidget, tr("Create new player in category"), msg);
 
     return INVALID_SEX;
