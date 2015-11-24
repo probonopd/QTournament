@@ -188,7 +188,8 @@ upSimpleReport BracketSheet::regenerateReport()
                             BRACKET_STYLE_ITALICS);
       } else {
         PlayerPair pp = Tournament::getPlayerMngr()->getPlayerPair(ppId);
-        drawTruncatedPlayerNameOnBracketLine(x0, y0, orientation, pp);
+        QString txt = getTruncatedPlayerName(pp, xFac - 2 * GAP_LINE_TXT__MM, rawReport->getTextStyle(BRACKET_STYLE));
+        drawBracketTextItem(x0, y0, spanY, orientation, txt, BRACKET_TEXT_ELEMENT::PAIR1);
       }
       ppId = determineEffectivePlayerPairId(el, 2);
       if (ppId < 0)
@@ -198,7 +199,8 @@ upSimpleReport BracketSheet::regenerateReport()
                             BRACKET_STYLE_ITALICS);
       } else {
         PlayerPair pp = Tournament::getPlayerMngr()->getPlayerPair(ppId);
-        drawTruncatedPlayerNameOnBracketLine(x0, y0 + spanY, orientation, pp);
+        QString txt = getTruncatedPlayerName(pp, xFac - 2 * GAP_LINE_TXT__MM, rawReport->getTextStyle(BRACKET_STYLE));
+        drawBracketTextItem(x0, y0, spanY, orientation, txt, BRACKET_TEXT_ELEMENT::PAIR2);
       }
 
       //
@@ -245,14 +247,9 @@ upSimpleReport BracketSheet::regenerateReport()
           // if the match is finished, print the winner's name as well
           if (stat == STAT_MA_FINISHED)
           {
-            // draw the winner's name
-            double xp;
-            double yp;
-            tie(xp, yp) = grid2MM(x0, y0 + termOffset);
-            xp += (orientation == BRACKET_ORIENTATION::RIGHT) ? 1.5 * xFac : -1.5 * xFac;
-            yp += (spanY * yFac) / 2.0;
-            QPointF txtBottomCenter{xp, yp};
-            drawWinnerNameOnTerminator(txtBottomCenter, *(ma->getWinner()), xFac, rawReport->getTextStyle(BRACKET_STYLE));
+            PlayerPair pp = *(ma->getWinner());
+            QString txt = getTruncatedPlayerName(pp, xFac - 2 * GAP_LINE_TXT__MM, rawReport->getTextStyle(BRACKET_STYLE));
+            drawBracketTextItem(x0, y0 + termOffset, spanY, orientation, txt, BRACKET_TEXT_ELEMENT::TERMINATOR_NAME);
           }
 
           // restore the original x0
@@ -374,6 +371,18 @@ tuple<double, double> BracketSheet::grid2MM(int gridX, int gridY) const
 
 //----------------------------------------------------------------------------
 
+/*
+ * The following code uses the following points for text elements:
+ *
+ *   x---------------x p1a
+ *   p1              |
+ *                   |
+ *          x        +-------x--------
+ *         p2        |      p3
+ *                   |
+ *   x---------------x p4a
+ *   p4
+ */
 void BracketSheet::drawBracketTextItem(int bracketX0, int bracketY0, int ySpan, BRACKET_ORIENTATION orientation, QString txt, BracketSheet::BRACKET_TEXT_ELEMENT item, const QString& styleNameOverride) const
 {
   // get the default text style for bracket text
@@ -388,147 +397,128 @@ void BracketSheet::drawBracketTextItem(int bracketX0, int bracketY0, int ySpan, 
   assert(style != nullptr);  // the style must have been created before!
   double txtHeight = style->getFontSize_MM();
 
-  // prepare common values for all text elements
-  double x0;
-  double y0;
-  SimpleReportLib::HOR_TXT_ALIGNMENT align = SimpleReportLib::LEFT;
+  // prepare common points for all text elements
+  double p1x;
+  double p1y;
+  tie(p1x, p1y) = grid2MM(bracketX0, bracketY0);
+  QPointF p1{p1x, p1y};
 
-  // adjust the top-left corner of the bracket, if necessary
-  if (orientation == BRACKET_ORIENTATION::LEFT)
-  {
-    --bracketX0;
-  }
+  // calculate p4
+  QPointF p4 = p1 + QPointF(0, ySpan * yFac);
 
-  // pre-calculate the y-positions of text elements
-  tie(x0, y0) = grid2MM(bracketX0, bracketY0);
-  double yTextTop = y0;
-  yTextTop -= txtHeight * 1.1 + GAP_LINE_TXT__MM;
-  double yTextBottom = yTextTop + yFac * ySpan;
-  double yTextCenter = GAP_LINE_TXT__MM + (yTextTop + yTextBottom + txtHeight) / 2.0;
+  // calculate p2
+  bool isLeftToRight = (orientation == BRACKET_ORIENTATION::RIGHT);
+  double dx = (isLeftToRight) ? xFac / 2.0 : -xFac / 2.0;
+  double dy = (ySpan * yFac) / 2.0;
+  QPointF p2 = p1 + QPointF(dx, dy);
 
-  //
-  // adjust x0,y0 depending on the text item
-  //
+  // calculate p1a and p4a
+  QPointF p1a{p1 + QPointF(2 * dx, 0)};
+  QPointF p4a{p4 + QPointF(2 * dx, 0)};
+
+  // calculate p3
+  QPointF p3 = p1 + QPointF(3 * dx, dy);
+
+  // prepare an offset-vector of one GAP_LINE_TXT__MM in x- and y-direction
+  QPointF gapOffsetX{GAP_LINE_TXT__MM, 0};
+  QPointF gapOffsetY{0, GAP_LINE_TXT__MM};
+
+  // check if we have a multiline text. That indicates a double player name
+  bool isMultiline = (txt.split("\n").length() > 1);
+
+  // calc the line space for multiline text
+  double lineSpace = 0.1 * style->getFontSize_MM();
 
   if (item == BRACKET_TEXT_ELEMENT::PAIR1)
   {
-    y0 = yTextTop;
-
-    // separate the text a bit from other lines or elements on the left
-    x0 += GAP_LINE_TXT__MM;
+    if (isLeftToRight)
+    {
+      if (isMultiline)
+      {
+        // Pair 1, left-to-right, multiline
+        rawReport->drawMultilineText(p1 + gapOffsetX, SimpleReportLib::RECT_CORNER::MID_LEFT, txt, SimpleReportLib::LEFT, lineSpace, style);
+      } else {
+        // Pair 1, left-to-right, single line
+        rawReport->drawMultilineText(p1 + gapOffsetX - 0.5 * gapOffsetY, SimpleReportLib::RECT_CORNER::BOTTOM_LEFT, txt, SimpleReportLib::LEFT, lineSpace, style);
+      }
+    } else {
+      if (isMultiline)
+      {
+        // Pair 1, right-to-left, multiline
+        rawReport->drawMultilineText(p1a + gapOffsetX, SimpleReportLib::RECT_CORNER::MID_LEFT, txt, SimpleReportLib::LEFT, lineSpace, style);
+      } else {
+        // Pair 1, right-to-left, single
+        rawReport->drawMultilineText(p1a + gapOffsetX - 0.5 * gapOffsetY, SimpleReportLib::RECT_CORNER::BOTTOM_LEFT, txt, SimpleReportLib::LEFT, lineSpace, style);
+      }
+    }
+    return;
   }
 
   if (item == BRACKET_TEXT_ELEMENT::PAIR2)
   {
-    y0 = yTextBottom;
-
-    // separate the text a bit from other lines or elements on the left
-    x0 += GAP_LINE_TXT__MM;
+    if (isLeftToRight)
+    {
+      if (isMultiline)
+      {
+        // Pair 2, left-to-right, multiline
+        rawReport->drawMultilineText(p4 + gapOffsetX, SimpleReportLib::RECT_CORNER::MID_LEFT, txt, SimpleReportLib::LEFT, lineSpace, style);
+      } else {
+        // Pair 2, left-to-right, single line
+        rawReport->drawMultilineText(p4 + gapOffsetX - 0.5 * gapOffsetY, SimpleReportLib::RECT_CORNER::BOTTOM_LEFT, txt, SimpleReportLib::LEFT, lineSpace, style);
+      }
+    } else {
+      if (isMultiline)
+      {
+        // Pair 2, right-to-left, multiline
+        rawReport->drawMultilineText(p4a + gapOffsetX, SimpleReportLib::RECT_CORNER::MID_LEFT, txt, SimpleReportLib::LEFT, lineSpace, style);
+      } else {
+        // Pair 2, right-to-left, single
+        rawReport->drawMultilineText(p4a + gapOffsetX - 0.5 * gapOffsetY, SimpleReportLib::RECT_CORNER::BOTTOM_LEFT, txt, SimpleReportLib::LEFT, lineSpace, style);
+      }
+    }
+    return;
   }
 
   if ((item == BRACKET_TEXT_ELEMENT::SCORE) || (item == BRACKET_TEXT_ELEMENT::MATCH_NUM))
   {
-    x0 += xFac / 2.0;  // center horizontaly
-    y0 = yTextCenter;
-    align = SimpleReportLib::CENTER;
+    rawReport->drawMultilineText(p2, SimpleReportLib::RECT_CORNER::CENTER, txt, SimpleReportLib::CENTER, lineSpace, style);
+    return;
   }
 
   if (item == BRACKET_TEXT_ELEMENT::INITIAL_RANK1)
   {
-    // undo the x0-adjustment, because the initial rank is always
-    // at the "open end" of the bracket, and the "open end" is the
-    // original x0,y0-pair
-    if (orientation == BRACKET_ORIENTATION::LEFT)
+    if (isLeftToRight)
     {
-      x0 += xFac;
+      rawReport->drawMultilineText(p1 - gapOffsetX, SimpleReportLib::RECT_CORNER::BOTTOM_RIGHT, txt, SimpleReportLib::CENTER, lineSpace, style);
+    } else {
+      rawReport->drawMultilineText(p1 + gapOffsetX, SimpleReportLib::RECT_CORNER::BOTTOM_LEFT, txt, SimpleReportLib::CENTER, lineSpace, style);
     }
-
-    // add a little gap between the line and the text. Depending
-    // on the bracket orientation we have to add or subtract
-    // from the x0-value
-    x0 += (orientation == BRACKET_ORIENTATION::LEFT) ? GAP_LINE_TXT__MM : -GAP_LINE_TXT__MM;
-
-    y0 = yTextTop;
-    align = SimpleReportLib::RIGHT;
+    return;
   }
+
   if (item == BRACKET_TEXT_ELEMENT::INITIAL_RANK2)
   {
-    if (orientation == BRACKET_ORIENTATION::LEFT)
+    if (isLeftToRight)
     {
-      x0 += xFac;
+      rawReport->drawMultilineText(p4 - gapOffsetX, SimpleReportLib::RECT_CORNER::BOTTOM_RIGHT, txt, SimpleReportLib::CENTER, lineSpace, style);
+    } else {
+      rawReport->drawMultilineText(p4 + gapOffsetX, SimpleReportLib::RECT_CORNER::BOTTOM_LEFT, txt, SimpleReportLib::CENTER, lineSpace, style);
     }
-
-    x0 += (orientation == BRACKET_ORIENTATION::LEFT) ? GAP_LINE_TXT__MM : -GAP_LINE_TXT__MM;
-
-    y0 = yTextBottom;
-    align = SimpleReportLib::RIGHT;
+    return;
   }
 
-  if ((item == BRACKET_TEXT_ELEMENT::WINNER_RANK) || (item == BRACKET_TEXT_ELEMENT::TERMINATOR_NAME))
+  if (item == BRACKET_TEXT_ELEMENT::WINNER_RANK)
   {
-    // default: calculate position for winner rank
-    x0 += (orientation == BRACKET_ORIENTATION::RIGHT) ? xFac : -xFac;
-    y0 = yTextCenter + txtHeight + GAP_LINE_TXT__MM;
-
-    // move up by text height plus 2 x gap if winner name
-    if (item == BRACKET_TEXT_ELEMENT::TERMINATOR_NAME)
-    {
-      y0 -= txtHeight + 2 * GAP_LINE_TXT__MM;
-    }
-
-    // ranks are printed in bold text
-    if ((item == BRACKET_TEXT_ELEMENT::WINNER_RANK) && (styleNameOverride.isEmpty()))
-    {
-      style = rawReport->getTextStyle(BRACKET_STYLE_BOLD);
-    }
-
-    x0 += xFac / 2.0;
-    align = SimpleReportLib::CENTER;
+    style = rawReport->getTextStyle(BRACKET_STYLE_BOLD);
+    rawReport->drawMultilineText(p3 + gapOffsetY, SimpleReportLib::RECT_CORNER::TOP_CENTER, txt, SimpleReportLib::CENTER, lineSpace, style);
+    return;
   }
 
-  // actually draw the text
-  rawReport->drawText(x0, y0, txt, style, align);
-}
-
-//----------------------------------------------------------------------------
-
-void BracketSheet::drawTruncatedPlayerNameOnBracketLine(int bracketLineX0, int bracketLineY0, BRACKET_ORIENTATION orientation, const PlayerPair& pp) const
-{
-  // get the default text style for bracket text
-  auto style = rawReport->getTextStyle(BRACKET_STYLE);
-  double txtHeight = style->getFontSize_MM();
-
-  // adjust the top-left corner of the bracket, if necessary
-  if (orientation == BRACKET_ORIENTATION::LEFT)
+  if (item == BRACKET_TEXT_ELEMENT::TERMINATOR_NAME)
   {
-    --bracketLineX0;
+    rawReport->drawMultilineText(p3 - gapOffsetY, SimpleReportLib::RECT_CORNER::BOTTOM_CENTER, txt, SimpleReportLib::CENTER, lineSpace, style);
+    return;
   }
-
-  // calc the base point of the bracket line
-  double lineX0;
-  double lineY0;
-  tie(lineX0, lineY0) = grid2MM(bracketLineX0, bracketLineY0);
-
-  // prepare a possible postfix for player1's name in
-  // case we are in doubles or mixed
-  QString p1Postfix = (pp.hasPlayer2()) ? " / " : QString();
-
-  // truncate player1's name until it fits on
-  // a bracket line and actually draw it
-  double maxWidth = xFac - 2 * GAP_LINE_TXT__MM;
-  QString p1TruncName = getTruncatedPlayerName(pp.getPlayer1(), p1Postfix, maxWidth, style);
-  double textY0 = lineY0 - txtHeight * 1.1 - GAP_LINE_TXT__MM;
-  rawReport->drawText(lineX0 + GAP_LINE_TXT__MM, textY0, p1TruncName, style);
-
-  // truncate player2's name until it fits on
-  // a bracket line and actually draw it
-  if (pp.hasPlayer2())
-  {
-    QString p2TruncName = getTruncatedPlayerName(pp.getPlayer2(), QString(), maxWidth, style);
-    textY0 = lineY0 + txtHeight * 0.1;
-    rawReport->drawText(lineX0 + GAP_LINE_TXT__MM, textY0, p2TruncName, style);
-  }
-
 }
 
 //----------------------------------------------------------------------------
@@ -546,6 +536,20 @@ QString BracketSheet::getTruncatedPlayerName(const Player& p, const QString& pos
   }
 
   return truncName;
+}
+
+//----------------------------------------------------------------------------
+
+QString BracketSheet::getTruncatedPlayerName(const PlayerPair& pp, double maxWidth, SimpleReportLib::TextStyle* style) const
+{
+  if (pp.hasPlayer2())
+  {
+    QString p1Name = getTruncatedPlayerName(pp.getPlayer1(), " /", maxWidth, style);
+    QString p2Name = getTruncatedPlayerName(pp.getPlayer2(), QString(), maxWidth, style);
+    return p1Name + "\n" + p2Name;
+  }
+
+  return getTruncatedPlayerName(pp.getPlayer1(), QString(), maxWidth, style);
 }
 
 //----------------------------------------------------------------------------
