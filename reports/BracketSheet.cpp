@@ -245,7 +245,14 @@ upSimpleReport BracketSheet::regenerateReport()
           // if the match is finished, print the winner's name as well
           if (stat == STAT_MA_FINISHED)
           {
-            drawBracketTextItem(x0, y0 + termOffset, spanY, orientation, ma->getWinner()->getDisplayName(), BRACKET_TEXT_ELEMENT::TERMINATOR_NAME);
+            // draw the winner's name
+            double xp;
+            double yp;
+            tie(xp, yp) = grid2MM(x0, y0 + termOffset);
+            xp += (orientation == BRACKET_ORIENTATION::RIGHT) ? 1.5 * xFac : -1.5 * xFac;
+            yp += (spanY * yFac) / 2.0;
+            QPointF txtBottomCenter{xp, yp};
+            drawWinnerNameOnTerminator(txtBottomCenter, *(ma->getWinner()), xFac, rawReport->getTextStyle(BRACKET_STYLE));
           }
 
           // restore the original x0
@@ -506,25 +513,10 @@ void BracketSheet::drawTruncatedPlayerNameOnBracketLine(int bracketLineX0, int b
   // case we are in doubles or mixed
   QString p1Postfix = (pp.hasPlayer2()) ? " / " : QString();
 
-  // a little helper function that truncates a player name
-  // until it fits on a bracket line
-  auto truncPlayerName = [&](const Player& _p, const QString& postfix) {
-    int fullLen = _p.getDisplayName().length();
-    QString truncName;
-    double maxWidth = xFac - 2 * GAP_LINE_TXT__MM;
-    for (int len = fullLen; len > 3; --len)
-    {
-      truncName = _p.getDisplayName(len) + postfix;
-      double width = rawReport->getTextDimensions_MM(truncName, style).width();
-      if (width <= maxWidth) break;    // xFac equals the line length
-    }
-
-    return truncName;
-  };
-
   // truncate player1's name until it fits on
   // a bracket line and actually draw it
-  QString p1TruncName = truncPlayerName(pp.getPlayer1(), p1Postfix);
+  double maxWidth = xFac - 2 * GAP_LINE_TXT__MM;
+  QString p1TruncName = getTruncatedPlayerName(pp.getPlayer1(), p1Postfix, maxWidth, style);
   double textY0 = lineY0 - txtHeight * 1.1 - GAP_LINE_TXT__MM;
   rawReport->drawText(lineX0 + GAP_LINE_TXT__MM, textY0, p1TruncName, style);
 
@@ -532,11 +524,46 @@ void BracketSheet::drawTruncatedPlayerNameOnBracketLine(int bracketLineX0, int b
   // a bracket line and actually draw it
   if (pp.hasPlayer2())
   {
-    QString p2TruncName = truncPlayerName(pp.getPlayer2(), QString());
+    QString p2TruncName = getTruncatedPlayerName(pp.getPlayer2(), QString(), maxWidth, style);
     textY0 = lineY0 + txtHeight * 0.1;
     rawReport->drawText(lineX0 + GAP_LINE_TXT__MM, textY0, p2TruncName, style);
   }
 
+}
+
+//----------------------------------------------------------------------------
+
+QString BracketSheet::getTruncatedPlayerName(const Player& p, const QString& postfix, double maxWidth, SimpleReportLib::TextStyle* style) const
+{
+  int fullLen = p.getDisplayName().length();
+
+  QString truncName;
+  for (int len = fullLen; len > 3; --len)
+  {
+    truncName = p.getDisplayName(len) + postfix;
+    double width = rawReport->getTextDimensions_MM(truncName, style).width();
+    if (width <= maxWidth) return truncName;
+  }
+
+  return truncName;
+}
+
+//----------------------------------------------------------------------------
+
+void BracketSheet::drawWinnerNameOnTerminator(const QPointF& txtBottomCenter, const PlayerPair& pp, double gridWidth, SimpleReportLib::TextStyle* style) const
+{
+  QString p1Postfix;
+  QString p2Name;
+  if (pp.hasPlayer2())
+  {
+    p1Postfix = " /";
+    p2Name = getTruncatedPlayerName(pp.getPlayer2(), QString(), gridWidth - 2 * GAP_LINE_TXT__MM, style);
+  }
+  QString p1Name = getTruncatedPlayerName(pp.getPlayer1(), p1Postfix, gridWidth - 2 * GAP_LINE_TXT__MM, style);
+
+  QString fullName = (p2Name.isEmpty()) ? p1Name : p1Name + "\n" + p2Name;
+  rawReport->drawMultilineText(txtBottomCenter, SimpleReportLib::RECT_CORNER::BOTTOM_CENTER, fullName, SimpleReportLib::CENTER,
+                               0.1 * style->getFontSize_MM(), style);
 }
 
 //----------------------------------------------------------------------------
