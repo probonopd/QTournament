@@ -17,20 +17,7 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
-      <layout class="QVBoxLayout" name="verticalLayout" stretch="1,0">
-       <item>
-        <widget class="QPushButton" name="btnReload">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-           <horstretch>1</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="text">
-          <string>Reload All</string>
-         </property>
-        </widget>
-       </item>
+      <layout class="QVBoxLayout" name="verticalLayout" stretch="0">
        <item>
         <widget class="QTreeWidget" name="repTree">
          <property name="sizePolicy">
@@ -84,22 +71,6 @@
     <hint type="sourcelabel">
      <x>56</x>
      <y>149</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>199</x>
-     <y>149</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>btnReload</sender>
-   <signal>clicked()</signal>
-   <receiver>ReportsTabWidget</receiver>
-   <slot>onBtnReloadClicked()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>138</x>
-     <y>24</y>
     </hint>
     <hint type="destinationlabel">
      <x>199</x>
