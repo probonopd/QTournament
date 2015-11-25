@@ -127,6 +127,7 @@ void MainFrame::newTournament()
   tnmt = new Tournament(filename, *settings);
   emit tournamentOpened(tnmt);
   enableControls(true);
+  setWindowTitle("QTournament - " + settings->tournamentName + "  (" + filename + ")");
 }
 
 //----------------------------------------------------------------------------
@@ -158,6 +159,11 @@ void MainFrame::openTournament()
   tnmt = new Tournament(filename);
   emit tournamentOpened(tnmt);
   enableControls(true);
+
+  // determine the tournament title
+  KeyValueTab cfg = KeyValueTab::getTab(tnmt->getDatabaseHandle(), TAB_CFG);
+  QString tnmtTitle = cfg.getString(CFG_KEY_TNMT_NAME);
+  setWindowTitle("QTournament - " + tnmtTitle + "  (" + filename + ")");
 
   // open the external player database file, if configured
   PlayerMngr* pm = Tournament::getPlayerMngr();
