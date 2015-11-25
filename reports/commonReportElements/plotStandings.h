@@ -9,11 +9,14 @@
 
 using namespace QTournament;
 
-class plotStandings : public AbstractReportElement, public QObject
+class plotStandings : public QObject, AbstractReportElement
 {
+  Q_OBJECT
+
 public:
   plotStandings(SimpleReportGenerator* _rep, const RankingEntryList& _rel, const QString& tabName);
-  virtual QRectF plot(const QPointF& topLeft = QPointF(-1, -1)) override;
+  virtual QRectF plot(const QPointF& topLeft = QPointF(-1, -1));
+  virtual ~plotStandings() {}
 
 protected:
   RankingEntryList rel;

@@ -2,6 +2,7 @@
 #define ABSTRACT_REPORT_ELEMENT__H
 
 #include <QPointF>
+#include <QRectF>
 
 #include "SimpleReportGenerator.h"
 

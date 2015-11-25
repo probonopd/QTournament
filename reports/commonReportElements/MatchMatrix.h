@@ -33,8 +33,10 @@ private:
 
 //----------------------------------------------------------------------------
 
-class MatchMatrix : public AbstractReportElement, public QObject
+class MatchMatrix : public QObject, AbstractReportElement
 {
+  Q_OBJECT
+
 public:
   enum class CELL_CONTENT_TYPE {
     TITLE,
@@ -47,7 +49,8 @@ public:
   static constexpr double GAP_TEXT_TO_GRID__MM = 1.0;
 
   MatchMatrix(SimpleReportGenerator* _rep, const QString& tabName, const Category& _cat, int _round, int _grpNum = -1);
-  virtual QRectF plot(const QPointF& topLeft = QPointF(-1, -1)) override;
+  virtual QRectF plot(const QPointF& topLeft = QPointF(-1, -1));
+  virtual ~MatchMatrix(){}
 
 protected:
   QString tableName;
