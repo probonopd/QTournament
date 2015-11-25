@@ -235,7 +235,9 @@ upSimpleReport BracketSheet::regenerateReport()
         if (stat == STAT_MA_FINISHED)
         {
           auto score = ma->getScore();
-          drawBracketTextItem(x0, y0, spanY, orientation, score->toString(), BRACKET_TEXT_ELEMENT::SCORE);
+          QString scTxt = score->toString();
+          scTxt.replace(",", "  ");
+          drawBracketTextItem(x0, y0, spanY, orientation, scTxt, BRACKET_TEXT_ELEMENT::SCORE);
         }
         else if (matchNum > 0)
         {
