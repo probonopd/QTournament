@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>dlgGroupAssignment</string>
+   <string>Assign players to groups</string>
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout_2">
    <item>
