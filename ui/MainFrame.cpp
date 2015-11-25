@@ -1,8 +1,19 @@
 /*
- * File:   MainFrame.cpp
- * Author: volker
+ *    This is QTournament, a badminton tournament management program.
+ *    Copyright (C) 2014 - 2015  Volker Knollmann
  *
- * Created on February 16, 2014, 5:16 PM
+ *    This program is free software: you can redistribute it and/or modify
+ *    it under the terms of the GNU General Public License as published by
+ *    the Free Software Foundation, either version 3 of the License, or
+ *    any later version.
+ *
+ *    This program is distributed in the hope that it will be useful,
+ *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *    GNU General Public License for more details.
+ *
+ *    You should have received a copy of the GNU General Public License
+ *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <stdexcept>
@@ -851,10 +862,42 @@ void MainFrame::onSelectExternalPlayerDatabase()
 
 //----------------------------------------------------------------------------
 
+void MainFrame::onInfoMenuTriggered()
+{
+  QString msg = tr("This is QTournament version %1.<br>");
+  msg += tr("© Volker Knollmann, 2014 - 2015<br><br>");
+  msg += tr("This program is free software: you can redistribute it and/or modify ");
+  msg += tr("it under the terms of the GNU General Public License as published by ");
+  msg += tr("the Free Software Foundation, either version 3 of the License, or ");
+  msg += tr("any later version.<br>");
+
+  msg += tr("This program is distributed in the hope that it will be useful, ");
+  msg += tr("but WITHOUT ANY WARRANTY; without even the implied warranty of ");
+  msg += tr("MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the ");
+  msg += tr("GNU General Public License for more details.<br>");
+
+  msg += tr("You should have received a copy of the GNU General Public License ");
+  msg += tr("along with this program. If not, see <a href='http://www.gnu.org/licenses/'>http://www.gnu.org/licenses/</a>.<br><br>");
+
+  msg += tr("The source code for this program is hosted on Github:<br>");
+  msg += "<a href='https://github.com/Foorgol/QTournament'>https://github.com/Foorgol/QTournament</a><br>";
+
+  msg = msg.arg(PRG_VERSION_STRING);
+
+  QMessageBox msgBox{this};
+  msgBox.setWindowTitle(tr("About QTournament"));
+  msgBox.setTextFormat(Qt::RichText);
+  msgBox.setText(msg);
+  msgBox.exec();
+}
+
+//----------------------------------------------------------------------------
+
 void MainFrame::onToggleTestMenuVisibility()
 {
   ui.menubar->clear();
   ui.menubar->addMenu(ui.menuTournament);
+  ui.menubar->addMenu(ui.menuAbout_QTournament);
 
   if (!isTestMenuVisible)
   {
