@@ -156,9 +156,11 @@ void MainFrame::openTournament()
   QString filename = fDlg.selectedFiles().at(0);
 
   // open the tournament
+  QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
   tnmt = new Tournament(filename);
   emit tournamentOpened(tnmt);
   enableControls(true);
+  QApplication::restoreOverrideCursor();
 
   // determine the tournament title
   KeyValueTab cfg = KeyValueTab::getTab(tnmt->getDatabaseHandle(), TAB_CFG);

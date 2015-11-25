@@ -457,7 +457,9 @@ void CategoryTableView::onRunCategory()
    * If we made it to this point, it is safe to apply the settings and write to
    * the database.
    */
+  QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
   e = Tournament::getCatMngr()->startCategory(*selectedCat, ppListList, initialRanking);
+  QApplication::restoreOverrideCursor();
   if (e != OK)  // should never happen
   {
     throw runtime_error("Unexpected error when starting the category");
@@ -583,7 +585,9 @@ void CategoryTableView::handleIntermediateSeedingForSelectedCat()
   /*
    * If we made it to this point, we can generate matches for the next round(s)
    */
+  QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
   ERR e = Tournament::getCatMngr()->continueWithIntermediateSeeding(*selectedCat, seeding);
+  QApplication::restoreOverrideCursor();
   if (e != OK)  // should never happen
   {
     throw runtime_error("Unexpected error when applying intermediate seeding");
