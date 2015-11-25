@@ -8,8 +8,10 @@
 
 using namespace QTournament;
 
-class cmdExportPlayerToExternalDatabase : public AbstractCommand, public QObject
+class cmdExportPlayerToExternalDatabase : public QObject, AbstractCommand
 {
+  Q_OBJECT
+
 public:
   cmdExportPlayerToExternalDatabase(QWidget* p, const Player& _pl);
   virtual ERR exec() override;

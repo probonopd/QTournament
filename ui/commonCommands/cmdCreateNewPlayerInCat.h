@@ -8,8 +8,10 @@
 
 using namespace QTournament;
 
-class cmdCreateNewPlayerInCat : public AbstractCommand, public QObject
+class cmdCreateNewPlayerInCat : public QObject, AbstractCommand
 {
+  Q_OBJECT
+
 public:
   cmdCreateNewPlayerInCat(QWidget* p, const Category& _cat);
   virtual ERR exec() override;

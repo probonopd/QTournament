@@ -9,8 +9,9 @@
 
 using namespace QTournament;
 
-class cmdCreatePlayerFromDialog : public AbstractCommand, public QObject
+class cmdCreatePlayerFromDialog : public QObject, AbstractCommand
 {
+  Q_OBJECT
 
 public:
   cmdCreatePlayerFromDialog(QWidget* p, DlgEditPlayer* initializedDialog);

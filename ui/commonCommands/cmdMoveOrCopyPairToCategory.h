@@ -9,8 +9,10 @@
 
 using namespace QTournament;
 
-class cmdMoveOrCopyPairToCategory : public AbstractCommand, public QObject
+class cmdMoveOrCopyPairToCategory : public QObject, AbstractCommand
 {
+  Q_OBJECT
+
 public:
   cmdMoveOrCopyPairToCategory(QWidget* p, const PlayerPair& _pp, const Category& _srcCat, const Category& _dstCat, bool _isMove=false);
   virtual ERR exec() override;

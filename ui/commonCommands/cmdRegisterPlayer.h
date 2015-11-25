@@ -8,9 +8,9 @@
 
 using namespace QTournament;
 
-class cmdRegisterPlayer : public AbstractCommand, public QObject
+class cmdRegisterPlayer : public QObject, AbstractCommand
 {
-  //Q_OBJECT    // we need to inherit from QObject to have tr() available
+  Q_OBJECT
 
 public:
   cmdRegisterPlayer(QWidget* p, const Player& _pl);

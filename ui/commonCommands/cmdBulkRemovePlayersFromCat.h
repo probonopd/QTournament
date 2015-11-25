@@ -8,8 +8,9 @@
 
 using namespace QTournament;
 
-class cmdBulkRemovePlayersFromCategory : public AbstractCommand, public QObject
+class cmdBulkRemovePlayersFromCategory : public QObject, AbstractCommand
 {
+  Q_OBJECT
 public:
   cmdBulkRemovePlayersFromCategory(QWidget* p, const Category& _cat);
   virtual ERR exec() override;

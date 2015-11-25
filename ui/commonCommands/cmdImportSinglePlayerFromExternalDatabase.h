@@ -8,8 +8,10 @@
 
 using namespace QTournament;
 
-class cmdImportSinglePlayerFromExternalDatabase : public AbstractCommand, public QObject
+class cmdImportSinglePlayerFromExternalDatabase : public QObject, AbstractCommand
 {
+  Q_OBJECT
+
 public:
   cmdImportSinglePlayerFromExternalDatabase(QWidget* p, int _preselectedCatId=-1);
   virtual ERR exec() override;

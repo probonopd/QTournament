@@ -9,9 +9,9 @@
 
 using namespace QTournament;
 
-class cmdRemovePlayerFromCategory : public AbstractCommand, public QObject
+class cmdRemovePlayerFromCategory : public QObject, AbstractCommand
 {
-  //Q_OBJECT    // we need to inherit from QObject to have tr() available
+  Q_OBJECT
 
 public:
   cmdRemovePlayerFromCategory(QWidget* p, const Player& _pl, const Category& _cat);
