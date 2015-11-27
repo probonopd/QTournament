@@ -349,6 +349,17 @@ int ScheduleTabWidget::estimateRemainingTournamentTime()
 
 int ScheduleTabWidget::getAverageMatchDuration()
 {
+  // calculate the total match duration of all finished matches
+  totalDuration = 0;
+  totalDurationCnt = 0;
+  for (const Match& ma : Tournament::getMatchMngr()->getFinishedMatches())
+  {
+    int duration = ma.getMatchDuration();
+    if (duration < 0) continue;
+    totalDuration += duration;
+    ++totalDurationCnt;
+  }
+
   return (totalDurationCnt > 0) ? totalDuration / totalDurationCnt : INITIAL_AVG_MATCH_DURATION__SECS;
 }
 
@@ -371,7 +382,7 @@ void ScheduleTabWidget::updateProgressBar()
   } else {
     int hours = timeRemain / 3600;
     int minutes = (timeRemain % 3600) / 60;
-    QString s = "%1:%2";
+    QString s = "%1 h %2 min";
     s = s.arg(hours);
     s = s.arg(minutes, 2, 10, QLatin1Char('0'));
     txt = txt.arg(s);
@@ -424,7 +435,7 @@ void ScheduleTabWidget::onMatchStatusChanged(int matchId, int matchSeqNum, OBJ_S
   int percComplete = (nTotal > 0) ? (nFinished * 100) / nTotal : 0;
 
   // update the match duration counter, if applicable
-  if ((toState == STAT_MA_FINISHED) && (matchId > 0))
+  /*if ((toState == STAT_MA_FINISHED) && (matchId > 0))
   {
     auto ma = Tournament::getMatchMngr()->getMatch(matchId);
     assert(ma != nullptr);
@@ -435,7 +446,7 @@ void ScheduleTabWidget::onMatchStatusChanged(int matchId, int matchSeqNum, OBJ_S
       totalDuration += duration;
       ++totalDurationCnt;
     }
-  }
+  }*/
 
   // put everything into a status string
   rawProgressBarString = tr("%1 matches in total, %2 finished (%3 %), %5 unfinished, %4 running");
