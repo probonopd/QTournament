@@ -329,7 +329,7 @@ void CategoryTableView::onRunCategory()
   QList<PlayerPairList> ppListList;
   if (selectedCat->needsGroupInitialization())
   {
-    dlgGroupAssignment dlg(*selectedCat);
+    dlgGroupAssignment dlg(this, *selectedCat);
     dlg.setModal(true);
     int result = dlg.exec();
 
@@ -352,7 +352,7 @@ void CategoryTableView::onRunCategory()
   PlayerPairList initialRanking;
   if (selectedCat->needsInitialRanking())
   {
-    DlgSeedingEditor dlg;
+    DlgSeedingEditor dlg{this};
     dlg.initSeedingList(selectedCat->getPlayerPairs());
     dlg.setModal(true);
     int result = dlg.exec();
@@ -565,7 +565,7 @@ void CategoryTableView::handleIntermediateSeedingForSelectedCat()
   PlayerPairList seedCandidates = selectedCat->getPlayerPairsForIntermediateSeeding();
   if (seedCandidates.isEmpty()) return;
 
-  DlgSeedingEditor dlg;
+  DlgSeedingEditor dlg{this};
   dlg.initSeedingList(seedCandidates);
   dlg.setModal(true);
   int result = dlg.exec();

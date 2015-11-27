@@ -28,7 +28,7 @@ class dlgGroupAssignment : public QDialog
 {
   Q_OBJECT
 public:
-  dlgGroupAssignment(Category &_cat);
+  dlgGroupAssignment(QWidget* p, Category &_cat);
   virtual ~dlgGroupAssignment();
   QList<PlayerPairList> getGroupAssignments();
 
