@@ -313,6 +313,23 @@ namespace QTournament
     return result;
   }
 
+  //----------------------------------------------------------------------------
+
+  int Match::getMatchDuration() const
+  {
+    if (getState() != STAT_MA_FINISHED) return -1;
+
+    QVariant _startTime = row[MA_START_TIME];
+    if (_startTime.isNull()) return -1;
+    int startTime = _startTime.toInt();
+
+    QVariant _finishTime = row[MA_FINISH_TIME];
+    if (_finishTime.isNull()) return -1;
+    int finishedTime = _finishTime.toInt();
+
+    return finishedTime - startTime;
+  }
+
 //----------------------------------------------------------------------------
 
   int Match::getSymbolicPlayerPairName(int playerPos) const

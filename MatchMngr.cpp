@@ -1510,6 +1510,22 @@ namespace QTournament {
     return nullptr;
   }
 
+  //----------------------------------------------------------------------------
+
+  tuple<int, int, int> MatchMngr::getMatchStats() const
+  {
+    // get the total number of matches
+    int nTotal = matchTab.length();
+
+    // get the number of currently running matches
+    int nRunning = matchTab.getMatchCountForColumnValue(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_RUNNING));
+
+    // get the number of finished matches
+    int nFinished = matchTab.getMatchCountForColumnValue(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_FINISHED));
+
+    return make_tuple(nTotal, nFinished, nRunning);
+  }
+
 //----------------------------------------------------------------------------
 
   void MatchMngr::onPlayerStatusChanged(int playerId, int playerSeqNum, OBJ_STATE fromState, OBJ_STATE toState)
@@ -1562,6 +1578,13 @@ namespace QTournament {
   MatchList MatchMngr::getCurrentlyRunningMatches() const
   {
     return getObjectsByColumnValue<Match>(matchTab, GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_RUNNING));
+  }
+
+  //----------------------------------------------------------------------------
+
+  MatchList MatchMngr::getFinishedMatches() const
+  {
+    return getObjectsByColumnValue<Match>(matchTab, GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_FINISHED));
   }
 
 //----------------------------------------------------------------------------

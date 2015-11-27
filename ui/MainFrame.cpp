@@ -515,6 +515,9 @@ void MainFrame::setupTestScenario(int scenarioID)
     mm->scheduleAllStagedMatchGroups();
 
     // play all scheduled matches
+    QDateTime curDateTime = QDateTime::currentDateTimeUtc();
+    uint epochSecs = curDateTime.toTime_t();
+    DbTab matchTab = Tournament::getDatabaseHandle()->getTab(TAB_MATCH);
     while (true)
     {
       int nextMacthId;
@@ -530,6 +533,12 @@ void MainFrame::setupTestScenario(int scenarioID)
       if (mm->assignMatchToCourt(*nextMatch, *nextCourt) != OK) break;
       auto score = MatchScore::genRandomScore();
       mm->setMatchScoreAndFinalizeMatch(*nextMatch, *score);
+
+      // overwrite the match finish time to get a fake match duration
+      // the duration is at least 15 minutes and max 25 minutes
+      int fakeDuration = 15 * 60  +  10 * 60 * (qrand() / (RAND_MAX * 1.0));
+      TabRow maRow = matchTab[nextMacthId];
+      maRow.update(MA_FINISH_TIME, QString::number(epochSecs + fakeDuration));
     }
   };
 

@@ -20,6 +20,8 @@
 #define	MATCHMNGR_H
 
 #include <memory>
+#include <tuple>
+
 #include "TournamentDataDefs.h"
 #include "TournamentErrorCodes.h"
 #include "DbTab.h"
@@ -53,12 +55,14 @@ namespace QTournament
 
     // retrievers / enumerators for MATCHES
     MatchList getCurrentlyRunningMatches() const;
+    MatchList getFinishedMatches() const;
     MatchList getMatchesForMatchGroup(const MatchGroup& grp) const;
     unique_ptr<Match> getMatchForCourt(const Court& court);
     unique_ptr<Match> getMatchForPlayerPairAndRound(const PlayerPair& pp, int round) const;
     unique_ptr<Match> getMatchBySeqNum(int maSeqNum) const;
     unique_ptr<Match> getMatchByMatchNum(int maNum) const;
     unique_ptr<Match> getMatch(int id) const;
+    tuple<int, int, int> getMatchStats() const;
 
     // boolean hasXXXXX functions for MATCHES
     bool hasMatchesInCategory(const Category& cat, int round=-1) const;

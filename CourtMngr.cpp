@@ -199,6 +199,16 @@ namespace QTournament
     return nullptr;
   }
 
+  //----------------------------------------------------------------------------
+
+  int CourtMngr::getActiveCourtCount()
+  {
+    int allCourts = courtTab.length();
+    int disabledCourts = courtTab.getMatchCountForColumnValue(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_CO_DISABLED));
+
+    return (allCourts - disabledCourts);
+  }
+
 //----------------------------------------------------------------------------
 
   unique_ptr<Court> CourtMngr::getNextUnusedCourt(bool includeManual) const

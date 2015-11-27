@@ -27,35 +27,48 @@
 #include "Match.h"
 
 namespace Ui {
-class ScheduleTabWidget;
+  class ScheduleTabWidget;
 }
 
 using namespace QTournament;
 
 class ScheduleTabWidget : public QDialog
 {
-    Q_OBJECT
+  Q_OBJECT
 
 public:
-    explicit ScheduleTabWidget(QWidget *parent = 0);
-    ~ScheduleTabWidget();
+  static constexpr int INITIAL_AVG_MATCH_DURATION__SECS = 25 * 60;
+
+  explicit ScheduleTabWidget(QWidget *parent = 0);
+  ~ScheduleTabWidget();
 
 public slots:
-    void onBtnStageClicked();
-    void onBtnUnstageClicked();
-    void onBtnScheduleClicked();
-    void onIdleSelectionChanged(const QItemSelection &, const QItemSelection &);
-    void onStagedSelectionChanged(const QItemSelection &, const QItemSelection &);
-    void onCourtDoubleClicked(const QModelIndex& index);
-    void onRoundCompleted(int catId, int round);
-    void onTournamentClosed();
-    void onTournamentOpened(Tournament* _tnmt);
+  void onBtnStageClicked();
+  void onBtnUnstageClicked();
+  void onBtnScheduleClicked();
+  void onIdleSelectionChanged(const QItemSelection &, const QItemSelection &);
+  void onStagedSelectionChanged(const QItemSelection &, const QItemSelection &);
+  void onCourtDoubleClicked(const QModelIndex& index);
+  void onRoundCompleted(int catId, int round);
+  void onTournamentClosed();
+  void onTournamentOpened(Tournament* _tnmt);
+  void onMatchStatusChanged(int matchId, int matchSeqNum, OBJ_STATE fromState, OBJ_STATE toState);
+  void onCatStatusChanged();
 
 private:
-    Ui::ScheduleTabWidget *ui;
-    void updateButtons();
-    void askAndStoreMatchResult(const Match& ma);
-    Tournament* tnmt;
+  Ui::ScheduleTabWidget *ui;
+  void updateButtons();
+  void askAndStoreMatchResult(const Match& ma);
+  int estimateRemainingTournamentTime();
+  int getAverageMatchDuration();
+  void updateProgressBar();
+  QString rawProgressBarString;
+  Tournament* tnmt = nullptr;
+  unsigned long totalDuration = INITIAL_AVG_MATCH_DURATION__SECS;
+  int totalDurationCnt;
+  uint avgStartTime;
+
+  void initProgressBarFromDatabase();
 };
 
 #endif // SCHEDULETABWIDGET_H

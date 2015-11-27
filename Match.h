@@ -73,6 +73,7 @@ namespace QTournament
     QDateTime getStartTime() const;
     bool addAddtionalCallTime() const;
     QList<QDateTime> getAdditionalCallTimes() const;
+    int getMatchDuration() const;
 
   private:
     Match (TournamentDB* db, int rowId);

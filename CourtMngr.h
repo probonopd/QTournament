@@ -52,6 +52,7 @@ namespace QTournament
     unique_ptr<Court> getCourtBySeqNum(int seqNum);
     bool hasCourtById(int id);
     unique_ptr<Court> getCourtById(int id);
+    int getActiveCourtCount();
 
     unique_ptr<Court> getNextUnusedCourt(bool includeManual=false) const;
     unique_ptr<Court> autoSelectNextUnusedCourt(ERR* err, bool includeManual=false) const;
