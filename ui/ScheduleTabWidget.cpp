@@ -57,6 +57,11 @@ ScheduleTabWidget::ScheduleTabWidget(QWidget *parent) :
     // initial status bar value
     QString rawProgressBarString = tr("No match status available");
     updateProgressBar();
+
+    // create a timer for cyclic updates of the remaining tournament time
+    progressbarUpdateTimer = make_unique<QTimer>(this);
+    connect(progressbarUpdateTimer.get(), SIGNAL(timeout()), this, SLOT(updateProgressBar()));
+    progressbarUpdateTimer->start(PROGRESSBAR_UPDATE_INTERVAL__SECS * 1000);
 }
 
 //----------------------------------------------------------------------------
@@ -307,6 +312,7 @@ int ScheduleTabWidget::estimateRemainingTournamentTime()
 
   // calculate the average runtime of all running matches
   int totalRuntime = 0;
+  int totalRuntimeCnt = 0;
   auto runningMatches = Tournament::getMatchMngr()->getCurrentlyRunningMatches();
   for (const Match& ma : runningMatches)
   {
@@ -320,6 +326,7 @@ int ScheduleTabWidget::estimateRemainingTournamentTime()
 
     // sum everything up
     totalRuntime += runtime;
+    ++totalRuntimeCnt;
   }
 
   // calculate the overall remaining playing time for all unfinished matches
@@ -327,14 +334,15 @@ int ScheduleTabWidget::estimateRemainingTournamentTime()
   int nFinished;
   int nRunning;
   tie(nTotal, nFinished, nRunning) = Tournament::getMatchMngr()->getMatchStats();
+  int remainingMatches = nTotal - nFinished;
   int avgMatchDuration = getAverageMatchDuration();
-  int totalRemainingPlayingTime = (nTotal - nFinished) * avgMatchDuration;
+  int remainingTime = (remainingMatches / courtCount) * avgMatchDuration;
+  remainingTime += ((remainingMatches % courtCount) == 0) ? 0 : avgMatchDuration;
 
-  // subtract the time already "consumed" by the running matches
-  totalRemainingPlayingTime -= totalRuntime;
+  // subtract the time already "consumed" by the running matches (averaged)
+  remainingTime -= (totalRuntimeCnt > 0) ? totalRuntime / totalRuntimeCnt : 0;
 
-  // distribute the remaining time evenly over all courts
-  return (totalRemainingPlayingTime / courtCount);
+  return remainingTime;
 }
 
 //----------------------------------------------------------------------------
@@ -430,9 +438,9 @@ void ScheduleTabWidget::onMatchStatusChanged(int matchId, int matchSeqNum, OBJ_S
   }
 
   // put everything into a status string
-  rawProgressBarString = tr("%1 matches in total, %2 finished (%3 %), %4 running");
-  rawProgressBarString = rawProgressBarString.arg(nTotal).arg(nFinished).arg(percComplete).arg(nRunning);
-  rawProgressBarString += "   " + tr("Avg. match duration: %1 min., est. remaining tournament time: %2 min.");
+  rawProgressBarString = tr("%1 matches in total, %2 finished (%3 %), %5 unfinished, %4 running");
+  rawProgressBarString = rawProgressBarString.arg(nTotal).arg(nFinished).arg(percComplete).arg(nRunning).arg(nTotal - nFinished);
+  rawProgressBarString += "   " + tr("Avg. match duration: %1 min., est. remaining tournament time: %2");
   rawProgressBarString = rawProgressBarString.arg(getAverageMatchDuration() / 60);
 
   // update the progress bar

@@ -22,6 +22,7 @@
 #include <QDialog>
 #include <QItemSelection>
 #include <QItemSelectionModel>
+#include <QTimer>
 
 #include "Tournament.h"
 #include "Match.h"
@@ -38,6 +39,7 @@ class ScheduleTabWidget : public QDialog
 
 public:
   static constexpr int INITIAL_AVG_MATCH_DURATION__SECS = 25 * 60;
+  static constexpr int PROGRESSBAR_UPDATE_INTERVAL__SECS = 20;
 
   explicit ScheduleTabWidget(QWidget *parent = 0);
   ~ScheduleTabWidget();
@@ -54,6 +56,7 @@ public slots:
   void onTournamentOpened(Tournament* _tnmt);
   void onMatchStatusChanged(int matchId, int matchSeqNum, OBJ_STATE fromState, OBJ_STATE toState);
   void onCatStatusChanged();
+  void updateProgressBar();
 
 private:
   Ui::ScheduleTabWidget *ui;
@@ -61,12 +64,12 @@ private:
   void askAndStoreMatchResult(const Match& ma);
   int estimateRemainingTournamentTime();
   int getAverageMatchDuration();
-  void updateProgressBar();
   QString rawProgressBarString;
   Tournament* tnmt = nullptr;
   unsigned long totalDuration = INITIAL_AVG_MATCH_DURATION__SECS;
   int totalDurationCnt;
   uint avgStartTime;
+  unique_ptr<QTimer> progressbarUpdateTimer;
 
   void initProgressBarFromDatabase();
 };
