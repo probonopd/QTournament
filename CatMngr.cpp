@@ -501,6 +501,109 @@ namespace QTournament
     return OK;
   }
 
+  //----------------------------------------------------------------------------
+
+  ERR CatMngr::deleteRunningCategory(const Category& cat) const
+  {
+    // only one initial check: can we do it "the soft way"?
+    if (canDeleteCategory(cat) == OK)
+    {
+      deleteCategory(cat);
+    }
+
+    // no, we can't.
+
+
+    // this is a brute-force deletion of an already running category.
+    //
+    // we don't perform any further pre-checks, because we directly delete everything,
+    // no matter what
+
+    // Step 1: undo calls for running matches in this category
+    MatchMngr* mm = Tournament::getMatchMngr();
+    auto runningMatches = mm->getCurrentlyRunningMatches();
+    for (const Match& ma : runningMatches)
+    {
+      if (ma.getCategory() != cat) continue;
+
+      ERR err = mm->undoMatchCall(ma);
+      if (err != OK) return err;   // shouldn't happen
+    }
+
+    // step 2: un-stage all staged match groups of this category
+    auto stagedMatchGroups = mm->getStagedMatchGroupsOrderedBySequence();
+    for (const MatchGroup& mg : stagedMatchGroups)
+    {
+      if (mg.getCategory() != cat) continue;
+
+      ERR err = mm->unstageMatchGroup(mg);
+      if (err != OK) return err;   // shouldn't happen
+    }
+
+    // step 3: tell everyone that something baaaad is about to happen
+    emit beginResetAllModels();
+
+    //
+    // now the actual deletion starts
+    //
+
+    int catId = cat.getId();
+
+    // deletion 1: bracket vis data, because it has only outgoing refs
+    auto tab = db->getTab(TAB_BRACKET_VIS);
+    tab.deleteRowsByColumnValue(BV_CAT_REF, catId);
+
+    // deletion 2: ranking data, because it has only outgoing refs
+    tab = db->getTab(TAB_RANKING);
+    tab.deleteRowsByColumnValue(RA_CAT_REF, catId);
+
+    // deletion 3a: matches, they are refered to by bracket vis data only
+    // deletion 3b: match groups, they are refered to only by ranking data and matches
+    tab = db->getTab(TAB_MATCH);
+    auto mgTab = db->getTab(TAB_MATCH_GROUP);
+    for (const MatchGroup& mg : mm->getAllMatchGroups())
+    {
+      if (mg.getCategory() == cat)
+      {
+        auto matchesInGroup = mg.getMatches();
+        for (const Match& ma : matchesInGroup)
+        {
+          int deletedSeqNum = ma.getSeqNum();
+          tab.deleteRowsByColumnValue("id", ma.getId());
+          fixSeqNumberAfterDelete(TAB_MATCH, deletedSeqNum);
+        }
+
+        // the match group has incoming links from matches
+        // and ranking and both have been deleted by now
+        int deletedSeqNum = mg.getSeqNum();
+        mgTab.deleteRowsByColumnValue("id", mg.getId());
+        fixSeqNumberAfterDelete(TAB_MATCH_GROUP, deletedSeqNum);
+      }
+    }
+
+    // deletion 4: player pairs
+    tab = db->getTab(TAB_PAIRS);
+    tab.deleteRowsByColumnValue(PAIRS_CAT_REF, catId);
+
+    // deletion 5: player to category allocation
+    tab = db->getTab(TAB_P2C);
+    tab.deleteRowsByColumnValue(P2C_CAT_REF, catId);
+
+    // final deletion: the category itself
+    int deletedSeqNum = cat.getSeqNum();
+    catTab.deleteRowsByColumnValue("id", catId);
+    fixSeqNumberAfterDelete(TAB_CATEGORY, deletedSeqNum);
+
+    //
+    // deletion completed
+    //
+
+    // refresh all models and the reports tab
+    emit endResetAllModels();
+
+    return OK;
+  }
+
 //----------------------------------------------------------------------------
 
   Category CatMngr::getCategoryById(int id)

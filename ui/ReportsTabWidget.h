@@ -49,6 +49,7 @@ public slots:
   void onTournamentClosed();
   void onTreeSelectionChanged();
   void onReloadRequested();
+  void onResetRequested();
 
 private:
   Ui::ReportsTabWidget *ui;
@@ -61,6 +62,7 @@ private:
   void showReport(const QString& repName);
   upSimpleReport curReport;
   Tournament* tnmt;
+  bool isInResetProcedure;
 };
 
 #endif // REPORTSTABWIDGET_H

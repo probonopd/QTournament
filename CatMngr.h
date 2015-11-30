@@ -75,6 +75,7 @@ namespace QTournament
     ERR addPlayerToCategory(const Player& p, const Category& c);
     ERR removePlayerFromCategory(const Player& p, const Category& c) const;
     ERR deleteCategory(const Category& cat) const;
+    ERR deleteRunningCategory(const Category& cat) const;
 
     // pairing
     ERR pairPlayers(const Category c, const Player& p1, const Player& p2);
@@ -99,6 +100,8 @@ namespace QTournament
     void categoryStatusChanged(const Category& c, const OBJ_STATE fromState, const OBJ_STATE toState);
     void beginDeleteCategory(int catSeqNum) const;
     void endDeleteCategory() const;
+    void beginResetAllModels() const;
+    void endResetAllModels() const;
 
   private:
     DbTab catTab;

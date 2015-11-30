@@ -39,6 +39,8 @@ public slots:
     void onBeginCreateMatchGroup();
     void onEndCreateMatchGroup(int newMatchGroupSeqNum);
     void onMatchGroupStatusChanged(int matchGroupId, int matchGroupSeqNum);
+    void onBeginResetModel();
+    void onEndResetModel();
 
 signals:
     void triggerFilterUpdate();

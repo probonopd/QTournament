@@ -28,7 +28,7 @@
 
 ReportsTabWidget::ReportsTabWidget(QWidget *parent) :
   QWidget(parent),
-  ui(new Ui::ReportsTabWidget)
+  ui(new Ui::ReportsTabWidget), isInResetProcedure(false)
 {
   ui->setupUi(this);
 
@@ -90,17 +90,18 @@ void ReportsTabWidget::onTournamentOpened(Tournament* _tnmt)
   tnmt = _tnmt;
 
   connect(tnmt, &Tournament::tournamentClosed, this, &ReportsTabWidget::onTournamentClosed);
+  connect(Tournament::getCatMngr(), SIGNAL(endResetAllModels()), this, SLOT(onResetRequested()), Qt::DirectConnection);
 
-  createRootItem();
-  updateRepPool();
+  onResetRequested();
 }
 
 //----------------------------------------------------------------------------
 
 void ReportsTabWidget::onTournamentClosed()
 {
+  onResetRequested();
+  disconnect(Tournament::getCatMngr(), SIGNAL(endResetAllModels()), this, SLOT(onResetRequested()));
   disconnect(tnmt, &Tournament::tournamentClosed, this, &ReportsTabWidget::onTournamentClosed);
-  repPool.clear();
 }
 
 //----------------------------------------------------------------------------
@@ -158,12 +159,20 @@ void ReportsTabWidget::createRootItem()
 
   // delete all old reports
   repPool.clear();
+
+  // delete the currently displayed report
+  curReport = nullptr;   // this calls the destructor of the old report
+  ui->repViewer->setReport(nullptr);
 }
 
 //----------------------------------------------------------------------------
 
 void ReportsTabWidget::onTreeSelectionChanged()
 {
+  // ignore selection-changed signals while we are in a reset
+  // procedure
+  if (isInResetProcedure) return;
+
   QTreeWidgetItem* curItem = ui->repTree->currentItem();
   if (curItem == nullptr) return;   // no selection
 
@@ -214,6 +223,20 @@ void ReportsTabWidget::onReloadRequested()
   {
     onTreeSelectionChanged();
   }
+}
+
+//----------------------------------------------------------------------------
+
+void ReportsTabWidget::onResetRequested()
+{
+  // inhibit signal processing while in reset
+  isInResetProcedure = true;
+
+  createRootItem();
+  updateRepPool();
+
+  // re-enable signal processing
+  isInResetProcedure = false;
 }
 
 //----------------------------------------------------------------------------

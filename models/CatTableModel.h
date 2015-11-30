@@ -47,6 +47,8 @@ public slots:
     void onEndCreateCategory(int newCatSeqNum);
     void onBeginDeleteCategory(int catSeqNum);
     void onEndDeleteCategory();
+    void onBeginResetModel();
+    void onEndResetModel();
 
 };
 

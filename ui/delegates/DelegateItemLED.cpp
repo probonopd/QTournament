@@ -30,7 +30,7 @@ void DelegateItemLED::operator ()(QPainter* painter, QRect itemArea, int margin,
     this->operator ()(painter, itemArea, margin, size, state2color[state]);
   } else {
     this->operator ()(painter, itemArea, margin, size, defaultColor);
-    qDebug() << "Applied default color to unknown state " << static_cast<int>(state);
+    //qDebug() << "Applied default color to unknown state " << static_cast<int>(state);
   }
 }
 

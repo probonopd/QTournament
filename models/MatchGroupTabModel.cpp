@@ -22,6 +22,8 @@ MatchGroupTableModel::MatchGroupTableModel(TournamentDB* _db)
   connect(Tournament::getMatchMngr(), &MatchMngr::beginCreateMatchGroup, this, &MatchGroupTableModel::onBeginCreateMatchGroup, Qt::DirectConnection);
   connect(Tournament::getMatchMngr(), &MatchMngr::endCreateMatchGroup, this, &MatchGroupTableModel::onEndCreateMatchGroup, Qt::DirectConnection);
   connect(Tournament::getMatchMngr(), &MatchMngr::matchGroupStatusChanged, this, &MatchGroupTableModel::onMatchGroupStatusChanged, Qt::DirectConnection);
+  connect(Tournament::getCatMngr(), SIGNAL(beginResetAllModels()), this, SLOT(onBeginResetModel()), Qt::DirectConnection);
+  connect(Tournament::getCatMngr(), SIGNAL(endResetAllModels()), this, SLOT(onEndResetModel()), Qt::DirectConnection);
 }
 
 //----------------------------------------------------------------------------
@@ -177,6 +179,20 @@ void MatchGroupTableModel::onMatchGroupStatusChanged(int matchGroupId, int match
   QModelIndex startIdx = createIndex(matchGroupSeqNum, 0);
   QModelIndex endIdx = createIndex(matchGroupSeqNum, COLUMN_COUNT-1);
   emit dataChanged(startIdx, endIdx);
+}
+
+//----------------------------------------------------------------------------
+
+void MatchGroupTableModel::onBeginResetModel()
+{
+  beginResetModel();
+}
+
+//----------------------------------------------------------------------------
+
+void MatchGroupTableModel::onEndResetModel()
+{
+  endResetModel();
 }
 
 //----------------------------------------------------------------------------

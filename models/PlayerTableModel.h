@@ -43,6 +43,8 @@ public slots:
   void onPlayerStatusChanged(int playerId, int playerSeqNum);
   void onBeginDeletePlayer(int playerSeqNum);
   void onEndDeletePlayer();
+  void onBeginResetModel();
+  void onEndResetModel();
 
 };
 

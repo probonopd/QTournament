@@ -229,15 +229,33 @@ void CategoryTableView::onRemoveCategory()
   ERR err = cm->canDeleteCategory(cat);
 
   // category is already beyond config state
-  if (err == CATEGORY_NOT_CONFIGURALE_ANYMORE)
+  // or not all players are removable
+  if (err != OK)
   {
-    QString msg = tr("The has already been started.\n");
-    msg += tr("Running categories cannot be deleted anymore.");
-    QMessageBox::critical(this, tr("Delete category"), msg);
+    QString msg = tr("The category has already been started.\n\n");
+    msg += tr("You can choose to force-delete the category anyway,\n");
+    msg += tr("but the following data will be IRREVOCABLY DELETED:\n\n");
+    msg += tr("\tPlayer and player pairs assigned to this category\n");
+    msg += tr("\tAll matches (scheduled, staged, running or finished)\n");
+    msg += tr("\tAll match results and rankings\n\n");
+    msg += tr("Do you want to proceed?");
+    int result = QMessageBox::warning(this, tr("Delete category"), msg, QMessageBox::Yes | QMessageBox::No);
+    if (result != QMessageBox::Yes) return;
+
+    // ask for a second confirmation
+    msg = tr("Please confirm again that you want to proceed\n");
+    msg += tr("and delete the category.\n\n");
+    msg += tr("AGAIN: THIS STEP CANNOT BE UNDONE!");
+    result = QMessageBox::warning(this, tr("Delete category"), msg, QMessageBox::Yes | QMessageBox::No);
+    if (result != QMessageBox::Yes) return;
+
+    // okay, force-delete the category
+    QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+    cm->deleteRunningCategory(cat);
+    QApplication::restoreOverrideCursor();
     return;
   }
 
-  // not all players removable
   if (err == PLAYER_NOT_REMOVABLE_FROM_CATEGORY)
   {
     QString msg = tr("Cannot remove all players from the category.\n");
@@ -654,7 +672,7 @@ void CategoryTableView::onContextMenuRequested(const QPoint& pos)
   actAddCategory->setEnabled(true);   // always possible
   actRunCategory->setEnabled(isCellClicked &&
                              ((catState == STAT_CAT_CONFIG) || (catState == STAT_CAT_WAIT_FOR_INTERMEDIATE_SEEDING)));
-  actRemoveCategory->setEnabled(isCellClicked && (catState == STAT_CAT_CONFIG));
+  actRemoveCategory->setEnabled(isCellClicked);
   actCloneCategory->setEnabled(isCellClicked);
   actAddPlayer->setEnabled(canAddPlayers);
   actImportPlayerToCat->setEnabled(canAddPlayers && Tournament::getPlayerMngr()->hasExternalPlayerDatabaseOpen());

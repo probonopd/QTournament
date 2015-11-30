@@ -25,6 +25,8 @@ PlayerTableModel::PlayerTableModel(TournamentDB* _db)
   connect(Tournament::getPlayerMngr(), &PlayerMngr::playerStatusChanged, this, &PlayerTableModel::onPlayerStatusChanged, Qt::DirectConnection);
   connect(Tournament::getPlayerMngr(), &PlayerMngr::beginDeletePlayer, this, &PlayerTableModel::onBeginDeletePlayer, Qt::DirectConnection);
   connect(Tournament::getPlayerMngr(), &PlayerMngr::endDeletePlayer, this, &PlayerTableModel::onEndDeletePlayer, Qt::DirectConnection);
+  connect(Tournament::getCatMngr(), SIGNAL(beginResetAllModels()), this, SLOT(onBeginResetModel()), Qt::DirectConnection);
+  connect(Tournament::getCatMngr(), SIGNAL(endResetAllModels()), this, SLOT(onEndResetModel()), Qt::DirectConnection);
 }
 
 //----------------------------------------------------------------------------
@@ -188,6 +190,20 @@ void PlayerTableModel::onBeginDeletePlayer(int playerSeqNum)
 void PlayerTableModel::onEndDeletePlayer()
 {
   endRemoveRows();
+}
+
+//----------------------------------------------------------------------------
+
+void PlayerTableModel::onBeginResetModel()
+{
+  beginResetModel();
+}
+
+//----------------------------------------------------------------------------
+
+void PlayerTableModel::onEndResetModel()
+{
+  endResetModel();
 }
 
 //----------------------------------------------------------------------------

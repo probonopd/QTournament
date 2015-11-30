@@ -39,6 +39,8 @@ public slots:
     void onBeginCreateMatch();
     void onEndCreateMatch(int newMatchSeqNum);
     void onMatchStatusChanged(int matchId, int matchSeqNum);
+    void onBeginResetModel();
+    void onEndResetModel();
 
 };
 
