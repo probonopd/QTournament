@@ -198,27 +198,45 @@ upSimpleReport BracketSheet::regenerateReport()
       //
       // print the actual or symbolic player names, if any
       //
+      QString pairName;
+      bool isSymbolic = false;
       int ppId = determineEffectivePlayerPairId(el, 1);
       if (ppId < 0)
       {
-        QString symbName = determineSymbolicPlayerPairDisplayText(el, 1);
-        drawBracketTextItem(x0, y0, spanY, orientation, symbName, BRACKET_TEXT_ELEMENT::PAIR1,
-                            BRACKET_STYLE_ITALICS);
+        pairName = determineSymbolicPlayerPairDisplayText(el, 1);
+        isSymbolic = true;
       } else {
         PlayerPair pp = Tournament::getPlayerMngr()->getPlayerPair(ppId);
-        QString txt = getTruncatedPlayerName(pp, xFac - 2 * GAP_LINE_TXT__MM, rawReport->getTextStyle(BRACKET_STYLE));
-        drawBracketTextItem(x0, y0, spanY, orientation, txt, BRACKET_TEXT_ELEMENT::PAIR1);
+        pairName = getTruncatedPlayerName(pp, xFac - 2 * GAP_LINE_TXT__MM, rawReport->getTextStyle(BRACKET_STYLE));
       }
+      drawBracketTextItem(x0, y0, spanY, orientation, pairName, BRACKET_TEXT_ELEMENT::PAIR1,
+                          isSymbolic ? BRACKET_STYLE_ITALICS : QString());
+
       ppId = determineEffectivePlayerPairId(el, 2);
+      isSymbolic = false;
       if (ppId < 0)
       {
-        QString symbName = determineSymbolicPlayerPairDisplayText(el, 2);
-        drawBracketTextItem(x0, y0, spanY, orientation, symbName, BRACKET_TEXT_ELEMENT::PAIR2,
-                            BRACKET_STYLE_ITALICS);
+        pairName = determineSymbolicPlayerPairDisplayText(el, 2);
+        isSymbolic = true;
       } else {
         PlayerPair pp = Tournament::getPlayerMngr()->getPlayerPair(ppId);
-        QString txt = getTruncatedPlayerName(pp, xFac - 2 * GAP_LINE_TXT__MM, rawReport->getTextStyle(BRACKET_STYLE));
-        drawBracketTextItem(x0, y0, spanY, orientation, txt, BRACKET_TEXT_ELEMENT::PAIR2);
+        pairName = getTruncatedPlayerName(pp, xFac - 2 * GAP_LINE_TXT__MM, rawReport->getTextStyle(BRACKET_STYLE));
+      }
+      if (yPageBreakSpan > 0)   // does the name of the second pair go on the next page?
+      {
+        // jump to the continuation page
+        rawReport->setActivePage(el.getNextPageNum());
+
+        // draw the remaining part of the bracket element
+        int remainingYSpan = spanY - yPageBreakSpan;
+        drawBracketTextItem(x0, 0, remainingYSpan, orientation, pairName, BRACKET_TEXT_ELEMENT::PAIR2,
+                            isSymbolic ? BRACKET_STYLE_ITALICS : QString());
+
+        // return to our current page
+        rawReport->setActivePage(idxPage);
+      } else {
+        drawBracketTextItem(x0, y0, spanY, orientation, pairName, BRACKET_TEXT_ELEMENT::PAIR2,
+                            isSymbolic ? BRACKET_STYLE_ITALICS : QString());
       }
 
       //
