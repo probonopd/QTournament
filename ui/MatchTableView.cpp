@@ -318,7 +318,11 @@ void MatchTableView::initContextMenu()
   walkoverSelectionMenu = contextMenu->addMenu(tr("Walkover for..."));
   walkoverSelectionMenu->addAction(actWalkoverP1);
   walkoverSelectionMenu->addAction(actWalkoverP2);
-  contextMenu->addAction(actPostponeMatch);
+
+  // disable the "Postpone"-entry as long as this function
+  // is not implemented
+  //contextMenu->addAction(actPostponeMatch);
+
   contextMenu->addSeparator();
   courtSelectionMenu = contextMenu->addMenu(tr("Call match on court..."));
 
