@@ -24,6 +24,7 @@
 #include <stdexcept>
 #include "SignalRelay.h"
 #include "models/CatTableModel.h"
+#include "PlayerMngr.h"
 
 using namespace dbOverlay;
 
@@ -153,7 +154,7 @@ namespace QTournament
     repFab = make_unique<ReportFactory>(db.get());
 
     // wire some signals between managers
-    connect(pm.get(), SIGNAL(playerStatusChanged()), mm.get(), SLOT(onPlayerStatusChanged()), Qt::DirectConnection);
+    connect(pm.get(), SIGNAL(playerStatusChanged(int, int, OBJ_STATE, OBJ_STATE)), mm.get(), SLOT(onPlayerStatusChanged(int, int, OBJ_STATE, OBJ_STATE)), Qt::DirectConnection);
   }
 
   //----------------------------------------------------------------------------

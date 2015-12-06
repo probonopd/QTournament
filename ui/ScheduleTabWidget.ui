@@ -103,7 +103,7 @@
             <bool>true</bool>
            </property>
            <attribute name="horizontalHeaderVisible">
-            <bool>true</bool>
+            <bool>false</bool>
            </attribute>
            <attribute name="verticalHeaderVisible">
             <bool>false</bool>
@@ -267,22 +267,6 @@
    <hints>
     <hint type="sourcelabel">
      <x>735</x>
-     <y>254</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>442</x>
-     <y>244</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>tvMatches</sender>
-   <signal>clicked(QModelIndex)</signal>
-   <receiver>ScheduleTabWidget</receiver>
-   <slot>onMatchSelectionChanged()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>408</x>
      <y>254</y>
     </hint>
     <hint type="destinationlabel">
