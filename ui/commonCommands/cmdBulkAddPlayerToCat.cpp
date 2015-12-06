@@ -51,7 +51,8 @@ ERR cmdBulkAddPlayerToCategory::exec()
   }
 
   // add all selected players to the category
-  auto cm = Tournament::getCatMngr();
+  auto tnmt = Tournament::getActiveTournament();
+  auto cm = tnmt->getCatMngr();
   for (const Player& pl : dlg.getSelectedPlayers())
   {
     ERR err = cm->addPlayerToCategory(pl, cat);

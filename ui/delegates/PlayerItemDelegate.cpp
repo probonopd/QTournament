@@ -44,7 +44,8 @@ void PlayerItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& op
   {
     row = (proxy->mapToSource(index)).row();
   }
-  auto p = Tournament::getPlayerMngr()->getPlayerBySeqNum(row);
+  auto tnmt = Tournament::getActiveTournament();
+  auto p = tnmt->getPlayerMngr()->getPlayerBySeqNum(row);
   // no check for a nullptr here, the call above MUST succeed
   
   // use a gray text color if the player is state "WAIT_FOR_REGISTRATION"

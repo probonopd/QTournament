@@ -69,7 +69,7 @@ CourtTableView::~CourtTableView()
 void CourtTableView::onTournamentOpened(Tournament* _tnmt)
 {
   tnmt = _tnmt;
-  sortedModel->setSourceModel(Tournament::getCourtTableModel());
+  sortedModel->setSourceModel(tnmt->getCourtTableModel());
   sortedModel->sort(CourtTableModel::COURT_NUM_COL_ID, Qt::AscendingOrder);
   setEnabled(true);
   
@@ -117,7 +117,7 @@ unique_ptr<Court> CourtTableView::getSelectedCourt() const
 
   // return the selected item
   int selectedSourceRow = sortedModel->mapToSource(indexes.at(0)).row();
-  return Tournament::getCourtMngr()->getCourtBySeqNum(selectedSourceRow);
+  return tnmt->getCourtMngr()->getCourtBySeqNum(selectedSourceRow);
 }
 
 //----------------------------------------------------------------------------
@@ -246,7 +246,7 @@ void CourtTableView::onContextMenuRequested(const QPoint& pos)
 
 void CourtTableView::onActionAddCourtTriggered()
 {
-  CourtMngr* cm = Tournament::getCourtMngr();
+  CourtMngr* cm = tnmt->getCourtMngr();
 
   int nextCourtNum = cm->getHighestUnusedCourtNumber();
 
@@ -281,7 +281,7 @@ void CourtTableView::onActionUndoCallTriggered()
   auto ma = getSelectedMatch();
   if (ma == nullptr) return;
 
-  MatchMngr* mm = Tournament::getMatchMngr();
+  MatchMngr* mm = tnmt->getMatchMngr();
   mm->undoMatchCall(*ma);
 }
 

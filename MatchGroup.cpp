@@ -40,7 +40,8 @@ namespace QTournament
   Category MatchGroup::getCategory() const
   {
     int catId = row[MG_CAT_REF].toInt();
-    return Tournament::getCatMngr()->getCategoryById(catId);
+    auto tnmt = Tournament::getActiveTournament();
+    return tnmt->getCatMngr()->getCategoryById(catId);
   }
 
 //----------------------------------------------------------------------------
@@ -61,7 +62,8 @@ namespace QTournament
 
   MatchList MatchGroup::getMatches() const
   {
-    return Tournament::getMatchMngr()->getMatchesForMatchGroup(*this);
+    auto tnmt = Tournament::getActiveTournament();
+    return tnmt->getMatchMngr()->getMatchesForMatchGroup(*this);
   }
 
 //----------------------------------------------------------------------------

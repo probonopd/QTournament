@@ -25,7 +25,6 @@
 #include <QWidget>
 #include <QTreeWidgetItem>
 
-#include "Tournament.h"
 #include "reports/ReportFactory.h"
 #include "reports/AbstractReport.h"
 #include "TournamentDB.h"
@@ -33,6 +32,12 @@
 namespace Ui {
   class ReportsTabWidget;
 }
+
+namespace QTournament {
+  class Tournament;
+}
+
+using namespace QTournament;
 
 class ReportsTabWidget : public QWidget
 {

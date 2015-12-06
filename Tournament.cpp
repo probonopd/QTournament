@@ -23,323 +23,345 @@
 #include <QFile>
 #include <stdexcept>
 #include "SignalRelay.h"
+#include "models/CatTableModel.h"
 
 using namespace dbOverlay;
 
 namespace QTournament
 {
-  TeamMngr* Tournament::tm = nullptr;
-  CatMngr* Tournament::cm = nullptr;
-  PlayerMngr* Tournament::pm = nullptr;
-  TeamListModel* Tournament::tlm = nullptr;
-  PlayerTableModel* Tournament::ptm = nullptr;
-  CategoryTableModel* Tournament::ctm = nullptr;
-  MatchMngr* Tournament::mm = nullptr;
-  MatchGroupTableModel* Tournament::mgm = nullptr;
-  MatchTableModel* Tournament::mam = nullptr;
-  CourtMngr* Tournament::com = nullptr;
-  CourtTableModel* Tournament::courtMod = nullptr;
-  RankingMngr* Tournament::rm = nullptr;
-  ReportFactory* Tournament::repFab = nullptr;
-  TournamentDB* Tournament::db = nullptr;
+  Tournament* Tournament::activeTournament = nullptr;
 
-/**
- * Constructor for a new, empty tournament file
- * 
+  Tournament::Tournament(unique_ptr<TournamentDB> dbHandle)
+  {
+    // Check whether the database handle is valid
+    if (dbHandle == nullptr)
+    {
+      throw std::invalid_argument("Received nullptr for database connection in Tournament ctor");
+    }
+
+    // take ownership of the database object
+    db = std::move(dbHandle);
+    
+    // initialize the various managers / handlers
+    initManagers();
+    
+    // always initialize the managers before the models,
+    // because the models connect to signals emitted by the
+    // managers
+    initModels();
+  }
+
+  //----------------------------------------------------------------------------
+
+  /**
+ * Creator for a new, empty tournament file
+ *
  * @param fName name of the file to create; the file may not exist
  * @param cfg initial configuration settings for the application
  */
-Tournament::Tournament(const QString& fName, const TournamentSettings& cfg)
-{
+  unique_ptr<Tournament> Tournament::createNew(const QString& fName, const TournamentSettings& cfg, ERR* err)
+  {
     // Check whether the file exists
     QFile f(fName);
     if (f.exists())
     {
-        QString msg = "Tournament ctor: ";
-        msg += "file " + fName + " already exists in the file system!";
-        throw std::invalid_argument(dbOverlay::QString2String(msg));
+      if (err != nullptr) *err = FILE_ALREADY_EXISTS;
+      return nullptr;
     }
-    
+
     // create a new, blank database
-    db = new TournamentDB(fName, true);
-    db->setLogLevel(1);
+    auto newDb = make_unique<TournamentDB>(fName, true);
+    newDb->setLogLevel(1);
 
     // initialize the database
-    KeyValueTab cfgTab = KeyValueTab::getTab(db, TAB_CFG);
-    cfgTab.set(CFG_KEY_DB_VERSION, DB_VERSION);
+    KeyValueTab cfgTab = KeyValueTab::getTab(newDb.get(), TAB_CFG);
+    QString dbVersion = "%1.%2";
+    dbVersion = dbVersion.arg(DB_VERSION_MAJOR).arg(DB_VERSION_MINOR);
+    cfgTab.set(CFG_KEY_DB_VERSION, dbVersion);
     cfgTab.set(CFG_KEY_TNMT_NAME, cfg.tournamentName);
     cfgTab.set(CFG_KEY_TNMT_ORGA, cfg.organizingClub);
     cfgTab.set(CFG_KEY_USE_TEAMS, cfg.useTeams);
-    
-    // initialize the various managers / handlers
-    initManagers();
-    
-    // always initialize the managers before the models,
-    // because the models connect to signals emitted by the
-    // managers
-    initModels();
-}
 
-//----------------------------------------------------------------------------
-    
-/**
- * Constructor for an existing tournament file
- * 
+    // construct a new tournament object for this database
+    auto newTnmt = unique_ptr<Tournament>(new Tournament(std::move(newDb)));
+
+    // return the new tournament pointer
+    if (err != nullptr) *err = OK;
+    return newTnmt;
+  }
+
+  //----------------------------------------------------------------------------
+
+  /**
+ * Creator for an existing tournament file
+ *
  * @param fName name of the file to create; the file must exist
  */
-Tournament::Tournament(const QString& fName)
-{
+  unique_ptr<Tournament> Tournament::openExisting(const QString& fName, ERR* err)
+  {
     // Check whether the file exists
     QFile f(fName);
     if (!(f.exists()))
     {
-        QString msg = "Tournament ctor: ";
-        msg += "file " + fName + " does not exist in the file system!";
-        throw std::invalid_argument(dbOverlay::QString2String(msg));
+      if (err != nullptr) *err = FILE_NOT_EXISTING;
+      return nullptr;
     }
-    
+
     // open an existing database
-    db = new TournamentDB(fName, false);
-    db->setLogLevel(1);
-    
-    // initialize the various managers / handlers
-    initManagers();
-    
-    // always initialize the managers before the models,
-    // because the models connect to signals emitted by the
-    // managers
-    initModels();
-}
+    auto newDb = make_unique<TournamentDB>(fName, false);
+    newDb->setLogLevel(1);
 
-//----------------------------------------------------------------------------
+    // check file format compatibiliy
+    if (!(newDb->isCompatibleDatabaseVersion()))
+    {
+      if (err != nullptr) *err = INCOMPATIBLE_FILE_FORMAT;
+      return nullptr;
 
-void Tournament::initManagers()
-{
-    tm = new TeamMngr(db);
-    cm = new CatMngr(db);
-    pm = new PlayerMngr(db);
-    mm = new MatchMngr(db);
-    com = new CourtMngr(db);
-    rm = new RankingMngr(db);
-    repFab = new ReportFactory(db);
+      // the newly created database object is automatically
+      // destroyed when leaving the scope
+    }
+
+    // construct a new tournament object for this database
+    auto newTnmt = unique_ptr<Tournament>(new Tournament(std::move(newDb)));
+
+    // return the new tournament pointer
+    if (err != nullptr) *err = OK;
+    return newTnmt;
+  }
+
+  //----------------------------------------------------------------------------
+
+  void Tournament::setActiveTournament(Tournament* newTnmt)
+  {
+    if (newTnmt == nullptr) return;
+
+    // set the global Tournament-pointer to the new tournament
+    activeTournament = newTnmt;
+  }
+
+  //----------------------------------------------------------------------------
+
+  void Tournament::initManagers()
+  {
+    tm = make_unique<TeamMngr>(db.get());
+    cm = make_unique<CatMngr>(db.get());
+    pm = make_unique<PlayerMngr>(db.get());
+    mm = make_unique<MatchMngr>(db.get());
+    com = make_unique<CourtMngr>(db.get());
+    rm = make_unique<RankingMngr>(db.get());
+    repFab = make_unique<ReportFactory>(db.get());
 
     // wire some signals between managers
-    connect(pm, &PlayerMngr::playerStatusChanged, mm, &MatchMngr::onPlayerStatusChanged, Qt::DirectConnection);
-}
-
-//----------------------------------------------------------------------------
-
-void Tournament::initModels()
-{
-  tlm = new TeamListModel(db);
-  ptm = new PlayerTableModel(db);
-  ctm = new CategoryTableModel(db);
-  mgm = new MatchGroupTableModel(db);
-  mam = new MatchTableModel(db);
-  courtMod = new CourtTableModel(db);
-}
-
-//----------------------------------------------------------------------------
-
-void Tournament::close()
-{
-  // announce that we're about to close
-  // IMPORTANT: the mamagers and models should
-  // stll be valid when emitting the signal,
-  // so that receivers can properly disconnect
-  emit tournamentClosed();
-    
-  delete tm;
-  delete cm;
-  delete pm;
-  delete mm;
-  delete com;
-  delete rm;
-  delete repFab;
-  
-  delete tlm;
-  delete ptm;
-  delete ctm;
-  delete mgm;
-  delete mam;
-  delete courtMod;
-  
-  tm = nullptr;
-  cm = nullptr;
-  pm = nullptr;
-  mm = nullptr;
-  tlm = nullptr;
-  ptm = nullptr;
-  ctm = nullptr;
-  mgm = nullptr;
-  mam = nullptr;
-  com = nullptr;
-  courtMod = nullptr;
-  rm = nullptr;
-  repFab = nullptr;
-  
-  db->close();
-  delete db;
-  db = nullptr;
-
-  //SignalRelay::cleanUp();
-}
-
-//----------------------------------------------------------------------------
-
-Tournament::~Tournament()
-{
-  // close will be called separately by the UI
-  //close();
-
-  // just to be sure, although should have been
-  // handled by close()
-  if (db)
-  {
-    db->close();
-    delete db;
-    db = nullptr;
+    connect(pm.get(), SIGNAL(playerStatusChanged()), mm.get(), SLOT(onPlayerStatusChanged()), Qt::DirectConnection);
   }
-}
 
-//----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
 
-TeamMngr* Tournament::getTeamMngr()
-{
-  return tm;
-}
+  void Tournament::initModels()
+  {
+    tlm = unique_ptr<TeamListModel>(new TeamListModel(this));
+    ptm = unique_ptr<PlayerTableModel>(new PlayerTableModel(this));
+    ctm = unique_ptr<CategoryTableModel>(new CategoryTableModel(this));
+    mgm = unique_ptr<MatchGroupTableModel>(new MatchGroupTableModel(this));
+    mam = unique_ptr<MatchTableModel>(new MatchTableModel(this));
+    courtMod = unique_ptr<CourtTableModel>(new CourtTableModel(this));
+  }
 
-//----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
 
-CatMngr* Tournament::getCatMngr()
-{
-  return cm;
-}
-
-//----------------------------------------------------------------------------
-
-PlayerMngr* Tournament::getPlayerMngr()
-{
-  return pm;
-}
-
-//----------------------------------------------------------------------------
-
-TeamListModel* Tournament::getTeamListModel()
-{
-  return tlm;
-}
-
-//----------------------------------------------------------------------------
-
-PlayerTableModel* Tournament::getPlayerTableModel()
-{
-  return ptm;
-}
-
-//----------------------------------------------------------------------------
-
-CategoryTableModel* Tournament::getCategoryTableModel()
-{
-  return ctm;
-}
-
-//----------------------------------------------------------------------------
+  void Tournament::close()
+  {
+    // announce that we're about to close
+    // IMPORTANT: the mamagers and models should
+    // stll be valid when emitting the signal,
+    // so that receivers can properly disconnect
+    emit tournamentClosed();
     
-MatchMngr* Tournament::getMatchMngr()
-{
-  return mm;
-}
+    tm.reset();
+    cm.reset();
+    pm.reset();
+    mm.reset();
+    com.reset();
+    rm.reset();
+    repFab.reset();
 
-//----------------------------------------------------------------------------
+    tlm.reset();
+    ptm.reset();
+    ctm.reset();
+    mgm.reset();
+    mam.reset();
+    courtMod.reset();
 
-MatchGroupTableModel* Tournament::getMatchGroupTableModel()
-{
-  return mgm;
-}
+    db->close();
+    db.reset();
 
-//----------------------------------------------------------------------------
-    
-MatchTableModel* Tournament::getMatchTableModel()
-{
-  return mam;
-}
+    // invalidate the global pointer
+    activeTournament = nullptr;
 
-//----------------------------------------------------------------------------
+    //SignalRelay::cleanUp();
+  }
 
-CourtMngr* Tournament::getCourtMngr()
-{
-  return com;
-}
+  //----------------------------------------------------------------------------
 
-//----------------------------------------------------------------------------
+  Tournament::~Tournament()
+  {
+    // just to be sure, although should have been
+    // handled by close()
+    if (db)
+    {
+      close();
+    }
+  }
 
-CourtTableModel* Tournament::getCourtTableModel()
-{
-  return courtMod;
-}
+  //----------------------------------------------------------------------------
 
-//----------------------------------------------------------------------------
+  TeamMngr* Tournament::getTeamMngr()
+  {
+    return tm.get();
+  }
 
-RankingMngr* Tournament::getRankingMngr()
-{
-  return rm;
-}
+  //----------------------------------------------------------------------------
 
-//----------------------------------------------------------------------------
+  CatMngr* Tournament::getCatMngr()
+  {
+    return cm.get();
+  }
 
-ReportFactory* Tournament::getReportFactory()
-{
-  return repFab;
-}
+  //----------------------------------------------------------------------------
 
-//----------------------------------------------------------------------------
+  PlayerMngr* Tournament::getPlayerMngr()
+  {
+    return pm.get();
+  }
 
-TournamentDB*Tournament::getDatabaseHandle()
-{
-  return db;
-}
+  //----------------------------------------------------------------------------
 
-//----------------------------------------------------------------------------
-    
+  TeamListModel* Tournament::getTeamListModel()
+  {
+    return tlm.get();
+  }
 
-//----------------------------------------------------------------------------
-    
+  //----------------------------------------------------------------------------
 
-//----------------------------------------------------------------------------
-    
+  PlayerTableModel* Tournament::getPlayerTableModel()
+  {
+    return ptm.get();
+  }
 
-//----------------------------------------------------------------------------
-    
+  //----------------------------------------------------------------------------
 
-//----------------------------------------------------------------------------
-    
+  CategoryTableModel* Tournament::getCategoryTableModel()
+  {
+    return ctm.get();
+  }
 
-//----------------------------------------------------------------------------
-    
+  //----------------------------------------------------------------------------
 
-//----------------------------------------------------------------------------
-    
+  MatchMngr* Tournament::getMatchMngr()
+  {
+    return mm.get();
+  }
 
-//----------------------------------------------------------------------------
-    
+  //----------------------------------------------------------------------------
 
-//----------------------------------------------------------------------------
-    
+  MatchGroupTableModel* Tournament::getMatchGroupTableModel()
+  {
+    return mgm.get();
+  }
 
-//----------------------------------------------------------------------------
-    
+  //----------------------------------------------------------------------------
 
-//----------------------------------------------------------------------------
-    
+  MatchTableModel* Tournament::getMatchTableModel()
+  {
+    return mam.get();
+  }
 
-//----------------------------------------------------------------------------
-    
+  //----------------------------------------------------------------------------
 
-//----------------------------------------------------------------------------
-    
+  CourtMngr* Tournament::getCourtMngr()
+  {
+    return com.get();
+  }
 
-//----------------------------------------------------------------------------
-    
+  //----------------------------------------------------------------------------
+
+  CourtTableModel* Tournament::getCourtTableModel()
+  {
+    return courtMod.get();
+  }
+
+  //----------------------------------------------------------------------------
+
+  RankingMngr* Tournament::getRankingMngr()
+  {
+    return rm.get();
+  }
+
+  //----------------------------------------------------------------------------
+
+  ReportFactory* Tournament::getReportFactory()
+  {
+    return repFab.get();
+  }
+
+  //----------------------------------------------------------------------------
+
+  TournamentDB*Tournament::getDatabaseHandle()
+  {
+    return db.get();
+  }
+
+  //----------------------------------------------------------------------------
+
+  bool Tournament::hasActiveTournament()
+  {
+    return (activeTournament != nullptr);
+  }
+
+  //----------------------------------------------------------------------------
+
+  Tournament*Tournament::getActiveTournament()
+  {
+    return activeTournament;
+  }
+
+  //----------------------------------------------------------------------------
+
+
+  //----------------------------------------------------------------------------
+
+
+  //----------------------------------------------------------------------------
+
+
+  //----------------------------------------------------------------------------
+
+
+  //----------------------------------------------------------------------------
+
+
+  //----------------------------------------------------------------------------
+
+
+  //----------------------------------------------------------------------------
+
+
+  //----------------------------------------------------------------------------
+
+
+  //----------------------------------------------------------------------------
+
+
+  //----------------------------------------------------------------------------
+
+
+  //----------------------------------------------------------------------------
+
+
+  //----------------------------------------------------------------------------
+
+
+  //----------------------------------------------------------------------------
+
 
 }

@@ -33,7 +33,8 @@ cmdMoveOrCopyPlayerToCategory::cmdMoveOrCopyPlayerToCategory(QWidget* p, const P
 
 ERR cmdMoveOrCopyPlayerToCategory::exec()
 {
-  auto cm = Tournament::getCatMngr();
+  auto tnmt = Tournament::getActiveTournament();
+  auto cm = tnmt->getCatMngr();
 
   // check if the player is in the source category
   if (!(srcCat.hasPlayer(pl)))

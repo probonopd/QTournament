@@ -328,25 +328,25 @@ namespace QTournament
       QList<Player>::const_iterator it;
       for (it = allPlayers.constBegin(); it != allPlayers.constEnd(); ++it)
       {
-	// skip players with matching sex
-	if ((*it).getSex() == s) continue;
-	
-	// for all other players, check if we can remove them
-	if (!(c.canRemovePlayer(*it)))
-	{
-	  return INVALID_RECONFIG;
-	}
+        // skip players with matching sex
+        if ((*it).getSex() == s) continue;
+
+        // for all other players, check if we can remove them
+        if (!(c.canRemovePlayer(*it)))
+        {
+          return INVALID_RECONFIG;
+        }
       }
       
       // okay, we can be sure that all "unwanted" players can be removed.
       // do it.
       for (it = allPlayers.constBegin(); it != allPlayers.constEnd(); ++it)
       {
-	// skip players with matching sex
-	if ((*it).getSex() == s) continue;
-	
-	// for all other players, check if we can remove them
-	c.removePlayer(*it);
+        // skip players with matching sex
+        if ((*it).getSex() == s) continue;
+
+        // for all other players, check if we can remove them
+        c.removePlayer(*it);
       }
     }
     
@@ -357,33 +357,34 @@ namespace QTournament
       
       PlayerPairList::const_iterator it;
       for (it = allPairs.constBegin(); it != allPairs.constEnd(); ++it) {
-	PlayerPair pp = *it;
-	
-	// Skip unpaired players
-	if (!(pp.hasPlayer2())) continue;
-	
-	// Skip true mixed pairs
-	if (pp.getPlayer1().getSex() != pp.getPlayer2().getSex()) continue;
+        PlayerPair pp = *it;
 
-	// check if we can split "false" mixed pairs (= same sex pairs)
-	if (c.canSplitPlayers(pp.getPlayer1(), pp.getPlayer2()) != OK) {
-	  return INVALID_RECONFIG;
-	}
+        // Skip unpaired players
+        if (!(pp.hasPlayer2())) continue;
+
+        // Skip true mixed pairs
+        if (pp.getPlayer1().getSex() != pp.getPlayer2().getSex()) continue;
+
+        // check if we can split "false" mixed pairs (= same sex pairs)
+        if (c.canSplitPlayers(pp.getPlayer1(), pp.getPlayer2()) != OK) {
+          return INVALID_RECONFIG;
+        }
       }
       
       // now we can be sure that all unwanted pairs can be split
-      CatMngr* cmngr = Tournament::getCatMngr();
+      auto tnmt = Tournament::getActiveTournament();
+      CatMngr* cmngr = tnmt->getCatMngr();
       for (it = allPairs.constBegin(); it != allPairs.constEnd(); ++it) {
-	PlayerPair pp = *it;
-	
-	// Skip unpaired players
-	if (!(pp.hasPlayer2())) continue;
-	
-	// Skip true mixed pairs
-	if (pp.getPlayer1().getSex() != pp.getPlayer2().getSex()) continue;
+        PlayerPair pp = *it;
 
-	// check if we can split "false" mixed pairs (= same sex pairs)
-	cmngr->splitPlayers(c, pp.getPairId());
+        // Skip unpaired players
+        if (!(pp.hasPlayer2())) continue;
+
+        // Skip true mixed pairs
+        if (pp.getPlayer1().getSex() != pp.getPlayer2().getSex()) continue;
+
+        // check if we can split "false" mixed pairs (= same sex pairs)
+        cmngr->splitPlayers(c, pp.getPairId());
       }
     }
     
@@ -520,7 +521,8 @@ namespace QTournament
     // no matter what
 
     // Step 1: undo calls for running matches in this category
-    MatchMngr* mm = Tournament::getMatchMngr();
+    auto tnmt = Tournament::getActiveTournament();
+    MatchMngr* mm = tnmt->getMatchMngr();
     auto runningMatches = mm->getCurrentlyRunningMatches();
     for (const Match& ma : runningMatches)
     {
@@ -849,7 +851,8 @@ namespace QTournament
   ERR CatMngr::splitPlayers(const Category c, int pairId) const
   {
     DbTab pairsTab = db->getTab(TAB_PAIRS);
-    PlayerMngr* pmngr = Tournament::getPlayerMngr();
+    auto tnmt = Tournament::getActiveTournament();
+    PlayerMngr* pmngr = tnmt->getPlayerMngr();
     try
     {
       TabRow r = pairsTab[pairId];
@@ -1093,7 +1096,8 @@ namespace QTournament
 
     // determine whether we have at least one RUNING and/or one
     // unfinished match in the category
-    auto mm = Tournament::getMatchMngr();
+    auto tnmt = Tournament::getActiveTournament();
+    auto mm = tnmt->getMatchMngr();
     bool hasMatchRunning = false;
     bool hasUnfinishedMatch = false;
     for (auto mg : mm->getMatchGroupsForCat(c))

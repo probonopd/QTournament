@@ -56,7 +56,8 @@ QList<int> CatRoundStatus::getCurrentlyRunningRoundNumbers() const
   int roundToCheck = (lastFinishedRound < 0) ? 1 : lastFinishedRound+1;
 
   // the last round that can possibly in state RUNNING
-  int lastRoundToCheck = Tournament::getMatchMngr()->getHighestUsedRoundNumberInCategory(cat);
+  auto tnmt = Tournament::getActiveTournament();
+  int lastRoundToCheck = tnmt->getMatchMngr()->getHighestUsedRoundNumberInCategory(cat);
 
   // loop through all applicable rounds and check their status
   while (roundToCheck <= lastRoundToCheck)
@@ -81,7 +82,8 @@ QList<int> CatRoundStatus::getCurrentlyRunningRoundNumbers() const
 
 int CatRoundStatus::getHighestGeneratedMatchRound() const
 {
-  return Tournament::getMatchMngr()->getHighestUsedRoundNumberInCategory(cat);
+  auto tnmt = Tournament::getActiveTournament();
+  return tnmt->getMatchMngr()->getHighestUsedRoundNumberInCategory(cat);
 }
 
 //----------------------------------------------------------------------------
@@ -101,7 +103,8 @@ int CatRoundStatus::getCurrentlyRunningRoundNumber() const
 
 int CatRoundStatus::getFinishedRoundsCount() const
 {
-  MatchMngr* mm = Tournament::getMatchMngr();
+  auto tnmt = Tournament::getActiveTournament();
+  MatchMngr* mm = tnmt->getMatchMngr();
 
   int roundNum = 1;
   int lastFinishedRound = NO_ROUNDS_FINISHED_YET;
@@ -154,9 +157,11 @@ tuple<int, int, int> CatRoundStatus::getMatchCountForCurrentRound() const
   int runningMatchCount = 0;
   int totalMatchCount = 0;
 
+  auto tnmt = Tournament::getActiveTournament();
+  auto mm = tnmt->getMatchMngr();
   for (int curRound : runningRounds)
   {
-    MatchGroupList matchGroupsInThisRound = Tournament::getMatchMngr()->getMatchGroupsForCat(cat, curRound);
+    MatchGroupList matchGroupsInThisRound = mm->getMatchGroupsForCat(cat, curRound);
     for (MatchGroup mg : matchGroupsInThisRound)
     {
       for (Match ma : mg.getMatches())

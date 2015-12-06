@@ -83,7 +83,7 @@ unique_ptr<Player> PlayerTableView::getSelectedPlayer() const
 
   // return the selected item
   int selectedSourceRow = sortedModel->mapToSource(indexes.at(0)).row();
-  return Tournament::getPlayerMngr()->getPlayerBySeqNum(selectedSourceRow);
+  return tnmt->getPlayerMngr()->getPlayerBySeqNum(selectedSourceRow);
 }
 
 //----------------------------------------------------------------------------
@@ -91,7 +91,7 @@ unique_ptr<Player> PlayerTableView::getSelectedPlayer() const
 void PlayerTableView::onTournamentOpened(Tournament* _tnmt)
 {
   tnmt = _tnmt;
-  sortedModel->setSourceModel(Tournament::getPlayerTableModel());
+  sortedModel->setSourceModel(tnmt->getPlayerTableModel());
   setEnabled(true);
   
   // connect signals from the Tournament and TeamMngr with my slots
@@ -153,7 +153,7 @@ void PlayerTableView::onContextMenuRequested(const QPoint& pos)
   actRegister->setEnabled(isPlayerClicked & (plStat == STAT_PL_WAIT_FOR_REGISTRATION));
   actUnregister->setEnabled(isPlayerClicked & (plStat == STAT_PL_IDLE));
 
-  bool hasExtDb = Tournament::getPlayerMngr()->hasExternalPlayerDatabaseOpen();
+  bool hasExtDb = tnmt->getPlayerMngr()->hasExternalPlayerDatabaseOpen();
   actImportFromExtDatabase->setEnabled(hasExtDb);
   actSyncAllToExtDatabase->setEnabled(hasExtDb);
   actExportToExtDatabase->setEnabled(isPlayerClicked && hasExtDb);
@@ -208,7 +208,7 @@ void PlayerTableView::onEditPlayerTriggered()
   }
 
   // category changes
-  CatMngr* cmngr = Tournament::getCatMngr();
+  CatMngr* cmngr = tnmt->getCatMngr();
 
   QHash<Category, bool> catSelection = dlg.getCategoryCheckState();
   QHash<Category, bool>::const_iterator it = catSelection.constBegin();
@@ -240,7 +240,7 @@ void PlayerTableView::onEditPlayerTriggered()
   }
 
   // Team changes
-  TeamMngr* tmngr = Tournament::getTeamMngr();
+  TeamMngr* tmngr = tnmt->getTeamMngr();
   Team newTeam = dlg.getTeam();
   if (newTeam != selectedPlayer->getTeam())
   {
@@ -261,7 +261,7 @@ void PlayerTableView::onRemovePlayerTriggered()
   auto p = getSelectedPlayer();
   if (p == nullptr) return;
 
-  auto pm = Tournament::getPlayerMngr();
+  auto pm = tnmt->getPlayerMngr();
 
   // can the player be deleted at all?
   ERR err = pm->canDeletePlayer(*p);
@@ -366,7 +366,7 @@ void PlayerTableView::onExportToExtDatabase()
 
 void PlayerTableView::onSyncAllToExtDatabase()
 {
-  PlayerMngr* pm = Tournament::getPlayerMngr();
+  PlayerMngr* pm = tnmt->getPlayerMngr();
 
   ERR err = pm->syncAllPlayersToExternalDatabase();
   if (err != OK)

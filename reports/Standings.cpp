@@ -49,7 +49,8 @@ Standings::Standings(TournamentDB* _db, const QString& _name, const Category& _c
 upSimpleReport Standings::regenerateReport()
 {
   // retrieve the ranking(s) for this round
-  RankingMngr* rm = Tournament::getRankingMngr();
+  auto tnmt = Tournament::getActiveTournament();
+  RankingMngr* rm = tnmt->getRankingMngr();
   RankingEntryListList rll = rm->getSortedRanking(cat, round);
 
   QString repName = cat.getName() + " -- " + tr("Standings after round ") + QString::number(round);
@@ -71,7 +72,7 @@ upSimpleReport Standings::regenerateReport()
   QString subHeader;
   if (!isRoundRobin)
   {
-    MatchMngr* mm = Tournament::getMatchMngr();
+    MatchMngr* mm = tnmt->getMatchMngr();
     MatchGroupList mgl = mm->getMatchGroupsForCat(cat, round);
     int matchGroupNumber = mgl.at(0).getGroupNumber();
     MATCH_SYSTEM mSys = cat.getMatchSystem();
@@ -168,7 +169,8 @@ int Standings::determineBestPossibleRankForPlayerAfterRound(const PlayerPair& pp
   // could have had a bye
   unique_ptr<Match> lastMatch = nullptr;
   int _r = round;
-  MatchMngr* mm = Tournament::getMatchMngr();
+  auto tnmt = Tournament::getActiveTournament();
+  MatchMngr* mm = tnmt->getMatchMngr();
   while ((lastMatch == nullptr) && (_r > 0))
   {
     lastMatch = mm->getMatchForPlayerPairAndRound(pp, _r);

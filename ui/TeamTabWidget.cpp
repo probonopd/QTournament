@@ -45,7 +45,8 @@ void TeamTabWidget::onCreateTeamClicked()
   {
     QString teamName = tr("New Team ") + QString::number(cnt);
     
-    e = Tournament::getTeamMngr()->createNewTeam(teamName);
+    auto tnmt = Tournament::getActiveTournament();
+    e = tnmt->getTeamMngr()->createNewTeam(teamName);
     cnt++;
   }
 }

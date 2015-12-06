@@ -173,7 +173,8 @@ void GuiHelpers::execWalkover(QWidget* parent, const QTournament::Match& ma, int
   {
     return;
   }
-  QTournament::MatchMngr* mm = QTournament::Tournament::getMatchMngr();
+  auto tnmt = QTournament::Tournament::getActiveTournament();
+  QTournament::MatchMngr* mm = tnmt->getMatchMngr();
   assert(mm != nullptr);
   mm->walkover(ma, playerNum);
 }

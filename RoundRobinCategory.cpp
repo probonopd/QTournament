@@ -35,7 +35,6 @@ namespace QTournament
   RoundRobinCategory::RoundRobinCategory(TournamentDB* db, int rowId)
   : Category(db, rowId)
   {
-    qDebug() << "!!  RR  !!";
   }
 
 //----------------------------------------------------------------------------
@@ -43,7 +42,6 @@ namespace QTournament
   RoundRobinCategory::RoundRobinCategory(TournamentDB* db, dbOverlay::TabRow row)
   : Category(db, row)
   {
-    qDebug() << "!!  RR  !!";
   }
 
 //----------------------------------------------------------------------------
@@ -92,7 +90,8 @@ namespace QTournament
   {
     if (getState() != STAT_CAT_IDLE) return WRONG_STATE;
 
-    auto mm = Tournament::getMatchMngr();
+    auto tnmt = Tournament::getActiveTournament();
+    auto mm = tnmt->getMatchMngr();
 
     // make sure we have not been called before; to this end, just
     // check that there have no matches been created for us so far
@@ -186,7 +185,8 @@ namespace QTournament
     KO_Config cfg = KO_Config(getParameter_string(GROUP_CONFIG));
     int groupRounds = cfg.getNumRounds();
 
-    RankingMngr* rm = Tournament::getRankingMngr();
+    auto tnmt = Tournament::getActiveTournament();
+    RankingMngr* rm = tnmt->getRankingMngr();
     ERR err;
 
     // if we are still in group rounds, simply calculate the
@@ -207,7 +207,7 @@ namespace QTournament
     // before we can enter the KO rounds
     if (round == groupRounds)
     {
-      Tournament::getCatMngr()->switchCatToWaitForSeeding(*this);
+      tnmt->getCatMngr()->switchCatToWaitForSeeding(*this);
     }
 
     // Actions for KO rounds
@@ -231,7 +231,7 @@ namespace QTournament
       }
 
       // set the ranks for the winner / losers of the finals
-      MatchMngr* mm = Tournament::getMatchMngr();
+      MatchMngr* mm = tnmt->getMatchMngr();
       for (MatchGroup mg : mm->getMatchGroupsForCat(*this, lastFinishedRound))
       {
         for (Match ma : mg.getMatches())
@@ -316,7 +316,8 @@ namespace QTournament
         if (err != nullptr) *err = OK;
         return result;
       }
-      MatchMngr* mm = Tournament::getMatchMngr();
+      auto tnmt = Tournament::getActiveTournament();
+      MatchMngr* mm = tnmt->getMatchMngr();
       for (MatchGroup mg : mm->getMatchGroupsForCat(*this, round))
       {
         for (Match ma : mg.getMatches())
@@ -394,7 +395,8 @@ namespace QTournament
     }
 
     // get the ranking after the last round-robin round
-    RankingEntryListList rll = Tournament::getRankingMngr()->getSortedRanking(*this, numGroupRounds);
+    auto tnmt = Tournament::getActiveTournament();
+    RankingEntryListList rll = tnmt->getRankingMngr()->getSortedRanking(*this, numGroupRounds);
     assert(rll.size() == cfg.getNumGroups());
 
     PlayerPairList result;

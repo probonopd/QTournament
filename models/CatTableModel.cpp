@@ -14,15 +14,16 @@
 using namespace QTournament;
 using namespace dbOverlay;
 
-CategoryTableModel::CategoryTableModel(TournamentDB* _db)
-:QAbstractTableModel(0), db(_db), catTab((_db->getTab(TAB_CATEGORY)))
+CategoryTableModel::CategoryTableModel(Tournament* tnmt)
+:QAbstractTableModel(0), db(tnmt->getDatabaseHandle()), catTab((db->getTab(TAB_CATEGORY)))
 {
-  connect(Tournament::getCatMngr(), &CatMngr::beginCreateCategory, this, &CategoryTableModel::onBeginCreateCategory, Qt::DirectConnection);
-  connect(Tournament::getCatMngr(), &CatMngr::endCreateCategory, this, &CategoryTableModel::onEndCreateCategory, Qt::DirectConnection);
-  connect(Tournament::getCatMngr(), SIGNAL(beginDeleteCategory(int)), this, SLOT(onBeginDeleteCategory(int)), Qt::DirectConnection);
-  connect(Tournament::getCatMngr(), SIGNAL(endDeleteCategory()), this, SLOT(onEndDeleteCategory()), Qt::DirectConnection);
-  connect(Tournament::getCatMngr(), SIGNAL(beginResetAllModels()), this, SLOT(onBeginResetModel()), Qt::DirectConnection);
-  connect(Tournament::getCatMngr(), SIGNAL(endResetAllModels()), this, SLOT(onEndResetModel()), Qt::DirectConnection);
+  CatMngr* cm = tnmt->getCatMngr();
+  connect(cm, SIGNAL(beginCreateCategory()), this, SLOT(onBeginCreateCategory()), Qt::DirectConnection);
+  connect(cm, SIGNAL(endCreateCategory(int)), this, SLOT(onEndCreateCategory(int)), Qt::DirectConnection);
+  connect(cm, SIGNAL(beginDeleteCategory(int)), this, SLOT(onBeginDeleteCategory(int)), Qt::DirectConnection);
+  connect(cm, SIGNAL(endDeleteCategory()), this, SLOT(onEndDeleteCategory()), Qt::DirectConnection);
+  connect(cm, SIGNAL(beginResetAllModels()), this, SLOT(onBeginResetModel()), Qt::DirectConnection);
+  connect(cm, SIGNAL(endResetAllModels()), this, SLOT(onEndResetModel()), Qt::DirectConnection);
 }
 
 //----------------------------------------------------------------------------
@@ -52,7 +53,8 @@ QVariant CategoryTableModel::data(const QModelIndex& index, int role) const
     if (role != Qt::DisplayRole)
       return QVariant();
     
-    Category c = Tournament::getCatMngr()->getCategoryBySeqNum(index.row());
+    auto tnmt = Tournament::getActiveTournament();
+    Category c = tnmt->getCatMngr()->getCategoryBySeqNum(index.row());
     
     // name
     if (index.column() == COL_NAME)

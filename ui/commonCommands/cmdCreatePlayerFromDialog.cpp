@@ -41,7 +41,8 @@ ERR cmdCreatePlayerFromDialog::exec()
   // is valid. That has been checked before the dialog
   // returns with "Accept". So we can directly step
   // into the creation of the new player
-  ERR e = Tournament::getPlayerMngr()->createNewPlayer(
+  auto tnmt = Tournament::getActiveTournament();
+  ERR e = tnmt->getPlayerMngr()->createNewPlayer(
                                                        dlg->getFirstName(),
                                                        dlg->getLastName(),
                                                        dlg->getSex(),
@@ -55,7 +56,7 @@ ERR cmdCreatePlayerFromDialog::exec()
     QMessageBox::warning(parentWidget, tr("WTF??"), msg);
     return e;
   }
-  Player p = Tournament::getPlayerMngr()->getPlayer(dlg->getFirstName(), dlg->getLastName());
+  Player p = tnmt->getPlayerMngr()->getPlayer(dlg->getFirstName(), dlg->getLastName());
 
   // assign the player to the selected categories
   //
@@ -63,7 +64,7 @@ ERR cmdCreatePlayerFromDialog::exec()
   // are valid. That has been checked upon creation of the "selectable"
   // category entries. So we can directly step
   // into the assignment of the categories
-  CatMngr* cmngr = Tournament::getCatMngr();
+  CatMngr* cmngr = tnmt->getCatMngr();
 
   QHash<Category, bool> catSelection = dlg->getCategoryCheckState();
   QHash<Category, bool>::const_iterator it = catSelection.constBegin();

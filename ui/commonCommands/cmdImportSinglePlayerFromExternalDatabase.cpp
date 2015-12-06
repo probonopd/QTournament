@@ -37,7 +37,8 @@ cmdImportSinglePlayerFromExternalDatabase::cmdImportSinglePlayerFromExternalData
 ERR cmdImportSinglePlayerFromExternalDatabase::exec()
 {
   // make sure we have an external database open
-  PlayerMngr* pm = Tournament::getPlayerMngr();
+  auto tnmt = Tournament::getActiveTournament();
+  PlayerMngr* pm = tnmt->getPlayerMngr();
   if (!(pm->hasExternalPlayerDatabaseOpen()))
   {
     QString msg = tr("No valid database for player import open.");
@@ -96,7 +97,7 @@ ERR cmdImportSinglePlayerFromExternalDatabase::exec()
   // category
   if (preselectedCatId > 0)
   {
-    CatMngr* cm = Tournament::getCatMngr();
+    CatMngr* cm = tnmt->getCatMngr();
     auto cat = cm->getCategory(preselectedCatId);
 
     // was the provided ID valid? If not, invalidate it

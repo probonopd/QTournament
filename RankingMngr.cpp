@@ -64,9 +64,11 @@ namespace QTournament
     // to avoid that the ranking entries have already been
     // halfway written to the database when we encounter an invalid
     // match
+    auto tnmt = Tournament::getActiveTournament();
+    auto mm = tnmt->getMatchMngr();
     for (PlayerPair pp : ppList)
     {
-      unique_ptr<Match> ma = Tournament::getMatchMngr()->getMatchForPlayerPairAndRound(pp, lastRound);
+      unique_ptr<Match> ma = mm->getMatchForPlayerPairAndRound(pp, lastRound);
       if (ma != nullptr)
       {
         ERR e;
@@ -106,7 +108,7 @@ namespace QTournament
 
       // get match results, if the player played in this round
       // (maybe the player had a bye; in this case we skip this section)
-      unique_ptr<Match> ma = Tournament::getMatchMngr()->getMatchForPlayerPairAndRound(pp, lastRound);
+      unique_ptr<Match> ma = mm->getMatchForPlayerPairAndRound(pp, lastRound);
       if (ma != nullptr)
       {
         // determine whether our pp is player 1 or player 2
@@ -174,7 +176,7 @@ namespace QTournament
         // we are in some sort of round-robin round with
         // multiple match groups. In this case, the group
         // number can be derived directly from the PlayerPair
-        MatchMngr* mm = Tournament::getMatchMngr();
+        MatchMngr* mm = tnmt->getMatchMngr();
         if (mm->getMatchGroupsForCat(cat, lastRound).size() > 1)
         {
           grpNum = pp.getPairsGroupNum(db);
@@ -246,7 +248,7 @@ namespace QTournament
     // retrieve
     //
     // Note: the list of applicable match groups cannot
-    // be derived from Tournament::getMatchMngr()->getMatchGroupsForCat(cat, lastRound)
+    // be derived from tnmt->getMatchMngr()->getMatchGroupsForCat(cat, lastRound)
     // because this doesn't fetch group numbers of those
     // round-robin groups that haven't played in this round.
     // This effect occurs if we have different group sizes in the category
@@ -321,7 +323,7 @@ namespace QTournament
     // sort
     //
     // Note: the list of applicable match groups cannot
-    // be derived from Tournament::getMatchMngr()->getMatchGroupsForCat(cat, lastRound)
+    // be derived from tnmt->getMatchMngr()->getMatchGroupsForCat(cat, lastRound)
     // because this doesn't fetch group numbers of those
     // round-robin groups that haven't played in this round.
     // This effect occurs if we have different group sizes in the category

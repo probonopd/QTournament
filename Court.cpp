@@ -60,7 +60,8 @@ namespace QTournament
 
   ERR Court::rename(const QString &newName)
   {
-    return Tournament::getCourtMngr()->renameCourt(*this, newName);
+    auto tnmt = Tournament::getActiveTournament();
+    return tnmt->getCourtMngr()->renameCourt(*this, newName);
   }
 
 //----------------------------------------------------------------------------
@@ -88,7 +89,8 @@ namespace QTournament
 
   unique_ptr<Match> Court::getMatch() const
   {
-    return Tournament::getMatchMngr()->getMatchForCourt(*this);
+    auto tnmt = Tournament::getActiveTournament();
+    return tnmt->getMatchMngr()->getMatchForCourt(*this);
   }
 
 //----------------------------------------------------------------------------

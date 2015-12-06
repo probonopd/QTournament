@@ -210,8 +210,9 @@ PlayerPairList GroupAssignmentListWidget::getSelectedPlayerPairs()
     int id1 = selectionQueue.first()->selectedItems()[0]->data(Qt::UserRole).toInt();
     int id2 = selectionQueue.last()->selectedItems()[0]->data(Qt::UserRole).toInt();
     
-    result.append(Tournament::getPlayerMngr()->getPlayerPair(id1));
-    result.append(Tournament::getPlayerMngr()->getPlayerPair(id2));
+    auto tnmt = Tournament::getActiveTournament();
+    result.append(tnmt->getPlayerMngr()->getPlayerPair(id1));
+    result.append(tnmt->getPlayerMngr()->getPlayerPair(id2));
   }
   
   return result;
@@ -246,7 +247,8 @@ QList<PlayerPairList> GroupAssignmentListWidget::getGroupAssignments()
   QList<PlayerPairList> result;
   if (!isInitialized) return result;
 
-  PlayerMngr* pmngr = Tournament::getPlayerMngr();
+  auto tnmt = Tournament::getActiveTournament();
+  PlayerMngr* pmngr = tnmt->getPlayerMngr();
   for (int i=0; i < MAX_GROUP_COUNT; i++)
   {
     if (lwGroup[i] == nullptr) continue;

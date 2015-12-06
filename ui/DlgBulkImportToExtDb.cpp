@@ -85,7 +85,8 @@ void DlgBulkImportToExtDb::initDropBoxes()
 {
   // prepare a list of all teams
   ui->cbTeam->clear();
-  TeamMngr* tm = Tournament::getTeamMngr();
+  auto tnmt = Tournament::getActiveTournament();
+  TeamMngr* tm = tnmt->getTeamMngr();
   auto teamList = tm->getAllTeams();
   std::sort(teamList.begin(), teamList.end(), [](Team& t1, Team& t2) {
     return t1.getName() < t2.getName();
@@ -99,7 +100,7 @@ void DlgBulkImportToExtDb::initDropBoxes()
   // prepare a list of all categories
   // that can potentially joined by new players
   ui->cbCat->clear();
-  CatMngr* cm = Tournament::getCatMngr();
+  CatMngr* cm = tnmt->getCatMngr();
   auto catList = cm->getAllCategories();
   std::sort(catList.begin(), catList.end(), [](Category& c1, Category& c2) {
     return c1.getName() < c2.getName();

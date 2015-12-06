@@ -71,7 +71,8 @@ namespace QTournament
 
   ERR Team::rename(const QString& nn)
   {
-    return Tournament::getTeamMngr()->renameTeam(*this, nn);
+    auto tnmt = Tournament::getActiveTournament();
+    return tnmt->getTeamMngr()->renameTeam(*this, nn);
   }
 
 //----------------------------------------------------------------------------

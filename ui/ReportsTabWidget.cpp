@@ -52,7 +52,9 @@ ReportsTabWidget::~ReportsTabWidget()
 
 void ReportsTabWidget::updateRepPool()
 {
-  auto repFab = Tournament::getReportFactory();
+  if (!(Tournament::hasActiveTournament())) return;
+
+  auto repFab = tnmt->getReportFactory();
   if (repFab == nullptr) return;
 
   QStringList existingReports;
@@ -90,7 +92,7 @@ void ReportsTabWidget::onTournamentOpened(Tournament* _tnmt)
   tnmt = _tnmt;
 
   connect(tnmt, &Tournament::tournamentClosed, this, &ReportsTabWidget::onTournamentClosed);
-  connect(Tournament::getCatMngr(), SIGNAL(endResetAllModels()), this, SLOT(onResetRequested()), Qt::DirectConnection);
+  connect(tnmt->getCatMngr(), SIGNAL(endResetAllModels()), this, SLOT(onResetRequested()), Qt::DirectConnection);
 
   onResetRequested();
 }
@@ -100,7 +102,7 @@ void ReportsTabWidget::onTournamentOpened(Tournament* _tnmt)
 void ReportsTabWidget::onTournamentClosed()
 {
   onResetRequested();
-  disconnect(Tournament::getCatMngr(), SIGNAL(endResetAllModels()), this, SLOT(onResetRequested()));
+  disconnect(tnmt->getCatMngr(), SIGNAL(endResetAllModels()), this, SLOT(onResetRequested()));
   disconnect(tnmt, &Tournament::tournamentClosed, this, &ReportsTabWidget::onTournamentClosed);
 }
 

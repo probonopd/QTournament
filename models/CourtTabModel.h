@@ -14,32 +14,36 @@
 #include "TournamentDB.h"
 #include "Court.h"
 
-using namespace QTournament;
-
-class CourtTableModel : public QAbstractTableModel
+namespace QTournament
 {
-  Q_OBJECT
-  
-public:
-  static constexpr int COURT_NUM_COL_ID = 0;  // id of the column with the court number
-  static constexpr int COLUMN_COUNT = 2;  // number of columns in the model
 
-  CourtTableModel (TournamentDB* _db);
-  int rowCount(const QModelIndex & parent = QModelIndex()) const;
-  int columnCount(const QModelIndex & parent = QModelIndex()) const;
-  QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const;
-  QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
-  
+  class Tournament;
+
+  class CourtTableModel : public QAbstractTableModel
+  {
+    Q_OBJECT
+
+  public:
+    static constexpr int COURT_NUM_COL_ID = 0;  // id of the column with the court number
+    static constexpr int COLUMN_COUNT = 2;  // number of columns in the model
+
+    CourtTableModel (Tournament* tnmt);
+    int rowCount(const QModelIndex & parent = QModelIndex()) const;
+    int columnCount(const QModelIndex & parent = QModelIndex()) const;
+    QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const;
+    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
+
   private:
     TournamentDB* db;
     dbOverlay::DbTab courtTab;
     
-public slots:
+  public slots:
     void onBeginCreateCourt();
     void onEndCreateCourt(int newCourtSeqNum);
     void onCourtStatusChanged(int courtId, int courtSeqNum);
 
-};
+  };
 
+}
 #endif	/* COURTTABLEMODEL_H */
 

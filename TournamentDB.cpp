@@ -16,6 +16,9 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <QString>
+#include <QStringList>
+
 #include "TournamentDB.h"
 #include "TournamentDataDefs.h"
 #include "KeyValueTab.h"
@@ -193,9 +196,73 @@ void TournamentDB::populateTables()
     tableCreationHelper(TAB_BRACKET_VIS, cols);
 }
 
+//----------------------------------------------------------------------------
+
 void TournamentDB::populateViews()
 {
-    
+
+}
+
+//----------------------------------------------------------------------------
+
+tuple<int, int> TournamentDB::getVersion()
+{
+  KeyValueTab cfg = KeyValueTab::getTab(this, TAB_CFG);
+
+  // return an error if no version information is stored in the database
+  if (!(cfg.hasKey(CFG_KEY_DB_VERSION)))
+  {
+    return make_tuple(-1, -1);
+  }
+
+  // get the raw version string
+  QString versionString = cfg.getString(CFG_KEY_DB_VERSION);
+  if (versionString.isEmpty())
+  {
+    return make_tuple(-1, -1);
+  }
+
+  // try to split it into major / minor
+  int major;
+  int minor;
+  bool isOkay;
+  auto col = versionString.split(".");
+  major = col[0].toInt(&isOkay);
+  if (!isOkay)
+  {
+    return make_tuple(-1, -1);
+  }
+  if (col.length() > 1)
+  {
+    minor = col[1].toInt(&isOkay);
+    if (!isOkay)
+    {
+      return make_tuple(major, -1);
+    }
+  } else {
+    // this is a workaround for old databases
+    // that did only store a major version number
+    // and no minor version number
+    minor = 0;
+  }
+
+  return make_tuple(major, minor);
+}
+
+//----------------------------------------------------------------------------
+
+bool TournamentDB::isCompatibleDatabaseVersion()
+{
+  // get the current file format version
+  int major;
+  int minor;
+  tie(major, minor) = getVersion();
+
+  // condition: major version number must
+  // match the compiled in version and the minor
+  // version number must be less or equal to
+  // the version at compile time
+  return ((major == DB_VERSION_MAJOR) && (minor >= 0) && (minor <= DB_VERSION_MINOR));
 }
 
 }

@@ -90,7 +90,8 @@ namespace QTournament
     }
 
     int ppId = row[MA_PAIR1_REF].toInt();
-    return Tournament::getPlayerMngr()->getPlayerPair(ppId);
+    auto tnmt = Tournament::getActiveTournament();
+    return tnmt->getPlayerMngr()->getPlayerPair(ppId);
   }
 
 //----------------------------------------------------------------------------
@@ -103,7 +104,8 @@ namespace QTournament
     }
 
     int ppId = row[MA_PAIR2_REF].toInt();
-    return Tournament::getPlayerMngr()->getPlayerPair(ppId);
+    auto tnmt = Tournament::getActiveTournament();
+    return tnmt->getPlayerMngr()->getPlayerPair(ppId);
   }
 
 //----------------------------------------------------------------------------
@@ -199,7 +201,8 @@ namespace QTournament
     }
 
     int courtId = courtEntry.toInt();
-    auto result = Tournament::getCourtMngr()->getCourtById(courtId);
+    auto tnmt = Tournament::getActiveTournament();
+    auto result = tnmt->getCourtMngr()->getCourtById(courtId);
     if (err != nullptr) *err = OK;
     return result;
   }
@@ -208,7 +211,8 @@ namespace QTournament
 
   QList<Player> Match::determineActualPlayers() const
   {
-    return Tournament::getPlayerMngr()->determineActualPlayersForMatch(*this);
+    auto tnmt = Tournament::getActiveTournament();
+    return tnmt->getPlayerMngr()->determineActualPlayersForMatch(*this);
   }
 
 //----------------------------------------------------------------------------
@@ -349,7 +353,8 @@ namespace QTournament
     bool isWinner = matchRef > 0;
     if (matchRef < 0) matchRef = -matchRef;
 
-    auto ma = Tournament::getMatchMngr()->getMatch(matchRef);
+    auto tnmt = Tournament::getActiveTournament();
+    auto ma = tnmt->getMatchMngr()->getMatch(matchRef);
     int matchNumber = ma->getMatchNumber();
     if (matchNumber == MATCH_NUM_NOT_ASSIGNED) return 0;
 

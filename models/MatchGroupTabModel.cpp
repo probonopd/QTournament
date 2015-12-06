@@ -16,14 +16,17 @@
 using namespace QTournament;
 using namespace dbOverlay;
 
-MatchGroupTableModel::MatchGroupTableModel(TournamentDB* _db)
-:QAbstractTableModel(0), db(_db), mgTab((_db->getTab(TAB_MATCH_GROUP)))
+MatchGroupTableModel::MatchGroupTableModel(Tournament* tnmt)
+:QAbstractTableModel(0), db(tnmt->getDatabaseHandle()), mgTab((db->getTab(TAB_MATCH_GROUP)))
 {
-  connect(Tournament::getMatchMngr(), &MatchMngr::beginCreateMatchGroup, this, &MatchGroupTableModel::onBeginCreateMatchGroup, Qt::DirectConnection);
-  connect(Tournament::getMatchMngr(), &MatchMngr::endCreateMatchGroup, this, &MatchGroupTableModel::onEndCreateMatchGroup, Qt::DirectConnection);
-  connect(Tournament::getMatchMngr(), &MatchMngr::matchGroupStatusChanged, this, &MatchGroupTableModel::onMatchGroupStatusChanged, Qt::DirectConnection);
-  connect(Tournament::getCatMngr(), SIGNAL(beginResetAllModels()), this, SLOT(onBeginResetModel()), Qt::DirectConnection);
-  connect(Tournament::getCatMngr(), SIGNAL(endResetAllModels()), this, SLOT(onEndResetModel()), Qt::DirectConnection);
+  MatchMngr* mm = tnmt->getMatchMngr();
+  connect(mm, SIGNAL(beginCreateMatchGroup()), this, SLOT(onBeginCreateMatchGroup()), Qt::DirectConnection);
+  connect(mm, SIGNAL(endCreateMatchGroup(int)), this, SLOT(onEndCreateMatchGroup(int)), Qt::DirectConnection);
+  connect(mm, SIGNAL(matchGroupStatusChanged(int,int,OBJ_STATE,OBJ_STATE)), this, SLOT(onMatchGroupStatusChanged(int,int)), Qt::DirectConnection);
+
+  CatMngr* cm = tnmt->getCatMngr();
+  connect(cm, SIGNAL(beginResetAllModels()), this, SLOT(onBeginResetModel()), Qt::DirectConnection);
+  connect(cm, SIGNAL(endResetAllModels()), this, SLOT(onEndResetModel()), Qt::DirectConnection);
 }
 
 //----------------------------------------------------------------------------
@@ -64,7 +67,8 @@ QVariant MatchGroupTableModel::data(const QModelIndex& index, int role) const
     if (role != Qt::DisplayRole)
       return QVariant();
     
-    auto mg = Tournament::getMatchMngr()->getMatchGroupBySeqNum(index.row());
+    auto tnmt = Tournament::getActiveTournament();
+    auto mg = tnmt->getMatchMngr()->getMatchGroupBySeqNum(index.row());
     
     // first column: category
     if (index.column() == 0)

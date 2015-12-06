@@ -67,7 +67,7 @@ CategoryTableView::~CategoryTableView()
 void CategoryTableView::onTournamentOpened(Tournament* _tnmt)
 {
   tnmt = _tnmt;
-  setModel(Tournament::getCategoryTableModel());
+  setModel(tnmt->getCategoryTableModel());
   setEnabled(true);
   
   // connect signals from the Tournament and TeamMngr with my slots
@@ -140,7 +140,7 @@ Category CategoryTableView::getSelectedCategory()
   QModelIndexList indexes = selectionModel()->selection().indexes();
   int selectedSeqNum = indexes.at(0).row();
   
-  return Tournament::getCatMngr()->getCategoryBySeqNum(selectedSeqNum);
+  return tnmt->getCatMngr()->getCategoryBySeqNum(selectedSeqNum);
 }
 
 //----------------------------------------------------------------------------
@@ -152,7 +152,7 @@ void CategoryTableView::onCategoryDoubleClicked(const QModelIndex& index)
     return;
   }
   
-  Category selectedCat = Tournament::getCatMngr()->getCategoryBySeqNum(index.row());
+  Category selectedCat = tnmt->getCatMngr()->getCategoryBySeqNum(index.row());
   
   QString oldName = selectedCat.getName();
   
@@ -181,7 +181,7 @@ void CategoryTableView::onCategoryDoubleClicked(const QModelIndex& index)
 
     // okay, we have a valid name. try to rename the category
     newName = newName.trimmed();
-    ERR e = Tournament::getCatMngr()->renameCategory(selectedCat, newName);
+    ERR e = tnmt->getCatMngr()->renameCategory(selectedCat, newName);
 
     if (e == INVALID_NAME)
     {
@@ -211,7 +211,7 @@ void CategoryTableView::onAddCategory()
   {
     QString newCatName = tr("New Category ") + QString::number(cnt);
 
-    e = Tournament::getCatMngr()->createNewCategory(newCatName);
+    e = tnmt->getCatMngr()->createNewCategory(newCatName);
     ++cnt;
   }
 }
@@ -223,7 +223,7 @@ void CategoryTableView::onRemoveCategory()
   if (!(hasCategorySelected())) return;
 
   Category cat = getSelectedCategory();
-  CatMngr* cm = Tournament::getCatMngr();
+  CatMngr* cm = tnmt->getCatMngr();
 
   // can the category be deleted at all?
   ERR err = cm->canDeleteCategory(cat);
@@ -321,7 +321,7 @@ void CategoryTableView::onRunCategory()
 
   if (e != OK) return;
 
-  e = Tournament::getCatMngr()->freezeConfig(*selectedCat);
+  e = tnmt->getCatMngr()->freezeConfig(*selectedCat);
   // after we checked for category-specific errors above, we can only see general errors here
   if (e == NOT_ALL_PLAYERS_REGISTERED)
   {
@@ -476,7 +476,7 @@ void CategoryTableView::onRunCategory()
    * the database.
    */
   QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
-  e = Tournament::getCatMngr()->startCategory(*selectedCat, ppListList, initialRanking);
+  e = tnmt->getCatMngr()->startCategory(*selectedCat, ppListList, initialRanking);
   QApplication::restoreOverrideCursor();
   if (e != OK)  // should never happen
   {
@@ -493,7 +493,7 @@ void CategoryTableView::onCloneCategory()
   if (!(hasCategorySelected())) return;
 
   Category cat = getSelectedCategory();
-  CatMngr* cm = Tournament::getCatMngr();
+  CatMngr* cm = tnmt->getCatMngr();
 
   ERR err = cm->cloneCategory(cat, tr("Clone"));
   if (err == OK) return;
@@ -604,7 +604,7 @@ void CategoryTableView::handleIntermediateSeedingForSelectedCat()
    * If we made it to this point, we can generate matches for the next round(s)
    */
   QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
-  ERR e = Tournament::getCatMngr()->continueWithIntermediateSeeding(*selectedCat, seeding);
+  ERR e = tnmt->getCatMngr()->continueWithIntermediateSeeding(*selectedCat, seeding);
   QApplication::restoreOverrideCursor();
   if (e != OK)  // should never happen
   {
@@ -625,7 +625,7 @@ bool CategoryTableView::unfreezeAndCleanup(unique_ptr<Category> selectedCat)
   if (selectedCat->getState() != STAT_CAT_FROZEN) return false;
 
   // undo all database changes that happened during freezing
-  ERR e = Tournament::getCatMngr()->unfreezeConfig(*selectedCat);
+  ERR e = tnmt->getCatMngr()->unfreezeConfig(*selectedCat);
   if (e != OK) // this should never be true
   {
     QMessageBox::critical(this, tr("Run Category"),
@@ -675,7 +675,7 @@ void CategoryTableView::onContextMenuRequested(const QPoint& pos)
   actRemoveCategory->setEnabled(isCellClicked);
   actCloneCategory->setEnabled(isCellClicked);
   actAddPlayer->setEnabled(canAddPlayers);
-  actImportPlayerToCat->setEnabled(canAddPlayers && Tournament::getPlayerMngr()->hasExternalPlayerDatabaseOpen());
+  actImportPlayerToCat->setEnabled(canAddPlayers && tnmt->getPlayerMngr()->hasExternalPlayerDatabaseOpen());
   actRemovePlayer->setEnabled(isCellClicked);
   actCreateNewPlayerInCat->setEnabled(canAddPlayers);   // TODO: this could be too restrictive for future purposes (e.g., random matches)
 

@@ -79,7 +79,7 @@ void ScheduleTabWidget::onBtnStageClicked()
   auto mg = ui->mgIdleView->getSelectedMatchGroup();
   if (mg == nullptr) return;
 
-  auto mm = Tournament::getMatchMngr();
+  auto mm = tnmt->getMatchMngr();
   if (mm->canStageMatchGroup(*mg) != OK) return;
 
   mm->stageMatchGroup(*mg);
@@ -93,7 +93,7 @@ void ScheduleTabWidget::onBtnUnstageClicked()
   auto mg = ui->mgStagedView->getSelectedMatchGroup();
   if (mg == nullptr) return;
 
-  auto mm = Tournament::getMatchMngr();
+  auto mm = tnmt->getMatchMngr();
   if (mm->canUnstageMatchGroup(*mg) != OK) return;
 
   mm->unstageMatchGroup(*mg);
@@ -104,7 +104,7 @@ void ScheduleTabWidget::onBtnUnstageClicked()
 void ScheduleTabWidget::onBtnScheduleClicked()
 {
   // is at least one match group staged?
-  auto mm = Tournament::getMatchMngr();
+  auto mm = tnmt->getMatchMngr();
   if (mm->getMaxStageSeqNum() == 0) return;
 
   mm->scheduleAllStagedMatchGroups();
@@ -132,7 +132,7 @@ void ScheduleTabWidget::onStagedSelectionChanged(const QItemSelection& selected,
 
 void ScheduleTabWidget::updateButtons()
 {
-  auto mm = Tournament::getMatchMngr();
+  auto mm = tnmt->getMatchMngr();
 
   // update the "stage"-button
   auto mg = ui->mgIdleView->getSelectedMatchGroup();
@@ -176,7 +176,7 @@ void ScheduleTabWidget::onCourtDoubleClicked(const QModelIndex &index)
 
 void ScheduleTabWidget::onRoundCompleted(int catId, int round)
 {
-  Category cat = Tournament::getCatMngr()->getCategoryById(catId);
+  Category cat = tnmt->getCatMngr()->getCategoryById(catId);
 
   QString txt = tr("Round %1 of category %2 finished!").arg(round).arg(cat.getName());
 
@@ -239,7 +239,7 @@ void ScheduleTabWidget::askAndStoreMatchResult(const Match &ma)
   if (confirm != QMessageBox::Yes) return;
 
   // actually store the data and update the internal object states
-  MatchMngr* mm = Tournament::getMatchMngr();
+  MatchMngr* mm = tnmt->getMatchMngr();
   mm->setMatchScoreAndFinalizeMatch(ma, *matchResult);
 
   // ask the user if the next available match should be started on the
@@ -304,7 +304,7 @@ int ScheduleTabWidget::estimateRemainingTournamentTime()
 {
   // we can't do any estimations if don't have courts
   // to play on
-  int courtCount = Tournament::getCourtMngr()->getActiveCourtCount();
+  int courtCount = tnmt->getCourtMngr()->getActiveCourtCount();
   if (courtCount <= 0) return -1;
 
   QDateTime curDateTime = QDateTime::currentDateTimeUtc();
@@ -313,7 +313,7 @@ int ScheduleTabWidget::estimateRemainingTournamentTime()
   // calculate the average runtime of all running matches
   int totalRuntime = 0;
   int totalRuntimeCnt = 0;
-  auto runningMatches = Tournament::getMatchMngr()->getCurrentlyRunningMatches();
+  auto runningMatches = tnmt->getMatchMngr()->getCurrentlyRunningMatches();
   for (const Match& ma : runningMatches)
   {
     auto startTime = ma.getStartTime();
@@ -333,7 +333,7 @@ int ScheduleTabWidget::estimateRemainingTournamentTime()
   int nTotal;
   int nFinished;
   int nRunning;
-  tie(nTotal, nFinished, nRunning) = Tournament::getMatchMngr()->getMatchStats();
+  tie(nTotal, nFinished, nRunning) = tnmt->getMatchMngr()->getMatchStats();
   int remainingMatches = nTotal - nFinished;
   int avgMatchDuration = getAverageMatchDuration();
   int remainingTime = (remainingMatches / courtCount) * avgMatchDuration;
@@ -352,7 +352,7 @@ int ScheduleTabWidget::getAverageMatchDuration()
   // calculate the total match duration of all finished matches
   totalDuration = 0;
   totalDurationCnt = 0;
-  for (const Match& ma : Tournament::getMatchMngr()->getFinishedMatches())
+  for (const Match& ma : tnmt->getMatchMngr()->getFinishedMatches())
   {
     int duration = ma.getMatchDuration();
     if (duration < 0) continue;
@@ -397,7 +397,7 @@ void ScheduleTabWidget::initProgressBarFromDatabase()
   // calculate the total match duration of all finished matches
   totalDuration = 0;
   totalDurationCnt = 0;
-  for (const Match& ma : Tournament::getMatchMngr()->getFinishedMatches())
+  for (const Match& ma : tnmt->getMatchMngr()->getFinishedMatches())
   {
     int duration = ma.getMatchDuration();
     if (duration < 0) continue;
@@ -416,9 +416,9 @@ void ScheduleTabWidget::onTournamentOpened(Tournament* _tnmt)
   tnmt = _tnmt;
   // connect signals from the Tournament and MatchMngr with my slots
   connect(_tnmt, &Tournament::tournamentClosed, this, &ScheduleTabWidget::onTournamentClosed);
-  connect(Tournament::getMatchMngr(), SIGNAL(roundCompleted(int,int)), this, SLOT(onRoundCompleted(int,int)));
-  connect(Tournament::getMatchMngr(), SIGNAL(matchStatusChanged(int,int,OBJ_STATE,OBJ_STATE)), this, SLOT(onMatchStatusChanged(int,int,OBJ_STATE,OBJ_STATE)));
-  connect(Tournament::getCatMngr(), SIGNAL(categoryStatusChanged(Category,OBJ_STATE,OBJ_STATE)), this, SLOT(onCatStatusChanged()));
+  connect(tnmt->getMatchMngr(), SIGNAL(roundCompleted(int,int)), this, SLOT(onRoundCompleted(int,int)));
+  connect(tnmt->getMatchMngr(), SIGNAL(matchStatusChanged(int,int,OBJ_STATE,OBJ_STATE)), this, SLOT(onMatchStatusChanged(int,int,OBJ_STATE,OBJ_STATE)));
+  connect(tnmt->getCatMngr(), SIGNAL(categoryStatusChanged(Category,OBJ_STATE,OBJ_STATE)), this, SLOT(onCatStatusChanged()));
 
   initProgressBarFromDatabase();
 }
@@ -431,13 +431,13 @@ void ScheduleTabWidget::onMatchStatusChanged(int matchId, int matchSeqNum, OBJ_S
   int nTotal;
   int nFinished;
   int nRunning;
-  tie(nTotal, nFinished, nRunning) = Tournament::getMatchMngr()->getMatchStats();
+  tie(nTotal, nFinished, nRunning) = tnmt->getMatchMngr()->getMatchStats();
   int percComplete = (nTotal > 0) ? (nFinished * 100) / nTotal : 0;
 
   // update the match duration counter, if applicable
   /*if ((toState == STAT_MA_FINISHED) && (matchId > 0))
   {
-    auto ma = Tournament::getMatchMngr()->getMatch(matchId);
+    auto ma = tnmt->getMatchMngr()->getMatch(matchId);
     assert(ma != nullptr);
     int duration = ma->getMatchDuration();
 
@@ -477,9 +477,9 @@ void ScheduleTabWidget::onTournamentClosed()
 
   // disconnect from all signals, because
   // the sending objects don't exist anymore
-  disconnect(Tournament::getMatchMngr(), SIGNAL(roundCompleted(int,int)), this, SLOT(onRoundCompleted(int,int)));
-  disconnect(Tournament::getMatchMngr(), SIGNAL(matchStatusChanged(int,int,OBJ_STATE,OBJ_STATE)), this, SLOT(onMatchStatusChanged(int,int,OBJ_STATE,OBJ_STATE)));
-  disconnect(Tournament::getCatMngr(), SIGNAL(categoryStatusChanged(Category,OBJ_STATE,OBJ_STATE)), this, SLOT(onCatStatusChanged()));
+  disconnect(tnmt->getMatchMngr(), SIGNAL(roundCompleted(int,int)), this, SLOT(onRoundCompleted(int,int)));
+  disconnect(tnmt->getMatchMngr(), SIGNAL(matchStatusChanged(int,int,OBJ_STATE,OBJ_STATE)), this, SLOT(onMatchStatusChanged(int,int,OBJ_STATE,OBJ_STATE)));
+  disconnect(tnmt->getCatMngr(), SIGNAL(categoryStatusChanged(Category,OBJ_STATE,OBJ_STATE)), this, SLOT(onCatStatusChanged()));
   disconnect(tnmt, &Tournament::tournamentClosed, this, &ScheduleTabWidget::onTournamentClosed);
   tnmt = nullptr;
 }

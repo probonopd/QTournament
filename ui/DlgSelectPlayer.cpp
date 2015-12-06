@@ -37,8 +37,9 @@ DlgSelectPlayer::DlgSelectPlayer(QWidget *parent, DLG_CONTEXT _ctxt, Category* _
     throw std::invalid_argument("Receied empty category reference for player selection dialog!");
   }
 
-  auto cm = Tournament::getCatMngr();
-  auto pm = Tournament::getPlayerMngr();
+  auto tnmt = Tournament::getActiveTournament();
+  auto cm = tnmt->getCatMngr();
+  auto pm = tnmt->getPlayerMngr();
 
   // define the set of players that should be available for selection
   PlayerList applicablePlayers;
@@ -100,7 +101,8 @@ PlayerList DlgSelectPlayer::getSelectedPlayers() const
 {
   PlayerList result;
 
-  PlayerMngr* pm = Tournament::getPlayerMngr();
+  auto tnmt = Tournament::getActiveTournament();
+  PlayerMngr* pm = tnmt->getPlayerMngr();
   for (auto& item : ui->lwPlayers->selectedItems())
   {
     int playerId = item->data(Qt::UserRole).toInt();

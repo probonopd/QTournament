@@ -42,7 +42,8 @@ MatchResultList_ByGroup::MatchResultList_ByGroup(TournamentDB* _db, const QStrin
   {
     throw std::runtime_error("Requested match results report for invalid group.");
   }
-  for (MatchGroup mg : Tournament::getMatchMngr()->getMatchGroupsForCat(cat, 1))
+  auto tnmt = Tournament::getActiveTournament();
+  for (MatchGroup mg : tnmt->getMatchMngr()->getMatchGroupsForCat(cat, 1))
   {
     if (mg.getGroupNumber() == grpNum) return;  // okay, the round-robin group number exists at least in the first round
   }
@@ -56,7 +57,8 @@ upSimpleReport MatchResultList_ByGroup::regenerateReport()
 {
   // collect the match groups with the requested match group number and
   // search in all rounds
-  MatchMngr* mm = Tournament::getMatchMngr();
+  auto tnmt = Tournament::getActiveTournament();
+  MatchMngr* mm = tnmt->getMatchMngr();
   MatchGroupList mgl = mm->getMatchGroupsForCat(cat);
   MatchGroupList filteredList;
   for (MatchGroup mg: mgl)

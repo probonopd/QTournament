@@ -89,7 +89,8 @@ namespace QTournament
   {
     if (getState() != STAT_CAT_IDLE) return WRONG_STATE;
 
-    auto mm = Tournament::getMatchMngr();
+    auto tnmt = Tournament::getActiveTournament();
+    auto mm = tnmt->getMatchMngr();
 
     // make sure we have not been called before; to this end, just
     // check that there have no matches been created for us so far
@@ -170,7 +171,8 @@ namespace QTournament
 
   ERR PureRoundRobinCategory::onRoundCompleted(int round)
   {
-    RankingMngr* rm = Tournament::getRankingMngr();
+    auto tnmt = Tournament::getActiveTournament();
+    RankingMngr* rm = tnmt->getRankingMngr();
     ERR err;
 
     rm->createUnsortedRankingEntriesForLastRound(*this, &err);

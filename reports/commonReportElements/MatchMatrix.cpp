@@ -221,11 +221,12 @@ upMatch MatchMatrix::getMatchForCell(const PlayerPairList& ppList, int row, int 
 
   // create a direct, low-level database query for the
   // applicable matches
-  MatchMngr* mm = Tournament::getMatchMngr();
+  auto tnmt = Tournament::getActiveTournament();
+  MatchMngr* mm = tnmt->getMatchMngr();
   QString where = "(%1 = %2 AND %3 = %4) OR (%1 = %4 AND %3 = %2)";
   where = where.arg(MA_PAIR1_REF).arg(ppRow.getPairId());
   where = where.arg(MA_PAIR2_REF).arg(ppCol.getPairId());
-  DbTab matchTab = Tournament::getDatabaseHandle()->getTab(TAB_MATCH);
+  DbTab matchTab = tnmt->getDatabaseHandle()->getTab(TAB_MATCH);
   DbTab::CachingRowIterator it = matchTab.getRowsByWhereClause(where);
   while (!(it.isEnd()))
   {

@@ -97,7 +97,8 @@ namespace QTournament
 
   ERR Player::rename(const QString& newFirst, const QString& newLast)
   {
-    return Tournament::getPlayerMngr()->renamePlayer(*this, newFirst, newLast);
+    auto tnmt = Tournament::getActiveTournament();
+    return tnmt->getPlayerMngr()->renamePlayer(*this, newFirst, newLast);
   }
 
 //----------------------------------------------------------------------------
@@ -134,7 +135,8 @@ namespace QTournament
       throw std::runtime_error("Query for team of a player occurred; however, we're not using teams in this tournament!");
     }
     
-    return Tournament::getTeamMngr()->getTeamById(teamRef.toInt());
+    auto tnmt = Tournament::getActiveTournament();
+    return tnmt->getTeamMngr()->getTeamById(teamRef.toInt());
   }
 
 //----------------------------------------------------------------------------
@@ -144,7 +146,8 @@ namespace QTournament
     QList<Category> result;
     DbTab::CachingRowIterator it = db->getTab(TAB_P2C).getRowsByColumnValue(P2C_PLAYER_REF, getId());
     
-    CatMngr* cmngr = Tournament::getCatMngr();
+    auto tnmt = Tournament::getActiveTournament();
+    CatMngr* cmngr = tnmt->getCatMngr();
     while (!(it.isEnd()))
     {
       int catId = (*it)[P2C_CAT_REF].toInt();

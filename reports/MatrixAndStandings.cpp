@@ -83,7 +83,8 @@ MartixAndStandings::MartixAndStandings(TournamentDB* _db, const QString& _name, 
 upSimpleReport MartixAndStandings::regenerateReport()
 {
   // retrieve the ranking(s) for this round
-  RankingMngr* rm = Tournament::getRankingMngr();
+  auto tnmt = Tournament::getActiveTournament();
+  RankingMngr* rm = tnmt->getRankingMngr();
   RankingEntryListList rll;
   if (round > 0) rll = rm->getSortedRanking(cat, round);
 

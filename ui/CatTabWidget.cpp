@@ -87,11 +87,12 @@ void CatTabWidget::onCatModelChanged()
 	  SLOT(onCatSelectionChanged(const QItemSelection&, const QItemSelection&)));
   
   // get information about changed player names or category assignments
-  connect(Tournament::getCatMngr(), &CatMngr::playerAddedToCategory, this, &CatTabWidget::onPlayerAddedToCategory);
-  connect(Tournament::getCatMngr(), &CatMngr::playerRemovedFromCategory, this, &CatTabWidget::onPlayerRemovedFromCategory);
-  connect(Tournament::getCatMngr(), &CatMngr::categoryStatusChanged, this, &CatTabWidget::onCatStateChanged);
-  connect(Tournament::getPlayerMngr(), &PlayerMngr::playerRenamed, this, &CatTabWidget::onPlayerRenamed);
-  connect(Tournament::getPlayerMngr(), SIGNAL(playerStatusChanged(int,int,OBJ_STATE,OBJ_STATE)), this, SLOT(onPlayerStateChanged(int,int,OBJ_STATE,OBJ_STATE)));
+  auto tnmt = Tournament::getActiveTournament();
+  connect(tnmt->getCatMngr(), &CatMngr::playerAddedToCategory, this, &CatTabWidget::onPlayerAddedToCategory);
+  connect(tnmt->getCatMngr(), &CatMngr::playerRemovedFromCategory, this, &CatTabWidget::onPlayerRemovedFromCategory);
+  connect(tnmt->getCatMngr(), &CatMngr::categoryStatusChanged, this, &CatTabWidget::onCatStateChanged);
+  connect(tnmt->getPlayerMngr(), &PlayerMngr::playerRenamed, this, &CatTabWidget::onPlayerRenamed);
+  connect(tnmt->getPlayerMngr(), SIGNAL(playerStatusChanged(int,int,OBJ_STATE,OBJ_STATE)), this, SLOT(onPlayerStateChanged(int,int,OBJ_STATE,OBJ_STATE)));
 
   updateControls();
   updatePairs();
@@ -428,7 +429,8 @@ upPlayer CatTabWidget::lwUnpaired_getSelectedPlayer() const
   auto selItem = ui.lwUnpaired->selectedItems().at(0);
   int playerId = selItem->data(Qt::UserRole).toInt();
 
-  return Tournament::getPlayerMngr()->getPlayer_up(playerId);
+  auto tnmt = Tournament::getActiveTournament();
+  return tnmt->getPlayerMngr()->getPlayer_up(playerId);
 }
 
 //----------------------------------------------------------------------------
@@ -444,7 +446,8 @@ unique_ptr<PlayerPair> CatTabWidget::lwPaired_getSelectedPair() const
   auto selItem = ui.lwPaired->selectedItems().at(0);
   int pairId = selItem->data(Qt::UserRole).toInt();
 
-  return Tournament::getPlayerMngr()->getPlayerPair_up(pairId);
+  auto tnmt = Tournament::getActiveTournament();
+  return tnmt->getPlayerMngr()->getPlayerPair_up(pairId);
 }
 
 //----------------------------------------------------------------------------
@@ -527,10 +530,11 @@ void CatTabWidget::onUnpairedPlayersSelectionChanged()
   
   // update the "pair" button, if necessary
   bool canPair = false;
+  auto tnmt = Tournament::getActiveTournament();
   if ((unpairedPlayerId1 > 0) && (unpairedPlayerId2 > 0))
   {
-    Player p1 = Tournament::getPlayerMngr()->getPlayer(unpairedPlayerId1);
-    Player p2 = Tournament::getPlayerMngr()->getPlayer(unpairedPlayerId2);
+    Player p1 = tnmt->getPlayerMngr()->getPlayer(unpairedPlayerId1);
+    Player p2 = tnmt->getPlayerMngr()->getPlayer(unpairedPlayerId2);
     
     Category c = ui.catTableView->getSelectedCategory();
     canPair = (c.canPairPlayers(p1, p2) == OK);
@@ -555,11 +559,12 @@ void CatTabWidget::onBtnPairClicked()
     return;
   }
   
+  auto tnmt = Tournament::getActiveTournament();
   int id1 = selPlayers.at(0)->data(Qt::UserRole).toInt();
   int id2 = selPlayers.at(1)->data(Qt::UserRole).toInt();
   Category c = ui.catTableView->getSelectedCategory();
-  Player p1 = Tournament::getPlayerMngr()->getPlayer(id1);
-  Player p2 = Tournament::getPlayerMngr()->getPlayer(id2);
+  Player p1 = tnmt->getPlayerMngr()->getPlayer(id1);
+  Player p2 = tnmt->getPlayerMngr()->getPlayer(id2);
   if (c.canPairPlayers(p1, p2) != OK)
   {
     QMessageBox::warning(this, tr("These two players can't be paired for this category!"), tr("Pairing impossible"));
@@ -567,7 +572,7 @@ void CatTabWidget::onBtnPairClicked()
     return;
   }
   
-  ERR e = Tournament::getCatMngr()->pairPlayers(c, p1, p2);
+  ERR e = tnmt->getCatMngr()->pairPlayers(c, p1, p2);
   if (e != OK)
   {
     QMessageBox::warning(this, tr("Something went wrong during pairing. This shouldn't happen. For the records: Error code = ") + e, tr("Pairing impossible"));
@@ -591,7 +596,8 @@ void CatTabWidget::onBtnSplitClicked()
 {
   QList<QListWidgetItem *> selPairs = ui.lwPaired->selectedItems();
   Category c = ui.catTableView->getSelectedCategory();
-  CatMngr* cmngr = Tournament::getCatMngr();
+  auto tnmt = Tournament::getActiveTournament();
+  CatMngr* cmngr = tnmt->getCatMngr();
   
   for (int i=0; i < selPairs.count(); i++)
   {
@@ -734,7 +740,8 @@ void CatTabWidget::onMatchSystemChanged(int newIndex)
   if (!(ui.catTableView->hasCategorySelected())) return;
   
   Category selectedCat = ui.catTableView->getSelectedCategory();
-  Tournament::getCatMngr()->setMatchSystem(selectedCat, ms);
+  auto tnmt = Tournament::getActiveTournament();
+  tnmt->getCatMngr()->setMatchSystem(selectedCat, ms);
   updateControls();
 }
 
@@ -810,7 +817,8 @@ void CatTabWidget::onPlayerStateChanged(int playerId, int seqNum, const OBJ_STAT
   // is the affected player in the currently selected category?
   // if not, there is nothing to do for us
   auto selectedCat = ui.catTableView->getSelectedCategory();
-  Player pl = Tournament::getPlayerMngr()->getPlayer(playerId);
+  auto tnmt = Tournament::getActiveTournament();
+  Player pl = tnmt->getPlayerMngr()->getPlayer(playerId);
   if (!(selectedCat.hasPlayer(pl))) return;
 
   // okay, the changed player is obviously part of the currently selected,
@@ -903,6 +911,7 @@ void CatTabWidget::onUnpairedContextMenuRequested(const QPoint& pos)
   MenuGenerator::allCategories(listOfCats_MovePlayerSubmenu.get());
 
   // enable / disable selection-specific actions
+  auto tnmt = Tournament::getActiveTournament();
   actRemovePlayer->setEnabled(isPlayerClicked);
   actRegister->setEnabled(plStat == STAT_PL_WAIT_FOR_REGISTRATION);
   actUnregister->setEnabled(plStat == STAT_PL_IDLE);
@@ -910,7 +919,7 @@ void CatTabWidget::onUnpairedContextMenuRequested(const QPoint& pos)
   listOfCats_MovePlayerSubmenu->setEnabled(isPlayerClicked);
   actCreateNewPlayerInCat->setEnabled(hasCatSelected && canAddPlayers);
   actAddPlayer->setEnabled(canAddPlayers);
-  actImportPlayerToCat->setEnabled(canAddPlayers && Tournament::getPlayerMngr()->hasExternalPlayerDatabaseOpen());
+  actImportPlayerToCat->setEnabled(canAddPlayers && tnmt->getPlayerMngr()->hasExternalPlayerDatabaseOpen());
   actBulkRemovePlayers->setEnabled(hasCatSelected);
 
   // show the context menu
@@ -955,7 +964,8 @@ void CatTabWidget::onPairedContextMenuRequested(const QPoint& pos)
     selItem->setSelected(true);
 
     int selPairId = selItem->data(Qt::UserRole).toInt();
-    selPair = Tournament::getPlayerMngr()->getPlayerPair_up(selPairId);
+    auto tnmt = Tournament::getActiveTournament();
+    selPair = tnmt->getPlayerMngr()->getPlayerPair_up(selPairId);
   }
 
   // we have no actions that are useful without a selected
@@ -1028,7 +1038,8 @@ void CatTabWidget::onCopyOrMovePlayer(int targetCatId, bool isMove)
     return;
   }
 
-  auto targetCat = Tournament::getCatMngr()->getCategoryById(targetCatId);
+  auto tnmt = Tournament::getActiveTournament();
+  auto targetCat = tnmt->getCatMngr()->getCategoryById(targetCatId);
 
   cmdMoveOrCopyPlayerToCategory cmd{this, *selPlayer,
         ui.catTableView->getSelectedCategory(),
@@ -1046,7 +1057,8 @@ void CatTabWidget::onCopyOrMovePair(const PlayerPair& selPair, int targetCatId, 
     return;
   }
 
-  auto targetCat = Tournament::getCatMngr()->getCategoryById(targetCatId);
+  auto tnmt = Tournament::getActiveTournament();
+  auto targetCat = tnmt->getCatMngr()->getCategoryById(targetCatId);
 
   cmdMoveOrCopyPairToCategory cmd{this, selPair,
         ui.catTableView->getSelectedCategory(),

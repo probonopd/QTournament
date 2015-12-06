@@ -21,10 +21,13 @@
 #include "Tournament.h"
 #include "BracketVisData.h"
 
+using namespace QTournament;
+
 unique_ptr<QTournament::BracketVisData> QTournament::BracketVisData::getExisting(const QTournament::Category& _cat)
 {
   // acquire a database handle
-  TournamentDB* _db = Tournament::getDatabaseHandle();
+  auto tnmt = Tournament::getActiveTournament();
+  TournamentDB* _db = tnmt->getDatabaseHandle();
 
   // check if the requested category has visualization data
   DbTab catTab = _db->getTab(TAB_CATEGORY);
@@ -55,7 +58,8 @@ unique_ptr<BracketVisData> BracketVisData::createNew(const Category& _cat, BRACK
   }
 
   // create a new, empty object
-  TournamentDB* _db = Tournament::getDatabaseHandle();
+  auto tnmt = Tournament::getActiveTournament();
+  TournamentDB* _db = tnmt->getDatabaseHandle();
   auto result = new BracketVisData(_db, _cat);
 
   // populate the first page
@@ -183,7 +187,8 @@ void BracketVisData::fillMissingPlayerNames() const
   int catId = cat.getId();
 
   // get the seeding list once, we need it later...
-  PlayerPairList seeding = Tournament::getCatMngr()->getSeeding(cat);
+  auto tnmt = Tournament::getActiveTournament();
+  PlayerPairList seeding = tnmt->getCatMngr()->getSeeding(cat);
 
   bool hasModifications = true;
   while (hasModifications)   // repeat until we find no more changes to make
@@ -377,7 +382,8 @@ unique_ptr<Match> BracketVisElement::getLinkedMatch() const
 {
   QVariant _matchId = row[BV_MATCH_REF];
   if (_matchId.isNull()) return nullptr;
-  return Tournament::getMatchMngr()->getMatch(_matchId.toInt());
+  auto tnmt = Tournament::getActiveTournament();
+  return tnmt->getMatchMngr()->getMatch(_matchId.toInt());
 }
 
 //----------------------------------------------------------------------------
@@ -385,7 +391,8 @@ unique_ptr<Match> BracketVisElement::getLinkedMatch() const
 Category BracketVisElement::getLinkedCategory() const
 {
   int catId = row[BV_CAT_REF].toInt();
-  return Tournament::getCatMngr()->getCategoryById(catId);
+  auto tnmt = Tournament::getActiveTournament();
+  return tnmt->getCatMngr()->getCategoryById(catId);
 }
 
 //----------------------------------------------------------------------------

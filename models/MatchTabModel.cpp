@@ -15,14 +15,17 @@
 using namespace QTournament;
 using namespace dbOverlay;
 
-MatchTableModel::MatchTableModel(TournamentDB* _db)
-:QAbstractTableModel(0), db(_db), matchTab((_db->getTab(TAB_MATCH)))
+MatchTableModel::MatchTableModel(Tournament* tnmt)
+:QAbstractTableModel(0), db(tnmt->getDatabaseHandle()), matchTab((db->getTab(TAB_MATCH)))
 {
-  connect(Tournament::getMatchMngr(), &MatchMngr::beginCreateMatch, this, &MatchTableModel::onBeginCreateMatch, Qt::DirectConnection);
-  connect(Tournament::getMatchMngr(), &MatchMngr::endCreateMatch, this, &MatchTableModel::onEndCreateMatch, Qt::DirectConnection);
-  connect(Tournament::getMatchMngr(), &MatchMngr::matchStatusChanged, this, &MatchTableModel::onMatchStatusChanged, Qt::DirectConnection);
-  connect(Tournament::getCatMngr(), SIGNAL(beginResetAllModels()), this, SLOT(onBeginResetModel()), Qt::DirectConnection);
-  connect(Tournament::getCatMngr(), SIGNAL(endResetAllModels()), this, SLOT(onEndResetModel()), Qt::DirectConnection);
+  MatchMngr* mm = tnmt->getMatchMngr();
+  connect(mm, SIGNAL(beginCreateMatch()), this, SLOT(onBeginCreateMatch()), Qt::DirectConnection);
+  connect(mm, SIGNAL(endCreateMatch(int)), this, SLOT(onEndCreateMatch(int)), Qt::DirectConnection);
+  connect(mm, SIGNAL(matchStatusChanged(int,int,OBJ_STATE,OBJ_STATE)), this, SLOT(onMatchStatusChanged(int,int)), Qt::DirectConnection);
+
+  CatMngr* cm = tnmt->getCatMngr();
+  connect(cm, SIGNAL(beginResetAllModels()), this, SLOT(onBeginResetModel()), Qt::DirectConnection);
+  connect(cm, SIGNAL(endResetAllModels()), this, SLOT(onEndResetModel()), Qt::DirectConnection);
 }
 
 //----------------------------------------------------------------------------
@@ -56,7 +59,8 @@ QVariant MatchTableModel::data(const QModelIndex& index, int role) const
     if (role != Qt::DisplayRole)
       return QVariant();
     
-    auto ma = Tournament::getMatchMngr()->getMatchBySeqNum(index.row());
+    auto tnmt = Tournament::getActiveTournament();
+    auto ma = tnmt->getMatchMngr()->getMatchBySeqNum(index.row());
     auto mg = ma->getMatchGroup();
     
     // first column: match num

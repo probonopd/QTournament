@@ -59,7 +59,7 @@ void TeamListView::onTournamentClosed()
 void TeamListView::onTournamentOpened(Tournament* _tnmt)
 {
   tnmt = _tnmt;
-  setModel(Tournament::getTeamListModel());
+  setModel(tnmt->getTeamListModel());
   setEnabled(true);
   
   // connect signals from the Tournament and TeamMngr with my slots

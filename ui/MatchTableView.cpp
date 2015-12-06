@@ -78,7 +78,7 @@ MatchTableView::~MatchTableView()
 void MatchTableView::onTournamentOpened(Tournament* _tnmt)
 {
   tnmt = _tnmt;
-  sortedModel->setSourceModel(Tournament::getMatchTableModel());
+  sortedModel->setSourceModel(tnmt->getMatchTableModel());
   setColumnHidden(MatchTableModel::STATE_COL_ID, true);  // hide the column containing the internal object state
 
   // create a regular expression, that matches either the match state
@@ -140,7 +140,7 @@ unique_ptr<Match> MatchTableView::getSelectedMatch() const
 
   // return the selected item
   int selectedSourceRow = sortedModel->mapToSource(indexes.at(0)).row();
-  return Tournament::getMatchMngr()->getMatchBySeqNum(selectedSourceRow);
+  return tnmt->getMatchMngr()->getMatchBySeqNum(selectedSourceRow);
 }
 
 //----------------------------------------------------------------------------
@@ -210,11 +210,11 @@ void MatchTableView::onContextMenuRequested(const QPoint& pos)
   if (isOk)
   {
     // get the selected court
-    auto co = Tournament::getCourtMngr()->getCourt(selectedCourt);
+    auto co = tnmt->getCourtMngr()->getCourt(selectedCourt);
     if (co == nullptr) return;  // shouldn't happen
 
     // call the match on the selected court
-    MatchMngr* mm = Tournament::getMatchMngr();
+    MatchMngr* mm = tnmt->getMatchMngr();
     ERR e = mm->canAssignMatchToCourt(*ma, *co);
     if (e != OK)
     {
@@ -248,8 +248,8 @@ void MatchTableView::onMatchDoubleClicked(const QModelIndex& index)
   auto ma = getSelectedMatch();
   if (ma == nullptr) return;
 
-  auto cm = Tournament::getCourtMngr();
-  auto mm = Tournament::getMatchMngr();
+  auto cm = tnmt->getCourtMngr();
+  auto mm = tnmt->getMatchMngr();
 
   // first of all, make sure that the match is eligible for being started
   if (ma->getState() != STAT_MA_READY)
@@ -342,7 +342,7 @@ void MatchTableView::updateContextMenu()
   {
     courtSelectionMenu->clear();
 
-    CourtMngr* cm = Tournament::getCourtMngr();
+    CourtMngr* cm = tnmt->getCourtMngr();
 
     QStringList availCourtNum;
     for (auto co : cm->getAllCourts())
@@ -394,7 +394,7 @@ void MatchTableView::execWalkover(int playerNum)
 
 void MatchTableView::execCall(const Match& ma, const Court& co)
 {
-  MatchMngr* mm = Tournament::getMatchMngr();
+  MatchMngr* mm = tnmt->getMatchMngr();
 
   // all necessary pre-checks should have been performed before
   // so that the following call should always yield "ok"

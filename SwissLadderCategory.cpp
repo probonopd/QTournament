@@ -60,11 +60,12 @@ namespace QTournament
 
     PlayerPairList rankedPairs;
     QList<int> rankedPairs_Int;
+    auto tnmt = Tournament::getActiveTournament();
     if (lastRound == 0)
     {
-      rankedPairs = Tournament::getCatMngr()->getSeeding(*this);
+      rankedPairs = tnmt->getCatMngr()->getSeeding(*this);
     } else {
-      RankingMngr* rm = Tournament::getRankingMngr();
+      RankingMngr* rm = tnmt->getRankingMngr();
       auto rll = rm->getSortedRanking(*this, lastRound);
       assert(rll.size() == 1);
       auto ranking = rll.at(0);
@@ -91,7 +92,7 @@ namespace QTournament
     // the number of matches for each player. We need this
     // value to figure out who is going to have the next
     // bye in case of an off number of players
-    MatchMngr* mm = Tournament::getMatchMngr();
+    MatchMngr* mm = tnmt->getMatchMngr();
     QStringList pastMatches;
     QHash<int, int> pairId2matchCount;
     for (int id : rankedPairs_Int)
@@ -268,8 +269,8 @@ namespace QTournament
       QString matchString = newMatches.at(cnt);
       int pp1Id = matchString.split(",").at(0).toInt();
       int pp2Id = matchString.split(",").at(1).toInt();
-      PlayerPair pp1 = Tournament::getPlayerMngr()->getPlayerPair(pp1Id);
-      PlayerPair pp2 = Tournament::getPlayerMngr()->getPlayerPair(pp2Id);
+      PlayerPair pp1 = tnmt->getPlayerMngr()->getPlayerPair(pp1Id);
+      PlayerPair pp2 = tnmt->getPlayerMngr()->getPlayerPair(pp2Id);
 
       e = mm->setPlayerPairsForMatch(ma, pp1, pp2);
       assert(e == OK);
@@ -324,7 +325,8 @@ namespace QTournament
   {
     if (getState() != STAT_CAT_IDLE) return WRONG_STATE;
 
-    auto mm = Tournament::getMatchMngr();
+    auto tnmt = Tournament::getActiveTournament();
+    auto mm = tnmt->getMatchMngr();
 
     // make sure we have not been called before; to this end, just
     // check that there have no matches been created for us so far
@@ -424,7 +426,8 @@ namespace QTournament
 
   ERR SwissLadderCategory::onRoundCompleted(int round)
   {
-    RankingMngr* rm = Tournament::getRankingMngr();
+    auto tnmt = Tournament::getActiveTournament();
+    RankingMngr* rm = tnmt->getRankingMngr();
     ERR err;
     PlayerPairList allPairs = getPlayerPairs();
 

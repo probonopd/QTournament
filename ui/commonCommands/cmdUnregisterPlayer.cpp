@@ -34,7 +34,8 @@ ERR cmdUnregisterPlayer::exec()
 {
   // set the "wait for registration"-flag
   ERR err;
-  auto pm = Tournament::getPlayerMngr();
+  auto tnmt = Tournament::getActiveTournament();
+  auto pm = tnmt->getPlayerMngr();
   err = pm->setWaitForRegistration(pl, true);
 
   if (err == OK) return OK; // no error

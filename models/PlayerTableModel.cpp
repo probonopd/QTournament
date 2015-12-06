@@ -14,19 +14,23 @@
 using namespace QTournament;
 using namespace dbOverlay;
 
-PlayerTableModel::PlayerTableModel(TournamentDB* _db)
-:QAbstractTableModel(0), db(_db), playerTab(_db->getTab(TAB_PLAYER)),
-        teamTab(_db->getTab(TAB_TEAM)), catTab((_db->getTab(TAB_CATEGORY)))
+PlayerTableModel::PlayerTableModel(Tournament* tnmt)
+:QAbstractTableModel(0), db(tnmt->getDatabaseHandle()), playerTab(db->getTab(TAB_PLAYER)),
+        teamTab(db->getTab(TAB_TEAM)), catTab((db->getTab(TAB_CATEGORY)))
 {
-  connect(Tournament::getTeamMngr(), &TeamMngr::teamRenamed, this, &PlayerTableModel::onTeamRenamed);
-  connect(Tournament::getPlayerMngr(), &PlayerMngr::beginCreatePlayer, this, &PlayerTableModel::onBeginCreatePlayer, Qt::DirectConnection);
-  connect(Tournament::getPlayerMngr(), &PlayerMngr::endCreatePlayer, this, &PlayerTableModel::onEndCreatePlayer, Qt::DirectConnection);
-  connect(Tournament::getPlayerMngr(), &PlayerMngr::playerRenamed, this, &PlayerTableModel::onPlayerRenamed, Qt::DirectConnection);
-  connect(Tournament::getPlayerMngr(), &PlayerMngr::playerStatusChanged, this, &PlayerTableModel::onPlayerStatusChanged, Qt::DirectConnection);
-  connect(Tournament::getPlayerMngr(), &PlayerMngr::beginDeletePlayer, this, &PlayerTableModel::onBeginDeletePlayer, Qt::DirectConnection);
-  connect(Tournament::getPlayerMngr(), &PlayerMngr::endDeletePlayer, this, &PlayerTableModel::onEndDeletePlayer, Qt::DirectConnection);
-  connect(Tournament::getCatMngr(), SIGNAL(beginResetAllModels()), this, SLOT(onBeginResetModel()), Qt::DirectConnection);
-  connect(Tournament::getCatMngr(), SIGNAL(endResetAllModels()), this, SLOT(onEndResetModel()), Qt::DirectConnection);
+  connect(tnmt->getTeamMngr(), SIGNAL(teamRenamed(int)), this, SLOT(onTeamRenamed(int)), Qt::DirectConnection);
+
+  PlayerMngr* pm = tnmt->getPlayerMngr();
+  connect(pm, SIGNAL(beginCreatePlayer()), this, SLOT(onBeginCreatePlayer()), Qt::DirectConnection);
+  connect(pm, SIGNAL(endCreatePlayer(int)), this, SLOT(onEndCreatePlayer(int)), Qt::DirectConnection);
+  connect(pm, SIGNAL(playerRenamed(Player)), this, SLOT(onPlayerRenamed(Player)), Qt::DirectConnection);
+  connect(pm, SIGNAL(playerStatusChanged(int,int,OBJ_STATE,OBJ_STATE)), this, SLOT(onPlayerStatusChanged(int,int)), Qt::DirectConnection);
+  connect(pm, SIGNAL(beginDeletePlayer(int)), this, SLOT(onBeginDeletePlayer(int)), Qt::DirectConnection);
+  connect(pm, SIGNAL(endDeletePlayer()), this, SLOT(onEndDeletePlayer()), Qt::DirectConnection);
+
+  CatMngr* cm = tnmt->getCatMngr();
+  connect(cm, SIGNAL(beginResetAllModels()), this, SLOT(onBeginResetModel()), Qt::DirectConnection);
+  connect(cm, SIGNAL(endResetAllModels()), this, SLOT(onEndResetModel()), Qt::DirectConnection);
 }
 
 //----------------------------------------------------------------------------
@@ -56,7 +60,8 @@ QVariant PlayerTableModel::data(const QModelIndex& index, int role) const
     if (role != Qt::DisplayRole)
       return QVariant();
     
-    auto p = Tournament::getPlayerMngr()->getPlayerBySeqNum(index.row());
+    auto tnmt = Tournament::getActiveTournament();
+    auto p = tnmt->getPlayerMngr()->getPlayerBySeqNum(index.row());
     // no check for a nullptr here, the call above MUST succeed
     
     // first column: name

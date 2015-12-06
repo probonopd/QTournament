@@ -17,12 +17,12 @@ using namespace dbOverlay;
 namespace QTournament
 {
 
-  TeamListModel::TeamListModel(TournamentDB* _db)
-  : QAbstractListModel(0), db(_db), teamTab(_db->getTab(TAB_TEAM))
+  TeamListModel::TeamListModel(Tournament* tnmt)
+  : QAbstractListModel(0), db(tnmt->getDatabaseHandle()), teamTab(db->getTab(TAB_TEAM))
   {
-    connect(Tournament::getTeamMngr(), &TeamMngr::beginCreateTeam, this, &TeamListModel::onBeginCreateTeam, Qt::DirectConnection);
-    connect(Tournament::getTeamMngr(), &TeamMngr::endCreateTeam, this, &TeamListModel::onEndCreateTeam, Qt::DirectConnection);
-    connect(Tournament::getTeamMngr(), &TeamMngr::teamRenamed, this, &TeamListModel::onTeamRenamed);
+    connect(tnmt->getTeamMngr(), SIGNAL(beginCreateTeam()), this, SLOT(onBeginCreateTeam()), Qt::DirectConnection);
+    connect(tnmt->getTeamMngr(), SIGNAL(endCreateTeam(int)), this, SLOT(onEndCreateTeam(int)), Qt::DirectConnection);
+    connect(tnmt->getTeamMngr(), SIGNAL(teamRenamed(int)), this, SLOT(onTeamRenamed(int)), Qt::DirectConnection);
   }
 
 //----------------------------------------------------------------------------
@@ -91,7 +91,8 @@ namespace QTournament
       return false;
     }
     
-    Team t = Tournament::getTeamMngr()->getTeamBySeqNum(index.row());
+    auto tnmt = Tournament::getActiveTournament();
+    Team t = tnmt->getTeamMngr()->getTeamBySeqNum(index.row());
     
     ERR e = t.rename(value.toString());
     

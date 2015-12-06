@@ -62,7 +62,8 @@ namespace QTournament
   QStringList ReportFactory::getReportCatalogue() const
   {
     QStringList result;
-    CatMngr* cm = Tournament::getCatMngr();
+    auto tnmt = Tournament::getActiveTournament();
+    CatMngr* cm = tnmt->getCatMngr();
 
     // we can always generate a participants list
     result.append(REP__PARTLIST_BY_NAME);
@@ -95,7 +96,7 @@ namespace QTournament
       // round robin groups
       if (cat.getMatchSystem() == GROUPS_WITH_KO)
       {
-        for (MatchGroup mg : Tournament::getMatchMngr()->getMatchGroupsForCat(cat, 1))
+        for (MatchGroup mg : tnmt->getMatchMngr()->getMatchGroupsForCat(cat, 1))
         {
           int grpNum = mg.getGroupNumber();
           if (grpNum < 0) continue;
@@ -216,12 +217,14 @@ namespace QTournament
       return upAbstractReport(new ParticipantsList(db, REP__PARTLIST_BY_CATEGORY, ParticipantsList::SORT_BY_CATEGORY));
     }
 
+    auto tnmt = Tournament::getActiveTournament();
+
     // result lists by round
     if (pureRepName == REP__RESULTS)
     {
       int catId = intParam1;
       int round = intParam2;
-      Category cat = Tournament::getCatMngr()->getCategoryById(catId);
+      Category cat = tnmt->getCatMngr()->getCategoryById(catId);
       return upAbstractReport(new MatchResultList(db, repName, cat, round));
     }
 
@@ -230,7 +233,7 @@ namespace QTournament
     {
       int catId = intParam1;
       int grpNum = intParam2;
-      Category cat = Tournament::getCatMngr()->getCategoryById(catId);
+      Category cat = tnmt->getCatMngr()->getCategoryById(catId);
       return upAbstractReport(new MatchResultList_ByGroup(db, repName, cat, grpNum));
     }
 
@@ -239,7 +242,7 @@ namespace QTournament
     {
       int catId = intParam1;
       int round = intParam2;
-      Category cat = Tournament::getCatMngr()->getCategoryById(catId);
+      Category cat = tnmt->getCatMngr()->getCategoryById(catId);
       return upAbstractReport(new Standings(db, repName, cat, round));
     }
 
@@ -248,7 +251,7 @@ namespace QTournament
     {
       int catId = intParam1;
       int round = intParam2;
-      Category cat = Tournament::getCatMngr()->getCategoryById(catId);
+      Category cat = tnmt->getCatMngr()->getCategoryById(catId);
       return upAbstractReport(new InOutList(db, repName, cat, round));
     }
 
@@ -264,7 +267,7 @@ namespace QTournament
     {
       int catId = intParam1;
       int round = intParam2;
-      Category cat = Tournament::getCatMngr()->getCategoryById(catId);
+      Category cat = tnmt->getCatMngr()->getCategoryById(catId);
       return upAbstractReport(new ResultsAndNextMatches(db, repName, cat, round));
     }
 
@@ -272,7 +275,7 @@ namespace QTournament
     if (pureRepName == REP__BRACKET)
     {
       int catId = intParam1;
-      Category cat = Tournament::getCatMngr()->getCategoryById(catId);
+      Category cat = tnmt->getCatMngr()->getCategoryById(catId);
       return upAbstractReport(new BracketSheet(db, repName, cat));
     }
 
@@ -281,7 +284,7 @@ namespace QTournament
     {
       int catId = intParam1;
       int round = intParam2;
-      Category cat = Tournament::getCatMngr()->getCategoryById(catId);
+      Category cat = tnmt->getCatMngr()->getCategoryById(catId);
       return upAbstractReport(new MartixAndStandings(db, repName, cat, round));
     }
 

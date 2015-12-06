@@ -89,15 +89,17 @@ namespace QTournament {
 
   void PlayerPair::sortPlayers()
   {
+    auto tnmt = Tournament::getActiveTournament();
+
     // if we have two players, sort the man first
     if (id2 > 0)
     {
-      Player p1 = Tournament::getPlayerMngr()->getPlayer(id1);
-      Player p2 = Tournament::getPlayerMngr()->getPlayer(id2);
+      Player p1 = tnmt->getPlayerMngr()->getPlayer(id1);
+      Player p2 = tnmt->getPlayerMngr()->getPlayer(id2);
       if ((p2.getSex() == M) && (p1.getSex() == F))
       {
-	id1 = p2.getId();
-	id2 = p1.getId();
+        id1 = p2.getId();
+        id2 = p1.getId();
       }
     }
     
@@ -114,14 +116,16 @@ namespace QTournament {
 
   Player PlayerPair::getPlayer1() const
   {
-    return Tournament::getPlayerMngr()->getPlayer(id1);
+    auto tnmt = Tournament::getActiveTournament();
+    return tnmt->getPlayerMngr()->getPlayer(id1);
   }
 
 //----------------------------------------------------------------------------
 
   Player PlayerPair::getPlayer2() const
   {
-    return Tournament::getPlayerMngr()->getPlayer(id2);
+    auto tnmt = Tournament::getActiveTournament();
+    return tnmt->getPlayerMngr()->getPlayer(id2);
   }
 
 //----------------------------------------------------------------------------
@@ -248,7 +252,8 @@ namespace QTournament {
     if (pairId <= 0) return nullptr;
 
     TabRow pairRow = (db->getTab(TAB_PAIRS))[pairId];
-    Category cat = Tournament::getCatMngr()->getCategoryById(pairRow[PAIRS_CAT_REF].toInt());
+    auto tnmt = Tournament::getActiveTournament();
+    Category cat = tnmt->getCatMngr()->getCategoryById(pairRow[PAIRS_CAT_REF].toInt());
 
     return unique_ptr<Category>(new Category(cat));
   }

@@ -10,20 +10,22 @@
 
 #include <QAbstractListModel>
 
-#include "TournamentDB.h"
 #include "TournamentDataDefs.h"
+#include "TournamentDB.h"
 #include "DbTab.h"
 #include "Team.h"
 
 namespace QTournament
 {
 
+  class Tournament;
+
   class TeamListModel : public QAbstractListModel
   {
     Q_OBJECT
 
   public:
-    TeamListModel (TournamentDB* _db);
+    TeamListModel (Tournament* tnmt);
     int rowCount (const QModelIndex &parent = QModelIndex ()) const;
     QVariant data (const QModelIndex &index, int role) const;
     QVariant headerData (int section, Qt::Orientation orientation,

@@ -22,12 +22,13 @@
 #include <QDialog>
 #include <QTimer>
 
-#include "Tournament.h"
 #include "PlayerPair.h"
 
 namespace Ui {
   class DlgSeedingEditor;
 }
+
+using namespace QTournament;
 
 class DlgSeedingEditor : public QDialog
 {

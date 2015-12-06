@@ -25,6 +25,8 @@
 #include "MenuGenerator.h"
 #include "CatMngr.h"
 
+using namespace QTournament;
+
 void MenuGenerator::allCategories(QMenu* targetMenu)
 {
   if (targetMenu == nullptr) return;
@@ -32,7 +34,8 @@ void MenuGenerator::allCategories(QMenu* targetMenu)
   // remove all previous menu contents
   targetMenu->clear();
 
-  auto cm = Tournament::getCatMngr();
+  auto tnmt = Tournament::getActiveTournament();
+  auto cm = tnmt->getCatMngr();
 
   // generate a sorted list of all categories
   auto allCats = cm->getAllCategories();

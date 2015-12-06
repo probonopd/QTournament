@@ -38,7 +38,8 @@ void MatchItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
   {
     row = (proxy->mapToSource(index)).row();
   }
-  auto ma = Tournament::getMatchMngr()->getMatchBySeqNum(row);
+  auto tnmt = Tournament::getActiveTournament();
+  auto ma = tnmt->getMatchMngr()->getMatchBySeqNum(row);
   
   // Fill the cell with the selection color, if necessary
   if(option.state & QStyle::State_Selected)

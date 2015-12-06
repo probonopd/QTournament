@@ -54,7 +54,7 @@ MatchGroupTableView::~MatchGroupTableView()
 void MatchGroupTableView::onTournamentOpened(Tournament* _tnmt)
 {
   tnmt = _tnmt;
-  sortedModel->setSourceModel(Tournament::getMatchGroupTableModel());
+  sortedModel->setSourceModel(tnmt->getMatchGroupTableModel());
   setColumnHidden(MatchGroupTableModel::STATE_COL_ID, true);  // hide the column containing the internal object state
   setColumnHidden(MatchGroupTableModel::STAGE_SEQ_COL_ID, true);  // hide the column containing the stage sequence number
   setEnabled(true);
@@ -63,7 +63,7 @@ void MatchGroupTableView::onTournamentOpened(Tournament* _tnmt)
   connect(tnmt, &Tournament::tournamentClosed, this, &MatchGroupTableView::onTournamentClosed, Qt::DirectConnection);
 
   // receive triggers from the underlying models when a filter update is necessary
-  connect(Tournament::getMatchGroupTableModel(), &MatchGroupTableModel::triggerFilterUpdate, this, &MatchGroupTableView::onFilterUpdateTriggered, Qt::DirectConnection);
+  connect(tnmt->getMatchGroupTableModel(), &MatchGroupTableModel::triggerFilterUpdate, this, &MatchGroupTableView::onFilterUpdateTriggered, Qt::DirectConnection);
   
   // resize columns and rows to content once (we do not want permanent automatic resizing)
   horizontalHeader()->resizeSections(QHeaderView::ResizeToContents);
@@ -76,7 +76,7 @@ void MatchGroupTableView::onTournamentClosed()
 {
   // disconnect from all signals, because
   // the sending objects don't exist anymore
-  disconnect(Tournament::getMatchGroupTableModel(), &MatchGroupTableModel::triggerFilterUpdate, this, &MatchGroupTableView::onFilterUpdateTriggered);
+  disconnect(tnmt->getMatchGroupTableModel(), &MatchGroupTableModel::triggerFilterUpdate, this, &MatchGroupTableView::onFilterUpdateTriggered);
   disconnect(tnmt, &Tournament::tournamentClosed, this, &MatchGroupTableView::onTournamentClosed);
   
   // invalidate the tournament handle and deactivate the view
@@ -141,7 +141,7 @@ unique_ptr<MatchGroup> MatchGroupTableView::getSelectedMatchGroup()
 
   // return the selected item
   int selectedSourceRow = sortedModel->mapToSource(indexes.at(0)).row();
-  return Tournament::getMatchMngr()->getMatchGroupBySeqNum(selectedSourceRow);
+  return tnmt->getMatchMngr()->getMatchGroupBySeqNum(selectedSourceRow);
 }
 
 //----------------------------------------------------------------------------

@@ -33,7 +33,8 @@ cmdExportPlayerToExternalDatabase::cmdExportPlayerToExternalDatabase(QWidget* p,
 ERR cmdExportPlayerToExternalDatabase::exec()
 {
   // make sure we have an external database open
-  PlayerMngr* pm = Tournament::getPlayerMngr();
+  auto tnmt = Tournament::getActiveTournament();
+  PlayerMngr* pm = tnmt->getPlayerMngr();
   if (!(pm->hasExternalPlayerDatabaseOpen()))
   {
     QString msg = tr("No valid database for player export open.");

@@ -125,15 +125,17 @@ void PlayerTabWidget::onPlayerDoubleClicked(const QModelIndex& index)
 
 void PlayerTabWidget::onPlayerCountChanged()
 {
-  PlayerMngr* pm = Tournament::getPlayerMngr();
-  if (pm == nullptr)
+  if (!(Tournament::hasActiveTournament()))
   {
     ui.laPlayerCount->setText(QString()); // no tournament started / opem
-  } else {
-    QString txt = QString::number(pm->getTotalPlayerCount());
-    txt += tr(" players in tournament");
-    ui.laPlayerCount->setText(txt);
+    return;
   }
+
+  auto tnmt = Tournament::getActiveTournament();
+  PlayerMngr* pm = tnmt->getPlayerMngr();
+  QString txt = QString::number(pm->getTotalPlayerCount());
+  txt += tr(" players in tournament");
+  ui.laPlayerCount->setText(txt);
 }
 
 //----------------------------------------------------------------------------
@@ -141,7 +143,8 @@ void PlayerTabWidget::onPlayerCountChanged()
 void PlayerTabWidget::onTournamentOpened()
 {
   // connect to all events that modify the number of players
-  PlayerMngr* pm = Tournament::getPlayerMngr();
+  auto tnmt = Tournament::getActiveTournament();
+  PlayerMngr* pm = tnmt->getPlayerMngr();
   if (pm == nullptr) return;
   connect(pm, SIGNAL(endCreatePlayer(int)), this, SLOT(onPlayerCountChanged()));
   connect(pm, SIGNAL(endDeletePlayer()), this, SLOT(onPlayerCountChanged()));
@@ -157,7 +160,8 @@ void PlayerTabWidget::onTournamentOpened()
 void PlayerTabWidget::onTournamentClosed()
 {
   // disconnect all signals
-  PlayerMngr* pm = Tournament::getPlayerMngr();
+  auto tnmt = Tournament::getActiveTournament();
+  PlayerMngr* pm = tnmt->getPlayerMngr();
   if (pm == nullptr) return;
   disconnect(pm, SIGNAL(endCreatePlayer(int)), this, SLOT(onPlayerCountChanged()));
   disconnect(pm, SIGNAL(endDeletePlayer()), this, SLOT(onPlayerCountChanged()));
@@ -176,7 +180,8 @@ void PlayerTabWidget::onRegisterAllTriggered()
   if (result != QMessageBox::Yes) return;
 
   // loop over all players and set them to "registered"
-  PlayerMngr* pm = Tournament::getPlayerMngr();
+  auto tnmt = Tournament::getActiveTournament();
+  PlayerMngr* pm = tnmt->getPlayerMngr();
   for (const Player& pl : pm->getAllPlayers())
   {
     pm->setWaitForRegistration(pl, false);
@@ -193,7 +198,8 @@ void PlayerTabWidget::onUnregisterAllTriggered()
   if (result != QMessageBox::Yes) return;
 
   // loop over all players and set them to "Wait for registration"
-  PlayerMngr* pm = Tournament::getPlayerMngr();
+  auto tnmt = Tournament::getActiveTournament();
+  PlayerMngr* pm = tnmt->getPlayerMngr();
   bool allModified = true;
   ERR err;
   for (const Player& pl : pm->getAllPlayers())
@@ -241,7 +247,8 @@ void PlayerTabWidget::onSyncAllToExtDatabase()
 
 void PlayerTabWidget::onExternalDatabaseChanged()
 {
-  PlayerMngr* pm = Tournament::getPlayerMngr();
+  auto tnmt = Tournament::getActiveTournament();
+  PlayerMngr* pm = tnmt->getPlayerMngr();
   ui.btnExtDatabase->setEnabled(pm->hasExternalPlayerDatabaseOpen());
   onPlayerSelectionChanged(QItemSelection(), QItemSelection());
 }
@@ -259,7 +266,8 @@ void PlayerTabWidget::onPlayerSelectionChanged(const QItemSelection&, const QIte
 
 void PlayerTabWidget::onImportCSV()
 {
-  PlayerMngr* pm = Tournament::getPlayerMngr();
+  auto tnmt = Tournament::getActiveTournament();
+  PlayerMngr* pm = tnmt->getPlayerMngr();
   if (!(pm->hasExternalPlayerDatabaseOpen()))
   {
     return;
@@ -300,8 +308,8 @@ void PlayerTabWidget::onImportCSV()
       return;
     }
 
-    TeamMngr* tm = Tournament::getTeamMngr();
-    CatMngr* cm = Tournament::getCatMngr();
+    TeamMngr* tm = tnmt->getTeamMngr();
+    CatMngr* cm = tnmt->getCatMngr();
 
     // get the team for adding the players to. The dialog
     // guarantees that the ID is valid

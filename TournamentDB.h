@@ -19,6 +19,8 @@
 #ifndef TOURNAMENTDB_H
 #define	TOURNAMENTDB_H
 
+#include <tuple>
+
 #include "GenericDatabase.h"
 
 #include "TournamentDataDefs.h"
@@ -33,6 +35,10 @@ namespace QTournament
         TournamentDB(QString fName, bool createNew);
         virtual void populateTables();
         virtual void populateViews();
+
+        tuple<int, int> getVersion();
+
+        bool isCompatibleDatabaseVersion();
 
     private:
     };

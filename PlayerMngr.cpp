@@ -80,7 +80,8 @@ namespace QTournament
         return INVALID_TEAM;
       }
       
-      TeamMngr* tm = Tournament::getTeamMngr();
+      auto tnmt = Tournament::getActiveTournament();
+      TeamMngr* tm = tnmt->getTeamMngr();
       if (!(tm->hasTeam(teamName)))
       {
         return INVALID_TEAM;
@@ -355,7 +356,8 @@ namespace QTournament
     //
 
     PlayerList result;
-    PlayerMngr* pm = Tournament::getPlayerMngr();
+    auto tnmt = Tournament::getActiveTournament();
+    PlayerMngr* pm = tnmt->getPlayerMngr();
 
     // have "actual players" already been assigned?
     // if yes, return those values. They overrule everything else
@@ -682,7 +684,6 @@ namespace QTournament
   ERR PlayerMngr::canDeletePlayer(const Player &p) const
   {
     // first check: see if we can remove the player from all categories
-    CatMngr* cm = Tournament::getCatMngr();
     auto assignedCats = p.getAssignedCategories();
     for (Category c : assignedCats)
     {
@@ -749,7 +750,6 @@ namespace QTournament
     }
 
     // remove the player from all categories
-    CatMngr* cm = Tournament::getCatMngr();
     auto assignedCats = p.getAssignedCategories();
     for (Category c : assignedCats)
     {

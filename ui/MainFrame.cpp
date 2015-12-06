@@ -99,12 +99,6 @@ void MainFrame::newTournament()
     return;
   }
 
-  // close other possibly open tournaments
-  if (tnmt != nullptr)
-  {
-    closeCurrentTournament();
-  }
-
   // get the filename and fix the extension, if necessary
   QString filename = fDlg.selectedFiles().at(0);
   QString ext = filename.right(4).toLower();
@@ -124,8 +118,28 @@ void MainFrame::newTournament()
     }
   }
 
-  tnmt = new Tournament(filename, *settings);
-  emit tournamentOpened(tnmt);
+  ERR err;
+  auto newTnmt = Tournament::createNew(filename, *settings, &err);
+  if ((err == FILE_ALREADY_EXISTS) || (newTnmt == nullptr))
+  {
+    // shouldn't happen, because the file has been
+    // deleted before (see above)
+    QMessageBox::warning(this, tr("New tournament"), tr("Something went wrong; no new tournament created."));
+    return;
+  }
+
+  // close other possibly open tournaments
+  if (tnmt != nullptr)
+  {
+    closeCurrentTournament();
+  }
+
+  // make the new tournament the new active,
+  // globally accessible tournament
+  tnmt = std::move(newTnmt);
+  Tournament::setActiveTournament(tnmt.get());
+
+  emit tournamentOpened(tnmt.get());
   enableControls(true);
   setWindowTitle("QTournament - " + settings->tournamentName + "  (" + filename + ")");
 }
@@ -146,19 +160,44 @@ void MainFrame::openTournament()
     return;
   }
 
+  // get the filename
+  QString filename = fDlg.selectedFiles().at(0);
+
+  // try to open the tournament file
+  ERR err;
+  auto newTnmt = Tournament::openExisting(filename, &err);
+
+  // check for errors
+  if (err == INCOMPATIBLE_FILE_FORMAT)
+  {
+    QString msg = tr("The file has been created with an incompatible\n");
+    msg += tr("version of QTournament and can't be opened.");
+    QMessageBox::critical(this, tr("Open tournament"), msg);
+    return;
+  }
+  if (err == FILE_NOT_EXISTING)   // shouldn't happen after the previous checks
+  {
+    QString msg = tr("Couldn't open ") + filename;
+    QMessageBox::critical(this, tr("Open tournament"), msg);
+    return;
+  }
+  if ((err != OK) || (newTnmt == nullptr))
+  {
+    QMessageBox::warning(this, tr("Open tournament"), tr("Something went wrong; no tournament opened."));
+    return;
+  }
+
   // close other possibly open tournaments
   if (tnmt != nullptr)
   {
     closeCurrentTournament();
   }
 
-  // get the filename
-  QString filename = fDlg.selectedFiles().at(0);
-
   // open the tournament
   QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
-  tnmt = new Tournament(filename);
-  emit tournamentOpened(tnmt);
+  tnmt = std::move(newTnmt);
+  Tournament::setActiveTournament(tnmt.get());
+  emit tournamentOpened(tnmt.get());
   enableControls(true);
   QApplication::restoreOverrideCursor();
 
@@ -168,7 +207,7 @@ void MainFrame::openTournament()
   setWindowTitle("QTournament - " + tnmtTitle + "  (" + filename + ")");
 
   // open the external player database file, if configured
-  PlayerMngr* pm = Tournament::getPlayerMngr();
+  PlayerMngr* pm = tnmt->getPlayerMngr();
   if (pm->hasExternalPlayerDatabaseConfigured())
   {
     ERR err = pm->openConfiguredExternalPlayerDatabase();
@@ -211,15 +250,14 @@ void MainFrame::closeCurrentTournament()
   if (tnmt != nullptr)
   {
     // disconnect from the external player database, if any
-    PlayerMngr* pm = Tournament::getPlayerMngr();
+    PlayerMngr* pm = tnmt->getPlayerMngr();
     pm->closeExternalPlayerDatabase();
 
     // this emits a signal to inform everyone that the
     // current tournament is about to die
     tnmt->close();
     
-    delete tnmt;
-    tnmt = nullptr;
+    tnmt.reset();
   }
   
   // delete the test file, if existing
@@ -248,7 +286,8 @@ void MainFrame::setupTestScenario(int scenarioID)
   cfg.organizingClub = "SV Whatever";
   cfg.tournamentName = "World Championship";
   cfg.useTeams = true;
-  tnmt = new Tournament(testFileName, cfg);
+  tnmt = Tournament::createNew(testFileName, cfg);
+  Tournament::setActiveTournament(tnmt.get());
   
   // the empty scenario
   if (scenarioID == 0)
@@ -256,9 +295,9 @@ void MainFrame::setupTestScenario(int scenarioID)
   }
   
   // a scenario with just a few teams already existing
-  TeamMngr* tmngr = Tournament::getTeamMngr();
-  PlayerMngr* pmngr = Tournament::getPlayerMngr();
-  CatMngr* cmngr = Tournament::getCatMngr();
+  TeamMngr* tmngr = tnmt->getTeamMngr();
+  PlayerMngr* pmngr = tnmt->getPlayerMngr();
+  CatMngr* cmngr = tnmt->getCatMngr();
   
   auto scenario01 = [&]()
   {
@@ -452,7 +491,7 @@ void MainFrame::setupTestScenario(int scenarioID)
   {
     scenario04();
     Category ls = cmngr->getCategory("LS");
-    MatchMngr* mm = Tournament::getMatchMngr();
+    MatchMngr* mm = tnmt->getMatchMngr();
 
     ERR e;
     auto mg = mm->getMatchGroup(ls, 1, 3, &e);  // round 1, players group 3
@@ -473,7 +512,7 @@ void MainFrame::setupTestScenario(int scenarioID)
     mm->scheduleAllStagedMatchGroups();
 
     // add four courts
-    auto cm = Tournament::getCourtMngr();
+    auto cm = tnmt->getCourtMngr();
     for (int i=1; i <= 4; ++i)
     {
       cm->createNewCourt(i, "XX", &e);
@@ -488,8 +527,8 @@ void MainFrame::setupTestScenario(int scenarioID)
     scenario05();
     Category ls = cmngr->getCategory("LS");
     Category ld = cmngr->getCategory("LD");
-    MatchMngr* mm = Tournament::getMatchMngr();
-    CourtMngr* cm = Tournament::getCourtMngr();
+    MatchMngr* mm = tnmt->getMatchMngr();
+    CourtMngr* cm = tnmt->getCourtMngr();
 
     // stage and schedule all matches in round 1
     // of LS and LD
@@ -517,7 +556,7 @@ void MainFrame::setupTestScenario(int scenarioID)
     // play all scheduled matches
     QDateTime curDateTime = QDateTime::currentDateTimeUtc();
     uint epochSecs = curDateTime.toTime_t();
-    DbTab matchTab = Tournament::getDatabaseHandle()->getTab(TAB_MATCH);
+    DbTab matchTab = tnmt->getDatabaseHandle()->getTab(TAB_MATCH);
     while (true)
     {
       int nextMacthId;
@@ -570,7 +609,7 @@ void MainFrame::setupTestScenario(int scenarioID)
     assert(e == OK);
 
     // stage all match groups
-    MatchMngr* mm = Tournament::getMatchMngr();
+    MatchMngr* mm = tnmt->getMatchMngr();
     auto mg = mm->getMatchGroup(ls, 1, GROUP_NUM__ITERATION, &e);  // round 1
     assert(e == OK);
     mm->stageMatchGroup(*mg);
@@ -592,7 +631,7 @@ void MainFrame::setupTestScenario(int scenarioID)
     mm->scheduleAllStagedMatchGroups();
 
     // add four courts
-    auto cm = Tournament::getCourtMngr();
+    auto cm = tnmt->getCourtMngr();
     for (int i=1; i <= 4; ++i)
     {
       cm->createNewCourt(i, "XX", &e);
@@ -703,10 +742,10 @@ void MainFrame::setupTestScenario(int scenarioID)
     break;
   }
 
+  emit tournamentOpened(tnmt.get());
+  
   enableControls(true);
-  
-  emit tournamentOpened(tnmt);
-  
+
   return;
 }
 
@@ -832,7 +871,7 @@ void MainFrame::onNewExternalPlayerDatabase()
   }
 
   // actually create and actiate the new database
-  PlayerMngr* pm = Tournament::getPlayerMngr();
+  PlayerMngr* pm = tnmt->getPlayerMngr();
   ERR e = pm->setExternalPlayerDatabase(filename, true);
   if (e != OK)
   {
@@ -861,7 +900,7 @@ void MainFrame::onSelectExternalPlayerDatabase()
   QString filename = fDlg.selectedFiles().at(0);
 
   // open and activate the database
-  PlayerMngr* pm = Tournament::getPlayerMngr();
+  PlayerMngr* pm = tnmt->getPlayerMngr();
   ERR e = pm->setExternalPlayerDatabase(filename, false);
   if (e != OK)
   {

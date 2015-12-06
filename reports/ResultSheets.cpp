@@ -55,7 +55,8 @@ upSimpleReport ResultSheets::regenerateReport()
   }
 
   // collect the matches to be printed
-  MatchMngr* mm = Tournament::getMatchMngr();
+  auto tnmt = Tournament::getActiveTournament();
+  MatchMngr* mm = tnmt->getMatchMngr();
   QList<Match> matchList;
   int lastMatch = mm->getMaxMatchNum();
   int i = firstMatchNum;
@@ -157,7 +158,8 @@ void ResultSheets::onMatchSelectionChanged(int newlySelectedMatchId)
   {
     firstMatchNum = -1;
   } else {
-    MatchMngr* mm = Tournament::getMatchMngr();
+    auto tnmt = Tournament::getActiveTournament();
+    MatchMngr* mm = tnmt->getMatchMngr();
     auto ma = mm->getMatch(newlySelectedMatchId);
     assert(ma != nullptr);
     firstMatchNum = ma->getMatchNumber();

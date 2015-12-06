@@ -58,7 +58,8 @@ ResultsAndNextMatches::ResultsAndNextMatches(TournamentDB* _db, const QString& _
 
 upSimpleReport ResultsAndNextMatches::regenerateReport()
 {
-  MatchMngr* mm = Tournament::getMatchMngr();
+  auto tnmt = Tournament::getActiveTournament();
+  MatchMngr* mm = tnmt->getMatchMngr();
 
   // prepare a subheader if we are in KO-rounds
   MatchGroupList mgl = mm->getMatchGroupsForCat(cat, round);
@@ -125,7 +126,8 @@ QStringList ResultsAndNextMatches::getReportLocators() const
 void ResultsAndNextMatches::printResultPart(upSimpleReport& rep) const
 {
   // collect all matches in this round
-  MatchMngr* mm = Tournament::getMatchMngr();
+  auto tnmt = Tournament::getActiveTournament();
+  MatchMngr* mm = tnmt->getMatchMngr();
   MatchGroupList mgl = mm->getMatchGroupsForCat(cat, round);
   MatchList allMatches;
   for (MatchGroup mg : mgl)
@@ -157,7 +159,8 @@ void ResultsAndNextMatches::printNextMatchPart(upSimpleReport& rep) const
   }
 
   // collect all matches for the next round
-  MatchMngr* mm = Tournament::getMatchMngr();
+  auto tnmt = Tournament::getActiveTournament();
+  MatchMngr* mm = tnmt->getMatchMngr();
   MatchGroupList mgl = mm->getMatchGroupsForCat(cat, round+1);
   MatchList allMatches;
   bool isAllScheduled = true;

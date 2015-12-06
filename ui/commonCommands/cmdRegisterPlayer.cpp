@@ -33,7 +33,8 @@ cmdRegisterPlayer::cmdRegisterPlayer(QWidget* p, const Player& _pl)
 ERR cmdRegisterPlayer::exec()
 {
   ERR err;
-  auto pm = Tournament::getPlayerMngr();
+  auto tnmt = Tournament::getActiveTournament();
+  auto pm = tnmt->getPlayerMngr();
   err = pm->setWaitForRegistration(pl, false);
 
   if (err != OK)   // this shouldn't happen

@@ -34,7 +34,8 @@ cmdMoveOrCopyPairToCategory::cmdMoveOrCopyPairToCategory(QWidget* p, const Playe
 
 ERR cmdMoveOrCopyPairToCategory::exec()
 {
-  auto cm = Tournament::getCatMngr();
+  auto tnmt = Tournament::getActiveTournament();
+  auto cm = tnmt->getCatMngr();
 
   // check that this is a "true" pair with two players
   if (!(pp.hasPlayer2()))
@@ -48,7 +49,7 @@ ERR cmdMoveOrCopyPairToCategory::exec()
   Player p2 = pp.getPlayer2();
 
   // check if the player pair is in the source category
-  auto ppCat = pp.getCategory(Tournament::getDatabaseHandle());
+  auto ppCat = pp.getCategory(tnmt->getDatabaseHandle());
   if (ppCat == nullptr)
   {
     QString msg = tr("The provided player pair is invalid.");

@@ -24,9 +24,10 @@
 #include <QListWidget>
 #include <QQueue>
 
-#include "Tournament.h"
 #include "PlayerPair.h"
 #include "delegates/PairItemDelegate.h"
+
+using namespace QTournament;
 
 class SeedingListWidget : public QListWidget
 {

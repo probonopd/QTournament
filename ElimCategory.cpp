@@ -116,7 +116,8 @@ namespace QTournament
   {
     if (getState() != STAT_CAT_IDLE) return WRONG_STATE;
 
-    auto mm = Tournament::getMatchMngr();
+    auto tnmt = Tournament::getActiveTournament();
+    auto mm = tnmt->getMatchMngr();
 
     // make sure we have not been called before; to this end, just
     // check that there have no matches been created for us so far
@@ -128,7 +129,7 @@ namespace QTournament
 
     // alright, this is a virgin category. Generate bracket matches
     // for each group
-    PlayerPairList seeding = Tournament::getCatMngr()->getSeeding(*this);
+    PlayerPairList seeding = tnmt->getCatMngr()->getSeeding(*this);
     return generateBracketMatches(elimMode, seeding, 1, progressNotificationQueue);
   }
 
@@ -166,7 +167,8 @@ namespace QTournament
     // and for everyone who achieved a final rank in a
     // previous round
     ERR err;
-    RankingMngr* rm = Tournament::getRankingMngr();
+    auto tnmt = Tournament::getActiveTournament();
+    RankingMngr* rm = tnmt->getRankingMngr();
     PlayerPairList ppList;
     if (round == 1)
     {
@@ -199,7 +201,7 @@ namespace QTournament
 
     // set the rank for all players that ended up at a final rank
     // in this or any prior round
-    MatchMngr* mm = Tournament::getMatchMngr();
+    MatchMngr* mm = tnmt->getMatchMngr();
     for (int r=1; r <= round; ++r)
     {
       for (MatchGroup mg : mm->getMatchGroupsForCat(*this, r))
@@ -276,7 +278,8 @@ namespace QTournament
     // those players that have no future matches.
     //
     // "no future match" can mean player "eliminated" or "ranked"
-    MatchMngr* mm = Tournament::getMatchMngr();
+    auto tnmt = Tournament::getActiveTournament();
+    MatchMngr* mm = tnmt->getMatchMngr();
     for (MatchGroup mg : mm->getMatchGroupsForCat(*this, round))
     {
       for (Match ma : mg.getMatches())

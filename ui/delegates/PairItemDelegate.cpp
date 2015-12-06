@@ -34,7 +34,8 @@ PairItemDelegate::PairItemDelegate(QObject* parent, bool _showListIndex)
 
 void PairItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-  PlayerPair pp = Tournament::getPlayerMngr()->getPlayerPair(index.data(Qt::UserRole).toInt());
+  auto tnmt = Tournament::getActiveTournament();
+  PlayerPair pp = tnmt->getPlayerMngr()->getPlayerPair(index.data(Qt::UserRole).toInt());
   QString playerName = pp.getDisplayName();
   QString teamName = pp.getDisplayName_Team();
 
@@ -87,7 +88,8 @@ void PairItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
 
 QSize PairItemDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index ) const
 {
-  PlayerPair pp = Tournament::getPlayerMngr()->getPlayerPair(index.data(Qt::UserRole).toInt());
+  auto tnmt = Tournament::getActiveTournament();
+  PlayerPair pp = tnmt->getPlayerMngr()->getPlayerPair(index.data(Qt::UserRole).toInt());
   QString playerName = pp.getDisplayName();
   QString teamName = pp.getDisplayName_Team();
   

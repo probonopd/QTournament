@@ -29,8 +29,8 @@ CatItemDelegate::CatItemDelegate(QObject* parent)
 void CatItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
   
-  
-  Category c = Tournament::getCatMngr()->getCategoryBySeqNum(index.row());
+  auto tnmt = Tournament::getActiveTournament();
+  Category c = tnmt->getCatMngr()->getCategoryBySeqNum(index.row());
   
   // Paint the background in the selection color, if necessary
   QColor bgColor = option.palette.color(QPalette::Background);

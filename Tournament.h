@@ -45,45 +45,60 @@ using namespace dbOverlay;
 
 namespace QTournament
 {
+  class CategoryTableModel;
+
   class Tournament : public QObject
   {
     Q_OBJECT
     
   public:
-    Tournament (const QString& fName, const TournamentSettings& cfg);
-    Tournament (const QString& fName);
-    static TeamMngr* getTeamMngr();
-    static CatMngr* getCatMngr();
-    static PlayerMngr* getPlayerMngr();
-    static TeamListModel* getTeamListModel();
-    static PlayerTableModel* getPlayerTableModel();
-    static CategoryTableModel* getCategoryTableModel();
-    static MatchMngr* getMatchMngr();
-    static MatchGroupTableModel* getMatchGroupTableModel();
-    static MatchTableModel* getMatchTableModel();
-    static CourtTableModel* getCourtTableModel();
-    static CourtMngr* getCourtMngr();
-    static RankingMngr* getRankingMngr();
-    static ReportFactory* getReportFactory();
-    static TournamentDB* getDatabaseHandle();
+    // Static functions for creating and opening a tournament
+    // and for setting / getting the current global tournament instance
+    static unique_ptr<Tournament> createNew(const QString& fName, const TournamentSettings& cfg, ERR* err=nullptr);
+    static unique_ptr<Tournament> openExisting(const QString& fName, ERR* err=nullptr);
+    static void setActiveTournament(Tournament* newTnmt);
+    static bool hasActiveTournament();
+    static Tournament* getActiveTournament();
+
+    // getters for the various managers and models
+    // for this tournament
+    TeamMngr* getTeamMngr();
+    CatMngr* getCatMngr();
+    PlayerMngr* getPlayerMngr();
+    TeamListModel* getTeamListModel();
+    PlayerTableModel* getPlayerTableModel();
+    CategoryTableModel* getCategoryTableModel();
+    MatchMngr* getMatchMngr();
+    MatchGroupTableModel* getMatchGroupTableModel();
+    MatchTableModel* getMatchTableModel();
+    CourtTableModel* getCourtTableModel();
+    CourtMngr* getCourtMngr();
+    RankingMngr* getRankingMngr();
+    ReportFactory* getReportFactory();
+    TournamentDB* getDatabaseHandle();
+
     void close();
     ~Tournament();
 
   private:
-    static TournamentDB* db;
-    static TeamMngr* tm;
-    static CatMngr* cm;
-    static PlayerMngr* pm;
-    static TeamListModel* tlm;
-    static PlayerTableModel *ptm;
-    static CategoryTableModel *ctm;
-    static MatchMngr* mm;
-    static MatchGroupTableModel* mgm;
-    static MatchTableModel* mam;
-    static CourtTableModel* courtMod;
-    static CourtMngr* com;
-    static RankingMngr* rm;
-    static ReportFactory* repFab;
+    static Tournament* activeTournament;
+
+    Tournament (unique_ptr<TournamentDB> dbHandle);
+    unique_ptr<TournamentDB> db;
+
+    unique_ptr<TeamMngr> tm;
+    unique_ptr<CatMngr> cm;
+    unique_ptr<PlayerMngr> pm;
+    unique_ptr<TeamListModel> tlm;
+    unique_ptr<PlayerTableModel> ptm;
+    unique_ptr<CategoryTableModel> ctm;
+    unique_ptr<MatchMngr> mm;
+    unique_ptr<MatchGroupTableModel> mgm;
+    unique_ptr<MatchTableModel> mam;
+    unique_ptr<CourtTableModel> courtMod;
+    unique_ptr<CourtMngr> com;
+    unique_ptr<RankingMngr> rm;
+    unique_ptr<ReportFactory> repFab;
     
     void initManagers ();
     void initModels();

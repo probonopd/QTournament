@@ -52,7 +52,8 @@ ParticipantsList::~ParticipantsList()
 
 upSimpleReport ParticipantsList::regenerateReport()
 {
-  PlayerMngr* pm = Tournament::getPlayerMngr();
+  auto tnmt = Tournament::getActiveTournament();
+  PlayerMngr* pm = tnmt->getPlayerMngr();
   PlayerList pl = pm->getAllPlayers();
 
   upSimpleReport result = createEmptyReport_Portrait();
@@ -114,7 +115,8 @@ QStringList ParticipantsList::getReportLocators() const
 
 void ParticipantsList::createNameSortedReport(upSimpleReport& rep) const
 {
-  PlayerMngr* pm = Tournament::getPlayerMngr();
+  auto tnmt = Tournament::getActiveTournament();
+  PlayerMngr* pm = tnmt->getPlayerMngr();
   PlayerList pl = pm->getAllPlayers();
 
   // do we have any participants at all?
@@ -152,7 +154,8 @@ void ParticipantsList::createNameSortedReport(upSimpleReport& rep) const
 
 void ParticipantsList::createTeamSortedReport(upSimpleReport &rep) const
 {
-  TeamMngr* tm = Tournament::getTeamMngr();
+  auto tnmt = Tournament::getActiveTournament();
+  TeamMngr* tm = tnmt->getTeamMngr();
 
   QList<Team> tl = tm->getAllTeams();
 
@@ -223,8 +226,9 @@ void ParticipantsList::createTeamSortedReport(upSimpleReport &rep) const
 
 void ParticipantsList::createCategorySortedReport(upSimpleReport& rep) const
 {
-  CatMngr* cm = Tournament::getCatMngr();
-  TeamMngr* tm = Tournament::getTeamMngr();
+  auto tnmt = Tournament::getActiveTournament();
+  CatMngr* cm = tnmt->getCatMngr();
+  TeamMngr* tm = tnmt->getTeamMngr();
 
   QList<Category> allCats = cm->getAllCategories();
 

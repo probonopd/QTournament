@@ -34,7 +34,8 @@ cmdRemovePlayerFromCategory::cmdRemovePlayerFromCategory(QWidget* p, const Playe
 ERR cmdRemovePlayerFromCategory::exec()
 {
   ERR err;
-  auto cm = Tournament::getCatMngr();
+  auto tnmt = Tournament::getActiveTournament();
+  auto cm = tnmt->getCatMngr();
   err = cm->removePlayerFromCategory(pl, cat);
 
   if (err == OK) return OK;

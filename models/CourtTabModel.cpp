@@ -5,22 +5,27 @@
  * Created on March 17, 2014, 7:51 PM
  */
 
+#include <QDebug>
+
 #include "CourtTabModel.h"
 
 #include "Category.h"
 #include "Tournament.h"
 #include "../ui/GuiHelpers.h"
-#include <QDebug>
+#include "CourtMngr.h"
+#include "Tournament.h"
+
 
 using namespace QTournament;
 using namespace dbOverlay;
 
-CourtTableModel::CourtTableModel(TournamentDB* _db)
-:QAbstractTableModel(0), db(_db), courtTab((_db->getTab(TAB_COURT)))
+CourtTableModel::CourtTableModel(Tournament* tnmt)
+:QAbstractTableModel(0), db(tnmt->getDatabaseHandle()), courtTab((db->getTab(TAB_COURT)))
 {
-  connect(Tournament::getCourtMngr(), &CourtMngr::beginCreateCourt, this, &CourtTableModel::onBeginCreateCourt, Qt::DirectConnection);
-  connect(Tournament::getCourtMngr(), &CourtMngr::endCreateCourt, this, &CourtTableModel::onEndCreateCourt, Qt::DirectConnection);
-  connect(Tournament::getCourtMngr(), &CourtMngr::courtStatusChanged, this, &CourtTableModel::onCourtStatusChanged, Qt::DirectConnection);
+  CourtMngr* cm = tnmt->getCourtMngr();
+  connect(cm, SIGNAL(beginCreateCourt()), this, SLOT(onBeginCreateCourt()), Qt::DirectConnection);
+  connect(cm, SIGNAL(endCreateCourt(int)), this, SLOT(onEndCreateCourt(int)), Qt::DirectConnection);
+  connect(cm, SIGNAL(courtStatusChanged(int,int,OBJ_STATE,OBJ_STATE)), this, SLOT(onCourtStatusChanged(int,int)), Qt::DirectConnection);
 }
 
 //----------------------------------------------------------------------------
@@ -54,7 +59,8 @@ QVariant CourtTableModel::data(const QModelIndex& index, int role) const
     if (role != Qt::DisplayRole)
       return QVariant();
     
-    auto co = Tournament::getCourtMngr()->getCourtBySeqNum(index.row());
+    auto tnmt = Tournament::getActiveTournament();
+    auto co = tnmt->getCourtMngr()->getCourtBySeqNum(index.row());
     
     // first column: court number
     if (index.column() == COURT_NUM_COL_ID)

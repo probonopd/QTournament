@@ -42,7 +42,8 @@ void CourtItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
   {
     row = (proxy->mapToSource(index)).row();
   }
-  auto co = Tournament::getCourtMngr()->getCourtBySeqNum(row);
+  auto tnmt = Tournament::getActiveTournament();
+  auto co = tnmt->getCourtMngr()->getCourtBySeqNum(row);
   auto ma = co->getMatch();
   
   // Fill the cell with the selection color, if necessary

@@ -18,6 +18,8 @@
 
 #include <algorithm>
 
+#include "Tournament.h"
+#include "PlayerMngr.h"
 #include "SeedingListWidget.h"
 
 
@@ -124,7 +126,8 @@ void SeedingListWidget::warpSelectedPlayerTo(int targetRow)
 PlayerPairList SeedingListWidget::getSeedList() const
 {
   PlayerPairList result;
-  PlayerMngr* pm = Tournament::getPlayerMngr();
+  auto tnmt = Tournament::getActiveTournament();
+  PlayerMngr* pm = tnmt->getPlayerMngr();
 
   for (int row = 0; row < count(); ++row)
   {

@@ -137,7 +137,8 @@ void DlgEditPlayer::done(int result)
   }
   if (_hasNameChange)   // this "if" triggers only for newly inserted players or for existing players with a name change
   {
-    if (Tournament::getPlayerMngr()->hasPlayer(newFirst, newLast))
+    auto tnmt = Tournament::getActiveTournament();
+    if (tnmt->getPlayerMngr()->hasPlayer(newFirst, newLast))
     {
       QMessageBox::critical(this, tr("Error in player data"), tr("A player of that name already exists!"));
       return;  // do not call parent done(), do not close the dialog)
@@ -184,7 +185,8 @@ void DlgEditPlayer::initFromPlayerData()
   ui.cbTeams->setCurrentText(t.getName());
   
   // initialize the list of applicable categories
-  QHash<Category,CAT_ADD_STATE> catStatus = Tournament::getCatMngr()->getAllCategoryAddStates(*selectedPlayer);
+  auto tnmt = Tournament::getActiveTournament();
+  QHash<Category,CAT_ADD_STATE> catStatus = tnmt->getCatMngr()->getAllCategoryAddStates(*selectedPlayer);
   updateCatList(catStatus);
 }
 
@@ -192,7 +194,8 @@ void DlgEditPlayer::initFromPlayerData()
 
 void DlgEditPlayer::initTeamList()
 {
-  QList<Team> allTeams = Tournament::getTeamMngr()->getAllTeams();
+  auto tnmt = Tournament::getActiveTournament();
+  QList<Team> allTeams = tnmt->getTeamMngr()->getAllTeams();
 
   // Sort the list aphabetically
   std::sort(allTeams.begin(), allTeams.end(), [](Team& t1, Team& t2) {
@@ -247,7 +250,8 @@ SEX DlgEditPlayer::getSex()
 Team DlgEditPlayer::getTeam()
 {
   int id = ui.cbTeams->currentData().toInt();
-  return Tournament::getTeamMngr()->getTeamById(id);
+  auto tnmt = Tournament::getActiveTournament();
+  return tnmt->getTeamMngr()->getTeamById(id);
 }
 
 //----------------------------------------------------------------------------
@@ -261,7 +265,8 @@ void DlgEditPlayer::onSexSelectionChanged(int preselectCatId)
   // with a new player. So it's the sex, not the player
   // itself that determines the can-add-state
   //
-  QHash<Category,CAT_ADD_STATE> catStatus = Tournament::getCatMngr()->getAllCategoryAddStates(getSex());
+  auto tnmt = Tournament::getActiveTournament();
+  QHash<Category,CAT_ADD_STATE> catStatus = tnmt->getCatMngr()->getAllCategoryAddStates(getSex());
   
   updateCatList(catStatus, preselectCatId);
 }
@@ -319,7 +324,8 @@ void DlgEditPlayer::updateCatList(QHash<Category,CAT_ADD_STATE> catStatus, int p
 QHash<Category,bool> DlgEditPlayer::getCategoryCheckState()
 {
   QHash<Category,bool> result;
-  CatMngr* cmngr = Tournament::getCatMngr();
+  auto tnmt = Tournament::getActiveTournament();
+  CatMngr* cmngr = tnmt->getCatMngr();
   
   for (int i=0; i < ui.catList->count(); i++)
   {

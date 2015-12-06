@@ -73,7 +73,8 @@ upSimpleReport InOutList::regenerateReport()
     result->writeLine(tr("All players are still in the game, no knock-outs yet."));
   } else {
     // sort the outList be the number of rounds that each player survived
-    RankingMngr* rm = Tournament::getRankingMngr();
+    auto tnmt = Tournament::getActiveTournament();
+    RankingMngr* rm = tnmt->getRankingMngr();
     QHash<int, int> ppId2Rounds;
     for (PlayerPair pp : outList)
     {

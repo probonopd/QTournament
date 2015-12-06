@@ -51,7 +51,8 @@ namespace QTournament
   Category RankingEntry::getCategory() const
   {
     int catId = row[RA_CAT_REF].toInt();
-    return Tournament::getCatMngr()->getCategoryById(catId);
+    auto tnmt = Tournament::getActiveTournament();
+    return tnmt->getCatMngr()->getCategoryById(catId);
   }
 
 //----------------------------------------------------------------------------

@@ -60,7 +60,8 @@ namespace QTournament
 
   ERR Category::rename(const QString& nn)
   {
-    return Tournament::getCatMngr()->renameCategory(*this, nn);
+    auto tnmt = Tournament::getActiveTournament();
+    return tnmt->getCatMngr()->renameCategory(*this, nn);
   }
 
   //----------------------------------------------------------------------------
@@ -94,21 +95,24 @@ namespace QTournament
 
   ERR Category::setMatchSystem(MATCH_SYSTEM s)
   {
-    return Tournament::getCatMngr()->setMatchSystem(*this, s);
+    auto tnmt = Tournament::getActiveTournament();
+    return tnmt->getCatMngr()->setMatchSystem(*this, s);
   }
 
   //----------------------------------------------------------------------------
 
   ERR Category::setMatchType(MATCH_TYPE t)
   {
-    return Tournament::getCatMngr()->setMatchType(*this, t);
+    auto tnmt = Tournament::getActiveTournament();
+    return tnmt->getCatMngr()->setMatchType(*this, t);
   }
 
   //----------------------------------------------------------------------------
 
   ERR Category::setSex(SEX s)
   {
-    return Tournament::getCatMngr()->setSex(*this, s);
+    auto tnmt = Tournament::getActiveTournament();
+    return tnmt->getCatMngr()->setSex(*this, s);
   }
 
   //----------------------------------------------------------------------------
@@ -167,7 +171,8 @@ namespace QTournament
 
   ERR Category::addPlayer(const Player& p)
   {
-    return Tournament::getCatMngr()->addPlayerToCategory(p, *this);
+    auto tnmt = Tournament::getActiveTournament();
+    return tnmt->getCatMngr()->addPlayerToCategory(p, *this);
   }
 
   //----------------------------------------------------------------------------
@@ -213,7 +218,8 @@ namespace QTournament
 
   ERR Category::removePlayer(const Player& p)
   {
-    return Tournament::getCatMngr()->removePlayerFromCategory(p, *this);
+    auto tnmt = Tournament::getActiveTournament();
+    return tnmt->getCatMngr()->removePlayerFromCategory(p, *this);
   }
 
 
@@ -253,7 +259,8 @@ namespace QTournament
 
   bool Category::setParameter(CAT_PARAMETER p, const QVariant& v)
   {
-    return Tournament::getCatMngr()->setCatParameter(*this, p, v);
+    auto tnmt = Tournament::getActiveTournament();
+    return tnmt->getCatMngr()->setCatParameter(*this, p, v);
   }
 
   //----------------------------------------------------------------------------
@@ -295,7 +302,8 @@ namespace QTournament
   PlayerPairList Category::getPlayerPairs(int grp) const
   {
     QList<PlayerPair> result;
-    PlayerMngr* pmngr = Tournament::getPlayerMngr();
+    auto tnmt = Tournament::getActiveTournament();
+    PlayerMngr* pmngr = tnmt->getPlayerMngr();
 
     // get all players assigned to this category
     QList<Player> singlePlayers = getAllPlayersInCategory();
@@ -365,7 +373,8 @@ namespace QTournament
   QList<Player> Category::getAllPlayersInCategory() const
   {
     QList<Player> result;
-    PlayerMngr* pmngr = Tournament::getPlayerMngr();
+    auto tnmt = Tournament::getActiveTournament();
+    PlayerMngr* pmngr = tnmt->getPlayerMngr();
 
     DbTab::CachingRowIterator it = db->getTab(TAB_P2C).getRowsByColumnValue(P2C_CAT_REF, getId());
     while (!(it.isEnd()))
@@ -521,7 +530,8 @@ namespace QTournament
       throw std::invalid_argument("Player doesn't have a partner");
     }
 
-    return Tournament::getPlayerMngr()->getPlayer(partnerId);
+    auto tnmt = Tournament::getActiveTournament();
+    return tnmt->getPlayerMngr()->getPlayer(partnerId);
   }
 
   //----------------------------------------------------------------------------
@@ -733,7 +743,8 @@ namespace QTournament
     if ((grpNum < 1) && (grpNum != GROUP_NUM__ITERATION)) return INVALID_GROUP_NUM;
 
     RoundRobinGenerator rrg;
-    auto mm = Tournament::getMatchMngr();
+    auto tnmt = Tournament::getActiveTournament();
+    auto mm = tnmt->getMatchMngr();
     int numPlayers = grpMembers.count();
     int internalRoundNum = 0;
     while (true)
@@ -883,7 +894,8 @@ namespace QTournament
     std::sort(bmdl.begin(), bmdl.end(), BracketGenerator::getBracketMatchSortFunction_earlyRoundsFirst());
 
     // create match groups and matches "from left to right"
-    MatchMngr* mm = Tournament::getMatchMngr();
+    auto tnmt = Tournament::getActiveTournament();
+    MatchMngr* mm = tnmt->getMatchMngr();
     int curRound = -1;
     int curDepth = -1;
     unique_ptr<MatchGroup> curGroup = nullptr;
@@ -1086,7 +1098,7 @@ namespace QTournament
         if (bracket2Match.keys().contains(i+1))    // bracket match IDs are 1-based, not 0-based!
         {
           int maId = bracket2Match.value(i+1);     // bracket match IDs are 1-based, not 0-based!
-          auto ma = Tournament::getMatchMngr()->getMatch(maId);
+          auto ma = tnmt->getMatchMngr()->getMatch(maId);
 
           auto bracketElement = bvd->getVisElement(i+1);   // bracket match IDs are 1-based, not 0-based!
           assert(bracketElement != nullptr);
@@ -1182,7 +1194,8 @@ namespace QTournament
 
   bool Category::hasMatchesInState(OBJ_STATE stat, int round) const
   {
-    MatchMngr* mm = Tournament::getMatchMngr();
+    auto tnmt = Tournament::getActiveTournament();
+    MatchMngr* mm = tnmt->getMatchMngr();
 
     MatchGroupList mgl = mm->getMatchGroupsForCat(*this, round);
     for (MatchGroup mg : mgl)

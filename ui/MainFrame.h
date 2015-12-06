@@ -19,6 +19,8 @@
 #ifndef _MAINFRAME_H
 #define	_MAINFRAME_H
 
+#include <memory>
+
 #include <QShortcut>
 
 #include "ui_MainFrame.h"
@@ -42,7 +44,7 @@ private:
   void enableControls(bool doEnable = true);
   void setupTestScenario(int scenarioID);
   
-  Tournament* tnmt;
+  unique_ptr<Tournament> tnmt;
   
   QString testFileName;
   
