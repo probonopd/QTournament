@@ -72,6 +72,7 @@ namespace QTournament
     // create a new, blank database
     auto newDb = make_unique<TournamentDB>(fName, true);
     newDb->setLogLevel(1);
+    newDb->createIndices();
 
     // initialize the database
     KeyValueTab cfgTab = KeyValueTab::getTab(newDb.get(), TAB_CFG);

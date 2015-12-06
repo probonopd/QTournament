@@ -35,10 +35,14 @@ namespace QTournament
         TournamentDB(QString fName, bool createNew);
         virtual void populateTables();
         virtual void populateViews();
+        void createIndices();
 
         tuple<int, int> getVersion();
 
         bool isCompatibleDatabaseVersion();
+
+        bool needsConversion();
+        bool convertToLatestDatabaseVersion();
 
     private:
     };

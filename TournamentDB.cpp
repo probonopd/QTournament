@@ -205,6 +205,57 @@ void TournamentDB::populateViews()
 
 //----------------------------------------------------------------------------
 
+void TournamentDB::createIndices()
+{
+  indexCreationHelper(TAB_COURT, GENERIC_NAME_FIELD_NAME);
+  indexCreationHelper(TAB_COURT, GENERIC_SEQNUM_FIELD_NAME, true);
+
+  indexCreationHelper(TAB_TEAM, GENERIC_NAME_FIELD_NAME, true);
+  indexCreationHelper(TAB_TEAM, GENERIC_SEQNUM_FIELD_NAME, true);
+
+  QStringList colList{PL_LNAME, PL_FNAME};
+  indexCreationHelper(TAB_PLAYER, GENERIC_SEQNUM_FIELD_NAME, true);
+  indexCreationHelper(TAB_PLAYER, GENERIC_STATE_FIELD_NAME);
+  indexCreationHelper(TAB_PLAYER, PL_FNAME);
+  indexCreationHelper(TAB_PLAYER, PL_LNAME);
+  indexCreationHelper(TAB_PLAYER, "Player_CombinedNames", colList, true);
+
+  indexCreationHelper(TAB_CATEGORY, GENERIC_NAME_FIELD_NAME, true);
+  indexCreationHelper(TAB_CATEGORY, GENERIC_SEQNUM_FIELD_NAME, true);
+  indexCreationHelper(TAB_CATEGORY, GENERIC_STATE_FIELD_NAME);
+
+  indexCreationHelper(TAB_P2C, P2C_CAT_REF);
+  indexCreationHelper(TAB_P2C, P2C_PLAYER_REF);
+
+  indexCreationHelper(TAB_PAIRS, PAIRS_PLAYER1_REF);
+  indexCreationHelper(TAB_PAIRS, PAIRS_PLAYER1_REF);
+  indexCreationHelper(TAB_PAIRS, PAIRS_CAT_REF);
+
+  indexCreationHelper(TAB_MATCH_GROUP, MG_CAT_REF);
+  indexCreationHelper(TAB_MATCH_GROUP, MG_GRP_NUM);
+  indexCreationHelper(TAB_MATCH_GROUP, MG_ROUND);
+  indexCreationHelper(TAB_MATCH_GROUP, MG_STAGE_SEQ_NUM, true);
+
+  indexCreationHelper(TAB_MATCH, MA_GRP_REF);
+  indexCreationHelper(TAB_MATCH, GENERIC_SEQNUM_FIELD_NAME, true);
+  indexCreationHelper(TAB_MATCH, GENERIC_STATE_FIELD_NAME);
+  indexCreationHelper(TAB_MATCH, MA_PAIR1_REF);
+  indexCreationHelper(TAB_MATCH, MA_PAIR2_REF);
+
+  indexCreationHelper(TAB_RANKING, RA_PAIR_REF);
+  indexCreationHelper(TAB_RANKING, RA_CAT_REF);
+  indexCreationHelper(TAB_RANKING, RA_ROUND);
+
+  indexCreationHelper(TAB_BRACKET_VIS, BV_CAT_REF);
+  indexCreationHelper(TAB_BRACKET_VIS, BV_MATCH_REF);
+  indexCreationHelper(TAB_BRACKET_VIS, BV_PAIR1_REF);
+  indexCreationHelper(TAB_BRACKET_VIS, BV_PAIR2_REF);
+
+  //indexCreationHelper(TAB_, );
+}
+
+//----------------------------------------------------------------------------
+
 tuple<int, int> TournamentDB::getVersion()
 {
   KeyValueTab cfg = KeyValueTab::getTab(this, TAB_CFG);
@@ -263,6 +314,52 @@ bool TournamentDB::isCompatibleDatabaseVersion()
   // version number must be less or equal to
   // the version at compile time
   return ((major == DB_VERSION_MAJOR) && (minor >= 0) && (minor <= DB_VERSION_MINOR));
+}
+
+//----------------------------------------------------------------------------
+
+bool TournamentDB::needsConversion()
+{
+  // get the current file format version
+  int major;
+  int minor;
+  tie(major, minor) = getVersion();
+
+  // condition: major version number must
+  // match the compiled in version and the minor
+  // version number must be less then
+  // the version at compile time
+  return ((major == DB_VERSION_MAJOR) && (minor >= 0) && (minor < DB_VERSION_MINOR));
+}
+
+//----------------------------------------------------------------------------
+
+bool TournamentDB::convertToLatestDatabaseVersion()
+{
+  // get the current file format version
+  int major;
+  int minor;
+  tie(major, minor) = getVersion();
+
+  if (major != DB_VERSION_MAJOR) return false;
+  if (minor < 0) return false;
+  if (minor > DB_VERSION_MINOR) return false;
+
+  // convert from 2.0 to 2.1
+  if (minor == 0)
+  {
+    createIndices();
+    minor = 1;
+  }
+
+  // store the new database version
+  QString dbVersion = "%1.%2";
+  dbVersion = dbVersion.arg(DB_VERSION_MAJOR);
+  dbVersion = dbVersion.arg(minor);
+  KeyValueTab cfg = KeyValueTab::getTab(this, TAB_CFG);
+  cfg.set(CFG_KEY_DB_VERSION, dbVersion);
+
+  return true;
 }
 
 }

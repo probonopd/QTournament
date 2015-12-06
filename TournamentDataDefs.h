@@ -24,7 +24,7 @@
 namespace QTournament
 {
 #define DB_VERSION_MAJOR 2
-#define DB_VERSION_MINOR 0
+#define DB_VERSION_MINOR 1
 #define MIN_REQUIRED_DB_VERSION 2
 
 //----------------------------------------------------------------------------

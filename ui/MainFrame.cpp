@@ -187,6 +187,31 @@ void MainFrame::openTournament()
     return;
   }
 
+  // do we need to convert this database to a new format?
+  TournamentDB* db = newTnmt->getDatabaseHandle();
+  if (db->needsConversion())
+  {
+    QString msg = tr("The file has been created with an older version of QTournament.\n\n");
+    msg += tr("The file is not compatible with the current version but it can be updated ");
+    msg += tr("to the current version. If you upgrade, you will no longer be able to open ");
+    msg += tr("the file with older versions of QTournament.\n\n");
+    msg += tr("The conversion cannot be undone.\n\n");
+    msg += tr("Do you want to proceed and update the file?");
+    int result = QMessageBox::question(this, tr("Convert file format?"), msg);
+    if (result != QMessageBox::Yes) return;
+
+    bool conversionOk = db->convertToLatestDatabaseVersion();
+    if (conversionOk)
+    {
+      msg = tr("The file was successfully converted!");
+      QMessageBox::information(this, tr("Convert file format"), msg);
+    } else {
+      msg = tr("The file conversion failed. The tournament could not be opened.");
+      QMessageBox::critical(this, tr("Convert file format"), msg);
+      return;
+    }
+  }
+
   // close other possibly open tournaments
   if (tnmt != nullptr)
   {
@@ -795,6 +820,23 @@ void MainFrame::setupScenario05()
 
 void MainFrame::setupScenario06()
 {
+  /*
+   * For performance tests
+   *
+  QDateTime startTime = QDateTime::currentDateTime();
+  for (int i=0; i < 5; ++i)
+  {
+    setupTestScenario(6);
+  }
+  QDateTime endTime = QDateTime::currentDateTime();
+  auto runtime = startTime.msecsTo(endTime);
+  int secs = runtime / 1000;
+  int msecs = runtime % 1000;
+  QString msg = "%1,%2 secs";
+  msg = msg.arg(secs).arg(msecs);
+  QMessageBox::information(this, "sdlfkjsdf", msg);
+  */
+
   setupTestScenario(6);
 }
 
