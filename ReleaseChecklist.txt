@@ -1,0 +1,47 @@
+Preparation and source baselining
+=================================
+
+  * Make sure that the code compiles and runs under Windows
+
+  * Compile the support libs (reports and DB) and QTournament
+    with "release" settings under Linux and Windows
+
+  * Make sure the release-compiled program works under Linux and Windows
+
+  * Commit and push changes to support libs (reports and DB)
+
+  * Assign version tags to support libs and push tags
+
+
+Build final release version of QTournament
+==========================================
+
+  * In 'dev' branch: set version number in MainFrame.h
+
+  * Merge 'dev' with 'staged' and finally 'staged' with 'master'
+
+  * Commit and push all changes
+
+  * Compile release version for Linux and Windows
+
+  * Make sure everything works fine (esp. under Windows)
+
+  * Tag 'master' branch with version number.
+    Use an annotated tag and include required version numbers of the
+    support libs in the comment
+
+  * Push all tags
+
+  * Create ZIP archives and create SHA1s and digital signatures
+
+
+Cleanup
+=======
+
+  * Checkout 'dev' in both the Windows and Linux source tree
+
+  * Reset the version string in MainFrame.h to '<DevelopmentSnapshot>'
+
+  * Commit and push the change
+
+
