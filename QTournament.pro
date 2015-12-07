@@ -10,9 +10,11 @@ TARGET = QTournament
 TEMPLATE = app
 QMAKE_CXXFLAGS += -std=c++14 -Wno-unused-parameter
 
+VERSION = 0.3.0
+
 # Optimization level O3 for release
-QMAKE_CXXFLAGS_RELEASE -= -O2
-QMAKE_CXXFLAGS_RELEASE += -O3
+#QMAKE_CXXFLAGS_RELEASE -= -O2
+#QMAKE_CXXFLAGS_RELEASE += -O3
 
 # Optimization level O1 for debug
 #QMAKE_CXXFLAGS_DEBUG += -O0
@@ -247,15 +249,16 @@ TRANSLATIONS = tournament_de.ts
 
 win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../build-DatabaseOverlayLib-Desktop_Qt_MinGW_w64_64bit_MSYS2-Release/release/ -lDatabaseOverlayLib
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../build-DatabaseOverlayLib-Desktop_Qt_MinGW_w64_64bit_MSYS2-Debug/debug/ -lDatabaseOverlayLib
-else:unix:!macx: LIBS += -L$$PWD/../build-DatabaseOverlayLib-Desktop_GCC-Debug/ -lDatabaseOverlayLib
+else:unix:CONFIG(debug, debug|release): LIBS += -L$$PWD/../build-DatabaseOverlayLib-Desktop_GCC-Debug/ -lDatabaseOverlayLib
+else:unix:CONFIG(release, debug|release): LIBS += -L$$PWD/../build-DatabaseOverlayLib-Desktop_GCC-Release/ -lDatabaseOverlayLib
 
 INCLUDEPATH += $$PWD/../DatabaseOverlayLib
 DEPENDPATH += $$PWD/../DatabaseOverlayLib
 
 win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../build-SimpleReportGenerator-Desktop_Qt_MinGW_w64_64bit_MSYS2-Release/release -lSimpleReportGenerator
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../build-SimpleReportGenerator-Desktop_Qt_MinGW_w64_64bit_MSYS2-Debug/debug -lSimpleReportGenerator
-else:unix:CONFIG(release, debug|release): LIBS += -L$$PWD/../build-SimpleReportGenerator-Desktop_Clang-Release/ -lSimpleReportGenerator
-else:unix:CONFIG(debug, debug|release): LIBS += -L$$PWD/../build-SimpleReportGenerator-Desktop_Clang-Debug/ -lSimpleReportGenerator
+else:unix:CONFIG(release, debug|release): LIBS += -L$$PWD/../build-SimpleReportGenerator-Desktop_GCC-Release/ -lSimpleReportGenerator
+else:unix:CONFIG(debug, debug|release): LIBS += -L$$PWD/../build-SimpleReportGenerator-Desktop_GCC-Debug/ -lSimpleReportGenerator
 
 INCLUDEPATH += $$PWD/../SimpleReportGeneratorLib
 DEPENDPATH += $$PWD/../SimpleReportGeneratorLib
