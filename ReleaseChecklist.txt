@@ -3,6 +3,8 @@ Preparation and source baselining
 
   * Make sure that the code compiles and runs under Windows
 
+  * Add / modify the version number in the libs' .pro-files
+
   * Compile the support libs (reports and DB) and QTournament
     with "release" settings under Linux and Windows
 
@@ -17,6 +19,8 @@ Build final release version of QTournament
 ==========================================
 
   * In 'dev' branch: set version number in MainFrame.h
+
+  * Add / modify the version number in the app's .pro-files
 
   * Merge 'dev' with 'staged' and finally 'staged' with 'master'
 

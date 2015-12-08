@@ -26,7 +26,7 @@
 #include "ui_MainFrame.h"
 #include "Tournament.h"
 
-#define PRG_VERSION_STRING "0.3.0"
+#define PRG_VERSION_STRING "<DevelopmentSnapshot>"
 
 using namespace QTournament;
 
