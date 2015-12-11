@@ -30,6 +30,7 @@
 #include "TournamentErrorCodes.h"
 #include "TournamentDataDefs.h"
 #include "TournamentDB.h"
+#include "HelperFunc.h"
 
 using namespace dbOverlay;
 
@@ -189,7 +190,7 @@ namespace QTournament
   {
     if (!(hasCategory(name)))
     {
-      throw std::invalid_argument("The category '" + QString2String(name) + "' does not exist");
+      throw std::invalid_argument("The category '" + QString2StdString(name) + "' does not exist");
     }
     
     TabRow r = catTab.getSingleRowByColumnValue(GENERIC_NAME_FIELD_NAME, name);
@@ -616,7 +617,7 @@ namespace QTournament
       }
     catch (std::exception e)
     {
-     throw std::invalid_argument("The category with ID " + QString2String(QString::number(id)) + " does not exist");
+     throw std::invalid_argument("The category with ID " + to_string(id) + " does not exist");
     }
   }
 
@@ -630,7 +631,7 @@ namespace QTournament
     }
     catch (std::exception e)
     {
-     throw std::invalid_argument("The category with sequence number " + QString2String(QString::number(seqNum)) + " does not exist");
+     throw std::invalid_argument("The category with sequence number " + to_string(seqNum) + " does not exist");
     }
   }
 

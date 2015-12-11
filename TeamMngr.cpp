@@ -94,7 +94,7 @@ namespace QTournament
   {
     if (!(hasTeam(name)))
     {
-      throw std::invalid_argument("The team '" + QString2String(name) + "' does not exist");
+      throw std::invalid_argument("The team '" + QString2StdString(name) + "' does not exist");
     }
     
     TabRow r = teamTab.getSingleRowByColumnValue(GENERIC_NAME_FIELD_NAME, name);
@@ -157,7 +157,7 @@ namespace QTournament
     }
     catch (std::exception e)
     {
-     throw std::invalid_argument("The team with sequence number " + QString2String(QString::number(seqNum)) + " does not exist");
+     throw std::invalid_argument("The team with sequence number " + to_string(seqNum) + " does not exist");
     }
   }
 
@@ -171,7 +171,7 @@ namespace QTournament
     }
     catch (std::exception e)
     {
-     throw std::invalid_argument("The team with ID " + QString2String(QString::number(id)) + " does not exist");
+     throw std::invalid_argument("The team with ID " + to_string(id) + " does not exist");
     }
   }
 

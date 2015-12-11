@@ -127,7 +127,7 @@ namespace QTournament
   {
     if (!(hasPlayer(firstName, lastName)))
     {
-      throw std::invalid_argument("The player '" + QString2String(firstName + " " + lastName) + "' does not exist");
+      throw std::invalid_argument("The player '" + QString2StdString(firstName + " " + lastName) + "' does not exist");
     }
     
     QVariantList qvl;

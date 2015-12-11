@@ -25,25 +25,24 @@
 
 #include <QHash>
 
-#include "GenericDatabase.h"
-#include "DbTab.h"
+#include "SqliteOverlay/SqliteDatabase.h"
+#include "SqliteOverlay/DbTab.h"
+#include "SqliteOverlay/TabRow.h"
 
 #include "TournamentDataDefs.h"
-
-using namespace dbOverlay;
 
 namespace QTournament
 {
 
 #define EXT_PLAYER_DB_VERSION 1
 #define MIN_REQUIRED_EXT_PLAYER_DB_VERSION 1
-#define TAB_EPD_CFG QString("Config")
-#define CFG_KEY_EPD_DB_VERSION QString("DatabaseVersion")
+#define TAB_EPD_CFG string("Config")
+#define CFG_KEY_EPD_DB_VERSION string("DatabaseVersion")
 
-#define TAB_EPD_PLAYER QString("Player")
-#define EPD_PL_FNAME QString("FirstName")
-#define EPD_PL_LNAME QString("LastName")
-#define EPD_PL_SEX QString("Sex")
+#define TAB_EPD_PLAYER string("Player")
+#define EPD_PL_FNAME string("FirstName")
+#define EPD_PL_LNAME string("LastName")
+#define EPD_PL_SEX string("Sex")
 
   class ExternalPlayerDatabaseEntry
   {
@@ -68,7 +67,7 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  class ExternalPlayerDB : public dbOverlay::GenericDatabase
+  class ExternalPlayerDB : public SqliteOverlay::SqliteDatabase
   {
   public:
     static unique_ptr<ExternalPlayerDB> createNew(const QString& fname);
@@ -85,8 +84,8 @@ namespace QTournament
     tuple<QList<int>, QList<int>, int> bulkImportCSV(const QString& csv);
 
   private:
-    ExternalPlayerDB(QString fName, bool createNew);
-    upExternalPlayerDatabaseEntry row2upEntry(const TabRow& r) const;
+    upExternalPlayerDatabaseEntry row2upEntry(const SqliteOverlay::TabRow& r) const;
+    ExternalPlayerDB(const QString& fname, bool createNew);
   };
   typedef unique_ptr<ExternalPlayerDB> upExternalPlayerDB;
 }

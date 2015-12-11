@@ -23,30 +23,32 @@
 #include <QStringList>
 
 #include "ExternalPlayerDB.h"
-#include "KeyValueTab.h"
-#include "TournamentDataDefs.h"
+#include "SqliteOverlay/KeyValueTab.h"
+#include "SqliteOverlay/TableCreator.h"
+#include "SqliteOverlay/ClausesAndQueries.h"
 
-using namespace dbOverlay;
+#include "HelperFunc.h"
+#include "TournamentDataDefs.h"
 
 namespace QTournament
 {
 
-  ExternalPlayerDB::ExternalPlayerDB(QString fName, bool createNew)
-    : GenericDatabase(fName, createNew)
+  upExternalPlayerDatabaseEntry ExternalPlayerDB::row2upEntry(const SqliteOverlay::TabRow& r) const
   {
-    populateTables();
-    populateViews();
+    auto sexValue = r.getInt2(EPD_PL_SEX);
+    ExternalPlayerDatabaseEntry* entry = new ExternalPlayerDatabaseEntry(
+          r.getId(), stdString2QString(r[EPD_PL_FNAME]), stdString2QString(r[EPD_PL_LNAME]),
+          sexValue->isNull() ? DONT_CARE : static_cast<SEX>(sexValue->get()));
+
+    return upExternalPlayerDatabaseEntry(entry);
   }
 
   //----------------------------------------------------------------------------
 
-  upExternalPlayerDatabaseEntry ExternalPlayerDB::row2upEntry(const TabRow& r) const
+  ExternalPlayerDB::ExternalPlayerDB(const QString& fname, bool createNew)
+    :SqliteOverlay::SqliteDatabase(QString2StdString(fname), createNew)
   {
-    ExternalPlayerDatabaseEntry* entry = new ExternalPlayerDatabaseEntry(
-          r.getId(), r[EPD_PL_FNAME].toString(), r[EPD_PL_LNAME].toString(),
-          r[EPD_PL_SEX].isNull() ? DONT_CARE : static_cast<SEX>(r[EPD_PL_SEX].toInt()));
 
-    return upExternalPlayerDatabaseEntry(entry);
   }
 
   //----------------------------------------------------------------------------
@@ -66,8 +68,8 @@ namespace QTournament
     }
 
     // write the database version to the file
-    auto cfg = KeyValueTab::getTab(result.get(), TAB_EPD_CFG);
-    cfg.set(CFG_KEY_EPD_DB_VERSION, EXT_PLAYER_DB_VERSION);
+    auto cfg = SqliteOverlay::KeyValueTab::getTab(result.get(), TAB_EPD_CFG, true);
+    cfg->set(CFG_KEY_EPD_DB_VERSION, EXT_PLAYER_DB_VERSION);
 
     result->setLogLevel(1);
 
@@ -91,8 +93,8 @@ namespace QTournament
     }
 
     // check the database version
-    auto cfg = KeyValueTab::getTab(result.get(), TAB_EPD_CFG);
-    int actualDbVersion = cfg.getInt(CFG_KEY_EPD_DB_VERSION);
+    auto cfg = SqliteOverlay::KeyValueTab::getTab(result.get(), TAB_EPD_CFG);
+    int actualDbVersion = cfg->getInt(CFG_KEY_EPD_DB_VERSION);
     if (actualDbVersion != EXT_PLAYER_DB_VERSION)
     {
       return nullptr;
@@ -107,19 +109,15 @@ namespace QTournament
 
   void ExternalPlayerDB::populateTables()
   {
-    QStringList cols;
-    QString nameTypeDef = " VARCHAR(" + QString::number(MAX_NAME_LEN) + ")";
-    QString nameFieldDef = GENERIC_NAME_FIELD_NAME + nameTypeDef;
-    
     // Generate the key-value-table with the database version
-    dbOverlay::KeyValueTab::getTab(this, TAB_EPD_CFG);
+    SqliteOverlay::KeyValueTab::getTab(this, TAB_EPD_CFG);
 
     // Generate the table for the players
-    cols.clear();
-    cols << EPD_PL_FNAME + nameTypeDef;
-    cols << EPD_PL_LNAME + nameTypeDef;;
-    cols << EPD_PL_SEX + " INTEGER";
-    tableCreationHelper(TAB_EPD_PLAYER, cols);
+    SqliteOverlay::TableCreator tc{this};
+    tc.addVarchar(EPD_PL_FNAME, MAX_NAME_LEN);
+    tc.addVarchar(EPD_PL_LNAME, MAX_NAME_LEN);
+    tc.addInt(EPD_PL_SEX);
+    tc.createTableAndResetCreator(TAB_EPD_PLAYER);
   }
 
   //----------------------------------------------------------------------------
@@ -137,13 +135,14 @@ namespace QTournament
     if (s.length() < 3) return ExternalPlayerDatabaseEntryList();
 
     // create a WHERE clause that matches any name with the substring in it
-    QString where = EPD_PL_FNAME + " LIKE '%" + s + "%' or ";
-    where += EPD_PL_LNAME + " LIKE '%" + s + "%'";
+    string _s = QString2StdString(s);
+    string where = EPD_PL_FNAME + " LIKE '%" + _s + "%' or ";
+    where += EPD_PL_LNAME + " LIKE '%" + _s + "%'";
     where += "ORDER BY " + EPD_PL_LNAME + " ASC, " + EPD_PL_FNAME + " ASC";
 
     // search for names matching this pattern
-    DbTab playerTab = getTab(TAB_EPD_PLAYER);
-    DbTab::CachingRowIterator it = playerTab.getRowsByWhereClause(where);
+    SqliteOverlay::DbTab* playerTab = getTab(TAB_EPD_PLAYER);
+    auto it = playerTab->getRowsByWhereClause(where);
     ExternalPlayerDatabaseEntryList result;
     while (!(it.isEnd()))
     {
@@ -163,13 +162,13 @@ namespace QTournament
 
   upExternalPlayerDatabaseEntry ExternalPlayerDB::getPlayer(int id)
   {
-    DbTab playerTab = getTab(TAB_EPD_PLAYER);
-    if (playerTab.getMatchCountForColumnValue("id", id) != 1)
+    auto playerTab = getTab(TAB_EPD_PLAYER);
+    if (playerTab->getMatchCountForColumnValue("id", id) != 1)
     {
       return nullptr;
     }
 
-    TabRow r = playerTab[id];
+    auto r = playerTab->operator [](id);
 
     return row2upEntry(r);
   }
@@ -178,17 +177,17 @@ namespace QTournament
 
   upExternalPlayerDatabaseEntry ExternalPlayerDB::getPlayer(const QString& fname, const QString& lname)
   {
-    QString where = "%1 = '%2' AND %3 = '%4'";
-    where = where.arg(EPD_PL_FNAME).arg(fname);
-    where = where.arg(EPD_PL_LNAME).arg(lname);
+    SqliteOverlay::WhereClause w;
+    w.addStringCol(EPD_PL_FNAME, QString2StdString(fname));
+    w.addStringCol(EPD_PL_LNAME, QString2StdString(lname));
 
-    DbTab playerTab = getTab(TAB_EPD_PLAYER);
-    if (playerTab.getMatchCountForWhereClause(where) != 1)
+    auto playerTab = getTab(TAB_EPD_PLAYER);
+    if (playerTab->getMatchCountForWhereClause(w) != 1)
     {
       return nullptr;
     }
 
-    TabRow r = playerTab.getSingleRowByWhereClause(where);
+    auto r = playerTab->getSingleRowByWhereClause(w);
 
     return row2upEntry(r);
   }
@@ -202,17 +201,17 @@ namespace QTournament
       return nullptr;
     }
 
-    QVariantList qvl;
-    qvl << EPD_PL_FNAME << newPlayer.getFirstname();
-    qvl << EPD_PL_LNAME << newPlayer.getLastname();
+    SqliteOverlay::ColumnValueClause cvc;
+    cvc.addStringCol(EPD_PL_FNAME, QString2StdString(newPlayer.getFirstname()));
+    cvc.addStringCol(EPD_PL_LNAME, QString2StdString(newPlayer.getLastname()));
 
     if (newPlayer.getSex() != DONT_CARE)
     {
-      qvl << EPD_PL_SEX << static_cast<int>(newPlayer.getSex());
+      cvc.addIntCol(EPD_PL_SEX, static_cast<int>(newPlayer.getSex()));
     }
 
-    DbTab playerTab = getTab(TAB_EPD_PLAYER);
-    int newId = playerTab.insertRow(qvl);
+    auto playerTab = getTab(TAB_EPD_PLAYER);
+    int newId = playerTab->insertRow(cvc);
     assert(newId > 0);
 
     return getPlayer(newId);
@@ -242,8 +241,8 @@ namespace QTournament
     if (pl->getSex() != DONT_CARE) return false;
 
     // update the player entry
-    DbTab playerTab = getTab(TAB_EPD_PLAYER);
-    playerTab[extPlayerId].update(EPD_PL_SEX, static_cast<int>(newSex));
+    auto playerTab = getTab(TAB_EPD_PLAYER);
+    playerTab->operator [](extPlayerId).update(EPD_PL_SEX, static_cast<int>(newSex));
 
     return true;
   }

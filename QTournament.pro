@@ -19,6 +19,11 @@ VERSION = 0.3.0
 # Optimization level O1 for debug
 #QMAKE_CXXFLAGS_DEBUG += -O0
 
+# Detect the platform we are running on
+win32 {
+  DEFINES += "__IS_WINDOWS_BUILD"
+}
+
 HEADERS += \
     Category.h \
     CatMngr.h \
@@ -118,7 +123,8 @@ HEADERS += \
     ui/DlgImportPlayer.h \
     ui/commonCommands/cmdExportPlayerToExternalDatabase.h \
     ui/commonCommands/cmdCreatePlayerFromDialog.h \
-    ui/DlgBulkImportToExtDb.h
+    ui/DlgBulkImportToExtDb.h \
+    HelperFunc.h
 
 SOURCES += \
     Category.cpp \
@@ -218,7 +224,8 @@ SOURCES += \
     ui/DlgImportPlayer.cpp \
     ui/commonCommands/cmdExportPlayerToExternalDatabase.cpp \
     ui/commonCommands/cmdCreatePlayerFromDialog.cpp \
-    ui/DlgBulkImportToExtDb.cpp
+    ui/DlgBulkImportToExtDb.cpp \
+    HelperFunc.cpp
 
 RESOURCES += \
     tournament.qrc
@@ -262,3 +269,12 @@ else:unix:CONFIG(debug, debug|release): LIBS += -L$$PWD/../build-SimpleReportGen
 
 INCLUDEPATH += $$PWD/../SimpleReportGeneratorLib
 DEPENDPATH += $$PWD/../SimpleReportGeneratorLib
+
+win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../SqliteOverlay/release/ -lSqliteOverlay
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../SqliteOverlay/debug/ -lSqliteOverlay
+else:unix:!macx:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../SqliteOverlay/debug/ -lSqliteOverlay
+else:unix:!macx:CONFIG(release, debug|release): LIBS += -L$$PWD/../../SqliteOverlay/release/ -lSqliteOverlay
+
+#INCLUDEPATH += $$PWD/../../SqliteOverlay
+INCLUDEPATH += $$PWD/../..
+DEPENDPATH += $$PWD/../../SqliteOverlay
