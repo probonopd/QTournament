@@ -29,8 +29,8 @@
 namespace QTournament
 {
 
-TournamentDB::TournamentDB(QString fName, bool createNew)
-  : SqliteOverlay::SqliteDatabase(QString2StdString(fName), createNew)
+TournamentDB::TournamentDB(string fName, bool createNew)
+  : SqliteOverlay::SqliteDatabase(fName, createNew)
 {
 }
 

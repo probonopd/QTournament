@@ -32,7 +32,7 @@ namespace QTournament
     {
     public:
 
-        TournamentDB(QString fName, bool createNew);
+        TournamentDB(string fName, bool createNew);
         virtual void populateTables();
         virtual void populateViews();
         void createIndices();

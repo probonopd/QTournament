@@ -16,17 +16,17 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "Tournament.h"
-#include "HelperFunc.h"
-#include "KeyValueTab.h"
 #include <QString>
 #include <QFile>
 #include <stdexcept>
+
+#include "SqliteOverlay/KeyValueTab.h"
+
+#include "Tournament.h"
+#include "HelperFunc.h"
 #include "SignalRelay.h"
 #include "models/CatTableModel.h"
 #include "PlayerMngr.h"
-
-using namespace dbOverlay;
 
 namespace QTournament
 {
@@ -71,18 +71,18 @@ namespace QTournament
     }
 
     // create a new, blank database
-    auto newDb = make_unique<TournamentDB>(fName, true);
+    auto newDb = SqliteOverlay::SqliteDatabase::get<TournamentDB>(QString2StdString(fName), true);
     newDb->setLogLevel(1);
     newDb->createIndices();
 
     // initialize the database
-    KeyValueTab cfgTab = KeyValueTab::getTab(newDb.get(), TAB_CFG);
+    auto cfgTab = SqliteOverlay::KeyValueTab::getTab(newDb.get(), TAB_CFG);
     QString dbVersion = "%1.%2";
     dbVersion = dbVersion.arg(DB_VERSION_MAJOR).arg(DB_VERSION_MINOR);
-    cfgTab.set(CFG_KEY_DB_VERSION, dbVersion);
-    cfgTab.set(CFG_KEY_TNMT_NAME, cfg.tournamentName);
-    cfgTab.set(CFG_KEY_TNMT_ORGA, cfg.organizingClub);
-    cfgTab.set(CFG_KEY_USE_TEAMS, cfg.useTeams);
+    cfgTab->set(CFG_KEY_DB_VERSION, QString2StdString(dbVersion));
+    cfgTab->set(CFG_KEY_TNMT_NAME, QString2StdString(cfg.tournamentName));
+    cfgTab->set(CFG_KEY_TNMT_ORGA, QString2StdString(cfg.organizingClub));
+    cfgTab->set(CFG_KEY_USE_TEAMS, cfg.useTeams);
 
     // construct a new tournament object for this database
     auto newTnmt = unique_ptr<Tournament>(new Tournament(std::move(newDb)));
@@ -110,7 +110,7 @@ namespace QTournament
     }
 
     // open an existing database
-    auto newDb = make_unique<TournamentDB>(fName, false);
+    auto newDb = SqliteOverlay::SqliteDatabase::get<TournamentDB>(QString2StdString(fName), false);
     newDb->setLogLevel(1);
 
     // check file format compatibiliy
