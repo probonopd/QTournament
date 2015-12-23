@@ -19,7 +19,6 @@
 #ifndef TOURNAMENTDATADEFS_H
 #define	TOURNAMENTDATADEFS_H
 
-#include <QString>
 
 namespace QTournament
 {
@@ -29,12 +28,12 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-#define GENERIC_NAME_FIELD_NAME QString("Name")
+#define GENERIC_NAME_FIELD_NAME "Name"
 #define MAX_NAME_LEN 50
   
-#define GENERIC_STATE_FIELD_NAME QString("ObjState")
+#define GENERIC_STATE_FIELD_NAME "ObjState"
   
-#define GENERIC_SEQNUM_FIELD_NAME QString("SequenceNumber")
+#define GENERIC_SEQNUM_FIELD_NAME "SequenceNumber"
 
 //----------------------------------------------------------------------------
 
@@ -55,196 +54,196 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
     
-#define TAB_CFG QString("Config")
-#define CFG_KEY_DB_VERSION QString("DatabaseVersion")
-#define CFG_KEY_TNMT_NAME QString("TournamentName")
-#define CFG_KEY_TNMT_ORGA QString("OrganizingClub")
-#define CFG_KEY_USE_TEAMS QString("UseTeams")
-#define CFG_KEY_EXT_PLAYER_DB QString("ExternalPlayerDatabase")
-//#define CFG_KEY_ QString("")
-//#define CFG_KEY_ QString("")
-//#define CFG_KEY_ QString("")
-//#define CFG_KEY_ QString("")
-//#define CFG_KEY_ QString("")
+#define TAB_CFG "Config"
+#define CFG_KEY_DB_VERSION "DatabaseVersion"
+#define CFG_KEY_TNMT_NAME "TournamentName"
+#define CFG_KEY_TNMT_ORGA "OrganizingClub"
+#define CFG_KEY_USE_TEAMS "UseTeams"
+#define CFG_KEY_EXT_PLAYER_DB "ExternalPlayerDatabase"
+//#define CFG_KEY_ ""
+//#define CFG_KEY_ ""
+//#define CFG_KEY_ ""
+//#define CFG_KEY_ ""
+//#define CFG_KEY_ ""
 
 //----------------------------------------------------------------------------
     
-#define TAB_PLAYER QString("Player")
-#define PL_FNAME QString("FirstName")
-#define PL_LNAME QString("LastName")
-#define PL_TEAM_REF QString("TeamRefId")
-#define PL_SEX QString("Sex")
-//#define PL_ QString("")
-//#define PL_ QString("")
-//#define PL_ QString("")
-//#define PL_ QString("")
-//#define PL_ QString("")
-//#define PL_ QString("")
-//#define PL_ QString("")
-//#define PL_ QString("")
-//#define PL_ QString("")
-//#define PL_ QString("")
-//#define PL_ QString("")
-//#define PL_ QString("")
-//#define PL_ QString("")
-//#define PL_ QString("")
-//#define PL_ QString("")
-//#define PL_ QString("")
-//#define PL_ QString("")
-//#define PL_ QString("")
+#define TAB_PLAYER "Player"
+#define PL_FNAME "FirstName"
+#define PL_LNAME "LastName"
+#define PL_TEAM_REF "TeamRefId"
+#define PL_SEX "Sex"
+//#define PL_ ""
+//#define PL_ ""
+//#define PL_ ""
+//#define PL_ ""
+//#define PL_ ""
+//#define PL_ ""
+//#define PL_ ""
+//#define PL_ ""
+//#define PL_ ""
+//#define PL_ ""
+//#define PL_ ""
+//#define PL_ ""
+//#define PL_ ""
+//#define PL_ ""
+//#define PL_ ""
+//#define PL_ ""
+//#define PL_ ""
+//#define PL_ ""
 
 //----------------------------------------------------------------------------
     
-#define TAB_TEAM QString("Team")
-//#define TE_ QString("")
+#define TAB_TEAM "Team"
+//#define TE_ ""
 
 //----------------------------------------------------------------------------
     
-#define TAB_COURT QString("Court")
-#define CO_NUMBER QString("Number")
-#define CO_IS_MANUAL_ASSIGNMENT QString("IsManualAssignment")
-//#define CO_ QString("")
-//#define CO_ QString("")
-//#define CO_ QString("")
-//#define CO_ QString("")
-//#define CO_ QString("")
+#define TAB_COURT "Court"
+#define CO_NUMBER "Number"
+#define CO_IS_MANUAL_ASSIGNMENT "IsManualAssignment"
+//#define CO_ ""
+//#define CO_ ""
+//#define CO_ ""
+//#define CO_ ""
+//#define CO_ ""
 
 //----------------------------------------------------------------------------
     
-#define TAB_CATEGORY QString("Category")
-#define CAT_MATCH_TYPE QString("MatchType")
-#define CAT_SEX QString("Sex")
-#define CAT_SYS QString("System")
-#define CAT_ACCEPT_DRAW QString("AcceptDraw")
-#define CAT_WIN_SCORE QString("WinScore")
-#define CAT_DRAW_SCORE QString("DrawScore")
-#define CAT_GROUP_CONFIG QString("GroupConfig")
-#define CAT_BRACKET_VIS_DATA QString("BracketVisData")
-//#define CAT_ QString("")
-//#define CAT_ QString("")
-//#define CAT_ QString("")
-//#define CAT_ QString("")
-//#define CAT_ QString("")
-//#define CAT_ QString("")
-//#define CAT_ QString("")
-//#define CAT_ QString("")
-//#define CAT_ QString("")
-//#define CAT_ QString("")
-//#define CAT_ QString("")
+#define TAB_CATEGORY "Category"
+#define CAT_MATCH_TYPE "MatchType"
+#define CAT_SEX "Sex"
+#define CAT_SYS "System"
+#define CAT_ACCEPT_DRAW "AcceptDraw"
+#define CAT_WIN_SCORE "WinScore"
+#define CAT_DRAW_SCORE "DrawScore"
+#define CAT_GROUP_CONFIG "GroupConfig"
+#define CAT_BRACKET_VIS_DATA "BracketVisData"
+//#define CAT_ ""
+//#define CAT_ ""
+//#define CAT_ ""
+//#define CAT_ ""
+//#define CAT_ ""
+//#define CAT_ ""
+//#define CAT_ ""
+//#define CAT_ ""
+//#define CAT_ ""
+//#define CAT_ ""
+//#define CAT_ ""
   
 //----------------------------------------------------------------------------
 
-#define TAB_P2C QString("Player2Category")
-#define P2C_PLAYER_REF QString("PlayerRefId")
-#define P2C_CAT_REF QString("CategoryRefId")
+#define TAB_P2C "Player2Category"
+#define P2C_PLAYER_REF "PlayerRefId"
+#define P2C_CAT_REF "CategoryRefId"
   
 //----------------------------------------------------------------------------
 
-#define TAB_PAIRS QString("PlayerPair")
-#define PAIRS_PLAYER1_REF QString("Player1RefId")
-#define PAIRS_PLAYER2_REF QString("Player2RefId")
-#define PAIRS_CAT_REF QString("CategoryRefId")
-#define PAIRS_GRP_NUM QString("GroupNumber")
-#define PAIRS_INITIAL_RANK QString("InitialRank")
+#define TAB_PAIRS "PlayerPair"
+#define PAIRS_PLAYER1_REF "Player1RefId"
+#define PAIRS_PLAYER2_REF "Player2RefId"
+#define PAIRS_CAT_REF "CategoryRefId"
+#define PAIRS_GRP_NUM "GroupNumber"
+#define PAIRS_INITIAL_RANK "InitialRank"
   
 //----------------------------------------------------------------------------
 
-#define TAB_MATCH QString("Match")
-#define MA_GRP_REF  QString("MatchGroupRefId")
-#define MA_NUM  QString("Number")
-#define MA_PAIR1_REF  QString("PlayerPair1RefId")
-#define MA_PAIR2_REF  QString("PlayerPair2RefId")
-#define MA_ACTUAL_PLAYER1A_REF  QString("ActualPlayer1aRefId")
-#define MA_ACTUAL_PLAYER1B_REF  QString("ActualPlayer1bRefId")
-#define MA_ACTUAL_PLAYER2A_REF  QString("ActualPlayer2aRefId")
-#define MA_ACTUAL_PLAYER2B_REF  QString("ActualPlayer2bRefId")
-#define MA_RESULT  QString("Result")
-#define MA_COURT_REF  QString("CourtRefId")
-#define MA_START_TIME  QString("StartTime")
-#define MA_ADDITIONAL_CALL_TIMES  QString("CallTimes")
-#define MA_FINISH_TIME  QString("FinishTime")
-#define MA_PAIR1_SYMBOLIC_VAL  QString("PlayerPair1SymbolicValue")
-#define MA_PAIR2_SYMBOLIC_VAL  QString("PlayerPair2SymbolicValue")
-#define MA_WINNER_RANK  QString("WinnerRank")
-#define MA_LOSER_RANK  QString("LoserRank")
-//#define MA_  QString("")
-//#define MA_  QString("")
-//#define MA_  QString("")
-//#define MA_  QString("")
-//#define MA_  QString("")
-//#define MA_  QString("")
+#define TAB_MATCH "Match"
+#define MA_GRP_REF  "MatchGroupRefId"
+#define MA_NUM  "Number"
+#define MA_PAIR1_REF  "PlayerPair1RefId"
+#define MA_PAIR2_REF  "PlayerPair2RefId"
+#define MA_ACTUAL_PLAYER1A_REF  "ActualPlayer1aRefId"
+#define MA_ACTUAL_PLAYER1B_REF  "ActualPlayer1bRefId"
+#define MA_ACTUAL_PLAYER2A_REF  "ActualPlayer2aRefId"
+#define MA_ACTUAL_PLAYER2B_REF  "ActualPlayer2bRefId"
+#define MA_RESULT  "Result"
+#define MA_COURT_REF  "CourtRefId"
+#define MA_START_TIME  "StartTime"
+#define MA_ADDITIONAL_CALL_TIMES  "CallTimes"
+#define MA_FINISH_TIME  "FinishTime"
+#define MA_PAIR1_SYMBOLIC_VAL  "PlayerPair1SymbolicValue"
+#define MA_PAIR2_SYMBOLIC_VAL  "PlayerPair2SymbolicValue"
+#define MA_WINNER_RANK  "WinnerRank"
+#define MA_LOSER_RANK  "LoserRank"
+//#define MA_  ""
+//#define MA_  ""
+//#define MA_  ""
+//#define MA_  ""
+//#define MA_  ""
+//#define MA_  ""
   
 //----------------------------------------------------------------------------
 
-#define TAB_MATCH_GROUP QString("MatchGroup")
-#define MG_CAT_REF  QString("CategoryRefId")
-#define MG_ROUND  QString("Round")
-#define MG_GRP_NUM  QString("RoundRobinGroupNumber")
-#define MG_STAGE_SEQ_NUM  QString("StageSequenceNumber")
-//#define MG_  QString("")
-//#define MG_  QString("")
-//#define MG_  QString("")
-//#define MG_  QString("")
-//#define MG_  QString("")
-//#define MG_  QString("")
-//#define MG_  QString("")
-//#define MG_  QString("")
-//#define MG_  QString("")
-//#define MG_  QString("")
-//#define MG_  QString("")
-//#define MG_  QString("")
-//#define MG_  QString("")
-//#define MG_  QString("")
-//#define MG_  QString("")
-//#define MG_  QString("")
-//#define MG_  QString("")
-//#define MG_  QString("")
-//#define MG_  QString("")
+#define TAB_MATCH_GROUP "MatchGroup"
+#define MG_CAT_REF  "CategoryRefId"
+#define MG_ROUND  "Round"
+#define MG_GRP_NUM  "RoundRobinGroupNumber"
+#define MG_STAGE_SEQ_NUM  "StageSequenceNumber"
+//#define MG_  ""
+//#define MG_  ""
+//#define MG_  ""
+//#define MG_  ""
+//#define MG_  ""
+//#define MG_  ""
+//#define MG_  ""
+//#define MG_  ""
+//#define MG_  ""
+//#define MG_  ""
+//#define MG_  ""
+//#define MG_  ""
+//#define MG_  ""
+//#define MG_  ""
+//#define MG_  ""
+//#define MG_  ""
+//#define MG_  ""
+//#define MG_  ""
+//#define MG_  ""
   
 //----------------------------------------------------------------------------
 
-#define TAB_RANKING QString("Ranking")
-#define RA_ROUND  QString("Round")
-#define RA_PAIR_REF  QString("PlayerPairRef")
-#define RA_GAMES_WON  QString("GamesWon")
-#define RA_GAMES_LOST  QString("GamesLost")
-#define RA_MATCHES_WON  QString("MatchesWon")
-#define RA_MATCHES_LOST  QString("MatchesLost")
-#define RA_MATCHES_DRAW  QString("MatchesDraw")
-#define RA_POINTS_WON  QString("PointsWon")
-#define RA_POINTS_LOST  QString("PointsLost")
-#define RA_RANK  QString("Rank")
-#define RA_CAT_REF  QString("CategoryRef")
-#define RA_GRP_NUM  QString("MatchGroupNumber")
-//#define RA_  QString("")
-//#define RA_  QString("")
-//#define RA_  QString("")
+#define TAB_RANKING "Ranking"
+#define RA_ROUND  "Round"
+#define RA_PAIR_REF  "PlayerPairRef"
+#define RA_GAMES_WON  "GamesWon"
+#define RA_GAMES_LOST  "GamesLost"
+#define RA_MATCHES_WON  "MatchesWon"
+#define RA_MATCHES_LOST  "MatchesLost"
+#define RA_MATCHES_DRAW  "MatchesDraw"
+#define RA_POINTS_WON  "PointsWon"
+#define RA_POINTS_LOST  "PointsLost"
+#define RA_RANK  "Rank"
+#define RA_CAT_REF  "CategoryRef"
+#define RA_GRP_NUM  "MatchGroupNumber"
+//#define RA_  ""
+//#define RA_  ""
+//#define RA_  ""
 
 //----------------------------------------------------------------------------
 
-#define TAB_BRACKET_VIS QString("BracketVisualization")
-#define BV_MATCH_REF QString("MatchRefId")
-#define BV_CAT_REF QString("CategoryRefId")
-#define BV_PAGE QString("PageNumber")
-#define BV_GRID_X0 QString("GridX0")
-#define BV_GRID_Y0 QString("GridY0")
-#define BV_SPAN_Y QString("SpanY")
-#define BV_ORIENTATION QString("Orientation")
-#define BV_TERMINATOR QString("Terminator")
-#define BV_INITIAL_RANK1 QString("InitialRank1")
-#define BV_INITIAL_RANK2 QString("InitialRank2")
-#define BV_PAIR1_REF QString("PlayerPair1RefId")
-#define BV_PAIR2_REF QString("PlayerPair2RefId")
-#define BV_Y_PAGEBREAK_SPAN QString("PagebreakOffsetY")
-#define BV_NEXT_PAGE_NUM QString("NextPageNum")
-#define BV_TERMINATOR_OFFSET_Y QString("TerminatorOffset")
-#define BV_ELEMENT_ID QString("BracketElementId")
-#define BV_NEXT_WINNER_MATCH QString("NextWinnerMatch")
-#define BV_NEXT_LOSER_MATCH QString("NextLoserMatch")
-#define BV_NEXT_MATCH_POS_FOR_WINNER QString("NextMatchPosForWinner")
-#define BV_NEXT_MATCH_POS_FOR_LOSER QString("NextMatchPosForLoser")
-//#define BV_ QString("")
-//#define BV_ QString("")
+#define TAB_BRACKET_VIS "BracketVisualization"
+#define BV_MATCH_REF "MatchRefId"
+#define BV_CAT_REF "CategoryRefId"
+#define BV_PAGE "PageNumber"
+#define BV_GRID_X0 "GridX0"
+#define BV_GRID_Y0 "GridY0"
+#define BV_SPAN_Y "SpanY"
+#define BV_ORIENTATION "Orientation"
+#define BV_TERMINATOR "Terminator"
+#define BV_INITIAL_RANK1 "InitialRank1"
+#define BV_INITIAL_RANK2 "InitialRank2"
+#define BV_PAIR1_REF "PlayerPair1RefId"
+#define BV_PAIR2_REF "PlayerPair2RefId"
+#define BV_Y_PAGEBREAK_SPAN "PagebreakOffsetY"
+#define BV_NEXT_PAGE_NUM "NextPageNum"
+#define BV_TERMINATOR_OFFSET_Y "TerminatorOffset"
+#define BV_ELEMENT_ID "BracketElementId"
+#define BV_NEXT_WINNER_MATCH "NextWinnerMatch"
+#define BV_NEXT_LOSER_MATCH "NextLoserMatch"
+#define BV_NEXT_MATCH_POS_FOR_WINNER "NextMatchPosForWinner"
+#define BV_NEXT_MATCH_POS_FOR_LOSER "NextMatchPosForLoser"
+//#define BV_ ""
+//#define BV_ ""
 
 //----------------------------------------------------------------------------
 

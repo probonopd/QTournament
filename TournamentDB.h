@@ -21,14 +21,14 @@
 
 #include <tuple>
 
-#include "GenericDatabase.h"
+#include "SqliteOverlay/SqliteDatabase.h"
 
 #include "TournamentDataDefs.h"
 
 namespace QTournament
 {
 
-    class TournamentDB : public dbOverlay::GenericDatabase
+    class TournamentDB : public SqliteOverlay::SqliteDatabase
     {
     public:
 
