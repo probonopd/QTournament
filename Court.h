@@ -23,17 +23,16 @@
 
 #include <QList>
 
-#include "GenericDatabaseObject.h"
+#include "SqliteOverlay/GenericDatabaseObject.h"
 #include "TournamentDB.h"
-#include "TabRow.h"
+#include "SqliteOverlay/TabRow.h"
 #include "TournamentErrorCodes.h"
-//#include "Match.h"
 
 namespace QTournament
 {
   class Match;
 
-  class Court : public GenericDatabaseObject
+  class Court : public SqliteOverlay::GenericDatabaseObject
   {
 
     friend class CourtMngr;
@@ -49,7 +48,7 @@ namespace QTournament
 
   private:
     Court (TournamentDB* db, int rowId);
-    Court (TournamentDB* db, dbOverlay::TabRow row);
+    Court (TournamentDB* db, SqliteOverlay::TabRow& row);
   };
 
 }

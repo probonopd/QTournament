@@ -23,19 +23,20 @@
 #include "TournamentDB.h"
 #include "TournamentErrorCodes.h"
 #include "Tournament.h"
+#include "HelperFunc.h"
 
 namespace QTournament
 {
 
   Court::Court(TournamentDB* db, int rowId)
-  :GenericDatabaseObject(db, TAB_COURT, rowId)
+    :SqliteOverlay::GenericDatabaseObject(db, TAB_COURT, rowId)
   {
   }
 
 //----------------------------------------------------------------------------
 
-  Court::Court(TournamentDB* db, dbOverlay::TabRow row)
-  :GenericDatabaseObject(db, row)
+  Court::Court(TournamentDB* db, SqliteOverlay::TabRow& row)
+  :SqliteOverlay::GenericDatabaseObject(db, row)
   {
   }
 
@@ -43,10 +44,10 @@ namespace QTournament
 
   QString Court::getName(int maxLen) const
   {
-    QVariant _result = row[GENERIC_NAME_FIELD_NAME].toString();
-    if (_result.isNull()) return QString();  // empty name field
+    auto _result = row.getString2(GENERIC_NAME_FIELD_NAME);
+    if (_result->isNull()) return QString();  // empty name field
 
-    QString result = _result.toString();
+    QString result = stdString2QString(_result->get());
 
     if ((maxLen > 0) && (result.length() > maxLen))
     {
@@ -68,14 +69,14 @@ namespace QTournament
 
   int Court::getNumber() const
   {
-    return row[CO_NUMBER].toInt();
+    return row.getInt(CO_NUMBER);
   }
 
 //----------------------------------------------------------------------------
 
   bool Court::isManualAssignmentOnly() const
   {
-    return (row[CO_IS_MANUAL_ASSIGNMENT].toInt() == 1);
+    return (row.getInt(CO_IS_MANUAL_ASSIGNMENT) == 1);
   }
 
 //----------------------------------------------------------------------------
