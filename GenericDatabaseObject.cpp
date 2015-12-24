@@ -18,9 +18,11 @@
 
 #include <stdexcept>
 
+#include "SqliteOverlay/TabRow.h"
+
 #include "GenericDatabaseObject.h"
 #include "TournamentDB.h"
-#include "TabRow.h"
+#include "HelperFunc.h"
 
 namespace QTournament
 {
@@ -33,24 +35,17 @@ namespace QTournament
    *
    */
 GenericDatabaseObject::GenericDatabaseObject(TournamentDB* _db, const QString& _tabName, int _id)
-: db(_db), row(dbOverlay::TabRow(_db, _tabName, _id))
+  : SqliteOverlay::GenericDatabaseObject(_db, QString2StdString(_tabName), _id)
 {
 }
 
 //----------------------------------------------------------------------------
 
-  GenericDatabaseObject::GenericDatabaseObject(TournamentDB* _db, dbOverlay::TabRow _row)
-  :db(_db), row(_row)
+  GenericDatabaseObject::GenericDatabaseObject(TournamentDB* _db, SqliteOverlay::TabRow _row)
+    : SqliteOverlay::GenericDatabaseObject(_db, _row)
   {
   }
 
-
-//----------------------------------------------------------------------------
-
-  int GenericDatabaseObject::getId() const
-  {
-    return row.getId();
-  }
 
 //----------------------------------------------------------------------------
 
@@ -59,7 +54,7 @@ GenericDatabaseObject::GenericDatabaseObject(TournamentDB* _db, const QString& _
   // NOT SET!!!
   OBJ_STATE GenericDatabaseObject::getState() const
   {
-    int stateInt = row[GENERIC_STATE_FIELD_NAME].toInt();
+    int stateInt = row.getInt(GENERIC_STATE_FIELD_NAME);
     
     return static_cast<OBJ_STATE>(stateInt);
   }
@@ -80,7 +75,7 @@ GenericDatabaseObject::GenericDatabaseObject(TournamentDB* _db, const QString& _
   // HAS NO "SeqNum" COLUMN OR IF THE COLUMN IS NULL
   int GenericDatabaseObject::getSeqNum() const
   {
-    return row[GENERIC_SEQNUM_FIELD_NAME].toInt();
+    return row.getInt(GENERIC_SEQNUM_FIELD_NAME);
   }
     
 //----------------------------------------------------------------------------

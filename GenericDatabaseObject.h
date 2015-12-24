@@ -20,36 +20,23 @@
 #define	GENERICDATABASEOBJECT_H
 
 #include <QString>
-#include "TabRow.h"
+
+#include "SqliteOverlay/TabRow.h"
+#include "SqliteOverlay/GenericDatabaseObject.h"
 #include "TournamentDB.h"
 
 namespace QTournament
 {
 
-  class GenericDatabaseObject
+  class GenericDatabaseObject : public SqliteOverlay::GenericDatabaseObject
   {
   public:
     GenericDatabaseObject (TournamentDB* _db, const QString& _tabName, int _id);
-    GenericDatabaseObject (TournamentDB* _db, dbOverlay::TabRow _row);
-    int getId () const;
-
-    inline bool operator== (const GenericDatabaseObject& other) const
-    {
-      return (other.row == row);
-    }
-
-    inline bool operator!= (const GenericDatabaseObject& other) const
-    {
-      return (!(this->operator == (other)));
-    }
+    GenericDatabaseObject (TournamentDB* _db, SqliteOverlay::TabRow _row);
     
     OBJ_STATE getState() const;
     void setState(OBJ_STATE newState) const;
     int getSeqNum() const;
-
-  protected:
-    TournamentDB* db;
-    dbOverlay::TabRow row;
 
   };
 }
