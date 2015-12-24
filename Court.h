@@ -21,22 +21,24 @@
 
 #include <memory>
 
-#include <QList>
-
-#include "SqliteOverlay/GenericDatabaseObject.h"
-#include "TournamentDB.h"
 #include "SqliteOverlay/TabRow.h"
+#include "SqliteOverlay/GenericObjectManager.h"
+
+#include "GenericDatabaseObject.h"
+#include "TournamentDB.h"
+
 #include "TournamentErrorCodes.h"
 
 namespace QTournament
 {
   class Match;
 
-  class Court : public SqliteOverlay::GenericDatabaseObject
+  class Court : public GenericDatabaseObject
   {
 
     friend class CourtMngr;
     friend class GenericObjectManager;
+    friend class SqliteOverlay::GenericObjectManager;
 
   public:
     QString getName(int maxLen = 0) const;
@@ -47,9 +49,10 @@ namespace QTournament
     unique_ptr<Match> getMatch() const;
 
   private:
-    Court (TournamentDB* db, int rowId);
-    Court (TournamentDB* db, SqliteOverlay::TabRow& row);
+    Court (SqliteOverlay::SqliteDatabase* db, int rowId);
+    Court (SqliteOverlay::SqliteDatabase* db, const SqliteOverlay::TabRow& row);
   };
+  typedef vector<Court> CourtList;
 
 }
 #endif	/* COURT_H */

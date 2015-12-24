@@ -31,8 +31,8 @@ namespace QTournament
   class GenericDatabaseObject : public SqliteOverlay::GenericDatabaseObject
   {
   public:
-    GenericDatabaseObject (TournamentDB* _db, const QString& _tabName, int _id);
-    GenericDatabaseObject (TournamentDB* _db, SqliteOverlay::TabRow _row);
+    GenericDatabaseObject (SqliteOverlay::SqliteDatabase* _db, const QString& _tabName, int _id);
+    GenericDatabaseObject (SqliteOverlay::SqliteDatabase* _db, SqliteOverlay::TabRow _row);
     
     OBJ_STATE getState() const;
     void setState(OBJ_STATE newState) const;

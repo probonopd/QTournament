@@ -24,15 +24,14 @@
 #include <QList>
 #include <QObject>
 
+#include "SqliteOverlay/DbTab.h"
+
 #include "TournamentDB.h"
 #include "Court.h"
 #include "TournamentDataDefs.h"
 #include "TournamentErrorCodes.h"
-#include "DbTab.h"
 #include "GenericObjectManager.h"
 
-
-using namespace dbOverlay;
 
 namespace QTournament
 {
@@ -47,7 +46,7 @@ namespace QTournament
     bool hasCourt (const int courtNum);
     int getHighestUnusedCourtNumber() const;
     unique_ptr<Court> getCourt(const int courtNum);
-    QList<Court> getAllCourts();
+    vector<Court> getAllCourts();
     ERR renameCourt (Court& c, const QString& _newName);
     unique_ptr<Court> getCourtBySeqNum(int seqNum);
     bool hasCourtById(int id);
@@ -61,7 +60,6 @@ namespace QTournament
     bool releaseCourt(const Court& co);
 
   private:
-    DbTab courtTab;
 
   signals:
     void beginCreateCourt ();

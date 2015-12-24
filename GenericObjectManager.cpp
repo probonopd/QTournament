@@ -16,17 +16,23 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <QtCore/qmetatype.h>
+#include "SqliteOverlay/ClausesAndQueries.h"
+#include "SqliteOverlay/TabRow.h"
 
 #include "GenericObjectManager.h"
-
-using namespace dbOverlay;
+#include "HelperFunc.h"
 
 namespace QTournament
 {
 
-  GenericObjectManager::GenericObjectManager(TournamentDB* _db)
-  :db(_db), cfg(KeyValueTab::getTab(db, TAB_CFG))
+  GenericObjectManager::GenericObjectManager(TournamentDB* _db, SqliteOverlay::DbTab* _tab)
+    :SqliteOverlay::GenericObjectManager(_db, _tab), tdb(_db)
+  {
+
+  }
+
+  GenericObjectManager::GenericObjectManager(TournamentDB *_db, const QString& tabName)
+    :SqliteOverlay::GenericObjectManager(_db, QString2StdString(tabName)), tdb(_db)
   {
 
   }
@@ -44,9 +50,9 @@ namespace QTournament
    */
   void GenericObjectManager::fixSeqNumberAfterInsert(const QString& tabName) const
   {
-    TabRow r = db->getTab(tabName).getSingleRowByColumnValue(GENERIC_SEQNUM_FIELD_NAME, DB_NULL);
+    auto r = tab->getSingleRowByColumnValueNull(GENERIC_SEQNUM_FIELD_NAME);
     
-    int newSeqNum = db->getTab(tabName).length() - 1;
+    int newSeqNum = tab->length() - 1;
     
     r.update(GENERIC_SEQNUM_FIELD_NAME, newSeqNum);
   }
@@ -56,11 +62,11 @@ namespace QTournament
 
   void GenericObjectManager::fixSeqNumberAfterDelete(const QString& tabName, int deletedSeqNum) const
   {
-    QString where = GENERIC_SEQNUM_FIELD_NAME + " > ? ORDER BY " + GENERIC_SEQNUM_FIELD_NAME + " ASC";
-    
-    QVariantList qvl;
-    qvl << deletedSeqNum;
-    DbTab::CachingRowIterator it = db->getTab(tabName).getRowsByWhereClause(where, qvl);
+    SqliteOverlay::WhereClause wc;
+    wc.addIntCol(GENERIC_SEQNUM_FIELD_NAME, ">", deletedSeqNum);
+    wc.setOrderColumn_Asc(GENERIC_SEQNUM_FIELD_NAME);
+
+    auto it = tab->getRowsByWhereClause(wc);
     
     
     // re-number all items behind the deleted item
@@ -75,10 +81,6 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  TournamentDB* GenericObjectManager::getDatabaseHandle()
-  {
-    return db;
-  }
 
 //----------------------------------------------------------------------------
     

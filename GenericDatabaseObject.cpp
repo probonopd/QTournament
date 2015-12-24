@@ -34,14 +34,14 @@ namespace QTournament
    * @param _id the ID of the object in the table
    *
    */
-GenericDatabaseObject::GenericDatabaseObject(TournamentDB* _db, const QString& _tabName, int _id)
+GenericDatabaseObject::GenericDatabaseObject(SqliteOverlay::SqliteDatabase* _db, const QString& _tabName, int _id)
   : SqliteOverlay::GenericDatabaseObject(_db, QString2StdString(_tabName), _id)
 {
 }
 
 //----------------------------------------------------------------------------
 
-  GenericDatabaseObject::GenericDatabaseObject(TournamentDB* _db, SqliteOverlay::TabRow _row)
+  GenericDatabaseObject::GenericDatabaseObject(SqliteOverlay::SqliteDatabase* _db, SqliteOverlay::TabRow _row)
     : SqliteOverlay::GenericDatabaseObject(_db, _row)
   {
   }

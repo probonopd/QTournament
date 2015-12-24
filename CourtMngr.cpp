@@ -18,8 +18,11 @@
 
 #include <stdexcept>
 
+#include "SqliteOverlay/ClausesAndQueries.h"
+
 #include "CourtMngr.h"
 #include "Tournament.h"
+#include "HelperFunc.h"
 
 using namespace dbOverlay;
 
@@ -27,7 +30,7 @@ namespace QTournament
 {
 
   CourtMngr::CourtMngr(TournamentDB* _db)
-  : GenericObjectManager(_db), courtTab((*db)[TAB_COURT])
+  : GenericObjectManager(_db, TAB_COURT)
   {
   }
 
@@ -50,21 +53,21 @@ namespace QTournament
     }
     
     // prepare a new table row
-    QVariantList qvl;
-    qvl << CO_NUMBER << courtNum;
-    qvl << GENERIC_NAME_FIELD_NAME << name;
-    qvl << CO_IS_MANUAL_ASSIGNMENT << 0;
-    qvl << GENERIC_STATE_FIELD_NAME << static_cast<int>(STAT_CO_AVAIL);
+    SqliteOverlay::ColumnValueClause cvc;
+    cvc.addIntCol(CO_NUMBER, courtNum);
+    cvc.addStringCol(GENERIC_NAME_FIELD_NAME, QString2StdString(name));
+    cvc.addIntCol(CO_IS_MANUAL_ASSIGNMENT, 0);
+    cvc.addIntCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_CO_AVAIL));
     
     // create the new court row
     emit beginCreateCourt();
-    int newId = courtTab.insertRow(qvl);
+    int newId = tab->insertRow(cvc);
     fixSeqNumberAfterInsert(TAB_COURT);
-    emit endCreateCourt(courtTab.length() - 1); // the new sequence number is always the greatest
+    emit endCreateCourt(tab->length() - 1); // the new sequence number is always the highest
     
     // create a court object for the new court and return a pointer
     // to this new object
-    Court* co_raw = new Court(db, newId);
+    Court* co_raw = new Court(tdb, newId);
     if (err != nullptr) *err = OK;
     return unique_ptr<Court>(co_raw);
   }
@@ -73,7 +76,7 @@ namespace QTournament
 
   bool CourtMngr::hasCourt(const int courtNum)
   {
-    return (courtTab.getMatchCountForColumnValue(CO_NUMBER, courtNum) > 0);
+    return (tab->getMatchCountForColumnValue(CO_NUMBER, courtNum) > 0);
   }
 
 //----------------------------------------------------------------------------
@@ -81,14 +84,15 @@ namespace QTournament
   int CourtMngr::getHighestUnusedCourtNumber() const
   {
     // do we have any courts at all?
-    if (courtTab.length() == 0) return 1;
+    if (tab->length() == 0) return 1;
 
     // okay, get the highest used court number
-    QString where = "id > 0 ORDER BY " + CO_NUMBER + " DESC";
-    TabRow r = courtTab.getSingleRowByWhereClause(where);
-    int cNum = r[CO_NUMBER].toInt();
+    SqliteOverlay::WhereClause wc;
+    wc.addIntCol("id", ">", 0);
+    wc.setOrderColumn_Desc(CO_NUMBER);
+    auto r = tab->getSingleRowByWhereClause(wc);
 
-    return cNum + 1;
+    return r.getInt(CO_NUMBER) + 1;
   }
 
 //----------------------------------------------------------------------------
@@ -102,17 +106,7 @@ namespace QTournament
    */
   unique_ptr<Court> CourtMngr::getCourt(const int courtNum)
   {
-    if (!(hasCourt(courtNum)))
-    {
-      return nullptr;
-    }
-    
-    QVariantList qvl;
-    qvl << CO_NUMBER << courtNum;
-    TabRow r = courtTab.getSingleRowByColumnValue(qvl);
-    
-    Court* co_raw = new Court(db, r);
-    return unique_ptr<Court>(co_raw);
+    return getSingleObjectByColumnValue<Court>(CO_NUMBER, courtNum);
   }
 
 //----------------------------------------------------------------------------
@@ -122,9 +116,9 @@ namespace QTournament
    *
    * @Return QList holding all courts
    */
-  QList<Court> CourtMngr::getAllCourts()
+  vector<Court> CourtMngr::getAllCourts()
   {
-    return getAllObjects<Court>(courtTab);
+    return getAllObjects<Court>();
   }
 
 //----------------------------------------------------------------------------
@@ -139,7 +133,7 @@ namespace QTournament
       return INVALID_NAME;
     }
         
-    c.row.update(GENERIC_NAME_FIELD_NAME, newName);
+    c.row.update(GENERIC_NAME_FIELD_NAME, QString2StdString(newName));
     
     emit courtRenamed(c);
     
@@ -157,15 +151,7 @@ namespace QTournament
    */
   unique_ptr<Court> CourtMngr::getCourtBySeqNum(int seqNum)
   {
-    try {
-      TabRow r = courtTab.getSingleRowByColumnValue(GENERIC_SEQNUM_FIELD_NAME, seqNum);
-      return unique_ptr<Court>(new Court(db, r));
-    }
-    catch (std::exception e)
-    {
-    }
-
-    return nullptr;
+    return getSingleObjectByColumnValue<Court>(GENERIC_SEQNUM_FIELD_NAME, seqNum);
   }
 
 
@@ -173,38 +159,22 @@ namespace QTournament
 
   bool CourtMngr::hasCourtById(int id)
   {
-    try
-    {
-      TabRow r = courtTab[id];
-      return true;
-    }
-    catch (std::exception e)
-    {
-    }
-    return false;
+    return (tab->getMatchCountForColumnValue("id", id) != 0);
   }
 
 //----------------------------------------------------------------------------
 
   unique_ptr<Court> CourtMngr::getCourtById(int id)
   {
-    // this public function essentially short-circuits the private Court()-constructor... Hmmm...
-    try {
-      return unique_ptr<Court>(new Court(db, id));
-    }
-    catch (std::exception e)
-    {
-    }
-
-    return nullptr;
+    return getSingleObjectByColumnValue<Court>("id", id);
   }
 
   //----------------------------------------------------------------------------
 
   int CourtMngr::getActiveCourtCount()
   {
-    int allCourts = courtTab.length();
-    int disabledCourts = courtTab.getMatchCountForColumnValue(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_CO_DISABLED));
+    int allCourts = tab->length();
+    int disabledCourts = tab->getMatchCountForColumnValue(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_CO_DISABLED));
 
     return (allCourts - disabledCourts);
   }
@@ -214,26 +184,20 @@ namespace QTournament
   unique_ptr<Court> CourtMngr::getNextUnusedCourt(bool includeManual) const
   {
     int reqState = static_cast<int>(STAT_CO_AVAIL);
-    QString where = GENERIC_STATE_FIELD_NAME + " = " + QString::number(reqState);
+    SqliteOverlay::WhereClause wc;
+    wc.addIntCol(GENERIC_STATE_FIELD_NAME, reqState);
 
     // further restrict the search criteria if courts for manual
     // match assignment are excluded
     if (!includeManual)
     {
-      where += " AND " + CO_IS_MANUAL_ASSIGNMENT + " = 0";
+      wc.addIntCol(CO_IS_MANUAL_ASSIGNMENT, 0);
     }
 
     // always get the court with the lowest number first
-    where += " ORDER BY " + CO_NUMBER + " ASC";
+    wc.setOrderColumn_Asc(CO_NUMBER);
 
-
-    if (courtTab.getMatchCountForWhereClause(where) < 1)
-    {
-      return nullptr;   // no free courts available
-    }
-
-    TabRow r = courtTab.getSingleRowByWhereClause(where);
-    return unique_ptr<Court>(new Court(db, r));
+    return getSingleObjectByWhereClause<Court>(wc);
   }
 
 //----------------------------------------------------------------------------
@@ -261,11 +225,11 @@ namespace QTournament
 
     // make sure there is no currently running match
     // assigned to this court
-    QVariantList qvl;
-    qvl << GENERIC_STATE_FIELD_NAME << static_cast<int>(STAT_MA_RUNNING);
-    qvl << MA_COURT_REF << co.getId();
-    DbTab matchTab = (*db)[TAB_MATCH];
-    if (matchTab.getMatchCountForColumnValue(qvl) > 0)
+    SqliteOverlay::WhereClause wc;
+    wc.addIntCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_RUNNING));
+    wc.addIntCol(MA_COURT_REF, co.getId());
+    auto matchTab = db->getTab(TAB_MATCH);
+    if (matchTab->getMatchCountForWhereClause(wc) > 0)
     {
       return false;   // there is at least one running match assigned to this court
     }
@@ -285,7 +249,7 @@ namespace QTournament
     if (nextAutoCourt != nullptr)
     {
       // okay, we have a regular court
-      *err = OK;
+      if (err != nullptr) *err = OK;
       return nextAutoCourt;
     }
 
@@ -295,7 +259,7 @@ namespace QTournament
     if (nextManualCourt == nullptr)
     {
       // okay, there is court available at all
-      *err = NO_COURT_AVAIL;
+      if (err != nullptr) *err = NO_COURT_AVAIL;
       return nullptr;
     }
 
@@ -304,12 +268,12 @@ namespace QTournament
     // manual courts, everything is fine
     if (includeManual)
     {
-      *err = OK;
+      if (err != nullptr) *err = OK;
       return nextManualCourt;
     }
 
     // indicate to the user that there would be a manual court
-    *err = ONLY_MANUAL_COURT_AVAIL;
+    if (err != nullptr) *err = ONLY_MANUAL_COURT_AVAIL;
     return nullptr;
   }
 
