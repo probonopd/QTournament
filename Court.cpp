@@ -28,14 +28,14 @@
 namespace QTournament
 {
 
-  Court::Court(SqliteOverlay::SqliteDatabase* db, int rowId)
+  Court::Court(TournamentDB* db, int rowId)
     :TournamentDatabaseObject(db, TAB_COURT, rowId)
   {
   }
 
 //----------------------------------------------------------------------------
 
-  Court::Court(SqliteOverlay::SqliteDatabase* db, const SqliteOverlay::TabRow& row)
+  Court::Court(TournamentDB* db, const SqliteOverlay::TabRow& row)
   :TournamentDatabaseObject(db, row)
   {
   }

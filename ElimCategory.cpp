@@ -186,9 +186,10 @@ namespace QTournament
         {
           auto pp = re.getPlayerPair();
           assert(pp != nullptr);
-          if (!(ppList.contains(*pp)))
+          bool hasPair = (std::find(ppList.begin(), ppList.end(), *pp) != ppList.end());
+          if (!hasPair)
           {
-            ppList.append(*pp);
+            ppList.push_back(*pp);
           }
         }
       }
@@ -300,14 +301,14 @@ namespace QTournament
         // check 1: is there a final rank for the winner?
         if (ma.getWinnerRank() > 0)
         {
-          result.removeAll(*winner);
+          std::remove(result.begin(), result.end(), *winner);
           winnerOut = true;
         }
 
         // check 2: is there a final rank for the loser?
         if (ma.getLoserRank() > 0)
         {
-          result.removeAll(*loser);
+          std::remove(result.begin(), result.end(), *loser);
           loserOut = true;
         }
 
@@ -315,7 +316,7 @@ namespace QTournament
         // Intermezzo: a helper function for searching
         // for future matches of a pair ID
         //
-        DbTab matchTab = db->getTab(TAB_MATCH);
+        DbTab* matchTab = db->getTab(TAB_MATCH);
         auto hasFutureMatch = [&](const PlayerPair& pp, bool asWinner) {
           // step 1: search by pair
           for (int r=round+1; r <= lastRoundInThisCat; ++r)
@@ -329,12 +330,11 @@ namespace QTournament
 
           // step 2: search for "is winner of" or "is loser of"
           // this match
-          QString where = MA_PAIR1_SYMBOLIC_VAL + " = ? OR ";
-          where += MA_PAIR2_SYMBOLIC_VAL + " = ?";
-          QVariantList qvl;
+          QString where = "%1 = %3 OR %2 = %3";
+          where = where.arg(MA_PAIR1_SYMBOLIC_VAL).arg(MA_PAIR2_SYMBOLIC_VAL);
           int symbMatchId = asWinner ? ma.getId() : -(ma.getId());
-          qvl << symbMatchId << symbMatchId;
-          if (matchTab.getMatchCountForWhereClause(where, qvl) > 0)
+          where = where.arg(symbMatchId);
+          if (matchTab->getMatchCountForWhereClause(where.toUtf8().constData()) > 0)
           {
             return true;
           }
@@ -350,7 +350,7 @@ namespace QTournament
         {
           if (!(hasFutureMatch(*winner, true)))
           {
-            result.removeAll(*winner);
+            std::remove(result.begin(), result.end(), *winner);
           }
         }
 
@@ -360,7 +360,7 @@ namespace QTournament
         {
           if (!(hasFutureMatch(*loser, false)))
           {
-            result.removeAll(*loser);
+            std::remove(result.begin(), result.end(), *loser);
           }
         }
       }

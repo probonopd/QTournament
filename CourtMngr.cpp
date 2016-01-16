@@ -30,7 +30,7 @@ namespace QTournament
 {
 
   CourtMngr::CourtMngr(TournamentDB* _db)
-  : GenericObjectManager(_db, TAB_COURT)
+  : TournamentDatabaseObjectManager(_db, TAB_COURT)
   {
   }
 

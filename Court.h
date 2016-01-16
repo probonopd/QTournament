@@ -49,8 +49,8 @@ namespace QTournament
     unique_ptr<Match> getMatch() const;
 
   private:
-    Court (SqliteOverlay::SqliteDatabase* db, int rowId);
-    Court (SqliteOverlay::SqliteDatabase* db, const SqliteOverlay::TabRow& row);
+    Court (TournamentDB* db, int rowId);
+    Court (TournamentDB* db, const SqliteOverlay::TabRow& row);
   };
   typedef vector<Court> CourtList;
 
