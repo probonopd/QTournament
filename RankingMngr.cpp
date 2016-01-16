@@ -26,7 +26,7 @@
 #include "Match.h"
 #include "Score.h"
 
-using namespace dbOverlay;
+using namespace SqliteOverlay;
 
 namespace QTournament
 {

@@ -23,7 +23,7 @@
 
 #include <QDateTime>
 
-#include "GenericDatabaseObject.h"
+#include "TournamentDatabaseObject.h"
 #include "TournamentDB.h"
 #include "TabRow.h"
 #include "TournamentErrorCodes.h"
@@ -38,7 +38,7 @@ namespace QTournament
 {
   class MatchGroup;
 
-  class Match : public GenericDatabaseObject
+  class Match : public TournamentDatabaseObject
   {
     friend class MatchMngr;
     friend class MatchGroup;
@@ -77,7 +77,7 @@ namespace QTournament
 
   private:
     Match (TournamentDB* db, int rowId);
-    Match (TournamentDB* db, dbOverlay::TabRow row);
+    Match (TournamentDB* db, SqliteOverlay::TabRow row);
     int getSymbolicPlayerPairName(int playerPos) const;
 
   };

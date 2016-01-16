@@ -28,14 +28,14 @@ namespace QTournament
 {
 
   RankingEntry::RankingEntry(TournamentDB* db, int rowId)
-  :GenericDatabaseObject(db, TAB_RANKING, rowId)
+  :TournamentDatabaseObject(db, TAB_RANKING, rowId)
   {
   }
 
 //----------------------------------------------------------------------------
 
-  RankingEntry::RankingEntry(TournamentDB* db, dbOverlay::TabRow row)
-  :GenericDatabaseObject(db, row)
+  RankingEntry::RankingEntry(TournamentDB* db, SqliteOverlay::TabRow row)
+  :TournamentDatabaseObject(db, row)
   {
   }
 

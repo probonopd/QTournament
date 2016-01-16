@@ -27,7 +27,7 @@
 
 #include <QDebug>
 
-using namespace dbOverlay;
+using namespace SqliteOverlay;
 
 namespace QTournament
 {
@@ -39,7 +39,7 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  RoundRobinCategory::RoundRobinCategory(TournamentDB* db, dbOverlay::TabRow row)
+  RoundRobinCategory::RoundRobinCategory(TournamentDB* db, SqliteOverlay::TabRow row)
   : Category(db, row)
   {
   }

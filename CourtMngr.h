@@ -24,7 +24,7 @@
 #include <QList>
 #include <QObject>
 
-#include "SqliteOverlay/DbTab.h"
+#include "DbTab.h"
 
 #include "TournamentDB.h"
 #include "Court.h"

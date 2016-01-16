@@ -30,7 +30,7 @@
 
 #include <QDebug>
 
-using namespace dbOverlay;
+using namespace SqliteOverlay;
 
 namespace QTournament
 {
@@ -42,7 +42,7 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  SwissLadderCategory::SwissLadderCategory(TournamentDB* db, dbOverlay::TabRow row)
+  SwissLadderCategory::SwissLadderCategory(TournamentDB* db, SqliteOverlay::TabRow row)
   : Category(db, row)
   {
   }

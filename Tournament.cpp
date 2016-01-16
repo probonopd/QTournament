@@ -20,7 +20,7 @@
 #include <QFile>
 #include <stdexcept>
 
-#include "SqliteOverlay/KeyValueTab.h"
+#include "KeyValueTab.h"
 
 #include "Tournament.h"
 #include "HelperFunc.h"

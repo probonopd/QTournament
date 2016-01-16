@@ -24,7 +24,7 @@
 #include "RankingEntry.h"
 
 
-using namespace dbOverlay;
+using namespace SqliteOverlay;
 
 namespace QTournament
 {
@@ -45,7 +45,7 @@ namespace QTournament
     
   private:
     PureRoundRobinCategory (TournamentDB* db, int rowId);
-    PureRoundRobinCategory (TournamentDB* db, dbOverlay::TabRow row);
+    PureRoundRobinCategory (TournamentDB* db, SqliteOverlay::TabRow row);
 
   } ;
 }

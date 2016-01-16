@@ -35,7 +35,7 @@
 #include <QList>
 #include <QString>
 
-using namespace dbOverlay;
+using namespace SqliteOverlay;
 
 namespace QTournament
 {

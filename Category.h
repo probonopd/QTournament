@@ -22,9 +22,11 @@
 #include <memory>
 #include <functional>
 
-#include "GenericDatabaseObject.h"
+#include <QVariant>
+
+#include "TournamentDatabaseObject.h"
 #include "TournamentDB.h"
-#include "SqliteOverlay/TabRow.h"
+#include "TabRow.h"
 #include "Player.h"
 #include "PlayerPair.h"
 #include "TournamentErrorCodes.h"
@@ -36,7 +38,7 @@ namespace QTournament
   class CatRoundStatus;
   class RankingEntry;
 
-  class Category : public GenericDatabaseObject
+  class Category : public TournamentDatabaseObject
   {
     friend class CatMngr;
     friend class RoundRobinCategory;
@@ -60,7 +62,7 @@ namespace QTournament
     QString getParameter_string(CAT_PARAMETER) const;
     PlayerPairList getPlayerPairs(int grp = GRP_NUM__NOT_ASSIGNED) const;
     int getDatabasePlayerPairCount(int grp = GRP_NUM__NOT_ASSIGNED) const;
-    QList<Player> getAllPlayersInCategory() const;
+    PlayerList getAllPlayersInCategory() const;
     Player getPartner(const Player& p) const;
     unique_ptr<Category> convertToSpecializedObject() const;
     int getGroupNumForPredecessorRound(const int grpNum) const;
@@ -88,7 +90,7 @@ namespace QTournament
     ERR canPairPlayers(const Player& p1, const Player& p2) const;
     ERR canSplitPlayers(const Player& p1, const Player& p2) const;
     bool hasUnpairedPlayers() const;
-    ERR canApplyGroupAssignment(QList<PlayerPairList> grpCfg);
+    ERR canApplyGroupAssignment(vector<PlayerPairList> grpCfg);
     ERR canApplyInitialRanking(PlayerPairList seed);
     bool hasMatchesInState(OBJ_STATE stat, int round=-1) const;
     bool isDrawAllowedInRound(int round) const;
@@ -113,7 +115,7 @@ namespace QTournament
   private:
     Category (TournamentDB* db, int rowId);
     Category (TournamentDB* db, SqliteOverlay::TabRow row);
-    ERR applyGroupAssignment(QList<PlayerPairList> grpCfg);
+    ERR applyGroupAssignment(vector<PlayerPairList> grpCfg);
     ERR applyInitialRanking(PlayerPairList seed);
     ERR generateGroupMatches(const PlayerPairList &grpMembers, int grpNum, int firstRoundNum=1, ProgressQueue* progressNotificationQueue=nullptr) const;
     ERR generateBracketMatches(int bracketMode, const PlayerPairList& seeding, int firstRoundNum, ProgressQueue* progressNotificationQueue=nullptr) const;

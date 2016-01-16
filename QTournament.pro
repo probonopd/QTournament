@@ -27,7 +27,6 @@ win32 {
 HEADERS += \
     Category.h \
     CatMngr.h \
-    GenericDatabaseObject.h \
     GroupDef.h \
     KO_Config.h \
     MatchGroup.h \
@@ -124,12 +123,12 @@ HEADERS += \
     ui/commonCommands/cmdCreatePlayerFromDialog.h \
     ui/DlgBulkImportToExtDb.h \
     HelperFunc.h \
-    TournamentDatabaseObjectManager.h
+    TournamentDatabaseObjectManager.h \
+    TournamentDatabaseObject.h
 
 SOURCES += \
     Category.cpp \
     CatMngr.cpp \
-    GenericDatabaseObject.cpp \
     GroupDef.cpp \
     KO_Config.cpp \
     main.cpp \
@@ -225,7 +224,8 @@ SOURCES += \
     ui/commonCommands/cmdCreatePlayerFromDialog.cpp \
     ui/DlgBulkImportToExtDb.cpp \
     HelperFunc.cpp \
-    TournamentDatabaseObjectManager.cpp
+    TournamentDatabaseObjectManager.cpp \
+    TournamentDatabaseObject.cpp
 
 RESOURCES += \
     tournament.qrc
@@ -254,14 +254,6 @@ FORMS += \
 
 TRANSLATIONS = tournament_de.ts
 
-win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../build-DatabaseOverlayLib-Desktop_Qt_MinGW_w64_64bit_MSYS2-Release/release/ -lDatabaseOverlayLib0
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../build-DatabaseOverlayLib-Desktop_Qt_MinGW_w64_64bit_MSYS2-Debug/debug/ -lDatabaseOverlayLib0
-else:unix:CONFIG(debug, debug|release): LIBS += -L$$PWD/../build-DatabaseOverlayLib-Desktop_GCC-Debug/ -lDatabaseOverlayLib
-else:unix:CONFIG(release, debug|release): LIBS += -L$$PWD/../build-DatabaseOverlayLib-Desktop_GCC-Release/ -lDatabaseOverlayLib
-
-INCLUDEPATH += $$PWD/../DatabaseOverlayLib
-DEPENDPATH += $$PWD/../DatabaseOverlayLib
-
 win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../build-SimpleReportGenerator-Desktop_Qt_MinGW_w64_64bit_MSYS2-Release/release -lSimpleReportGenerator0
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../build-SimpleReportGenerator-Desktop_Qt_MinGW_w64_64bit_MSYS2-Debug/debug -lSimpleReportGenerator0
 else:unix:CONFIG(release, debug|release): LIBS += -L$$PWD/../build-SimpleReportGenerator-Desktop_GCC-Release/ -lSimpleReportGenerator
@@ -270,11 +262,11 @@ else:unix:CONFIG(debug, debug|release): LIBS += -L$$PWD/../build-SimpleReportGen
 INCLUDEPATH += $$PWD/../SimpleReportGeneratorLib
 DEPENDPATH += $$PWD/../SimpleReportGeneratorLib
 
-win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../SqliteOverlay/release/ -lSqliteOverlay
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../SqliteOverlay/debug/ -lSqliteOverlay
-else:unix:!macx:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../SqliteOverlay/debug/ -lSqliteOverlay
-else:unix:!macx:CONFIG(release, debug|release): LIBS += -L$$PWD/../../SqliteOverlay/release/ -lSqliteOverlay
+win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../#include "SqliteOverlay/release/ -lSqliteOverlay
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../#include "SqliteOverlay/debug/ -lSqliteOverlay
+else:unix:!macx:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../#include "SqliteOverlay/debug/ -lSqliteOverlay
+else:unix:!macx:CONFIG(release, debug|release): LIBS += -L$$PWD/../../#include "SqliteOverlay/release/ -lSqliteOverlay
 
-#INCLUDEPATH += $$PWD/../../SqliteOverlay
-INCLUDEPATH += $$PWD/../..
+INCLUDEPATH += $$PWD/../../SqliteOverlay
+#INCLUDEPATH += $$PWD/../..
 DEPENDPATH += $$PWD/../../SqliteOverlay

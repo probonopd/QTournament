@@ -23,9 +23,9 @@
 #include <QStringList>
 
 #include "ExternalPlayerDB.h"
-#include "SqliteOverlay/KeyValueTab.h"
-#include "SqliteOverlay/TableCreator.h"
-#include "SqliteOverlay/ClausesAndQueries.h"
+#include "KeyValueTab.h"
+#include "TableCreator.h"
+#include "ClausesAndQueries.h"
 
 #include "HelperFunc.h"
 #include "TournamentDataDefs.h"

@@ -29,14 +29,14 @@ namespace QTournament
 {
 
   Match::Match(TournamentDB* db, int rowId)
-  :GenericDatabaseObject(db, TAB_MATCH, rowId)
+  :TournamentDatabaseObject(db, TAB_MATCH, rowId)
   {
   }
 
 //----------------------------------------------------------------------------
 
-  Match::Match(TournamentDB* db, dbOverlay::TabRow row)
-  :GenericDatabaseObject(db, row)
+  Match::Match(TournamentDB* db, SqliteOverlay::TabRow row)
+  :TournamentDatabaseObject(db, row)
   {
   }
 

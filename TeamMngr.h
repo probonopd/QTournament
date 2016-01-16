@@ -29,7 +29,7 @@
 
 #include <QList>
 
-using namespace dbOverlay;
+using namespace SqliteOverlay;
 
 namespace QTournament
 {

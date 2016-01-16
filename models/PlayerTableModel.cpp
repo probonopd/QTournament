@@ -12,7 +12,7 @@
 #include "Tournament.h"
 
 using namespace QTournament;
-using namespace dbOverlay;
+using namespace SqliteOverlay;
 
 PlayerTableModel::PlayerTableModel(Tournament* tnmt)
 :QAbstractTableModel(0), db(tnmt->getDatabaseHandle()), playerTab(db->getTab(TAB_PLAYER)),

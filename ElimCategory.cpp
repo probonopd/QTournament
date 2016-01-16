@@ -27,7 +27,7 @@
 
 #include <QDebug>
 
-using namespace dbOverlay;
+using namespace SqliteOverlay;
 
 namespace QTournament
 {
@@ -47,7 +47,7 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  EliminationCategory::EliminationCategory(TournamentDB* db, dbOverlay::TabRow row, int eliminationMode)
+  EliminationCategory::EliminationCategory(TournamentDB* db, SqliteOverlay::TabRow row, int eliminationMode)
   : Category(db, row)
   {
     if ((eliminationMode != BracketGenerator::BRACKET_SINGLE_ELIM) &&

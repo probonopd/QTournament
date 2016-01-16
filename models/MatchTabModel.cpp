@@ -13,7 +13,7 @@
 #include <QDebug>
 
 using namespace QTournament;
-using namespace dbOverlay;
+using namespace SqliteOverlay;
 
 MatchTableModel::MatchTableModel(Tournament* tnmt)
 :QAbstractTableModel(0), db(tnmt->getDatabaseHandle()), matchTab((db->getTab(TAB_MATCH)))

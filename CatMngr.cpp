@@ -1016,7 +1016,7 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  ERR CatMngr::startCategory(const Category &c, QList<PlayerPairList> grpCfg, PlayerPairList seed, ProgressQueue *progressNotificationQueue)
+  ERR CatMngr::startCategory(const Category &c, vector<PlayerPairList> grpCfg, PlayerPairList seed, ProgressQueue *progressNotificationQueue)
   {
     // we can only transition to "IDLE" if we are "FROZEN"
     if (c.getState() != STAT_CAT_FROZEN)

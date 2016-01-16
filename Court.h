@@ -21,10 +21,10 @@
 
 #include <memory>
 
-#include "SqliteOverlay/TabRow.h"
-#include "SqliteOverlay/GenericObjectManager.h"
+#include "TabRow.h"
+#include "GenericObjectManager.h"
 
-#include "GenericDatabaseObject.h"
+#include "TournamentDatabaseObject.h"
 #include "TournamentDB.h"
 
 #include "TournamentErrorCodes.h"
@@ -33,7 +33,7 @@ namespace QTournament
 {
   class Match;
 
-  class Court : public GenericDatabaseObject
+  class Court : public TournamentDatabaseObject
   {
 
     friend class CourtMngr;

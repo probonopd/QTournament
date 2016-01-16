@@ -35,9 +35,9 @@ namespace QTournament
 
   private:
     TournamentDB* db;
-    dbOverlay::DbTab playerTab;
-    dbOverlay::DbTab teamTab;
-    dbOverlay::DbTab catTab;
+    SqliteOverlay::DbTab playerTab;
+    SqliteOverlay::DbTab teamTab;
+    SqliteOverlay::DbTab catTab;
     
   public slots:
     void onBeginCreatePlayer();

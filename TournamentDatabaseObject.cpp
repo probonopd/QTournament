@@ -18,33 +18,14 @@
 
 #include <stdexcept>
 
-#include "SqliteOverlay/TabRow.h"
+#include "TabRow.h"
 
-#include "GenericDatabaseObject.h"
+#include "TournamentDatabaseObject.h"
 #include "TournamentDB.h"
 #include "HelperFunc.h"
 
 namespace QTournament
 {
-
-  /**
-   * Constructor for a database object identified by table name and ID
-   *
-   * @param _tabName the name of the table the object refers to
-   * @param _id the ID of the object in the table
-   *
-   */
-GenericDatabaseObject::GenericDatabaseObject(SqliteOverlay::SqliteDatabase* _db, const QString& _tabName, int _id)
-  : SqliteOverlay::GenericDatabaseObject(_db, QString2StdString(_tabName), _id)
-{
-}
-
-//----------------------------------------------------------------------------
-
-  GenericDatabaseObject::GenericDatabaseObject(SqliteOverlay::SqliteDatabase* _db, SqliteOverlay::TabRow _row)
-    : SqliteOverlay::GenericDatabaseObject(_db, _row)
-  {
-  }
 
 
 //----------------------------------------------------------------------------
@@ -52,7 +33,7 @@ GenericDatabaseObject::GenericDatabaseObject(SqliteOverlay::SqliteDatabase* _db,
   // THIS FUNCTION WILL FAIL IF THE DATABASE
   // HAS NO "State" COLUMN OR IF THE VALUE IS
   // NOT SET!!!
-  OBJ_STATE GenericDatabaseObject::getState() const
+  OBJ_STATE TournamentDatabaseObject::getState() const
   {
     int stateInt = row.getInt(GENERIC_STATE_FIELD_NAME);
     
@@ -63,7 +44,7 @@ GenericDatabaseObject::GenericDatabaseObject(SqliteOverlay::SqliteDatabase* _db,
 
   // THIS FUNCTION WILL FAIL IF THE DATABASE
   // HAS NO "State" COLUMN
-  void GenericDatabaseObject::setState(OBJ_STATE newState) const
+  void TournamentDatabaseObject::setState(OBJ_STATE newState) const
   {
     int stateInt = static_cast<int>(newState);
     row.update(GENERIC_STATE_FIELD_NAME, stateInt);
@@ -73,7 +54,7 @@ GenericDatabaseObject::GenericDatabaseObject(SqliteOverlay::SqliteDatabase* _db,
 
   // THIS FUNCTION WILL FAIL IF THE DATABASE
   // HAS NO "SeqNum" COLUMN OR IF THE COLUMN IS NULL
-  int GenericDatabaseObject::getSeqNum() const
+  int TournamentDatabaseObject::getSeqNum() const
   {
     return row.getInt(GENERIC_SEQNUM_FIELD_NAME);
   }

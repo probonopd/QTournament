@@ -21,18 +21,21 @@
 
 #include <QString>
 
-#include "SqliteOverlay/TabRow.h"
-#include "SqliteOverlay/GenericDatabaseObject.h"
+#include "TabRow.h"
+#include "GenericDatabaseObject.h"
 #include "TournamentDB.h"
 
 namespace QTournament
 {
 
-  class GenericDatabaseObject : public SqliteOverlay::GenericDatabaseObject
+  class TournamentDatabaseObject : public SqliteOverlay::GenericDatabaseObject<TournamentDB>
   {
   public:
-    GenericDatabaseObject (SqliteOverlay::SqliteDatabase* _db, const QString& _tabName, int _id);
-    GenericDatabaseObject (SqliteOverlay::SqliteDatabase* _db, SqliteOverlay::TabRow _row);
+    TournamentDatabaseObject (TournamentDB* _db, const QString& _tabName, int _id)
+      : SqliteOverlay::GenericDatabaseObject<TournamentDB>(_db, _tabName.toUtf8().constData(), _id) {}
+
+    TournamentDatabaseObject (TournamentDB* _db, SqliteOverlay::TabRow _row)
+      : SqliteOverlay::GenericDatabaseObject<TournamentDB>(_db, _row) {}
     
     OBJ_STATE getState() const;
     void setState(OBJ_STATE newState) const;

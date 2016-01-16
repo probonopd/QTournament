@@ -24,7 +24,7 @@
 #include "RankingEntry.h"
 
 
-using namespace dbOverlay;
+using namespace SqliteOverlay;
 
 namespace QTournament
 {
@@ -45,7 +45,7 @@ namespace QTournament
     
   private:
     SwissLadderCategory (TournamentDB* db, int rowId);
-    SwissLadderCategory (TournamentDB* db, dbOverlay::TabRow row);
+    SwissLadderCategory (TournamentDB* db, SqliteOverlay::TabRow row);
     bool genMatchesForNextRound() const;
 
   } ;

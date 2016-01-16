@@ -16,9 +16,12 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "BracketGenerator.h"
 #include <memory>
 #include <vector>
+
+#include <QDebug>
+
+#include "BracketGenerator.h"
 
 namespace QTournament
 {

@@ -19,7 +19,7 @@
 #ifndef TEAM_H
 #define	TEAM_H
 
-#include "GenericDatabaseObject.h"
+#include "TournamentDatabaseObject.h"
 #include "TournamentDB.h"
 #include "TabRow.h"
 #include "TournamentErrorCodes.h"
@@ -27,7 +27,7 @@
 namespace QTournament
 {
 
-  class Team : public GenericDatabaseObject
+  class Team : public TournamentDatabaseObject
   {
     friend class TeamMngr;
     friend class GenericObjectManager;
@@ -38,7 +38,7 @@ namespace QTournament
 
   private:
     Team (TournamentDB* db, int rowId);
-    Team (TournamentDB* db, dbOverlay::TabRow row);
+    Team (TournamentDB* db, SqliteOverlay::TabRow row);
   };
 
 }

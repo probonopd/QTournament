@@ -41,7 +41,7 @@
 #include "RankingMngr.h"
 #include "reports/ReportFactory.h"
 
-using namespace dbOverlay;
+using namespace SqliteOverlay;
 
 namespace QTournament
 {

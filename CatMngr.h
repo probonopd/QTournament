@@ -32,8 +32,6 @@
 #include "PlayerPair.h"
 #include "ThreadSafeQueue.h"
 
-using namespace dbOverlay;
-
 namespace QTournament
 {
 
@@ -85,7 +83,7 @@ namespace QTournament
     // freezing, starting, updating while running
     ERR freezeConfig(const Category& c);
     ERR unfreezeConfig(const Category& c);
-    ERR startCategory(const Category& c, QList<PlayerPairList> grpCfg, PlayerPairList seed, ProgressQueue* progressNotificationQueue=nullptr);
+    ERR startCategory(const Category& c, vector<PlayerPairList> grpCfg, PlayerPairList seed, ProgressQueue* progressNotificationQueue=nullptr);
     void updateCatStatusFromMatchStatus(const Category& c);
     bool switchCatToWaitForSeeding(const Category& cat);
     ERR continueWithIntermediateSeeding(const Category& c, const PlayerPairList& seeding, ProgressQueue* progressNotificationQueue=nullptr);

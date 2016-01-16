@@ -18,13 +18,13 @@
 
 #include <stdexcept>
 
-#include "SqliteOverlay/ClausesAndQueries.h"
+#include "ClausesAndQueries.h"
 
 #include "CourtMngr.h"
 #include "Tournament.h"
 #include "HelperFunc.h"
 
-using namespace dbOverlay;
+using namespace SqliteOverlay;
 
 namespace QTournament
 {

@@ -23,7 +23,7 @@
 
 #include <QList>
 
-#include "GenericDatabaseObject.h"
+#include "TournamentDatabaseObject.h"
 #include "TournamentDatabaseObjectManager.h"
 #include "TournamentDB.h"
 #include "TabRow.h"
@@ -36,7 +36,7 @@ namespace QTournament
 {
   class Category;
 
-  class Player : public GenericDatabaseObject
+  class Player : public TournamentDatabaseObject
   {
     friend class PlayerMngr;
     friend class TeamMngr;
@@ -54,7 +54,7 @@ namespace QTournament
 
   private:
     Player (TournamentDB* db, int rowId);
-    Player (TournamentDB* db, dbOverlay::TabRow row);
+    Player (TournamentDB* db, SqliteOverlay::TabRow row);
   };
 
   typedef QList<Player> PlayerList;

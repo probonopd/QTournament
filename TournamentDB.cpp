@@ -19,8 +19,8 @@
 #include <QString>
 #include <QStringList>
 
-#include "SqliteOverlay/TableCreator.h"
-#include "SqliteOverlay/KeyValueTab.h"
+#include "TableCreator.h"
+#include "KeyValueTab.h"
 
 #include "TournamentDB.h"
 #include "TournamentDataDefs.h"

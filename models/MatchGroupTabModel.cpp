@@ -14,7 +14,7 @@
 #include <QDebug>
 
 using namespace QTournament;
-using namespace dbOverlay;
+using namespace SqliteOverlay;
 
 MatchGroupTableModel::MatchGroupTableModel(Tournament* tnmt)
 :QAbstractTableModel(0), db(tnmt->getDatabaseHandle()), mgTab((db->getTab(TAB_MATCH_GROUP)))

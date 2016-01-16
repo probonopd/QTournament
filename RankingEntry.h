@@ -24,7 +24,7 @@
 
 #include <QList>
 
-#include "GenericDatabaseObject.h"
+#include "TournamentDatabaseObject.h"
 #include "TournamentDB.h"
 #include "TabRow.h"
 #include "TournamentErrorCodes.h"
@@ -33,7 +33,7 @@
 
 namespace QTournament
 {
-  class RankingEntry : public GenericDatabaseObject
+  class RankingEntry : public TournamentDatabaseObject
   {
 
     friend class RankingMngr;
@@ -68,7 +68,7 @@ namespace QTournament
 
   private:
     RankingEntry (TournamentDB* db, int rowId);
-    RankingEntry (TournamentDB* db, dbOverlay::TabRow row);
+    RankingEntry (TournamentDB* db, SqliteOverlay::TabRow row);
     int QVariant2Int_WithDefault(const QVariant& v, int defaultVal=0) const;
   };
 

@@ -24,7 +24,7 @@
 #include "Tournament.h"
 #include "CatRoundStatus.h"
 
-using namespace dbOverlay;
+using namespace SqliteOverlay;
 
 namespace QTournament {
 

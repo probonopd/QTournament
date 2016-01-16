@@ -12,7 +12,7 @@
 #include "CatRoundStatus.h"
 
 using namespace QTournament;
-using namespace dbOverlay;
+using namespace SqliteOverlay;
 
 CategoryTableModel::CategoryTableModel(Tournament* tnmt)
 :QAbstractTableModel(0), db(tnmt->getDatabaseHandle()), catTab((db->getTab(TAB_CATEGORY)))

@@ -28,7 +28,7 @@
 #include "TournamentDB.h"
 #include "TournamentDataDefs.h"
 
-using namespace dbOverlay;
+using namespace SqliteOverlay;
 
 namespace QTournament
 {

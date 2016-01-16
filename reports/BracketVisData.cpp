@@ -449,7 +449,7 @@ bool BracketVisElement::linkToPlayerPair(const PlayerPair& pp, int pos) const
 //----------------------------------------------------------------------------
 
 BracketVisElement::BracketVisElement(TournamentDB* _db, int rowId)
-  :GenericDatabaseObject(_db, TAB_BRACKET_VIS, rowId)
+  :TournamentDatabaseObject(_db, TAB_BRACKET_VIS, rowId)
 {
 
 }
@@ -457,7 +457,7 @@ BracketVisElement::BracketVisElement(TournamentDB* _db, int rowId)
 //----------------------------------------------------------------------------
 
 BracketVisElement::BracketVisElement(TournamentDB* _db, TabRow row)
-  :GenericDatabaseObject(_db, row)
+  :TournamentDatabaseObject(_db, row)
 {
 
 }

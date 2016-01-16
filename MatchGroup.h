@@ -19,7 +19,7 @@
 #ifndef MATCHGROUP_H
 #define	MATCHGROUP_H
 
-#include "GenericDatabaseObject.h"
+#include "TournamentDatabaseObject.h"
 #include "TournamentDB.h"
 #include "TabRow.h"
 #include "TournamentErrorCodes.h"
@@ -29,14 +29,14 @@
 
 #include <QList>
 
-using namespace dbOverlay;
+using namespace SqliteOverlay;
 
 namespace QTournament
 {
 
   typedef QList<Match> MatchList;
 
-  class MatchGroup : public GenericDatabaseObject
+  class MatchGroup : public TournamentDatabaseObject
   {
     friend class MatchMngr;
     friend class Match;
@@ -54,7 +54,7 @@ namespace QTournament
 
   private:
     MatchGroup(TournamentDB* db, int rowId);
-    MatchGroup(TournamentDB* db, dbOverlay::TabRow row);
+    MatchGroup(TournamentDB* db, SqliteOverlay::TabRow row);
     DbTab matchTab;
   } ;
 

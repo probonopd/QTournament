@@ -24,7 +24,7 @@
 #include <QList>
 
 #include "TournamentDatabaseObjectManager.h"
-#include "GenericDatabaseObject.h"
+#include "TournamentDatabaseObject.h"
 #include "TournamentDB.h"
 #include "TabRow.h"
 #include "Category.h"
@@ -121,35 +121,35 @@ namespace QTournament
 
   };
 
-  class BracketVisElement : public GenericDatabaseObject
+  class BracketVisElement : public TournamentDatabaseObject
   {
     friend class BracketVisData;
     friend class TournamentDatabaseObjectManager;
 
   public:
     // getters
-    int getPage() const {return row[BV_PAGE].toInt();}
-    int getGridX0() const {return row[BV_GRID_X0].toInt();}
-    int getGridY0() const {return row[BV_GRID_Y0].toInt();}
-    int getSpanY() const {return row[BV_SPAN_Y].toInt();}
-    int getYPageBreakSpan() const {return row[BV_Y_PAGEBREAK_SPAN].toInt();}
-    int getNextPageNum() const {return row[BV_NEXT_PAGE_NUM].toInt();}
+    int getPage() const {return row.getInt(BV_PAGE);}
+    int getGridX0() const {return row.getInt(BV_GRID_X0);}
+    int getGridY0() const {return row.getInt(BV_GRID_Y0);}
+    int getSpanY() const {return row.getInt(BV_SPAN_Y);}
+    int getYPageBreakSpan() const {return row.getInt(BV_Y_PAGEBREAK_SPAN);}
+    int getNextPageNum() const {return row.getInt(BV_NEXT_PAGE_NUM);}
 
-    BRACKET_ORIENTATION getOrientation() const {return static_cast<BRACKET_ORIENTATION>(row[BV_ORIENTATION].toInt());}
-    BRACKET_TERMINATOR getTerminator() const {return  static_cast<BRACKET_TERMINATOR>(row[BV_TERMINATOR].toInt());}
-    int getTerminatorOffset() const {return row[BV_TERMINATOR_OFFSET_Y].toInt();}
+    BRACKET_ORIENTATION getOrientation() const {return static_cast<BRACKET_ORIENTATION>(row.getInt(BV_ORIENTATION));}
+    BRACKET_TERMINATOR getTerminator() const {return  static_cast<BRACKET_TERMINATOR>(row.getInt(BV_TERMINATOR));}
+    int getTerminatorOffset() const {return row.getInt(BV_TERMINATOR_OFFSET_Y);}
 
-    int getInitialRank1() const {return row[BV_INITIAL_RANK1].toInt();}
-    int getInitialRank2() const {return row[BV_INITIAL_RANK2].toInt();}
+    int getInitialRank1() const {return row.getInt(BV_INITIAL_RANK1);}
+    int getInitialRank2() const {return row.getInt(BV_INITIAL_RANK2);}
 
-    int getNextBracketElementForWinner() const {return row[BV_NEXT_WINNER_MATCH].toInt();}
-    int getNextBracketElementForLoser() const {return row[BV_NEXT_LOSER_MATCH].toInt();}
-    int getNextBracketElementPosForWinner() const {return row[BV_NEXT_MATCH_POS_FOR_WINNER].toInt();}
-    int getNextBracketElementPosForLoser() const {return row[BV_NEXT_MATCH_POS_FOR_LOSER].toInt();}
+    int getNextBracketElementForWinner() const {return row.getInt(BV_NEXT_WINNER_MATCH);}
+    int getNextBracketElementForLoser() const {return row.getInt(BV_NEXT_LOSER_MATCH);}
+    int getNextBracketElementPosForWinner() const {return row.getInt(BV_NEXT_MATCH_POS_FOR_WINNER);}
+    int getNextBracketElementPosForLoser() const {return row.getInt(BV_NEXT_MATCH_POS_FOR_LOSER);}
 
-    int getBracketElementId() const {return row[BV_ELEMENT_ID].toInt();}
+    int getBracketElementId() const {return row.getInt(BV_ELEMENT_ID);}
 
-    int getCategoryId() const {return row[BV_CAT_REF].toInt();}
+    int getCategoryId() const {return row.getInt(BV_CAT_REF);}
 
     unique_ptr<Match> getLinkedMatch() const;
     Category getLinkedCategory() const;
@@ -162,14 +162,14 @@ namespace QTournament
 
   private:
     BracketVisElement (TournamentDB* _db, int rowId);
-    BracketVisElement (TournamentDB* _db, dbOverlay::TabRow row);
+    BracketVisElement (TournamentDB* _db, SqliteOverlay::TabRow row);
     unique_ptr<PlayerPair> getParentPlayerPair(int pos) const;
   };
   typedef QList<BracketVisElement> BracketVisElementList;
   typedef unique_ptr<BracketVisElement> upBracketVisElement;
 
 
-  class BracketVisData : public GenericObjectManager
+  class BracketVisData : public TournamentDatabaseObjectManager
   {
   public:
 

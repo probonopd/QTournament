@@ -27,14 +27,14 @@ namespace QTournament
 {
 
   Team::Team(TournamentDB* db, int rowId)
-  :GenericDatabaseObject(db, TAB_TEAM, rowId)
+  :TournamentDatabaseObject(db, TAB_TEAM, rowId)
   {
   }
 
 //----------------------------------------------------------------------------
 
-  Team::Team(TournamentDB* db, dbOverlay::TabRow row)
-  :GenericDatabaseObject(db, row)
+  Team::Team(TournamentDB* db, SqliteOverlay::TabRow row)
+  :TournamentDatabaseObject(db, row)
   {
   }
 

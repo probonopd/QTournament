@@ -12,7 +12,7 @@
 #include "TeamMngr.h"
 #include "Tournament.h"
 
-using namespace dbOverlay;
+using namespace SqliteOverlay;
 
 namespace QTournament
 {

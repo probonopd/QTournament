@@ -24,7 +24,7 @@
 #include "RankingEntry.h"
 
 
-using namespace dbOverlay;
+using namespace SqliteOverlay;
 
 namespace QTournament
 {
@@ -45,7 +45,7 @@ namespace QTournament
     
   private:
     EliminationCategory (TournamentDB* db, int rowId, int eliminationMode);
-    EliminationCategory (TournamentDB* db, dbOverlay::TabRow row, int eliminationMode);
+    EliminationCategory (TournamentDB* db, SqliteOverlay::TabRow row, int eliminationMode);
 
     int elimMode;
 

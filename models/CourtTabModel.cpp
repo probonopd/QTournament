@@ -17,7 +17,7 @@
 
 
 using namespace QTournament;
-using namespace dbOverlay;
+using namespace SqliteOverlay;
 
 CourtTableModel::CourtTableModel(Tournament* tnmt)
 :QAbstractTableModel(0), db(tnmt->getDatabaseHandle()), courtTab((db->getTab(TAB_COURT)))
