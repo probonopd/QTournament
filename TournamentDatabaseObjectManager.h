@@ -16,8 +16,8 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GENERICOBJECTMANAGER_H
-#define	GENERICOBJECTMANAGER_H
+#ifndef TOURNAMENTDATABASEOBJECTMANAGER_H
+#define	TOURNAMENTDATABASEOBJECTMANAGER_H
 
 #include <QString>
 
@@ -28,13 +28,12 @@
 
 namespace QTournament
 {
-  class GenericObjectManager : public SqliteOverlay::GenericObjectManager
+  class TournamentDatabaseObjectManager : public SqliteOverlay::GenericObjectManager<TournamentDB>
   {
   public:
-    GenericObjectManager (TournamentDB* _db, SqliteOverlay::DbTab* _tab);
-    GenericObjectManager (TournamentDB* _db, const QString& tabName);
-    inline TournamentDB* getTournamentDatabaseHandle() { return tdb; }
-    
+    TournamentDatabaseObjectManager (TournamentDB* _db, const QString& _tabName)
+      : SqliteOverlay::GenericObjectManager<TournamentDB>(_db, _tabName.toUtf8().constData()) {}
+
   protected:
     void fixSeqNumberAfterInsert(const QString& tabName) const;
     void fixSeqNumberAfterDelete(const QString& tabName, int deletedSeqNum) const;
@@ -44,5 +43,5 @@ namespace QTournament
 
 }
 
-#endif	/* GENERICOBJECTMANAGER_H */
+#endif	/* TOURNAMENTDATABASEOBJECTMANAGER_H */
 

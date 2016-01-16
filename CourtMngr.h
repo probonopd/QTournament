@@ -30,13 +30,13 @@
 #include "Court.h"
 #include "TournamentDataDefs.h"
 #include "TournamentErrorCodes.h"
-#include "GenericObjectManager.h"
+#include "TournamentDatabaseObjectManager.h"
 
 
 namespace QTournament
 {
 
-  class CourtMngr : public QObject, GenericObjectManager
+  class CourtMngr : public QObject, TournamentDatabaseObjectManager
   {
     Q_OBJECT
     

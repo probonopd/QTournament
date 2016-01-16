@@ -24,7 +24,7 @@
 #include <QList>
 
 #include "GenericDatabaseObject.h"
-#include "GenericObjectManager.h"
+#include "TournamentDatabaseObjectManager.h"
 #include "TournamentDB.h"
 #include "TabRow.h"
 #include "TournamentErrorCodes.h"
@@ -40,7 +40,7 @@ namespace QTournament
   {
     friend class PlayerMngr;
     friend class TeamMngr;
-    friend class GenericObjectManager;
+    friend class TournamentDatabaseObjectManager;
     
   public:
     QString getDisplayName(int maxLen = 0) const;

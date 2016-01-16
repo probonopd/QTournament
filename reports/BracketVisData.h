@@ -23,7 +23,7 @@
 
 #include <QList>
 
-#include "GenericObjectManager.h"
+#include "TournamentDatabaseObjectManager.h"
 #include "GenericDatabaseObject.h"
 #include "TournamentDB.h"
 #include "TabRow.h"
@@ -124,7 +124,7 @@ namespace QTournament
   class BracketVisElement : public GenericDatabaseObject
   {
     friend class BracketVisData;
-    friend class GenericObjectManager;
+    friend class TournamentDatabaseObjectManager;
 
   public:
     // getters

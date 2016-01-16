@@ -27,7 +27,7 @@
 #include "TournamentDataDefs.h"
 #include "TournamentErrorCodes.h"
 #include "DbTab.h"
-#include "GenericObjectManager.h"
+#include "TournamentDatabaseObjectManager.h"
 #include "Category.h"
 #include "PlayerPair.h"
 #include "ThreadSafeQueue.h"
@@ -37,7 +37,7 @@ using namespace dbOverlay;
 namespace QTournament
 {
 
-  class CatMngr : public QObject, public GenericObjectManager
+  class CatMngr : public QObject, public TournamentDatabaseObjectManager
   {
     Q_OBJECT
     
@@ -57,11 +57,11 @@ namespace QTournament
     unique_ptr<Category> getCategory(int id);
     Category getCategoryById(int id);
     Category getCategoryBySeqNum(int seqNum);
-    QList<Category> getAllCategories();
+    vector<Category> getAllCategories();
     QHash<Category, CAT_ADD_STATE> getAllCategoryAddStates(SEX s);
     QHash<Category, CAT_ADD_STATE> getAllCategoryAddStates(const Player& p);
     static std::function<bool (Category&, Category&)> getCategorySortFunction_byName();
-    PlayerPairList getSeeding(const Category& c) const;
+    vector<PlayerPair> getSeeding(const Category& c) const;
     ERR canDeleteCategory(const Category& cat) const;
 
     // setters
@@ -104,8 +104,6 @@ namespace QTournament
     void endResetAllModels() const;
 
   private:
-    DbTab catTab;
-    
     bool setCatParam_AllowDraw( Category& c, const QVariant& v);
     bool setCatParam_Score( Category& c, int newScore, bool isDraw);
   };

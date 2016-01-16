@@ -28,7 +28,6 @@ HEADERS += \
     Category.h \
     CatMngr.h \
     GenericDatabaseObject.h \
-    GenericObjectManager.h \
     GroupDef.h \
     KO_Config.h \
     MatchGroup.h \
@@ -124,13 +123,13 @@ HEADERS += \
     ui/commonCommands/cmdExportPlayerToExternalDatabase.h \
     ui/commonCommands/cmdCreatePlayerFromDialog.h \
     ui/DlgBulkImportToExtDb.h \
-    HelperFunc.h
+    HelperFunc.h \
+    TournamentDatabaseObjectManager.h
 
 SOURCES += \
     Category.cpp \
     CatMngr.cpp \
     GenericDatabaseObject.cpp \
-    GenericObjectManager.cpp \
     GroupDef.cpp \
     KO_Config.cpp \
     main.cpp \
@@ -225,7 +224,8 @@ SOURCES += \
     ui/commonCommands/cmdExportPlayerToExternalDatabase.cpp \
     ui/commonCommands/cmdCreatePlayerFromDialog.cpp \
     ui/DlgBulkImportToExtDb.cpp \
-    HelperFunc.cpp
+    HelperFunc.cpp \
+    TournamentDatabaseObjectManager.cpp
 
 RESOURCES += \
     tournament.qrc

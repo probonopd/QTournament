@@ -19,25 +19,11 @@
 #include "SqliteOverlay/ClausesAndQueries.h"
 #include "SqliteOverlay/TabRow.h"
 
-#include "GenericObjectManager.h"
+#include "TournamentDatabaseObjectManager.h"
 #include "HelperFunc.h"
 
 namespace QTournament
 {
-
-  GenericObjectManager::GenericObjectManager(TournamentDB* _db, SqliteOverlay::DbTab* _tab)
-    :SqliteOverlay::GenericObjectManager(_db, _tab), tdb(_db)
-  {
-
-  }
-
-  GenericObjectManager::GenericObjectManager(TournamentDB *_db, const QString& tabName)
-    :SqliteOverlay::GenericObjectManager(_db, QString2StdString(tabName)), tdb(_db)
-  {
-
-  }
-
-//----------------------------------------------------------------------------
 
   /**
    *  Fixes the sequence number column after a row has been inserted.

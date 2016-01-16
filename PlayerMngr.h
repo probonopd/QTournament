@@ -32,7 +32,7 @@
 #include "TournamentDataDefs.h"
 #include "TournamentErrorCodes.h"
 #include "DbTab.h"
-#include "GenericObjectManager.h"
+#include "TournamentDatabaseObjectManager.h"
 #include "Match.h"
 #include "ExternalPlayerDB.h"
 
@@ -42,7 +42,7 @@ using namespace dbOverlay;
 namespace QTournament
 {
 
-  class PlayerMngr : public QObject, GenericObjectManager
+  class PlayerMngr : public QObject, TournamentDatabaseObjectManager
   {
     Q_OBJECT
     

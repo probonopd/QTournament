@@ -25,7 +25,7 @@
 #include "TournamentDataDefs.h"
 #include "TournamentErrorCodes.h"
 #include "DbTab.h"
-#include "GenericObjectManager.h"
+#include "TournamentDatabaseObjectManager.h"
 #include "Category.h"
 #include "MatchGroup.h"
 #include "Match.h"
@@ -42,7 +42,7 @@ namespace QTournament
 
   typedef QList<MatchGroup> MatchGroupList;
   
-  class MatchMngr : public QObject, GenericObjectManager
+  class MatchMngr : public QObject, TournamentDatabaseObjectManager
   {
     Q_OBJECT
   public:

@@ -40,7 +40,7 @@ namespace QTournament
   {
     friend class MatchMngr;
     friend class Match;
-    friend class GenericObjectManager;
+    friend class TournamentDatabaseObjectManager;
     
   public:
     Category getCategory() const;

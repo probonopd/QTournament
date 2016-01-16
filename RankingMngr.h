@@ -28,7 +28,7 @@
 #include "TournamentDataDefs.h"
 #include "TournamentErrorCodes.h"
 #include "DbTab.h"
-#include "GenericObjectManager.h"
+#include "TournamentDatabaseObjectManager.h"
 #include "Category.h"
 #include "PlayerPair.h"
 
@@ -42,7 +42,7 @@ namespace QTournament
   typedef QList<RankingEntry> RankingEntryList;
   typedef QList<RankingEntryList> RankingEntryListList;
 
-  class RankingMngr : public QObject, GenericObjectManager
+  class RankingMngr : public QObject, TournamentDatabaseObjectManager
   {
     Q_OBJECT
     

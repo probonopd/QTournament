@@ -20,6 +20,8 @@
 #define	PLAYERPAIR_H
 
 #include <memory>
+#include <vector>
+
 #include "Player.h"
 
 namespace QTournament
@@ -31,7 +33,7 @@ namespace QTournament
     PlayerPair(const Player& p1, const Player& p2, int _pairId);
     PlayerPair(const Player& p1, int _pairId);
     PlayerPair(const Player& p1);
-    PlayerPair(const TournamentDB* db, const TabRow& row);
+    PlayerPair(const TournamentDB* db, const SqliteOverlay::TabRow& row);
     PlayerPair(TournamentDB* db, int ppId);
     bool hasPlayer2() const;
     Player getPlayer1() const;
@@ -68,7 +70,7 @@ namespace QTournament
     void sortPlayers();
   } ;
   
-  typedef QList<PlayerPair> PlayerPairList;
+  typedef vector<PlayerPair> PlayerPairList;
   typedef unique_ptr<PlayerPair> upPlayerPair;
 
 }

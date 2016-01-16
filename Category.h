@@ -24,7 +24,7 @@
 
 #include "GenericDatabaseObject.h"
 #include "TournamentDB.h"
-#include "TabRow.h"
+#include "SqliteOverlay/TabRow.h"
 #include "Player.h"
 #include "PlayerPair.h"
 #include "TournamentErrorCodes.h"
@@ -43,8 +43,9 @@ namespace QTournament
     friend class EliminationCategory;
     friend class PureRoundRobinCategory;
     friend class SwissLadderCategory;
-    friend class GenericObjectManager;
-    
+    friend class TournamentDatabaseObjectManager;
+    friend class SqliteOverlay::GenericObjectManager<TournamentDB>;
+
   public:
     // getters
     QString getName() const;
@@ -111,7 +112,7 @@ namespace QTournament
 
   private:
     Category (TournamentDB* db, int rowId);
-    Category (TournamentDB* db, dbOverlay::TabRow row);
+    Category (TournamentDB* db, SqliteOverlay::TabRow row);
     ERR applyGroupAssignment(QList<PlayerPairList> grpCfg);
     ERR applyInitialRanking(PlayerPairList seed);
     ERR generateGroupMatches(const PlayerPairList &grpMembers, int grpNum, int firstRoundNum=1, ProgressQueue* progressNotificationQueue=nullptr) const;

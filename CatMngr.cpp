@@ -20,6 +20,7 @@
 #include <QtCore/qdebug.h>
 #include <QtCore/qjsonarray.h>
 #include <QList>
+
 #include "HelperFunc.h"
 #include "Category.h"
 #include "Player.h"
@@ -32,13 +33,11 @@
 #include "TournamentDB.h"
 #include "HelperFunc.h"
 
-using namespace dbOverlay;
-
 namespace QTournament
 {
 
   CatMngr::CatMngr(TournamentDB* _db)
-  : GenericObjectManager(_db), catTab((*db)[TAB_CATEGORY])
+  : TournamentDatabaseObjectManager(_db, TAB_CATEGORY)
   {
   }
 
@@ -64,21 +63,21 @@ namespace QTournament
     }
     
     // create a new table row and set some arbitrary default data
-    QVariantList qvl;
-    qvl << GENERIC_NAME_FIELD_NAME << catName;
-    qvl << CAT_ACCEPT_DRAW << false;
-    qvl << CAT_SYS << static_cast<int>(GROUPS_WITH_KO);
-    qvl << CAT_MATCH_TYPE << static_cast<int>(SINGLES);
-    qvl << CAT_SEX << static_cast<int>(M);
-    qvl << GENERIC_STATE_FIELD_NAME << static_cast<int>(STAT_CAT_CONFIG);
-    qvl << CAT_WIN_SCORE << 2;
-    qvl << CAT_DRAW_SCORE << 1;
-    qvl << CAT_GROUP_CONFIG << KO_Config(QUARTER, false).toString();
+    SqliteOverlay::ColumnValueClause cvc;
+    cvc.addStringCol(GENERIC_NAME_FIELD_NAME, catName.toUtf8().constData());
+    cvc.addIntCol(CAT_ACCEPT_DRAW, false);
+    cvc.addIntCol(CAT_SYS, static_cast<int>(GROUPS_WITH_KO));
+    cvc.addIntCol(CAT_MATCH_TYPE, static_cast<int>(SINGLES));
+    cvc.addIntCol(CAT_SEX, static_cast<int>(M));
+    cvc.addIntCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_CAT_CONFIG));
+    cvc.addIntCol(CAT_WIN_SCORE, 2);
+    cvc.addIntCol(CAT_DRAW_SCORE, 1);
+    cvc.addStringCol(CAT_GROUP_CONFIG, KO_Config(QUARTER, false).toString().toUtf8().constData());
     
     emit beginCreateCategory();
-    catTab.insertRow(qvl);
+    tab->insertRow(cvc);
     fixSeqNumberAfterInsert(TAB_CATEGORY);
-    emit endCreateCategory(catTab.length() - 1); // the new sequence number is always the greatest
+    emit endCreateCategory(tab->length() - 1); // the new sequence number is always the greatest
     
     return OK;
   }
@@ -128,14 +127,20 @@ namespace QTournament
     Category clone = getCategory(dstCatName);
 
     // copy the settings fromt the source category to clone
-    assert(clone.setMatchSystem(src.getMatchSystem()) == OK);
-    assert(clone.setMatchType(src.getMatchType()) == OK);
-    assert(clone.setSex(src.getSex()) == OK);
-    assert(setCatParam_AllowDraw(clone, src.getParameter_bool(ALLOW_DRAW)));
-    assert(setCatParam_Score(clone, src.getParameter_int(WIN_SCORE), false));
+    err = clone.setMatchSystem(src.getMatchSystem());
+    assert(err == OK);
+    err = clone.setMatchType(src.getMatchType());
+    assert(err == OK);
+    err = clone.setSex(src.getSex());
+    assert(err == OK);
+    bool isOk = setCatParam_AllowDraw(clone, src.getParameter_bool(ALLOW_DRAW));
+    assert(isOk);
+    isOk = setCatParam_Score(clone, src.getParameter_int(WIN_SCORE), false);
+    assert(isOk);
     setCatParam_Score(clone, src.getParameter_int(DRAW_SCORE), true);  // no assert here; setting draw score may fail if draw is not allowed
     KO_Config ko{src.getParameter_string(GROUP_CONFIG)};
-    assert(clone.setParameter(GROUP_CONFIG, ko.toString()));
+    isOk = clone.setParameter(GROUP_CONFIG, ko.toString());
+    assert(isOk);
 
     // Do not copy the BracketVisData here, because the clone is still in
     // CONFIG and BracketVisData is created when starting the cat
@@ -172,7 +177,7 @@ namespace QTournament
 
   bool CatMngr::hasCategory(const QString& catName) const
   {
-    return (catTab.getMatchCountForColumnValue(GENERIC_NAME_FIELD_NAME, catName) > 0);
+    return (tab->getMatchCountForColumnValue(GENERIC_NAME_FIELD_NAME, catName.toUtf8().constData()) > 0);
   }
 
 //----------------------------------------------------------------------------
@@ -193,7 +198,7 @@ namespace QTournament
       throw std::invalid_argument("The category '" + QString2StdString(name) + "' does not exist");
     }
     
-    TabRow r = catTab.getSingleRowByColumnValue(GENERIC_NAME_FIELD_NAME, name);
+    SqliteOverlay::TabRow r = tab->getSingleRowByColumnValue(GENERIC_NAME_FIELD_NAME, name.toUtf8().constData());
     
     return Category(db, r);
   }
@@ -202,7 +207,7 @@ namespace QTournament
 
   unique_ptr<Category> CatMngr::getCategory(int id)
   {
-    return getSingleObjectByColumnValue<Category>(catTab, "id", id);
+    return getSingleObjectByColumnValue<Category>("id", id);
   }
 
 //----------------------------------------------------------------------------
@@ -212,9 +217,9 @@ namespace QTournament
    *
    * @Return QList holding all categories
    */
-  QList<Category> CatMngr::getAllCategories()
+  vector<Category> CatMngr::getAllCategories()
   {
-    return getAllObjects<Category>(catTab);
+    return getAllObjects<Category>();
   }
 
 //----------------------------------------------------------------------------
@@ -255,17 +260,14 @@ namespace QTournament
     PlayerPairList pairList = c.getPlayerPairs();
     
     // check if we can split all pairs
-    PlayerPairList::const_iterator it = pairList.constBegin();
     bool canSplit = true;
-    for (it = pairList.constBegin(); it != pairList.constEnd(); ++it)
+    for (const PlayerPair& pp : pairList)
     {
-      PlayerPair pp = *it;
-      
       if (!(pp.hasPlayer2())) continue;
       
       if (c.canSplitPlayers(pp.getPlayer1(), pp.getPlayer2()) != OK)
       {
-	canSplit = false;
+        canSplit = false;
       }
     }
     if (!canSplit)
@@ -274,10 +276,8 @@ namespace QTournament
     }
     
     // actually split all pairs
-    for (it = pairList.constBegin(); it != pairList.constEnd(); ++it)
+    for (const PlayerPair& pp : pairList)
     {
-      PlayerPair pp = *it;
-      
       if (!(pp.hasPlayer2())) continue;
       
       splitPlayers(c, pp.getPlayer1(), pp.getPlayer2());
@@ -296,10 +296,8 @@ namespace QTournament
     c.row.update(CAT_MATCH_TYPE, typeInt);
     
     // try to recreate as many pairs as possible
-    for (it = pairList.constBegin(); it != pairList.constEnd(); ++it)
+    for (const PlayerPair& pp : pairList)
     {
-      PlayerPair pp = *it;
-      
       if (!(pp.hasPlayer2())) continue;
       
       pairPlayers(c, pp.getPlayer1(), pp.getPlayer2());
@@ -356,9 +354,7 @@ namespace QTournament
     if ((s != DONT_CARE) && (c.getMatchType() == MIXED)) {
       PlayerPairList allPairs = c.getPlayerPairs();
       
-      PlayerPairList::const_iterator it;
-      for (it = allPairs.constBegin(); it != allPairs.constEnd(); ++it) {
-        PlayerPair pp = *it;
+      for (const PlayerPair& pp : allPairs) {
 
         // Skip unpaired players
         if (!(pp.hasPlayer2())) continue;
@@ -375,8 +371,7 @@ namespace QTournament
       // now we can be sure that all unwanted pairs can be split
       auto tnmt = Tournament::getActiveTournament();
       CatMngr* cmngr = tnmt->getCatMngr();
-      for (it = allPairs.constBegin(); it != allPairs.constEnd(); ++it) {
-        PlayerPair pp = *it;
+      for (const PlayerPair& pp : allPairs) {
 
         // Skip unpaired players
         if (!(pp.hasPlayer2())) continue;
@@ -418,10 +413,10 @@ namespace QTournament
     // TODO: check that player is not permanently disabled
     
     // actually add the player
-    QVariantList qvl;
-    qvl << P2C_CAT_REF << c.getId();
-    qvl << P2C_PLAYER_REF << p.getId();
-    db->getTab(TAB_P2C).insertRow(qvl);
+    SqliteOverlay::ColumnValueClause cvc;
+    cvc.addIntCol(P2C_CAT_REF, c.getId());
+    cvc.addIntCol(P2C_PLAYER_REF, p.getId());
+    db->getTab(TAB_P2C)->insertRow(cvc);
     
     emit playerAddedToCategory(p, c);
     
@@ -457,10 +452,11 @@ namespace QTournament
     // "Category Configuration" state
     
     // actually delete the assignment
-    QVariantList qvl;
-    qvl << P2C_CAT_REF << c.getId();
-    qvl << P2C_PLAYER_REF << p.getId();
-    db->getTab(TAB_P2C).deleteRowsByColumnValue(qvl);
+    SqliteOverlay::WhereClause wc;
+    wc.addIntCol(P2C_CAT_REF, c.getId());
+    wc.addIntCol(P2C_PLAYER_REF, p.getId());
+    int cnt = db->getTab(TAB_P2C)->deleteRowsByWhereClause(wc);
+    assert(cnt == 1);
     
     emit playerRemovedFromCategory(p, c);
     
@@ -487,16 +483,16 @@ namespace QTournament
 
     // a few checks for the cowards
     int catId = cat.getId();
-    assert(db->getTab(TAB_P2C).getMatchCountForColumnValue(P2C_CAT_REF, catId) == 0);
-    assert(db->getTab(TAB_PAIRS).getMatchCountForColumnValue(PAIRS_CAT_REF, catId) == 0);
-    assert(db->getTab(TAB_MATCH_GROUP).getMatchCountForColumnValue(MG_CAT_REF, catId) == 0);
-    assert(db->getTab(TAB_RANKING).getMatchCountForColumnValue(RA_CAT_REF, catId) == 0);
-    assert(db->getTab(TAB_BRACKET_VIS).getMatchCountForColumnValue(BV_CAT_REF, catId) == 0);
+    assert(db->getTab(TAB_P2C)->getMatchCountForColumnValue(P2C_CAT_REF, catId) == 0);
+    assert(db->getTab(TAB_PAIRS)->getMatchCountForColumnValue(PAIRS_CAT_REF, catId) == 0);
+    assert(db->getTab(TAB_MATCH_GROUP)->getMatchCountForColumnValue(MG_CAT_REF, catId) == 0);
+    assert(db->getTab(TAB_RANKING)->getMatchCountForColumnValue(RA_CAT_REF, catId) == 0);
+    assert(db->getTab(TAB_BRACKET_VIS)->getMatchCountForColumnValue(BV_CAT_REF, catId) == 0);
 
     // the actual deletion
     int oldSeqNum = cat.getSeqNum();
     emit beginDeleteCategory(oldSeqNum);
-    catTab.deleteRowsByColumnValue("id", cat.getId());
+    tab->deleteRowsByColumnValue("id", catId);
     fixSeqNumberAfterDelete(TAB_CATEGORY, oldSeqNum);
     emit endDeleteCategory();
 
@@ -553,16 +549,16 @@ namespace QTournament
     int catId = cat.getId();
 
     // deletion 1: bracket vis data, because it has only outgoing refs
-    auto tab = db->getTab(TAB_BRACKET_VIS);
-    tab.deleteRowsByColumnValue(BV_CAT_REF, catId);
+    auto t = db->getTab(TAB_BRACKET_VIS);
+    t->deleteRowsByColumnValue(BV_CAT_REF, catId);
 
     // deletion 2: ranking data, because it has only outgoing refs
-    tab = db->getTab(TAB_RANKING);
-    tab.deleteRowsByColumnValue(RA_CAT_REF, catId);
+    t = db->getTab(TAB_RANKING);
+    t->deleteRowsByColumnValue(RA_CAT_REF, catId);
 
     // deletion 3a: matches, they are refered to by bracket vis data only
     // deletion 3b: match groups, they are refered to only by ranking data and matches
-    tab = db->getTab(TAB_MATCH);
+    t = db->getTab(TAB_MATCH);
     auto mgTab = db->getTab(TAB_MATCH_GROUP);
     for (const MatchGroup& mg : mm->getAllMatchGroups())
     {
@@ -572,29 +568,29 @@ namespace QTournament
         for (const Match& ma : matchesInGroup)
         {
           int deletedSeqNum = ma.getSeqNum();
-          tab.deleteRowsByColumnValue("id", ma.getId());
+          t->deleteRowsByColumnValue("id", ma.getId());
           fixSeqNumberAfterDelete(TAB_MATCH, deletedSeqNum);
         }
 
         // the match group has incoming links from matches
         // and ranking and both have been deleted by now
         int deletedSeqNum = mg.getSeqNum();
-        mgTab.deleteRowsByColumnValue("id", mg.getId());
+        mgTab->deleteRowsByColumnValue("id", mg.getId());
         fixSeqNumberAfterDelete(TAB_MATCH_GROUP, deletedSeqNum);
       }
     }
 
     // deletion 4: player pairs
-    tab = db->getTab(TAB_PAIRS);
-    tab.deleteRowsByColumnValue(PAIRS_CAT_REF, catId);
+    t = db->getTab(TAB_PAIRS);
+    t->deleteRowsByColumnValue(PAIRS_CAT_REF, catId);
 
     // deletion 5: player to category allocation
-    tab = db->getTab(TAB_P2C);
-    tab.deleteRowsByColumnValue(P2C_CAT_REF, catId);
+    t = db->getTab(TAB_P2C);
+    t->deleteRowsByColumnValue(P2C_CAT_REF, catId);
 
     // final deletion: the category itself
     int deletedSeqNum = cat.getSeqNum();
-    catTab.deleteRowsByColumnValue("id", catId);
+    tab->deleteRowsByColumnValue("id", catId);
     fixSeqNumberAfterDelete(TAB_CATEGORY, deletedSeqNum);
 
     //
@@ -612,7 +608,7 @@ namespace QTournament
   Category CatMngr::getCategoryById(int id)
   {
     try {
-      TabRow r = catTab[id];
+      SqliteOverlay::TabRow r = tab->operator [](id);
       return Category(db, r);
       }
     catch (std::exception e)
@@ -626,7 +622,7 @@ namespace QTournament
   Category CatMngr::getCategoryBySeqNum(int seqNum)
   {
     try {
-      TabRow r = catTab.getSingleRowByColumnValue(GENERIC_SEQNUM_FIELD_NAME, seqNum);
+      SqliteOverlay::TabRow r = tab->getSingleRowByColumnValue(GENERIC_SEQNUM_FIELD_NAME, seqNum);
       return Category(db, r);
     }
     catch (std::exception e)
@@ -639,13 +635,12 @@ namespace QTournament
 
   QHash<Category, CAT_ADD_STATE> CatMngr::getAllCategoryAddStates(SEX s)
   {
-    QList<Category> allCat = getAllCategories();
+    vector<Category> allCat = getAllCategories();
     QHash<Category, CAT_ADD_STATE> result;
     
-    QList<Category>::const_iterator it;
-    for (it = allCat.begin(); it != allCat.constEnd(); ++it)
+    for (Category& c : allCat)
     {
-      result[(*it)] = (*it).getAddState(s);
+      result[c] = c.getAddState(s);
     }
     
     return result;
@@ -655,13 +650,12 @@ namespace QTournament
 
   QHash<Category, CAT_ADD_STATE> CatMngr::getAllCategoryAddStates(const Player& p)
   {
-    QList<Category> allCat = getAllCategories();
+    vector<Category> allCat = getAllCategories();
     QHash<Category, CAT_ADD_STATE> result;
     
-    QList<Category>::const_iterator it;
-    for (it = allCat.begin(); it != allCat.constEnd(); ++it)
+    for (Category& c : allCat)
     {
-      result[(*it)] = (*it).getAddState(p);
+      result[c] = c.getAddState(p);
     }
     
     return result;
@@ -687,7 +681,7 @@ namespace QTournament
     {
       if (c.getState() != STAT_CAT_CONFIG) return false;
 
-      c.row.update(CAT_GROUP_CONFIG, v.toString());
+      c.row.update(CAT_GROUP_CONFIG, v.toString().toUtf8().constData());
       return true;
     }
     
@@ -802,13 +796,13 @@ namespace QTournament
     }
     
     // create the pair
-    QVariantList qvl;
-    qvl << PAIRS_CAT_REF << c.getId();
-    qvl << PAIRS_PLAYER1_REF << p1.getId();
-    qvl << PAIRS_PLAYER2_REF << p2.getId();
-    qvl << PAIRS_GRP_NUM << GRP_NUM__NOT_ASSIGNED;   // Default value: no group
+    SqliteOverlay::ColumnValueClause cvc;
+    cvc.addIntCol(PAIRS_CAT_REF, c.getId());
+    cvc.addIntCol(PAIRS_PLAYER1_REF, p1.getId());
+    cvc.addIntCol(PAIRS_PLAYER2_REF, p2.getId());
+    cvc.addIntCol(PAIRS_GRP_NUM, GRP_NUM__NOT_ASSIGNED);   // Default value: no group
 
-    db->getTab(TAB_PAIRS).insertRow(qvl);
+    db->getTab(TAB_PAIRS)->insertRow(cvc);
     
     emit playersPaired(c, p1, p2);
     
@@ -829,17 +823,17 @@ namespace QTournament
     }
     
     // delete all combinations of p1/p2 pairs from the database
-    QVariantList qvl;
-    qvl << PAIRS_CAT_REF << c.getId();
-    qvl << PAIRS_PLAYER1_REF << p1.getId();
-    qvl << PAIRS_PLAYER2_REF << p2.getId();
-    DbTab pairsTab = db->getTab(TAB_PAIRS);
-    pairsTab.deleteRowsByColumnValue(qvl);
-    qvl.clear();
-    qvl << PAIRS_CAT_REF << c.getId();
-    qvl << PAIRS_PLAYER1_REF << p2.getId();
-    qvl << PAIRS_PLAYER2_REF << p1.getId();
-    pairsTab.deleteRowsByColumnValue(qvl);
+    SqliteOverlay::WhereClause wc;
+    wc.addIntCol(PAIRS_CAT_REF, c.getId());
+    wc.addIntCol(PAIRS_PLAYER1_REF, p1.getId());
+    wc.addIntCol(PAIRS_PLAYER2_REF, p2.getId());
+    SqliteOverlay::DbTab* pairsTab = db->getTab(TAB_PAIRS);
+    pairsTab->deleteRowsByWhereClause(wc);
+    wc.clear();
+    wc.addIntCol(PAIRS_CAT_REF, c.getId());
+    wc.addIntCol(PAIRS_PLAYER1_REF, p2.getId());
+    wc.addIntCol(PAIRS_PLAYER2_REF, p1.getId());
+    pairsTab->deleteRowsByWhereClause(wc);
     
     emit playersSplit(c, p1, p2);
     
@@ -851,14 +845,14 @@ namespace QTournament
 
   ERR CatMngr::splitPlayers(const Category c, int pairId) const
   {
-    DbTab pairsTab = db->getTab(TAB_PAIRS);
+    SqliteOverlay::DbTab* pairsTab = db->getTab(TAB_PAIRS);
     auto tnmt = Tournament::getActiveTournament();
     PlayerMngr* pmngr = tnmt->getPlayerMngr();
     try
     {
-      TabRow r = pairsTab[pairId];
-      Player p1 = pmngr->getPlayer(r[PAIRS_PLAYER1_REF].toInt());
-      Player p2 = pmngr->getPlayer(r[PAIRS_PLAYER2_REF].toInt());
+      SqliteOverlay::TabRow r = pairsTab->operator [](pairId);
+      Player p1 = pmngr->getPlayer(r.getInt(PAIRS_PLAYER1_REF));
+      Player p2 = pmngr->getPlayer(r.getInt(PAIRS_PLAYER2_REF));
       return splitPlayers(c, p1, p2);
     }
     catch (exception e)
@@ -886,7 +880,7 @@ namespace QTournament
       return NAME_EXISTS;
     }
     
-    c.row.update(GENERIC_NAME_FIELD_NAME, newName);
+    c.row.update(GENERIC_NAME_FIELD_NAME, newName.toUtf8().constData());
     
     return OK;
   }
@@ -950,20 +944,20 @@ namespace QTournament
     
     PlayerPairList ppList = c.getPlayerPairs();
     int catId = c.getId();
-    for (int i=0; i < ppList.count(); i++)
+    for (int i=0; i < ppList.size(); ++i)
     {
       PlayerPair pp = ppList.at(i);
       if (!(pp.hasPlayer2()))
       {
         int playerId = pp.getPlayer1().getId();
 
-        QVariantList qvl;
-        qvl << PAIRS_CAT_REF << catId;
-        qvl << PAIRS_GRP_NUM << GRP_NUM__NOT_ASSIGNED;
-        qvl << PAIRS_PLAYER1_REF << playerId;
+        SqliteOverlay::ColumnValueClause cvc;
+        cvc.addIntCol(PAIRS_CAT_REF, catId);
+        cvc.addIntCol(PAIRS_GRP_NUM, GRP_NUM__NOT_ASSIGNED);
+        cvc.addIntCol(PAIRS_PLAYER1_REF, playerId);
         // leave out PAIRS_PLAYER2_REF to assign a NULL value
 
-        db->getTab(TAB_PAIRS).insertRow(qvl);
+        db->getTab(TAB_PAIRS)->insertRow(cvc);
       }
     }
     
@@ -995,8 +989,8 @@ namespace QTournament
     // remove all player pairs without a partner from the official pair list
     // See also the constraints in freezeConfig()
     PlayerPairList ppList = c.getPlayerPairs();
-    DbTab ppTab = db->getTab(TAB_PAIRS);
-    for (int i=0; i < ppList.count(); i++)
+    SqliteOverlay::DbTab* ppTab = db->getTab(TAB_PAIRS);
+    for (int i=0; i < ppList.size(); ++i)
     {
       PlayerPair pp = ppList.at(i);
       if (pp.hasPlayer2()) continue;  // this is a "real" pair and should survive
@@ -1010,7 +1004,7 @@ namespace QTournament
       }
       
       // the actual removal
-      ppTab.deleteRowsByColumnValue("id", ppId);
+      ppTab->deleteRowsByColumnValue("id", ppId);
     }
     // update the category state
     c.setState(STAT_CAT_CONFIG);
@@ -1168,7 +1162,7 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  PlayerPairList CatMngr::getSeeding(const Category& c) const
+  vector<PlayerPair> CatMngr::getSeeding(const Category& c) const
   {
     // as long as the category is still in configuration, we can't rely
     // on the existence of valid player pairs in the database and thus
@@ -1176,12 +1170,12 @@ namespace QTournament
     if (c.getState() == STAT_CAT_CONFIG) return PlayerPairList();
 
     // get the player pairs for the category
-    DbTab pairTab = (*db)[TAB_PAIRS];
-    QString where = PAIRS_CAT_REF + " = ? ORDER BY " + PAIRS_INITIAL_RANK + " ASC";
-    QVariantList qvl;
-    qvl << c.getId();
+    SqliteOverlay::DbTab* pairTab = db->getTab(TAB_PAIRS);
+    SqliteOverlay::WhereClause wc;
+    wc.addIntCol(PAIRS_CAT_REF, c.getId());
+    wc.setOrderColumn_Asc(PAIRS_INITIAL_RANK);
 
-    return getObjectsByWhereClause<PlayerPair>(pairTab, where, qvl);
+    return getObjectsByWhereClause<PlayerPair>(pairTab, wc);
   }
 
   //----------------------------------------------------------------------------

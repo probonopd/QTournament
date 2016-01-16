@@ -38,7 +38,7 @@ namespace QTournament
 
     friend class CourtMngr;
     friend class GenericObjectManager;
-    friend class SqliteOverlay::GenericObjectManager;
+    friend class SqliteOverlay::GenericObjectManager<TournamentDB>;
 
   public:
     QString getName(int maxLen = 0) const;

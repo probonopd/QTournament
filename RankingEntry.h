@@ -37,7 +37,7 @@ namespace QTournament
   {
 
     friend class RankingMngr;
-    friend class GenericObjectManager;
+    friend class TournamentDatabaseObjectManager;
 
   public:
     static constexpr int NO_RANK_ASSIGNED = -1;
