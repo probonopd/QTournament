@@ -51,7 +51,7 @@ namespace QTournament
 
   MatchGroup Match::getMatchGroup() const
   {
-    int grpId = row[MA_GRP_REF].toInt();
+    int grpId = row.getInt(MA_GRP_REF);
     return MatchGroup{db, grpId};
   }
 
@@ -59,8 +59,8 @@ namespace QTournament
 
   bool Match::hasPlayerPair1() const
   {
-    QVariant ppId = row[MA_PAIR1_REF];
-    if (ppId.isNull()) return false;
+    auto ppId = row.getInt2(MA_PAIR1_REF);
+    if (ppId->isNull()) return false;
     return true;
   }
 
@@ -68,8 +68,8 @@ namespace QTournament
 
   bool Match::hasPlayerPair2() const
   {
-    QVariant ppId = row[MA_PAIR2_REF];
-    if (ppId.isNull()) return false;
+    auto ppId = row.getInt2(MA_PAIR2_REF);
+    if (ppId->isNull()) return false;
     return true;
   }
 
@@ -89,7 +89,7 @@ namespace QTournament
       throw runtime_error("Invalid request for PlayerPair1 of a match");
     }
 
-    int ppId = row[MA_PAIR1_REF].toInt();
+    int ppId = row.getInt(MA_PAIR1_REF);
     auto tnmt = Tournament::getActiveTournament();
     return tnmt->getPlayerMngr()->getPlayerPair(ppId);
   }
@@ -103,7 +103,7 @@ namespace QTournament
       throw runtime_error("Invalid request for PlayerPair2 of a match");
     }
 
-    int ppId = row[MA_PAIR2_REF].toInt();
+    int ppId = row.getInt(MA_PAIR2_REF);
     auto tnmt = Tournament::getActiveTournament();
     return tnmt->getPlayerMngr()->getPlayerPair(ppId);
   }
@@ -112,9 +112,9 @@ namespace QTournament
 
   int Match::getMatchNumber() const
   {
-    QVariant num = row[MA_NUM];
-    if (num.isNull()) return MATCH_NUM_NOT_ASSIGNED;
-    return num.toInt();
+    auto num = row.getInt2(MA_NUM);
+    if (num->isNull()) return MATCH_NUM_NOT_ASSIGNED;
+    return num->get();
   }
 
 //----------------------------------------------------------------------------
@@ -158,9 +158,9 @@ namespace QTournament
 
   unique_ptr<MatchScore> Match::getScore(ERR *err) const
   {
-    QVariant scoreEntry = row[MA_RESULT];
+    auto scoreEntry = row.getString2(MA_RESULT);
 
-    if (scoreEntry.isNull())
+    if (scoreEntry->isNull())
     {
       if (err != nullptr) *err = NO_MATCH_RESULT_SET;
       return nullptr;
@@ -169,7 +169,7 @@ namespace QTournament
     // we assume that any score that has been written to the database
     // is valid. So we simply parse it from the database string
     // without further validating it against the category settings
-    QString scoreString = scoreEntry.toString();
+    QString scoreString = QString::fromUtf8(scoreEntry->get().data());
     auto result = MatchScore::fromStringWithoutValidation(scoreString);
     if (result == nullptr)
     {
@@ -177,7 +177,7 @@ namespace QTournament
       //
       // but if it does, we clear the invalid database entry
       // and return an error
-      row.update(MA_RESULT, QVariant());
+      row.updateToNull(MA_RESULT);
       if (err != nullptr) *err = INCONSISTENT_MATCH_RESULT_STRING;
       return nullptr;
     }
@@ -193,14 +193,14 @@ namespace QTournament
 
   unique_ptr<Court> Match::getCourt(ERR *err) const
   {
-    QVariant courtEntry = row[MA_COURT_REF];
-    if (courtEntry.isNull())
+    auto courtEntry = row.getInt2(MA_COURT_REF);
+    if (courtEntry->isNull())
     {
       if (err != nullptr) *err = NO_COURT_ASSIGNED;
       return nullptr;
     }
 
-    int courtId = courtEntry.toInt();
+    int courtId = courtEntry->get();
     auto tnmt = Tournament::getActiveTournament();
     auto result = tnmt->getCourtMngr()->getCourtById(courtId);
     if (err != nullptr) *err = OK;
@@ -231,10 +231,10 @@ namespace QTournament
 
   int Match::getWinnerRank() const
   {
-    QVariant _wr = row[MA_WINNER_RANK];
-    if (_wr.isNull()) return -1;
+    auto _wr = row.getInt2(MA_WINNER_RANK);
+    if (_wr->isNull()) return -1;
 
-    int wr = _wr.toInt();
+    int wr = _wr->get();
     return (wr < 1) ? -1 : wr;
   }
 
@@ -242,10 +242,10 @@ namespace QTournament
 
   int Match::getLoserRank() const
   {
-    QVariant _lr = row[MA_LOSER_RANK];
-    if (_lr.isNull()) return -1;
+    auto _lr = row.getInt2(MA_LOSER_RANK);
+    if (_lr->isNull()) return -1;
 
-    int lr = _lr.toInt();
+    int lr = _lr->get();
     return (lr < 1) ? -1 : lr;
   }
 
@@ -261,9 +261,9 @@ namespace QTournament
 
   QDateTime Match::getStartTime() const
   {
-    QVariant startTime = row[MA_START_TIME];
-    if (startTime.isNull()) return QDateTime();   // return null-time as error indicator
-    uint epochSecs = startTime.toUInt();
+    auto startTime = row.getInt2(MA_START_TIME);
+    if (startTime->isNull()) return QDateTime();   // return null-time as error indicator
+    uint epochSecs = startTime->get();   // Hmmm... conversion from int to unit... should work until 2035 or something
 
     return QDateTime::fromTime_t(epochSecs);
   }
@@ -277,17 +277,17 @@ namespace QTournament
     QString sEpochSecs = QString::number(epochSecs);
 
     QString callTimes = "";
-    QVariant _callTimes = row[MA_ADDITIONAL_CALL_TIMES];
-    if (!(_callTimes.isNull()))
+    auto _callTimes = row.getString2(MA_ADDITIONAL_CALL_TIMES);
+    if (!(_callTimes->isNull()))
     {
-      callTimes = _callTimes.toString() + ",";
+      callTimes = QString::fromUtf8(_callTimes->get().data()) + ",";
     }
     callTimes += sEpochSecs;
 
     // we have a limit of 50 chars for this CSV-string
     if (callTimes.length() <= 50)
     {
-      row.update(MA_ADDITIONAL_CALL_TIMES, callTimes);
+      row.update(MA_ADDITIONAL_CALL_TIMES, callTimes.toUtf8().constData());
       return true;
     }
 
@@ -300,13 +300,13 @@ namespace QTournament
   {
     QList<QDateTime> result;
 
-    QVariant _callTimes = row[MA_ADDITIONAL_CALL_TIMES];
-    if (_callTimes.isNull())
+    auto _callTimes = row.getString2(MA_ADDITIONAL_CALL_TIMES);
+    if (_callTimes->isNull())
     {
       return result;
     }
-
-    QStringList sCallTimes = _callTimes.toString().split(",");
+    QString allTimes = QString::fromUtf8(_callTimes->get().data());
+    QStringList sCallTimes = allTimes.split(",");
 
     for (QString sCallTime : sCallTimes)
     {
@@ -323,13 +323,13 @@ namespace QTournament
   {
     if (getState() != STAT_MA_FINISHED) return -1;
 
-    QVariant _startTime = row[MA_START_TIME];
-    if (_startTime.isNull()) return -1;
-    int startTime = _startTime.toInt();
+    auto _startTime = row.getInt2(MA_START_TIME);
+    if (_startTime->isNull()) return -1;
+    int startTime = _startTime->get();
 
-    QVariant _finishTime = row[MA_FINISH_TIME];
-    if (_finishTime.isNull()) return -1;
-    int finishedTime = _finishTime.toInt();
+    auto _finishTime = row.getInt2(MA_FINISH_TIME);
+    if (_finishTime->isNull()) return -1;
+    int finishedTime = _finishTime->get();
 
     return finishedTime - startTime;
   }
@@ -343,11 +343,11 @@ namespace QTournament
     if ((playerPos == 2) && hasPlayerPair2()) return 0;
 
     // check if we have a symbolic name
-    QVariant symName = (playerPos == 1) ? row[MA_PAIR1_SYMBOLIC_VAL] : row[MA_PAIR2_SYMBOLIC_VAL];
-    if (symName.isNull()) return 0;
+    auto symName = (playerPos == 1) ? row.getInt2(MA_PAIR1_SYMBOLIC_VAL) : row.getInt2(MA_PAIR2_SYMBOLIC_VAL);
+    if (symName->isNull()) return 0;
 
     // okay, there is a symbolic name
-    int matchRef = symName.toInt();
+    int matchRef = symName->get();
     if (matchRef == 0) return 0;
 
     bool isWinner = matchRef > 0;

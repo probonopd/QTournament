@@ -19,6 +19,7 @@
 #ifndef TOURNAMENTDATADEFS_H
 #define	TOURNAMENTDATADEFS_H
 
+#include <QString>
 
 namespace QTournament
 {
