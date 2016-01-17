@@ -20,6 +20,8 @@
 
 #include <QDateTime>
 
+#include "DateAndTime.h"
+
 #include "MatchMngr.h"
 #include "Tournament.h"
 #include "CatRoundStatus.h"
@@ -29,11 +31,11 @@ using namespace SqliteOverlay;
 namespace QTournament {
 
   MatchMngr::MatchMngr(TournamentDB* _db)
-  : GenericObjectManager(_db), matchTab((*db)[TAB_MATCH]), groupTab((*db)[TAB_MATCH_GROUP])
+    : TournamentDatabaseObjectManager(_db, TAB_MATCH), groupTab(db->getTab(TAB_MATCH_GROUP))
   {
   }
 
-//----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
 
   unique_ptr<MatchGroup> MatchMngr::createMatchGroup(const Category& cat, const int round, const int grpNum, ERR *err)
   {
@@ -52,10 +54,10 @@ namespace QTournament {
     if (grpNum <= 0)
     {
       if ((grpNum != GROUP_NUM__FINAL)
-       && (grpNum != GROUP_NUM__SEMIFINAL)
-       && (grpNum != GROUP_NUM__QUARTERFINAL)
-       && (grpNum != GROUP_NUM__L16)
-       && (grpNum != GROUP_NUM__ITERATION))
+          && (grpNum != GROUP_NUM__SEMIFINAL)
+          && (grpNum != GROUP_NUM__QUARTERFINAL)
+          && (grpNum != GROUP_NUM__L16)
+          && (grpNum != GROUP_NUM__ITERATION))
       {
         *err = INVALID_GROUP_NUM;
         return nullptr;
@@ -73,7 +75,7 @@ namespace QTournament {
     {
       // in this case, no other match groups in this round may exist, i. e.
       // there can only be one match group for semi finals
-      int nOtherGroups = getMatchGroupsForCat(cat, round).count();
+      int nOtherGroups = getMatchGroupsForCat(cat, round).size();
       if (nOtherGroups != 0)
       {
         *err = INVALID_GROUP_NUM;
@@ -84,8 +86,11 @@ namespace QTournament {
     {
       // in this case, no other match groups with group numbers
       // below zero (e. g. semi finals) may exist
-      QString where = MG_GRP_NUM + " <= 0 AND " + MG_ROUND + " = " + QString::number(round) + " AND " + MG_CAT_REF + " = " + QString::number(cat.getId());
-      int nOtherGroups = db->getTab(TAB_MATCH_GROUP).getMatchCountForWhereClause(where);
+      WhereClause wc;
+      wc.addIntCol(MG_GRP_NUM, "<=", 0);
+      wc.addIntCol(MG_ROUND, round);
+      wc.addIntCol(MG_CAT_REF, cat.getId());
+      int nOtherGroups = groupTab->getMatchCountForWhereClause(wc);
       if (nOtherGroups != 0)
       {
         *err = INVALID_GROUP_NUM;
@@ -113,21 +118,21 @@ namespace QTournament {
      *   - create no match group with a round number that's less than the number of an already finished / running round
      *   - don't have e.g. semi finals in an earlier round than quarter finals
      *   - etc.
-     * 
+     *
      * But for now, let's skip that ;)
      */
     
     // Okay, parameters are valid
     // create a new match group entry in the database
-    QVariantList qvl;
-    qvl << MG_CAT_REF << cat.getId();
-    qvl << MG_ROUND << round;
-    qvl << MG_GRP_NUM << grpNum;
-    qvl << GENERIC_STATE_FIELD_NAME << STAT_MG_CONFIG;
+    ColumnValueClause cvc;
+    cvc.addIntCol(MG_CAT_REF, cat.getId());
+    cvc.addIntCol(MG_ROUND, round);
+    cvc.addIntCol(MG_GRP_NUM, grpNum);
+    cvc.addIntCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MG_CONFIG));
     emit beginCreateMatchGroup();
-    int newId = groupTab.insertRow(qvl);
+    int newId = groupTab->insertRow(cvc);
     fixSeqNumberAfterInsert(TAB_MATCH_GROUP);
-    emit endCreateMatchGroup(groupTab.length() - 1); // the new sequence number is always the greatest
+    emit endCreateMatchGroup(groupTab->length() - 1); // the new sequence number is always the largest
 
     
     // create a match group object for the new group an return a pointer
@@ -137,28 +142,28 @@ namespace QTournament {
     return unique_ptr<MatchGroup>(mg_raw);
   }
 
-//----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
 
   MatchGroupList MatchMngr::getMatchGroupsForCat(const Category& cat, int round) const
   {
-    QVariantList qvl;
-    qvl << MG_CAT_REF << cat.getId();
+    WhereClause wc;
+    wc.addIntCol(MG_CAT_REF, cat.getId());
     if (round > 0)
     {
-      qvl << MG_ROUND << round;
+      wc.addIntCol(MG_ROUND, round);
     }
 
-    return getObjectsByColumnValue<MatchGroup>(groupTab, qvl);
+    return getObjectsByWhereClause<MatchGroup>(groupTab, wc);
   }
   
-//----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
 
   MatchGroupList MatchMngr::getAllMatchGroups()
   {
     return getAllObjects<MatchGroup>(groupTab);
   }
 
-//----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
 
   unique_ptr<MatchGroup> MatchMngr::getMatchGroup(const Category& cat, const int round, const int grpNum, ERR *err)
   {
@@ -175,24 +180,24 @@ namespace QTournament {
     if (grpNum <= 0)
     {
       if ((grpNum != GROUP_NUM__FINAL)
-	   && (grpNum != GROUP_NUM__SEMIFINAL)
-	   && (grpNum != GROUP_NUM__QUARTERFINAL)
-	   && (grpNum != GROUP_NUM__L16)
-       && (grpNum != GROUP_NUM__ITERATION))
+          && (grpNum != GROUP_NUM__SEMIFINAL)
+          && (grpNum != GROUP_NUM__QUARTERFINAL)
+          && (grpNum != GROUP_NUM__L16)
+          && (grpNum != GROUP_NUM__ITERATION))
       {
         *err = INVALID_GROUP_NUM;
         return nullptr;
       }
     }
     
-    QVariantList qvl;
-    qvl << MG_CAT_REF << cat.getId();
-    qvl << MG_ROUND << round;
-    qvl << MG_GRP_NUM << grpNum;
+    WhereClause wc;
+    wc.addIntCol(MG_CAT_REF, cat.getId());
+    wc.addIntCol(MG_ROUND, round);
+    wc.addIntCol(MG_GRP_NUM, grpNum);
     
     try
     {
-      TabRow r = groupTab.getSingleRowByColumnValue(qvl);
+      TabRow r = groupTab->getSingleRowByWhereClause(wc);
       MatchGroup* grp = new MatchGroup(db, r);
       *err = OK;
       return unique_ptr<MatchGroup>(grp);
@@ -202,14 +207,14 @@ namespace QTournament {
     }
   }
 
-//----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
 
   bool MatchMngr::hasMatchGroup(const Category& cat, const int round, const int grpNum, ERR* err)
   {
     ERR e;
     auto mg = getMatchGroup(cat, round, grpNum, &e);
     
-    if (e == OK)
+    if ((e == OK) && (mg != nullptr))
     {
       if (err != nullptr) *err = OK;
       return true;
@@ -219,7 +224,7 @@ namespace QTournament {
     return false;
   }
 
-//----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
 
   unique_ptr<Match> MatchMngr::createMatch(const MatchGroup &grp, ERR* err)
   {
@@ -235,17 +240,17 @@ namespace QTournament {
 
     // Okay, parameters are valid
     // create a new match entry in the database
-    QVariantList qvl;
-    qvl << MA_GRP_REF << grp.getId();
-    qvl << GENERIC_STATE_FIELD_NAME << STAT_MA_INCOMPLETE;
-    qvl << MA_PAIR1_SYMBOLIC_VAL << 0;   // default: no symbolic name
-    qvl << MA_PAIR2_SYMBOLIC_VAL << 0;   // default: no symbolic name
-    qvl << MA_WINNER_RANK << -1;         // default: no rank, no knock out
-    qvl << MA_LOSER_RANK << -1;         // default: no rank, no knock out
+    ColumnValueClause cvc;
+    cvc.addIntCol(MA_GRP_REF, grp.getId());
+    cvc.addIntCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_INCOMPLETE));
+    cvc.addIntCol(MA_PAIR1_SYMBOLIC_VAL, 0);   // default: no symbolic name
+    cvc.addIntCol(MA_PAIR2_SYMBOLIC_VAL, 0);   // default: no symbolic name
+    cvc.addIntCol(MA_WINNER_RANK, -1);         // default: no rank, no knock out
+    cvc.addIntCol(MA_LOSER_RANK, -1);         // default: no rank, no knock out
     emit beginCreateMatch();
-    int newId = matchTab.insertRow(qvl);
+    int newId = tab->insertRow(cvc);
     fixSeqNumberAfterInsert(TAB_MATCH);
-    emit endCreateMatch(matchTab.length() - 1); // the new sequence number is always the highest
+    emit endCreateMatch(tab->length() - 1); // the new sequence number is always the highest
 
     // create a match group object for the new group and return a pointer
     // to this new object
@@ -254,7 +259,7 @@ namespace QTournament {
     return unique_ptr<Match>(ma);
   }
 
-//----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
 
   ERR MatchMngr::setPlayerPairsForMatch(const Match &ma, const PlayerPair &pp1, const PlayerPair &pp2)
   {
@@ -284,7 +289,7 @@ namespace QTournament {
     }
 
     // assign the player pairs
-    TabRow matchRow = matchTab[ma.getId()];
+    TabRow matchRow = tab->operator [](ma.getId());
     matchRow.update(MA_PAIR1_REF, pp1.getPairId());
     matchRow.update(MA_PAIR2_REF, pp2.getPairId());
 
@@ -295,7 +300,7 @@ namespace QTournament {
     return OK;
   }
 
-//----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
 
   ERR MatchMngr::setPlayerPairForMatch(const Match& ma, const PlayerPair& pp, int ppPos) const
   {
@@ -307,14 +312,14 @@ namespace QTournament {
     if (e != OK) return e;
 
     // assign the player pair
-    TabRow matchRow = matchTab[ma.getId()];
+    TabRow matchRow = tab->operator [](ma.getId());
     if (ppPos == 1) matchRow.update(MA_PAIR1_REF, pp.getPairId());
     if (ppPos == 2) matchRow.update(MA_PAIR2_REF, pp.getPairId());
 
     return OK;
   }
 
-//----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
 
   ERR MatchMngr::setSymbolicPlayerForMatch(const Match& fromMatch, const Match& toMatch, bool asWinner, int dstPlayerPosInMatch) const
   {
@@ -338,38 +343,38 @@ namespace QTournament {
     }
 
     // okay, the link is valid
-    TabRow toRow = matchTab[toMatch.getId()];
+    TabRow toRow = tab->operator [](toMatch.getId());
     int dstId = asWinner ? fromMatch.getId() : -(fromMatch.getId());
     if (dstPlayerPosInMatch == 1)
     {
       toRow.update(MA_PAIR1_SYMBOLIC_VAL, dstId);
-      toRow.update(MA_PAIR1_REF, QVariant());
+      toRow.updateToNull(MA_PAIR1_REF);
     }
     if (dstPlayerPosInMatch == 2)
     {
       toRow.update(MA_PAIR2_SYMBOLIC_VAL, dstId);
-      toRow.update(MA_PAIR2_REF, QVariant());
+      toRow.updateToNull(MA_PAIR2_REF);
     }
 
     return OK;
   }
 
-//----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
 
   ERR MatchMngr::setPlayerToUnused(const Match& ma, int unusedPlayerPos, int winnerRank) const
   {
     // Only allow changing / setting player pairs if we not yet fully configured
     if (ma.getState() != STAT_MA_INCOMPLETE) return MATCH_NOT_CONFIGURALE_ANYMORE;
 
-    TabRow matchRow = matchTab[ma.getId()];
+    TabRow matchRow = tab->operator [](ma.getId());
     if (unusedPlayerPos == 1)
     {
-      matchRow.update(MA_PAIR1_REF, QVariant());
+      matchRow.updateToNull(MA_PAIR1_REF);
       matchRow.update(MA_PAIR1_SYMBOLIC_VAL, SYMBOLIC_ID_FOR_UNUSED_PLAYER_PAIR_IN_MATCH);
     }
     if (unusedPlayerPos == 2)
     {
-      matchRow.update(MA_PAIR2_REF, QVariant());
+      matchRow.updateToNull(MA_PAIR2_REF);
       matchRow.update(MA_PAIR2_SYMBOLIC_VAL, SYMBOLIC_ID_FOR_UNUSED_PLAYER_PAIR_IN_MATCH);
     }
     matchRow.update(MA_WINNER_RANK, winnerRank);
@@ -377,7 +382,7 @@ namespace QTournament {
     return OK;
   }
 
-//----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
 
   ERR MatchMngr::setRankForWinnerOrLoser(const Match& ma, bool isWinner, int rank) const
   {
@@ -396,7 +401,7 @@ namespace QTournament {
     return OK;
   }
 
-//----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
 
   ERR MatchMngr::canAssignPlayerPairToMatch(const Match &ma, const PlayerPair &pp) const
   {
@@ -461,7 +466,7 @@ namespace QTournament {
     return OK;
   }
 
-//----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
 
   /**
     Closes a match group so that no further matches can be added. This promotes
@@ -493,7 +498,7 @@ namespace QTournament {
     return OK;
   }
 
-//----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
 
   /**
     Checks if any match groups within a category can be promoted to a higher
@@ -576,23 +581,23 @@ namespace QTournament {
 
   }
 
-//----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
 
   unique_ptr<MatchGroup> MatchMngr::getMatchGroupBySeqNum(int mgSeqNum)
   {
     try {
-      TabRow r = groupTab.getSingleRowByColumnValue(GENERIC_SEQNUM_FIELD_NAME, mgSeqNum);
+      TabRow r = groupTab->getSingleRowByColumnValue(GENERIC_SEQNUM_FIELD_NAME, mgSeqNum);
       MatchGroup* mg_raw = new MatchGroup(db, r.getId());
       return unique_ptr<MatchGroup>(mg_raw);
     }
     catch (std::exception e)
     {
-     return nullptr;  // null indicates error
+      return nullptr;  // null indicates error
     }
     return nullptr;
   }
 
-//----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
 
   /**
     Try to promote the match group from IDLE to STAGED.
@@ -615,7 +620,7 @@ namespace QTournament {
     int nextStageSeqNum = getMaxStageSeqNum() + 1;
     grp.setState(STAT_MG_STAGED);
     int grpId = grp.getId();
-    TabRow r = groupTab[grpId];
+    TabRow r = groupTab->operator [](grpId);
     r.update(MG_STAGE_SEQ_NUM, nextStageSeqNum);
     emit matchGroupStatusChanged(grp.getId(), grp.getSeqNum(), STAT_MG_IDLE, STAT_MG_STAGED);
 
@@ -625,7 +630,7 @@ namespace QTournament {
     return OK;
   }
 
-//----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
 
   /**
    * Determines the highest currently assigned sequence number in the staging area
@@ -636,23 +641,26 @@ namespace QTournament {
   {
     // Is there any staged match group at all?
     int statId = static_cast<int>(STAT_MG_STAGED);
-    if (groupTab.getMatchCountForColumnValue(GENERIC_STATE_FIELD_NAME, statId) < 1)
+    if (groupTab->getMatchCountForColumnValue(GENERIC_STATE_FIELD_NAME, statId) < 1)
     {
       return 0;  // no staged match groups so far
     }
 
     // determine the max sequence number
-    QString sql = "SELECT max(" + MG_STAGE_SEQ_NUM + ") FROM " + TAB_MATCH_GROUP;
-    QVariant result = db->execScalarQuery(sql);
-    if ( (!(result.isValid())) || (result.isNull()))
+    QString sql = "SELECT max(%1) FROM %2";
+    sql = sql.arg(MG_STAGE_SEQ_NUM).arg(TAB_MATCH_GROUP);
+    int result;
+    int dbErr;
+    bool isOk = db->execScalarQueryInt(sql.toUtf8().constData(), &result, &dbErr);
+    if (!isOk)
     {
       return 0;  // shouldn't happen, but anyway...
     }
 
-    return result.toInt();
+    return result;
   }
 
-//----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
 
   /**
    * Checks whether a match group can be unstaged or not. In order to demote
@@ -677,11 +685,11 @@ namespace QTournament {
     int catId = grp.getCategory().getId();
 
     // check for a match group with "round + 1" in the staging area
-    QVariantList qvl;
-    qvl << MG_ROUND << round+1;
-    qvl << GENERIC_STATE_FIELD_NAME << static_cast<int>(STAT_MG_STAGED);
-    qvl << MG_CAT_REF << catId;
-    if (groupTab.getMatchCountForColumnValue(qvl) == 0)
+    WhereClause wc;
+    wc.addIntCol(MG_ROUND, round+1);
+    wc.addIntCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MG_STAGED));
+    wc.addIntCol(MG_CAT_REF, catId);
+    if (groupTab->getMatchCountForWhereClause(wc) == 0)
     {
       // there is no match group of this category and with a higher
       // round number in the staging area
@@ -716,7 +724,7 @@ namespace QTournament {
     // if the match group(s) with "round+1" are of the
     // same players group or already in KO phase, we can't
     // demote this match group
-    for (MatchGroup mg : getObjectsByColumnValue<MatchGroup>(groupTab, qvl))
+    for (MatchGroup mg : getObjectsByWhereClause<MatchGroup>(groupTab, wc))
     {
       int nextGroupNumber = mg.getGroupNumber();
       if (nextGroupNumber < 0)
@@ -736,7 +744,7 @@ namespace QTournament {
     return OK;
   }
 
-//----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
 
   /**
    * Tries to demote a match group from STAGED to IDLE. If this demotion is
@@ -759,14 +767,15 @@ namespace QTournament {
     // store and delete old stage sequence number
     int oldStageSeqNumber = grp.getStageSequenceNumber();
     int grpId = grp.getId();
-    TabRow r = groupTab[grpId];
-    r.update(MG_STAGE_SEQ_NUM, QVariant());
+    TabRow r = groupTab->operator [](grpId);
+    r.updateToNull(MG_STAGE_SEQ_NUM);
 
     emit matchGroupStatusChanged(grp.getId(), grp.getSeqNum(), STAT_MG_STAGED, STAT_MG_IDLE);
 
     // update all subsequent sequence numbers
-    QString where = MG_STAGE_SEQ_NUM + " > " + QString::number(oldStageSeqNumber);
-    for (MatchGroup mg : getObjectsByWhereClause<MatchGroup>(groupTab, where))
+    WhereClause wc;
+    wc.addIntCol(MG_STAGE_SEQ_NUM, ">", oldStageSeqNumber);
+    for (MatchGroup mg : getObjectsByWhereClause<MatchGroup>(groupTab, wc))
     {
       int old = mg.getStageSequenceNumber();
       mg.row.update(MG_STAGE_SEQ_NUM, old - 1);
@@ -779,11 +788,11 @@ namespace QTournament {
     int playersGroup = grp.getGroupNumber();
     int catId = grp.getCategory().getId();
 
-    QVariantList qvl;
-    qvl << MG_ROUND << round+1;
-    qvl << GENERIC_STATE_FIELD_NAME << static_cast<int>(STAT_MG_IDLE);
-    qvl << MG_CAT_REF << catId;
-    for (MatchGroup mg : getObjectsByColumnValue<MatchGroup>(groupTab, qvl))
+    wc.clear();
+    wc.addIntCol(MG_ROUND, round+1);
+    wc.addIntCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MG_IDLE));
+    wc.addIntCol(MG_CAT_REF, catId);
+    for (MatchGroup mg : getObjectsByWhereClause<MatchGroup>(groupTab, wc))
     {
       // if our demoted match group and the IDLE match group are round-robin-groups,
       // the IDLE match group has only to be demoted if it matches the "grp's" players group
@@ -804,7 +813,7 @@ namespace QTournament {
     return OK;
   }
 
-//----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
 
   /**
    * Checks whether a match group can be Staged or not.
@@ -825,7 +834,7 @@ namespace QTournament {
     return OK;
   }
 
-//----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
 
   /**
    * Checks whether the necessary conditions are met to promote a match
@@ -851,8 +860,8 @@ namespace QTournament {
     // from INCOMPLETE to FUZZY
     if (curState == STAT_MA_INCOMPLETE)
     {
-      bool isFuzzy1 = (ma.row[MA_PAIR1_SYMBOLIC_VAL].toInt() != 0);
-      bool isFuzzy2 = (ma.row[MA_PAIR2_SYMBOLIC_VAL].toInt() != 0);
+      bool isFuzzy1 = (ma.row.getInt(MA_PAIR1_SYMBOLIC_VAL) != 0);
+      bool isFuzzy2 = (ma.row.getInt(MA_PAIR2_SYMBOLIC_VAL) != 0);
       bool hasMatchNumber = ma.getMatchNumber() > 0;
 
       // we shall never have a symbolic and a real player assignment at the same time
@@ -872,8 +881,8 @@ namespace QTournament {
     // FUZZY at least to WAITING, maybe even to READY or BUSY
     if (curState == STAT_MA_FUZZY)
     {
-      bool isFixed1 = ((ma.row[MA_PAIR1_SYMBOLIC_VAL].toInt() == 0) && (ma.row[MA_PAIR1_REF].toInt() > 0));
-      bool isFixed2 = ((ma.row[MA_PAIR2_SYMBOLIC_VAL].toInt() == 0) && (ma.row[MA_PAIR2_REF].toInt() > 0));
+      bool isFixed1 = ((ma.row.getInt(MA_PAIR1_SYMBOLIC_VAL) == 0) && (ma.row.getInt(MA_PAIR1_REF) > 0));
+      bool isFixed2 = ((ma.row.getInt(MA_PAIR2_SYMBOLIC_VAL) == 0) && (ma.row.getInt(MA_PAIR2_REF) > 0));
       bool hasMatchNumber = ma.getMatchNumber() > 0;
 
       if (isFixed1 && isFixed2 && hasMatchNumber)
@@ -916,7 +925,7 @@ namespace QTournament {
     // POSTPONED is handled separately
   }
 
-//----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
 
   /**
    * Checks whether a match can potentially be called, given that all players are
@@ -985,7 +994,7 @@ namespace QTournament {
     return false;   // no match group found that has to be finished before the match
   }
 
-//----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
 
   /**
    * Assigns match numbers to all matches in all currently staged match groups and
@@ -1000,7 +1009,7 @@ namespace QTournament {
       for (auto ma : mg.getMatches())
       {
         int matchId = ma.getId();
-        TabRow r = matchTab[matchId];
+        TabRow r = tab->operator [](matchId);
         r.update(MA_NUM, nextMatchNumber);
         updateMatchStatus(ma);
 
@@ -1014,13 +1023,13 @@ namespace QTournament {
 
       // update the match group's state
       mg.setState(STAT_MG_SCHEDULED);
-      TabRow r = groupTab[mg.getId()];
-      r.update(MG_STAGE_SEQ_NUM, QVariant());  // delete the sequence number
+      TabRow r = groupTab->operator [](mg.getId());
+      r.updateToNull(MG_STAGE_SEQ_NUM);  // delete the sequence number
       emit matchGroupStatusChanged(mg.getId(), mg.getSeqNum(), STAT_MG_STAGED, STAT_MG_SCHEDULED);
     }
   }
 
-//----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
 
   /**
    * Retrieves a list of all currently staged match groups. The
@@ -1032,11 +1041,13 @@ namespace QTournament {
   {
     MatchGroupList result;
 
-    QString where = MG_STAGE_SEQ_NUM + " > 0 ORDER BY " + MG_STAGE_SEQ_NUM + " ASC";
-    return getObjectsByWhereClause<MatchGroup>(groupTab, where);
+    WhereClause wc;
+    wc.addIntCol(MG_STAGE_SEQ_NUM, ">", 0);
+    wc.setOrderColumn_Asc(MG_STAGE_SEQ_NUM);
+    return getObjectsByWhereClause<MatchGroup>(groupTab, wc);
   }
 
-//----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
 
   /**
    * Determines the highest currently assigned match number
@@ -1045,57 +1056,61 @@ namespace QTournament {
    */
   int MatchMngr::getMaxMatchNum() const
   {
-    // Is there any staged match group at all?
-    QString where = MA_NUM + " > 0";
-    if (matchTab.getMatchCountForWhereClause(where) < 1)
+    // Is there any scheduled match at all?
+    WhereClause wc;
+    wc.addIntCol(MA_NUM, ">", 0);
+    if (tab->getMatchCountForWhereClause(wc) < 1)
     {
       return 0;  // no assigned match numbers so far
     }
 
     // determine the max match number
-    QString sql = "SELECT max(" + MA_NUM + ") FROM " + TAB_MATCH;
-    QVariant result = db->execScalarQuery(sql);
-    if ( (!(result.isValid())) || (result.isNull()))
+    QString sql = "SELECT max(%1) FROM %2";
+    sql = sql.arg(MA_NUM).arg(TAB_MATCH);
+    int result;
+    int dbErr;
+    bool isOk = db->execScalarQueryInt(sql.toUtf8().constData(), &result, &dbErr);
+    if (!isOk)
     {
       return 0;  // shouldn't happen, but anyway...
     }
 
-    return result.toInt();
+    return result;
   }
 
-//----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
 
   unique_ptr<Match> MatchMngr::getMatchBySeqNum(int maSeqNum) const
   {
     try {
-      TabRow r = matchTab.getSingleRowByColumnValue(GENERIC_SEQNUM_FIELD_NAME, maSeqNum);
+      TabRow r = tab->getSingleRowByColumnValue(GENERIC_SEQNUM_FIELD_NAME, maSeqNum);
       Match* ma_raw = new Match(db, r.getId());
       return unique_ptr<Match>(ma_raw);
     }
     catch (std::exception e)
     {
-     return nullptr;  // null indicates error
+      return nullptr;  // null indicates error
     }
     return nullptr;
   }
 
-//----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
 
   unique_ptr<Match> MatchMngr::getMatchByMatchNum(int maNum) const
   {
     try {
-      TabRow r = matchTab.getSingleRowByColumnValue(MA_NUM, maNum);
+      TabRow r = tab->getSingleRowByColumnValue(MA_NUM, maNum);
       Match* ma_raw = new Match(db, r.getId());
       return unique_ptr<Match>(ma_raw);
     }
     catch (std::exception e)
     {
-     return nullptr;  // null indicates error
+      return nullptr;  // null indicates error
     }
     return nullptr;
   }
 
-//----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
 
   /**
    * Determines the next callable match and the next free court. Can be used for
@@ -1115,13 +1130,14 @@ namespace QTournament {
 
     // find the next available match with the lowest match number
     int reqState = static_cast<int>(STAT_MA_READY);
-    QString where = GENERIC_STATE_FIELD_NAME + " = " + QString::number(reqState);
-    where += " ORDER BY " + MA_NUM + " ASC";
-    if (matchTab.getMatchCountForWhereClause(where) < 1)
+    WhereClause wc;
+    wc.addIntCol(GENERIC_STATE_FIELD_NAME, reqState);
+    wc.setOrderColumn_Asc(MA_NUM);
+    if (tab->getMatchCountForWhereClause(wc) < 1)
     {
       return NO_MATCH_AVAIL;
     }
-    TabRow matchRow = matchTab.getSingleRowByWhereClause(where);
+    TabRow matchRow = tab->getSingleRowByWhereClause(wc);
 
     ERR err;
     auto tnmt = Tournament::getActiveTournament();
@@ -1136,7 +1152,7 @@ namespace QTournament {
     return err;
   }
 
-//----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
 
   /**
    * Determines whether it is okay to start a specific match on a specific court
@@ -1183,7 +1199,7 @@ namespace QTournament {
     return COURT_BUSY;
   }
 
-//----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
 
   ERR MatchMngr::assignMatchToCourt(const Match &ma, const Court &court) const
   {
@@ -1210,33 +1226,33 @@ namespace QTournament {
     // Since match groups don't distinguish between SCHEDULED and FINISHED, a match group
     // update is not necessary
 
-    QVariantList qvl;
+    ColumnValueClause cvc;
 
     // assign the court
-    qvl << MA_COURT_REF << court.getId();
+    cvc.addIntCol(MA_COURT_REF, court.getId());
 
     // copy the actual players to the database
     // TODO: implement substitute players etc. So far, we only copy
     // the contents of the player pairs blindly
     PlayerPair pp = ma.getPlayerPair1();
-    qvl << MA_ACTUAL_PLAYER1A_REF << pp.getPlayer1().getId();
+    cvc.addIntCol(MA_ACTUAL_PLAYER1A_REF, pp.getPlayer1().getId());
     if (pp.hasPlayer2())
     {
-      qvl << MA_ACTUAL_PLAYER1B_REF << pp.getPlayer2().getId();
+      cvc.addIntCol(MA_ACTUAL_PLAYER1B_REF, pp.getPlayer2().getId());
     }
     pp = ma.getPlayerPair2();
-    qvl << MA_ACTUAL_PLAYER2A_REF << pp.getPlayer1().getId();
+    cvc.addIntCol(MA_ACTUAL_PLAYER2A_REF, pp.getPlayer1().getId());
     if (pp.hasPlayer2())
     {
-      qvl << MA_ACTUAL_PLAYER2B_REF << pp.getPlayer2().getId();
+      cvc.addIntCol(MA_ACTUAL_PLAYER2B_REF, pp.getPlayer2().getId());
     }
 
     // update the match state
-    qvl << GENERIC_STATE_FIELD_NAME << static_cast<int>(STAT_MA_RUNNING);
+    cvc.addIntCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_RUNNING));
 
     // execute all updates at once
-    TabRow matchRow = matchTab[ma.getId()];
-    matchRow.update(qvl);
+    TabRow matchRow = tab->operator [](ma.getId());
+    matchRow.update(cvc);
 
     // tell the world that the match status has changed
     emit matchStatusChanged(ma.getId(), ma.getSeqNum(), STAT_MA_READY, STAT_MA_RUNNING);
@@ -1254,15 +1270,12 @@ namespace QTournament {
     tnmt->getCatMngr()->updateCatStatusFromMatchStatus(ma.getCategory());
 
     // store the call time in the database
-    QDateTime curDateTime = QDateTime::currentDateTimeUtc();
-    uint epochSecs = curDateTime.toTime_t();
-    QString sEpochSecs = QString::number(epochSecs);
-    matchRow.update(MA_START_TIME, sEpochSecs);
+    matchRow.update(MA_START_TIME, UTCTimestamp());
 
     return OK;
   }
 
-//----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
 
   unique_ptr<Court> MatchMngr::autoAssignMatchToNextAvailCourt(const Match &ma, ERR *err, bool includeManualCourts) const
   {
@@ -1280,7 +1293,7 @@ namespace QTournament {
     return nullptr;
   }
 
-//----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
 
   ERR MatchMngr::setMatchScoreAndFinalizeMatch(const Match &ma, const MatchScore &score, bool isWalkover) const
   {
@@ -1325,11 +1338,11 @@ namespace QTournament {
     // and update the match status
     int maId = ma.getId();
     int maSeqNum = ma.getSeqNum();
-    QVariantList qvl;
-    qvl << MA_RESULT << score.toString();
-    qvl << GENERIC_STATE_FIELD_NAME << static_cast<int>(STAT_MA_FINISHED);
-    TabRow matchRow = matchTab[maId];
-    matchRow.update(qvl);
+    ColumnValueClause cvc;
+    cvc.addStringCol(MA_RESULT, score.toString().toUtf8().constData());
+    cvc.addIntCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_FINISHED));
+    TabRow matchRow = tab->operator [](maId);
+    matchRow.update(cvc);
 
     emit matchResultUpdated(maId, maSeqNum);
     emit matchStatusChanged(maId, maSeqNum, oldState, STAT_MA_FINISHED);
@@ -1374,10 +1387,7 @@ namespace QTournament {
     // store the finish time in the database
     if (oldState == STAT_MA_RUNNING)   // match was called normally, so we have a start time
     {
-      QDateTime curDateTime = QDateTime::currentDateTimeUtc();
-      uint epochSecs = curDateTime.toTime_t();
-      QString sEpochSecs = QString::number(epochSecs);
-      matchRow.update(MA_FINISH_TIME, sEpochSecs);
+      matchRow.update(MA_FINISH_TIME, UTCTimestamp());
     }
 
     // get the round status AFTER the match and check whether
@@ -1396,7 +1406,7 @@ namespace QTournament {
     return OK;
   }
 
-//----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
 
   ERR MatchMngr::walkover(const Match& ma, int playerNum) const
   {
@@ -1429,7 +1439,7 @@ namespace QTournament {
     return setMatchScoreAndFinalizeMatch(ma, *ms, true);
   }
 
-//----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
 
   ERR MatchMngr::undoMatchCall(const Match& ma) const
   {
@@ -1449,20 +1459,20 @@ namespace QTournament {
     assert(e == OK);
 
     // reset the references to the court and the actual players
-    QVariantList qvl;
-    qvl << MA_ACTUAL_PLAYER1A_REF << QVariant();
-    qvl << MA_ACTUAL_PLAYER1B_REF << QVariant();
-    qvl << MA_ACTUAL_PLAYER2A_REF << QVariant();
-    qvl << MA_ACTUAL_PLAYER2B_REF << QVariant();
-    qvl << MA_COURT_REF << QVariant();
+    ColumnValueClause cvc;
+    cvc.addNullCol(MA_ACTUAL_PLAYER1A_REF);
+    cvc.addNullCol(MA_ACTUAL_PLAYER1B_REF);
+    cvc.addNullCol(MA_ACTUAL_PLAYER2A_REF);
+    cvc.addNullCol(MA_ACTUAL_PLAYER2B_REF);
+    cvc.addNullCol(MA_COURT_REF);
 
     // set the state back to READY
-    qvl << GENERIC_STATE_FIELD_NAME << static_cast<int>(STAT_MA_READY);
+    cvc.addIntCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_READY));
 
     // apply all changes at once
     int maId = ma.getId();
-    TabRow matchRow = matchTab[maId];
-    matchRow.update(qvl);
+    TabRow matchRow = tab->operator [](maId);
+    matchRow.update(cvc);
     emit matchStatusChanged(maId, ma.getSeqNum(), STAT_MA_RUNNING, STAT_MA_READY);
 
     // release the court
@@ -1476,32 +1486,32 @@ namespace QTournament {
     tnmt->getCatMngr()->updateCatStatusFromMatchStatus(ma.getCategory());
 
     // erase start time from database
-    matchRow.update(MA_START_TIME, QVariant());
-    matchRow.update(MA_ADDITIONAL_CALL_TIMES, QVariant());
+    matchRow.updateToNull(MA_START_TIME);
+    matchRow.updateToNull(MA_ADDITIONAL_CALL_TIMES);
 
     return OK;
   }
 
-//----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
 
   unique_ptr<Match> MatchMngr::getMatchForCourt(const Court &court)
   {
     // search for matches in state RUNNING and assigned to the court
-    QVariantList qvl;
-    qvl << MA_COURT_REF << court.getId();
-    qvl << GENERIC_STATE_FIELD_NAME << static_cast<int>(STAT_MA_RUNNING);
+    WhereClause wc;
+    wc.addIntCol(MA_COURT_REF, court.getId());
+    wc.addIntCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_RUNNING));
 
-    if (matchTab.getMatchCountForColumnValue(qvl) != 1)
+    if (tab->getMatchCountForWhereClause(wc) != 1)
     {
       return nullptr;
     }
 
-    TabRow r = matchTab.getSingleRowByColumnValue(qvl);
+    TabRow r = tab->getSingleRowByWhereClause(wc);
 
     return unique_ptr<Match>(new Match(db, r));
   }
 
-//----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
 
   unique_ptr<Match> MatchMngr::getMatch(int id) const
   {
@@ -1522,18 +1532,18 @@ namespace QTournament {
   tuple<int, int, int> MatchMngr::getMatchStats() const
   {
     // get the total number of matches
-    int nTotal = matchTab.length();
+    int nTotal = tab->length();
 
     // get the number of currently running matches
-    int nRunning = matchTab.getMatchCountForColumnValue(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_RUNNING));
+    int nRunning = tab->getMatchCountForColumnValue(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_RUNNING));
 
     // get the number of finished matches
-    int nFinished = matchTab.getMatchCountForColumnValue(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_FINISHED));
+    int nFinished = tab->getMatchCountForColumnValue(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_FINISHED));
 
     return make_tuple(nTotal, nFinished, nRunning);
   }
 
-//----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
 
   void MatchMngr::onPlayerStatusChanged(int playerId, int playerSeqNum, OBJ_STATE fromState, OBJ_STATE toState)
   {
@@ -1550,7 +1560,7 @@ namespace QTournament {
     // set matches that are READY to BUSY, if the necessary players become unavailable
     if (toState == STAT_PL_PLAYING)
     {
-      for (Match ma : getObjectsByColumnValue<Match>(matchTab, GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_READY)))
+      for (Match ma : getObjectsByColumnValue<Match>(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_READY)))
       {
         PlayerList pl = ma.determineActualPlayers();
         for (Player p : pl)
@@ -1570,7 +1580,7 @@ namespace QTournament {
     if (toState == STAT_PL_IDLE)
     {
       PlayerMngr* pm = tnmt->getPlayerMngr();
-      for (Match ma : getObjectsByColumnValue<Match>(matchTab, GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_BUSY)))
+      for (Match ma : getObjectsByColumnValue<Match>(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_BUSY)))
       {
         if (pm->canAcquirePlayerPairsForMatch(ma) == OK)
         {
@@ -1581,28 +1591,28 @@ namespace QTournament {
     }
   }
 
-//----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
 
   MatchList MatchMngr::getCurrentlyRunningMatches() const
   {
-    return getObjectsByColumnValue<Match>(matchTab, GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_RUNNING));
+    return getObjectsByColumnValue<Match>(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_RUNNING));
   }
 
   //----------------------------------------------------------------------------
 
   MatchList MatchMngr::getFinishedMatches() const
   {
-    return getObjectsByColumnValue<Match>(matchTab, GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_FINISHED));
+    return getObjectsByColumnValue<Match>(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_FINISHED));
   }
 
-//----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
 
   MatchList MatchMngr::getMatchesForMatchGroup(const MatchGroup &grp) const
   {
-    return getObjectsByColumnValue<Match>(matchTab, MA_GRP_REF, grp.getId());
+    return getObjectsByColumnValue<Match>(MA_GRP_REF, grp.getId());
   }
 
-//----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
 
   bool MatchMngr::hasMatchesInCategory(const Category &cat, int round) const
   {
@@ -1615,46 +1625,49 @@ namespace QTournament {
     return false;
   }
 
-//----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
 
   int MatchMngr::getHighestUsedRoundNumberInCategory(const Category& cat) const
   {
     // do we have match groups in this category at all?
-    int grpCount = groupTab.getMatchCountForColumnValue(MG_CAT_REF, cat.getId());
+    int grpCount = groupTab->getMatchCountForColumnValue(MG_CAT_REF, cat.getId());
     if (grpCount == 0) return 0;
 
     // query the highest used round number
-    QString sql = "SELECT max(" + MG_ROUND + ") FROM " + TAB_MATCH_GROUP;
-    sql += " WHERE " + MG_CAT_REF + " = " + QString::number(cat.getId());
+    QString sql = "SELECT max(%1) FROM %2 WHERE %3 = %4";
+    sql = sql.arg(MG_ROUND).arg(TAB_MATCH_GROUP);
+    sql = sql.arg(MG_CAT_REF).arg(cat.getId());
 
-    QVariant result = db->execScalarQuery(sql);
-    if ( (!(result.isValid())) || (result.isNull()))
+    int result;
+    int dbErr;
+    bool isOk = db->execScalarQueryInt(sql.toUtf8().constData(), &result, &dbErr);
+    if (!isOk)
     {
       return 0;  // shouldn't happen, but anyway...
     }
 
-    return result.toInt();
+    return result;
   }
 
-//----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
 
   unique_ptr<Match> MatchMngr::getMatchForPlayerPairAndRound(const PlayerPair &pp, int round) const
   {
     auto cat = pp.getCategory(db);
     if (cat == nullptr) return nullptr;
 
-    QString sId = QString::number(pp.getPairId());
     for (MatchGroup mg : getMatchGroupsForCat(*cat, round))
     {
-      QString where = "(" + MA_PAIR1_REF + " = " + sId + " OR " + MA_PAIR2_REF + " = " + sId + ")";
-      where += " AND " + MA_GRP_REF + " = " + QString::number(mg.getId());
-      auto result = getSingleObjectByWhereClause<Match>(matchTab, where);
+      QString where = "(%1 = %2 OR %3 = %2) AND %3 = %4";
+      where = where.arg(MA_PAIR1_REF).arg(pp.getPairId()).arg(MA_PAIR2_REF);
+      where = where.arg(MA_GRP_REF).arg(mg.getId());
+      auto result = getSingleObjectByWhereClause<Match>(where.toUtf8().constData());
       if (result != nullptr) return result;
     }
     return nullptr;
   }
 
-//----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
 
   void MatchMngr::resolveSymbolicNamesAfterFinishedMatch(const Match &ma) const
   {
@@ -1672,7 +1685,7 @@ namespace QTournament {
     {
       // find all matches that use the winner of this match as player 1
       // and resolve their symbolic references
-      ml = getObjectsByColumnValue<Match>(matchTab, MA_PAIR1_SYMBOLIC_VAL, matchId);
+      ml = getObjectsByColumnValue<Match>(MA_PAIR1_SYMBOLIC_VAL, matchId);
       for (Match m : ml)
       {
         // we may only modify matches in state FUZZY or INCOMPLETE
@@ -1688,7 +1701,7 @@ namespace QTournament {
       }
       // find all matches that use the winner of this match as player 2
       // and resolve their symbolic references
-      ml = getObjectsByColumnValue<Match>(matchTab, MA_PAIR2_SYMBOLIC_VAL, matchId);
+      ml = getObjectsByColumnValue<Match>(MA_PAIR2_SYMBOLIC_VAL, matchId);
       for (Match m : ml)
       {
         // we may only modify matches in state FUZZY or INCOMPLETE
@@ -1708,7 +1721,7 @@ namespace QTournament {
     {
       // find all matches that use the loser of this match as player 1
       // and resolve their symbolic references
-      ml = getObjectsByColumnValue<Match>(matchTab, MA_PAIR1_SYMBOLIC_VAL, -matchId);
+      ml = getObjectsByColumnValue<Match>(MA_PAIR1_SYMBOLIC_VAL, -matchId);
       for (Match m : ml)
       {
         // we may only modify matches in state FUZZY or INCOMPLETE
@@ -1724,7 +1737,7 @@ namespace QTournament {
       }
       // find all matches that use the loser of this match as player 2
       // and resolve their symbolic references
-      ml = getObjectsByColumnValue<Match>(matchTab, MA_PAIR2_SYMBOLIC_VAL, -matchId);
+      ml = getObjectsByColumnValue<Match>(MA_PAIR2_SYMBOLIC_VAL, -matchId);
       for (Match m : ml)
       {
         // we may only modify matches in state FUZZY or INCOMPLETE
@@ -1746,35 +1759,35 @@ namespace QTournament {
     where = where.arg(GENERIC_STATE_FIELD_NAME).arg(static_cast<int>(STAT_MA_FUZZY));
     where = where.arg(MA_PAIR1_SYMBOLIC_VAL).arg(MA_PAIR2_SYMBOLIC_VAL);
     where = where.arg(MA_PAIR1_REF).arg(MA_PAIR2_REF);
-    for (Match m : getObjectsByWhereClause<Match>(matchTab, where))
+    for (Match m : getObjectsByWhereClause<Match>(where.toUtf8().constData()))
     {
       updateMatchStatus(m);
     }
 
   }
 
-//----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
 
 
-//----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
 
 
-//----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
 
 
-//----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
 
 
-//----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
 
 
-//----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
 
 
-//----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
 
 
-//----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
 
 
 }

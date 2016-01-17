@@ -22,6 +22,9 @@
 #include <memory>
 
 #include <QDateTime>
+#include <QList>
+
+#include "GenericObjectManager.h"
 
 #include "TournamentDatabaseObject.h"
 #include "TournamentDB.h"
@@ -32,7 +35,6 @@
 //#include "MatchGroup.h"
 #include "Score.h"
 
-#include <QList>
 
 namespace QTournament
 {
@@ -42,6 +44,7 @@ namespace QTournament
   {
     friend class MatchMngr;
     friend class MatchGroup;
+    friend class SqliteOverlay::GenericObjectManager<TournamentDB>;
     friend class TournamentDatabaseObjectManager;
     
   public:

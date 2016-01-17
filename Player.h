@@ -20,8 +20,11 @@
 #define	PLAYER_H
 
 #include <memory>
+#include <vector>
 
 #include <QList>
+
+#include <GenericObjectManager.h>
 
 #include "TournamentDatabaseObject.h"
 #include "TournamentDatabaseObjectManager.h"
@@ -40,6 +43,7 @@ namespace QTournament
   {
     friend class PlayerMngr;
     friend class TeamMngr;
+    friend class SqliteOverlay::GenericObjectManager<TournamentDB>;
     friend class TournamentDatabaseObjectManager;
     
   public:
@@ -50,14 +54,14 @@ namespace QTournament
     ERR rename(const QString& newFirst, const QString& newLast);
     SEX getSex() const;
     Team getTeam() const;
-    QList<Category> getAssignedCategories() const;
+    vector<Category> getAssignedCategories() const;
 
   private:
     Player (TournamentDB* db, int rowId);
     Player (TournamentDB* db, SqliteOverlay::TabRow row);
   };
 
-  typedef QList<Player> PlayerList;
+  typedef vector<Player> PlayerList;
   typedef unique_ptr<Player> upPlayer;
 
 }

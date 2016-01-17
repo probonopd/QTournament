@@ -23,6 +23,7 @@
 
 #include "TabRow.h"
 #include "DbTab.h"
+#include "GenericObjectManager.h"
 
 #include "TournamentDatabaseObject.h"
 #include "TournamentDB.h"
@@ -41,6 +42,7 @@ namespace QTournament
   {
     friend class MatchMngr;
     friend class Match;
+    friend class SqliteOverlay::GenericObjectManager<TournamentDB>;
     friend class TournamentDatabaseObjectManager;
     
   public:

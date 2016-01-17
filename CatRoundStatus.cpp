@@ -115,7 +115,7 @@ int CatRoundStatus::getFinishedRoundsCount() const
     MatchGroupList matchGroupsInThisRound = mm->getMatchGroupsForCat(cat, roundNum);
     // finish searching for rounds when no more groups show up
     // in the search
-    if (matchGroupsInThisRound.count() == 0) break;
+    if (matchGroupsInThisRound.size() == 0) break;
 
     bool allGroupsFinished = true;
     for (MatchGroup mg : matchGroupsInThisRound)

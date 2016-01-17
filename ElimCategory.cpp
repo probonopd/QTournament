@@ -125,7 +125,7 @@ namespace QTournament
     // do not return an error here, because obviously we have been
     // called successfully before and we only want to avoid
     // double initialization
-    if (allGrp.count() != 0) return OK;
+    if (allGrp.size() != 0) return OK;
 
     // alright, this is a virgin category. Generate bracket matches
     // for each group

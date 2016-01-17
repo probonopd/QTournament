@@ -22,6 +22,9 @@
 #include <memory>
 #include <tuple>
 
+#include <QList>
+#include <QString>
+
 #include "TournamentDataDefs.h"
 #include "TournamentErrorCodes.h"
 #include "DbTab.h"
@@ -32,15 +35,12 @@
 #include "Court.h"
 #include "Score.h"
 
-#include <QList>
-#include <QString>
-
 using namespace SqliteOverlay;
 
 namespace QTournament
 {
 
-  typedef QList<MatchGroup> MatchGroupList;
+  typedef vector<MatchGroup> MatchGroupList;
   
   class MatchMngr : public QObject, TournamentDatabaseObjectManager
   {
@@ -111,8 +111,7 @@ namespace QTournament
 
 
   private:
-    DbTab matchTab;
-    DbTab groupTab;
+    DbTab* groupTab;
     void updateAllMatchGroupStates(const Category& cat) const;
     void updateMatchStatus(const Match& ma) const;
     bool hasUnfinishedMandatoryPredecessor(const Match& ma) const;

@@ -45,8 +45,8 @@ namespace QTournament
 
   QString Player::getDisplayName(int maxLen) const
   {
-    QString first = row[PL_FNAME].toString();
-    QString last = row[PL_LNAME].toString();
+    QString first = QString::fromUtf8(row[PL_FNAME].data());
+    QString last = QString::fromUtf8(row[PL_LNAME].data());
     
     QString fullName = last + ", " + first;
     
@@ -87,8 +87,8 @@ namespace QTournament
 
   QString Player::getDisplayName_FirstNameFirst() const
   {
-    QString first = row[PL_FNAME].toString();
-    QString last = row[PL_LNAME].toString();
+    QString first = QString::fromUtf8(row[PL_FNAME].data());
+    QString last = QString::fromUtf8(row[PL_LNAME].data());
 
     return first + " " + last;
   }
@@ -105,21 +105,21 @@ namespace QTournament
 
   QString Player::getFirstName() const
   {
-    return row[PL_FNAME].toString();
+    return QString::fromUtf8(row[PL_FNAME].data());
   }
 
 //----------------------------------------------------------------------------
 
   QString Player::getLastName() const
   {
-    return row[PL_LNAME].toString();
+    return QString::fromUtf8(row[PL_LNAME].data());
   }
 
 //----------------------------------------------------------------------------
 
   SEX Player::getSex() const
   {
-    int sexInt = row[PL_SEX].toInt();
+    int sexInt = row.getInt(PL_SEX);
     return static_cast<SEX>(sexInt);
   }
 
@@ -127,31 +127,31 @@ namespace QTournament
 
   Team Player::getTeam() const
   {
-    QVariant teamRef = row[PL_TEAM_REF];
+    auto teamRef = row.getInt2(PL_TEAM_REF);
     
     // if we don't use teams, throw an exception
-    if (teamRef.isNull())
+    if (teamRef->isNull())
     {
       throw std::runtime_error("Query for team of a player occurred; however, we're not using teams in this tournament!");
     }
     
     auto tnmt = Tournament::getActiveTournament();
-    return tnmt->getTeamMngr()->getTeamById(teamRef.toInt());
+    return tnmt->getTeamMngr()->getTeamById(teamRef->get());
   }
 
 //----------------------------------------------------------------------------
 
-  QList<Category> Player::getAssignedCategories() const
+  vector<Category> Player::getAssignedCategories() const
   {
-    QList<Category> result;
-    DbTab::CachingRowIterator it = db->getTab(TAB_P2C).getRowsByColumnValue(P2C_PLAYER_REF, getId());
+    vector<Category> result;
+    auto it = db->getTab(TAB_P2C)->getRowsByColumnValue(P2C_PLAYER_REF, getId());
     
     auto tnmt = Tournament::getActiveTournament();
     CatMngr* cmngr = tnmt->getCatMngr();
     while (!(it.isEnd()))
     {
-      int catId = (*it)[P2C_CAT_REF].toInt();
-      result.append(cmngr->getCategoryById(catId));
+      int catId = (*it).getInt(P2C_CAT_REF);
+      result.push_back(cmngr->getCategoryById(catId));
       ++it;
     }
     
