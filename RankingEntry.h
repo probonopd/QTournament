@@ -25,6 +25,7 @@
 #include <QList>
 
 #include "ClausesAndQueries.h"
+#include "GenericObjectManager.h"
 
 #include "TournamentDatabaseObject.h"
 #include "TournamentDB.h"
@@ -39,6 +40,7 @@ namespace QTournament
   {
 
     friend class RankingMngr;
+    friend class SqliteOverlay::GenericObjectManager<TournamentDB>;
     friend class TournamentDatabaseObjectManager;
 
   public:

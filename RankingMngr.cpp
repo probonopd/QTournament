@@ -19,6 +19,8 @@
 #include <stdexcept>
 #include <algorithm>
 
+#include <QDebug>
+
 #include "RankingMngr.h"
 #include "Tournament.h"
 #include "CatRoundStatus.h"
@@ -32,7 +34,7 @@ namespace QTournament
 {
 
   RankingMngr::RankingMngr(TournamentDB* _db)
-  : GenericObjectManager(_db), rankTab((*db)[TAB_RANKING])
+  : TournamentDatabaseObjectManager(_db, TAB_RANKING)
   {
   }
 
@@ -52,7 +54,7 @@ namespace QTournament
     // establish the list of player pairs for that the ranking shall
     // be created; it's either ALL pairs or a caller-provided list
     PlayerPairList ppList;
-    if (_ppList.isEmpty())
+    if (_ppList.empty())
     {
       ppList = cat.getPlayerPairs();
     } else {
@@ -193,23 +195,23 @@ namespace QTournament
 
       // prep the complete data set for the entry,
       // but leave the "rank" column empty
-      QVariantList qvl;
-      qvl << RA_MATCHES_WON << wonMatches;
-      qvl << RA_MATCHES_DRAW << drawMatches;
-      qvl << RA_MATCHES_LOST << lostMatches;
-      qvl << RA_GAMES_WON << wonGames;
-      qvl << RA_GAMES_LOST << lostGames;
-      qvl << RA_POINTS_WON << wonPoints;
-      qvl << RA_POINTS_LOST << lostPoints;
-      qvl << RA_PAIR_REF << pp.getPairId();
-      qvl << RA_ROUND << lastRound;
-      qvl << RA_CAT_REF << cat.getId();  // eases searching, but is redundant information
-      qvl << RA_GRP_NUM << grpNum; // eases searching, but is redundant information
+      ColumnValueClause cvc;
+      cvc.addIntCol(RA_MATCHES_WON, wonMatches);
+      cvc.addIntCol(RA_MATCHES_DRAW, drawMatches);
+      cvc.addIntCol(RA_MATCHES_LOST, lostMatches);
+      cvc.addIntCol(RA_GAMES_WON, wonGames);
+      cvc.addIntCol(RA_GAMES_LOST, lostGames);
+      cvc.addIntCol(RA_POINTS_WON, wonPoints);
+      cvc.addIntCol(RA_POINTS_LOST, lostPoints);
+      cvc.addIntCol(RA_PAIR_REF, pp.getPairId());
+      cvc.addIntCol(RA_ROUND, lastRound);
+      cvc.addIntCol(RA_CAT_REF, cat.getId());  // eases searching, but is redundant information
+      cvc.addIntCol(RA_GRP_NUM, grpNum); // eases searching, but is redundant information
 
       // create the new entry and add an instance
       // of the entry to the result list
-      int newId = rankTab.insertRow(qvl);
-      result.append(RankingEntry(db, newId));
+      int newId = tab->insertRow(cvc);
+      result.push_back(RankingEntry(db, newId));
     }
 
     if (err != nullptr) *err = OK;
@@ -220,12 +222,12 @@ namespace QTournament
 
   unique_ptr<RankingEntry> RankingMngr::getRankingEntry(const PlayerPair &pp, int round) const
   {
-    QVariantList qvl;
-    qvl << RA_CAT_REF << pp.getCategory(db)->getId();
-    qvl << RA_PAIR_REF << pp.getPairId();
-    qvl << RA_ROUND << round;
+    WhereClause wc;
+    wc.addIntCol(RA_CAT_REF, pp.getCategory(db)->getId());
+    wc.addIntCol(RA_PAIR_REF, pp.getPairId());
+    wc.addIntCol(RA_ROUND, round);
 
-    return getSingleObjectByColumnValue<RankingEntry>(rankTab, qvl);
+    return getSingleObjectByWhereClause<RankingEntry>(wc);
   }
 
 //----------------------------------------------------------------------------
@@ -233,11 +235,11 @@ namespace QTournament
   RankingEntryListList RankingMngr::getSortedRanking(const Category &cat, int round) const
   {
     // make sure we have ranking entries
-    QVariantList qvl;
-    qvl << RA_CAT_REF << cat.getId();
-    qvl << RA_ROUND << round;
-    RankingEntryList rel = getObjectsByColumnValue<RankingEntry>(rankTab, qvl);
-    if (rel.isEmpty())
+    WhereClause wc;
+    wc.addIntCol(RA_CAT_REF, cat.getId());
+    wc.addIntCol(RA_ROUND, round);
+    RankingEntryList rel = getObjectsByWhereClause<RankingEntry>(wc);
+    if (rel.empty())
     {
       return RankingEntryListList();
     }
@@ -270,12 +272,14 @@ namespace QTournament
     // there is only one (artificial) match group in those cases
     for (int grpNum : applicableMatchGroupNumbers)
     {
-      QString where = RA_CAT_REF + " = " + QString::number(cat.getId());
-      where += " AND " + RA_ROUND + " = " + QString::number(round);
-      where += " AND " + RA_GRP_NUM + " = " + QString::number(grpNum);
-      where += " ORDER BY " + RA_GRP_NUM + ", " + RA_RANK + " ASC";
+      WhereClause wc;
+      wc.addIntCol(RA_CAT_REF, cat.getId());
+      wc.addIntCol(RA_ROUND, round);
+      wc.addIntCol(RA_GRP_NUM, grpNum);
+      wc.setOrderColumn_Asc(RA_GRP_NUM);
+      wc.setOrderColumn_Asc(RA_RANK);
 
-      result.append(getObjectsByWhereClause<RankingEntry>(rankTab, where));
+      result.push_back(getObjectsByWhereClause<RankingEntry>(wc));
     }
 
     return result;
@@ -285,11 +289,12 @@ namespace QTournament
 
   int RankingMngr::getHighestRoundWithRankingEntryForPlayerPair(const Category& cat, const PlayerPair& pp) const
   {
-    QString where = RA_CAT_REF + " = " + QString::number(cat.getId());
-    where += " AND " + RA_PAIR_REF + " = " + QString::number(pp.getPairId());
-    where += " ORDER BY " + RA_ROUND + " DESC";
+    WhereClause wc;
+    wc.addIntCol(RA_CAT_REF, cat.getId());
+    wc.addIntCol(RA_PAIR_REF, pp.getPairId());
+    wc.setOrderColumn_Asc(RA_ROUND);
 
-    auto re = getSingleObjectByWhereClause<RankingEntry>(rankTab, where);
+    auto re = getSingleObjectByWhereClause<RankingEntry>(wc);
     if (re == nullptr) return -1;
 
     return re->getRound();
@@ -309,11 +314,11 @@ namespace QTournament
     }
 
     // make sure we have (unsorted) ranking entries
-    QVariantList qvl;
-    qvl << RA_CAT_REF << cat.getId();
-    qvl << RA_ROUND << lastRound;
-    RankingEntryList rel = getObjectsByColumnValue<RankingEntry>(rankTab, qvl);
-    if (rel.isEmpty())
+    WhereClause wc;
+    wc.addIntCol(RA_CAT_REF, cat.getId());
+    wc.addIntCol(RA_ROUND, lastRound);
+    RankingEntryList rel = getObjectsByWhereClause<RankingEntry>(wc);
+    if (rel.empty())
     {
       if (err != nullptr) *err = MISSING_RANKING_ENTRIES;
       return RankingEntryListList();
@@ -349,16 +354,13 @@ namespace QTournament
     //
     // In non-round-robin matches, this does no harm because
     // there is only one (artificial) match group in those cases
-    qvl << RA_GRP_NUM << 4242;  // dummy number, just to fill the field
     for (int grpNum : applicableMatchGroupNumbers)
     {
-      // remove last group number
-      // and append the current one
-      qvl.removeLast();
-      qvl << grpNum;
+      WhereClause wcWithGroupNum = wc;
+      wcWithGroupNum.addIntCol(RA_GRP_NUM, grpNum);
 
       // get the ranking entries
-      RankingEntryList rankList = getObjectsByColumnValue<RankingEntry>(rankTab, qvl);
+      RankingEntryList rankList = getObjectsByWhereClause<RankingEntry>(wcWithGroupNum);
 
       // call the standard sorting algorithm
       std::sort(rankList.begin(), rankList.end(), lessThanFunc);
@@ -372,7 +374,7 @@ namespace QTournament
       }
 
       // add the sorted group list to the result
-      result.append(rankList);
+      result.push_back(rankList);
     }
 
     if (err != nullptr) *err = OK;
@@ -399,24 +401,24 @@ namespace QTournament
 
     // a little helper function for creating a dummy ranking entry
     auto insertRankingEntry = [&](int g, int r) {
-      QVariantList qvl;
-      qvl << RA_MATCHES_WON << -1;
-      qvl << RA_MATCHES_DRAW << -1;
-      qvl << RA_MATCHES_LOST << -1;
-      qvl << RA_GAMES_WON << -1;
-      qvl << RA_GAMES_LOST << -1;
-      qvl << RA_POINTS_WON << -1;
-      qvl << RA_POINTS_LOST << -1;
-      qvl << RA_PAIR_REF << QVariant();
-      qvl << RA_ROUND << round;
-      qvl << RA_CAT_REF << catId;
-      qvl << RA_GRP_NUM << g;
-      qvl << RA_RANK << r;
-      rankTab.insertRow(qvl);
+      ColumnValueClause cvc;
+      cvc.addIntCol(RA_MATCHES_WON, -1);
+      cvc.addIntCol(RA_MATCHES_DRAW, -1);
+      cvc.addIntCol(RA_MATCHES_LOST, -1);
+      cvc.addIntCol(RA_GAMES_WON, -1);
+      cvc.addIntCol(RA_GAMES_LOST, -1);
+      cvc.addIntCol(RA_POINTS_WON, -1);
+      cvc.addIntCol(RA_POINTS_LOST, -1);
+      cvc.addNullCol(RA_PAIR_REF);
+      cvc.addIntCol(RA_ROUND, round);
+      cvc.addIntCol(RA_CAT_REF, catId);
+      cvc.addIntCol(RA_GRP_NUM, g);
+      cvc.addIntCol(RA_RANK, r);
+      tab->insertRow(cvc);
     };
 
     RankingEntryListList rll = getSortedRanking(cat, round);
-    if (rll.isEmpty()) return;
+    if (rll.empty()) return;
 
     // for each match group, go through the
     // list of ranking entries and fill gaps
@@ -454,13 +456,13 @@ namespace QTournament
 
   unique_ptr<RankingEntry> RankingMngr::getRankingEntry(const Category& cat, int round, int grpNum, int rank) const
   {
-    QVariantList qvl;
-    qvl << RA_CAT_REF << cat.getId();
-    qvl << RA_ROUND << round;
-    qvl << RA_GRP_NUM << grpNum;
-    qvl << RA_RANK << rank;
+    WhereClause wc;
+    wc.addIntCol(RA_CAT_REF, cat.getId());
+    wc.addIntCol(RA_ROUND, round);
+    wc.addIntCol(RA_GRP_NUM, grpNum);
+    wc.addIntCol(RA_RANK, rank);
 
-    return getSingleObjectByColumnValue<RankingEntry>(rankTab, qvl);
+    return getSingleObjectByWhereClause<RankingEntry>(wc);
   }
 
 //----------------------------------------------------------------------------

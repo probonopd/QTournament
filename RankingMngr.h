@@ -39,8 +39,8 @@ namespace QTournament
 {
   class RankingEntry;
 
-  typedef QList<RankingEntry> RankingEntryList;
-  typedef QList<RankingEntryList> RankingEntryListList;
+  typedef vector<RankingEntry> RankingEntryList;
+  typedef vector<RankingEntryList> RankingEntryListList;
 
   class RankingMngr : public QObject, TournamentDatabaseObjectManager
   {
@@ -60,7 +60,6 @@ namespace QTournament
     int getHighestRoundWithRankingEntryForPlayerPair(const Category &cat, const PlayerPair &pp) const;
 
   private:
-    DbTab rankTab;
 
   signals:
   };
