@@ -34,7 +34,7 @@ namespace QTournament
 {
 
   PlayerMngr::PlayerMngr(TournamentDB* _db)
-  : GenericObjectManager(_db), playerTab((*db)[TAB_PLAYER])
+  : TournamentDatabaseObjectManager(_db, TAB_PLAYER)
   {
   }
 
@@ -66,14 +66,19 @@ namespace QTournament
     }
     
     // prepare a new table row
-    QVariantList qvl;
-    qvl << PL_FNAME << first;
-    qvl << PL_LNAME << last;
-    qvl << PL_SEX << static_cast<int>(sex);
-    qvl << GENERIC_STATE_FIELD_NAME << static_cast<int>(STAT_PL_IDLE);
+    ColumnValueClause cvc;
+    cvc.addStringCol(PL_FNAME, first.toUtf8().constData());
+    cvc.addStringCol(PL_LNAME, last.toUtf8().constData());
+    cvc.addIntCol(PL_SEX, static_cast<int>(sex));
+    cvc.addIntCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_PL_IDLE));
     
     // set the team reference, if applicable
-    if (cfg.getBool(CFG_KEY_USE_TEAMS))
+    auto cfg = KeyValueTab::getTab(db, TAB_CFG, false);
+    if (cfg == nullptr)
+    {
+      throw runtime_error("Config table not found -- this shouldn't happen!");
+    }
+    if (cfg->getInt(CFG_KEY_USE_TEAMS) != 0)
     {
       if (teamName.isEmpty())
       {
@@ -88,14 +93,14 @@ namespace QTournament
       }
       
       Team t = tm->getTeam(teamName);
-      qvl << PL_TEAM_REF << t.getId();
+      cvc.addIntCol(PL_TEAM_REF, t.getId());
     }
     
     // create the new player row
     emit beginCreatePlayer();
-    playerTab.insertRow(qvl);
+    tab->insertRow(cvc);
     fixSeqNumberAfterInsert(TAB_PLAYER);
-    emit endCreatePlayer(playerTab.length() - 1); // the new sequence number is always the greatest
+    emit endCreatePlayer(tab->length() - 1); // the new sequence number is always the greatest
     
     return OK;
   }
@@ -104,11 +109,11 @@ namespace QTournament
 
   bool PlayerMngr::hasPlayer(const QString& firstName, const QString& lastName)
   {
-    QVariantList qvl;
-    qvl << PL_FNAME << firstName;
-    qvl << PL_LNAME << lastName;
+    WhereClause wc;
+    wc.addStringCol(PL_FNAME, firstName.toUtf8().constData());
+    wc.addStringCol(PL_LNAME, lastName.toUtf8().constData());
     
-    return (playerTab.getMatchCountForColumnValue(qvl) > 0);
+    return (tab->getMatchCountForWhereClause(wc) > 0);
   }
 
 //----------------------------------------------------------------------------
@@ -130,10 +135,10 @@ namespace QTournament
       throw std::invalid_argument("The player '" + QString2StdString(firstName + " " + lastName) + "' does not exist");
     }
     
-    QVariantList qvl;
-    qvl << PL_FNAME << firstName;
-    qvl << PL_LNAME << lastName;
-    TabRow r = playerTab.getSingleRowByColumnValue(qvl);
+    WhereClause wc;
+    wc.addStringCol(PL_FNAME, firstName.toUtf8().constData());
+    wc.addStringCol(PL_LNAME, lastName.toUtf8().constData());
+    TabRow r = tab->getSingleRowByWhereClause(wc);
     
     return Player(db, r);
   }
@@ -145,18 +150,9 @@ namespace QTournament
    *
    * @Return QList holding all Teams
    */
-  QList<Player> PlayerMngr::getAllPlayers()
+  vector<Player> PlayerMngr::getAllPlayers()
   {
-    QList<Player> result;
-    
-    DbTab::CachingRowIterator it = playerTab.getAllRows();
-    while (!(it.isEnd()))
-    {
-      result << Player(db, *it);
-      ++it;
-    }
-    
-    return result;
+    return getAllObjects<Player>();
   }
 
 //----------------------------------------------------------------------------
@@ -192,10 +188,10 @@ namespace QTournament
       return NAME_EXISTS;
     }
     
-    QVariantList qvl;
-    qvl << PL_FNAME << newFirst;
-    qvl << PL_LNAME << newLast;
-    p.row.update(qvl);
+    ColumnValueClause cvc;
+    cvc.addStringCol(PL_FNAME, newFirst.toUtf8().constData());
+    cvc.addStringCol(PL_LNAME, newLast.toUtf8().constData());
+    p.row.update(cvc);
     
     emit playerRenamed(p);
     
@@ -213,7 +209,7 @@ namespace QTournament
    */
   unique_ptr<Player> PlayerMngr::getPlayerBySeqNum(int seqNum)
   {
-    return getSingleObjectByColumnValue<Player>(playerTab, GENERIC_SEQNUM_FIELD_NAME, seqNum);
+    return getSingleObjectByColumnValue<Player>(GENERIC_SEQNUM_FIELD_NAME, seqNum);
   }
 
 
@@ -221,16 +217,7 @@ namespace QTournament
 
   bool PlayerMngr::hasPlayer(int id)
   {
-    try
-    {
-      TabRow r = playerTab[id];
-      return true;
-    }
-    catch (std::exception e)
-    {
-      
-    }
-    return false;
+    return tab->hasRowId(id);
   }
 
 //----------------------------------------------------------------------------
@@ -245,14 +232,14 @@ namespace QTournament
 
   unique_ptr<Player> PlayerMngr::getPlayer_up(int id) const
   {
-    return getSingleObjectByColumnValue<Player>(playerTab, "id", id);
+    return getSingleObjectByColumnValue<Player>("id", id);
   }
 
 //----------------------------------------------------------------------------
 
   PlayerPair PlayerMngr::getPlayerPair(int id)
   {
-    TabRow r = (*db)[TAB_PAIRS][id];
+    TabRow r = db->getTab(TAB_PAIRS)->operator [](id);
 
     return PlayerPair(db, r);
     
@@ -277,13 +264,13 @@ namespace QTournament
 
   upPlayerPair PlayerMngr::getPlayerPair_up(int pairId) const
   {
-    DbTab pairsTab = (*db)[TAB_PAIRS];
-    if (pairsTab.getMatchCountForColumnValue("id", pairId) != 1)
+    DbTab* pairsTab = db->getTab(TAB_PAIRS);
+    if (!(pairsTab->hasRowId(pairId)))
     {
       return nullptr;
     }
 
-    TabRow r = (*db)[TAB_PAIRS][pairId];
+    TabRow r = pairsTab->operator [](pairId);
 
     return upPlayerPair(new PlayerPair(db, r));
   }
@@ -314,8 +301,8 @@ namespace QTournament
     for (Player p : pl)
     {
       OBJ_STATE oldStat = p.getState();
-      TabRow r = playerTab[p.getId()];
-      r.update(GENERIC_STATE_FIELD_NAME, STAT_PL_PLAYING);
+      TabRow r = tab->operator [](p.getId());
+      r.update(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_PL_PLAYING));
       emit playerStatusChanged(p.getId(), p.getSeqNum(), oldStat, STAT_PL_PLAYING);
     }
 
@@ -331,8 +318,8 @@ namespace QTournament
     // update all player states back to idle
     for (Player p : pl)
     {
-      TabRow r = playerTab[p.getId()];
-      r.update(GENERIC_STATE_FIELD_NAME, STAT_PL_IDLE);
+      TabRow r = tab->operator [](p.getId());
+      r.update(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_PL_IDLE));
       emit playerStatusChanged(p.getId(), p.getSeqNum(), STAT_PL_PLAYING, STAT_PL_IDLE);
     }
 
@@ -361,20 +348,20 @@ namespace QTournament
 
     // have "actual players" already been assigned?
     // if yes, return those values. They overrule everything else
-    TabRow matchRow = (db->getTab(TAB_MATCH))[ma.getId()];
-    QVariant pRef = matchRow[MA_ACTUAL_PLAYER1A_REF];
-    if (!(pRef.isNull()))
+    TabRow matchRow = db->getTab(TAB_MATCH)->operator [](ma.getId());
+    auto pRef = matchRow.getInt2(MA_ACTUAL_PLAYER1A_REF);
+    if (!(pRef->isNull()))
     {
-      result << pm->getPlayer(pRef.toInt());
+      result.push_back(pm->getPlayer(pRef->get()));
 
-      pRef = matchRow[MA_ACTUAL_PLAYER1B_REF];
-      if (!(pRef.isNull())) result << pm->getPlayer(pRef.toInt());
+      pRef = matchRow.getInt2(MA_ACTUAL_PLAYER1B_REF);
+      if (!(pRef->isNull())) result.push_back(pm->getPlayer(pRef->get()));
 
-      pRef = matchRow[MA_ACTUAL_PLAYER2A_REF];
-      if (!(pRef.isNull())) result << pm->getPlayer(pRef.toInt());  // should always be true, since we have a valid player1a
+      pRef = matchRow.getInt2(MA_ACTUAL_PLAYER2A_REF);
+      if (!(pRef->isNull())) result.push_back(pm->getPlayer(pRef->get()));  // should always be true, since we have a valid player1a
 
-      pRef = matchRow[MA_ACTUAL_PLAYER2B_REF];
-      if (!(pRef.isNull())) result << pm->getPlayer(pRef.toInt());
+      pRef = matchRow.getInt2(MA_ACTUAL_PLAYER2B_REF);
+      if (!(pRef->isNull())) result.push_back(pm->getPlayer(pRef->get()));
 
       return result;
     }
@@ -393,10 +380,10 @@ namespace QTournament
 
     PlayerPair pp1 = ma.getPlayerPair1();
     PlayerPair pp2 = ma.getPlayerPair2();
-    result << pp1.getPlayer1();
-    result << pp2.getPlayer1();
-    if (pp1.hasPlayer2()) result << pp1.getPlayer2();
-    if (pp2.hasPlayer2()) result << pp2.getPlayer2();
+    result.push_back(pp1.getPlayer1());
+    result.push_back(pp2.getPlayer1());
+    if (pp1.hasPlayer2()) result.push_back(pp1.getPlayer2());
+    if (pp2.hasPlayer2()) result.push_back(pp2.getPlayer2());
 
     //
     // TODO:
@@ -496,12 +483,18 @@ namespace QTournament
 
   bool PlayerMngr::hasExternalPlayerDatabaseConfigured() const
   {
-    if (!(cfg.hasKey(CFG_KEY_EXT_PLAYER_DB)))
+    auto cfg = KeyValueTab::getTab(db, TAB_CFG, false);
+    if (cfg == nullptr)
+    {
+      throw runtime_error("Config table not found -- this shouldn't happen!");
+    }
+
+    if (!(cfg->hasKey(CFG_KEY_EXT_PLAYER_DB)))
     {
       return false;
     }
 
-    return (!(cfg.getString(CFG_KEY_EXT_PLAYER_DB).isEmpty()));
+    return (!(cfg->operator[](CFG_KEY_EXT_PLAYER_DB).empty()));
   }
 
   //----------------------------------------------------------------------------
@@ -520,7 +513,12 @@ namespace QTournament
       return QString();
     }
 
-    return cfg.getString(CFG_KEY_EXT_PLAYER_DB);
+    auto cfg = KeyValueTab::getTab(db, TAB_CFG, false);
+    if (cfg == nullptr)
+    {
+      throw runtime_error("Config table not found -- this shouldn't happen!");
+    }
+    return QString::fromUtf8(cfg->operator[](CFG_KEY_EXT_PLAYER_DB).data());
   }
 
   //----------------------------------------------------------------------------
@@ -551,7 +549,12 @@ namespace QTournament
     // overwrite the database config key with
     // the new filename
     extPlayerDb = std::move(extDb);
-    cfg.set(CFG_KEY_EXT_PLAYER_DB, fname);
+    auto cfg = KeyValueTab::getTab(db, TAB_CFG, false);
+    if (cfg == nullptr)
+    {
+      throw runtime_error("Config table not found -- this shouldn't happen!");
+    }
+    cfg->set(CFG_KEY_EXT_PLAYER_DB, fname.toUtf8().constData());
 
     emit externalPlayerDatabaseChanged();
 
@@ -567,7 +570,12 @@ namespace QTournament
       return EPD__NOT_CONFIGURED;
     }
 
-    QString playerDbName = cfg.getString(CFG_KEY_EXT_PLAYER_DB);
+    auto cfg = KeyValueTab::getTab(db, TAB_CFG, false);
+    if (cfg == nullptr)
+    {
+      throw runtime_error("Config table not found -- this shouldn't happen!");
+    }
+    QString playerDbName = QString::fromUtf8(cfg->operator[](CFG_KEY_EXT_PLAYER_DB).data());
 
     return setExternalPlayerDatabase(playerDbName, false);
   }
@@ -699,19 +707,19 @@ namespace QTournament
     // step 1: get all player pairs that involve this player
     QString where = "%1 = %2 OR %3 = %2";
     where = where.arg(PAIRS_PLAYER1_REF).arg(p.getId()).arg(PAIRS_PLAYER2_REF);
-    DbTab pairTab = (*db)[TAB_PAIRS];
-    PlayerPairList assignedPairs = getObjectsByWhereClause<PlayerPair>(pairTab, where);
+    DbTab* pairTab = db->getTab(TAB_PAIRS);
+    PlayerPairList assignedPairs = getObjectsByWhereClause<PlayerPair>(pairTab, where.toUtf8().constData());
 
     // step 2: check if we have any matches that involve one of these pairs
-    DbTab matchTab = (*db)[TAB_MATCH];
+    DbTab* matchTab = db->getTab(TAB_MATCH);
     for (PlayerPair pp : assignedPairs)
     {
       int ppId = pp.getPairId();
       if (ppId < 0) continue;  // player pair in a not-yet-started category
-      where = "%1 = %2 OR %3 = %1";
+      where = "%1 = %2 OR %3 = %2";
       where = where.arg(MA_PAIR1_REF).arg(ppId).arg(MA_PAIR2_REF);
-      MatchList maList = getObjectsByWhereClause<Match>(matchTab, where);
-      if (!(maList.isEmpty()))
+      MatchList maList = getObjectsByWhereClause<Match>(matchTab, where.toUtf8().constData());
+      if (!(maList.empty()))
       {
         return PLAYER_ALREADY_IN_MATCHES;
       }
@@ -722,8 +730,8 @@ namespace QTournament
     where = "%1 = %2 OR %3 = %2 OR %4 = %2 OR %5 = %2";
     where = where.arg(MA_ACTUAL_PLAYER1A_REF).arg(p.getId());
     where = where.arg(MA_ACTUAL_PLAYER1B_REF).arg(MA_ACTUAL_PLAYER2A_REF).arg(MA_ACTUAL_PLAYER2B_REF);
-    MatchList maList = getObjectsByWhereClause<Match>(matchTab, where);
-    if (!(maList.isEmpty()))
+    MatchList maList = getObjectsByWhereClause<Match>(matchTab, where.toUtf8().constData());
+    if (!(maList.empty()))
     {
       return PLAYER_ALREADY_IN_MATCHES;
     }
@@ -731,7 +739,7 @@ namespace QTournament
     // at this point, we have pairs but no matches yet. this means
     // that the player is assigned to a doubles/mixed partner in a
     // not yet started category
-    if (!(assignedPairs.isEmpty()))
+    if (!(assignedPairs.empty()))
     {
       return PLAYER_ALREADY_PAIRED;
     }
@@ -766,7 +774,7 @@ namespace QTournament
     // the actual deletion
     int oldSeqNum = p.getSeqNum();
     emit beginDeletePlayer(oldSeqNum);
-    playerTab.deleteRowsByColumnValue("id", p.getId());
+    tab->deleteRowsByColumnValue("id", p.getId());
     fixSeqNumberAfterDelete(TAB_PLAYER, oldSeqNum);
     emit endDeletePlayer();
 
@@ -777,7 +785,7 @@ namespace QTournament
 
   int PlayerMngr::getTotalPlayerCount() const
   {
-    return playerTab.length();
+    return tab->length();
   }
 
   //----------------------------------------------------------------------------

@@ -323,15 +323,14 @@ namespace QTournament
     // we can remove the wrong players
     if ((s != DONT_CARE) && (c.getMatchType() != MIXED))
     {
-      QList<Player> allPlayers = c.getAllPlayersInCategory();
-      QList<Player>::const_iterator it;
-      for (it = allPlayers.constBegin(); it != allPlayers.constEnd(); ++it)
+      PlayerList allPlayers = c.getAllPlayersInCategory();
+      for (const Player& p : allPlayers)
       {
         // skip players with matching sex
-        if ((*it).getSex() == s) continue;
+        if (p.getSex() == s) continue;
 
         // for all other players, check if we can remove them
-        if (!(c.canRemovePlayer(*it)))
+        if (!(c.canRemovePlayer(p)))
         {
           return INVALID_RECONFIG;
         }
@@ -339,13 +338,13 @@ namespace QTournament
       
       // okay, we can be sure that all "unwanted" players can be removed.
       // do it.
-      for (it = allPlayers.constBegin(); it != allPlayers.constEnd(); ++it)
+      for (const Player& p : allPlayers)
       {
         // skip players with matching sex
-        if ((*it).getSex() == s) continue;
+        if (p.getSex() == s) continue;
 
         // for all other players, check if we can remove them
-        c.removePlayer(*it);
+        c.removePlayer(p);
       }
     }
     

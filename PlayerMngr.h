@@ -56,7 +56,7 @@ namespace QTournament
     // getters and (boolean) queries
     bool hasPlayer (const QString& firstName, const QString& lastName);
     Player getPlayer(const QString& firstName, const QString& lastName);
-    QList<Player> getAllPlayers();
+    vector<Player> getAllPlayers();
     unique_ptr<Player> getPlayerBySeqNum(int seqNum);
     bool hasPlayer(int id);
     Player getPlayer(int id);
@@ -107,7 +107,6 @@ namespace QTournament
 
 
   private:
-    DbTab playerTab;
     upExternalPlayerDB extPlayerDb;
 
   signals:

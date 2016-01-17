@@ -209,7 +209,7 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  QList<Player> Match::determineActualPlayers() const
+  PlayerList Match::determineActualPlayers() const
   {
     auto tnmt = Tournament::getActiveTournament();
     return tnmt->getPlayerMngr()->determineActualPlayersForMatch(*this);

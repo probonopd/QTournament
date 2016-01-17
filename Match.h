@@ -63,7 +63,7 @@ namespace QTournament
     unique_ptr<PlayerPair> getLoser() const;
 
     unique_ptr<Court> getCourt(ERR *err=nullptr) const;
-    QList<Player> determineActualPlayers() const;
+    PlayerList determineActualPlayers() const;
 
     int getSymbolicPlayerPair1Name() const;
     int getSymbolicPlayerPair2Name() const;

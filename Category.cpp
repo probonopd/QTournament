@@ -318,7 +318,7 @@ namespace QTournament
     {
       int id1 = (*it).getInt(PAIRS_PLAYER1_REF);
       Player p1 = pmngr->getPlayer(id1);
-      singlePlayers.removeAll(p1);
+      std::remove(singlePlayers.begin(), singlePlayers.end(), p1);
 
       // id2 is sometimes empty, e.g. in singles categories
       auto _id2 = (*it).getInt2(PAIRS_PLAYER2_REF);
@@ -328,7 +328,7 @@ namespace QTournament
         int id2 = _id2->get();
         Player p2 = pmngr->getPlayer(id2);
         result.push_back(PlayerPair(p1, p2, (*it).getId()));
-        singlePlayers.removeAll(p2);
+        std::remove(singlePlayers.begin(), singlePlayers.end(), p2);
       }
 
       ++it;
@@ -344,9 +344,9 @@ namespace QTournament
 
     // create special entries for un-paired players that do
     // not yet have an entry in the database
-    for (int i=0; i < singlePlayers.count(); i++)
+    for (const Player& p : singlePlayers)
     {
-      result.push_back(PlayerPair(singlePlayers.at(i)));
+      result.push_back(PlayerPair(p));
     }
 
     return result;
