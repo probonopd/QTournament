@@ -56,13 +56,13 @@ namespace QTournament {
   PlayerPair::PlayerPair(const TournamentDB* db, const TabRow& row)
   {
     pairId = row.getId();
-    id1 = row[PAIRS_PLAYER1_REF].toInt();
+    id1 = row.getInt(PAIRS_PLAYER1_REF);
     id2 = -1;
 
-    QVariant _id2 = row[PAIRS_PLAYER2_REF];
-    if (!(_id2.isNull()))
+    auto _id2 = row.getInt2(PAIRS_PLAYER2_REF);
+    if (!(_id2->isNull()))
     {
-      id2 = _id2.toInt();
+      id2 = _id2->get();
       sortPlayers();
     }
   }
@@ -71,16 +71,16 @@ namespace QTournament {
 
   PlayerPair::PlayerPair(TournamentDB* db, int ppId)
   {
-    TabRow row = db->getTab(TAB_PAIRS)[ppId];
+    TabRow row = db->getTab(TAB_PAIRS)->operator [](ppId);
 
-    pairId = ppId;
-    id1 = row[PAIRS_PLAYER1_REF].toInt();
+    pairId = row.getId();
+    id1 = row.getInt(PAIRS_PLAYER1_REF);
     id2 = -1;
 
-    QVariant _id2 = row[PAIRS_PLAYER2_REF];
-    if (!(_id2.isNull()))
+    auto _id2 = row.getInt2(PAIRS_PLAYER2_REF);
+    if (!(_id2->isNull()))
     {
-      id2 = _id2.toInt();
+      id2 = _id2->get();
       sortPlayers();
     }
   }
@@ -251,9 +251,9 @@ namespace QTournament {
 
     if (pairId <= 0) return nullptr;
 
-    TabRow pairRow = (db->getTab(TAB_PAIRS))[pairId];
+    TabRow pairRow = db->getTab(TAB_PAIRS)->operator [](pairId);
     auto tnmt = Tournament::getActiveTournament();
-    Category cat = tnmt->getCatMngr()->getCategoryById(pairRow[PAIRS_CAT_REF].toInt());
+    Category cat = tnmt->getCatMngr()->getCategoryById(pairRow.getInt(PAIRS_CAT_REF));
 
     return unique_ptr<Category>(new Category(cat));
   }
@@ -269,14 +269,14 @@ namespace QTournament {
 
     if (pairId > 0)
     {
-      TabRow pairRow = (db->getTab(TAB_PAIRS))[pairId];
-      if (pairRow[PAIRS_PLAYER1_REF].toInt() != id1) return false;
+      TabRow pairRow = db->getTab(TAB_PAIRS)->operator [](pairId);
+      if (pairRow.getInt(PAIRS_PLAYER1_REF) != id1) return false;
 
-      QVariant p2Id = pairRow[PAIRS_PLAYER2_REF];
-      if (p2Id.isNull() && (id2 > 0)) return false;
-      if (!(p2Id.isNull()))
+      auto p2Id = pairRow.getInt2(PAIRS_PLAYER2_REF);
+      if (p2Id->isNull() && (id2 > 0)) return false;
+      if (!(p2Id->isNull()))
       {
-        if (id2 != p2Id.toInt()) return false;
+        if (id2 != p2Id->get()) return false;
       }
     }
 
@@ -295,8 +295,8 @@ namespace QTournament {
       throw runtime_error("Queried PlayerPair does not yet exist in the database");
     }
 
-    TabRow pairRow = (db->getTab(TAB_PAIRS))[pairId];
-    return pairRow[PAIRS_GRP_NUM].toInt();
+    TabRow pairRow = db->getTab(TAB_PAIRS)->operator [](pairId);
+    return pairRow.getInt(PAIRS_GRP_NUM);
   }
 
 //----------------------------------------------------------------------------
