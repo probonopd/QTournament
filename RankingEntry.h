@@ -24,6 +24,8 @@
 
 #include <QList>
 
+#include "ClausesAndQueries.h"
+
 #include "TournamentDatabaseObject.h"
 #include "TournamentDB.h"
 #include "TabRow.h"
@@ -69,7 +71,7 @@ namespace QTournament
   private:
     RankingEntry (TournamentDB* db, int rowId);
     RankingEntry (TournamentDB* db, SqliteOverlay::TabRow row);
-    int QVariant2Int_WithDefault(const QVariant& v, int defaultVal=0) const;
+    int ScalarQueryResult2Int_WithDefault(const unique_ptr<SqliteOverlay::ScalarQueryResult<int> >& v, int defaultVal=0) const;
   };
 
 }

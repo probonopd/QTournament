@@ -18,6 +18,8 @@
 
 #include <stdexcept>
 
+#include "ClausesAndQueries.h"
+
 #include "RankingEntry.h"
 #include "TournamentDataDefs.h"
 #include "TournamentDB.h"
@@ -43,14 +45,14 @@ namespace QTournament
 
   int RankingEntry::getRound() const
   {
-    return row[RA_ROUND].toInt();
+    return row.getInt(RA_ROUND);
   }
 
 //----------------------------------------------------------------------------
 
   Category RankingEntry::getCategory() const
   {
-    int catId = row[RA_CAT_REF].toInt();
+    int catId = row.getInt(RA_CAT_REF);
     auto tnmt = Tournament::getActiveTournament();
     return tnmt->getCatMngr()->getCategoryById(catId);
   }
@@ -59,10 +61,10 @@ namespace QTournament
 
   unique_ptr<PlayerPair> RankingEntry::getPlayerPair() const
   {
-    QVariant _ppId = row[RA_PAIR_REF];
-    if (_ppId.isNull()) return nullptr;
+    auto _ppId = row.getInt2(RA_PAIR_REF);
+    if (_ppId->isNull()) return nullptr;
 
-    int ppId = _ppId.toInt();
+    int ppId = _ppId->get();
     return unique_ptr<PlayerPair>(new PlayerPair(db, ppId));
   }
 
@@ -70,7 +72,7 @@ namespace QTournament
 
   int RankingEntry::getRank() const
   {
-    int rank = QVariant2Int_WithDefault(row[RA_RANK], -1);
+    int rank = ScalarQueryResult2Int_WithDefault(row.getInt2(RA_RANK), -1);
     if (rank <= 0) return NO_RANK_ASSIGNED;
 
     return rank;
@@ -80,38 +82,38 @@ namespace QTournament
 
   int RankingEntry::getGroupNumber() const
   {
-    return row[RA_GRP_NUM].toInt();
+    return row.getInt(RA_GRP_NUM);
   }
 
 //----------------------------------------------------------------------------
 
   tuple<int, int, int, int> RankingEntry::getMatchStats() const
   {
-    int won = QVariant2Int_WithDefault(row[RA_MATCHES_WON]);
-    int draw = QVariant2Int_WithDefault(row[RA_MATCHES_DRAW]);
-    int lost = QVariant2Int_WithDefault(row[RA_MATCHES_LOST]);
+    int won = ScalarQueryResult2Int_WithDefault(row.getInt2(RA_MATCHES_WON));
+    int draw = ScalarQueryResult2Int_WithDefault(row.getInt2(RA_MATCHES_DRAW));
+    int lost = ScalarQueryResult2Int_WithDefault(row.getInt2(RA_MATCHES_LOST));
 
     return make_tuple(won, draw, lost, won+draw+lost);
   }
 
 //----------------------------------------------------------------------------
 
-  int RankingEntry::QVariant2Int_WithDefault(const QVariant &v, int defaultVal) const
+  int RankingEntry::ScalarQueryResult2Int_WithDefault(const unique_ptr<SqliteOverlay::ScalarQueryResult<int>> &v, int defaultVal) const
   {
-    if ((v.isNull()) || (!(v.isValid())))
+    if (v->isNull())
     {
       return defaultVal;
     }
 
-    return v.toInt();
+    return v->get();
   }
 
 //----------------------------------------------------------------------------
 
   tuple<int, int, int> RankingEntry::getGameStats() const
   {
-    int won = QVariant2Int_WithDefault(row[RA_GAMES_WON]);
-    int lost = QVariant2Int_WithDefault(row[RA_GAMES_LOST]);
+    int won = ScalarQueryResult2Int_WithDefault(row.getInt2(RA_GAMES_WON));
+    int lost = ScalarQueryResult2Int_WithDefault(row.getInt2(RA_GAMES_LOST));
 
     return make_tuple(won, lost, won+lost);
   }
@@ -120,8 +122,8 @@ namespace QTournament
 
   tuple<int, int> RankingEntry::getPointStats() const
   {
-    int won = QVariant2Int_WithDefault(row[RA_POINTS_WON]);
-    int lost = QVariant2Int_WithDefault(row[RA_POINTS_LOST]);
+    int won = ScalarQueryResult2Int_WithDefault(row.getInt2(RA_POINTS_WON));
+    int lost = ScalarQueryResult2Int_WithDefault(row.getInt2(RA_POINTS_LOST));
 
     return make_tuple(won, lost);
   }
