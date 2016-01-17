@@ -39,7 +39,7 @@ namespace QTournament
 
   Category MatchGroup::getCategory() const
   {
-    int catId = row[MG_CAT_REF].toInt();
+    int catId = row.getInt(MG_CAT_REF);
     auto tnmt = Tournament::getActiveTournament();
     return tnmt->getCatMngr()->getCategoryById(catId);
   }
@@ -48,14 +48,14 @@ namespace QTournament
 
   int MatchGroup::getGroupNumber() const
   {
-    return row[MG_GRP_NUM].toInt();
+    return row.getInt(MG_GRP_NUM);
   }
 
 //----------------------------------------------------------------------------
 
   int MatchGroup::getRound() const
   {
-    return row[MG_ROUND].toInt();
+    return row.getInt(MG_ROUND);
   }  
 
 //----------------------------------------------------------------------------
@@ -70,20 +70,20 @@ namespace QTournament
 
   int MatchGroup::getMatchCount() const
   {
-    return matchTab.getMatchCountForColumnValue(MA_GRP_REF, getId());
+    return matchTab->getMatchCountForColumnValue(MA_GRP_REF, getId());
   }
 
 //----------------------------------------------------------------------------
 
   int MatchGroup::getStageSequenceNumber() const
   {
-    QVariant result = row[MG_STAGE_SEQ_NUM];
-    if (result.isNull())
+    auto result = row.getInt2(MG_STAGE_SEQ_NUM);
+    if (result->isNull())
     {
       return -1;  // group not staged
     }
 
-    return result.toInt();
+    return result->get();
   }
 
 //----------------------------------------------------------------------------
@@ -92,10 +92,10 @@ namespace QTournament
   {
     // for performance reasons, we issue a single SQL-statement here
     // instead of looping through all matches in the group
-    QVariantList qvl;
-    qvl << MA_GRP_REF << row.getId();
-    qvl << GENERIC_STATE_FIELD_NAME << static_cast<int>(stat);
-    return (matchTab.getMatchCountForColumnValue(qvl) > 0);
+    WhereClause wc;
+    wc.addIntCol(MA_GRP_REF, getId());
+    wc.addIntCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(stat));
+    return (matchTab->getMatchCountForWhereClause(wc) > 0);
   }
 
 //----------------------------------------------------------------------------
@@ -104,11 +104,11 @@ namespace QTournament
   {
     // for performance reasons, we issue a single SQL-statement here
     // instead of looping through all matches in the group
-    QString where = MA_GRP_REF + " = " + QString::number(row.getId());
-    where += " AND " + GENERIC_STATE_FIELD_NAME + " != ";
-    where += QString::number(static_cast<int>(stat));
+    QString where = "%1 = %2 AND %3 != %4";
+    where = where.arg(MA_GRP_REF).arg(getId());
+    where = where.arg(GENERIC_NAME_FIELD_NAME).arg(static_cast<int>(stat));
 
-    return (matchTab.getMatchCountForWhereClause(where) > 0);
+    return (matchTab->getMatchCountForWhereClause(where.toUtf8().constData()) > 0);
   }
 
 //----------------------------------------------------------------------------

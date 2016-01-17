@@ -19,22 +19,23 @@
 #ifndef MATCHGROUP_H
 #define	MATCHGROUP_H
 
+#include <vector>
+
+#include "TabRow.h"
+#include "DbTab.h"
+
 #include "TournamentDatabaseObject.h"
 #include "TournamentDB.h"
-#include "TabRow.h"
 #include "TournamentErrorCodes.h"
 #include "Category.h"
 #include "Match.h"
-#include "DbTab.h"
-
-#include <QList>
 
 using namespace SqliteOverlay;
 
 namespace QTournament
 {
 
-  typedef QList<Match> MatchList;
+  typedef vector<Match> MatchList;
 
   class MatchGroup : public TournamentDatabaseObject
   {
@@ -53,9 +54,9 @@ namespace QTournament
     bool hasMatches__NOT__InState(OBJ_STATE stat) const;
 
   private:
+    DbTab* matchTab;
     MatchGroup(TournamentDB* db, int rowId);
     MatchGroup(TournamentDB* db, SqliteOverlay::TabRow row);
-    DbTab matchTab;
   } ;
 
 }
