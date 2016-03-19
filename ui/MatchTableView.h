@@ -26,6 +26,7 @@
 #include <QListWidget>
 #include <QMenu>
 #include <QAction>
+#include <QStringListModel>
 
 #include "Tournament.h"
 #include "delegates/MatchItemDelegate.h"

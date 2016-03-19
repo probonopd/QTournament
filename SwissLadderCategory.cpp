@@ -147,8 +147,8 @@ namespace QTournament
 
       // remove the found player pair from all lists so that it's
       // not part of all further algorithms
-      rankedPairs.removeAt(byeIndex);
-      rankedPairs_Int.removeAt(byeIndex);
+      rankedPairs.erase(rankedPairs.begin() + byeIndex);
+      rankedPairs_Int.erase(rankedPairs_Int.begin() + byeIndex);
       --pairCount;
     }
 
@@ -334,7 +334,7 @@ namespace QTournament
     // do not return an error here, because obviously we have been
     // called successfully before and we only want to avoid
     // double initialization
-    if (allGrp.count() != 0) return OK;
+    if (allGrp.size() != 0) return OK;
 
     // alright, this is a virgin category.
     // Assume that we play all possible rounds (very much like a
