@@ -16,11 +16,13 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <stdexcept>
+
+#include "KeyValueTab.h"
+
 #include "TeamMngr.h"
 #include "TournamentErrorCodes.h"
 #include "TournamentDataDefs.h"
-#include <stdexcept>
-#include <QtCore/qdebug.h>
 #include "HelperFunc.h"
 #include "Player.h"
 
@@ -30,7 +32,7 @@ namespace QTournament
 {
 
   TeamMngr::TeamMngr(TournamentDB* _db)
-  : GenericObjectManager(_db), teamTab((*db)[TAB_TEAM])
+    : TournamentDatabaseObjectManager(_db, TAB_TEAM)
   {
   }
 
@@ -38,7 +40,9 @@ namespace QTournament
 
   ERR TeamMngr::createNewTeam(const QString& tm)
   {
-    if (!(cfg.getBool(CFG_KEY_USE_TEAMS)))
+    auto cfg = KeyValueTab::getTab(db, TAB_CFG);
+
+    if (!(cfg->getBool(CFG_KEY_USE_TEAMS)))
     {
       return NOT_USING_TEAMS;
     }
@@ -61,13 +65,13 @@ namespace QTournament
     }
     
     // create a new table row
-    QVariantList qvl;
-    qvl << GENERIC_NAME_FIELD_NAME << teamName;
+    ColumnValueClause cvc;
+    cvc.addStringCol(GENERIC_NAME_FIELD_NAME, teamName.toUtf8().constData());
     
     emit beginCreateTeam();
-    teamTab.insertRow(qvl);
+    tab->insertRow(cvc);
     fixSeqNumberAfterInsert(TAB_TEAM);
-    emit endCreateTeam(teamTab.length() - 1);  // the new sequence number is always the greatest
+    emit endCreateTeam(tab->length() - 1);  // the new sequence number is always the greatest
     
     return OK;
   }
@@ -76,7 +80,7 @@ namespace QTournament
 
   bool TeamMngr::hasTeam(const QString& teamName)
   {
-    return (teamTab.getMatchCountForColumnValue(GENERIC_NAME_FIELD_NAME, teamName) > 0);
+    return (tab->getMatchCountForColumnValue(GENERIC_NAME_FIELD_NAME, teamName.toUtf8().constData()) > 0);
   }
 
 //----------------------------------------------------------------------------
@@ -97,7 +101,7 @@ namespace QTournament
       throw std::invalid_argument("The team '" + QString2StdString(name) + "' does not exist");
     }
     
-    TabRow r = teamTab.getSingleRowByColumnValue(GENERIC_NAME_FIELD_NAME, name);
+    TabRow r = tab->getSingleRowByColumnValue(GENERIC_NAME_FIELD_NAME, name.toUtf8().constData());
     
     return Team(db, r);
   }
@@ -109,9 +113,9 @@ namespace QTournament
    *
    * @Return QList holding all Teams
    */
-  QList<Team> TeamMngr::getAllTeams()
+  vector<Team> TeamMngr::getAllTeams()
   {
-    return getAllObjects<Team>(teamTab);
+    return getAllObjects<Team>();
   }
 
 //----------------------------------------------------------------------------
@@ -132,7 +136,7 @@ namespace QTournament
       return NAME_EXISTS;
     }
     
-    t.row.update(GENERIC_NAME_FIELD_NAME, newName);
+    t.row.update(GENERIC_NAME_FIELD_NAME, newName.toUtf8().constData());
     emit teamRenamed(t.getSeqNum());
     
     return OK;
@@ -152,7 +156,7 @@ namespace QTournament
   Team TeamMngr::getTeamBySeqNum(int seqNum)
   {
     try {
-      TabRow r = teamTab.getSingleRowByColumnValue(GENERIC_SEQNUM_FIELD_NAME, seqNum);
+      TabRow r = tab->getSingleRowByColumnValue(GENERIC_SEQNUM_FIELD_NAME, seqNum);
       return Team(db, r);
     }
     catch (std::exception e)
@@ -166,7 +170,7 @@ namespace QTournament
   Team TeamMngr::getTeamById(int id)
   {
     try {
-      TabRow r = teamTab[id];
+      TabRow r = tab->operator [](id);
       return Team(db, r);
     }
     catch (std::exception e)
@@ -179,7 +183,9 @@ namespace QTournament
 
   ERR TeamMngr::changeTeamAssigment(const Player& p, const Team& newTeam)
   {
-    if (!(cfg.getBool(CFG_KEY_USE_TEAMS)))
+    auto cfg = KeyValueTab::getTab(db, TAB_CFG);
+
+    if (!(cfg->getBool(CFG_KEY_USE_TEAMS)))
     {
       return NOT_USING_TEAMS;
     }
@@ -211,7 +217,8 @@ namespace QTournament
 
   PlayerList TeamMngr::getPlayersForTeam(const Team& t) const
   {
-    return getObjectsByColumnValue<Player>((*db)[TAB_PLAYER], PL_TEAM_REF, t.getId());
+    DbTab* playerTab = db->getTab(TAB_PLAYER);
+    return getObjectsByColumnValue<Player>(playerTab, PL_TEAM_REF, t.getId());
   }
 
 //----------------------------------------------------------------------------

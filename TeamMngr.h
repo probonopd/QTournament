@@ -44,7 +44,7 @@ namespace QTournament
     ERR createNewTeam (const QString& teamName);
     bool hasTeam (const QString& teamName);
     Team getTeam (const QString& name);
-    QList<Team> getAllTeams ();
+    vector<Team> getAllTeams();
     ERR renameTeam (Team& t, const QString& nn);
     Team getTeamBySeqNum (int seqNum);
     Team getTeamById (int id);
@@ -53,9 +53,6 @@ namespace QTournament
     PlayerList getPlayersForTeam(const Team& t) const;
 
     static std::function<bool (Team&, Team&)> getTeamSortFunction_byName();
-
-  private:
-    DbTab teamTab;
 
 signals:
     void beginCreateTeam ();
