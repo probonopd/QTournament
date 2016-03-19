@@ -42,7 +42,7 @@ namespace QTournament
 
   QString Team::getName(int maxLen) const
   {
-    QString fullName = row[GENERIC_NAME_FIELD_NAME].toString();
+    QString fullName = QString::fromUtf8(row[GENERIC_NAME_FIELD_NAME].data());
     
     if (maxLen < 1)
     {

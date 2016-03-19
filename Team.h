@@ -20,6 +20,7 @@
 #define	TEAM_H
 
 #include "TournamentDatabaseObject.h"
+#include "TournamentDatabaseObjectManager.h"
 #include "TournamentDB.h"
 #include "TabRow.h"
 #include "TournamentErrorCodes.h"
@@ -30,8 +31,9 @@ namespace QTournament
   class Team : public TournamentDatabaseObject
   {
     friend class TeamMngr;
-    friend class GenericObjectManager;
-    
+    friend class SqliteOverlay::GenericObjectManager<TournamentDB>;
+    friend class TournamentDatabaseObjectManager;
+
   public:
     QString getName(int maxLen=0) const;
     ERR rename(const QString& newName);

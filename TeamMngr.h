@@ -19,6 +19,9 @@
 #ifndef TEAMMNGR_H
 #define	TEAMMNGR_H
 
+#include <QObject>
+#include <QList>
+
 #include "TournamentDB.h"
 #include "Team.h"
 #include "Player.h"
@@ -26,8 +29,6 @@
 #include "TournamentErrorCodes.h"
 #include "DbTab.h"
 #include "TournamentDatabaseObjectManager.h"
-
-#include <QList>
 
 using namespace SqliteOverlay;
 
