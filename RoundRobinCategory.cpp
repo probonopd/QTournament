@@ -62,7 +62,7 @@ namespace QTournament
     // make sure we have a valid group configuration
     PlayerPairList pp = getPlayerPairs();
     KO_Config cfg = KO_Config(getParameter_string(GROUP_CONFIG));
-    if (!(cfg.isValid(pp.count())))
+    if (!(cfg.isValid(pp.size())))
     {
       return INVALID_KO_CONFIG;
     }
@@ -99,7 +99,7 @@ namespace QTournament
     // do not return an error here, because obviously we have been
     // called successfully before and we only want to avoid
     // double initialization
-    if (allGrp.count() != 0) return OK;
+    if (allGrp.size() != 0) return OK;
 
     // alright, this is a virgin category. Generate group matches
     // for each group
@@ -324,7 +324,7 @@ namespace QTournament
         {
           auto loser = ma.getLoser();
           if (loser == nullptr) continue;   // shouldn't happen
-          result.removeAll(*loser);
+          std::remove(result.begin(), result.end(), *loser);
         }
       }
 
@@ -363,13 +363,13 @@ namespace QTournament
     PlayerPairList controlList = getPlayerPairsForIntermediateSeeding();
     for (PlayerPair pp : seed)
     {
-      if (!(controlList.contains(pp)))
+      if (std::find(controlList.begin(), controlList.end(), pp) == controlList.end())
       {
         return INVALID_SEEDING_LIST;
       }
-      controlList.removeAll(pp);
+      std::remove(controlList.begin(), controlList.end(), pp);
     }
-    if (!(controlList.isEmpty()))
+    if (!(controlList.empty()))
     {
       return INVALID_SEEDING_LIST;
     }
@@ -408,7 +408,7 @@ namespace QTournament
       // the first in each group is always qualified
       auto qualifiedPP = rl.at(0).getPlayerPair();
       assert(qualifiedPP != nullptr);
-      result.push_front(*qualifiedPP);
+      result.insert(result.begin(), *qualifiedPP);
 
       // maybe the second qualifies as well
       if (cfg.getSecondSurvives())
