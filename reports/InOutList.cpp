@@ -68,7 +68,7 @@ upSimpleReport InOutList::regenerateReport()
     return result;
   }
 
-  if (outList.isEmpty())
+  if (outList.empty())
   {
     result->writeLine(tr("All players are still in the game, no knock-outs yet."));
   } else {

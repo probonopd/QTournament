@@ -21,11 +21,12 @@
 
 #include <memory>
 
-#include "Tournament.h"
-//#include "delegates/PlayerItemDelegate.h"
-
 #include <QTableView>
 #include <QSortFilterProxyModel>
+#include <QStringListModel>
+
+#include "Tournament.h"
+//#include "delegates/PlayerItemDelegate.h"
 
 using namespace QTournament;
 

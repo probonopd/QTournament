@@ -344,7 +344,7 @@ void CategoryTableView::onRunCategory()
    */
 
   // show the dialog for the initial group assignments, if necessary
-  QList<PlayerPairList> ppListList;
+  vector<PlayerPairList> ppListList;
   if (selectedCat->needsGroupInitialization())
   {
     dlgGroupAssignment dlg(this, *selectedCat);
@@ -358,7 +358,7 @@ void CategoryTableView::onRunCategory()
     }
 
     ppListList = dlg.getGroupAssignments();
-    if (ppListList.isEmpty())
+    if (ppListList.empty())
     {
       QMessageBox::warning(this, tr("Run Category"), tr("Can't read group assignments.\nOperation cancelled."));
       unfreezeAndCleanup(std::move(selectedCat));
@@ -382,7 +382,7 @@ void CategoryTableView::onRunCategory()
     }
 
     initialRanking = dlg.getSeeding();
-    if (initialRanking.isEmpty())
+    if (initialRanking.empty())
     {
       QMessageBox::warning(this, tr("Run Category"), tr("Can't read seeding.\nOperation cancelled."));
       unfreezeAndCleanup(std::move(selectedCat));
@@ -397,7 +397,7 @@ void CategoryTableView::onRunCategory()
    * Let's do a final check before we actually apply the settings and write to
    * the database.
    */
-  if (ppListList.count() != 0)
+  if (ppListList.size() != 0)
   {
     ERR e = selectedCat->canApplyGroupAssignment(ppListList);
     if (e != OK)
@@ -438,7 +438,7 @@ void CategoryTableView::onRunCategory()
     }
   }
 
-  if (initialRanking.count() != 0)
+  if (initialRanking.size() != 0)
   {
     ERR e = selectedCat->canApplyInitialRanking(initialRanking);
     if (e != OK)
@@ -581,7 +581,7 @@ void CategoryTableView::handleIntermediateSeedingForSelectedCat()
   }
 
   PlayerPairList seedCandidates = selectedCat->getPlayerPairsForIntermediateSeeding();
-  if (seedCandidates.isEmpty()) return;
+  if (seedCandidates.empty()) return;
 
   DlgSeedingEditor dlg{this};
   dlg.initSeedingList(seedCandidates);
@@ -594,7 +594,7 @@ void CategoryTableView::handleIntermediateSeedingForSelectedCat()
   }
 
   PlayerPairList seeding = dlg.getSeeding();
-  if (seeding.isEmpty())
+  if (seeding.empty())
   {
     QMessageBox::warning(this, tr("Intermediate Seeding"), tr("Can't read seeding.\nOperation cancelled."));
     return;

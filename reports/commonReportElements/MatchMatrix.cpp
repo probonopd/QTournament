@@ -104,7 +104,7 @@ QRectF MatchMatrix::plot(const QPointF& topLeft)
   assert(boldStyle != nullptr);
 
   // prepare the grid
-  int nPlayers = ppList.length();
+  int nPlayers = ppList.size();
   MatrixGrid grid{origin, rep->getUsablePageWidth(), nPlayers + 1, 6 * baseStyle->getFontSize_MM()};
 
   // plot the grid
@@ -211,7 +211,7 @@ QRectF MatchMatrix::plot(const QPointF& topLeft)
 
 upMatch MatchMatrix::getMatchForCell(const PlayerPairList& ppList, int row, int col, int maxRound) const
 {
-  if ((row < 1) || (col < 1) || (row > ppList.length()) || (col > ppList.length()))
+  if ((row < 1) || (col < 1) || (row > ppList.size()) || (col > ppList.size()))
   {
     return nullptr;
   }
@@ -226,8 +226,8 @@ upMatch MatchMatrix::getMatchForCell(const PlayerPairList& ppList, int row, int 
   QString where = "(%1 = %2 AND %3 = %4) OR (%1 = %4 AND %3 = %2)";
   where = where.arg(MA_PAIR1_REF).arg(ppRow.getPairId());
   where = where.arg(MA_PAIR2_REF).arg(ppCol.getPairId());
-  DbTab matchTab = tnmt->getDatabaseHandle()->getTab(TAB_MATCH);
-  DbTab::CachingRowIterator it = matchTab.getRowsByWhereClause(where);
+  DbTab* matchTab = tnmt->getDatabaseHandle()->getTab(TAB_MATCH);
+  DbTab::CachingRowIterator it = matchTab->getRowsByWhereClause(where.toUtf8().constData());
   while (!(it.isEnd()))
   {
     auto ma = mm->getMatch((*it).getId());

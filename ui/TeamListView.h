@@ -22,6 +22,7 @@
 #include "Tournament.h"
 
 #include <QListView>
+#include <QStringListModel>
 
 using namespace QTournament;
 

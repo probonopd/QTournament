@@ -55,7 +55,7 @@ DlgSelectPlayer::DlgSelectPlayer(QWidget *parent, DLG_CONTEXT _ctxt, Category* _
 
       if (cat->getAddState(pl.getSex()) == CAN_JOIN)
       {
-        applicablePlayers.append(pl);
+        applicablePlayers.push_back(pl);
       }
     }
   }
@@ -65,7 +65,7 @@ DlgSelectPlayer::DlgSelectPlayer(QWidget *parent, DLG_CONTEXT _ctxt, Category* _
     {
       if (cat->canRemovePlayer(pl))
       {
-        applicablePlayers.append(pl);
+        applicablePlayers.push_back(pl);
       }
     }
   }
@@ -106,7 +106,7 @@ PlayerList DlgSelectPlayer::getSelectedPlayers() const
   for (auto& item : ui->lwPlayers->selectedItems())
   {
     int playerId = item->data(Qt::UserRole).toInt();
-    result.append(pm->getPlayer(playerId));
+    result.push_back(pm->getPlayer(playerId));
   }
 
   return result;

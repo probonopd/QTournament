@@ -29,7 +29,7 @@ namespace QTournament
 
   int TeamListModel::rowCount(const QModelIndex& parent) const
   {
-    return teamTab.length();
+    return teamTab->length();
   }
 
 //----------------------------------------------------------------------------
@@ -39,11 +39,14 @@ namespace QTournament
     if (!index.isValid())
       return QVariant();
 
-    if (index.row() >= teamTab.length())
+    if (index.row() >= teamTab->length())
       return QVariant();
 
     if (role == Qt::DisplayRole)
-      return (teamTab.getSingleRowByColumnValue(GENERIC_SEQNUM_FIELD_NAME, index.row()))[GENERIC_NAME_FIELD_NAME];
+    {
+      string name = teamTab->getSingleRowByColumnValue(GENERIC_SEQNUM_FIELD_NAME, index.row())[GENERIC_NAME_FIELD_NAME];
+      return QString::fromUtf8(name.data());
+    }
 
     else
       return QVariant();
@@ -60,7 +63,7 @@ namespace QTournament
 
   void TeamListModel::onBeginCreateTeam()
   {
-    int newPos = teamTab.length();
+    int newPos = teamTab->length();
     beginInsertRows(QModelIndex(), newPos, newPos);
   }
 

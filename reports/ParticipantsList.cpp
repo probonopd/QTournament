@@ -157,7 +157,7 @@ void ParticipantsList::createTeamSortedReport(upSimpleReport &rep) const
   auto tnmt = Tournament::getActiveTournament();
   TeamMngr* tm = tnmt->getTeamMngr();
 
-  QList<Team> tl = tm->getAllTeams();
+  vector<Team> tl = tm->getAllTeams();
 
   // do we have any teams at all?
   if (tl.size() == 0) return;
@@ -230,12 +230,12 @@ void ParticipantsList::createCategorySortedReport(upSimpleReport& rep) const
   CatMngr* cm = tnmt->getCatMngr();
   TeamMngr* tm = tnmt->getTeamMngr();
 
-  QList<Category> allCats = cm->getAllCategories();
+  vector<Category> allCats = cm->getAllCategories();
 
   if (rep == nullptr) rep = createEmptyReport_Portrait();
 
   // do we have any categories at all?
-  if (allCats.isEmpty())
+  if (allCats.empty())
   {
     setHeaderAndHeadline(rep.get(), tr("List of Participants"), tr("Sorted by category"));
     rep->writeLine(tr("No categories have been created yet."));
@@ -294,7 +294,7 @@ void ParticipantsList::createCategorySortedReport(upSimpleReport& rep) const
       PlayerList pl;
       for (Player p : tm->getPlayersForTeam(team))
       {
-        if (cat.hasPlayer(p)) pl.append(p);
+        if (cat.hasPlayer(p)) pl.push_back(p);
       }
 
       // sort the player list alphabetically
@@ -328,7 +328,7 @@ QString ParticipantsList::getCommaSepCatListForPlayer(const Player& p) const
 {
   QString result;
 
-  QList<Category> catList = p.getAssignedCategories();
+  vector<Category> catList = p.getAssignedCategories();
   std::sort(catList.begin(), catList.end(), CatMngr::getCategorySortFunction_byName());
   for (Category c : catList)
   {

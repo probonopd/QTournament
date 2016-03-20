@@ -43,7 +43,7 @@ namespace QTournament
 
   private:
     TournamentDB* db;
-    SqliteOverlay::DbTab catTab;
+    SqliteOverlay::DbTab* catTab;
     
   public slots:
     void onBeginCreateCategory();

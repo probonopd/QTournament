@@ -683,7 +683,9 @@ void BracketSheet::printHeaderAndFooterOnAllPages() const
 
   // prepare the elements of the label: headline, organizer name, date
   QString headline = cat.getName() + " -- " + tr("Bracket");
-  QString org = cfg[CFG_KEY_TNMT_ORGA].toString() + " -- " + cfg[CFG_KEY_TNMT_NAME].toString();
+  QString org = "%1 -- %2";
+  org = org.arg(QString::fromUtf8(cfg->operator[](CFG_KEY_TNMT_ORGA).data()));
+  org = org.arg(QString::fromUtf8(cfg->operator[](CFG_KEY_TNMT_NAME).data()));
   QString dat = tr("As of %1, %2");
   dat = dat.arg(SimpleReportLib::HeaderFooterStrings::TOKEN_CURDATE);
   dat = dat.arg(SimpleReportLib::HeaderFooterStrings::TOKEN_CURTIME);

@@ -30,7 +30,7 @@ CategoryTableModel::CategoryTableModel(Tournament* tnmt)
 
 int CategoryTableModel::rowCount(const QModelIndex& parent) const
 {
-  return catTab.length();
+  return catTab->length();
 }
 
 //----------------------------------------------------------------------------
@@ -47,7 +47,7 @@ QVariant CategoryTableModel::data(const QModelIndex& index, int role) const
     if (!index.isValid())
       return QVariant();
 
-    if (index.row() >= catTab.length())
+    if (index.row() >= catTab->length())
       return QVariant();
 
     if (role != Qt::DisplayRole)
@@ -225,7 +225,7 @@ QVariant CategoryTableModel::headerData(int section, Qt::Orientation orientation
 
 void CategoryTableModel::onBeginCreateCategory()
 {
-  int newPos = catTab.length();
+  int newPos = catTab->length();
   beginInsertRows(QModelIndex(), newPos, newPos);
 }
 //----------------------------------------------------------------------------

@@ -175,7 +175,7 @@ void SeedingListWidget::clearListAndFillFromSeed(const PlayerPairList& seed)
   int oldSelection = currentRow();
 
   clear();
-  for (int cnt=0; cnt < seed.count(); ++cnt)
+  for (int cnt=0; cnt < seed.size(); ++cnt)
   {
     QListWidgetItem* lwi = new QListWidgetItem(this);
     lwi->setData(Qt::UserRole, seed.at(cnt).getPairId());
@@ -183,7 +183,7 @@ void SeedingListWidget::clearListAndFillFromSeed(const PlayerPairList& seed)
   }
 
   // restore the old selection, if necessary and possible
-  if ((!(seed.isEmpty())) && (oldSelection >= 0))
+  if ((!(seed.empty())) && (oldSelection >= 0))
   {
     if (oldSelection < seed.size())
     {

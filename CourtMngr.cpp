@@ -62,7 +62,7 @@ namespace QTournament
     // create the new court row
     emit beginCreateCourt();
     int newId = tab->insertRow(cvc);
-    fixSeqNumberAfterInsert(TAB_COURT);
+    fixSeqNumberAfterInsert();
     emit endCreateCourt(tab->length() - 1); // the new sequence number is always the highest
     
     // create a court object for the new court and return a pointer

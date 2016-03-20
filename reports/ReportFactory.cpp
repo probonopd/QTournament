@@ -167,11 +167,11 @@ namespace QTournament
 
     // we brute-force check all categories for the availability
     // of tournament bracket visualization data
-    DbTab tabVis = db->getTab(TAB_BRACKET_VIS);
+    DbTab* tabVis = db->getTab(TAB_BRACKET_VIS);
     for (Category cat : cm->getAllCategories())
     {
       int catId = cat.getId();
-      if (tabVis.getMatchCountForColumnValue(BV_CAT_REF, catId) > 0)
+      if (tabVis->getMatchCountForColumnValue(BV_CAT_REF, catId) > 0)
       {
         result.append(genRepName(REP__BRACKET, cat, 0));
       }

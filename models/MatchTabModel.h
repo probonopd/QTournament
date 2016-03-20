@@ -36,7 +36,7 @@ namespace QTournament
 
   private:
     TournamentDB* db;
-    SqliteOverlay::DbTab matchTab;
+    SqliteOverlay::DbTab* matchTab;
     
   public slots:
     void onBeginCreateMatch();

@@ -45,7 +45,7 @@ public:
   void teardown();
   PlayerPairList getSelectedPlayerPairs();
   void swapSelectedPlayers();
-  QList<PlayerPairList> getGroupAssignments();
+  vector<PlayerPairList> getGroupAssignments();
 
 public slots:
   void onRowSelectionChanged();

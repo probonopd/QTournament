@@ -63,7 +63,7 @@ upSimpleReport MatchResultList_ByGroup::regenerateReport()
   MatchGroupList filteredList;
   for (MatchGroup mg: mgl)
   {
-    if (mg.getGroupNumber() == grpNum) filteredList.append(mg);
+    if (mg.getGroupNumber() == grpNum) filteredList.push_back(mg);
   }
 
   // sort match groups by round number

@@ -30,7 +30,7 @@ class dlgGroupAssignment : public QDialog
 public:
   dlgGroupAssignment(QWidget* p, Category &_cat);
   virtual ~dlgGroupAssignment();
-  QList<PlayerPairList> getGroupAssignments();
+  vector<PlayerPairList> getGroupAssignments();
 
 private:
   Ui::dlgGroupAssignment ui;

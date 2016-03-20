@@ -37,7 +37,7 @@ PlayerTableModel::PlayerTableModel(Tournament* tnmt)
 
 int PlayerTableModel::rowCount(const QModelIndex& parent) const
 {
-  return playerTab.length();
+  return playerTab->length();
 }
 
 //----------------------------------------------------------------------------
@@ -54,7 +54,7 @@ QVariant PlayerTableModel::data(const QModelIndex& index, int role) const
     if (!index.isValid())
       return QVariant();
 
-    if (index.row() >= playerTab.length())
+    if (index.row() >= playerTab->length())
       return QVariant();
 
     if (role != Qt::DisplayRole)
@@ -86,13 +86,13 @@ QVariant PlayerTableModel::data(const QModelIndex& index, int role) const
     if (index.column() == 3)
     {
       QString result = "";
-      QList<Category> assignedCats = p->getAssignedCategories();
-      for (int i=0; i < assignedCats.count(); i++)
+      vector<Category> assignedCats = p->getAssignedCategories();
+      for (int i=0; i < assignedCats.size(); i++)
       {
         result += assignedCats.at(i).getName() + ", ";
       }
       
-      if (assignedCats.count() > 0)
+      if (assignedCats.size() > 0)
       {
         result = result.left(result.length() - 2);
       }
@@ -140,7 +140,7 @@ QVariant PlayerTableModel::headerData(int section, Qt::Orientation orientation, 
 
 void PlayerTableModel::onBeginCreatePlayer()
 {
-  int newPos = playerTab.length();
+  int newPos = playerTab->length();
   beginInsertRows(QModelIndex(), newPos, newPos);
 }
 

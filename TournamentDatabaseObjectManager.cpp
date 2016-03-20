@@ -34,11 +34,12 @@ namespace QTournament
    *    * Except for the new row, all other sequence numbers in the table are correct
    *
    */
-  void GenericObjectManager::fixSeqNumberAfterInsert(const QString& tabName) const
+  void TournamentDatabaseObjectManager::fixSeqNumberAfterInsert(SqliteOverlay::DbTab* tabPtr) const
   {
-    auto r = tab->getSingleRowByColumnValueNull(GENERIC_SEQNUM_FIELD_NAME);
+    SqliteOverlay::DbTab* t = (tabPtr == nullptr) ? tab : tabPtr;
+    auto r = t->getSingleRowByColumnValueNull(GENERIC_SEQNUM_FIELD_NAME);
     
-    int newSeqNum = tab->length() - 1;
+    int newSeqNum = t->length() - 1;
     
     r.update(GENERIC_SEQNUM_FIELD_NAME, newSeqNum);
   }
@@ -46,13 +47,15 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  void GenericObjectManager::fixSeqNumberAfterDelete(const QString& tabName, int deletedSeqNum) const
+  void TournamentDatabaseObjectManager::fixSeqNumberAfterDelete(SqliteOverlay::DbTab* tabPtr, int deletedSeqNum) const
   {
+    SqliteOverlay::DbTab* t = (tabPtr == nullptr) ? tab : tabPtr;
+
     SqliteOverlay::WhereClause wc;
     wc.addIntCol(GENERIC_SEQNUM_FIELD_NAME, ">", deletedSeqNum);
     wc.setOrderColumn_Asc(GENERIC_SEQNUM_FIELD_NAME);
 
-    auto it = tab->getRowsByWhereClause(wc);
+    auto it = t->getRowsByWhereClause(wc);
     
     
     // re-number all items behind the deleted item

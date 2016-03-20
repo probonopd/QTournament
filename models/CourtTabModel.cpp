@@ -33,7 +33,7 @@ CourtTableModel::CourtTableModel(Tournament* tnmt)
 int CourtTableModel::rowCount(const QModelIndex& parent) const
 {
   if (parent.isValid()) return 0;
-  return courtTab.length();
+  return courtTab->length();
 }
 
 //----------------------------------------------------------------------------
@@ -52,7 +52,7 @@ QVariant CourtTableModel::data(const QModelIndex& index, int role) const
       //return QVariant();
       return QString("Invalid index");
 
-    if (index.row() >= courtTab.length())
+    if (index.row() >= courtTab->length())
       //return QVariant();
       return QString("Invalid row: " + QString::number(index.row()));
 
@@ -112,7 +112,7 @@ QVariant CourtTableModel::headerData(int section, Qt::Orientation orientation, i
 
 void CourtTableModel::onBeginCreateCourt()
 {
-  int newPos = courtTab.length();
+  int newPos = courtTab->length();
   beginInsertRows(QModelIndex(), newPos, newPos);
 }
 //----------------------------------------------------------------------------

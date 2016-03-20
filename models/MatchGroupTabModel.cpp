@@ -34,7 +34,7 @@ MatchGroupTableModel::MatchGroupTableModel(Tournament* tnmt)
 int MatchGroupTableModel::rowCount(const QModelIndex& parent) const
 {
   if (parent.isValid()) return 0;
-  return mgTab.length();
+  return mgTab->length();
 }
 
 //----------------------------------------------------------------------------
@@ -53,7 +53,7 @@ QVariant MatchGroupTableModel::data(const QModelIndex& index, int role) const
       //return QVariant();
       return QString("Invalid index");
 
-    if (index.row() >= mgTab.length())
+    if (index.row() >= mgTab->length())
       //return QVariant();
       return QString("Invalid row: " + QString::number(index.row()));
 
@@ -158,7 +158,7 @@ QVariant MatchGroupTableModel::headerData(int section, Qt::Orientation orientati
 
 void MatchGroupTableModel::onBeginCreateMatchGroup()
 {
-  int newPos = mgTab.length();
+  int newPos = mgTab->length();
   beginInsertRows(QModelIndex(), newPos, newPos);
 }
 //----------------------------------------------------------------------------

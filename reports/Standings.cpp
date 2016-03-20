@@ -57,7 +57,7 @@ upSimpleReport Standings::regenerateReport()
   upSimpleReport result = createEmptyReport_Portrait();
 
   // return an empty report if we have no standings yet
-  if (rll.isEmpty() || ((rll.size() == 1) && (rll.at(0).size() == 0)))
+  if (rll.empty() || ((rll.size() == 1) && (rll.at(0).size() == 0)))
   {
     setHeaderAndHeadline(result.get(), repName);
     result->writeLine(tr("There are no standings for this round yet."));
@@ -240,7 +240,7 @@ int Standings::determineBestPossibleRankForPlayerAfterRound(const PlayerPair& pp
     QString where = QString("%1 = %2 OR %3 = %4").arg(MA_PAIR1_SYMBOLIC_VAL).arg(ma.getId());
     where = where.arg(MA_PAIR2_SYMBOLIC_VAL).arg(ma.getId());
 
-    TabRow winnerMatchRow = (*db)[TAB_MATCH].getSingleRowByWhereClause(where);  // this query must always yield exactly one match
+    TabRow winnerMatchRow = db->getTab(TAB_MATCH)->getSingleRowByWhereClause(where.toUtf8().constData());  // this query must always yield exactly one match
 
     return mm->getMatch(winnerMatchRow.getId());
   };

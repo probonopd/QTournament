@@ -320,7 +320,7 @@ void CatTabWidget::updatePairs()
   
   int nextPairedItemCount = 1;
   int nextUnPairedItemCount = 1;
-  for (int i=0; i < pairList.count(); i++)
+  for (int i=0; i < pairList.size(); i++)
   {
     PlayerPair pp = pairList.at(i);
     

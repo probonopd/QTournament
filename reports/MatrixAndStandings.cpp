@@ -127,7 +127,7 @@ upSimpleReport MartixAndStandings::regenerateReport()
     // plot the standing, if available
     if (round > 0)
     {
-      if (rll.isEmpty() || ((rll.size() == 1) && (rll.at(0).size() == 0)))
+      if (rll.empty() || ((rll.size() == 1) && (rll.at(0).size() == 0)))
       {
         result->writeLine(tr("There are no standings for this round yet."));
       } else {
@@ -135,7 +135,7 @@ upSimpleReport MartixAndStandings::regenerateReport()
         for (const RankingEntryList& rl : rll)
         {
           // skip empty entries (there shouldn't be any, but anyway...)
-          if (rl.isEmpty()) continue;
+          if (rl.empty()) continue;
 
           // skip entries belong to the wrong group
           if ((msys == GROUPS_WITH_KO) && (rl.at(0).getGroupNumber() != grpNum)) continue;

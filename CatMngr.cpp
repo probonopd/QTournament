@@ -76,7 +76,7 @@ namespace QTournament
     
     emit beginCreateCategory();
     tab->insertRow(cvc);
-    fixSeqNumberAfterInsert(TAB_CATEGORY);
+    fixSeqNumberAfterInsert();
     emit endCreateCategory(tab->length() - 1); // the new sequence number is always the greatest
     
     return OK;
@@ -492,7 +492,7 @@ namespace QTournament
     int oldSeqNum = cat.getSeqNum();
     emit beginDeleteCategory(oldSeqNum);
     tab->deleteRowsByColumnValue("id", catId);
-    fixSeqNumberAfterDelete(TAB_CATEGORY, oldSeqNum);
+    fixSeqNumberAfterDelete(tab, oldSeqNum);
     emit endDeleteCategory();
 
     return OK;
@@ -568,14 +568,14 @@ namespace QTournament
         {
           int deletedSeqNum = ma.getSeqNum();
           t->deleteRowsByColumnValue("id", ma.getId());
-          fixSeqNumberAfterDelete(TAB_MATCH, deletedSeqNum);
+          fixSeqNumberAfterDelete(t, deletedSeqNum);
         }
 
         // the match group has incoming links from matches
         // and ranking and both have been deleted by now
         int deletedSeqNum = mg.getSeqNum();
         mgTab->deleteRowsByColumnValue("id", mg.getId());
-        fixSeqNumberAfterDelete(TAB_MATCH_GROUP, deletedSeqNum);
+        fixSeqNumberAfterDelete(mgTab, deletedSeqNum);
       }
     }
 
@@ -590,7 +590,7 @@ namespace QTournament
     // final deletion: the category itself
     int deletedSeqNum = cat.getSeqNum();
     tab->deleteRowsByColumnValue("id", catId);
-    fixSeqNumberAfterDelete(TAB_CATEGORY, deletedSeqNum);
+    fixSeqNumberAfterDelete(tab, deletedSeqNum);
 
     //
     // deletion completed

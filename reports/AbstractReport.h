@@ -23,6 +23,8 @@
 
 #include <QString>
 
+#include "KeyValueTab.h"
+
 #include "TournamentDB.h"
 #include "SimpleReportGenerator.h"
 #include "Match.h"
@@ -70,7 +72,7 @@ namespace QTournament
   protected:
     TournamentDB* db;
     QString name;
-    KeyValueTab cfg;
+    unique_ptr<KeyValueTab> cfg;
 
     void prepStyles(upSimpleReport& rep) const;
     void printIntermediateHeader(upSimpleReport& rep, const QString& txt, double skipBefore__MM=SKIP_BEFORE_INTERMEDIATE_HEADER__MM) const;

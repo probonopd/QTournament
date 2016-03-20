@@ -65,9 +65,9 @@ QList<PlayerPairList> dlgGroupAssignment::getRandomizedPlayerPairListList()
       PlayerPairList grpMemberList;
       for (int memberCount=0; memberCount < grpDef.getGroupSize(); memberCount++)
       {
-	int playerPairIndex = qrand() % ppList.count();
-	grpMemberList.append(ppList.at(playerPairIndex));
-	ppList.removeAt(playerPairIndex);
+        int playerPairIndex = qrand() % ppList.size();
+        grpMemberList.push_back(ppList.at(playerPairIndex));
+        ppList.erase(ppList.begin() + playerPairIndex);
       }
       result.append(grpMemberList);
       grpIndex++;
@@ -100,7 +100,7 @@ void dlgGroupAssignment::onBtnSwapClicked()
 
 //----------------------------------------------------------------------------
 
-QList<PlayerPairList> dlgGroupAssignment::getGroupAssignments()
+vector<PlayerPairList> dlgGroupAssignment::getGroupAssignments()
 {
   return ui.grpWidget->getGroupAssignments();
 }

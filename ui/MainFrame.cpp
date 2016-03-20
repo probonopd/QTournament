@@ -227,8 +227,8 @@ void MainFrame::openTournament()
   QApplication::restoreOverrideCursor();
 
   // determine the tournament title
-  KeyValueTab cfg = KeyValueTab::getTab(tnmt->getDatabaseHandle(), TAB_CFG);
-  QString tnmtTitle = cfg.getString(CFG_KEY_TNMT_NAME);
+  auto cfg = KeyValueTab::getTab(tnmt->getDatabaseHandle(), TAB_CFG);
+  QString tnmtTitle = QString(cfg->operator[](CFG_KEY_TNMT_NAME).data());
   setWindowTitle("QTournament - " + tnmtTitle + "  (" + filename + ")");
 
   // open the external player database file, if configured
@@ -429,7 +429,7 @@ void MainFrame::setupTestScenario(int scenarioID)
     assert(e == OK);
 
     // fake a list of player-pair-lists for the group assignments
-    QList<PlayerPairList> ppListList;
+    vector<PlayerPairList> ppListList;
     for (int grpNum=0; grpNum < 8; ++grpNum)
     {
         PlayerPairList thisGroup;
@@ -439,9 +439,9 @@ void MainFrame::setupTestScenario(int scenarioID)
 
             Player p = pmngr->getPlayer(playerId);
             PlayerPair pp(p, (playerId-6));   // PlayerPairID starts at 1
-            thisGroup.append(pp);
+            thisGroup.push_back(pp);
         }
-        ppListList.append(thisGroup);
+        ppListList.push_back(thisGroup);
     }
 
     // make sure the faked group assignment is valid
@@ -495,9 +495,9 @@ void MainFrame::setupTestScenario(int scenarioID)
         PlayerPairList thisGroup;
         for (int pNum=0; pNum < 4; ++pNum)
         {
-            thisGroup.append(allPairsInCat.at(grpNum * 4 + pNum));
+            thisGroup.push_back(allPairsInCat.at(grpNum * 4 + pNum));
         }
-        ppListList.append(thisGroup);
+        ppListList.push_back(thisGroup);
     }
 
     // make sure the faked group assignment is valid
@@ -581,7 +581,7 @@ void MainFrame::setupTestScenario(int scenarioID)
     // play all scheduled matches
     QDateTime curDateTime = QDateTime::currentDateTimeUtc();
     uint epochSecs = curDateTime.toTime_t();
-    DbTab matchTab = tnmt->getDatabaseHandle()->getTab(TAB_MATCH);
+    DbTab* matchTab = tnmt->getDatabaseHandle()->getTab(TAB_MATCH);
     while (true)
     {
       int nextMacthId;
@@ -601,8 +601,8 @@ void MainFrame::setupTestScenario(int scenarioID)
       // overwrite the match finish time to get a fake match duration
       // the duration is at least 15 minutes and max 25 minutes
       int fakeDuration = 15 * 60  +  10 * 60 * (qrand() / (RAND_MAX * 1.0));
-      TabRow maRow = matchTab[nextMacthId];
-      maRow.update(MA_FINISH_TIME, QString::number(epochSecs + fakeDuration));
+      TabRow maRow = matchTab->operator [](nextMacthId);
+      maRow.update(MA_FINISH_TIME, to_string(epochSecs + fakeDuration));
     }
   };
 
@@ -624,7 +624,7 @@ void MainFrame::setupTestScenario(int scenarioID)
     assert(e == OK);
 
     // prepare an empty list for the not-required initial group assignment
-    QList<PlayerPairList> ppListList;
+    vector<PlayerPairList> ppListList;
 
     // prepare a list for the (faked) initial ranking
     PlayerPairList initialRanking = ls.getPlayerPairs();
@@ -718,7 +718,7 @@ void MainFrame::setupTestScenario(int scenarioID)
     assert(e == OK);
 
     // prepare an empty list for the not-required initial group assignment
-    QList<PlayerPairList> ppListList;
+    vector<PlayerPairList> ppListList;
 
     // prepare a list for the (faked) initial ranking
     PlayerPairList initialRanking = ls.getPlayerPairs();

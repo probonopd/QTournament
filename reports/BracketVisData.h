@@ -125,6 +125,7 @@ namespace QTournament
   {
     friend class BracketVisData;
     friend class TournamentDatabaseObjectManager;
+    friend class GenericObjectManager<TournamentDB>;
 
   public:
     // getters
@@ -165,7 +166,7 @@ namespace QTournament
     BracketVisElement (TournamentDB* _db, SqliteOverlay::TabRow row);
     unique_ptr<PlayerPair> getParentPlayerPair(int pos) const;
   };
-  typedef QList<BracketVisElement> BracketVisElementList;
+  typedef vector<BracketVisElement> BracketVisElementList;
   typedef unique_ptr<BracketVisElement> upBracketVisElement;
 
 
@@ -189,7 +190,6 @@ namespace QTournament
 
   private:
     BracketVisData(TournamentDB* _db, const Category& _cat);
-    DbTab visTab;
     Category cat;
     QList<int> labelPosOnPage;
 

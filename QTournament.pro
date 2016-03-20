@@ -262,10 +262,10 @@ else:unix:CONFIG(debug, debug|release): LIBS += -L$$PWD/../build-SimpleReportGen
 INCLUDEPATH += $$PWD/../SimpleReportGeneratorLib
 DEPENDPATH += $$PWD/../SimpleReportGeneratorLib
 
-win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../#include "SqliteOverlay/release/ -lSqliteOverlay
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../#include "SqliteOverlay/debug/ -lSqliteOverlay
-else:unix:!macx:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../#include "SqliteOverlay/debug/ -lSqliteOverlay
-else:unix:!macx:CONFIG(release, debug|release): LIBS += -L$$PWD/../../#include "SqliteOverlay/release/ -lSqliteOverlay
+win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../SqliteOverlay/release/ -lSqliteOverlay
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../SqliteOverlay/debug/ -lSqliteOverlay
+else:unix:!macx:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../SqliteOverlay/debug/ -lSqliteOverlay
+else:unix:!macx:CONFIG(release, debug|release): LIBS += -L$$PWD/../../SqliteOverlay/release/ -lSqliteOverlay
 
 INCLUDEPATH += $$PWD/../../SqliteOverlay
 #INCLUDEPATH += $$PWD/../..

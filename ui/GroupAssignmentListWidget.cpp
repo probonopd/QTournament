@@ -79,7 +79,7 @@ void GroupAssignmentListWidget::setup(QList<PlayerPairList> ppListList)
     
     // fill the newly created widget
     PlayerPairList ppList = ppListList.at(i);
-    for (int cnt=0; cnt < ppList.count(); cnt++)
+    for (int cnt=0; cnt < ppList.size(); cnt++)
     {
       QListWidgetItem* lwi = new QListWidgetItem(lw);
       lwi->setData(Qt::UserRole, ppList.at(cnt).getPairId());
@@ -211,8 +211,8 @@ PlayerPairList GroupAssignmentListWidget::getSelectedPlayerPairs()
     int id2 = selectionQueue.last()->selectedItems()[0]->data(Qt::UserRole).toInt();
     
     auto tnmt = Tournament::getActiveTournament();
-    result.append(tnmt->getPlayerMngr()->getPlayerPair(id1));
-    result.append(tnmt->getPlayerMngr()->getPlayerPair(id2));
+    result.push_back(tnmt->getPlayerMngr()->getPlayerPair(id1));
+    result.push_back(tnmt->getPlayerMngr()->getPlayerPair(id2));
   }
   
   return result;
@@ -242,9 +242,9 @@ void GroupAssignmentListWidget::swapSelectedPlayers()
 
 //----------------------------------------------------------------------------
 
-QList<PlayerPairList> GroupAssignmentListWidget::getGroupAssignments()
+vector<PlayerPairList> GroupAssignmentListWidget::getGroupAssignments()
 {
-  QList<PlayerPairList> result;
+  vector<PlayerPairList> result;
   if (!isInitialized) return result;
 
   auto tnmt = Tournament::getActiveTournament();
@@ -260,10 +260,10 @@ QList<PlayerPairList> GroupAssignmentListWidget::getGroupAssignments()
     {
       QListWidgetItem* it = lw->item(cnt);
       int ppId = it->data(Qt::UserRole).toInt();
-      ppList.append(pmngr->getPlayerPair(ppId));
+      ppList.push_back(pmngr->getPlayerPair(ppId));
     }
 
-    result.append(ppList);
+    result.push_back(ppList);
   }
 
   return result;

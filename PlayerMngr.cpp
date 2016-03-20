@@ -99,7 +99,7 @@ namespace QTournament
     // create the new player row
     emit beginCreatePlayer();
     tab->insertRow(cvc);
-    fixSeqNumberAfterInsert(TAB_PLAYER);
+    fixSeqNumberAfterInsert();
     emit endCreatePlayer(tab->length() - 1); // the new sequence number is always the greatest
     
     return OK;
@@ -775,7 +775,7 @@ namespace QTournament
     int oldSeqNum = p.getSeqNum();
     emit beginDeletePlayer(oldSeqNum);
     tab->deleteRowsByColumnValue("id", p.getId());
-    fixSeqNumberAfterDelete(TAB_PLAYER, oldSeqNum);
+    fixSeqNumberAfterDelete(tab, oldSeqNum);
     emit endDeletePlayer();
 
     return OK;

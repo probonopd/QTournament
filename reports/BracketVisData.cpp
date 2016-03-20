@@ -18,6 +18,8 @@
 
 #include <memory>
 
+#include "ClausesAndQueries.h"
+
 #include "Tournament.h"
 #include "BracketVisData.h"
 
@@ -30,9 +32,10 @@ unique_ptr<QTournament::BracketVisData> QTournament::BracketVisData::getExisting
   TournamentDB* _db = tnmt->getDatabaseHandle();
 
   // check if the requested category has visualization data
-  DbTab catTab = _db->getTab(TAB_CATEGORY);
-  QVariant visData = catTab[_cat.getId()][CAT_BRACKET_VIS_DATA];
-  if (visData.isNull())
+  DbTab* catTab = _db->getTab(TAB_CATEGORY);
+  TabRow r = catTab->operator [](_cat.getId());
+  auto visData = r.getString2(CAT_BRACKET_VIS_DATA);
+  if (visData->isNull())
   {
     return nullptr;
   }
@@ -101,24 +104,24 @@ tuple<BRACKET_PAGE_ORIENTATION, BRACKET_LABEL_POS> BracketVisData::getPageInfo(i
 
 QTournament::BracketVisElementList BracketVisData::getVisElements(int idxPage)
 {
-  QVariantList qvl;
-  qvl << BV_CAT_REF << cat.getId();
+  WhereClause wc;
+  wc.addIntCol(BV_CAT_REF, cat.getId());
   if (idxPage >= 0)
   {
-    qvl << BV_PAGE << idxPage;
+    wc.addIntCol(BV_PAGE, idxPage);
   }
-  return getObjectsByColumnValue<BracketVisElement>(visTab, qvl);
+  return getObjectsByWhereClause<BracketVisElement>(wc);
 }
 
 //----------------------------------------------------------------------------
 
 QTournament::upBracketVisElement BracketVisData::getVisElement(int idx) const
 {
-  QVariantList qvl;
-  qvl << BV_CAT_REF << cat.getId();
-  qvl << BV_ELEMENT_ID << idx;
+  WhereClause wc;
+  wc.addIntCol(BV_CAT_REF, cat.getId());
+  wc.addIntCol(BV_ELEMENT_ID, idx);
 
-  return getSingleObjectByColumnValue<BracketVisElement>(visTab, qvl);
+  return getSingleObjectByWhereClause<BracketVisElement>(wc);
 }
 
 //----------------------------------------------------------------------------
@@ -126,51 +129,52 @@ QTournament::upBracketVisElement BracketVisData::getVisElement(int idx) const
 void BracketVisData::addPage(BRACKET_PAGE_ORIENTATION pageOrientation, BRACKET_LABEL_POS labelOnPagePosition) const
 {
   // convert the parameters into a comma-sep. string
-  QString pageDef = QString::number(static_cast<int>(pageOrientation));
-  pageDef += "," + QString::number(static_cast<int>(labelOnPagePosition));
+  string pageDef = to_string(static_cast<int>(pageOrientation));
+  pageDef += "," + to_string(static_cast<int>(labelOnPagePosition));
 
   // get the existing page specification
-  DbTab catTab = db->getTab(TAB_CATEGORY);
+  DbTab* catTab = db->getTab(TAB_CATEGORY);
   int catId = cat.getId();
-  QString visData = catTab[catId][CAT_BRACKET_VIS_DATA].toString();
+  TabRow visDataRow = catTab->operator [](catId);
+  string visData = visDataRow[CAT_BRACKET_VIS_DATA];
 
   // treat the vis data as a colon-separated list of integers and add a new
   // element, if necessary
-  if (!(visData.isEmpty()))
+  if (!(visData.empty()))
   {
     visData += ":";
   }
   visData += pageDef;
 
   // write the new string to the database
-  catTab[catId].update(CAT_BRACKET_VIS_DATA, visData);
+  visDataRow.update(CAT_BRACKET_VIS_DATA, visData);
 }
 
 //----------------------------------------------------------------------------
 
 void BracketVisData::addElement(int idx, const RawBracketVisElement& el)
 {
-  QVariantList qvl;
+  ColumnValueClause cvc;
 
-  qvl << BV_CAT_REF << cat.getId();
+  cvc.addIntCol(BV_CAT_REF, cat.getId());
 
-  qvl << BV_PAGE << el.page;
-  qvl << BV_GRID_X0 << el.gridX0;
-  qvl << BV_GRID_Y0 << el.gridY0;
-  qvl << BV_SPAN_Y << el.ySpan;
-  qvl << BV_ORIENTATION << static_cast<int>(el.orientation);
-  qvl << BV_TERMINATOR << static_cast<int>(el.terminator);
-  qvl << BV_Y_PAGEBREAK_SPAN << el.yPageBreakSpan;
-  qvl << BV_NEXT_PAGE_NUM << el.nextPageNum;
-  qvl << BV_TERMINATOR_OFFSET_Y << el.terminatorOffsetY;
-  qvl << BV_ELEMENT_ID << idx;
-  qvl << BV_INITIAL_RANK1 << el.initialRank1;
-  qvl << BV_INITIAL_RANK2 << el.initialRank2;
-  qvl << BV_NEXT_WINNER_MATCH << el.nextMatchForWinner;
-  qvl << BV_NEXT_LOSER_MATCH << el.nextMatchForLoser;
-  qvl << BV_NEXT_MATCH_POS_FOR_WINNER << el.nextMatchPlayerPosForWinner;
-  qvl << BV_NEXT_MATCH_POS_FOR_LOSER << el.nextMatchPlayerPosForLoser;
-  visTab.insertRow(qvl);
+  cvc.addIntCol(BV_PAGE, el.page);
+  cvc.addIntCol(BV_GRID_X0, el.gridX0);
+  cvc.addIntCol(BV_GRID_Y0, el.gridY0);
+  cvc.addIntCol(BV_SPAN_Y, el.ySpan);
+  cvc.addIntCol(BV_ORIENTATION, static_cast<int>(el.orientation));
+  cvc.addIntCol(BV_TERMINATOR, static_cast<int>(el.terminator));
+  cvc.addIntCol(BV_Y_PAGEBREAK_SPAN, el.yPageBreakSpan);
+  cvc.addIntCol(BV_NEXT_PAGE_NUM, el.nextPageNum);
+  cvc.addIntCol(BV_TERMINATOR_OFFSET_Y, el.terminatorOffsetY);
+  cvc.addIntCol(BV_ELEMENT_ID, idx);
+  cvc.addIntCol(BV_INITIAL_RANK1, el.initialRank1);
+  cvc.addIntCol(BV_INITIAL_RANK2, el.initialRank2);
+  cvc.addIntCol(BV_NEXT_WINNER_MATCH, el.nextMatchForWinner);
+  cvc.addIntCol(BV_NEXT_LOSER_MATCH, el.nextMatchForLoser);
+  cvc.addIntCol(BV_NEXT_MATCH_POS_FOR_WINNER, el.nextMatchPlayerPosForWinner);
+  cvc.addIntCol(BV_NEXT_MATCH_POS_FOR_LOSER, el.nextMatchPlayerPosForLoser);
+  tab->insertRow(cvc);
 }
 
 //----------------------------------------------------------------------------
@@ -205,7 +209,7 @@ void BracketVisData::fillMissingPlayerNames() const
     where = where.arg(BV_MATCH_REF);
     where = where.arg(BV_INITIAL_RANK1, BV_INITIAL_RANK2);
     where = where.arg(BV_PAIR1_REF, BV_PAIR2_REF);
-    for (BracketVisElement el : getObjectsByWhereClause<BracketVisElement>(visTab, where))
+    for (BracketVisElement el : getObjectsByWhereClause<BracketVisElement>(where.toUtf8().constData()))
     {
       int iniRank = el.getInitialRank1();
       if (iniRank <= seeding.size())
@@ -231,7 +235,7 @@ void BracketVisData::fillMissingPlayerNames() const
     where = where.arg(BV_INITIAL_RANK1, BV_INITIAL_RANK2);  // %4, %5
     where = where.arg(BV_PAIR1_REF, BV_PAIR2_REF);   // %6, %7
 
-    for (BracketVisElement el : getObjectsByWhereClause<BracketVisElement>(visTab, where))
+    for (BracketVisElement el : getObjectsByWhereClause<BracketVisElement>(where.toUtf8().constData()))
     {
       // Pair 1:
       // is there any match pointing to this bracket element
@@ -259,7 +263,7 @@ void BracketVisData::fillMissingPlayerNames() const
 //----------------------------------------------------------------------------
 
 BracketVisData::BracketVisData(TournamentDB* _db, const Category& _cat)
-: GenericObjectManager(_db), visTab((*db)[TAB_BRACKET_VIS]), cat(_cat)
+: TournamentDatabaseObjectManager(_db, TAB_BRACKET_VIS), cat(_cat)
 {
 }
 
@@ -283,7 +287,7 @@ unique_ptr<PlayerPair> BracketVisData::getParentPlayerPairForElement(const Brack
   where = where.arg(pos);                           // %6
   where = where.arg(BV_NEXT_LOSER_MATCH);           // %7
   where = where.arg(BV_NEXT_MATCH_POS_FOR_LOSER);   // %8
-  auto parentElem = getSingleObjectByWhereClause<BracketVisElement>(visTab, where);
+  auto parentElem = getSingleObjectByWhereClause<BracketVisElement>(where.toUtf8().constData());
 
   // case 1: no parent
   if (parentElem == nullptr) return nullptr;
@@ -380,17 +384,17 @@ unique_ptr<PlayerPair> BracketVisData::getParentPlayerPairForElement(const Brack
 
 unique_ptr<Match> BracketVisElement::getLinkedMatch() const
 {
-  QVariant _matchId = row[BV_MATCH_REF];
-  if (_matchId.isNull()) return nullptr;
+  auto _matchId = row.getInt2(BV_MATCH_REF);
+  if (_matchId->isNull()) return nullptr;
   auto tnmt = Tournament::getActiveTournament();
-  return tnmt->getMatchMngr()->getMatch(_matchId.toInt());
+  return tnmt->getMatchMngr()->getMatch(_matchId->get());
 }
 
 //----------------------------------------------------------------------------
 
 Category BracketVisElement::getLinkedCategory() const
 {
-  int catId = row[BV_CAT_REF].toInt();
+  int catId = row.getInt(BV_CAT_REF);
   auto tnmt = Tournament::getActiveTournament();
   return tnmt->getCatMngr()->getCategoryById(catId);
 }
@@ -399,15 +403,15 @@ Category BracketVisElement::getLinkedCategory() const
 
 unique_ptr<PlayerPair> BracketVisElement::getLinkedPlayerPair(int pos) const
 {
-  if ((pos != 1) && (pos != 2)) return false;
+  if ((pos != 1) && (pos != 2)) return nullptr;
 
-  QVariant _pairId;
-  if (pos == 1) _pairId = row[BV_PAIR1_REF];
-  else _pairId = row[BV_PAIR2_REF];
+  unique_ptr<ScalarQueryResult<int>> _pairId;
+  if (pos == 1) _pairId = row.getInt2(BV_PAIR1_REF);
+  else _pairId = row.getInt2(BV_PAIR2_REF);
 
-  if (_pairId.isNull()) return nullptr;
+  if (_pairId->isNull()) return nullptr;
 
-  return make_unique<PlayerPair>(db, _pairId.toInt());
+  return make_unique<PlayerPair>(db, _pairId->get());
 }
 
 //----------------------------------------------------------------------------

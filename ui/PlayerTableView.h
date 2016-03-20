@@ -23,6 +23,7 @@
 
 #include <QTableView>
 #include <QSortFilterProxyModel>
+#include <QStringListModel>
 
 #include "Tournament.h"
 #include "delegates/PlayerItemDelegate.h"

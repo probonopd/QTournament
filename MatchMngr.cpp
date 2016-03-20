@@ -131,7 +131,7 @@ namespace QTournament {
     cvc.addIntCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MG_CONFIG));
     emit beginCreateMatchGroup();
     int newId = groupTab->insertRow(cvc);
-    fixSeqNumberAfterInsert(TAB_MATCH_GROUP);
+    fixSeqNumberAfterInsert(groupTab);
     emit endCreateMatchGroup(groupTab->length() - 1); // the new sequence number is always the largest
 
     
@@ -249,7 +249,7 @@ namespace QTournament {
     cvc.addIntCol(MA_LOSER_RANK, -1);         // default: no rank, no knock out
     emit beginCreateMatch();
     int newId = tab->insertRow(cvc);
-    fixSeqNumberAfterInsert(TAB_MATCH);
+    fixSeqNumberAfterInsert();
     emit endCreateMatch(tab->length() - 1); // the new sequence number is always the highest
 
     // create a match group object for the new group and return a pointer

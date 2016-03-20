@@ -132,7 +132,7 @@ void ResultsAndNextMatches::printResultPart(upSimpleReport& rep) const
   MatchList allMatches;
   for (MatchGroup mg : mgl)
   {
-    allMatches.append(mg.getMatches());
+    for (Match& m : mg.getMatches()) allMatches.push_back(m);
   }
 
   std::sort(allMatches.begin(), allMatches.end(), getSortFunction_MatchByGroupAndNumber());
@@ -172,11 +172,11 @@ void ResultsAndNextMatches::printNextMatchPart(upSimpleReport& rep) const
       isAllScheduled = false;
       break;
     }
-    allMatches.append(mg.getMatches());
+    for (Match& m : mg.getMatches()) allMatches.push_back(m);
   }
 
   // if there are unscheduled match groups, print nothing at all
-  if ((!isAllScheduled) || (allMatches.isEmpty()))
+  if ((!isAllScheduled) || (allMatches.empty()))
   {
     rep->writeLine(tr("Matches for next round are not yet scheduled."));
     return;
@@ -190,8 +190,8 @@ void ResultsAndNextMatches::printNextMatchPart(upSimpleReport& rep) const
   PlayerPairList playingList;
   for (Match ma : allMatches)
   {
-    playingList.append(ma.getPlayerPair1());
-    playingList.append(ma.getPlayerPair2());
+    playingList.push_back(ma.getPlayerPair1());
+    playingList.push_back(ma.getPlayerPair2());
   }
   auto specialCat = cat.convertToSpecializedObject();
   ERR e;
@@ -200,8 +200,8 @@ void ResultsAndNextMatches::printNextMatchPart(upSimpleReport& rep) const
   {
     for (PlayerPair pp : remainingPlayers)
     {
-      if (playingList.contains(pp)) continue;
-      byeList.append(pp);
+      if (std::find(playingList.begin(), playingList.end(), pp) != playingList.end()) continue;
+      byeList.push_back(pp);
     }
   }
 

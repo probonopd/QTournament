@@ -70,7 +70,7 @@ namespace QTournament
     
     emit beginCreateTeam();
     tab->insertRow(cvc);
-    fixSeqNumberAfterInsert(TAB_TEAM);
+    fixSeqNumberAfterInsert();
     emit endCreateTeam(tab->length() - 1);  // the new sequence number is always the greatest
     
     return OK;

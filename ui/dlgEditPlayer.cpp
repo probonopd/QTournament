@@ -195,7 +195,7 @@ void DlgEditPlayer::initFromPlayerData()
 void DlgEditPlayer::initTeamList()
 {
   auto tnmt = Tournament::getActiveTournament();
-  QList<Team> allTeams = tnmt->getTeamMngr()->getAllTeams();
+  vector<Team> allTeams = tnmt->getTeamMngr()->getAllTeams();
 
   // Sort the list aphabetically
   std::sort(allTeams.begin(), allTeams.end(), [](Team& t1, Team& t2) {
@@ -211,7 +211,7 @@ void DlgEditPlayer::initTeamList()
     ui.cbTeams->addItem(tr("<Please select>"), -1);
   }
   
-  for (int i=0; i < allTeams.length(); i++)
+  for (int i=0; i < allTeams.size(); i++)
   {
     ui.cbTeams->addItem(allTeams.at(i).getName(), allTeams.at(i).getId());
   }

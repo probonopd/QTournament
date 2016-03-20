@@ -247,7 +247,7 @@ void AbstractReport::printMatchList(upSimpleReport& rep, const MatchList& maList
   }
 
   // if we have players with a bye, list those players at the bottom of the table
-  if (!(byeList.isEmpty()))
+  if (!(byeList.empty()))
   {
     // sort the list alphabetically (and not, e.g., by group)
     //
@@ -286,8 +286,8 @@ void AbstractReport::printMatchList(upSimpleReport& rep, const MatchList& maList
 
 void AbstractReport::setHeaderAndFooter(upSimpleReport& rep, const QString& reportName) const
 {
-  QString tName = cfg[CFG_KEY_TNMT_NAME].toString();
-  QString cName = cfg[CFG_KEY_TNMT_ORGA].toString();
+  QString tName = QString::fromUtf8(cfg->operator[](CFG_KEY_TNMT_NAME).data());
+  QString cName = QString::fromUtf8(cfg->operator[](CFG_KEY_TNMT_ORGA).data());
   rep->setGlobalHeader(cName, tName, SimpleReportLib::HeaderFooterStrings::TOKEN_CURDATE);
 
   QString fl = SimpleReportLib::HeaderFooterStrings::TOKEN_CURTIME;
