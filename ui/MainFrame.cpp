@@ -405,7 +405,8 @@ void MainFrame::setupTestScenario(int scenarioID)
       QString lastName = "Massive" + QString::number(i);
       pmngr->createNewPlayer("Lady", lastName, F, "Massive");
       Player p = pmngr->getPlayer(i + 7);   // the first six IDs are already used by previous ini-functions above
-      if (i < 40) ls.addPlayer(p);
+      //if (i < 40) ls.addPlayer(p);
+      if (i < 17) ls.addPlayer(p);
     }
     
     // create and set a valid group configuration for LS

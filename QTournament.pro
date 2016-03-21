@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += sql widgets
+QT       += widgets
 
 TARGET = QTournament
 TEMPLATE = app
@@ -254,10 +254,10 @@ FORMS += \
 
 TRANSLATIONS = tournament_de.ts
 
-win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../build-SimpleReportGenerator-Desktop_Qt_MinGW_w64_64bit_MSYS2-Release/release -lSimpleReportGenerator0
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../build-SimpleReportGenerator-Desktop_Qt_MinGW_w64_64bit_MSYS2-Debug/debug -lSimpleReportGenerator0
-else:unix:CONFIG(release, debug|release): LIBS += -L$$PWD/../build-SimpleReportGenerator-Desktop_GCC-Release/ -lSimpleReportGenerator
-else:unix:CONFIG(debug, debug|release): LIBS += -L$$PWD/../build-SimpleReportGenerator-Desktop_GCC-Debug/ -lSimpleReportGenerator
+win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../SimpleReportGeneratorLib/release -lSimpleReportGenerator0
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../SimpleReportGeneratorLib/debug -lSimpleReportGenerator0
+else:unix:CONFIG(release, debug|release): LIBS += -L$$PWD/../SimpleReportGeneratorLib/release -lSimpleReportGenerator
+else:unix:CONFIG(debug, debug|release): LIBS += -L$$PWD/../SimpleReportGeneratorLib/debug -lSimpleReportGenerator
 
 INCLUDEPATH += $$PWD/../SimpleReportGeneratorLib
 DEPENDPATH += $$PWD/../SimpleReportGeneratorLib

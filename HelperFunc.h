@@ -43,6 +43,15 @@ namespace QTournament
 #endif
   }
 
+  template<class T>
+  int eraseAllValuesFromVector(vector<T>& vec, const T& val)
+  {
+    int oldSize = vec.size();
+    vec.erase(std::remove(vec.begin(), vec.end(), val), vec.end());
+    int newSize = vec.size();
+    return oldSize - newSize;
+  }
+
 }
 #endif	/* HELPERFUNC_H */
 

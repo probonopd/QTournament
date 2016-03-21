@@ -37,8 +37,6 @@ namespace QTournament
   protected:
     void fixSeqNumberAfterInsert(SqliteOverlay::DbTab* tabPtr = nullptr) const;
     void fixSeqNumberAfterDelete(SqliteOverlay::DbTab* tabPtr, int deletedSeqNum) const;
-
-    TournamentDB* tdb;
   };
 
 }

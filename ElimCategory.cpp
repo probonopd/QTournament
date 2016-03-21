@@ -24,6 +24,7 @@
 #include "RankingMngr.h"
 #include "assert.h"
 #include "BracketGenerator.h"
+#include "HelperFunc.h"
 
 #include <QDebug>
 
@@ -301,14 +302,14 @@ namespace QTournament
         // check 1: is there a final rank for the winner?
         if (ma.getWinnerRank() > 0)
         {
-          std::remove(result.begin(), result.end(), *winner);
+          eraseAllValuesFromVector<PlayerPair>(result, *winner);
           winnerOut = true;
         }
 
         // check 2: is there a final rank for the loser?
         if (ma.getLoserRank() > 0)
         {
-          std::remove(result.begin(), result.end(), *loser);
+          eraseAllValuesFromVector<PlayerPair>(result, *loser);
           loserOut = true;
         }
 
@@ -350,7 +351,7 @@ namespace QTournament
         {
           if (!(hasFutureMatch(*winner, true)))
           {
-            std::remove(result.begin(), result.end(), *winner);
+            eraseAllValuesFromVector<PlayerPair>(result, *winner);
           }
         }
 
@@ -360,7 +361,7 @@ namespace QTournament
         {
           if (!(hasFutureMatch(*loser, false)))
           {
-            std::remove(result.begin(), result.end(), *loser);
+            eraseAllValuesFromVector<PlayerPair>(result, *loser);
           }
         }
       }

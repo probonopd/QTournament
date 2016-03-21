@@ -24,6 +24,7 @@
 #include "RankingMngr.h"
 #include "assert.h"
 #include "BracketGenerator.h"
+#include "HelperFunc.h"
 
 #include <QDebug>
 
@@ -324,7 +325,7 @@ namespace QTournament
         {
           auto loser = ma.getLoser();
           if (loser == nullptr) continue;   // shouldn't happen
-          std::remove(result.begin(), result.end(), *loser);
+          eraseAllValuesFromVector<PlayerPair>(result, *loser);
         }
       }
 
@@ -367,7 +368,7 @@ namespace QTournament
       {
         return INVALID_SEEDING_LIST;
       }
-      std::remove(controlList.begin(), controlList.end(), pp);
+      eraseAllValuesFromVector<PlayerPair>(controlList, pp);
     }
     if (!(controlList.empty()))
     {

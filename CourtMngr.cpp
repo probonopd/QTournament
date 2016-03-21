@@ -67,7 +67,7 @@ namespace QTournament
     
     // create a court object for the new court and return a pointer
     // to this new object
-    Court* co_raw = new Court(tdb, newId);
+    Court* co_raw = new Court(db, newId);
     if (err != nullptr) *err = OK;
     return unique_ptr<Court>(co_raw);
   }

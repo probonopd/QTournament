@@ -136,14 +136,11 @@ void BracketVisData::addPage(BRACKET_PAGE_ORIENTATION pageOrientation, BRACKET_L
   DbTab* catTab = db->getTab(TAB_CATEGORY);
   int catId = cat.getId();
   TabRow visDataRow = catTab->operator [](catId);
-  string visData = visDataRow[CAT_BRACKET_VIS_DATA];
+  auto _visData = visDataRow.getString2(CAT_BRACKET_VIS_DATA);
 
   // treat the vis data as a colon-separated list of integers and add a new
   // element, if necessary
-  if (!(visData.empty()))
-  {
-    visData += ":";
-  }
+  string visData = _visData->isNull() ? "" : (_visData->get() + ":");
   visData += pageDef;
 
   // write the new string to the database
