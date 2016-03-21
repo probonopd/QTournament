@@ -39,7 +39,8 @@ namespace QTournament
     static constexpr int NO_NEXT_MATCH = 0;
     static constexpr int UNUSED_PLAYER = 999999;
 
-    BracketMatchData();
+    // Explicitly declare a default copy constructor
+    BracketMatchData(const BracketMatchData& other) = default;
 
     // the next two values are either...
     //   * > 0 if they indicate an initial rank in the lef-most part of the bracket; or
@@ -70,7 +71,10 @@ namespace QTournament
 
     void dumpOnScreen();
 
+    static BracketMatchData getNew();
+
   private:
+    BracketMatchData();
     static int lastBracketMatchId;
     int bracketMatchId;
   };
@@ -78,7 +82,7 @@ namespace QTournament
   typedef unique_ptr<BracketMatchData> upBracketMatchData;
   //typedef QList<BracketMatchData> BracketMatchDataList;
   typedef vector<BracketMatchData> BracketMatchDataList;
-  typedef std::vector<upBracketMatchData> upBracketMatchDataVector;
+  //typedef std::vector<upBracketMatchData> upBracketMatchDataVector;
 
   class BracketGenerator
   {
@@ -90,16 +94,15 @@ namespace QTournament
     BracketGenerator();
     BracketGenerator(int type);
 
-    tuple<BracketMatchDataList, RawBracketVisDataDef> getBracketMatches(int numPlayers) const;
-    static std::function<bool (BracketMatchData&, BracketMatchData&)> getBracketMatchSortFunction_earlyRoundsFirst();
-    static std::function<bool (upBracketMatchData&, upBracketMatchData&)> getBracketMatchSortFunction_up_earlyRoundsFirst();
+    void getBracketMatches(int numPlayers, BracketMatchDataList& bmdl__out, RawBracketVisDataDef& bvdd__out) const;
+    static std::function<bool (const BracketMatchData&, const BracketMatchData&)> getBracketMatchSortFunction_earlyRoundsFirst();
     int getNumRounds(int numPlayers) const;
 
   private:
     int bracketType;
-    tuple<upBracketMatchDataVector, RawBracketVisDataDef> genBracket__SingleElim(int numPlayers) const;
-    tuple<upBracketMatchDataVector, RawBracketVisDataDef> genBracket__Ranking1(int numPlayers) const;
-    void removeUnusedMatches(upBracketMatchDataVector& bracketMatches, int numPlayers) const;  // modifies the list IN PLACE!!
+    void genBracket__SingleElim(int numPlayers, BracketMatchDataList& bmdl__out, RawBracketVisDataDef& bvdd__out) const;
+    void genBracket__Ranking1(int numPlayers, BracketMatchDataList& bmdl__out, RawBracketVisDataDef& bvdd__out) const;
+    void removeUnusedMatches(BracketMatchDataList& bracketMatches, int numPlayers) const;  // modifies the list IN PLACE!!
   };
 
 }

@@ -817,7 +817,7 @@ namespace QTournament
     BracketGenerator gen{bracketMode};
     BracketMatchDataList bmdl;
     RawBracketVisDataDef visDataDef;
-    tie(bmdl, visDataDef) = gen.getBracketMatches(seeding.size());
+    gen.getBracketMatches(seeding.size(), bmdl, visDataDef);
 
     //
     // handle a special corner case here:
@@ -843,7 +843,7 @@ namespace QTournament
       if ((cfg.getStartLevel() == FINAL) && (cfg.getSecondSurvives()))
       {
         // we start with finals, which is simply "first vs. second"
-        BracketMatchData final;
+        BracketMatchData final = BracketMatchData::getNew();
         final.setInitialRanks(1, 2);
         final.nextMatchForLoser = -2;
         final.nextMatchForWinner = -1;
@@ -860,7 +860,7 @@ namespace QTournament
         visFinal.terminatorOffsetY = 0;
 
         // match for third place
-        BracketMatchData thirdPlaceMatch;
+        BracketMatchData thirdPlaceMatch = BracketMatchData::getNew();
         thirdPlaceMatch.setInitialRanks(3, 4);
         thirdPlaceMatch.nextMatchForLoser = -4;
         thirdPlaceMatch.nextMatchForWinner = -3;
@@ -895,7 +895,12 @@ namespace QTournament
     }
 
     // sort the bracket data so that we have early rounds first
-    std::sort(bmdl.begin(), bmdl.end(), BracketGenerator::getBracketMatchSortFunction_earlyRoundsFirst());
+    //
+    // std::sort constantly produces memory leaks by reading / writing beyond the end of the list. So I've
+    // finally decided to use my own primitive sorting algorithm that is optimized on simplicity, not efficiency
+    //
+    //std::sort(bmdl.begin(), bmdl.end(), BracketGenerator::getBracketMatchSortFunction_earlyRoundsFirst());
+    lazyAndInefficientVectorSortFunc<BracketMatchData>(bmdl, BracketGenerator::getBracketMatchSortFunction_earlyRoundsFirst());
 
     // create match groups and matches "from left to right"
     auto tnmt = Tournament::getActiveTournament();

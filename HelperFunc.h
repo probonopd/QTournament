@@ -20,6 +20,7 @@
 #define	HELPERFUNC_H
 
 #include <string>
+#include <functional>
 
 #include <QString>
 
@@ -50,6 +51,27 @@ namespace QTournament
     vec.erase(std::remove(vec.begin(), vec.end(), val), vec.end());
     int newSize = vec.size();
     return oldSize - newSize;
+  }
+
+  template<class T>
+  void lazyAndInefficientVectorSortFunc(vector<T>& vec, std::function<bool (const T&, const T&)> compFunc)
+  {
+    int i = 0;
+    while (i < (vec.size() - 1))
+    {
+      bool isRightOrder = compFunc(vec[i], vec[i+1]);
+      if (!isRightOrder)
+      {
+        T tmp = vec[i];   // copy!!
+        vec[i] = vec[i+1];
+        vec[i+1] = tmp;
+
+        // start all over
+        i = 0;
+        continue;
+      }
+      ++i;
+    }
   }
 
 }

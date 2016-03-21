@@ -18,10 +18,12 @@
 
 #include <memory>
 #include <vector>
+#include <algorithm>
 
 #include <QDebug>
 
 #include "BracketGenerator.h"
+#include "HelperFunc.h"
 
 namespace QTournament
 {
@@ -47,15 +49,15 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  tuple<upBracketMatchDataVector, RawBracketVisDataDef> BracketGenerator::genBracket__SingleElim(int numPlayers) const
+  void BracketGenerator::genBracket__SingleElim(int numPlayers, BracketMatchDataList& bmdl__out, RawBracketVisDataDef& bvdd__out) const
   {
-    upBracketMatchDataVector result;
-    RawBracketVisDataDef visResult;
+    bmdl__out.clear();
+    bvdd__out.clear();
 
     // return an empty list in case of invalid arguments
     if (numPlayers < 2)
     {
-      return make_tuple(upBracketMatchDataVector(), visResult);
+      return;
     }
 
     BracketMatchData::resetBracketMatchId();
@@ -66,21 +68,21 @@ namespace QTournament
     //
     // the initial configuration is easy:
     // we start with finals, which is simply "first vs. second"
-    upBracketMatchData bmData = upBracketMatchData(new BracketMatchData);
-    bmData->setInitialRanks(1, 2);
-    bmData->nextMatchForLoser = -2;
-    bmData->nextMatchForWinner = -1;
-    bmData->depthInBracket = 0;
-    result.push_back(std::move(bmData));
+    BracketMatchData bmData = BracketMatchData::getNew();
+    bmData.setInitialRanks(1, 2);
+    bmData.nextMatchForLoser = -2;
+    bmData.nextMatchForWinner = -1;
+    bmData.depthInBracket = 0;
+    bmdl__out.push_back(bmData);
 
     // prepare a match for third place but don't store it yet
     // in the result list (otherwise it would be part of the
     // "split-each-match-into-two-new-ones"-algorithm (see below)
-    upBracketMatchData thirdPlaceMatch = upBracketMatchData(new BracketMatchData);
-    thirdPlaceMatch->setInitialRanks(3, 4);
-    thirdPlaceMatch->nextMatchForLoser = -4;
-    thirdPlaceMatch->nextMatchForWinner = -3;
-    thirdPlaceMatch->depthInBracket = 0;
+    BracketMatchData thirdPlaceMatch = BracketMatchData::getNew();
+    thirdPlaceMatch.setInitialRanks(3, 4);
+    thirdPlaceMatch.nextMatchForLoser = -4;
+    thirdPlaceMatch.nextMatchForWinner = -3;
+    thirdPlaceMatch.depthInBracket = 0;
 
     int nActual = 2;
     int curDepth = 0;
@@ -106,62 +108,60 @@ namespace QTournament
       nActual *= 2;  // the number of players doubles in each round
       ++curDepth;
 
-      int matchCountBeforeWhile = result.size();
+      int matchCountBeforeWhile = bmdl__out.size();
       int cnt=0;
       while (cnt < matchCountBeforeWhile)   // loop over all matches generated so far
       {
-        upBracketMatchData& prevMatch = result.at(cnt);
-        if (prevMatch->depthInBracket != (curDepth-1))
+        BracketMatchData& prevMatch = bmdl__out.at(cnt);
+        if (prevMatch.depthInBracket != (curDepth-1))
         {
           ++cnt;
           continue;  // skip all but the last round
         }
 
-        int rank1 = prevMatch->initialRank_Player1;
-        int rank2 = prevMatch->initialRank_Player2;
+        int rank1 = prevMatch.initialRank_Player1;
+        int rank2 = prevMatch.initialRank_Player2;
 
-        upBracketMatchData newBracketMatch1 = upBracketMatchData(new BracketMatchData);
-        newBracketMatch1->setInitialRanks(rank1, (nActual+1)-rank1);
-        newBracketMatch1->setNextMatchForWinner(*prevMatch, 1);
-        newBracketMatch1->nextMatchForLoser = BracketMatchData::NO_NEXT_MATCH;
-        newBracketMatch1->depthInBracket = curDepth;
+        BracketMatchData newBracketMatch1 = BracketMatchData::getNew();
+        newBracketMatch1.setInitialRanks(rank1, (nActual+1)-rank1);
+        newBracketMatch1.setNextMatchForWinner(prevMatch, 1);
+        newBracketMatch1.nextMatchForLoser = BracketMatchData::NO_NEXT_MATCH;
+        newBracketMatch1.depthInBracket = curDepth;
 
-        upBracketMatchData newBracketMatch2 = upBracketMatchData(new BracketMatchData);
-        newBracketMatch2->setInitialRanks(rank2, (nActual+1)-rank2);
-        newBracketMatch2->setNextMatchForWinner(*prevMatch, 2);
-        newBracketMatch2->nextMatchForLoser = BracketMatchData::NO_NEXT_MATCH;
-        newBracketMatch2->depthInBracket = curDepth;
+        BracketMatchData newBracketMatch2 = BracketMatchData::getNew();
+        newBracketMatch2.setInitialRanks(rank2, (nActual+1)-rank2);
+        newBracketMatch2.setNextMatchForWinner(prevMatch, 2);
+        newBracketMatch2.nextMatchForLoser = BracketMatchData::NO_NEXT_MATCH;
+        newBracketMatch2.depthInBracket = curDepth;
 
         // a special treatment for semifinals: losers get a match for third place
         if ((curDepth == 1) && (numPlayers > 3))
         {
-          newBracketMatch1->setNextMatchForLoser(*thirdPlaceMatch, 1);
-          newBracketMatch2->setNextMatchForLoser(*thirdPlaceMatch, 2);
-          result.push_back(std::move(thirdPlaceMatch));
+          newBracketMatch1.setNextMatchForLoser(thirdPlaceMatch, 1);
+          newBracketMatch2.setNextMatchForLoser(thirdPlaceMatch, 2);
+          bmdl__out.push_back(thirdPlaceMatch);
         }
 
-        result.push_back(std::move(newBracketMatch1));
-        result.push_back(std::move(newBracketMatch2));
+        bmdl__out.push_back(newBracketMatch1);
+        bmdl__out.push_back(newBracketMatch2);
         ++cnt;
       }
     }
 
-    removeUnusedMatches(result, numPlayers);
-
-    return make_tuple(std::move(result), visResult);
+    removeUnusedMatches(bmdl__out, numPlayers);
   }
 
 //----------------------------------------------------------------------------
 
-  tuple<upBracketMatchDataVector, RawBracketVisDataDef> BracketGenerator::genBracket__Ranking1(int numPlayers) const
+  void BracketGenerator::genBracket__Ranking1(int numPlayers, BracketMatchDataList& bmdl__out, RawBracketVisDataDef& bvdd__out) const
   {
-    upBracketMatchDataVector result;
-    RawBracketVisDataDef visResult;
+    bmdl__out.clear();
+    bvdd__out.clear();
 
     // return an empty list in case of invalid arguments
     if ((numPlayers < 2) || (numPlayers > 32))
     {
-      return make_tuple(upBracketMatchDataVector(), visResult);
+      return;
     }
 
     BracketMatchData::resetBracketMatchId();
@@ -456,109 +456,108 @@ namespace QTournament
     if (numPlayers <= 16)
     {
       // prepare the container for the visualization data
-      visResult.addPage(BRACKET_PAGE_ORIENTATION::LANDSCAPE, BRACKET_LABEL_POS::TOP_LEFT);
+      bvdd__out.addPage(BRACKET_PAGE_ORIENTATION::LANDSCAPE, BRACKET_LABEL_POS::TOP_LEFT);
 
       for (int i=0; i < 36; ++i)
       {
         // prepare the bracket matches as such
-        upBracketMatchData newBracketMatch = upBracketMatchData(new BracketMatchData);
+        BracketMatchData newBracketMatch = BracketMatchData::getNew();
 
-        newBracketMatch->initialRank_Player1 = rawBracketData_16[i][0];
-        newBracketMatch->initialRank_Player2 = rawBracketData_16[i][1];
-        newBracketMatch->nextMatchForWinner = rawBracketData_16[i][2];
-        newBracketMatch->nextMatchForLoser = rawBracketData_16[i][3];
-        newBracketMatch->nextMatchPlayerPosForWinner = rawBracketData_16[i][4];
-        newBracketMatch->nextMatchPlayerPosForLoser = rawBracketData_16[i][5];
-        newBracketMatch->depthInBracket = rawBracketData_16[i][6];
+        newBracketMatch.initialRank_Player1 = rawBracketData_16[i][0];
+        newBracketMatch.initialRank_Player2 = rawBracketData_16[i][1];
+        newBracketMatch.nextMatchForWinner = rawBracketData_16[i][2];
+        newBracketMatch.nextMatchForLoser = rawBracketData_16[i][3];
+        newBracketMatch.nextMatchPlayerPosForWinner = rawBracketData_16[i][4];
+        newBracketMatch.nextMatchPlayerPosForLoser = rawBracketData_16[i][5];
+        newBracketMatch.depthInBracket = rawBracketData_16[i][6];
 
         // prepare the visualization data
         RawBracketVisElement el{bracketVisData_16[i]};
-        el.initialRank1 = (newBracketMatch->initialRank_Player1 > 0) ? newBracketMatch->initialRank_Player1 : -1;
-        el.initialRank2 = (newBracketMatch->initialRank_Player2 > 0) ? newBracketMatch->initialRank_Player2 : -1;
-        el.nextMatchForWinner = newBracketMatch->nextMatchForWinner;
-        el.nextMatchForLoser = newBracketMatch->nextMatchForLoser;
-        el.nextMatchPlayerPosForWinner = newBracketMatch->nextMatchPlayerPosForWinner;
-        el.nextMatchPlayerPosForLoser = newBracketMatch->nextMatchPlayerPosForLoser;
+        el.initialRank1 = (newBracketMatch.initialRank_Player1 > 0) ? newBracketMatch.initialRank_Player1 : -1;
+        el.initialRank2 = (newBracketMatch.initialRank_Player2 > 0) ? newBracketMatch.initialRank_Player2 : -1;
+        el.nextMatchForWinner = newBracketMatch.nextMatchForWinner;
+        el.nextMatchForLoser = newBracketMatch.nextMatchForLoser;
+        el.nextMatchPlayerPosForWinner = newBracketMatch.nextMatchPlayerPosForWinner;
+        el.nextMatchPlayerPosForLoser = newBracketMatch.nextMatchPlayerPosForLoser;
 
         // store both in different containers
-        result.push_back(std::move(newBracketMatch));
-        visResult.addElement(el);
+        bmdl__out.push_back(newBracketMatch);
+        bvdd__out.addElement(el);
       }
     } else {
       // prepare the container for the visualization data
-      visResult.addPage(BRACKET_PAGE_ORIENTATION::LANDSCAPE, BRACKET_LABEL_POS::TOP_LEFT);
-      visResult.addPage(BRACKET_PAGE_ORIENTATION::LANDSCAPE, BRACKET_LABEL_POS::NONE);
-      visResult.addPage(BRACKET_PAGE_ORIENTATION::LANDSCAPE, BRACKET_LABEL_POS::NONE);
+      bvdd__out.addPage(BRACKET_PAGE_ORIENTATION::LANDSCAPE, BRACKET_LABEL_POS::TOP_LEFT);
+      bvdd__out.addPage(BRACKET_PAGE_ORIENTATION::LANDSCAPE, BRACKET_LABEL_POS::NONE);
+      bvdd__out.addPage(BRACKET_PAGE_ORIENTATION::LANDSCAPE, BRACKET_LABEL_POS::NONE);
 
       for (int i=0; i < 92; ++i)
       {
         // prepare the bracket matches as such
-        upBracketMatchData newBracketMatch = upBracketMatchData(new BracketMatchData);
+        BracketMatchData newBracketMatch = BracketMatchData::getNew();
 
-        newBracketMatch->initialRank_Player1 = rawBracketData_32[i][0];
-        newBracketMatch->initialRank_Player2 = rawBracketData_32[i][1];
-        newBracketMatch->nextMatchForWinner = rawBracketData_32[i][2];
-        newBracketMatch->nextMatchForLoser = rawBracketData_32[i][3];
-        newBracketMatch->nextMatchPlayerPosForWinner = rawBracketData_32[i][4];
-        newBracketMatch->nextMatchPlayerPosForLoser = rawBracketData_32[i][5];
-        newBracketMatch->depthInBracket = rawBracketData_32[i][6];
+        newBracketMatch.initialRank_Player1 = rawBracketData_32[i][0];
+        newBracketMatch.initialRank_Player2 = rawBracketData_32[i][1];
+        newBracketMatch.nextMatchForWinner = rawBracketData_32[i][2];
+        newBracketMatch.nextMatchForLoser = rawBracketData_32[i][3];
+        newBracketMatch.nextMatchPlayerPosForWinner = rawBracketData_32[i][4];
+        newBracketMatch.nextMatchPlayerPosForLoser = rawBracketData_32[i][5];
+        newBracketMatch.depthInBracket = rawBracketData_32[i][6];
 
         // prepare the visualization data
         RawBracketVisElement el{bracketVisData_32[i]};
-        el.initialRank1 = (newBracketMatch->initialRank_Player1 > 0) ? newBracketMatch->initialRank_Player1 : -1;
-        el.initialRank2 = (newBracketMatch->initialRank_Player2 > 0) ? newBracketMatch->initialRank_Player2 : -1;
-        el.nextMatchForWinner = newBracketMatch->nextMatchForWinner;
-        el.nextMatchForLoser = newBracketMatch->nextMatchForLoser;
-        el.nextMatchPlayerPosForWinner = newBracketMatch->nextMatchPlayerPosForWinner;
-        el.nextMatchPlayerPosForLoser = newBracketMatch->nextMatchPlayerPosForLoser;
+        el.initialRank1 = (newBracketMatch.initialRank_Player1 > 0) ? newBracketMatch.initialRank_Player1 : -1;
+        el.initialRank2 = (newBracketMatch.initialRank_Player2 > 0) ? newBracketMatch.initialRank_Player2 : -1;
+        el.nextMatchForWinner = newBracketMatch.nextMatchForWinner;
+        el.nextMatchForLoser = newBracketMatch.nextMatchForLoser;
+        el.nextMatchPlayerPosForWinner = newBracketMatch.nextMatchPlayerPosForWinner;
+        el.nextMatchPlayerPosForLoser = newBracketMatch.nextMatchPlayerPosForLoser;
 
         // store both in different containers
-        result.push_back(std::move(newBracketMatch));
-        visResult.addElement(el);
+        bmdl__out.push_back(newBracketMatch);
+        bvdd__out.addElement(el);
       }
     }
 
-    removeUnusedMatches(result, numPlayers);
-
-    return make_tuple(std::move(result), visResult);
+    removeUnusedMatches(bmdl__out, numPlayers);
   }
 
 
 //----------------------------------------------------------------------------
 
-  tuple<BracketMatchDataList, RawBracketVisDataDef> BracketGenerator::getBracketMatches(int numPlayers) const
+  void BracketGenerator::getBracketMatches(int numPlayers, BracketMatchDataList& bmdl__out, RawBracketVisDataDef& bvdd__out) const
   {
-    if (numPlayers < 2) return make_tuple(BracketMatchDataList(), RawBracketVisDataDef());
+    bmdl__out.clear();
+    bvdd__out.clear();
 
-    upBracketMatchDataVector upResult;
-    RawBracketVisDataDef visResult;
+    if (numPlayers < 2) return;
+
     switch (bracketType)
     {
     case BRACKET_SINGLE_ELIM:
-      tie(upResult, visResult) = genBracket__SingleElim(numPlayers);
+      genBracket__SingleElim(numPlayers, bmdl__out, bvdd__out);
       break;
     case BRACKET_RANKING1:
-      tie(upResult, visResult) = genBracket__Ranking1(numPlayers);
+      genBracket__Ranking1(numPlayers, bmdl__out, bvdd__out);
       break;
     default:
       throw std::runtime_error("TODO: Unimplemented bracket type!");
     }
-
-    // convert unique_ptrs to standard objects that are easier to handle
-    BracketMatchDataList result;
-    for_each(upResult.begin(), upResult.end(), [&result](upBracketMatchData& b){result.push_back(*b);});
-
-    return make_tuple(result, visResult);
   }
 
 //----------------------------------------------------------------------------
 
-  void BracketGenerator::removeUnusedMatches(upBracketMatchDataVector &bracketMatches, int numPlayers) const
+  void BracketGenerator::removeUnusedMatches(BracketMatchDataList& bracketMatches, int numPlayers) const
   {
     // sort the bracket matches so that we always traverse the tree "from left to right" (read: from the
     // earlier to the later matches)
-    std::sort(bracketMatches.begin(), bracketMatches.end(), getBracketMatchSortFunction_up_earlyRoundsFirst());
+    //
+    // std::sort constantly produces memory leaks by reading / writing beyond the end of the list. So I've
+    // finally decided to use my own primitive sorting algorithm that is optimized on simplicity, not efficiency
+    //
+    //std::sort(bracketMatches.begin(), bracketMatches.end(), getBracketMatchSortFunction_earlyRoundsFirst());
+    lazyAndInefficientVectorSortFunc<BracketMatchData>(bracketMatches, getBracketMatchSortFunction_earlyRoundsFirst());
 
+    /*
     // since I have some trouble with std::sort() (see below), I put in another safeguard
     // that all bracket matches are sorted properly
     int nMatches = bracketMatches.size();
@@ -570,14 +569,15 @@ namespace QTournament
     }
     // the last match must be at depth 0
     assert(bracketMatches[nMatches-1]->depthInBracket == 0);
+    */
 
     // a little helper function that returns an iterator to a match with
     // a given ID
     auto getMatchById = [&bracketMatches](int matchId) {
-      upBracketMatchDataVector::iterator i = bracketMatches.begin();
+      BracketMatchDataList::iterator i = bracketMatches.begin();
       while (i != bracketMatches.end())
       {
-        if ((**i).getBracketMatchId() == matchId) return i;
+        if ((*i).getBracketMatchId() == matchId) return i;
         ++i;
       }
       return i;
@@ -591,9 +591,9 @@ namespace QTournament
 
       if (playerPos == 1)
       {
-        (*iMatch)->initialRank_Player1 = newVal;
+        (*iMatch).initialRank_Player1 = newVal;
       } else {
-        (*iMatch)->initialRank_Player2 = newVal;
+        (*iMatch).initialRank_Player2 = newVal;
       }
     };
 
@@ -606,34 +606,34 @@ namespace QTournament
 
       // first step: flag all matches with initial ranks > numPlayers for BOTH players
       // as "to be deleted"
-      upBracketMatchDataVector::iterator i = bracketMatches.begin();
+      BracketMatchDataList::iterator i = bracketMatches.begin();
       while (i != bracketMatches.end())
       {
-        upBracketMatchData& bmd = *i;
+        BracketMatchData& bmd = *i;
 
         // skip deleted matches
-        if (bmd->matchDeleted)
+        if (bmd.matchDeleted)
         {
           ++i;
           continue;
         }
 
-        if ((bmd->initialRank_Player1 > numPlayers) && (bmd->initialRank_Player2 > numPlayers))
+        if ((bmd.initialRank_Player1 > numPlayers) && (bmd.initialRank_Player2 > numPlayers))
         {
-          if (bmd->nextMatchForWinner > 0)
+          if (bmd.nextMatchForWinner > 0)
           {
-            updatePlayer(bmd->nextMatchForWinner, bmd->nextMatchPlayerPosForWinner, BracketMatchData::UNUSED_PLAYER);
+            updatePlayer(bmd.nextMatchForWinner, bmd.nextMatchPlayerPosForWinner, BracketMatchData::UNUSED_PLAYER);
           }
-          if (bmd->nextMatchForLoser > 0)
+          if (bmd.nextMatchForLoser > 0)
           {
-            updatePlayer(bmd->nextMatchForLoser, bmd->nextMatchPlayerPosForLoser, BracketMatchData::UNUSED_PLAYER);
+            updatePlayer(bmd.nextMatchForLoser, bmd.nextMatchPlayerPosForLoser, BracketMatchData::UNUSED_PLAYER);
           }
           // tag the match as deleted
           //
           // note: we may not actually delete the element from the match list because otherwise we
           // lose the visualization information
           //i = bracketMatches.erase(i);
-          bmd->matchDeleted = true;
+          bmd.matchDeleted = true;
           matchesChanged = true;
         } else {
           ++i;
@@ -645,36 +645,36 @@ namespace QTournament
       i = bracketMatches.begin();
       while (i != bracketMatches.end())
       {
-        upBracketMatchData& bmd = *i;
+        BracketMatchData& bmd = *i;
 
         // skip deleted matches
-        if (bmd->matchDeleted)
+        if (bmd.matchDeleted)
         {
           ++i;
           continue;
         }
 
-        if (bmd->initialRank_Player1 > numPlayers)
+        if (bmd.initialRank_Player1 > numPlayers)
         {
           // player 1 does not exist, this means that player 2 wins automatically;
           // find the match the winner will be promoted to
-          if (bmd->nextMatchForWinner > 0)
+          if (bmd.nextMatchForWinner > 0)
           {
-            updatePlayer(bmd->nextMatchForWinner, bmd->nextMatchPlayerPosForWinner, bmd->initialRank_Player2);
+            updatePlayer(bmd.nextMatchForWinner, bmd.nextMatchPlayerPosForWinner, bmd.initialRank_Player2);
 
             // if player2 of "bmd" is not a directly seeded, initial player
             // but the winner/loser of a previous match, we need to update
             // that previous match, too
-            if (bmd->initialRank_Player2 < 0)
+            if (bmd.initialRank_Player2 < 0)
             {
-              int prevMatchId = -(bmd->initialRank_Player2);
+              int prevMatchId = -(bmd.initialRank_Player2);
               auto prevMatch = getMatchById(prevMatchId);
-              auto nextMatch = getMatchById(bmd->nextMatchForWinner);
-              if ((*prevMatch)->nextMatchForWinner == bmd->getBracketMatchId())
+              auto nextMatch = getMatchById(bmd.nextMatchForWinner);
+              if ((*prevMatch).nextMatchForWinner == bmd.getBracketMatchId())
               {
-                (*prevMatch)->setNextMatchForWinner(**nextMatch, bmd->nextMatchPlayerPosForWinner);
+                (*prevMatch).setNextMatchForWinner(*nextMatch, bmd.nextMatchPlayerPosForWinner);
               } else {
-                (*prevMatch)->setNextMatchForLoser(**nextMatch, bmd->nextMatchPlayerPosForWinner);
+                (*prevMatch).setNextMatchForLoser(*nextMatch, bmd.nextMatchPlayerPosForWinner);
               }
             }
           }
@@ -682,21 +682,21 @@ namespace QTournament
           // player 1 does not exist and player 2 wins automatically
           // ==> we have no loser! If we promote the (non-existing) loser to a next match
           // we need to update that match, too
-          if (bmd->nextMatchForLoser > 0)
+          if (bmd.nextMatchForLoser > 0)
           {
-            updatePlayer(bmd->nextMatchForLoser, bmd->nextMatchPlayerPosForLoser, BracketMatchData::UNUSED_PLAYER);
+            updatePlayer(bmd.nextMatchForLoser, bmd.nextMatchPlayerPosForLoser, BracketMatchData::UNUSED_PLAYER);
           }
 
           // we may only delete this match if the winner does not achieve a final rank.
           // Otherwise we would lose this ranking information.
-          if (bmd->nextMatchForWinner >= 0)
+          if (bmd.nextMatchForWinner >= 0)
           {
             // tag the match as deleted
             //
             // note: we may not actually delete the element from the match list because otherwise we
             // lose the visualization information
             //i = bracketMatches.erase(i);
-            bmd->matchDeleted = true;
+            bmd.matchDeleted = true;
           } else {
             ++i;
           }
@@ -707,27 +707,27 @@ namespace QTournament
           continue;
         }
 
-        if (bmd->initialRank_Player2 > numPlayers)
+        if (bmd.initialRank_Player2 > numPlayers)
         {
           // player 2 does not exist, this means that player 1 wins automatically;
           // find the match the winner will be promoted to
-          if (bmd->nextMatchForWinner > 0)
+          if (bmd.nextMatchForWinner > 0)
           {
-            updatePlayer(bmd->nextMatchForWinner, bmd->nextMatchPlayerPosForWinner, bmd->initialRank_Player1);
+            updatePlayer(bmd.nextMatchForWinner, bmd.nextMatchPlayerPosForWinner, bmd.initialRank_Player1);
 
             // if player1 of "bmd" is not a directly seeded, initial player
             // but the winner/loser of a previous match, we need to update
             // that previous match, too
-            if (bmd->initialRank_Player1 < 0)
+            if (bmd.initialRank_Player1 < 0)
             {
-              int prevMatchId = -(bmd->initialRank_Player1);
+              int prevMatchId = -(bmd.initialRank_Player1);
               auto prevMatch = getMatchById(prevMatchId);
-              auto nextMatch = getMatchById(bmd->nextMatchForWinner);
-              if ((*prevMatch)->nextMatchForWinner == bmd->getBracketMatchId())
+              auto nextMatch = getMatchById(bmd.nextMatchForWinner);
+              if ((*prevMatch).nextMatchForWinner == bmd.getBracketMatchId())
               {
-                (*prevMatch)->setNextMatchForWinner(**nextMatch, bmd->nextMatchPlayerPosForWinner);
+                (*prevMatch).setNextMatchForWinner(*nextMatch, bmd.nextMatchPlayerPosForWinner);
               } else {
-                (*prevMatch)->setNextMatchForLoser(**nextMatch, bmd->nextMatchPlayerPosForWinner);
+                (*prevMatch).setNextMatchForLoser(*nextMatch, bmd.nextMatchPlayerPosForWinner);
               }
             }
             matchesChanged = true;
@@ -736,22 +736,22 @@ namespace QTournament
           // player 2 does not exist and player 1 wins automatically
           // ==> we have no loser! If we promote the (non-existing) loser to a next match
           // we need to update that match, too
-          if (bmd->nextMatchForLoser > 0)
+          if (bmd.nextMatchForLoser > 0)
           {
-            updatePlayer(bmd->nextMatchForLoser, bmd->nextMatchPlayerPosForLoser, BracketMatchData::UNUSED_PLAYER);
+            updatePlayer(bmd.nextMatchForLoser, bmd.nextMatchPlayerPosForLoser, BracketMatchData::UNUSED_PLAYER);
             matchesChanged = true;
           }
 
           // we may only delete this match if the winner does not achieve a final rank.
           // Otherwise we would lose this ranking information.
-          if (bmd->nextMatchForWinner >= 0)
+          if (bmd.nextMatchForWinner >= 0)
           {
             // tag the match as deleted
             //
             // note: we may not actually delete the element from the match list because otherwise we
             // lose the visualization information
             //i = bracketMatches.erase(i);
-            bmd->matchDeleted = true;
+            bmd.matchDeleted = true;
           } else {
             ++i;
           }
@@ -770,26 +770,26 @@ namespace QTournament
       i = bracketMatches.begin();
       while (i != bracketMatches.end())
       {
-        upBracketMatchData& bmd = *i;
+        BracketMatchData& bmd = *i;
 
         // skip deleted matches
-        if (bmd->matchDeleted)
+        if (bmd.matchDeleted)
         {
           ++i;
           continue;
         }
 
-        if ((bmd->initialRank_Player1 == BracketMatchData::UNUSED_PLAYER) && (bmd->initialRank_Player2 < 0))
+        if ((bmd.initialRank_Player1 == BracketMatchData::UNUSED_PLAYER) && (bmd.initialRank_Player2 < 0))
         {
-          int prevMatchId = -(bmd->initialRank_Player2);
+          int prevMatchId = -(bmd.initialRank_Player2);
           auto prevMatch = getMatchById(prevMatchId);
-          int winnerRank = bmd->nextMatchForWinner;
+          int winnerRank = bmd.nextMatchForWinner;
           assert(winnerRank < 0);   // must be true because of step 2 before
-          if ((*prevMatch)->nextMatchForWinner == bmd->getBracketMatchId())
+          if ((*prevMatch).nextMatchForWinner == bmd.getBracketMatchId())
           {
-            (*prevMatch)->nextMatchForWinner = winnerRank;
+            (*prevMatch).nextMatchForWinner = winnerRank;
           } else {
-            (*prevMatch)->nextMatchForLoser = winnerRank;
+            (*prevMatch).nextMatchForLoser = winnerRank;
           }
 
           // tag the match as deleted
@@ -797,22 +797,22 @@ namespace QTournament
           // note: we may not actually delete the element from the match list because otherwise we
           // lose the visualization information
           //i = bracketMatches.erase(i);
-          bmd->matchDeleted = true;
+          bmd.matchDeleted = true;
           matchesChanged = true;
           continue;
         }
-        if ((bmd->initialRank_Player2 == BracketMatchData::UNUSED_PLAYER) && (bmd->initialRank_Player1 < 0))
+        if ((bmd.initialRank_Player2 == BracketMatchData::UNUSED_PLAYER) && (bmd.initialRank_Player1 < 0))
         {
-          int prevMatchId = -(bmd->initialRank_Player1);
+          int prevMatchId = -(bmd.initialRank_Player1);
           assert(prevMatchId > 0);    // there should never be a final rank for a non-symbolic player
           auto prevMatch = getMatchById(prevMatchId);
-          int winnerRank = bmd->nextMatchForWinner;
+          int winnerRank = bmd.nextMatchForWinner;
           assert(winnerRank < 0);   // must be true because of step 2 before
-          if ((*prevMatch)->nextMatchForWinner == bmd->getBracketMatchId())
+          if ((*prevMatch).nextMatchForWinner == bmd.getBracketMatchId())
           {
-            (*prevMatch)->nextMatchForWinner = winnerRank;
+            (*prevMatch).nextMatchForWinner = winnerRank;
           } else {
-            (*prevMatch)->nextMatchForLoser = winnerRank;
+            (*prevMatch).nextMatchForLoser = winnerRank;
           }
 
           // tag the match as deleted
@@ -820,7 +820,7 @@ namespace QTournament
           // note: we may not actually delete the element from the match list because otherwise we
           // lose the visualization information
           //i = bracketMatches.erase(i);
-          bmd->matchDeleted = true;
+          bmd.matchDeleted = true;
           matchesChanged = true;
           continue;
         }
@@ -829,19 +829,19 @@ namespace QTournament
     }
 
     // before we return we want to check that no match has "UNUSED_PLAYER" anymore
-    upBracketMatchDataVector::iterator i = bracketMatches.begin();
+    BracketMatchDataList::iterator i = bracketMatches.begin();
     while (i != bracketMatches.end())
     {
-      upBracketMatchData& bmd = *i;
+      BracketMatchData& bmd = *i;
       // skip deleted matches
-      if (bmd->matchDeleted)
+      if (bmd.matchDeleted)
       {
         ++i;
         continue;
       }
 
-      assert(bmd->initialRank_Player1 != BracketMatchData::UNUSED_PLAYER);
-      assert(bmd->initialRank_Player2 != BracketMatchData::UNUSED_PLAYER);
+      assert(bmd.initialRank_Player1 != BracketMatchData::UNUSED_PLAYER);
+      assert(bmd.initialRank_Player2 != BracketMatchData::UNUSED_PLAYER);
       ++i;
     }
 
@@ -850,7 +850,7 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  std::function<bool (BracketMatchData&, BracketMatchData&)> BracketGenerator::getBracketMatchSortFunction_earlyRoundsFirst()
+  std::function<bool (const BracketMatchData&, const BracketMatchData&)> BracketGenerator::getBracketMatchSortFunction_earlyRoundsFirst()
   {
     return [](const BracketMatchData& bmd1, const BracketMatchData& bmd2) {
       // if matches are at the same depth level,
@@ -894,83 +894,6 @@ namespace QTournament
       return bmd1.depthInBracket > bmd2.depthInBracket;
     };
   }
-
-
-//----------------------------------------------------------------------------
-
-    std::function<bool (upBracketMatchData&, upBracketMatchData&)> BracketGenerator::getBracketMatchSortFunction_up_earlyRoundsFirst()
-    {
-      return [](upBracketMatchData& bmd1, upBracketMatchData& bmd2) {
-        // initial note:
-        // std::sort now seems to provide invalid bmd2 reference that
-        // cause a SIGSEGV. Using the debugger I could trace it down to
-        // stl_algo.h using an invalid value for the last element of the
-        // vector, although std:sort was called with a correct value.
-        // std::sort seems to go beyond the last element and that causes
-        // a SIGSEGV.
-        //
-        // weird.
-        //
-        // changing the compiler or the optimization settings didn't help.
-        //
-        // as a workaround, i test the validity of bmd1 and bmd2 first
-        int depth1;
-        int depth2;
-        try
-        {
-          if (bmd1 == nullptr) return false;
-          if (bmd2 == nullptr) return false;
-          uint64_t p1 = (uint64_t)(bmd1.get());
-          if (p1 < 0x1000) return false;
-          uint64_t p2 = (uint64_t)(bmd2.get());
-          if (p2 < 0x1000) return false;
-          depth1 = bmd1->depthInBracket;
-          depth2 = bmd2->depthInBracket;
-        } catch (std::exception& e)
-        {
-          return false;    // invalid pointer, return some arbitrary value
-        }
-
-        // if matches are at the same depth level,
-        // than matches with end in a final rank should be played
-        // later.
-        //
-        // if both matches result in a final rank, the numerically lower
-        // rank should be played later
-
-        if (depth1 == depth2)
-        {
-          int rank1 = bmd1->nextMatchForWinner;
-          int rank2 = bmd2->nextMatchForWinner;
-          if ((rank1 < 0) && (rank2 > 0))
-          {
-            // only match 1 results in a final rank,
-            // so play match 2 first
-            return false;
-          }
-          if ((rank1 > 0) && (rank2 < 0))
-          {
-            // only match 2 results in a final rank,
-            // so play match 1 first
-            return true;
-          }
-          if ((rank1 < 0) && (rank2 < 0))
-          {
-            // if rank1 is higher (e.g. -1 = rank 1) then
-            // play match 1 later
-            return rank1 < rank2;
-          }
-
-          // no match ends in a final rank, order doesn't matter
-          return true;
-        }
-
-        // if we made it to this point, we can be sure
-        // that the matches are at different depths, so
-        // the depth is the only sorting criteria
-        return depth1 > depth2;
-      };
-    }
 
 //----------------------------------------------------------------------------
 
@@ -1030,7 +953,7 @@ namespace QTournament
 
   BracketMatchData::BracketMatchData()
   {
-    bracketMatchId = ++lastBracketMatchId;
+    //bracketMatchId = ++lastBracketMatchId;
   }
 
   void BracketMatchData::resetBracketMatchId()
@@ -1101,6 +1024,18 @@ namespace QTournament
     qDebug() << "  Winner to    = " << nextMatchForWinner << "." << nextMatchPlayerPosForWinner;
     qDebug() << "  Loser to     = " << nextMatchForLoser << "." << nextMatchPlayerPosForLoser;
     qDebug();
+  }
+
+  //----------------------------------------------------------------------------
+
+  BracketMatchData BracketMatchData::getNew()
+  {
+    ++lastBracketMatchId;
+
+    BracketMatchData tmp;
+    tmp.bracketMatchId = lastBracketMatchId;
+
+    return tmp;   // will be returned by copy
   }
 
 //----------------------------------------------------------------------------
