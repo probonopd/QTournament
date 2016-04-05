@@ -1658,7 +1658,7 @@ namespace QTournament {
 
     for (MatchGroup mg : getMatchGroupsForCat(*cat, round))
     {
-      QString where = "(%1 = %2 OR %3 = %2) AND %3 = %4";
+      QString where = "(%1 = %2 OR %3 = %2) AND %4 = %5";
       where = where.arg(MA_PAIR1_REF).arg(pp.getPairId()).arg(MA_PAIR2_REF);
       where = where.arg(MA_GRP_REF).arg(mg.getId());
       auto result = getSingleObjectByWhereClause<Match>(where.toUtf8().constData());

@@ -257,7 +257,7 @@ namespace QTournament
 
     // get the list for the previous round, if any
     PlayerPairList result;
-    if (round > 1)
+    if (round > 0)
     {
       ERR e;
       result = this->getRemainingPlayersAfterRound(round-1, &e);
