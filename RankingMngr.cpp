@@ -292,7 +292,7 @@ namespace QTournament
     WhereClause wc;
     wc.addIntCol(RA_CAT_REF, cat.getId());
     wc.addIntCol(RA_PAIR_REF, pp.getPairId());
-    wc.setOrderColumn_Asc(RA_ROUND);
+    wc.setOrderColumn_Desc(RA_ROUND);
 
     auto re = getSingleObjectByWhereClause<RankingEntry>(wc);
     if (re == nullptr) return -1;

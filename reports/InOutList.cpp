@@ -91,7 +91,7 @@ upSimpleReport InOutList::regenerateReport()
     QStringList header;
     header.append(tr("Name"));
     header.append(tr("Team"));
-    header.append(tr("Rounds played"));
+    header.append(tr("Dropped out after round"));
     SimpleReportLib::TabSet ts;
     ts.addTab(90, SimpleReportLib::TAB_JUSTIFICATION::TAB_LEFT);
     ts.addTab(145, SimpleReportLib::TAB_JUSTIFICATION::TAB_LEFT);
