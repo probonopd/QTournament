@@ -29,8 +29,7 @@ class GroupConfigWidget : public QWidget
 {
   Q_OBJECT
 public:
-  GroupConfigWidget();
-  GroupConfigWidget(QWidget* parent);
+  GroupConfigWidget(QWidget* parent = nullptr);
   virtual ~GroupConfigWidget();
   KO_Config getConfig();
   void applyConfig(const KO_Config& cfg);

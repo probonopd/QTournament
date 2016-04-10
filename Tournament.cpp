@@ -72,7 +72,7 @@ namespace QTournament
 
     // create a new, blank database
     auto newDb = SqliteOverlay::SqliteDatabase::get<TournamentDB>(QString2StdString(fName), true);
-    //newDb->setLogLevel(1);
+    newDb->setLogLevel(1);
     newDb->createIndices();
 
     // initialize the database
@@ -111,7 +111,7 @@ namespace QTournament
 
     // open an existing database
     auto newDb = SqliteOverlay::SqliteDatabase::get<TournamentDB>(QString2StdString(fName), false);
-    //newDb->setLogLevel(1);
+    newDb->setLogLevel(1);
 
     // check file format compatibiliy
     if (!(newDb->isCompatibleDatabaseVersion()))

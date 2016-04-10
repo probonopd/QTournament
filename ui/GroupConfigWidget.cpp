@@ -21,32 +21,14 @@
 #include <stdexcept>
 #include <QtWidgets/qmessagebox.h>
 
-GroupConfigWidget::GroupConfigWidget()
-: pointersInitialized(false)
-{
-  ui.setupUi(this);
-  
-  // copy spin box pointers to an array for easier access
-  spGroupSize[0] = ui.spGroupSize1;
-  spGroupSize[1] = ui.spGroupSize2;
-  spGroupSize[2] = ui.spGroupSize3;
-  spGroupCount[0] = ui.spGroupCount1;
-  spGroupCount[1] = ui.spGroupCount2;
-  spGroupCount[2] = ui.spGroupCount3;
-  pointersInitialized = true;
-  
-  rangeControlEnabled = true;
-}
-
-//----------------------------------------------------------------------------
-    
 GroupConfigWidget::~GroupConfigWidget()
 {
 }
 
 //----------------------------------------------------------------------------
     
-GroupConfigWidget::GroupConfigWidget(QWidget* parent) : QWidget(parent), pointersInitialized(false)
+GroupConfigWidget::GroupConfigWidget(QWidget* parent)
+    : QWidget(parent), pointersInitialized(false), rangeControlEnabled(true)
 {
   ui.setupUi(this);
   

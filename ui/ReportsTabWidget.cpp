@@ -28,7 +28,7 @@
 
 ReportsTabWidget::ReportsTabWidget(QWidget *parent) :
   QWidget(parent),
-  ui(new Ui::ReportsTabWidget), isInResetProcedure(false)
+  ui(new Ui::ReportsTabWidget), treeRoot(nullptr), isInResetProcedure(false)
 {
   ui->setupUi(this);
 
