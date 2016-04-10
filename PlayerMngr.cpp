@@ -27,6 +27,7 @@
 #include "TeamMngr.h"
 #include "Tournament.h"
 #include "CatMngr.h"
+#include "CentralSignalEmitter.h"
 
 using namespace SqliteOverlay;
 
@@ -97,10 +98,11 @@ namespace QTournament
     }
     
     // create the new player row
-    emit beginCreatePlayer();
+    CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
+    cse->beginCreatePlayer();
     tab->insertRow(cvc);
     fixSeqNumberAfterInsert();
-    emit endCreatePlayer(tab->length() - 1); // the new sequence number is always the greatest
+    cse->endCreatePlayer(tab->length() - 1); // the new sequence number is always the greatest
     
     return OK;
   }
@@ -193,7 +195,7 @@ namespace QTournament
     cvc.addStringCol(PL_LNAME, newLast.toUtf8().constData());
     p.row.update(cvc);
     
-    emit playerRenamed(p);
+    CentralSignalEmitter::getInstance()->playerRenamed(p);
     
     return OK;
   }
@@ -303,7 +305,7 @@ namespace QTournament
       OBJ_STATE oldStat = p.getState();
       TabRow r = tab->operator [](p.getId());
       r.update(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_PL_PLAYING));
-      emit playerStatusChanged(p.getId(), p.getSeqNum(), oldStat, STAT_PL_PLAYING);
+      CentralSignalEmitter::getInstance()->playerStatusChanged(p.getId(), p.getSeqNum(), oldStat, STAT_PL_PLAYING);
     }
 
     return OK;
@@ -320,7 +322,7 @@ namespace QTournament
     {
       TabRow r = tab->operator [](p.getId());
       r.update(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_PL_IDLE));
-      emit playerStatusChanged(p.getId(), p.getSeqNum(), STAT_PL_PLAYING, STAT_PL_IDLE);
+      CentralSignalEmitter::getInstance()->playerStatusChanged(p.getId(), p.getSeqNum(), STAT_PL_PLAYING, STAT_PL_IDLE);
     }
 
     return OK;
@@ -408,6 +410,7 @@ namespace QTournament
     // it was in a different state than WAIT_FOR_REGISTRATION (e.g., PLAYING)
 
     OBJ_STATE plStat = p.getState();
+    CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
 
     // easiest case first: un-set "wait for registration"
     if (waitForPlayerRegistration == false)
@@ -417,7 +420,7 @@ namespace QTournament
 
       // switch to IDLE
       p.setState(STAT_PL_IDLE);
-      emit playerStatusChanged(p.getId(), p.getSeqNum(), STAT_PL_WAIT_FOR_REGISTRATION, STAT_PL_IDLE);
+      cse->playerStatusChanged(p.getId(), p.getSeqNum(), STAT_PL_WAIT_FOR_REGISTRATION, STAT_PL_IDLE);
       return OK;
     }
 
@@ -445,7 +448,7 @@ namespace QTournament
 
     // all checks passed ==> we can switch the player to "wait for registration"
     p.setState(STAT_PL_WAIT_FOR_REGISTRATION);
-    emit playerStatusChanged(p.getId(), p.getSeqNum(), STAT_PL_IDLE, STAT_PL_WAIT_FOR_REGISTRATION);
+    cse->playerStatusChanged(p.getId(), p.getSeqNum(), STAT_PL_IDLE, STAT_PL_WAIT_FOR_REGISTRATION);
 
     return OK;
   }
@@ -556,7 +559,7 @@ namespace QTournament
     }
     cfg->set(CFG_KEY_EXT_PLAYER_DB, fname.toUtf8().constData());
 
-    emit externalPlayerDatabaseChanged();
+    CentralSignalEmitter::getInstance()->externalPlayerDatabaseChanged();
 
     return OK;
   }
@@ -592,7 +595,7 @@ namespace QTournament
     // of the underlying database object
     extPlayerDb.reset(nullptr);
 
-    emit externalPlayerDatabaseChanged();
+    CentralSignalEmitter::getInstance()->externalPlayerDatabaseChanged();
   }
 
   //----------------------------------------------------------------------------
@@ -773,10 +776,11 @@ namespace QTournament
 
     // the actual deletion
     int oldSeqNum = p.getSeqNum();
-    emit beginDeletePlayer(oldSeqNum);
+    CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
+    cse->beginDeletePlayer(oldSeqNum);
     tab->deleteRowsByColumnValue("id", p.getId());
     fixSeqNumberAfterDelete(tab, oldSeqNum);
-    emit endDeletePlayer();
+    cse->endDeletePlayer();
 
     return OK;
   }

@@ -32,6 +32,7 @@
 #include "TournamentDataDefs.h"
 #include "TournamentDB.h"
 #include "HelperFunc.h"
+#include "CentralSignalEmitter.h"
 
 namespace QTournament
 {
@@ -74,10 +75,11 @@ namespace QTournament
     cvc.addIntCol(CAT_DRAW_SCORE, 1);
     cvc.addStringCol(CAT_GROUP_CONFIG, KO_Config(QUARTER, false).toString().toUtf8().constData());
     
-    emit beginCreateCategory();
+    CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
+    cse->beginCreateCategory();
     tab->insertRow(cvc);
     fixSeqNumberAfterInsert();
-    emit endCreateCategory(tab->length() - 1); // the new sequence number is always the greatest
+    cse->endCreateCategory(tab->length() - 1); // the new sequence number is always the greatest
     
     return OK;
   }
@@ -417,7 +419,7 @@ namespace QTournament
     cvc.addIntCol(P2C_PLAYER_REF, p.getId());
     db->getTab(TAB_P2C)->insertRow(cvc);
     
-    emit playerAddedToCategory(p, c);
+    CentralSignalEmitter::getInstance()->playerAddedToCategory(p, c);
     
     return OK;
   }
@@ -457,7 +459,7 @@ namespace QTournament
     int cnt = db->getTab(TAB_P2C)->deleteRowsByWhereClause(wc);
     assert(cnt == 1);
     
-    emit playerRemovedFromCategory(p, c);
+    CentralSignalEmitter::getInstance()->playerRemovedFromCategory(p, c);
     
     return OK;
   }
@@ -490,10 +492,11 @@ namespace QTournament
 
     // the actual deletion
     int oldSeqNum = cat.getSeqNum();
-    emit beginDeleteCategory(oldSeqNum);
+    CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
+    cse->beginDeleteCategory(oldSeqNum);
     tab->deleteRowsByColumnValue("id", catId);
     fixSeqNumberAfterDelete(tab, oldSeqNum);
-    emit endDeleteCategory();
+    cse->endDeleteCategory();
 
     return OK;
   }
@@ -539,7 +542,8 @@ namespace QTournament
     }
 
     // step 3: tell everyone that something baaaad is about to happen
-    emit beginResetAllModels();
+    CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
+    cse->beginResetAllModels();
 
     //
     // now the actual deletion starts
@@ -597,7 +601,7 @@ namespace QTournament
     //
 
     // refresh all models and the reports tab
-    emit endResetAllModels();
+    cse->endResetAllModels();
 
     return OK;
   }
@@ -803,7 +807,7 @@ namespace QTournament
 
     db->getTab(TAB_PAIRS)->insertRow(cvc);
     
-    emit playersPaired(c, p1, p2);
+    CentralSignalEmitter::getInstance()->playersPaired(c, p1, p2);
     
     return OK;
   }
@@ -834,7 +838,7 @@ namespace QTournament
     wc.addIntCol(PAIRS_PLAYER2_REF, p1.getId());
     pairsTab->deleteRowsByWhereClause(wc);
     
-    emit playersSplit(c, p1, p2);
+    CentralSignalEmitter::getInstance()->playersSplit(c, p1, p2);
     
     return OK;
   }
@@ -963,7 +967,7 @@ namespace QTournament
     // update the category state
     OBJ_STATE oldState = c.getState();  // this MUST be STAT_CAT_CONFIG, ensured by canFreezeConfig
     c.setState(STAT_CAT_FROZEN);
-    emit categoryStatusChanged(c, oldState, STAT_CAT_FROZEN);
+    CentralSignalEmitter::getInstance()->categoryStatusChanged(c, oldState, STAT_CAT_FROZEN);
     
     return OK;
   }
@@ -1007,7 +1011,7 @@ namespace QTournament
     }
     // update the category state
     c.setState(STAT_CAT_CONFIG);
-    emit categoryStatusChanged(c, STAT_CAT_FROZEN, STAT_CAT_CONFIG);
+    CentralSignalEmitter::getInstance()->categoryStatusChanged(c, STAT_CAT_FROZEN, STAT_CAT_CONFIG);
     
     return OK;
   }
@@ -1058,7 +1062,7 @@ namespace QTournament
 
     // switch the category to IDLE state
     c.setState(STAT_CAT_IDLE);
-    emit categoryStatusChanged(c, STAT_CAT_FROZEN, STAT_CAT_IDLE);
+    CentralSignalEmitter::getInstance()->categoryStatusChanged(c, STAT_CAT_FROZEN, STAT_CAT_IDLE);
 
     // do the individual prep of the first round
     ERR result = specializedCat->prepareFirstRound(progressNotificationQueue);
@@ -1088,6 +1092,8 @@ namespace QTournament
       return;  // nothing to do for us
     }
 
+    CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
+
     // determine whether we have at least one RUNING and/or one
     // unfinished match in the category
     auto tnmt = Tournament::getActiveTournament();
@@ -1107,7 +1113,7 @@ namespace QTournament
     if ((curStat == STAT_CAT_IDLE) && hasMatchRunning)
     {
       c.setState(STAT_CAT_PLAYING);
-      emit categoryStatusChanged(c, STAT_CAT_IDLE, STAT_CAT_PLAYING);
+      cse->categoryStatusChanged(c, STAT_CAT_IDLE, STAT_CAT_PLAYING);
       return;
     }
 
@@ -1123,7 +1129,7 @@ namespace QTournament
     {
       {
         c.setState(STAT_CAT_FINALIZED);
-        emit categoryStatusChanged(c, STAT_CAT_PLAYING, STAT_CAT_FINALIZED);
+        cse->categoryStatusChanged(c, STAT_CAT_PLAYING, STAT_CAT_FINALIZED);
         return;
       }
     }
@@ -1133,7 +1139,7 @@ namespace QTournament
     if ((curStat == STAT_CAT_PLAYING) && !catIsFinished && !hasMatchRunning)
     {
       c.setState(STAT_CAT_IDLE);
-      emit categoryStatusChanged(c, STAT_CAT_PLAYING, STAT_CAT_IDLE);
+      cse->categoryStatusChanged(c, STAT_CAT_PLAYING, STAT_CAT_IDLE);
       return;
     }
   }
@@ -1146,7 +1152,7 @@ namespace QTournament
     if (cat.getState() != STAT_CAT_IDLE) return false;
 
     cat.setState(STAT_CAT_WAIT_FOR_INTERMEDIATE_SEEDING);
-    emit categoryStatusChanged(cat, STAT_CAT_IDLE, STAT_CAT_WAIT_FOR_INTERMEDIATE_SEEDING);
+    CentralSignalEmitter::getInstance()->categoryStatusChanged(cat, STAT_CAT_IDLE, STAT_CAT_WAIT_FOR_INTERMEDIATE_SEEDING);
     return true;
   }
 
@@ -1224,7 +1230,7 @@ namespace QTournament
     // safely transit to IDLE and continue with new matches,
     // if necessary
     c.setState(STAT_CAT_IDLE);
-    emit categoryStatusChanged(c, STAT_CAT_WAIT_FOR_INTERMEDIATE_SEEDING, STAT_CAT_IDLE);
+    CentralSignalEmitter::getInstance()->categoryStatusChanged(c, STAT_CAT_WAIT_FOR_INTERMEDIATE_SEEDING, STAT_CAT_IDLE);
 
     return OK;
   }

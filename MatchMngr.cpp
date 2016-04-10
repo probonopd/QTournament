@@ -25,6 +25,7 @@
 #include "MatchMngr.h"
 #include "Tournament.h"
 #include "CatRoundStatus.h"
+#include "CentralSignalEmitter.h"
 
 using namespace SqliteOverlay;
 
@@ -129,10 +130,11 @@ namespace QTournament {
     cvc.addIntCol(MG_ROUND, round);
     cvc.addIntCol(MG_GRP_NUM, grpNum);
     cvc.addIntCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MG_CONFIG));
-    emit beginCreateMatchGroup();
+    CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
+    cse->beginCreateMatchGroup();
     int newId = groupTab->insertRow(cvc);
     fixSeqNumberAfterInsert(groupTab);
-    emit endCreateMatchGroup(groupTab->length() - 1); // the new sequence number is always the largest
+    cse->endCreateMatchGroup(groupTab->length() - 1); // the new sequence number is always the largest
 
     
     // create a match group object for the new group an return a pointer
@@ -247,10 +249,11 @@ namespace QTournament {
     cvc.addIntCol(MA_PAIR2_SYMBOLIC_VAL, 0);   // default: no symbolic name
     cvc.addIntCol(MA_WINNER_RANK, -1);         // default: no rank, no knock out
     cvc.addIntCol(MA_LOSER_RANK, -1);         // default: no rank, no knock out
-    emit beginCreateMatch();
+    CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
+    cse->beginCreateMatch();
     int newId = tab->insertRow(cvc);
     fixSeqNumberAfterInsert();
-    emit endCreateMatch(tab->length() - 1); // the new sequence number is always the highest
+    cse->endCreateMatch(tab->length() - 1); // the new sequence number is always the highest
 
     // create a match group object for the new group and return a pointer
     // to this new object
@@ -489,7 +492,7 @@ namespace QTournament {
 
     // we can close the group unconditionally
     grp.setState(STAT_MG_FROZEN);
-    emit matchGroupStatusChanged(grp.getId(), grp.getSeqNum(), STAT_MG_CONFIG, STAT_MG_FROZEN);
+    CentralSignalEmitter::getInstance()->matchGroupStatusChanged(grp.getId(), grp.getSeqNum(), STAT_MG_CONFIG, STAT_MG_FROZEN);
 
     // call updateAllMatchGroupStates in case the group can be further promoted
     // to idle (which enables the group the be scheduled)
@@ -517,6 +520,8 @@ namespace QTournament {
     // looping through all match groups using "for", a dedicated
     // SQL-statement with a suitable WHERE-clause would be better
 
+    CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
+
     // transition from SCHEDULED to FINISHED
     for (auto mg : mgl)
     {
@@ -535,7 +540,7 @@ namespace QTournament {
       if (isfinished)
       {
         mg.setState(STAT_MG_FINISHED);
-        emit matchGroupStatusChanged(mg.getId(), mg.getSeqNum(), STAT_MG_SCHEDULED, STAT_MG_FINISHED);
+        cse->matchGroupStatusChanged(mg.getId(), mg.getSeqNum(), STAT_MG_SCHEDULED, STAT_MG_FINISHED);
       }
     }
 
@@ -575,7 +580,7 @@ namespace QTournament {
       if (canPromote)
       {
         mg.setState(STAT_MG_IDLE);
-        emit matchGroupStatusChanged(mg.getId(), mg.getSeqNum(), STAT_MG_FROZEN, STAT_MG_IDLE);
+        cse->matchGroupStatusChanged(mg.getId(), mg.getSeqNum(), STAT_MG_FROZEN, STAT_MG_IDLE);
       }
     }
 
@@ -622,7 +627,7 @@ namespace QTournament {
     int grpId = grp.getId();
     TabRow r = groupTab->operator [](grpId);
     r.update(MG_STAGE_SEQ_NUM, nextStageSeqNum);
-    emit matchGroupStatusChanged(grp.getId(), grp.getSeqNum(), STAT_MG_IDLE, STAT_MG_STAGED);
+    CentralSignalEmitter::getInstance()->matchGroupStatusChanged(grp.getId(), grp.getSeqNum(), STAT_MG_IDLE, STAT_MG_STAGED);
 
     // promote other groups from FROZEN to IDLE, if applicable
     updateAllMatchGroupStates(grp.getCategory());
@@ -770,7 +775,9 @@ namespace QTournament {
     TabRow r = groupTab->operator [](grpId);
     r.updateToNull(MG_STAGE_SEQ_NUM);
 
-    emit matchGroupStatusChanged(grp.getId(), grp.getSeqNum(), STAT_MG_STAGED, STAT_MG_IDLE);
+    CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
+
+    cse->matchGroupStatusChanged(grp.getId(), grp.getSeqNum(), STAT_MG_STAGED, STAT_MG_IDLE);
 
     // update all subsequent sequence numbers
     WhereClause wc;
@@ -779,7 +786,7 @@ namespace QTournament {
     {
       int old = mg.getStageSequenceNumber();
       mg.row.update(MG_STAGE_SEQ_NUM, old - 1);
-      emit matchGroupStatusChanged(mg.getId(), mg.getSeqNum(), STAT_MG_STAGED, STAT_MG_STAGED);
+      cse->matchGroupStatusChanged(mg.getId(), mg.getSeqNum(), STAT_MG_STAGED, STAT_MG_STAGED);
     }
 
     // demote other rounds from IDLE to FROZEN
@@ -807,7 +814,7 @@ namespace QTournament {
 
       // in all other cases, the "IDLE" group has to be demoted to FROZEN
       mg.setState(STAT_MG_FROZEN);
-      emit matchGroupStatusChanged(mg.getId(), mg.getSeqNum(), STAT_MG_IDLE, STAT_MG_FROZEN);
+      cse->matchGroupStatusChanged(mg.getId(), mg.getSeqNum(), STAT_MG_IDLE, STAT_MG_FROZEN);
     }
 
     return OK;
@@ -846,6 +853,8 @@ namespace QTournament {
   {
     OBJ_STATE curState = ma.getState();
 
+    CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
+
     // from INCOMPLETE to WAITING
     if (curState == STAT_MA_INCOMPLETE)
     {
@@ -853,7 +862,7 @@ namespace QTournament {
       {
         ma.setState(STAT_MA_WAITING);
         curState = STAT_MA_WAITING;
-        emit matchStatusChanged(ma.getId(), ma.getSeqNum(), STAT_MA_INCOMPLETE, STAT_MA_WAITING);
+        cse->matchStatusChanged(ma.getId(), ma.getSeqNum(), STAT_MA_INCOMPLETE, STAT_MA_WAITING);
       }
     }
 
@@ -872,7 +881,7 @@ namespace QTournament {
       {
         ma.setState(STAT_MA_FUZZY);
         curState = STAT_MA_FUZZY;
-        emit matchStatusChanged(ma.getId(), ma.getSeqNum(), STAT_MA_INCOMPLETE, STAT_MA_FUZZY);
+        cse->matchStatusChanged(ma.getId(), ma.getSeqNum(), STAT_MA_INCOMPLETE, STAT_MA_FUZZY);
       }
     }
 
@@ -889,7 +898,7 @@ namespace QTournament {
       {
         ma.setState(STAT_MA_WAITING);
         curState = STAT_MA_WAITING;
-        emit matchStatusChanged(ma.getId(), ma.getSeqNum(), STAT_MA_FUZZY, STAT_MA_WAITING);
+        cse->matchStatusChanged(ma.getId(), ma.getSeqNum(), STAT_MA_FUZZY, STAT_MA_WAITING);
       }
     }
 
@@ -901,7 +910,7 @@ namespace QTournament {
     {
       curState = playersAvail ? STAT_MA_READY : STAT_MA_BUSY;
       ma.setState(curState);
-      emit matchStatusChanged(ma.getId(), ma.getSeqNum(), STAT_MA_WAITING, curState);
+      cse->matchStatusChanged(ma.getId(), ma.getSeqNum(), STAT_MA_WAITING, curState);
     }
 
     // from READY to BUSY
@@ -909,7 +918,7 @@ namespace QTournament {
     {
       ma.setState(STAT_MA_BUSY);
       curState = STAT_MA_BUSY;
-      emit matchStatusChanged(ma.getId(), ma.getSeqNum(), STAT_MA_READY, STAT_MA_BUSY);
+      cse->matchStatusChanged(ma.getId(), ma.getSeqNum(), STAT_MA_READY, STAT_MA_BUSY);
     }
 
     // from BUSY to READY
@@ -917,7 +926,7 @@ namespace QTournament {
     {
       ma.setState(STAT_MA_READY);
       curState = STAT_MA_READY;
-      emit matchStatusChanged(ma.getId(), ma.getSeqNum(), STAT_MA_BUSY, STAT_MA_READY);
+      cse->matchStatusChanged(ma.getId(), ma.getSeqNum(), STAT_MA_BUSY, STAT_MA_READY);
     }
 
     // RUNNING is handled separately
@@ -1004,6 +1013,8 @@ namespace QTournament {
   {
     int nextMatchNumber = getMaxMatchNum() + 1;
 
+    CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
+
     for (auto mg : getStagedMatchGroupsOrderedBySequence())
     {
       for (auto ma : mg.getMatches())
@@ -1016,7 +1027,7 @@ namespace QTournament {
         // Manually trigger (another) update, because assigning the match number
         // does not change the match state in all cases. So we need to have at
         // least this one trigger to tell everone that the data has changed
-        emit matchStatusChanged(matchId, ma.getSeqNum(), ma.getState(), ma.getState());
+        cse->matchStatusChanged(matchId, ma.getSeqNum(), ma.getState(), ma.getState());
 
         ++nextMatchNumber;
       }
@@ -1025,7 +1036,7 @@ namespace QTournament {
       mg.setState(STAT_MG_SCHEDULED);
       TabRow r = groupTab->operator [](mg.getId());
       r.updateToNull(MG_STAGE_SEQ_NUM);  // delete the sequence number
-      emit matchGroupStatusChanged(mg.getId(), mg.getSeqNum(), STAT_MG_STAGED, STAT_MG_SCHEDULED);
+      cse->matchGroupStatusChanged(mg.getId(), mg.getSeqNum(), STAT_MG_STAGED, STAT_MG_SCHEDULED);
     }
   }
 
@@ -1255,7 +1266,7 @@ namespace QTournament {
     matchRow.update(cvc);
 
     // tell the world that the match status has changed
-    emit matchStatusChanged(ma.getId(), ma.getSeqNum(), STAT_MA_READY, STAT_MA_RUNNING);
+    CentralSignalEmitter::getInstance()->matchStatusChanged(ma.getId(), ma.getSeqNum(), STAT_MA_READY, STAT_MA_RUNNING);
 
     // update the player's status
     auto tnmt = Tournament::getActiveTournament();
@@ -1344,8 +1355,10 @@ namespace QTournament {
     TabRow matchRow = tab->operator [](maId);
     matchRow.update(cvc);
 
-    emit matchResultUpdated(maId, maSeqNum);
-    emit matchStatusChanged(maId, maSeqNum, oldState, STAT_MA_FINISHED);
+    CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
+
+    cse->matchResultUpdated(maId, maSeqNum);
+    cse->matchStatusChanged(maId, maSeqNum, oldState, STAT_MA_FINISHED);
 
     // if this was a regular, running match we need to release the court
     // and the players
@@ -1399,7 +1412,7 @@ namespace QTournament {
       // or for generating new matches)
       auto specialCat = ma.getCategory().convertToSpecializedObject();
       specialCat->onRoundCompleted(lastFinishedRoundAfterMatch);
-      emit roundCompleted(ma.getCategory().getId(), lastFinishedRoundAfterMatch);
+      cse->roundCompleted(ma.getCategory().getId(), lastFinishedRoundAfterMatch);
     }
 
 
@@ -1473,7 +1486,7 @@ namespace QTournament {
     int maId = ma.getId();
     TabRow matchRow = tab->operator [](maId);
     matchRow.update(cvc);
-    emit matchStatusChanged(maId, ma.getSeqNum(), STAT_MA_RUNNING, STAT_MA_READY);
+    CentralSignalEmitter::getInstance()->matchStatusChanged(maId, ma.getSeqNum(), STAT_MA_RUNNING, STAT_MA_READY);
 
     // release the court
     bool isOkay = tnmt->getCourtMngr()->releaseCourt(*pCourt);
@@ -1556,6 +1569,7 @@ namespace QTournament {
     // BUSY-condition is no longer applicable. Read: the only transition
     // back from BUSY is to READY!!
 
+    CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
 
     // set matches that are READY to BUSY, if the necessary players become unavailable
     if (toState == STAT_PL_PLAYING)
@@ -1568,7 +1582,7 @@ namespace QTournament {
           if (p.getId() == playerId)
           {
             ma.row.update(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_BUSY));
-            emit matchStatusChanged(ma.getId(), ma.getSeqNum(), STAT_MA_READY, STAT_MA_BUSY);
+            cse->matchStatusChanged(ma.getId(), ma.getSeqNum(), STAT_MA_READY, STAT_MA_BUSY);
             break;  // no need to check other players for this match
           }
         }
@@ -1585,7 +1599,7 @@ namespace QTournament {
         if (pm->canAcquirePlayerPairsForMatch(ma) == OK)
         {
           ma.row.update(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_READY));
-          emit matchStatusChanged(ma.getId(), ma.getSeqNum(), STAT_MA_BUSY, STAT_MA_READY);
+          cse->matchStatusChanged(ma.getId(), ma.getSeqNum(), STAT_MA_BUSY, STAT_MA_READY);
         }
       }
     }
@@ -1680,6 +1694,8 @@ namespace QTournament {
     auto winnerPair = ma.getWinner();
     auto loserPair = ma.getLoser();
 
+    CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
+
     MatchList ml;
     if (winnerPair != nullptr)
     {
@@ -1697,7 +1713,7 @@ namespace QTournament {
 
         // emit a faked state change to trigger a display update of the
         // match in the match tab view
-        emit matchStatusChanged(m.getId(), m.getSeqNum(), stat, stat);
+        cse->matchStatusChanged(m.getId(), m.getSeqNum(), stat, stat);
       }
       // find all matches that use the winner of this match as player 2
       // and resolve their symbolic references
@@ -1713,7 +1729,7 @@ namespace QTournament {
 
         // emit a faked state change to trigger a display update of the
         // match in the match tab view
-        emit matchStatusChanged(m.getId(), m.getSeqNum(), stat, stat);
+        cse->matchStatusChanged(m.getId(), m.getSeqNum(), stat, stat);
       }
     }
 
@@ -1733,7 +1749,7 @@ namespace QTournament {
 
         // emit a faked state change to trigger a display update of the
         // match in the match tab view
-        emit matchStatusChanged(m.getId(), m.getSeqNum(), stat, stat);
+        cse->matchStatusChanged(m.getId(), m.getSeqNum(), stat, stat);
       }
       // find all matches that use the loser of this match as player 2
       // and resolve their symbolic references
@@ -1749,7 +1765,7 @@ namespace QTournament {
 
         // emit a faked state change to trigger a display update of the
         // match in the match tab view
-        emit matchStatusChanged(m.getId(), m.getSeqNum(), stat, stat);
+        cse->matchStatusChanged(m.getId(), m.getSeqNum(), stat, stat);
       }
     }
 

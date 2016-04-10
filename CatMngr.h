@@ -88,19 +88,6 @@ namespace QTournament
     bool switchCatToWaitForSeeding(const Category& cat);
     ERR continueWithIntermediateSeeding(const Category& c, const PlayerPairList& seeding, ProgressQueue* progressNotificationQueue=nullptr);
 
-  signals:
-    void playersPaired(const Category c, const Player& p1, const Player& p2) const;
-    void playersSplit(const Category c, const Player& p1, const Player& p2) const;
-    void playerAddedToCategory(const Player& p, const Category& c) const;
-    void playerRemovedFromCategory(const Player& p, const Category& c) const;
-    void beginCreateCategory() const;
-    void endCreateCategory(int newCatSeqNum) const;
-    void categoryStatusChanged(const Category& c, const OBJ_STATE fromState, const OBJ_STATE toState);
-    void beginDeleteCategory(int catSeqNum) const;
-    void endDeleteCategory() const;
-    void beginResetAllModels() const;
-    void endResetAllModels() const;
-
   private:
     bool setCatParam_AllowDraw( Category& c, const QVariant& v);
     bool setCatParam_Score( Category& c, int newScore, bool isDraw);

@@ -55,10 +55,6 @@ namespace QTournament
     static std::function<bool (Team&, Team&)> getTeamSortFunction_byName();
 
 signals:
-    void beginCreateTeam ();
-    void endCreateTeam (int newTeamSeqNum);
-    void teamRenamed(int teamSeqNum);
-    void teamAssignmentChanged(const Player& affectedPlayer, const Team& oldTeam, const Team& newTeam);
 
   };
 }

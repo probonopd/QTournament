@@ -110,13 +110,6 @@ namespace QTournament
     upExternalPlayerDB extPlayerDb;
 
   signals:
-    void beginCreatePlayer ();
-    void endCreatePlayer (int newPlayerSeqNum);
-    void playerRenamed (const Player& p);
-    void playerStatusChanged(int playerId, int playerSeqNum, OBJ_STATE fromState, OBJ_STATE toState) const;
-    void beginDeletePlayer(int playerSeqNum) const;
-    void endDeletePlayer() const;
-    void externalPlayerDatabaseChanged();
   };
 }
 

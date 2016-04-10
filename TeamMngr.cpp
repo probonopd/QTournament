@@ -25,6 +25,7 @@
 #include "TournamentDataDefs.h"
 #include "HelperFunc.h"
 #include "Player.h"
+#include "CentralSignalEmitter.h"
 
 using namespace SqliteOverlay;
 
@@ -68,10 +69,11 @@ namespace QTournament
     ColumnValueClause cvc;
     cvc.addStringCol(GENERIC_NAME_FIELD_NAME, teamName.toUtf8().constData());
     
-    emit beginCreateTeam();
+    CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
+    cse->beginCreateTeam();
     tab->insertRow(cvc);
     fixSeqNumberAfterInsert();
-    emit endCreateTeam(tab->length() - 1);  // the new sequence number is always the greatest
+    cse->endCreateTeam(tab->length() - 1);  // the new sequence number is always the greatest
     
     return OK;
   }
@@ -137,7 +139,7 @@ namespace QTournament
     }
     
     t.row.update(GENERIC_NAME_FIELD_NAME, newName.toUtf8().constData());
-    emit teamRenamed(t.getSeqNum());
+    CentralSignalEmitter::getInstance()->teamRenamed(t.getSeqNum());
     
     return OK;
   }
@@ -199,7 +201,7 @@ namespace QTournament
     
     TabRow r = p.row;
     r.update(PL_TEAM_REF, newTeam.getId());
-    emit teamAssignmentChanged(p, oldTeam, newTeam);
+    CentralSignalEmitter::getInstance()->teamAssignmentChanged(p, oldTeam, newTeam);
     
     return OK;
   }

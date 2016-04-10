@@ -119,14 +119,6 @@ namespace QTournament
     static constexpr int SYMBOLIC_ID_FOR_UNUSED_PLAYER_PAIR_IN_MATCH = 999999;
     
   signals:
-    void beginCreateMatchGroup ();
-    void endCreateMatchGroup (int newMatchGroupSeqNum);
-    void beginCreateMatch();
-    void endCreateMatch(int newMatchSeqNum);
-    void matchStatusChanged(int matchId, int matchSeqNum, OBJ_STATE fromState, OBJ_STATE toState) const;
-    void matchGroupStatusChanged(int matchGroupId, int matchGroupSeqNum, OBJ_STATE fromState, OBJ_STATE toState) const;
-    void matchResultUpdated(int matchId, int matchSeqNum) const;
-    void roundCompleted(int catId, int round) const;
 
   public slots:
     void onPlayerStatusChanged(int playerId, int playerSeqNum, OBJ_STATE fromState, OBJ_STATE toState);

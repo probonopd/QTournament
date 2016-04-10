@@ -23,6 +23,7 @@
 #include "CourtMngr.h"
 #include "Tournament.h"
 #include "HelperFunc.h"
+#include "CentralSignalEmitter.h"
 
 using namespace SqliteOverlay;
 
@@ -60,10 +61,11 @@ namespace QTournament
     cvc.addIntCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_CO_AVAIL));
     
     // create the new court row
-    emit beginCreateCourt();
+    CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
+    cse->beginCreateCourt();
     int newId = tab->insertRow(cvc);
     fixSeqNumberAfterInsert();
-    emit endCreateCourt(tab->length() - 1); // the new sequence number is always the highest
+    cse->endCreateCourt(tab->length() - 1); // the new sequence number is always the highest
     
     // create a court object for the new court and return a pointer
     // to this new object
@@ -135,7 +137,7 @@ namespace QTournament
         
     c.row.update(GENERIC_NAME_FIELD_NAME, QString2StdString(newName));
     
-    emit courtRenamed(c);
+    CentralSignalEmitter::getInstance()->courtRenamed(c);
     
     return OK;
   }
@@ -210,7 +212,7 @@ namespace QTournament
     }
 
     co.setState(STAT_CO_BUSY);
-    emit courtStatusChanged(co.getId(), co.getSeqNum(), STAT_CO_AVAIL, STAT_CO_BUSY);
+    CentralSignalEmitter::getInstance()->courtStatusChanged(co.getId(), co.getSeqNum(), STAT_CO_AVAIL, STAT_CO_BUSY);
     return true;
   }
 
@@ -236,7 +238,7 @@ namespace QTournament
 
     // all fine, we can fall back to AVAIL
     co.setState(STAT_CO_AVAIL);
-    emit courtStatusChanged(co.getId(), co.getSeqNum(), STAT_CO_BUSY, STAT_CO_AVAIL);
+    CentralSignalEmitter::getInstance()->courtStatusChanged(co.getId(), co.getSeqNum(), STAT_CO_BUSY, STAT_CO_AVAIL);
     return true;
   }
 

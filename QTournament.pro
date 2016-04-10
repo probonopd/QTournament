@@ -124,7 +124,8 @@ HEADERS += \
     ui/DlgBulkImportToExtDb.h \
     HelperFunc.h \
     TournamentDatabaseObjectManager.h \
-    TournamentDatabaseObject.h
+    TournamentDatabaseObject.h \
+    CentralSignalEmitter.h
 
 SOURCES += \
     Category.cpp \
@@ -225,7 +226,8 @@ SOURCES += \
     ui/DlgBulkImportToExtDb.cpp \
     HelperFunc.cpp \
     TournamentDatabaseObjectManager.cpp \
-    TournamentDatabaseObject.cpp
+    TournamentDatabaseObject.cpp \
+    CentralSignalEmitter.cpp
 
 RESOURCES += \
     tournament.qrc
