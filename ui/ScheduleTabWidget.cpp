@@ -24,6 +24,7 @@
 #include "Score.h"
 #include "ui/DlgMatchResult.h"
 #include "ui/MainFrame.h"
+#include "CentralSignalEmitter.h"
 
 ScheduleTabWidget::ScheduleTabWidget(QWidget *parent) :
     QDialog(parent),
@@ -48,6 +49,12 @@ ScheduleTabWidget::ScheduleTabWidget(QWidget *parent) :
     connect(ui->mgStagedView->selectionModel(),
       SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
       SLOT(onStagedSelectionChanged(const QItemSelection&, const QItemSelection&)));
+
+    // react to changes in round,  match or category status
+    CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
+    connect(cse, SIGNAL(roundCompleted(int,int)), this, SLOT(onRoundCompleted(int,int)));
+    connect(cse, SIGNAL(matchStatusChanged(int,int,OBJ_STATE,OBJ_STATE)), this, SLOT(onMatchStatusChanged(int,int,OBJ_STATE,OBJ_STATE)));
+    connect(cse, SIGNAL(categoryStatusChanged(Category,OBJ_STATE,OBJ_STATE)), this, SLOT(onCatStatusChanged()));
 
     // default all buttons to "disabled"
     ui->btnSchedule->setEnabled(false);
@@ -416,9 +423,6 @@ void ScheduleTabWidget::onTournamentOpened(Tournament* _tnmt)
   tnmt = _tnmt;
   // connect signals from the Tournament and MatchMngr with my slots
   connect(_tnmt, &Tournament::tournamentClosed, this, &ScheduleTabWidget::onTournamentClosed);
-  connect(tnmt->getMatchMngr(), SIGNAL(roundCompleted(int,int)), this, SLOT(onRoundCompleted(int,int)));
-  connect(tnmt->getMatchMngr(), SIGNAL(matchStatusChanged(int,int,OBJ_STATE,OBJ_STATE)), this, SLOT(onMatchStatusChanged(int,int,OBJ_STATE,OBJ_STATE)));
-  connect(tnmt->getCatMngr(), SIGNAL(categoryStatusChanged(Category,OBJ_STATE,OBJ_STATE)), this, SLOT(onCatStatusChanged()));
 
   initProgressBarFromDatabase();
 }
@@ -477,9 +481,6 @@ void ScheduleTabWidget::onTournamentClosed()
 
   // disconnect from all signals, because
   // the sending objects don't exist anymore
-  disconnect(tnmt->getMatchMngr(), SIGNAL(roundCompleted(int,int)), this, SLOT(onRoundCompleted(int,int)));
-  disconnect(tnmt->getMatchMngr(), SIGNAL(matchStatusChanged(int,int,OBJ_STATE,OBJ_STATE)), this, SLOT(onMatchStatusChanged(int,int,OBJ_STATE,OBJ_STATE)));
-  disconnect(tnmt->getCatMngr(), SIGNAL(categoryStatusChanged(Category,OBJ_STATE,OBJ_STATE)), this, SLOT(onCatStatusChanged()));
   disconnect(tnmt, &Tournament::tournamentClosed, this, &ScheduleTabWidget::onTournamentClosed);
   tnmt = nullptr;
 }

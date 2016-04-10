@@ -10,6 +10,7 @@
 #include "Category.h"
 #include "Tournament.h"
 #include "CatRoundStatus.h"
+#include "CentralSignalEmitter.h"
 
 using namespace QTournament;
 using namespace SqliteOverlay;
@@ -17,13 +18,13 @@ using namespace SqliteOverlay;
 CategoryTableModel::CategoryTableModel(Tournament* tnmt)
 :QAbstractTableModel(0), db(tnmt->getDatabaseHandle()), catTab((db->getTab(TAB_CATEGORY)))
 {
-  CatMngr* cm = tnmt->getCatMngr();
-  connect(cm, SIGNAL(beginCreateCategory()), this, SLOT(onBeginCreateCategory()), Qt::DirectConnection);
-  connect(cm, SIGNAL(endCreateCategory(int)), this, SLOT(onEndCreateCategory(int)), Qt::DirectConnection);
-  connect(cm, SIGNAL(beginDeleteCategory(int)), this, SLOT(onBeginDeleteCategory(int)), Qt::DirectConnection);
-  connect(cm, SIGNAL(endDeleteCategory()), this, SLOT(onEndDeleteCategory()), Qt::DirectConnection);
-  connect(cm, SIGNAL(beginResetAllModels()), this, SLOT(onBeginResetModel()), Qt::DirectConnection);
-  connect(cm, SIGNAL(endResetAllModels()), this, SLOT(onEndResetModel()), Qt::DirectConnection);
+  CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
+  connect(cse, SIGNAL(beginCreateCategory()), this, SLOT(onBeginCreateCategory()), Qt::DirectConnection);
+  connect(cse, SIGNAL(endCreateCategory(int)), this, SLOT(onEndCreateCategory(int)), Qt::DirectConnection);
+  connect(cse, SIGNAL(beginDeleteCategory(int)), this, SLOT(onBeginDeleteCategory(int)), Qt::DirectConnection);
+  connect(cse, SIGNAL(endDeleteCategory()), this, SLOT(onEndDeleteCategory()), Qt::DirectConnection);
+  connect(cse, SIGNAL(beginResetAllModels()), this, SLOT(onBeginResetModel()), Qt::DirectConnection);
+  connect(cse, SIGNAL(endResetAllModels()), this, SLOT(onEndResetModel()), Qt::DirectConnection);
 }
 
 //----------------------------------------------------------------------------

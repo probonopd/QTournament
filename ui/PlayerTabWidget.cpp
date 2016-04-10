@@ -25,6 +25,7 @@
 #include "DlgBulkImportToExtDb.h"
 #include "ExternalPlayerDB.h"
 #include "DlgPickPlayerSex.h"
+#include "CentralSignalEmitter.h"
 
 PlayerTabWidget::PlayerTabWidget()
 :QWidget()
@@ -49,6 +50,15 @@ PlayerTabWidget::PlayerTabWidget()
   connect(ui.playerView->selectionModel(),
     SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
     SLOT(onPlayerSelectionChanged(QItemSelection,QItemSelection)));
+
+  // connect to all events that modify the number of players
+  CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
+  connect(cse, SIGNAL(endCreatePlayer(int)), this, SLOT(onPlayerCountChanged()));
+  connect(cse, SIGNAL(endDeletePlayer()), this, SLOT(onPlayerCountChanged()));
+
+  // connect to the "external player database changed" signel emitted by the player manager
+  connect(cse, SIGNAL(externalPlayerDatabaseChanged()), this, SLOT(onExternalDatabaseChanged()), Qt::DirectConnection);
+
 }
 
 //----------------------------------------------------------------------------
@@ -142,16 +152,6 @@ void PlayerTabWidget::onPlayerCountChanged()
 
 void PlayerTabWidget::onTournamentOpened()
 {
-  // connect to all events that modify the number of players
-  auto tnmt = Tournament::getActiveTournament();
-  PlayerMngr* pm = tnmt->getPlayerMngr();
-  if (pm == nullptr) return;
-  connect(pm, SIGNAL(endCreatePlayer(int)), this, SLOT(onPlayerCountChanged()));
-  connect(pm, SIGNAL(endDeletePlayer()), this, SLOT(onPlayerCountChanged()));
-
-  // connect to the "external player database changed" signel emitted by the player manager
-  connect(pm, SIGNAL(externalPlayerDatabaseChanged()), this, SLOT(onExternalDatabaseChanged()), Qt::DirectConnection);
-
   onPlayerCountChanged();
 }
 
@@ -159,14 +159,6 @@ void PlayerTabWidget::onTournamentOpened()
 
 void PlayerTabWidget::onTournamentClosed()
 {
-  // disconnect all signals
-  auto tnmt = Tournament::getActiveTournament();
-  PlayerMngr* pm = tnmt->getPlayerMngr();
-  if (pm == nullptr) return;
-  disconnect(pm, SIGNAL(endCreatePlayer(int)), this, SLOT(onPlayerCountChanged()));
-  disconnect(pm, SIGNAL(endDeletePlayer()), this, SLOT(onPlayerCountChanged()));
-  disconnect(pm, SIGNAL(externalPlayerDatabaseChanged()), this, SLOT(onExternalDatabaseChanged()));
-
   onPlayerCountChanged();
 }
 

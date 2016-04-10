@@ -10,6 +10,7 @@
 #include "Category.h"
 #include "Tournament.h"
 #include "../ui/GuiHelpers.h"
+#include "CentralSignalEmitter.h"
 
 #include <QDebug>
 
@@ -19,14 +20,12 @@ using namespace SqliteOverlay;
 MatchGroupTableModel::MatchGroupTableModel(Tournament* tnmt)
 :QAbstractTableModel(0), db(tnmt->getDatabaseHandle()), mgTab((db->getTab(TAB_MATCH_GROUP)))
 {
-  MatchMngr* mm = tnmt->getMatchMngr();
-  connect(mm, SIGNAL(beginCreateMatchGroup()), this, SLOT(onBeginCreateMatchGroup()), Qt::DirectConnection);
-  connect(mm, SIGNAL(endCreateMatchGroup(int)), this, SLOT(onEndCreateMatchGroup(int)), Qt::DirectConnection);
-  connect(mm, SIGNAL(matchGroupStatusChanged(int,int,OBJ_STATE,OBJ_STATE)), this, SLOT(onMatchGroupStatusChanged(int,int)), Qt::DirectConnection);
-
-  CatMngr* cm = tnmt->getCatMngr();
-  connect(cm, SIGNAL(beginResetAllModels()), this, SLOT(onBeginResetModel()), Qt::DirectConnection);
-  connect(cm, SIGNAL(endResetAllModels()), this, SLOT(onEndResetModel()), Qt::DirectConnection);
+  CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
+  connect(cse, SIGNAL(beginCreateMatchGroup()), this, SLOT(onBeginCreateMatchGroup()), Qt::DirectConnection);
+  connect(cse, SIGNAL(endCreateMatchGroup(int)), this, SLOT(onEndCreateMatchGroup(int)), Qt::DirectConnection);
+  connect(cse, SIGNAL(matchGroupStatusChanged(int,int,OBJ_STATE,OBJ_STATE)), this, SLOT(onMatchGroupStatusChanged(int,int)), Qt::DirectConnection);
+  connect(cse, SIGNAL(beginResetAllModels()), this, SLOT(onBeginResetModel()), Qt::DirectConnection);
+  connect(cse, SIGNAL(endResetAllModels()), this, SLOT(onEndResetModel()), Qt::DirectConnection);
 }
 
 //----------------------------------------------------------------------------

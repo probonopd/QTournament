@@ -25,6 +25,7 @@
 #include "Tournament.h"
 #include "reports/ReportFactory.h"
 #include "MainFrame.h"
+#include "CentralSignalEmitter.h"
 
 ReportsTabWidget::ReportsTabWidget(QWidget *parent) :
   QWidget(parent),
@@ -34,6 +35,10 @@ ReportsTabWidget::ReportsTabWidget(QWidget *parent) :
 
   // connect to open / close events for updating our reports tree
   connect(MainFrame::getMainFramePointer(), &MainFrame::tournamentOpened, this, &ReportsTabWidget::onTournamentOpened);
+
+  // react to model reset requests
+  CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
+  connect(cse, SIGNAL(endResetAllModels()), this, SLOT(onResetRequested()), Qt::DirectConnection);
 
   // create a root item for the reports tree
   // and initialize the pool of available reports
@@ -92,7 +97,6 @@ void ReportsTabWidget::onTournamentOpened(Tournament* _tnmt)
   tnmt = _tnmt;
 
   connect(tnmt, &Tournament::tournamentClosed, this, &ReportsTabWidget::onTournamentClosed);
-  connect(tnmt->getCatMngr(), SIGNAL(endResetAllModels()), this, SLOT(onResetRequested()), Qt::DirectConnection);
 
   onResetRequested();
 }
@@ -102,7 +106,6 @@ void ReportsTabWidget::onTournamentOpened(Tournament* _tnmt)
 void ReportsTabWidget::onTournamentClosed()
 {
   onResetRequested();
-  disconnect(tnmt->getCatMngr(), SIGNAL(endResetAllModels()), this, SLOT(onResetRequested()));
   disconnect(tnmt, &Tournament::tournamentClosed, this, &ReportsTabWidget::onTournamentClosed);
 }
 

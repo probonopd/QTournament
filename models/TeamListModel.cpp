@@ -6,11 +6,12 @@
  */
 
 #include <Qt>
-#include <QtWidgets/qmessagebox.h>
+#include <QMessageBox>
 
 #include "TeamListModel.h"
 #include "TeamMngr.h"
 #include "Tournament.h"
+#include "CentralSignalEmitter.h"
 
 using namespace SqliteOverlay;
 
@@ -20,9 +21,10 @@ namespace QTournament
   TeamListModel::TeamListModel(Tournament* tnmt)
   : QAbstractListModel(0), db(tnmt->getDatabaseHandle()), teamTab(db->getTab(TAB_TEAM))
   {
-    connect(tnmt->getTeamMngr(), SIGNAL(beginCreateTeam()), this, SLOT(onBeginCreateTeam()), Qt::DirectConnection);
-    connect(tnmt->getTeamMngr(), SIGNAL(endCreateTeam(int)), this, SLOT(onEndCreateTeam(int)), Qt::DirectConnection);
-    connect(tnmt->getTeamMngr(), SIGNAL(teamRenamed(int)), this, SLOT(onTeamRenamed(int)), Qt::DirectConnection);
+    CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
+    connect(cse, SIGNAL(beginCreateTeam()), this, SLOT(onBeginCreateTeam()), Qt::DirectConnection);
+    connect(cse, SIGNAL(endCreateTeam(int)), this, SLOT(onEndCreateTeam(int)), Qt::DirectConnection);
+    connect(cse, SIGNAL(teamRenamed(int)), this, SLOT(onTeamRenamed(int)), Qt::DirectConnection);
   }
 
 //----------------------------------------------------------------------------

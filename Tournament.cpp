@@ -154,6 +154,7 @@ namespace QTournament
     repFab = make_unique<ReportFactory>(db.get());
 
     // wire some signals between managers
+    //FIX THIS WITH A DIRECT CALL FROM THE PLAYERMNGR:
     connect(pm.get(), SIGNAL(playerStatusChanged(int, int, OBJ_STATE, OBJ_STATE)), mm.get(), SLOT(onPlayerStatusChanged(int, int, OBJ_STATE, OBJ_STATE)), Qt::DirectConnection);
   }
 

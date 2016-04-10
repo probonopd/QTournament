@@ -35,6 +35,7 @@
 #include "ui/commonCommands/cmdMoveOrCopyPairToCategory.h"
 #include "ui/commonCommands/cmdCreateNewPlayerInCat.h"
 #include "MenuGenerator.h"
+#include "CentralSignalEmitter.h"
 
 CatTabWidget::CatTabWidget()
 {
@@ -64,6 +65,14 @@ CatTabWidget::CatTabWidget()
   // setup the context menu(s)
   initContextMenu();
 
+  // get information about changed player names or category assignments
+  CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
+  connect(cse, SIGNAL(playerAddedToCategory(Player,Category)), this, SLOT(onPlayerAddedToCategory(Player,Category)));
+  connect(cse, SIGNAL(playerRemovedFromCategory(Player,Category)), this, SLOT(onPlayerRemovedFromCategory(Player,Category)));
+  connect(cse, SIGNAL(categoryStatusChanged(Category,OBJ_STATE,OBJ_STATE)), this, SLOT(onCatStateChanged(Category,OBJ_STATE,OBJ_STATE)));
+  connect(cse, SIGNAL(playerRenamed(Player)), this, SLOT(onPlayerRenamed(Player)));
+  connect(cse, SIGNAL(playerStatusChanged(int,int,OBJ_STATE,OBJ_STATE)), this, SLOT(onPlayerStateChanged(int,int,OBJ_STATE,OBJ_STATE)));
+
   // tell the list widgets to emit signals if a context menu is requested
   ui.lwUnpaired->setContextMenuPolicy(Qt::CustomContextMenu);
   connect(ui.lwUnpaired, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(onUnpairedContextMenuRequested(QPoint)));
@@ -86,14 +95,6 @@ void CatTabWidget::onCatModelChanged()
 	  SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
 	  SLOT(onCatSelectionChanged(const QItemSelection&, const QItemSelection&)));
   
-  // get information about changed player names or category assignments
-  auto tnmt = Tournament::getActiveTournament();
-  connect(tnmt->getCatMngr(), &CatMngr::playerAddedToCategory, this, &CatTabWidget::onPlayerAddedToCategory);
-  connect(tnmt->getCatMngr(), &CatMngr::playerRemovedFromCategory, this, &CatTabWidget::onPlayerRemovedFromCategory);
-  connect(tnmt->getCatMngr(), &CatMngr::categoryStatusChanged, this, &CatTabWidget::onCatStateChanged);
-  connect(tnmt->getPlayerMngr(), &PlayerMngr::playerRenamed, this, &CatTabWidget::onPlayerRenamed);
-  connect(tnmt->getPlayerMngr(), SIGNAL(playerStatusChanged(int,int,OBJ_STATE,OBJ_STATE)), this, SLOT(onPlayerStateChanged(int,int,OBJ_STATE,OBJ_STATE)));
-
   updateControls();
   updatePairs();
 }

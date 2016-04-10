@@ -14,7 +14,7 @@
 #include "../ui/GuiHelpers.h"
 #include "CourtMngr.h"
 #include "Tournament.h"
-
+#include "CentralSignalEmitter.h"
 
 using namespace QTournament;
 using namespace SqliteOverlay;
@@ -22,10 +22,10 @@ using namespace SqliteOverlay;
 CourtTableModel::CourtTableModel(Tournament* tnmt)
 :QAbstractTableModel(0), db(tnmt->getDatabaseHandle()), courtTab((db->getTab(TAB_COURT)))
 {
-  CourtMngr* cm = tnmt->getCourtMngr();
-  connect(cm, SIGNAL(beginCreateCourt()), this, SLOT(onBeginCreateCourt()), Qt::DirectConnection);
-  connect(cm, SIGNAL(endCreateCourt(int)), this, SLOT(onEndCreateCourt(int)), Qt::DirectConnection);
-  connect(cm, SIGNAL(courtStatusChanged(int,int,OBJ_STATE,OBJ_STATE)), this, SLOT(onCourtStatusChanged(int,int)), Qt::DirectConnection);
+  CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
+  connect(cse, SIGNAL(beginCreateCourt()), this, SLOT(onBeginCreateCourt()), Qt::DirectConnection);
+  connect(cse, SIGNAL(endCreateCourt(int)), this, SLOT(onEndCreateCourt(int)), Qt::DirectConnection);
+  connect(cse, SIGNAL(courtStatusChanged(int,int,OBJ_STATE,OBJ_STATE)), this, SLOT(onCourtStatusChanged(int,int)), Qt::DirectConnection);
 }
 
 //----------------------------------------------------------------------------
