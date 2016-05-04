@@ -21,24 +21,22 @@
 #include <QMenu>
 #include <QAction>
 
-#include "Tournament.h"
 #include "MenuGenerator.h"
 #include "CatMngr.h"
 
 using namespace QTournament;
 
-void MenuGenerator::allCategories(QMenu* targetMenu)
+void MenuGenerator::allCategories(TournamentDB* db, QMenu* targetMenu)
 {
   if (targetMenu == nullptr) return;
 
   // remove all previous menu contents
   targetMenu->clear();
 
-  auto tnmt = Tournament::getActiveTournament();
-  auto cm = tnmt->getCatMngr();
+  CatMngr cm{db};
 
   // generate a sorted list of all categories
-  auto allCats = cm->getAllCategories();
+  auto allCats = cm.getAllCategories();
   std::sort(allCats.begin(), allCats.end(), CatMngr::getCategorySortFunction_byName());
 
   // create a new action for each category and add it to the menu

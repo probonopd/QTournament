@@ -25,9 +25,11 @@
 #include "Court.h"
 #include "ui/GuiHelpers.h"
 #include "SignalRelay.h"
+#include "MatchMngr.h"
+#include "CourtMngr.h"
 
 MatchTableView::MatchTableView(QWidget* parent)
-  :QTableView(parent)
+  :QTableView(parent), db(nullptr), curDataModel(nullptr)
 {
   // an empty model for clearing the table when
   // no tournament is open
@@ -38,8 +40,11 @@ MatchTableView::MatchTableView(QWidget* parent)
   sortedModel->setSourceModel(emptyModel);
   setModel(sortedModel);
 
-  connect(MainFrame::getMainFramePointer(), &MainFrame::tournamentOpened, this, &MatchTableView::onTournamentOpened);
-  
+  defaultDelegate = itemDelegate();
+
+  // initiate the model(s) as empty
+  setDatabase(nullptr);
+
   // react on selection changes in the match table view
   connect(selectionModel(),
     SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
@@ -49,11 +54,6 @@ MatchTableView::MatchTableView(QWidget* parent)
   setContextMenuPolicy(Qt::CustomContextMenu);
   connect(this, SIGNAL(customContextMenuRequested(const QPoint&)),
           this, SLOT(onContextMenuRequested(const QPoint&)));
-
-  // define a delegate for drawing the match items
-  itemDelegate = new MatchItemDelegate(this);
-  itemDelegate->setProxy(sortedModel);
-  setItemDelegate(itemDelegate);
 
   // setup the context menu
   initContextMenu();
@@ -69,61 +69,13 @@ MatchTableView::~MatchTableView()
 {
   delete emptyModel;
   delete sortedModel;
-  delete itemDelegate;
   SignalRelay::cleanUp();
+  if (curDataModel != nullptr) delete curDataModel;
+  if (defaultDelegate != nullptr) delete defaultDelegate;
 }
 
 //----------------------------------------------------------------------------
     
-void MatchTableView::onTournamentOpened(Tournament* _tnmt)
-{
-  tnmt = _tnmt;
-  sortedModel->setSourceModel(tnmt->getMatchTableModel());
-  setColumnHidden(MatchTableModel::STATE_COL_ID, true);  // hide the column containing the internal object state
-
-  // create a regular expression, that matches either the match state
-  // READY, BUSY, FUZZY or WAITING
-  QString reString = "^" + QString::number(static_cast<int>(STAT_MA_READY)) + "|";
-  reString += QString::number(static_cast<int>(STAT_MA_BUSY)) + "|";
-  reString += QString::number(static_cast<int>(STAT_MA_FUZZY)) + "|";   // TODO: check if there can be a condition where a match is FUZZY but without assigned match number
-  reString += QString::number(static_cast<int>(STAT_MA_WAITING)) + "$";
-
-  // apply the regExp as a filter on the state id column
-  sortedModel->setFilterRegExp(reString);
-  sortedModel->setFilterKeyColumn(MatchTableModel::STATE_COL_ID);
-
-  // sort matches in ascing match number order
-  sortedModel->sort(MatchTableModel::MATCH_NUM_COL_ID, Qt::AscendingOrder);
-  setEnabled(true);
-  
-  // connect signals from the Tournament and TeamMngr with my slots
-  connect(tnmt, &Tournament::tournamentClosed, this, &MatchTableView::onTournamentClosed, Qt::DirectConnection);
-
-  // resize columns and rows to content once (we do not want permanent automatic resizing)
-  horizontalHeader()->resizeSections(QHeaderView::ResizeToContents);
-  verticalHeader()->resizeSections(QHeaderView::ResizeToContents);
-
-  //horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-  //verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-}
-
-//----------------------------------------------------------------------------
-    
-void MatchTableView::onTournamentClosed()
-{
-  // disconnect from all signals, because
-  // the sending objects don't exist anymore
-  disconnect(tnmt, &Tournament::tournamentClosed, this, &MatchTableView::onTournamentClosed);
-  
-  // invalidate the tournament handle and deactivate the view
-  tnmt = nullptr;
-  sortedModel->setSourceModel(emptyModel);
-  setEnabled(false);
-  
-}
-
-//----------------------------------------------------------------------------
-
 unique_ptr<Match> MatchTableView::getSelectedMatch() const
 {
   // make sure we have non-empty model
@@ -140,7 +92,8 @@ unique_ptr<Match> MatchTableView::getSelectedMatch() const
 
   // return the selected item
   int selectedSourceRow = sortedModel->mapToSource(indexes.at(0)).row();
-  return tnmt->getMatchMngr()->getMatchBySeqNum(selectedSourceRow);
+  MatchMngr mm{db};
+  return mm.getMatchBySeqNum(selectedSourceRow);
 }
 
 //----------------------------------------------------------------------------
@@ -149,7 +102,7 @@ void MatchTableView::onSelectionChanged(const QItemSelection& selectedItem, cons
 {
   for (auto item : selectedItem)
   {
-    itemDelegate->setSelectedRow(item.top());
+    matchItemDelegate->setSelectedRow(item.top());
     //resizeRowToContents(item.top());
   }
   for (auto item : deselectedItem)
@@ -174,8 +127,72 @@ void MatchTableView::updateSelectionAfterDataChange()
     return;
   }
   int selectedTargetRow = indexes.at(0).row();
-  itemDelegate->setSelectedRow(selectedTargetRow);
+  matchItemDelegate->setSelectedRow(selectedTargetRow);
   resizeRowToContents(selectedTargetRow);
+}
+
+//----------------------------------------------------------------------------
+
+void MatchTableView::setDatabase(TournamentDB* _db)
+{
+  // According to the Qt documentation, the selection model
+  // has to be explicitly deleted by the user
+  //
+  // Thus we store the model pointer for later deletion
+  QItemSelectionModel *oldSelectionModel = selectionModel();
+
+  // set the new data model
+  MatchTableModel* newDataModel = nullptr;
+  if (_db != nullptr)
+  {
+    newDataModel = new MatchTableModel(_db);
+    sortedModel->setSourceModel(newDataModel);
+    setColumnHidden(MatchTableModel::STATE_COL_ID, true);  // hide the column containing the internal object state
+
+    // create a regular expression, that matches either the match state
+    // READY, BUSY, FUZZY or WAITING
+    QString reString = "^" + QString::number(static_cast<int>(STAT_MA_READY)) + "|";
+    reString += QString::number(static_cast<int>(STAT_MA_BUSY)) + "|";
+    reString += QString::number(static_cast<int>(STAT_MA_FUZZY)) + "|";   // TODO: check if there can be a condition where a match is FUZZY but without assigned match number
+    reString += QString::number(static_cast<int>(STAT_MA_WAITING)) + "$";
+
+    // apply the regExp as a filter on the state id column
+    sortedModel->setFilterRegExp(reString);
+    sortedModel->setFilterKeyColumn(MatchTableModel::STATE_COL_ID);
+
+    // sort matches in ascing match number order
+    sortedModel->sort(MatchTableModel::MATCH_NUM_COL_ID, Qt::AscendingOrder);
+
+    // define a delegate for drawing the match items
+    matchItemDelegate = make_unique<MatchItemDelegate>(db, this);
+    matchItemDelegate->setProxy(sortedModel);
+    setItemDelegate(matchItemDelegate.get());
+
+    // resize columns and rows to content once (we do not want permanent automatic resizing)
+    horizontalHeader()->resizeSections(QHeaderView::ResizeToContents);
+    verticalHeader()->resizeSections(QHeaderView::ResizeToContents);
+
+  } else {
+    sortedModel->setSourceModel(emptyModel);
+    setItemDelegate(defaultDelegate);
+  }
+
+  // delete the old data model, if it was a
+  // CategoryTableModel instance
+  if (curDataModel != nullptr)
+  {
+    delete curDataModel;
+  }
+
+  // store the new CategoryTableModel instance, if any
+  curDataModel = newDataModel;
+
+  // delete the old selection model
+  delete oldSelectionModel;
+
+  // update the database pointer and set the widget's enabled state
+  db = _db;
+  setEnabled(db != nullptr);
 }
 
 //----------------------------------------------------------------------------
@@ -210,12 +227,13 @@ void MatchTableView::onContextMenuRequested(const QPoint& pos)
   if (isOk)
   {
     // get the selected court
-    auto co = tnmt->getCourtMngr()->getCourt(selectedCourt);
+    CourtMngr cm{db};
+    auto co = cm.getCourt(selectedCourt);
     if (co == nullptr) return;  // shouldn't happen
 
     // call the match on the selected court
-    MatchMngr* mm = tnmt->getMatchMngr();
-    ERR e = mm->canAssignMatchToCourt(*ma, *co);
+    MatchMngr mm{db};
+    ERR e = mm.canAssignMatchToCourt(*ma, *co);
     if (e != OK)
     {
       QMessageBox::warning(this, tr("Call match"),
@@ -248,8 +266,8 @@ void MatchTableView::onMatchDoubleClicked(const QModelIndex& index)
   auto ma = getSelectedMatch();
   if (ma == nullptr) return;
 
-  auto cm = tnmt->getCourtMngr();
-  auto mm = tnmt->getMatchMngr();
+  CourtMngr cm{db};
+  MatchMngr mm{db};
 
   // first of all, make sure that the match is eligible for being started
   if (ma->getState() != STAT_MA_READY)
@@ -263,7 +281,7 @@ void MatchTableView::onMatchDoubleClicked(const QModelIndex& index)
 
   // check if there is a court available
   ERR err;
-  auto nextCourt = cm->autoSelectNextUnusedCourt(&err, false);
+  auto nextCourt = cm.autoSelectNextUnusedCourt(&err, false);
   if (err == ONLY_MANUAL_COURT_AVAIL)
   {
     QString msg = tr("There are no free courts for automatic match assignment available right now.\n");
@@ -275,7 +293,7 @@ void MatchTableView::onMatchDoubleClicked(const QModelIndex& index)
       return;
     }
 
-    nextCourt = cm->autoSelectNextUnusedCourt(&err, true);
+    nextCourt = cm.autoSelectNextUnusedCourt(&err, true);
     if (nextCourt == nullptr)
     {
       QString msg = tr("An unexpected error occured.\n");
@@ -314,7 +332,7 @@ void MatchTableView::initContextMenu()
   actWalkoverP2 = new QAction("P2", this);  // this is just a dummy
 
   // create the context menu and connect it to the actions
-  contextMenu = unique_ptr<QMenu>(new QMenu());
+  contextMenu = make_unique<QMenu>();
   walkoverSelectionMenu = contextMenu->addMenu(tr("Walkover for..."));
   walkoverSelectionMenu->addAction(actWalkoverP1);
   walkoverSelectionMenu->addAction(actWalkoverP2);
@@ -346,10 +364,10 @@ void MatchTableView::updateContextMenu()
   {
     courtSelectionMenu->clear();
 
-    CourtMngr* cm = tnmt->getCourtMngr();
+    CourtMngr cm{db};
 
     QStringList availCourtNum;
-    for (auto co : cm->getAllCourts())
+    for (auto co : cm.getAllCourts())
     {
       if (co.getState() == STAT_CO_AVAIL)
       {
@@ -398,11 +416,11 @@ void MatchTableView::execWalkover(int playerNum)
 
 void MatchTableView::execCall(const Match& ma, const Court& co)
 {
-  MatchMngr* mm = tnmt->getMatchMngr();
+  MatchMngr mm{db};
 
   // all necessary pre-checks should have been performed before
   // so that the following call should always yield "ok"
-  ERR err = mm->canAssignMatchToCourt(ma, co);
+  ERR err = mm.canAssignMatchToCourt(ma, co);
   if (err != OK)
   {
     QString msg = tr("An unexpected error occured.\n");
@@ -420,7 +438,7 @@ void MatchTableView::execCall(const Match& ma, const Court& co)
   {
     // after all the checks before, the following call
     // should always yield "ok"
-    err = mm->assignMatchToCourt(ma, co);
+    err = mm.assignMatchToCourt(ma, co);
     if (err != OK)
     {
       QString msg = tr("An unexpected error occured.\n");

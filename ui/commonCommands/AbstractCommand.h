@@ -21,8 +21,8 @@
 
 #include <QWidget>
 
-#include "Tournament.h"
 #include "TournamentErrorCodes.h"
+#include "TournamentDB.h"
 
 using namespace QTournament;
 
@@ -30,11 +30,12 @@ class AbstractCommand
 {
 
 public:
-  AbstractCommand(QWidget* _parent = nullptr);
+  AbstractCommand(TournamentDB* _db, QWidget* _parent = nullptr);
   virtual ERR exec() = 0;
   virtual ~AbstractCommand() {}
 
 protected:
+  TournamentDB* db;
   QWidget* parentWidget;
 };
 

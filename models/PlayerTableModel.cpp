@@ -9,14 +9,14 @@
 
 #include "Player.h"
 #include "PlayerTableModel.h"
-#include "Tournament.h"
+#include "PlayerMngr.h"
 #include "CentralSignalEmitter.h"
 
 using namespace QTournament;
 using namespace SqliteOverlay;
 
-PlayerTableModel::PlayerTableModel(Tournament* tnmt)
-:QAbstractTableModel(0), db(tnmt->getDatabaseHandle()), playerTab(db->getTab(TAB_PLAYER)),
+PlayerTableModel::PlayerTableModel(TournamentDB* _db)
+:QAbstractTableModel(0), db(_db), playerTab(db->getTab(TAB_PLAYER)),
         teamTab(db->getTab(TAB_TEAM)), catTab((db->getTab(TAB_CATEGORY)))
 {
   CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
@@ -60,8 +60,8 @@ QVariant PlayerTableModel::data(const QModelIndex& index, int role) const
     if (role != Qt::DisplayRole)
       return QVariant();
     
-    auto tnmt = Tournament::getActiveTournament();
-    auto p = tnmt->getPlayerMngr()->getPlayerBySeqNum(index.row());
+    PlayerMngr pm{db};
+    auto p = pm.getPlayerBySeqNum(index.row());
     // no check for a nullptr here, the call above MUST succeed
     
     // first column: name

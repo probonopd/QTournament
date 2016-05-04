@@ -26,31 +26,32 @@
 #include "ui/commonCommands/cmdImportSinglePlayerFromExternalDatabase.h"
 #include "ui/commonCommands/cmdExportPlayerToExternalDatabase.h"
 #include "ui/commonCommands/cmdCreatePlayerFromDialog.h"
+#include "PlayerMngr.h"
+#include "TeamMngr.h"
+#include "CatMngr.h"
 
 PlayerTableView::PlayerTableView(QWidget* parent)
-:QTableView(parent)
+:QTableView(parent), db(nullptr), curDataModel(nullptr)
 {
   // an empty model for clearing the table when
   // no tournament is open
   emptyModel = new QStringListModel();
+
+  defaultDelegate = itemDelegate();
   
   // prepare a proxy model to support sorting by columns
   sortedModel = new QSortFilterProxyModel();
   sortedModel->setSourceModel(emptyModel);
   setModel(sortedModel);
 
-  connect(MainFrame::getMainFramePointer(), &MainFrame::tournamentOpened, this, &PlayerTableView::onTournamentOpened);
-  
+  // initiate the model(s) as empty
+  setDatabase(nullptr);
+
   // handle context menu requests
   setContextMenuPolicy(Qt::CustomContextMenu);
   connect(this, SIGNAL(customContextMenuRequested(const QPoint&)),
           this, SLOT(onContextMenuRequested(const QPoint&)));
 
-  // define a delegate for drawing the player items
-  itemDelegate = new PlayerItemDelegate(this);
-  itemDelegate->setProxy(sortedModel);
-  setItemDelegate(itemDelegate);
-  
   // setup the context menu
   initContextMenu();
 
@@ -62,7 +63,8 @@ PlayerTableView::~PlayerTableView()
 {
   delete emptyModel;
   delete sortedModel;
-  delete itemDelegate;
+  if (curDataModel != nullptr) delete curDataModel;
+  if (defaultDelegate != nullptr) delete defaultDelegate;
 }
 
 //----------------------------------------------------------------------------
@@ -82,43 +84,62 @@ unique_ptr<Player> PlayerTableView::getSelectedPlayer() const
   }
 
   // return the selected item
+  PlayerMngr pm{db};
   int selectedSourceRow = sortedModel->mapToSource(indexes.at(0)).row();
-  return tnmt->getPlayerMngr()->getPlayerBySeqNum(selectedSourceRow);
+  return pm.getPlayerBySeqNum(selectedSourceRow);
+}
+
+//----------------------------------------------------------------------------
+
+void PlayerTableView::setDatabase(TournamentDB* _db)
+{
+  // According to the Qt documentation, the selection model
+  // has to be explicitly deleted by the user
+  //
+  // Thus we store the model pointer for later deletion
+  QItemSelectionModel *oldSelectionModel = selectionModel();
+
+  // set the new data model
+  PlayerTableModel* newDataModel = nullptr;
+  if (_db != nullptr)
+  {
+    newDataModel = new PlayerTableModel(_db);
+    sortedModel->setSourceModel(newDataModel);
+
+    // define a delegate for drawing the player items
+    playerItemDelegate = make_unique<PlayerItemDelegate>(db, this);
+    playerItemDelegate->setProxy(sortedModel);
+    setItemDelegate(playerItemDelegate.get());
+
+    // resize columns and rows to content once (we do not want permanent automatic resizing)
+    horizontalHeader()->resizeSections(QHeaderView::ResizeToContents);
+    verticalHeader()->resizeSections(QHeaderView::ResizeToContents);
+
+  } else {
+    sortedModel->setSourceModel(emptyModel);
+    setItemDelegate(defaultDelegate);
+  }
+
+  // delete the old data model, if it was a
+  // CategoryTableModel instance
+  if (curDataModel != nullptr)
+  {
+    delete curDataModel;
+  }
+
+  // store the new CategoryTableModel instance, if any
+  curDataModel = newDataModel;
+
+  // delete the old selection model
+  delete oldSelectionModel;
+
+  // update the database pointer and set the widget's enabled state
+  db = _db;
+  setEnabled(db != nullptr);
 }
 
 //----------------------------------------------------------------------------
     
-void PlayerTableView::onTournamentOpened(Tournament* _tnmt)
-{
-  tnmt = _tnmt;
-  sortedModel->setSourceModel(tnmt->getPlayerTableModel());
-  setEnabled(true);
-  
-  // connect signals from the Tournament and TeamMngr with my slots
-  connect(tnmt, &Tournament::tournamentClosed, this, &PlayerTableView::onTournamentClosed);
-  
-  // resize columns and rows to content once (we do not want permanent automatic resizing)
-  horizontalHeader()->resizeSections(QHeaderView::ResizeToContents);
-  verticalHeader()->resizeSections(QHeaderView::ResizeToContents);
-}
-
-//----------------------------------------------------------------------------
-    
-void PlayerTableView::onTournamentClosed()
-{
-  // disconnect from all signals, because
-  // the sending objects don't exist anymore
-  disconnect(tnmt, &Tournament::tournamentClosed, this, &PlayerTableView::onTournamentClosed);
-  
-  // invalidate the tournament handle and deactivate the view
-  tnmt = nullptr;
-  sortedModel->setSourceModel(emptyModel);
-  setEnabled(false);
-  
-}
-
-//----------------------------------------------------------------------------
-
 QModelIndex PlayerTableView::mapToSource(const QModelIndex &proxyIndex)
 {
   return sortedModel->mapToSource(proxyIndex);
@@ -153,7 +174,8 @@ void PlayerTableView::onContextMenuRequested(const QPoint& pos)
   actRegister->setEnabled(isPlayerClicked & (plStat == STAT_PL_WAIT_FOR_REGISTRATION));
   actUnregister->setEnabled(isPlayerClicked & (plStat == STAT_PL_IDLE));
 
-  bool hasExtDb = tnmt->getPlayerMngr()->hasExternalPlayerDatabaseOpen();
+  PlayerMngr pm{db};
+  bool hasExtDb = pm.hasExternalPlayerDatabaseOpen();
   actImportFromExtDatabase->setEnabled(hasExtDb);
   actSyncAllToExtDatabase->setEnabled(hasExtDb);
   actExportToExtDatabase->setEnabled(isPlayerClicked && hasExtDb);
@@ -166,10 +188,10 @@ void PlayerTableView::onContextMenuRequested(const QPoint& pos)
 
 void PlayerTableView::onAddPlayerTriggered()
 {
-  DlgEditPlayer dlg(this);
+  DlgEditPlayer dlg(db, this);
 
   dlg.setModal(true);
-  cmdCreatePlayerFromDialog cmd{this, &dlg};
+  cmdCreatePlayerFromDialog cmd{db, this, &dlg};
   cmd.exec();
 }
 
@@ -180,7 +202,7 @@ void PlayerTableView::onEditPlayerTriggered()
   auto selectedPlayer = getSelectedPlayer();
   if (selectedPlayer == nullptr) return;
 
-  DlgEditPlayer dlg(this, selectedPlayer.get());
+  DlgEditPlayer dlg(db, this, selectedPlayer.get());
 
   dlg.setModal(true);
   int result = dlg.exec();
@@ -208,7 +230,7 @@ void PlayerTableView::onEditPlayerTriggered()
   }
 
   // category changes
-  CatMngr* cmngr = tnmt->getCatMngr();
+  CatMngr cmngr{db};
 
   QHash<Category, bool> catSelection = dlg.getCategoryCheckState();
   QHash<Category, bool>::const_iterator it = catSelection.constBegin();
@@ -218,7 +240,7 @@ void PlayerTableView::onEditPlayerTriggered()
     bool isCatSelected = it.value();
 
     if (isAlreadyInCat && !isCatSelected) {    // remove player from category
-      ERR e = cmngr->removePlayerFromCategory(*selectedPlayer, cat);
+      ERR e = cmngr.removePlayerFromCategory(*selectedPlayer, cat);
 
       if (e != OK) {
         QString msg = tr("Something went wrong when removing the player from a category. This shouldn't happen.");
@@ -228,7 +250,7 @@ void PlayerTableView::onEditPlayerTriggered()
     }
 
     if (!isAlreadyInCat && isCatSelected) {    // add player to category
-      ERR e = cmngr->addPlayerToCategory(*selectedPlayer, cat);
+      ERR e = cmngr.addPlayerToCategory(*selectedPlayer, cat);
 
       if (e != OK) {
         QString msg = tr("Something went wrong when adding the player to a category. This shouldn't happen.");
@@ -240,11 +262,11 @@ void PlayerTableView::onEditPlayerTriggered()
   }
 
   // Team changes
-  TeamMngr* tmngr = tnmt->getTeamMngr();
+  TeamMngr tmngr{db};
   Team newTeam = dlg.getTeam();
   if (newTeam != selectedPlayer->getTeam())
   {
-    ERR e = tmngr->changeTeamAssigment(*selectedPlayer, newTeam);
+    ERR e = tmngr.changeTeamAssigment(*selectedPlayer, newTeam);
 
     if (e != OK) {
       QString msg = tr("Something went wrong when changing the player's team assignment. This shouldn't happen.");
@@ -261,10 +283,10 @@ void PlayerTableView::onRemovePlayerTriggered()
   auto p = getSelectedPlayer();
   if (p == nullptr) return;
 
-  auto pm = tnmt->getPlayerMngr();
+  PlayerMngr pm{db};
 
   // can the player be deleted at all?
-  ERR err = pm->canDeletePlayer(*p);
+  ERR err = pm.canDeletePlayer(*p);
 
   // player is still paired in a not-yet-started
   // category
@@ -295,7 +317,7 @@ void PlayerTableView::onRemovePlayerTriggered()
   if (result != QMessageBox::Yes) return;
 
   // we can actually delete the player. Let's go!
-  err = pm->deletePlayer(*p);
+  err = pm.deletePlayer(*p);
   if (err != OK) {
     QString msg = tr("Something went wrong when deleting the player. This shouldn't happen.\n\n");
     msg += tr("For the records: error code = ") + QString::number(static_cast<int> (err));
@@ -338,7 +360,7 @@ void PlayerTableView::onUnregisterPlayerTriggered()
 
 void PlayerTableView::onImportFromExtDatabase()
 {
-  cmdImportSinglePlayerFromExternalDatabase cmd{this};
+  cmdImportSinglePlayerFromExternalDatabase cmd{db, this};
 
   cmd.exec();
 }
@@ -366,9 +388,9 @@ void PlayerTableView::onExportToExtDatabase()
 
 void PlayerTableView::onSyncAllToExtDatabase()
 {
-  PlayerMngr* pm = tnmt->getPlayerMngr();
+  PlayerMngr pm{db};
 
-  ERR err = pm->syncAllPlayersToExternalDatabase();
+  ERR err = pm.syncAllPlayersToExternalDatabase();
   if (err != OK)
   {
     QMessageBox::warning(this, tr("Sync players"), tr("No database open!"));
@@ -394,7 +416,7 @@ void PlayerTableView::initContextMenu()
   actSyncAllToExtDatabase = new QAction(tr("Sync all players to database"), this);
 
   // create the context menu and connect it to the actions
-  contextMenu = unique_ptr<QMenu>(new QMenu());
+  contextMenu = make_unique<QMenu>();
   contextMenu->addAction(actRegister);
   contextMenu->addAction(actUnregister);
   contextMenu->addSeparator();

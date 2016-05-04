@@ -9,15 +9,15 @@
 
 #include "MatchTabModel.h"
 #include "Category.h"
-#include "Tournament.h"
 #include "../ui/GuiHelpers.h"
 #include "CentralSignalEmitter.h"
+#include "MatchMngr.h"
 
 using namespace QTournament;
 using namespace SqliteOverlay;
 
-MatchTableModel::MatchTableModel(Tournament* tnmt)
-:QAbstractTableModel(0), db(tnmt->getDatabaseHandle()), matchTab((db->getTab(TAB_MATCH)))
+MatchTableModel::MatchTableModel(TournamentDB* _db)
+:QAbstractTableModel(0), db(_db), matchTab((db->getTab(TAB_MATCH)))
 {
   CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
   connect(cse, SIGNAL(beginCreateMatch()), this, SLOT(onBeginCreateMatch()), Qt::DirectConnection);
@@ -58,8 +58,8 @@ QVariant MatchTableModel::data(const QModelIndex& index, int role) const
     if (role != Qt::DisplayRole)
       return QVariant();
     
-    auto tnmt = Tournament::getActiveTournament();
-    auto ma = tnmt->getMatchMngr()->getMatchBySeqNum(index.row());
+    MatchMngr mm{db};
+    auto ma = mm.getMatchBySeqNum(index.row());
     auto mg = ma->getMatchGroup();
     
     // first column: match num

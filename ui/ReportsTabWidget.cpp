@@ -22,19 +22,15 @@
 #include "ReportsTabWidget.h"
 #include "ui_ReportsTabWidget.h"
 
-#include "Tournament.h"
 #include "reports/ReportFactory.h"
 #include "MainFrame.h"
 #include "CentralSignalEmitter.h"
 
 ReportsTabWidget::ReportsTabWidget(QWidget *parent) :
-  QWidget(parent),
+  QWidget(parent), db(nullptr),
   ui(new Ui::ReportsTabWidget), treeRoot(nullptr), isInResetProcedure(false)
 {
   ui->setupUi(this);
-
-  // connect to open / close events for updating our reports tree
-  connect(MainFrame::getMainFramePointer(), &MainFrame::tournamentOpened, this, &ReportsTabWidget::onTournamentOpened);
 
   // react to model reset requests
   CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
@@ -57,10 +53,9 @@ ReportsTabWidget::~ReportsTabWidget()
 
 void ReportsTabWidget::updateRepPool()
 {
-  if (!(Tournament::hasActiveTournament())) return;
+  if (db == nullptr) return;
 
-  auto repFab = tnmt->getReportFactory();
-  if (repFab == nullptr) return;
+  ReportFactory repFab{db};
 
   QStringList existingReports;
   for_each(repPool.cbegin(), repPool.cend(), [&existingReports](const upAbstractReport& rep)
@@ -68,7 +63,7 @@ void ReportsTabWidget::updateRepPool()
     existingReports.push_back(rep->getName());
   });
 
-  auto newReps = repFab->getMissingReports(existingReports);
+  auto newReps = repFab.getMissingReports(existingReports);
 
   // update the tree and add the new items
   for_each(newReps.cbegin(), newReps.cend(), [&](const upAbstractReport& rep)
@@ -92,21 +87,11 @@ void ReportsTabWidget::updateRepPool()
 
 //----------------------------------------------------------------------------
 
-void ReportsTabWidget::onTournamentOpened(Tournament* _tnmt)
+void ReportsTabWidget::setDatabase(TournamentDB* _db)
 {
-  tnmt = _tnmt;
-
-  connect(tnmt, &Tournament::tournamentClosed, this, &ReportsTabWidget::onTournamentClosed);
-
+  db = _db;
   onResetRequested();
-}
-
-//----------------------------------------------------------------------------
-
-void ReportsTabWidget::onTournamentClosed()
-{
-  onResetRequested();
-  disconnect(tnmt, &Tournament::tournamentClosed, this, &ReportsTabWidget::onTournamentClosed);
+  setEnabled(db != nullptr);
 }
 
 //----------------------------------------------------------------------------

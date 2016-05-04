@@ -20,22 +20,25 @@
 #include "CourtTableView.h"
 #include "MainFrame.h"
 #include "CourtMngr.h"
+#include "MatchMngr.h"
 #include "ui/GuiHelpers.h"
 
 CourtTableView::CourtTableView(QWidget* parent)
-  :QTableView(parent)
+  :QTableView(parent), db(nullptr), curCourtTabModel(nullptr)
 {
   // an empty model for clearing the table when
   // no tournament is open
   emptyModel = new QStringListModel();
+  defaultDelegate = itemDelegate();
 
   // prepare a proxy model to support sorting by columns
   sortedModel = new QSortFilterProxyModel();
   sortedModel->setSourceModel(emptyModel);
   setModel(sortedModel);
 
-  connect(MainFrame::getMainFramePointer(), &MainFrame::tournamentOpened, this, &CourtTableView::onTournamentOpened);
-  
+  // initiate the model(s) as empty
+  setDatabase(nullptr);
+
   // react on selection changes in the court table view
   connect(selectionModel(),
     SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
@@ -45,11 +48,6 @@ CourtTableView::CourtTableView(QWidget* parent)
   setContextMenuPolicy(Qt::CustomContextMenu);
   connect(this, SIGNAL(customContextMenuRequested(const QPoint&)),
           this, SLOT(onContextMenuRequested(const QPoint&)));
-
-  // define a delegate for drawing the court items
-  itemDelegate = new CourtItemDelegate(this);
-  itemDelegate->setProxy(sortedModel);
-  setItemDelegate(itemDelegate);
 
   // setup the context menu and its actions
   initContextMenu();
@@ -62,45 +60,13 @@ CourtTableView::~CourtTableView()
   delete emptyModel;
   delete sortedModel;
   //delete itemDelegate;
+
+  if (curCourtTabModel != nullptr) delete curCourtTabModel;
+  if (defaultDelegate != nullptr) delete defaultDelegate;
 }
 
 //----------------------------------------------------------------------------
     
-void CourtTableView::onTournamentOpened(Tournament* _tnmt)
-{
-  tnmt = _tnmt;
-  sortedModel->setSourceModel(tnmt->getCourtTableModel());
-  sortedModel->sort(CourtTableModel::COURT_NUM_COL_ID, Qt::AscendingOrder);
-  setEnabled(true);
-  
-  // connect signals from the Tournament and TeamMngr with my slots
-  connect(tnmt, &Tournament::tournamentClosed, this, &CourtTableView::onTournamentClosed, Qt::DirectConnection);
-
-  // resize columns and rows to content once (we do not want permanent automatic resizing)
-  horizontalHeader()->resizeSections(QHeaderView::ResizeToContents);
-  verticalHeader()->resizeSections(QHeaderView::ResizeToContents);
-
-  //horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-  //verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-}
-
-//----------------------------------------------------------------------------
-    
-void CourtTableView::onTournamentClosed()
-{
-  // disconnect from all signals, because
-  // the sending objects don't exist anymore
-  disconnect(tnmt, &Tournament::tournamentClosed, this, &CourtTableView::onTournamentClosed);
-  
-  // invalidate the tournament handle and deactivate the view
-  tnmt = nullptr;
-  sortedModel->setSourceModel(emptyModel);
-  setEnabled(false);
-  
-}
-
-//----------------------------------------------------------------------------
-
 unique_ptr<Court> CourtTableView::getSelectedCourt() const
 {
   // make sure we have non-empty model
@@ -117,7 +83,8 @@ unique_ptr<Court> CourtTableView::getSelectedCourt() const
 
   // return the selected item
   int selectedSourceRow = sortedModel->mapToSource(indexes.at(0)).row();
-  return tnmt->getCourtMngr()->getCourtBySeqNum(selectedSourceRow);
+  CourtMngr cm{db};
+  return cm.getCourtBySeqNum(selectedSourceRow);
 }
 
 //----------------------------------------------------------------------------
@@ -132,12 +99,62 @@ unique_ptr<Match> CourtTableView::getSelectedMatch() const
 
 //----------------------------------------------------------------------------
 
+void CourtTableView::setDatabase(TournamentDB* _db)
+{
+  // According to the Qt documentation, the selection model
+  // has to be explicitly deleted by the user
+  //
+  // Thus we store the model pointer for later deletion
+  QItemSelectionModel *oldSelectionModel = selectionModel();
+
+  // set the new data model
+  CourtTableModel* newCourtTabModel = nullptr;
+  if (_db != nullptr)
+  {
+    newCourtTabModel = new CourtTableModel(_db);
+    sortedModel->setSourceModel(newCourtTabModel);
+    sortedModel->sort(CourtTableModel::COURT_NUM_COL_ID, Qt::AscendingOrder);
+
+    // update the delegate
+    courtItemDelegate = make_unique<CourtItemDelegate>(db, this);
+    courtItemDelegate->setProxy(sortedModel);
+    setItemDelegate(courtItemDelegate.get());
+
+    // resize columns and rows to content once (we do not want permanent automatic resizing)
+    horizontalHeader()->resizeSections(QHeaderView::ResizeToContents);
+    verticalHeader()->resizeSections(QHeaderView::ResizeToContents);
+
+  } else {
+    sortedModel->setSourceModel(emptyModel);
+    setItemDelegate(defaultDelegate);
+  }
+
+  // delete the old data model, if it was a
+  // CategoryTableModel instance
+  if (curCourtTabModel != nullptr)
+  {
+    delete curCourtTabModel;
+  }
+
+  // store the new CategoryTableModel instance, if any
+  curCourtTabModel = newCourtTabModel;
+
+  // delete the old selection model
+  delete oldSelectionModel;
+
+  // update the database pointer and set the widget's enabled state
+  db = _db;
+  setEnabled(db != nullptr);
+}
+
+//----------------------------------------------------------------------------
+
 void CourtTableView::onSelectionChanged(const QItemSelection& selectedItem, const QItemSelection& deselectedItem)
 {
   resizeRowsToContents();
   for (auto item : selectedItem)
   {
-    itemDelegate->setSelectedRow(item.top());
+    courtItemDelegate->setSelectedRow(item.top());
     resizeRowToContents(item.top());
   }
   for (auto item : deselectedItem)
@@ -168,7 +185,7 @@ void CourtTableView::initContextMenu()
   connect(actAddCall, SIGNAL(triggered(bool)), this, SLOT(onActionAddCallTriggered()));
 
   // create the context menu and connect it to the actions
-  contextMenu = unique_ptr<QMenu>(new QMenu());
+  contextMenu = make_unique<QMenu>();
   contextMenu->addAction(actFinishMatch);
   contextMenu->addAction(actAddCall);
   walkoverSelectionMenu = contextMenu->addMenu(tr("Walkover for..."));
@@ -246,12 +263,12 @@ void CourtTableView::onContextMenuRequested(const QPoint& pos)
 
 void CourtTableView::onActionAddCourtTriggered()
 {
-  CourtMngr* cm = tnmt->getCourtMngr();
+  CourtMngr cm{db};
 
-  int nextCourtNum = cm->getHighestUnusedCourtNumber();
+  int nextCourtNum = cm.getHighestUnusedCourtNumber();
 
   ERR err;
-  cm->createNewCourt(nextCourtNum, QString::number(nextCourtNum), &err);
+  cm.createNewCourt(nextCourtNum, QString::number(nextCourtNum), &err);
 
   if (err != OK)
   {
@@ -281,8 +298,8 @@ void CourtTableView::onActionUndoCallTriggered()
   auto ma = getSelectedMatch();
   if (ma == nullptr) return;
 
-  MatchMngr* mm = tnmt->getMatchMngr();
-  mm->undoMatchCall(*ma);
+  MatchMngr mm{db};
+  mm.undoMatchCall(*ma);
 }
 
 //----------------------------------------------------------------------------

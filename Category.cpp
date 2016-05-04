@@ -24,7 +24,6 @@
 #include "TournamentDB.h"
 #include "TournamentErrorCodes.h"
 #include "CatMngr.h"
-#include "Tournament.h"
 #include "RoundRobinCategory.h"
 #include "RoundRobinGenerator.h"
 #include "Match.h"
@@ -34,6 +33,7 @@
 #include "PureRoundRobinCategory.h"
 #include "SwissLadderCategory.h"
 #include "HelperFunc.h"
+#include "PlayerMngr.h"
 
 namespace QTournament
 {
@@ -61,8 +61,8 @@ namespace QTournament
 
   ERR Category::rename(const QString& nn)
   {
-    auto tnmt = Tournament::getActiveTournament();
-    return tnmt->getCatMngr()->renameCategory(*this, nn);
+    CatMngr cm{db};
+    return cm.renameCategory(*this, nn);
   }
 
   //----------------------------------------------------------------------------
@@ -96,24 +96,24 @@ namespace QTournament
 
   ERR Category::setMatchSystem(MATCH_SYSTEM s)
   {
-    auto tnmt = Tournament::getActiveTournament();
-    return tnmt->getCatMngr()->setMatchSystem(*this, s);
+    CatMngr cm{db};
+    return cm.setMatchSystem(*this, s);
   }
 
   //----------------------------------------------------------------------------
 
   ERR Category::setMatchType(MATCH_TYPE t)
   {
-    auto tnmt = Tournament::getActiveTournament();
-    return tnmt->getCatMngr()->setMatchType(*this, t);
+    CatMngr cm{db};
+    return cm.setMatchType(*this, t);
   }
 
   //----------------------------------------------------------------------------
 
   ERR Category::setSex(SEX s)
   {
-    auto tnmt = Tournament::getActiveTournament();
-    return tnmt->getCatMngr()->setSex(*this, s);
+    CatMngr cm{db};
+    return cm.setSex(*this, s);
   }
 
   //----------------------------------------------------------------------------
@@ -172,8 +172,8 @@ namespace QTournament
 
   ERR Category::addPlayer(const Player& p)
   {
-    auto tnmt = Tournament::getActiveTournament();
-    return tnmt->getCatMngr()->addPlayerToCategory(p, *this);
+    CatMngr cm{db};
+    return cm.addPlayerToCategory(p, *this);
   }
 
   //----------------------------------------------------------------------------
@@ -219,8 +219,8 @@ namespace QTournament
 
   ERR Category::removePlayer(const Player& p)
   {
-    auto tnmt = Tournament::getActiveTournament();
-    return tnmt->getCatMngr()->removePlayerFromCategory(p, *this);
+    CatMngr cm{db};
+    return cm.removePlayerFromCategory(p, *this);
   }
 
 
@@ -260,8 +260,8 @@ namespace QTournament
 
   bool Category::setParameter(CAT_PARAMETER p, const QVariant& v)
   {
-    auto tnmt = Tournament::getActiveTournament();
-    return tnmt->getCatMngr()->setCatParameter(*this, p, v);
+    CatMngr cm{db};
+    return cm.setCatParameter(*this, p, v);
   }
 
   //----------------------------------------------------------------------------
@@ -303,8 +303,7 @@ namespace QTournament
   PlayerPairList Category::getPlayerPairs(int grp) const
   {
     PlayerPairList result;
-    auto tnmt = Tournament::getActiveTournament();
-    PlayerMngr* pmngr = tnmt->getPlayerMngr();
+    PlayerMngr pmngr{db};
 
     // get all players assigned to this category
     PlayerList singlePlayers = getAllPlayersInCategory();
@@ -318,7 +317,7 @@ namespace QTournament
     while (!(it.isEnd()))
     {
       int id1 = (*it).getInt(PAIRS_PLAYER1_REF);
-      Player p1 = pmngr->getPlayer(id1);
+      Player p1 = pmngr.getPlayer(id1);
       eraseAllValuesFromVector<Player>(singlePlayers, p1);
 
       // id2 is sometimes empty, e.g. in singles categories
@@ -327,7 +326,7 @@ namespace QTournament
         result.push_back(PlayerPair(p1, (*it).getId()));
       } else {
         int id2 = _id2->get();
-        Player p2 = pmngr->getPlayer(id2);
+        Player p2 = pmngr.getPlayer(id2);
         result.push_back(PlayerPair(p1, p2, (*it).getId()));
         eraseAllValuesFromVector<Player>(singlePlayers, p2);
       }
@@ -374,13 +373,12 @@ namespace QTournament
   PlayerList Category::getAllPlayersInCategory() const
   {
     PlayerList result;
-    auto tnmt = Tournament::getActiveTournament();
-    PlayerMngr* pmngr = tnmt->getPlayerMngr();
+    PlayerMngr pmngr{db};
 
     auto it = db->getTab(TAB_P2C)->getRowsByColumnValue(P2C_CAT_REF, getId());
     while (!(it.isEnd()))
     {
-      result.push_back(pmngr->getPlayer((*it).getInt(P2C_PLAYER_REF)));
+      result.push_back(pmngr.getPlayer((*it).getInt(P2C_PLAYER_REF)));
       ++it;
     }
 
@@ -534,8 +532,8 @@ namespace QTournament
     int p1Id = r.getInt(PAIRS_PLAYER1_REF);
     partnerId = (p1Id == p.getId()) ? p2Id->get() : p1Id;
 
-    auto tnmt = Tournament::getActiveTournament();
-    return tnmt->getPlayerMngr()->getPlayer(partnerId);
+    PlayerMngr pmngr{db};
+    return pmngr.getPlayer(partnerId);
   }
 
   //----------------------------------------------------------------------------
@@ -747,8 +745,7 @@ namespace QTournament
     if ((grpNum < 1) && (grpNum != GROUP_NUM__ITERATION)) return INVALID_GROUP_NUM;
 
     RoundRobinGenerator rrg;
-    auto tnmt = Tournament::getActiveTournament();
-    auto mm = tnmt->getMatchMngr();
+    MatchMngr mm{db};
     int numPlayers = grpMembers.size();
     int internalRoundNum = 0;
     while (true)
@@ -762,7 +759,7 @@ namespace QTournament
 
       // create a match group for the new round
       ERR e;
-      auto mg = mm->createMatchGroup(*this, firstRoundNum + internalRoundNum, grpNum, &e);
+      auto mg = mm.createMatchGroup(*this, firstRoundNum + internalRoundNum, grpNum, &e);
       if (e != OK) return e;
 
       // assign matches to this group
@@ -774,17 +771,17 @@ namespace QTournament
         PlayerPair pp1 = grpMembers.at(pairIndex1);
         PlayerPair pp2 = grpMembers.at(pairIndex2);
 
-        auto newMatch = mm->createMatch(*mg, &e);
+        auto newMatch = mm.createMatch(*mg, &e);
         if (e != OK) return e;
 
-        e = mm->setPlayerPairsForMatch(*newMatch, pp1, pp2);
+        e = mm.setPlayerPairsForMatch(*newMatch, pp1, pp2);
         if (e != OK) return e;
 
         if (progressNotificationQueue != nullptr) progressNotificationQueue->step();
       }
 
       // close this group (transition to FROZEN) and potentially promote it further to IDLE
-      mm->closeMatchGroup(*mg);
+      mm.closeMatchGroup(*mg);
 
       ++internalRoundNum;
     }
@@ -903,8 +900,7 @@ namespace QTournament
     lazyAndInefficientVectorSortFunc<BracketMatchData>(bmdl, BracketGenerator::getBracketMatchSortFunction_earlyRoundsFirst());
 
     // create match groups and matches "from left to right"
-    auto tnmt = Tournament::getActiveTournament();
-    MatchMngr* mm = tnmt->getMatchMngr();
+    MatchMngr mm{db};
     int curRound = -1;
     int curDepth = -1;
     unique_ptr<MatchGroup> curGroup = nullptr;
@@ -922,7 +918,7 @@ namespace QTournament
       {
         if (curGroup != nullptr)
         {
-          mm->closeMatchGroup(*curGroup);
+          mm.closeMatchGroup(*curGroup);
         }
 
         curDepth = bmd.depthInBracket;
@@ -948,14 +944,14 @@ namespace QTournament
 
         // create the match group
         ERR err;
-        curGroup = mm->createMatchGroup(*this, firstRoundNum+curRound, grpNum, &err);
+        curGroup = mm.createMatchGroup(*this, firstRoundNum+curRound, grpNum, &err);
         assert(err == OK);
         assert(curGroup != nullptr);
       }
 
       // create a new, empty match in this group and map it to the bracket match id
       ERR err;
-      auto ma = mm->createMatch(*curGroup, &err);
+      auto ma = mm.createMatch(*curGroup, &err);
       assert(err == OK);
       assert(ma != nullptr);
 
@@ -964,7 +960,7 @@ namespace QTournament
       if (progressNotificationQueue != nullptr) progressNotificationQueue->step();
     }
     // close the last open match group (the finals)
-    if (curGroup != nullptr) mm->closeMatchGroup(*curGroup);
+    if (curGroup != nullptr) mm.closeMatchGroup(*curGroup);
 
     // a little helper function that returns an iterator to a match with
     // a given ID
@@ -991,19 +987,19 @@ namespace QTournament
       assert(bmd.initialRank_Player1 != 0);
       assert(bmd.initialRank_Player2 != 0);
 
-      auto ma = mm->getMatch(bracket2Match.value(bmd.getBracketMatchId()));
+      auto ma = mm.getMatch(bracket2Match.value(bmd.getBracketMatchId()));
       assert(ma != nullptr);
 
       // case 1: we have "real" players that we can use
       if ((bmd.initialRank_Player1 > 0) && (bmd.initialRank_Player1 <= seeding.size()))
       {
         PlayerPair pp = seeding.at(bmd.initialRank_Player1 - 1);
-        mm->setPlayerPairForMatch(*ma, pp, 1);
+        mm.setPlayerPairForMatch(*ma, pp, 1);
       }
       if ((bmd.initialRank_Player2 > 0) && (bmd.initialRank_Player2 <= seeding.size()))
       {
         PlayerPair pp = seeding.at(bmd.initialRank_Player2 - 1);
-        mm->setPlayerPairForMatch(*ma, pp, 2);
+        mm.setPlayerPairForMatch(*ma, pp, 2);
       }
 
       // case 2: we have "symbolic" values like "winner of bracket match XYZ"
@@ -1013,17 +1009,17 @@ namespace QTournament
         BracketMatchData srcBracketMatch = *(getMatchById(srcBracketMatchId));
 
         int srcDatabaseMatchId = bracket2Match.value(srcBracketMatchId);
-        auto srcDatabaseMatch = mm->getMatch(srcDatabaseMatchId);
+        auto srcDatabaseMatch = mm.getMatch(srcDatabaseMatchId);
         assert(srcDatabaseMatch != nullptr);
 
         if (srcBracketMatch.nextMatchForWinner == bmd.getBracketMatchId())  // player 1 of bmd is the winner of srcMatch
         {
           assert(srcBracketMatch.nextMatchPlayerPosForWinner == 1);
-          mm->setSymbolicPlayerForMatch(*srcDatabaseMatch, *ma, true, 1);
+          mm.setSymbolicPlayerForMatch(*srcDatabaseMatch, *ma, true, 1);
         } else {
           // player 1 of bmd is the loser of srcMatch
           assert(srcBracketMatch.nextMatchPlayerPosForLoser == 1);
-          mm->setSymbolicPlayerForMatch(*srcDatabaseMatch, *ma, false, 1);
+          mm.setSymbolicPlayerForMatch(*srcDatabaseMatch, *ma, false, 1);
         }
       }
       if (bmd.initialRank_Player2 < 0)
@@ -1032,16 +1028,16 @@ namespace QTournament
         BracketMatchData srcBracketMatch = *(getMatchById(srcBracketMatchId));
 
         int srcDatabaseMatchId = bracket2Match.value(srcBracketMatchId);
-        auto srcDatabaseMatch = mm->getMatch(srcDatabaseMatchId);
+        auto srcDatabaseMatch = mm.getMatch(srcDatabaseMatchId);
 
         if (srcBracketMatch.nextMatchForWinner == bmd.getBracketMatchId())  // player 2 of bmd is the winner of srcMatch
         {
           assert(srcBracketMatch.nextMatchPlayerPosForWinner == 2);
-          mm->setSymbolicPlayerForMatch(*srcDatabaseMatch, *ma, true, 2);
+          mm.setSymbolicPlayerForMatch(*srcDatabaseMatch, *ma, true, 2);
         } else {
           // player 2 of bmd is the loser of srcMatch
           assert(srcBracketMatch.nextMatchPlayerPosForLoser == 2);
-          mm->setSymbolicPlayerForMatch(*srcDatabaseMatch, *ma, false, 2);
+          mm.setSymbolicPlayerForMatch(*srcDatabaseMatch, *ma, false, 2);
         }
       }
 
@@ -1049,21 +1045,21 @@ namespace QTournament
       // BUT the match contains information about the final rank of the one player
       if ((bmd.initialRank_Player1 == BracketMatchData::UNUSED_PLAYER) && (bmd.nextMatchForWinner < 0))
       {
-        mm->setPlayerToUnused(*ma, 1, -(bmd.nextMatchForWinner));
+        mm.setPlayerToUnused(*ma, 1, -(bmd.nextMatchForWinner));
       }
       if ((bmd.initialRank_Player2 == BracketMatchData::UNUSED_PLAYER) && (bmd.nextMatchForWinner < 0))
       {
-        mm->setPlayerToUnused(*ma, 2, -(bmd.nextMatchForWinner));
+        mm.setPlayerToUnused(*ma, 2, -(bmd.nextMatchForWinner));
       }
 
       // last step: perhaps we have final ranks for winner and/or loser
       if (bmd.nextMatchForWinner < 0)
       {
-        mm->setRankForWinnerOrLoser(*ma, true, -(bmd.nextMatchForWinner));
+        mm.setRankForWinnerOrLoser(*ma, true, -(bmd.nextMatchForWinner));
       }
       if (bmd.nextMatchForLoser < 0)
       {
-        mm->setRankForWinnerOrLoser(*ma, false, -(bmd.nextMatchForLoser));
+        mm.setRankForWinnerOrLoser(*ma, false, -(bmd.nextMatchForLoser));
       }
 
       if (progressNotificationQueue != nullptr) progressNotificationQueue->step();
@@ -1107,7 +1103,7 @@ namespace QTournament
         if (bracket2Match.keys().contains(i+1))    // bracket match IDs are 1-based, not 0-based!
         {
           int maId = bracket2Match.value(i+1);     // bracket match IDs are 1-based, not 0-based!
-          auto ma = tnmt->getMatchMngr()->getMatch(maId);
+          auto ma = mm.getMatch(maId);
 
           auto bracketElement = bvd->getVisElement(i+1);   // bracket match IDs are 1-based, not 0-based!
           assert(bracketElement != nullptr);
@@ -1203,10 +1199,9 @@ namespace QTournament
 
   bool Category::hasMatchesInState(OBJ_STATE stat, int round) const
   {
-    auto tnmt = Tournament::getActiveTournament();
-    MatchMngr* mm = tnmt->getMatchMngr();
+    MatchMngr mm{db};
 
-    MatchGroupList mgl = mm->getMatchGroupsForCat(*this, round);
+    MatchGroupList mgl = mm.getMatchGroupsForCat(*this, round);
     for (MatchGroup mg : mgl)
     {
       if (mg.hasMatchesInState(stat)) return true;

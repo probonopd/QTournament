@@ -23,6 +23,8 @@
 
 #include <QMenu>
 
+#include "TournamentDB.h"
+
 using namespace std;
 
 class MenuGenerator
@@ -30,7 +32,7 @@ class MenuGenerator
 public:
   MenuGenerator() = delete;
 
-  static void allCategories(QMenu* targetMenu);
+  static void allCategories(QTournament::TournamentDB* db, QMenu* targetMenu);
 
   static bool isActionInMenu(const QMenu* m, const QAction* a);
 };

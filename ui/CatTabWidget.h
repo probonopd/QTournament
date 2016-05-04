@@ -23,6 +23,7 @@
 #include <QAction>
 
 #include "ui_CatTabWidget.h"
+#include "TournamentDB.h"
 
 class CatTabWidget : public QDialog
 {
@@ -30,7 +31,10 @@ class CatTabWidget : public QDialog
 public:
   CatTabWidget();
   virtual ~CatTabWidget();
+  void setDatabase(TournamentDB* _db);
+
 private:
+  TournamentDB* db;
   Ui::CatTabWidget ui;
   void updateControls();
   void updatePairs();

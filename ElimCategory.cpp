@@ -16,17 +16,19 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <QDebug>
+
 #include "ElimCategory.h"
 #include "KO_Config.h"
-#include "Tournament.h"
 #include "CatRoundStatus.h"
 #include "RankingEntry.h"
 #include "RankingMngr.h"
 #include "assert.h"
 #include "BracketGenerator.h"
 #include "HelperFunc.h"
-
-#include <QDebug>
+#include "MatchMngr.h"
+#include "CatMngr.h"
+#include "RankingMngr.h"
 
 using namespace SqliteOverlay;
 
@@ -117,12 +119,11 @@ namespace QTournament
   {
     if (getState() != STAT_CAT_IDLE) return WRONG_STATE;
 
-    auto tnmt = Tournament::getActiveTournament();
-    auto mm = tnmt->getMatchMngr();
+    MatchMngr mm{db};
 
     // make sure we have not been called before; to this end, just
     // check that there have no matches been created for us so far
-    auto allGrp = mm->getMatchGroupsForCat(*this);
+    auto allGrp = mm.getMatchGroupsForCat(*this);
     // do not return an error here, because obviously we have been
     // called successfully before and we only want to avoid
     // double initialization
@@ -130,7 +131,8 @@ namespace QTournament
 
     // alright, this is a virgin category. Generate bracket matches
     // for each group
-    PlayerPairList seeding = tnmt->getCatMngr()->getSeeding(*this);
+    CatMngr cm{db};
+    PlayerPairList seeding = cm.getSeeding(*this);
     return generateBracketMatches(elimMode, seeding, 1, progressNotificationQueue);
   }
 
@@ -168,8 +170,7 @@ namespace QTournament
     // and for everyone who achieved a final rank in a
     // previous round
     ERR err;
-    auto tnmt = Tournament::getActiveTournament();
-    RankingMngr* rm = tnmt->getRankingMngr();
+    RankingMngr rm{db};
     PlayerPairList ppList;
     if (round == 1)
     {
@@ -178,7 +179,7 @@ namespace QTournament
       ppList = this->getRemainingPlayersAfterRound(round - 1, &err);
       if (err != OK) return err;
     }
-    auto rll = rm->getSortedRanking(*this, round-1);
+    auto rll = rm.getSortedRanking(*this, round-1);
     for (auto rl : rll)
     {
       for (RankingEntry re : rl)
@@ -198,15 +199,15 @@ namespace QTournament
 
     // create unsorted entries for everyone who played in this round
     // or who achieved a final rank in a previous round
-    rm->createUnsortedRankingEntriesForLastRound(*this, &err, ppList);
+    rm.createUnsortedRankingEntriesForLastRound(*this, &err, ppList);
     if (err != OK) return err;
 
     // set the rank for all players that ended up at a final rank
     // in this or any prior round
-    MatchMngr* mm = tnmt->getMatchMngr();
+    MatchMngr mm{db};
     for (int r=1; r <= round; ++r)
     {
-      for (MatchGroup mg : mm->getMatchGroupsForCat(*this, r))
+      for (MatchGroup mg : mm.getMatchGroupsForCat(*this, r))
       {
         for (Match ma : mg.getMatches())
         {
@@ -215,9 +216,9 @@ namespace QTournament
           {
             auto w = ma.getWinner();
             assert(w != nullptr);
-            auto re = rm->getRankingEntry(*w, round);
+            auto re = rm.getRankingEntry(*w, round);
             assert(re != nullptr);
-            rm->forceRank(*re, winnerRank);
+            rm.forceRank(*re, winnerRank);
           }
 
           int loserRank = ma.getLoserRank();
@@ -225,9 +226,9 @@ namespace QTournament
           {
             auto l = ma.getLoser();
             assert(l != nullptr);
-            auto re = rm->getRankingEntry(*l, round);
+            auto re = rm.getRankingEntry(*l, round);
             assert(re != nullptr);
-            rm->forceRank(*re, loserRank);
+            rm.forceRank(*re, loserRank);
           }
         }
       }
@@ -280,9 +281,8 @@ namespace QTournament
     // those players that have no future matches.
     //
     // "no future match" can mean player "eliminated" or "ranked"
-    auto tnmt = Tournament::getActiveTournament();
-    MatchMngr* mm = tnmt->getMatchMngr();
-    for (MatchGroup mg : mm->getMatchGroupsForCat(*this, round))
+    MatchMngr mm{db};
+    for (MatchGroup mg : mm.getMatchGroupsForCat(*this, round))
     {
       for (Match ma : mg.getMatches())
       {
@@ -322,7 +322,7 @@ namespace QTournament
           // step 1: search by pair
           for (int r=round+1; r <= lastRoundInThisCat; ++r)
           {
-            auto next = mm->getMatchForPlayerPairAndRound(pp, r);
+            auto next = mm.getMatchForPlayerPairAndRound(pp, r);
             if (next != nullptr)
             {
               return true;

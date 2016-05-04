@@ -19,14 +19,14 @@
 #include <QObject>
 #include <QMessageBox>
 
-#include "Tournament.h"
 #include "cmdCreateNewPlayerInCat.h"
 #include "ui/dlgEditPlayer.h"
 #include "ui/DlgPickPlayerSex.h"
 #include "cmdCreatePlayerFromDialog.h"
+#include "CatMngr.h"
 
 cmdCreateNewPlayerInCat::cmdCreateNewPlayerInCat(QWidget* p, const Category& _cat)
-  :AbstractCommand(p), cat(_cat)
+  :AbstractCommand(_cat.getDatabaseHandle(), p), cat(_cat)
 {
 
 }
@@ -65,10 +65,10 @@ ERR cmdCreateNewPlayerInCat::exec()
   }
 
   // prepare a dialog for creating a new player
-  DlgEditPlayer dlgCreate{parentWidget, selectedSex, cat};
+  DlgEditPlayer dlgCreate{db, parentWidget, selectedSex, cat};
 
   // let an external command do the rest of the work
-  cmdCreatePlayerFromDialog cmd{parentWidget, &dlgCreate};
+  cmdCreatePlayerFromDialog cmd{db, parentWidget, &dlgCreate};
   return cmd.exec();
 }
 

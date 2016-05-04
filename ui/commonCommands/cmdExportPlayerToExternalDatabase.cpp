@@ -19,11 +19,11 @@
 #include <QObject>
 #include <QMessageBox>
 
-#include "Tournament.h"
 #include "cmdExportPlayerToExternalDatabase.h"
+#include "PlayerMngr.h"
 
 cmdExportPlayerToExternalDatabase::cmdExportPlayerToExternalDatabase(QWidget* p, const Player& _pl)
-  :AbstractCommand(p), pl(_pl)
+  :AbstractCommand(_pl.getDatabaseHandle(), p), pl(_pl)
 {
 
 }
@@ -33,18 +33,15 @@ cmdExportPlayerToExternalDatabase::cmdExportPlayerToExternalDatabase(QWidget* p,
 ERR cmdExportPlayerToExternalDatabase::exec()
 {
   // make sure we have an external database open
-  auto tnmt = Tournament::getActiveTournament();
-  PlayerMngr* pm = tnmt->getPlayerMngr();
-  if (!(pm->hasExternalPlayerDatabaseOpen()))
+  PlayerMngr pm{db};
+  if (!(pm.hasExternalPlayerDatabaseOpen()))
   {
     QString msg = tr("No valid database for player export open.");
     QMessageBox::warning(parentWidget, tr("Export player"), msg);
     return EPD__NOT_OPENED;
   }
 
-  ExternalPlayerDB* extDb = pm->getExternalPlayerDatabaseHandle();
-
-  ERR err = pm->exportPlayerToExternalDatabase(pl);
+  ERR err = pm.exportPlayerToExternalDatabase(pl);
   if (err == OK) return OK;
 
   QString msg;

@@ -10,17 +10,15 @@
 #include "CourtTabModel.h"
 
 #include "Category.h"
-#include "Tournament.h"
 #include "../ui/GuiHelpers.h"
 #include "CourtMngr.h"
-#include "Tournament.h"
 #include "CentralSignalEmitter.h"
 
 using namespace QTournament;
 using namespace SqliteOverlay;
 
-CourtTableModel::CourtTableModel(Tournament* tnmt)
-:QAbstractTableModel(0), db(tnmt->getDatabaseHandle()), courtTab((db->getTab(TAB_COURT)))
+CourtTableModel::CourtTableModel(TournamentDB* _db)
+:QAbstractTableModel(0), db(_db), courtTab((db->getTab(TAB_COURT)))
 {
   CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
   connect(cse, SIGNAL(beginCreateCourt()), this, SLOT(onBeginCreateCourt()), Qt::DirectConnection);
@@ -59,8 +57,8 @@ QVariant CourtTableModel::data(const QModelIndex& index, int role) const
     if (role != Qt::DisplayRole)
       return QVariant();
     
-    auto tnmt = Tournament::getActiveTournament();
-    auto co = tnmt->getCourtMngr()->getCourtBySeqNum(index.row());
+    CourtMngr cm{db};
+    auto co = cm.getCourtBySeqNum(index.row());
     
     // first column: court number
     if (index.column() == COURT_NUM_COL_ID)

@@ -12,6 +12,10 @@
 #include <QFontMetrics>
 #include <QAbstractProxyModel>
 
+#include "TournamentDB.h"
+
+using namespace QTournament;
+
 class MatchItemDelegate : public QStyledItemDelegate
 {
   Q_OBJECT
@@ -22,15 +26,16 @@ public:
   static constexpr int ITEM_STAT_INDICATOR_SIZE = 15;
   static constexpr int ITEM_MARGIN = 5;
 
-  MatchItemDelegate(QObject* parent = 0);
+  MatchItemDelegate(TournamentDB* _db, QObject* parent = 0);
   void setProxy(QAbstractProxyModel* _proxy);
   void paint (QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index ) const;
   QSize sizeHint (const QStyleOptionViewItem& option, const QModelIndex& index ) const;
   void setSelectedRow(int _selRow);
   
 private:
-  QFontMetrics fntMetrics;
+  TournamentDB* db;
   QAbstractProxyModel* proxy;
+  QFontMetrics fntMetrics;
   int selectedRow;
 } ;
 

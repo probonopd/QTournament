@@ -23,6 +23,7 @@
 
 #include "Player.h"
 #include "ExternalPlayerDB.h"
+#include "TournamentDB.h"
 
 using namespace QTournament;
 
@@ -30,9 +31,9 @@ class DlgEditPlayer : public QDialog
 {
   Q_OBJECT
 public:
-  DlgEditPlayer (QWidget *parent, Player* _selectedPlayer = nullptr);
-  DlgEditPlayer (QWidget *parent, SEX _sexPreset, const Category& _catPreset);
-  DlgEditPlayer (QWidget *parent, const ExternalPlayerDatabaseEntry& nameAndSexPreset, int _presetCatId=-1);
+  DlgEditPlayer (TournamentDB* _db, QWidget *parent, Player* _selectedPlayer = nullptr);
+  DlgEditPlayer (TournamentDB* _db, QWidget *parent, SEX _sexPreset, const Category& _catPreset);
+  DlgEditPlayer (TournamentDB* _db, QWidget *parent, const ExternalPlayerDatabaseEntry& nameAndSexPreset, int _presetCatId=-1);
   virtual ~DlgEditPlayer ();
   QString getFirstName();
   QString getLastName();
@@ -43,6 +44,7 @@ public:
   
 private:
   Ui::dlgEditPlayer ui;
+  TournamentDB* db;
   Player* selectedPlayer;
   void initFromPlayerData();
   void initTeamList();

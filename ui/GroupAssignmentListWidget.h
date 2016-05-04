@@ -26,7 +26,7 @@
 #include <QList>
 #include <QQueue>
 
-#include "Tournament.h"
+#include "TournamentDB.h"
 #include "PlayerPair.h"
 #include "delegates/PairItemDelegate.h"
 
@@ -41,20 +41,22 @@ public:
   GroupAssignmentListWidget(QWidget* parent = 0);
   virtual ~GroupAssignmentListWidget();
   
-  void setup(QList<PlayerPairList> ppListList);
+  void setup(TournamentDB* _db, QList<PlayerPairList> ppListList);
   void teardown();
   PlayerPairList getSelectedPlayerPairs();
   void swapSelectedPlayers();
   vector<PlayerPairList> getGroupAssignments();
+  void setDatabase(TournamentDB* _db);
 
 public slots:
   void onRowSelectionChanged();
   
 private:
   Ui::GroupAssignmentListWidget ui;
+  TournamentDB* db;
   QListWidget* lwGroup[MAX_GROUP_COUNT];
   QLabel* laGroup[MAX_GROUP_COUNT];
-  PairItemDelegate* delegate[MAX_GROUP_COUNT];
+  unique_ptr<PairItemDelegate> delegate[MAX_GROUP_COUNT];
   bool isInitialized;
   int getColCountForGroupCount(int grpCount);
   QQueue<QListWidget*> selectionQueue;

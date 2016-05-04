@@ -35,7 +35,7 @@ namespace QTournament
     static constexpr int COL_WAITING_MATCHES = 6;
     static constexpr int COL_TOTAL_MATCHES = 7;
 
-    CategoryTableModel (Tournament* tnmt);
+    CategoryTableModel (TournamentDB* _db);
     int rowCount(const QModelIndex & parent = QModelIndex()) const;
     int columnCount(const QModelIndex & parent = QModelIndex()) const;
     QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const;

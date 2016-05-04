@@ -25,8 +25,9 @@
 #include <QSortFilterProxyModel>
 #include <QStringListModel>
 
-#include "Tournament.h"
+#include "TournamentDB.h"
 #include "delegates/PlayerItemDelegate.h"
+#include "models/PlayerTableModel.h"
 
 using namespace QTournament;
 
@@ -40,8 +41,7 @@ public:
   unique_ptr<Player> getSelectedPlayer() const;
   
 public slots:
-  void onTournamentClosed();
-  void onTournamentOpened(Tournament* tnmt);
+  void setDatabase(TournamentDB* _db);
   QModelIndex mapToSource(const QModelIndex& proxyIndex);
   void onAddPlayerTriggered();
   void onEditPlayerTriggered();
@@ -57,10 +57,12 @@ private slots:
   void onContextMenuRequested(const QPoint& pos);
   
 private:
-  Tournament* tnmt;
+  TournamentDB* db;
   QStringListModel* emptyModel;
+  PlayerTableModel* curDataModel;
   QSortFilterProxyModel* sortedModel;
-  PlayerItemDelegate* itemDelegate;
+  unique_ptr<PlayerItemDelegate> playerItemDelegate;
+  QAbstractItemDelegate* defaultDelegate;
 
   unique_ptr<QMenu> contextMenu;
   QAction* actAddPlayer;

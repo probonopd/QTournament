@@ -28,6 +28,7 @@
 #include "Match.h"
 #include "MatchMngr.h"
 #include "BracketGenerator.h"
+#include "PlayerMngr.h"
 
 namespace QTournament
 {
@@ -198,7 +199,7 @@ upSimpleReport BracketSheet::regenerateReport()
       //
       // print the actual or symbolic player names, if any
       //
-      auto tnmt = Tournament::getActiveTournament();
+      PlayerMngr pm{db};
       QString pairName;
       bool isSymbolic = false;
       int ppId = determineEffectivePlayerPairId(el, 1);
@@ -207,7 +208,7 @@ upSimpleReport BracketSheet::regenerateReport()
         pairName = determineSymbolicPlayerPairDisplayText(el, 1);
         isSymbolic = true;
       } else {
-        PlayerPair pp = tnmt->getPlayerMngr()->getPlayerPair(ppId);
+        PlayerPair pp = pm.getPlayerPair(ppId);
         pairName = getTruncatedPlayerName(pp, xFac - 2 * GAP_LINE_TXT__MM, rawReport->getTextStyle(BRACKET_STYLE));
       }
       drawBracketTextItem(x0, y0, spanY, orientation, pairName, BRACKET_TEXT_ELEMENT::PAIR1,
@@ -220,7 +221,7 @@ upSimpleReport BracketSheet::regenerateReport()
         pairName = determineSymbolicPlayerPairDisplayText(el, 2);
         isSymbolic = true;
       } else {
-        PlayerPair pp = tnmt->getPlayerMngr()->getPlayerPair(ppId);
+        PlayerPair pp = pm.getPlayerPair(ppId);
         pairName = getTruncatedPlayerName(pp, xFac - 2 * GAP_LINE_TXT__MM, rawReport->getTextStyle(BRACKET_STYLE));
       }
       if (yPageBreakSpan > 0)   // does the name of the second pair go on the next page?

@@ -24,7 +24,8 @@
 #include "TournamentDB.h"
 #include "TournamentErrorCodes.h"
 #include "PlayerMngr.h"
-#include "Tournament.h"
+#include "CatMngr.h"
+#include "TeamMngr.h"
 
 namespace QTournament
 {
@@ -97,8 +98,8 @@ namespace QTournament
 
   ERR Player::rename(const QString& newFirst, const QString& newLast)
   {
-    auto tnmt = Tournament::getActiveTournament();
-    return tnmt->getPlayerMngr()->renamePlayer(*this, newFirst, newLast);
+    PlayerMngr pm{db};
+    return pm.renamePlayer(*this, newFirst, newLast);
   }
 
 //----------------------------------------------------------------------------
@@ -135,8 +136,8 @@ namespace QTournament
       throw std::runtime_error("Query for team of a player occurred; however, we're not using teams in this tournament!");
     }
     
-    auto tnmt = Tournament::getActiveTournament();
-    return tnmt->getTeamMngr()->getTeamById(teamRef->get());
+    TeamMngr tm{db};
+    return tm.getTeamById(teamRef->get());
   }
 
 //----------------------------------------------------------------------------
@@ -146,12 +147,11 @@ namespace QTournament
     vector<Category> result;
     auto it = db->getTab(TAB_P2C)->getRowsByColumnValue(P2C_PLAYER_REF, getId());
     
-    auto tnmt = Tournament::getActiveTournament();
-    CatMngr* cmngr = tnmt->getCatMngr();
+    CatMngr cmngr{db};
     while (!(it.isEnd()))
     {
       int catId = (*it).getInt(P2C_CAT_REF);
-      result.push_back(cmngr->getCategoryById(catId));
+      result.push_back(cmngr.getCategoryById(catId));
       ++it;
     }
     

@@ -21,44 +21,39 @@
 
 #include "PlayerPair.h"
 #include "PlayerMngr.h"
-#include "Tournament.h"
+#include "CatMngr.h"
 
 namespace QTournament {
 
+  // ctor for a player pair with a single player only and without database entry
   PlayerPair::PlayerPair(const Player& p1)
+    : id1(p1.getId()), id2(-1), pairId(-1), db(p1.getDatabaseHandle())
   {
-    id1 = p1.getId();
-    id2 = -1;
-    pairId = -1;
   }
 
 //----------------------------------------------------------------------------
 
+  // ctor for a player pair with two players and an optional database entry (_pairId may be -1)
   PlayerPair::PlayerPair(const Player& p1, const Player& p2, int _pairId)
+    : id1(p1.getId()), id2(p2.getId()), pairId(_pairId), db(p1.getDatabaseHandle())
   {
-    id1 = p1.getId();
-    id2 = p2.getId();
-    pairId = _pairId;
     sortPlayers();
   }
 
 //----------------------------------------------------------------------------
 
+  // ctor for a player pair with a single player only and with database entry
   PlayerPair::PlayerPair(const Player& p1, int _pairId)
+    : id1(p1.getId()), id2(-1), pairId(_pairId), db(p1.getDatabaseHandle())
   {
-    id1 = p1.getId();
-    id2 = -1;
-    pairId = _pairId;
   }
 
 //----------------------------------------------------------------------------
 
-  PlayerPair::PlayerPair(const TournamentDB* db, const TabRow& row)
+  // ctor for a PlayerPair constructed from a row in TAB_PAIRS
+  PlayerPair::PlayerPair(TournamentDB* _db, const TabRow& row)
+    :id1(row.getInt(PAIRS_PLAYER1_REF)), id2(-1), pairId(row.getId()), db(_db)
   {
-    pairId = row.getId();
-    id1 = row.getInt(PAIRS_PLAYER1_REF);
-    id2 = -1;
-
     auto _id2 = row.getInt2(PAIRS_PLAYER2_REF);
     if (!(_id2->isNull()))
     {
@@ -69,6 +64,7 @@ namespace QTournament {
 
 //----------------------------------------------------------------------------
 
+  // ctor for a PlayerPair constructed from a row in TAB_PAIRS identified by its ID
   PlayerPair::PlayerPair(TournamentDB* db, int ppId)
   {
     TabRow row = db->getTab(TAB_PAIRS)->operator [](ppId);
@@ -89,13 +85,13 @@ namespace QTournament {
 
   void PlayerPair::sortPlayers()
   {
-    auto tnmt = Tournament::getActiveTournament();
+    PlayerMngr pm{db};
 
     // if we have two players, sort the man first
     if (id2 > 0)
     {
-      Player p1 = tnmt->getPlayerMngr()->getPlayer(id1);
-      Player p2 = tnmt->getPlayerMngr()->getPlayer(id2);
+      Player p1 = pm.getPlayer(id1);
+      Player p2 = pm.getPlayer(id2);
       if ((p2.getSex() == M) && (p1.getSex() == F))
       {
         id1 = p2.getId();
@@ -116,16 +112,16 @@ namespace QTournament {
 
   Player PlayerPair::getPlayer1() const
   {
-    auto tnmt = Tournament::getActiveTournament();
-    return tnmt->getPlayerMngr()->getPlayer(id1);
+    PlayerMngr pm{db};
+    return pm.getPlayer(id1);
   }
 
 //----------------------------------------------------------------------------
 
   Player PlayerPair::getPlayer2() const
   {
-    auto tnmt = Tournament::getActiveTournament();
-    return tnmt->getPlayerMngr()->getPlayer(id2);
+    PlayerMngr pm{db};
+    return pm.getPlayer(id2);
   }
 
 //----------------------------------------------------------------------------
@@ -252,8 +248,8 @@ namespace QTournament {
     if (pairId <= 0) return nullptr;
 
     TabRow pairRow = db->getTab(TAB_PAIRS)->operator [](pairId);
-    auto tnmt = Tournament::getActiveTournament();
-    Category cat = tnmt->getCatMngr()->getCategoryById(pairRow.getInt(PAIRS_CAT_REF));
+    CatMngr cm{db};
+    Category cat = cm.getCategoryById(pairRow.getInt(PAIRS_CAT_REF));
 
     return unique_ptr<Category>(new Category(cat));
   }
@@ -263,7 +259,7 @@ namespace QTournament {
   // this serves only as a hot fix until this class will be re-factored to inherit GenericDatabaseObject
   //
   // for debugging and unit testing only
-  bool PlayerPair::isConsistent(TournamentDB *db) const
+  bool PlayerPair::isConsistent() const
   {
     assert(db != nullptr);
 
@@ -286,7 +282,7 @@ namespace QTournament {
 //----------------------------------------------------------------------------
 
   // this serves only as a hot fix until this class will be re-factored to inherit GenericDatabaseObject
-  int PlayerPair::getPairsGroupNum(TournamentDB *db) const
+  int PlayerPair::getPairsGroupNum() const
   {
     assert(db != nullptr);
 

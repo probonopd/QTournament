@@ -28,7 +28,7 @@ GroupConfigWidget::~GroupConfigWidget()
 //----------------------------------------------------------------------------
     
 GroupConfigWidget::GroupConfigWidget(QWidget* parent)
-    : QWidget(parent), pointersInitialized(false), rangeControlEnabled(true)
+    : QWidget(parent), db(nullptr), pointersInitialized(false), rangeControlEnabled(true)
 {
   ui.setupUi(this);
   
@@ -255,6 +255,15 @@ void GroupConfigWidget::setRequiredPlayersCount(int cnt)
   
   reqPlayers = cnt;
   updateLabels();
+}
+
+//----------------------------------------------------------------------------
+
+void GroupConfigWidget::setDatabase(TournamentDB* _db)
+{
+  db = _db;
+
+  setEnabled(db != nullptr);
 }
 
 //----------------------------------------------------------------------------

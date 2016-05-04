@@ -23,7 +23,8 @@
 #include "TournamentDB.h"
 #include "TournamentErrorCodes.h"
 #include "MatchMngr.h"
-#include "Tournament.h"
+#include "PlayerMngr.h"
+#include "CourtMngr.h"
 
 namespace QTournament
 {
@@ -90,8 +91,8 @@ namespace QTournament
     }
 
     int ppId = row.getInt(MA_PAIR1_REF);
-    auto tnmt = Tournament::getActiveTournament();
-    return tnmt->getPlayerMngr()->getPlayerPair(ppId);
+    PlayerMngr pm{db};
+    return pm.getPlayerPair(ppId);
   }
 
 //----------------------------------------------------------------------------
@@ -104,8 +105,8 @@ namespace QTournament
     }
 
     int ppId = row.getInt(MA_PAIR2_REF);
-    auto tnmt = Tournament::getActiveTournament();
-    return tnmt->getPlayerMngr()->getPlayerPair(ppId);
+    PlayerMngr pm{db};
+    return pm.getPlayerPair(ppId);
   }
 
 //----------------------------------------------------------------------------
@@ -201,8 +202,8 @@ namespace QTournament
     }
 
     int courtId = courtEntry->get();
-    auto tnmt = Tournament::getActiveTournament();
-    auto result = tnmt->getCourtMngr()->getCourtById(courtId);
+    CourtMngr cm{db};
+    auto result = cm.getCourtById(courtId);
     if (err != nullptr) *err = OK;
     return result;
   }
@@ -211,8 +212,8 @@ namespace QTournament
 
   PlayerList Match::determineActualPlayers() const
   {
-    auto tnmt = Tournament::getActiveTournament();
-    return tnmt->getPlayerMngr()->determineActualPlayersForMatch(*this);
+    PlayerMngr pm{db};
+    return pm.determineActualPlayersForMatch(*this);
   }
 
 //----------------------------------------------------------------------------
@@ -353,8 +354,8 @@ namespace QTournament
     bool isWinner = matchRef > 0;
     if (matchRef < 0) matchRef = -matchRef;
 
-    auto tnmt = Tournament::getActiveTournament();
-    auto ma = tnmt->getMatchMngr()->getMatch(matchRef);
+    MatchMngr mm{db};
+    auto ma = mm.getMatch(matchRef);
     int matchNumber = ma->getMatchNumber();
     if (matchNumber == MATCH_NUM_NOT_ASSIGNED) return 0;
 

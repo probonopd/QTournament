@@ -23,13 +23,14 @@
 #include "MainFrame.h"
 
 TeamListView::TeamListView(QWidget* parent)
-:QListView(parent)
+:QListView(parent), db(nullptr), curDataModel(nullptr)
 {
   // an empty model for clearing the list when
   // no tournament is open
   emptyModel = new QStringListModel();
   
-  connect(MainFrame::getMainFramePointer(), &MainFrame::tournamentOpened, this, &TeamListView::onTournamentOpened);
+  // initiate the model(s) as empty
+  setDatabase(nullptr);
 }
 
 //----------------------------------------------------------------------------
@@ -37,37 +38,49 @@ TeamListView::TeamListView(QWidget* parent)
 TeamListView::~TeamListView()
 {
   delete emptyModel;
+  if (curDataModel != nullptr) delete curDataModel;
 }
 
 //----------------------------------------------------------------------------
-    
-void TeamListView::onTournamentClosed()
+
+void TeamListView::setDatabase(TournamentDB* _db)
 {
-  // disconnect from all signals, because
-  // the sending objects don't exist anymore
-  disconnect(tnmt, &Tournament::tournamentClosed, this, &TeamListView::onTournamentClosed);
-  
-  // invalidate the tournament handle and deactivate the view
-  tnmt = 0;
-  setModel(emptyModel);
-  setEnabled(false);
-  
+  // According to the Qt documentation, the selection model
+  // has to be explicitly deleted by the user
+  //
+  // Thus we store the model pointer for later deletion
+  QItemSelectionModel *oldSelectionModel = selectionModel();
+
+  // set the new data model
+  TeamListModel* newDataModel = nullptr;
+  if (_db != nullptr)
+  {
+    newDataModel = new TeamListModel(_db);
+    setModel(newDataModel);
+  } else {
+    setModel(emptyModel);
+  }
+
+  // delete the old data model, if it was a
+  // CategoryTableModel instance
+  if (curDataModel != nullptr)
+  {
+    delete curDataModel;
+  }
+
+  // store the new CategoryTableModel instance, if any
+  curDataModel = newDataModel;
+
+  // delete the old selection model
+  delete oldSelectionModel;
+
+  // update the database pointer and set the widget's enabled state
+  db = _db;
+  setEnabled(db != nullptr);
 }
 
 //----------------------------------------------------------------------------
-    
-void TeamListView::onTournamentOpened(Tournament* _tnmt)
-{
-  tnmt = _tnmt;
-  setModel(tnmt->getTeamListModel());
-  setEnabled(true);
-  
-  // connect signals from the Tournament and TeamMngr with my slots
-  connect(tnmt, &Tournament::tournamentClosed, this, &TeamListView::onTournamentClosed);
-}
 
-//----------------------------------------------------------------------------
-    
 
 //----------------------------------------------------------------------------
     

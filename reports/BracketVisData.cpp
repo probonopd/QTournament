@@ -20,16 +20,15 @@
 
 #include "ClausesAndQueries.h"
 
-#include "Tournament.h"
 #include "BracketVisData.h"
+#include "CatMngr.h"
 
 using namespace QTournament;
 
 unique_ptr<QTournament::BracketVisData> QTournament::BracketVisData::getExisting(const QTournament::Category& _cat)
 {
   // acquire a database handle
-  auto tnmt = Tournament::getActiveTournament();
-  TournamentDB* _db = tnmt->getDatabaseHandle();
+  TournamentDB* _db = _cat.getDatabaseHandle();
 
   // check if the requested category has visualization data
   DbTab* catTab = _db->getTab(TAB_CATEGORY);
@@ -61,8 +60,7 @@ unique_ptr<BracketVisData> BracketVisData::createNew(const Category& _cat, BRACK
   }
 
   // create a new, empty object
-  auto tnmt = Tournament::getActiveTournament();
-  TournamentDB* _db = tnmt->getDatabaseHandle();
+  TournamentDB* _db = _cat.getDatabaseHandle();
   auto result = new BracketVisData(_db, _cat);
 
   // populate the first page
@@ -179,7 +177,7 @@ void BracketVisData::addElement(int idx, const RawBracketVisElement& el)
 /**
  * @brief Inserts player names (as PlayerPair ref) in bracket matches that do not have a corresponding "real" match
  *
- * Fills as many gaps as currentlt possible. Has to be called repeatedly as the tournamen progresses (e.g., every time
+ * Fills as many gaps as currently possible. Has to be called repeatedly as the tournament progresses (e.g., every time
  * a bracket view / report is created).
  *
  */
@@ -188,8 +186,8 @@ void BracketVisData::fillMissingPlayerNames() const
   int catId = cat.getId();
 
   // get the seeding list once, we need it later...
-  auto tnmt = Tournament::getActiveTournament();
-  PlayerPairList seeding = tnmt->getCatMngr()->getSeeding(cat);
+  CatMngr cm{db};
+  PlayerPairList seeding = cm.getSeeding(cat);
 
   bool hasModifications = true;
   while (hasModifications)   // repeat until we find no more changes to make
@@ -383,8 +381,8 @@ unique_ptr<Match> BracketVisElement::getLinkedMatch() const
 {
   auto _matchId = row.getInt2(BV_MATCH_REF);
   if (_matchId->isNull()) return nullptr;
-  auto tnmt = Tournament::getActiveTournament();
-  return tnmt->getMatchMngr()->getMatch(_matchId->get());
+  MatchMngr mm{db};
+  return mm.getMatch(_matchId->get());
 }
 
 //----------------------------------------------------------------------------
@@ -392,8 +390,8 @@ unique_ptr<Match> BracketVisElement::getLinkedMatch() const
 Category BracketVisElement::getLinkedCategory() const
 {
   int catId = row.getInt(BV_CAT_REF);
-  auto tnmt = Tournament::getActiveTournament();
-  return tnmt->getCatMngr()->getCategoryById(catId);
+  CatMngr cm{db};
+  return cm.getCategoryById(catId);
 }
 
 //----------------------------------------------------------------------------
@@ -465,10 +463,6 @@ BracketVisElement::BracketVisElement(TournamentDB* _db, TabRow row)
 
 //----------------------------------------------------------------------------
 
-unique_ptr<PlayerPair> BracketVisElement::getParentPlayerPair(int pos) const
-{
-}
-
 //----------------------------------------------------------------------------
 
 
@@ -522,6 +516,7 @@ bool RawBracketVisDataDef::addElement(const RawBracketVisElement& el)
   if (el.page >= getNumPages()) return false;
 
   bracketElementList.push_back(el);
+  return true;
 }
 
 //----------------------------------------------------------------------------

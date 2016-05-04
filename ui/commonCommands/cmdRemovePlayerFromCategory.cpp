@@ -19,12 +19,11 @@
 #include <QObject>
 #include <QMessageBox>
 
-#include "Tournament.h"
 #include "cmdRemovePlayerFromCategory.h"
 #include "CatMngr.h"
 
 cmdRemovePlayerFromCategory::cmdRemovePlayerFromCategory(QWidget* p, const Player& _pl, const Category& _cat)
-  :AbstractCommand(p), pl(_pl), cat(_cat)
+  :AbstractCommand(_pl.getDatabaseHandle(), p), pl(_pl), cat(_cat)
 {
 
 }
@@ -34,9 +33,9 @@ cmdRemovePlayerFromCategory::cmdRemovePlayerFromCategory(QWidget* p, const Playe
 ERR cmdRemovePlayerFromCategory::exec()
 {
   ERR err;
-  auto tnmt = Tournament::getActiveTournament();
-  auto cm = tnmt->getCatMngr();
-  err = cm->removePlayerFromCategory(pl, cat);
+  CatMngr cm{db};
+
+  err = cm.removePlayerFromCategory(pl, cat);
 
   if (err == OK) return OK;
 

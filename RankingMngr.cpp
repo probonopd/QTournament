@@ -22,11 +22,11 @@
 #include <QDebug>
 
 #include "RankingMngr.h"
-#include "Tournament.h"
 #include "CatRoundStatus.h"
 #include "RankingEntry.h"
 #include "Match.h"
 #include "Score.h"
+#include "MatchMngr.h"
 
 using namespace SqliteOverlay;
 
@@ -66,11 +66,10 @@ namespace QTournament
     // to avoid that the ranking entries have already been
     // halfway written to the database when we encounter an invalid
     // match
-    auto tnmt = Tournament::getActiveTournament();
-    auto mm = tnmt->getMatchMngr();
+    MatchMngr mm{db};
     for (PlayerPair pp : ppList)
     {
-      unique_ptr<Match> ma = mm->getMatchForPlayerPairAndRound(pp, lastRound);
+      unique_ptr<Match> ma = mm.getMatchForPlayerPairAndRound(pp, lastRound);
       if (ma != nullptr)
       {
         ERR e;
@@ -110,7 +109,7 @@ namespace QTournament
 
       // get match results, if the player played in this round
       // (maybe the player had a bye; in this case we skip this section)
-      unique_ptr<Match> ma = mm->getMatchForPlayerPairAndRound(pp, lastRound);
+      unique_ptr<Match> ma = mm.getMatchForPlayerPairAndRound(pp, lastRound);
       if (ma != nullptr)
       {
         // determine whether our pp is player 1 or player 2
@@ -178,10 +177,9 @@ namespace QTournament
         // we are in some sort of round-robin round with
         // multiple match groups. In this case, the group
         // number can be derived directly from the PlayerPair
-        MatchMngr* mm = tnmt->getMatchMngr();
-        if (mm->getMatchGroupsForCat(cat, lastRound).size() > 1)
+        if (mm.getMatchGroupsForCat(cat, lastRound).size() > 1)
         {
-          grpNum = pp.getPairsGroupNum(db);
+          grpNum = pp.getPairsGroupNum();
         } else {
 
           // case 2:
@@ -189,7 +187,7 @@ namespace QTournament
           // one group or in a KO-round or similar. So we have
           // only one match group. Thus, we can derive the
           // group number from the match group
-          grpNum = mm->getMatchGroupsForCat(cat, lastRound).at(0).getGroupNumber();
+          grpNum = mm.getMatchGroupsForCat(cat, lastRound).at(0).getGroupNumber();
         }
       }
 

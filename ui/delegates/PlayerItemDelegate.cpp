@@ -9,7 +9,7 @@
 
 #include <QPainter>
 
-#include "Tournament.h"
+#include "PlayerMngr.h"
 #include "Player.h"
 #include "DelegateItemLED.h"
 
@@ -21,8 +21,8 @@
 
 using namespace QTournament;
 
-PlayerItemDelegate::PlayerItemDelegate(QObject* parent)
-: QStyledItemDelegate(parent), proxy(nullptr), fntMetrics(QFontMetrics(QFont()))
+PlayerItemDelegate::PlayerItemDelegate(TournamentDB* _db, QObject* parent)
+: QStyledItemDelegate(parent), db(_db), proxy(nullptr), fntMetrics(QFontMetrics(QFont()))
 {
 }
 
@@ -44,8 +44,8 @@ void PlayerItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& op
   {
     row = (proxy->mapToSource(index)).row();
   }
-  auto tnmt = Tournament::getActiveTournament();
-  auto p = tnmt->getPlayerMngr()->getPlayerBySeqNum(row);
+  PlayerMngr pm{db};
+  auto p = pm.getPlayerBySeqNum(row);
   // no check for a nullptr here, the call above MUST succeed
   
   // use a gray text color if the player is state "WAIT_FOR_REGISTRATION"

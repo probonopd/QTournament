@@ -55,14 +55,13 @@ upSimpleReport ResultSheets::regenerateReport()
   }
 
   // collect the matches to be printed
-  auto tnmt = Tournament::getActiveTournament();
-  MatchMngr* mm = tnmt->getMatchMngr();
+  MatchMngr mm{db};
   QList<Match> matchList;
-  int lastMatch = mm->getMaxMatchNum();
+  int lastMatch = mm.getMaxMatchNum();
   int i = firstMatchNum;
   while (matchList.size() < numMatches)
   {
-    auto ma = mm->getMatchByMatchNum(i);
+    auto ma = mm.getMatchByMatchNum(i);
     if (ma != nullptr)
     {
       // we can only print result sheet for unfinished
@@ -158,9 +157,8 @@ void ResultSheets::onMatchSelectionChanged(int newlySelectedMatchId)
   {
     firstMatchNum = -1;
   } else {
-    auto tnmt = Tournament::getActiveTournament();
-    MatchMngr* mm = tnmt->getMatchMngr();
-    auto ma = mm->getMatch(newlySelectedMatchId);
+    MatchMngr mm{db};
+    auto ma = mm.getMatch(newlySelectedMatchId);
     assert(ma != nullptr);
     firstMatchNum = ma->getMatchNumber();
   }

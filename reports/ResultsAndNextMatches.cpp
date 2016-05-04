@@ -28,6 +28,8 @@
 #include "ui/GuiHelpers.h"
 #include "RankingMngr.h"
 #include "RankingEntry.h"
+#include "MatchMngr.h"
+#include "MatchGroup.h"
 
 namespace QTournament
 {
@@ -58,11 +60,10 @@ ResultsAndNextMatches::ResultsAndNextMatches(TournamentDB* _db, const QString& _
 
 upSimpleReport ResultsAndNextMatches::regenerateReport()
 {
-  auto tnmt = Tournament::getActiveTournament();
-  MatchMngr* mm = tnmt->getMatchMngr();
+  MatchMngr mm{db};
 
   // prepare a subheader if we are in KO-rounds
-  MatchGroupList mgl = mm->getMatchGroupsForCat(cat, round);
+  MatchGroupList mgl = mm.getMatchGroupsForCat(cat, round);
   QString subHeader = QString();
   if (mgl.size() == 1)
   {
@@ -126,9 +127,8 @@ QStringList ResultsAndNextMatches::getReportLocators() const
 void ResultsAndNextMatches::printResultPart(upSimpleReport& rep) const
 {
   // collect all matches in this round
-  auto tnmt = Tournament::getActiveTournament();
-  MatchMngr* mm = tnmt->getMatchMngr();
-  MatchGroupList mgl = mm->getMatchGroupsForCat(cat, round);
+  MatchMngr mm{db};
+  MatchGroupList mgl = mm.getMatchGroupsForCat(cat, round);
   MatchList allMatches;
   for (MatchGroup mg : mgl)
   {
@@ -159,9 +159,8 @@ void ResultsAndNextMatches::printNextMatchPart(upSimpleReport& rep) const
   }
 
   // collect all matches for the next round
-  auto tnmt = Tournament::getActiveTournament();
-  MatchMngr* mm = tnmt->getMatchMngr();
-  MatchGroupList mgl = mm->getMatchGroupsForCat(cat, round+1);
+  MatchMngr mm{db};
+  MatchGroupList mgl = mm.getMatchGroupsForCat(cat, round+1);
   MatchList allMatches;
   bool isAllScheduled = true;
   for (MatchGroup mg : mgl)

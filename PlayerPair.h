@@ -23,6 +23,7 @@
 #include <vector>
 
 #include "Player.h"
+#include "TournamentDB.h"
 
 namespace QTournament
 {
@@ -30,12 +31,19 @@ namespace QTournament
   class PlayerPair
   {
   public:
+    // constructors
     PlayerPair(const Player& p1, const Player& p2, int _pairId);
     PlayerPair(const Player& p1, int _pairId);
     PlayerPair(const Player& p1);
-    PlayerPair(const TournamentDB* db, const SqliteOverlay::TabRow& row);
+    PlayerPair(TournamentDB* _db, const SqliteOverlay::TabRow& row);
     PlayerPair(TournamentDB* db, int ppId);
+
+    // boolean queries
     bool hasPlayer2() const;
+    bool isConsistent() const; // for debugging only
+    bool areAllPlayersIdle() const;
+
+    // getters
     Player getPlayer1() const;
     Player getPlayer2() const;
     QString getDisplayName(int maxLen = 0, bool unregisteredPlayersInBrackets=false) const;
@@ -44,9 +52,7 @@ namespace QTournament
     QString getCallName(const QString &sepString) const;
     int getPairId() const;
     unique_ptr<Category> getCategory(TournamentDB* db) const;  // only as a hot-fix
-    bool isConsistent(TournamentDB* db) const; // for debugging only
-    int getPairsGroupNum(TournamentDB* db) const;  // only as a hot-fix
-    bool areAllPlayersIdle() const;
+    int getPairsGroupNum() const;  // only as a hot-fix
 
     inline bool operator == (const PlayerPair& other) const {
       // case 1: we have player pairs with a database ID
@@ -67,6 +73,7 @@ namespace QTournament
     int id1;
     int id2;
     int pairId;
+    TournamentDB* db;
     void sortPlayers();
   } ;
   

@@ -28,7 +28,7 @@ namespace QTournament
     static constexpr int STAGE_SEQ_COL_ID = 5;  // id of the column with the stage sequence number
     static constexpr int COLUMN_COUNT = 6;  // number of columns in the model
 
-    MatchGroupTableModel (Tournament* tnmt);
+    MatchGroupTableModel (TournamentDB* _db);
     int rowCount(const QModelIndex & parent = QModelIndex()) const;
     int columnCount(const QModelIndex & parent = QModelIndex()) const;
     QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const;

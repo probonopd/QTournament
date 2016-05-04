@@ -19,10 +19,13 @@
 #ifndef CATTABLEVIEW_H
 #define	CATTABLEVIEW_H
 
-#include "Tournament.h"
-
 #include <QTableView>
 #include <QStringListModel>
+
+#include "TournamentDB.h"
+#include "Category.h"
+#include "models/CatTableModel.h"
+#include "delegates/CatItemDelegate.h"
 
 using namespace QTournament;
 
@@ -36,10 +39,9 @@ public:
   bool isEmptyModel();
   Category getSelectedCategory();
   bool hasCategorySelected();
+  void setDatabase(TournamentDB* _db);
   
 public slots:
-  void onTournamentClosed();
-  void onTournamentOpened(Tournament* tnmt);
   void onCategoryDoubleClicked(const QModelIndex& index);
   void onAddCategory();
   void onRemoveCategory();
@@ -53,9 +55,15 @@ public slots:
 private slots:
   void onContextMenuRequested(const QPoint& pos);
 
+signals:
+  void catModelChanged();
+
 private:
-  Tournament* tnmt;
+  TournamentDB* db;
   QStringListModel* emptyModel;
+  CategoryTableModel* curCatTableModel;
+  unique_ptr<CatItemDelegate> catItemDelegate;
+  QAbstractItemDelegate* defaultDelegate;
 
   unique_ptr<QMenu> contextMenu;
   QAction* actAddCategory;
@@ -71,9 +79,6 @@ private:
 
   void handleIntermediateSeedingForSelectedCat();
   bool unfreezeAndCleanup(unique_ptr<Category> selectedCat);
-
-signals:
-  void catModelChanged();
 
 };
 

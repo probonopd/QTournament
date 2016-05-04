@@ -22,15 +22,14 @@
 
 #include "DlgBulkImportToExtDb.h"
 #include "ui_DlgBulkImportToExtDb.h"
-#include "Tournament.h"
 #include "TeamMngr.h"
 #include "CatMngr.h"
 
 using namespace QTournament;
 
-DlgBulkImportToExtDb::DlgBulkImportToExtDb(QWidget *parent) :
+DlgBulkImportToExtDb::DlgBulkImportToExtDb(TournamentDB* _db, QWidget *parent) :
   QDialog(parent),
-  ui(new Ui::DlgBulkImportToExtDb)
+  ui(new Ui::DlgBulkImportToExtDb), db(_db)
 {
   ui->setupUi(this);
 
@@ -85,9 +84,8 @@ void DlgBulkImportToExtDb::initDropBoxes()
 {
   // prepare a list of all teams
   ui->cbTeam->clear();
-  auto tnmt = Tournament::getActiveTournament();
-  TeamMngr* tm = tnmt->getTeamMngr();
-  auto teamList = tm->getAllTeams();
+  TeamMngr tm{db};
+  auto teamList = tm.getAllTeams();
   std::sort(teamList.begin(), teamList.end(), [](Team& t1, Team& t2) {
     return t1.getName() < t2.getName();
   });
@@ -100,8 +98,8 @@ void DlgBulkImportToExtDb::initDropBoxes()
   // prepare a list of all categories
   // that can potentially joined by new players
   ui->cbCat->clear();
-  CatMngr* cm = tnmt->getCatMngr();
-  auto catList = cm->getAllCategories();
+  CatMngr cm{db};
+  auto catList = cm.getAllCategories();
   std::sort(catList.begin(), catList.end(), [](Category& c1, Category& c2) {
     return c1.getName() < c2.getName();
   });

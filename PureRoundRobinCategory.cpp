@@ -18,12 +18,12 @@
 
 #include "PureRoundRobinCategory.h"
 #include "KO_Config.h"
-#include "Tournament.h"
 #include "CatRoundStatus.h"
 #include "RankingEntry.h"
 #include "RankingMngr.h"
 #include "assert.h"
 #include "BracketGenerator.h"
+#include "MatchMngr.h"
 
 #include <QDebug>
 
@@ -89,12 +89,11 @@ namespace QTournament
   {
     if (getState() != STAT_CAT_IDLE) return WRONG_STATE;
 
-    auto tnmt = Tournament::getActiveTournament();
-    auto mm = tnmt->getMatchMngr();
+    MatchMngr mm{db};
 
     // make sure we have not been called before; to this end, just
     // check that there have no matches been created for us so far
-    auto allGrp = mm->getMatchGroupsForCat(*this);
+    auto allGrp = mm.getMatchGroupsForCat(*this);
     // do not return an error here, because obviously we have been
     // called successfully before and we only want to avoid
     // double initialization
@@ -171,13 +170,12 @@ namespace QTournament
 
   ERR PureRoundRobinCategory::onRoundCompleted(int round)
   {
-    auto tnmt = Tournament::getActiveTournament();
-    RankingMngr* rm = tnmt->getRankingMngr();
+    RankingMngr rm{db};
     ERR err;
 
-    rm->createUnsortedRankingEntriesForLastRound(*this, &err);
+    rm.createUnsortedRankingEntriesForLastRound(*this, &err);
     if (err != OK) return err;  // shouldn't happen
-    rm->sortRankingEntriesForLastRound(*this, &err);
+    rm.sortRankingEntriesForLastRound(*this, &err);
     if (err != OK) return err;  // shouldn't happen
 
     return OK;

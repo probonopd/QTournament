@@ -16,17 +16,20 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "dlgGroupAssignment.h"
-
 #include <QDateTime>
 #include <QMessageBox>
 
-dlgGroupAssignment::dlgGroupAssignment(QWidget* p, Category& _cat)
-  :QDialog(p),
+#include "dlgGroupAssignment.h"
+#include "Category.h"
+
+dlgGroupAssignment::dlgGroupAssignment(TournamentDB* _db, QWidget* p, Category& _cat)
+  :QDialog(p), db(_db),
     cfg(KO_Config(QUARTER, false)), cat(_cat)    // dummy, just for formal initialization
 {
   ui.setupUi(this);
   cfg = KO_Config(cat.getParameter(GROUP_CONFIG).toString());
+
+  ui.grpWidget->setDatabase(db);
 
   // set the window title
   setWindowTitle(tr("Group assignment for ") + cat.getName());
@@ -88,7 +91,7 @@ void dlgGroupAssignment::done(int result)
 
 void dlgGroupAssignment::onBtnRandomizeClicked()
 {
-  ui.grpWidget->setup(getRandomizedPlayerPairListList());
+  ui.grpWidget->setup(db, getRandomizedPlayerPairListList());
 }
 
 //----------------------------------------------------------------------------

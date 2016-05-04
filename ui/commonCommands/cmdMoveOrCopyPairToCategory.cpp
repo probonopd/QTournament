@@ -19,13 +19,13 @@
 #include <QObject>
 #include <QMessageBox>
 
-#include "Tournament.h"
 #include "cmdMoveOrCopyPairToCategory.h"
 #include "cmdMoveOrCopyPlayerToCategory.h"
 #include "ui/DlgSelectPlayer.h"
+#include "CatMngr.h"
 
 cmdMoveOrCopyPairToCategory::cmdMoveOrCopyPairToCategory(QWidget* p, const PlayerPair& _pp, const Category& _srcCat, const Category& _dstCat, bool _isMove)
-  :AbstractCommand(p), pp(_pp), srcCat(_srcCat), dstCat(_dstCat), isMove(_isMove)
+  :AbstractCommand(_srcCat.getDatabaseHandle(), p), pp(_pp), srcCat(_srcCat), dstCat(_dstCat), isMove(_isMove)
 {
 
 }
@@ -34,8 +34,7 @@ cmdMoveOrCopyPairToCategory::cmdMoveOrCopyPairToCategory(QWidget* p, const Playe
 
 ERR cmdMoveOrCopyPairToCategory::exec()
 {
-  auto tnmt = Tournament::getActiveTournament();
-  auto cm = tnmt->getCatMngr();
+  CatMngr cm{db};
 
   // check that this is a "true" pair with two players
   if (!(pp.hasPlayer2()))
@@ -49,7 +48,7 @@ ERR cmdMoveOrCopyPairToCategory::exec()
   Player p2 = pp.getPlayer2();
 
   // check if the player pair is in the source category
-  auto ppCat = pp.getCategory(tnmt->getDatabaseHandle());
+  auto ppCat = pp.getCategory(db);
   if (ppCat == nullptr)
   {
     QString msg = tr("The provided player pair is invalid.");
@@ -142,7 +141,7 @@ ERR cmdMoveOrCopyPairToCategory::exec()
       return OK;   // no error indication in this case
     }
 
-    err = cm->splitPlayers(dstCat, p1, p1Partner);
+    err = cm.splitPlayers(dstCat, p1, p1Partner);
     if (err != OK) return err;    // shouldn't happen after the previous check
   }
 
@@ -159,13 +158,13 @@ ERR cmdMoveOrCopyPairToCategory::exec()
       QMessageBox::warning(parentWidget, tr("Move or copy player pair"), msg);
       return OK;   // no error indication in this case
     }
-    err = cm->splitPlayers(dstCat, p2, p2Partner);
+    err = cm.splitPlayers(dstCat, p2, p2Partner);
     if (err != OK) return err;    // shouldn't happen after the previous check
   }
 
   // At this point, the two players are free to be paired
 
-  if (cm->pairPlayers(dstCat, p1, p2) != OK)
+  if (cm.pairPlayers(dstCat, p1, p2) != OK)
   {
     QString msg = tr("Cannot pair both players in the target category.");
     msg += tr("The players have been moved / copied but they are not paired.");

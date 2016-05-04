@@ -61,6 +61,8 @@ namespace QTournament
     PORTRAIT
   };
 
+  //----------------------------------------------------------------------------
+
   class RawBracketVisElement
   {
   public:
@@ -100,6 +102,8 @@ namespace QTournament
     ~RawBracketVisElement() = default;
   };
 
+  //----------------------------------------------------------------------------
+
   class RawBracketVisDataDef
   {
   public:
@@ -120,6 +124,8 @@ namespace QTournament
     QList<RawBracketVisElement> bracketElementList;
 
   };
+
+  //----------------------------------------------------------------------------
 
   class BracketVisElement : public TournamentDatabaseObject
   {
@@ -164,11 +170,11 @@ namespace QTournament
   private:
     BracketVisElement (TournamentDB* _db, int rowId);
     BracketVisElement (TournamentDB* _db, SqliteOverlay::TabRow row);
-    unique_ptr<PlayerPair> getParentPlayerPair(int pos) const;
   };
   typedef vector<BracketVisElement> BracketVisElementList;
   typedef unique_ptr<BracketVisElement> upBracketVisElement;
 
+  //----------------------------------------------------------------------------
 
   class BracketVisData : public TournamentDatabaseObjectManager
   {

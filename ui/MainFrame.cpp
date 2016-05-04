@@ -17,12 +17,17 @@
  */
 
 #include <stdexcept>
+
 #include <QMessageBox>
 #include <QFileDialog>
 #include <QFile>
 
 #include "MainFrame.h"
-#include "Tournament.h"
+#include "MatchMngr.h"
+#include "CourtMngr.h"
+#include "PlayerMngr.h"
+#include "TeamMngr.h"
+#include "CatMngr.h"
 #include "ui/DlgTournamentSettings.h"
 
 using namespace QTournament;
@@ -34,6 +39,7 @@ MainFrame* MainFrame::mainFramePointer = nullptr;
 //----------------------------------------------------------------------------
 
 MainFrame::MainFrame()
+  :currentDb(nullptr)
 {
   if (MainFrame::mainFramePointer != nullptr)
   {
@@ -41,12 +47,13 @@ MainFrame::MainFrame()
   }
   MainFrame::mainFramePointer = this;
   
-  tnmt = nullptr;
-  
   ui.setupUi(this);
   showMaximized();
+
+  // disable all widgets by setting their database instance to nullptr
+  distributeCurrentDatabasePointerToWidgets();
   enableControls(false);
-  
+
   testFileName = QDir().absoluteFilePath("tournamentTestFile.tdb");
 
   // prepare an action to toggle the test-menu's visibility
@@ -119,8 +126,8 @@ void MainFrame::newTournament()
   }
 
   ERR err;
-  auto newTnmt = Tournament::createNew(filename, *settings, &err);
-  if ((err == FILE_ALREADY_EXISTS) || (newTnmt == nullptr))
+  auto newDb = TournamentDB::createNew(filename, *settings, &err);
+  if ((err != OK) || (newDb == nullptr))
   {
     // shouldn't happen, because the file has been
     // deleted before (see above)
@@ -129,17 +136,15 @@ void MainFrame::newTournament()
   }
 
   // close other possibly open tournaments
-  if (tnmt != nullptr)
+  if (currentDb != nullptr)
   {
     closeCurrentTournament();
   }
 
-  // make the new tournament the new active,
-  // globally accessible tournament
-  tnmt = std::move(newTnmt);
-  Tournament::setActiveTournament(tnmt.get());
+  // make the new database the current one
+  currentDb = std::move(newDb);
+  distributeCurrentDatabasePointerToWidgets();
 
-  emit tournamentOpened(tnmt.get());
   enableControls(true);
   setWindowTitle("QTournament - " + settings->tournamentName + "  (" + filename + ")");
 }
@@ -165,7 +170,7 @@ void MainFrame::openTournament()
 
   // try to open the tournament file
   ERR err;
-  auto newTnmt = Tournament::openExisting(filename, &err);
+  auto newDb = TournamentDB::openExisting(filename, &err);
 
   // check for errors
   if (err == INCOMPATIBLE_FILE_FORMAT)
@@ -181,15 +186,14 @@ void MainFrame::openTournament()
     QMessageBox::critical(this, tr("Open tournament"), msg);
     return;
   }
-  if ((err != OK) || (newTnmt == nullptr))
+  if ((err != OK) || (newDb == nullptr))
   {
     QMessageBox::warning(this, tr("Open tournament"), tr("Something went wrong; no tournament opened."));
     return;
   }
 
   // do we need to convert this database to a new format?
-  TournamentDB* db = newTnmt->getDatabaseHandle();
-  if (db->needsConversion())
+  if (newDb->needsConversion())
   {
     QString msg = tr("The file has been created with an older version of QTournament.\n\n");
     msg += tr("The file is not compatible with the current version but it can be updated ");
@@ -200,7 +204,7 @@ void MainFrame::openTournament()
     int result = QMessageBox::question(this, tr("Convert file format?"), msg);
     if (result != QMessageBox::Yes) return;
 
-    bool conversionOk = db->convertToLatestDatabaseVersion();
+    bool conversionOk = newDb->convertToLatestDatabaseVersion();
     if (conversionOk)
     {
       msg = tr("The file was successfully converted!");
@@ -213,29 +217,28 @@ void MainFrame::openTournament()
   }
 
   // close other possibly open tournaments
-  if (tnmt != nullptr)
+  if (currentDb != nullptr)
   {
     closeCurrentTournament();
   }
 
-  // open the tournament
+  // open the tournament and distribute the database handle to all widgets
   QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
-  tnmt = std::move(newTnmt);
-  Tournament::setActiveTournament(tnmt.get());
-  emit tournamentOpened(tnmt.get());
+  currentDb = std::move(newDb);
+  distributeCurrentDatabasePointerToWidgets();
   enableControls(true);
   QApplication::restoreOverrideCursor();
 
   // determine the tournament title
-  auto cfg = KeyValueTab::getTab(tnmt->getDatabaseHandle(), TAB_CFG);
+  auto cfg = KeyValueTab::getTab(currentDb.get(), TAB_CFG);
   QString tnmtTitle = QString(cfg->operator[](CFG_KEY_TNMT_NAME).data());
   setWindowTitle("QTournament - " + tnmtTitle + "  (" + filename + ")");
 
   // open the external player database file, if configured
-  PlayerMngr* pm = tnmt->getPlayerMngr();
-  if (pm->hasExternalPlayerDatabaseConfigured())
+  PlayerMngr pm(currentDb.get());
+  if (pm.hasExternalPlayerDatabaseConfigured())
   {
-    ERR err = pm->openConfiguredExternalPlayerDatabase();
+    ERR err = pm.openConfiguredExternalPlayerDatabase();
 
     if (err == OK) return;
 
@@ -244,13 +247,13 @@ void MainFrame::openTournament()
     {
     case EPD__NOT_FOUND:
       msg = tr("Could not find the player database\n\n");
-      msg += pm->getExternalDatabaseName() + "\n\n";
+      msg += pm.getExternalDatabaseName() + "\n\n";
       msg += tr("Please make sure the file exists and is valid.");
       break;
 
     default:
       msg = tr("The player database\n\n");
-      msg += pm->getExternalDatabaseName() + "\n\n";
+      msg += pm.getExternalDatabaseName() + "\n\n";
       msg += tr("is invalid.");
     }
 
@@ -272,17 +275,19 @@ void MainFrame::enableControls(bool doEnable)
 void MainFrame::closeCurrentTournament()
 {
   // close the tournament
-  if (tnmt != nullptr)
+  if (currentDb != nullptr)
   {
     // disconnect from the external player database, if any
-    PlayerMngr* pm = tnmt->getPlayerMngr();
-    pm->closeExternalPlayerDatabase();
+    PlayerMngr pm{currentDb.get()};
+    pm.closeExternalPlayerDatabase();
 
-    // this emits a signal to inform everyone that the
-    // current tournament is about to die
-    tnmt->close();
-    
-    tnmt.reset();
+    // force all widgets to forget the database handle
+    // BEFORE we actually close the database
+    distributeCurrentDatabasePointerToWidgets(true);
+
+    // close the database
+    currentDb->close();
+    currentDb.reset();
   }
   
   // delete the test file, if existing
@@ -292,6 +297,19 @@ void MainFrame::closeCurrentTournament()
   }
   
   enableControls(false);
+}
+
+//----------------------------------------------------------------------------
+
+void MainFrame::distributeCurrentDatabasePointerToWidgets(bool forceNullptr)
+{
+  TournamentDB* db = forceNullptr ? nullptr : currentDb.get();
+
+  ui.tabPlayers->setDatabase(db);
+  ui.tabCategories->setDatabase(db);
+  ui.tabTeams->setDatabase(db);
+  ui.tabSchedule->setDatabase(db);
+  ui.tabReports->setDatabase(db);
 }
 
 //----------------------------------------------------------------------------
@@ -311,8 +329,7 @@ void MainFrame::setupTestScenario(int scenarioID)
   cfg.organizingClub = "SV Whatever";
   cfg.tournamentName = "World Championship";
   cfg.useTeams = true;
-  tnmt = Tournament::createNew(testFileName, cfg);
-  Tournament::setActiveTournament(tnmt.get());
+  currentDb = TournamentDB::createNew(testFileName, cfg);
   
   // the empty scenario
   if (scenarioID == 0)
@@ -320,45 +337,47 @@ void MainFrame::setupTestScenario(int scenarioID)
   }
   
   // a scenario with just a few teams already existing
-  TeamMngr* tmngr = tnmt->getTeamMngr();
-  PlayerMngr* pmngr = tnmt->getPlayerMngr();
-  CatMngr* cmngr = tnmt->getCatMngr();
+  TeamMngr tmngr{currentDb.get()};
+  PlayerMngr pmngr{currentDb.get()};
+  CatMngr cmngr{currentDb.get()};
+  MatchMngr mm{currentDb.get()};
+  CourtMngr courtm{currentDb.get()};
   
   auto scenario01 = [&]()
   {
-    tmngr->createNewTeam("Team 1");
-    tmngr->createNewTeam("Team 2");
+    tmngr.createNewTeam("Team 1");
+    tmngr.createNewTeam("Team 2");
     
-    pmngr->createNewPlayer("First1", "Last1", M, "Team 1");
-    pmngr->createNewPlayer("First2", "Last2", F, "Team 1");
-    pmngr->createNewPlayer("First3", "Last3", M, "Team 1");
-    pmngr->createNewPlayer("First4", "Last4", F, "Team 1");
-    pmngr->createNewPlayer("First5", "Last5", M, "Team 2");
-    pmngr->createNewPlayer("First6", "Last6", F, "Team 2");
+    pmngr.createNewPlayer("First1", "Last1", M, "Team 1");
+    pmngr.createNewPlayer("First2", "Last2", F, "Team 1");
+    pmngr.createNewPlayer("First3", "Last3", M, "Team 1");
+    pmngr.createNewPlayer("First4", "Last4", F, "Team 1");
+    pmngr.createNewPlayer("First5", "Last5", M, "Team 2");
+    pmngr.createNewPlayer("First6", "Last6", F, "Team 2");
 
     // create one category of every kind
-    cmngr->createNewCategory("MS");
-    Category ms = cmngr->getCategory("MS");
+    cmngr.createNewCategory("MS");
+    Category ms = cmngr.getCategory("MS");
     ms.setMatchType(SINGLES);
     ms.setSex(M);
 
-    cmngr->createNewCategory("MD");
-    Category md = cmngr->getCategory("MD");
+    cmngr.createNewCategory("MD");
+    Category md = cmngr.getCategory("MD");
     md.setMatchType(DOUBLES);
     md.setSex(M);
 
-    cmngr->createNewCategory("LS");
-    Category ls = cmngr->getCategory("LS");
+    cmngr.createNewCategory("LS");
+    Category ls = cmngr.getCategory("LS");
     ls.setMatchType(SINGLES);
     ls.setSex(F);
 
-    cmngr->createNewCategory("LD");
-    Category ld = cmngr->getCategory("LD");
+    cmngr.createNewCategory("LD");
+    Category ld = cmngr.getCategory("LD");
     ld.setMatchType(DOUBLES);
     ld.setSex(F);
 
-    cmngr->createNewCategory("MX");
-    Category mx = cmngr->getCategory("MX");
+    cmngr.createNewCategory("MX");
+    Category mx = cmngr.getCategory("MX");
     mx.setMatchType(MIXED);
     mx.setSex(M); // shouldn't matter at all
   };
@@ -366,30 +385,30 @@ void MainFrame::setupTestScenario(int scenarioID)
   auto scenario02 = [&]()
   {
     scenario01();
-    Category md = cmngr->getCategory("MD");
-    Category ms = cmngr->getCategory("MS");
-    Category mx = cmngr->getCategory("MX");
+    Category md = cmngr.getCategory("MD");
+    Category ms = cmngr.getCategory("MS");
+    Category mx = cmngr.getCategory("MX");
     
-    Player m1 = pmngr->getPlayer(1);
-    Player m2 = pmngr->getPlayer(3);
-    Player m3 = pmngr->getPlayer(5);
-    Player l1 = pmngr->getPlayer(2);
-    Player l2 = pmngr->getPlayer(4);
-    Player l3 = pmngr->getPlayer(6);
+    Player m1 = pmngr.getPlayer(1);
+    Player m2 = pmngr.getPlayer(3);
+    Player m3 = pmngr.getPlayer(5);
+    Player l1 = pmngr.getPlayer(2);
+    Player l2 = pmngr.getPlayer(4);
+    Player l3 = pmngr.getPlayer(6);
     
-    cmngr->addPlayerToCategory(m1, md);
-    cmngr->addPlayerToCategory(m2, md);
+    cmngr.addPlayerToCategory(m1, md);
+    cmngr.addPlayerToCategory(m2, md);
     
-    cmngr->addPlayerToCategory(m1, ms);
-    cmngr->addPlayerToCategory(m2, ms);
-    cmngr->addPlayerToCategory(m3, ms);
+    cmngr.addPlayerToCategory(m1, ms);
+    cmngr.addPlayerToCategory(m2, ms);
+    cmngr.addPlayerToCategory(m3, ms);
     
-    cmngr->addPlayerToCategory(m1, mx);
-    cmngr->addPlayerToCategory(m2, mx);
-    cmngr->addPlayerToCategory(m3, mx);
-    cmngr->addPlayerToCategory(l1, mx);
-    cmngr->addPlayerToCategory(l2, mx);
-    cmngr->addPlayerToCategory(l3, mx);
+    cmngr.addPlayerToCategory(m1, mx);
+    cmngr.addPlayerToCategory(m2, mx);
+    cmngr.addPlayerToCategory(m3, mx);
+    cmngr.addPlayerToCategory(l1, mx);
+    cmngr.addPlayerToCategory(l2, mx);
+    cmngr.addPlayerToCategory(l3, mx);
   };
   
   // a scenario with a lot of participants, including a group of
@@ -397,14 +416,14 @@ void MainFrame::setupTestScenario(int scenarioID)
   auto scenario03 = [&]()
   {
     scenario02();
-    tmngr->createNewTeam("Massive");
-    Category ls = cmngr->getCategory("LS");
+    tmngr.createNewTeam("Massive");
+    Category ls = cmngr.getCategory("LS");
     
     for (int i=0; i < 250; i++)
     {
       QString lastName = "Massive" + QString::number(i);
-      pmngr->createNewPlayer("Lady", lastName, F, "Massive");
-      Player p = pmngr->getPlayer(i + 7);   // the first six IDs are already used by previous ini-functions above
+      pmngr.createNewPlayer("Lady", lastName, F, "Massive");
+      Player p = pmngr.getPlayer(i + 7);   // the first six IDs are already used by previous ini-functions above
       if (i < 40) ls.addPlayer(p);
       //if (i < 17) ls.addPlayer(p);
     }
@@ -422,11 +441,11 @@ void MainFrame::setupTestScenario(int scenarioID)
   auto scenario04 = [&]()
   {
     scenario03();
-    Category ls = cmngr->getCategory("LS");
+    Category ls = cmngr.getCategory("LS");
 
     // run the category
     unique_ptr<Category> specialCat = ls.convertToSpecializedObject();
-    ERR e = cmngr->freezeConfig(ls);
+    ERR e = cmngr.freezeConfig(ls);
     assert(e == OK);
 
     // fake a list of player-pair-lists for the group assignments
@@ -438,7 +457,7 @@ void MainFrame::setupTestScenario(int scenarioID)
         {
             int playerId = (grpNum * 5) + pNum + 7;  // the first six IDs are already in use; see above
 
-            Player p = pmngr->getPlayer(playerId);
+            Player p = pmngr.getPlayer(playerId);
             PlayerPair pp(p, (playerId-6));   // PlayerPairID starts at 1
             thisGroup.push_back(pp);
         }
@@ -453,25 +472,25 @@ void MainFrame::setupTestScenario(int scenarioID)
     PlayerPairList initialRanking;
 
     // actually run the category
-    e = cmngr->startCategory(ls, ppListList, initialRanking);
+    e = cmngr.startCategory(ls, ppListList, initialRanking);
     assert(e == OK);
 
     // we're done with LS here...
 
     // add 16 players to LD
-    Category ld = cmngr->getCategory("LD");
+    Category ld = cmngr.getCategory("LD");
     for (int id=100; id < 116; ++id)
     {
-      e = ld.addPlayer(pmngr->getPlayer(id));
+      e = ld.addPlayer(pmngr.getPlayer(id));
       assert(e == OK);
     }
 
     // generate eight player pairs
     for (int id=100; id < 116; id+=2)
     {
-      Player p1 = pmngr->getPlayer(id);
-      Player p2 = pmngr->getPlayer(id+1);
-      e = cmngr->pairPlayers(ld, p1, p2);
+      Player p1 = pmngr.getPlayer(id);
+      Player p2 = pmngr.getPlayer(id+1);
+      e = cmngr.pairPlayers(ld, p1, p2);
       assert(e == OK);
     }
 
@@ -485,7 +504,7 @@ void MainFrame::setupTestScenario(int scenarioID)
 
     // freeze
     specialCat = ld.convertToSpecializedObject();
-    e = cmngr->freezeConfig(ld);
+    e = cmngr.freezeConfig(ld);
     assert(e == OK);
 
     // fake a list of player-pair-lists for the group assignments
@@ -506,7 +525,7 @@ void MainFrame::setupTestScenario(int scenarioID)
     assert(e == OK);
 
     // actually run the category
-    e = cmngr->startCategory(ld, ppListList, initialRanking);  // "initialRanking" is reused from above
+    e = cmngr.startCategory(ld, ppListList, initialRanking);  // "initialRanking" is reused from above
     assert(e == OK);
   };
 
@@ -516,32 +535,30 @@ void MainFrame::setupTestScenario(int scenarioID)
   auto scenario05 = [&]()
   {
     scenario04();
-    Category ls = cmngr->getCategory("LS");
-    MatchMngr* mm = tnmt->getMatchMngr();
+    Category ls = cmngr.getCategory("LS");
 
     ERR e;
-    auto mg = mm->getMatchGroup(ls, 1, 3, &e);  // round 1, players group 3
+    auto mg = mm.getMatchGroup(ls, 1, 3, &e);  // round 1, players group 3
     assert(e == OK);
-    mm->stageMatchGroup(*mg);
-    mm->scheduleAllStagedMatchGroups();
+    mm.stageMatchGroup(*mg);
+    mm.scheduleAllStagedMatchGroups();
 
-    Category ld = cmngr->getCategory("LD");
-    mg = mm->getMatchGroup(ld, 1, 1, &e);  // round 1, players group 1
+    Category ld = cmngr.getCategory("LD");
+    mg = mm.getMatchGroup(ld, 1, 1, &e);  // round 1, players group 1
     assert(e == OK);
-    mm->stageMatchGroup(*mg);
-    mg = mm->getMatchGroup(ld, 1, 2, &e);  // round 1, players group 2
+    mm.stageMatchGroup(*mg);
+    mg = mm.getMatchGroup(ld, 1, 2, &e);  // round 1, players group 2
     assert(e == OK);
-    mm->stageMatchGroup(*mg);
-    mg = mm->getMatchGroup(ld, 2, 1, &e);  // round 2, players group 1
+    mm.stageMatchGroup(*mg);
+    mg = mm.getMatchGroup(ld, 2, 1, &e);  // round 2, players group 1
     assert(e == OK);
-    mm->stageMatchGroup(*mg);
-    mm->scheduleAllStagedMatchGroups();
+    mm.stageMatchGroup(*mg);
+    mm.scheduleAllStagedMatchGroups();
 
     // add four courts
-    auto cm = tnmt->getCourtMngr();
     for (int i=1; i <= 4; ++i)
     {
-      cm->createNewCourt(i, "XX", &e);
+      courtm.createNewCourt(i, "XX", &e);
       assert(e == OK);
     }
   };
@@ -551,10 +568,8 @@ void MainFrame::setupTestScenario(int scenarioID)
   auto scenario06 = [&]()
   {
     scenario05();
-    Category ls = cmngr->getCategory("LS");
-    Category ld = cmngr->getCategory("LD");
-    MatchMngr* mm = tnmt->getMatchMngr();
-    CourtMngr* cm = tnmt->getCourtMngr();
+    Category ls = cmngr.getCategory("LS");
+    Category ld = cmngr.getCategory("LD");
 
     // stage and schedule all matches in round 1
     // of LS and LD
@@ -562,42 +577,42 @@ void MainFrame::setupTestScenario(int scenarioID)
     while (canStageMatchGroups)
     {
       canStageMatchGroups = false;
-      for (MatchGroup mg : mm->getMatchGroupsForCat(ls))
+      for (MatchGroup mg : mm.getMatchGroupsForCat(ls))
       {
         if (mg.getState() != STAT_MG_IDLE) continue;
-        if (mm->canStageMatchGroup(mg) != OK) continue;
-        mm->stageMatchGroup(mg);
+        if (mm.canStageMatchGroup(mg) != OK) continue;
+        mm.stageMatchGroup(mg);
         canStageMatchGroups = true;
       }
-      for (MatchGroup mg : mm->getMatchGroupsForCat(ld))
+      for (MatchGroup mg : mm.getMatchGroupsForCat(ld))
       {
         if (mg.getState() != STAT_MG_IDLE) continue;
-        if (mm->canStageMatchGroup(mg) != OK) continue;
-        mm->stageMatchGroup(mg);
+        if (mm.canStageMatchGroup(mg) != OK) continue;
+        mm.stageMatchGroup(mg);
         canStageMatchGroups = true;
       }
     }
-    mm->scheduleAllStagedMatchGroups();
+    mm.scheduleAllStagedMatchGroups();
 
     // play all scheduled matches
     QDateTime curDateTime = QDateTime::currentDateTimeUtc();
     uint epochSecs = curDateTime.toTime_t();
-    DbTab* matchTab = tnmt->getDatabaseHandle()->getTab(TAB_MATCH);
+    DbTab* matchTab = currentDb->getTab(TAB_MATCH);
     while (true)
     {
       int nextMacthId;
       int nextCourtId;
-      mm->getNextViableMatchCourtPair(&nextMacthId, &nextCourtId);
+      mm.getNextViableMatchCourtPair(&nextMacthId, &nextCourtId);
       if (nextMacthId <= 0) break;
 
-      auto nextMatch = mm->getMatch(nextMacthId);
+      auto nextMatch = mm.getMatch(nextMacthId);
       if (nextMatch == nullptr) break;
-      auto nextCourt = cm->getCourtById(nextCourtId);
+      auto nextCourt = courtm.getCourtById(nextCourtId);
       if (nextCourt == nullptr) break;
 
-      if (mm->assignMatchToCourt(*nextMatch, *nextCourt) != OK) break;
+      if (mm.assignMatchToCourt(*nextMatch, *nextCourt) != OK) break;
       auto score = MatchScore::genRandomScore();
-      mm->setMatchScoreAndFinalizeMatch(*nextMatch, *score);
+      mm.setMatchScoreAndFinalizeMatch(*nextMatch, *score);
 
       // overwrite the match finish time to get a fake match duration
       // the duration is at least 15 minutes and max 25 minutes
@@ -613,7 +628,7 @@ void MainFrame::setupTestScenario(int scenarioID)
   auto scenario07 = [&]()
   {
     scenario03();
-    Category ls = cmngr->getCategory("LS");
+    Category ls = cmngr.getCategory("LS");
 
     // set the match system to Single Elimination
     ERR e = ls.setMatchSystem(SINGLE_ELIM) ;
@@ -621,7 +636,7 @@ void MainFrame::setupTestScenario(int scenarioID)
 
     // run the category
     unique_ptr<Category> specialCat = ls.convertToSpecializedObject();
-    e = cmngr->freezeConfig(ls);
+    e = cmngr.freezeConfig(ls);
     assert(e == OK);
 
     // prepare an empty list for the not-required initial group assignment
@@ -631,36 +646,34 @@ void MainFrame::setupTestScenario(int scenarioID)
     PlayerPairList initialRanking = ls.getPlayerPairs();
 
     // actually run the category
-    e = cmngr->startCategory(ls, ppListList, initialRanking);
+    e = cmngr.startCategory(ls, ppListList, initialRanking);
     assert(e == OK);
 
     // stage all match groups
-    MatchMngr* mm = tnmt->getMatchMngr();
-    auto mg = mm->getMatchGroup(ls, 1, GROUP_NUM__ITERATION, &e);  // round 1
+    auto mg = mm.getMatchGroup(ls, 1, GROUP_NUM__ITERATION, &e);  // round 1
     assert(e == OK);
-    mm->stageMatchGroup(*mg);
-    mg = mm->getMatchGroup(ls, 2, GROUP_NUM__ITERATION, &e);  // round 2
+    mm.stageMatchGroup(*mg);
+    mg = mm.getMatchGroup(ls, 2, GROUP_NUM__ITERATION, &e);  // round 2
     assert(e == OK);
-    mm->stageMatchGroup(*mg);
-    mg = mm->getMatchGroup(ls, 3, GROUP_NUM__L16, &e);  // round 3
+    mm.stageMatchGroup(*mg);
+    mg = mm.getMatchGroup(ls, 3, GROUP_NUM__L16, &e);  // round 3
     assert(e == OK);
-    mm->stageMatchGroup(*mg);
-    mg = mm->getMatchGroup(ls, 4, GROUP_NUM__QUARTERFINAL, &e);  // round 4
+    mm.stageMatchGroup(*mg);
+    mg = mm.getMatchGroup(ls, 4, GROUP_NUM__QUARTERFINAL, &e);  // round 4
     assert(e == OK);
-    mm->stageMatchGroup(*mg);
-    mg = mm->getMatchGroup(ls, 5, GROUP_NUM__SEMIFINAL, &e);  // round 5
+    mm.stageMatchGroup(*mg);
+    mg = mm.getMatchGroup(ls, 5, GROUP_NUM__SEMIFINAL, &e);  // round 5
     assert(e == OK);
-    mm->stageMatchGroup(*mg);
-    mg = mm->getMatchGroup(ls, 6, GROUP_NUM__FINAL, &e);  // round 6
+    mm.stageMatchGroup(*mg);
+    mg = mm.getMatchGroup(ls, 6, GROUP_NUM__FINAL, &e);  // round 6
     assert(e == OK);
-    mm->stageMatchGroup(*mg);
-    mm->scheduleAllStagedMatchGroups();
+    mm.stageMatchGroup(*mg);
+    mm.scheduleAllStagedMatchGroups();
 
     // add four courts
-    auto cm = tnmt->getCourtMngr();
     for (int i=1; i <= 4; ++i)
     {
-      cm->createNewCourt(i, "XX", &e);
+      courtm.createNewCourt(i, "XX", &e);
       assert(e == OK);
     }
 
@@ -669,18 +682,18 @@ void MainFrame::setupTestScenario(int scenarioID)
     {
       int nextMacthId;
       int nextCourtId;
-      mm->getNextViableMatchCourtPair(&nextMacthId, &nextCourtId);
+      mm.getNextViableMatchCourtPair(&nextMacthId, &nextCourtId);
       if (nextMacthId <= 0) break;
 
-      auto nextMatch = mm->getMatch(nextMacthId);
+      auto nextMatch = mm.getMatch(nextMacthId);
       if (nextMatch == nullptr) break;
       //if (nextMatch->getMatchGroup().getRound() == 2) break;
-      auto nextCourt = cm->getCourtById(nextCourtId);
+      auto nextCourt = courtm.getCourtById(nextCourtId);
       if (nextCourt == nullptr) break;
 
-      if (mm->assignMatchToCourt(*nextMatch, *nextCourt) != OK) break;
+      if (mm.assignMatchToCourt(*nextMatch, *nextCourt) != OK) break;
       auto score = MatchScore::genRandomScore();
-      mm->setMatchScoreAndFinalizeMatch(*nextMatch, *score);
+      mm.setMatchScoreAndFinalizeMatch(*nextMatch, *score);
     }
   };
 
@@ -688,16 +701,16 @@ void MainFrame::setupTestScenario(int scenarioID)
   auto scenario08 = [&]()
   {
     scenario02();
-    tmngr->createNewTeam("Ranking Team");
-    Category ls = cmngr->getCategory("LS");
-    Category ld = cmngr->getCategory("LD");
+    tmngr.createNewTeam("Ranking Team");
+    Category ls = cmngr.getCategory("LS");
+    Category ld = cmngr.getCategory("LD");
 
     int evenPlayerId = -1;
     for (int i=0; i < 28; i++)   // must be an even number, for doubles!
     {
       QString lastName = "Ranking" + QString::number(i+1);
-      pmngr->createNewPlayer("Lady", lastName, F, "Ranking Team");
-      Player p = pmngr->getPlayer(i + 7);   // the first six IDs are already used by previous ini-functions above
+      pmngr.createNewPlayer("Lady", lastName, F, "Ranking Team");
+      Player p = pmngr.getPlayer(i + 7);   // the first six IDs are already used by previous ini-functions above
       ls.addPlayer(p);
       ld.addPlayer(p);
 
@@ -706,8 +719,8 @@ void MainFrame::setupTestScenario(int scenarioID)
       {
         evenPlayerId = p.getId();
       } else {
-        Player evenPlayer = pmngr->getPlayer(evenPlayerId);
-        cmngr->pairPlayers(ld, p, evenPlayer);
+        Player evenPlayer = pmngr.getPlayer(evenPlayerId);
+        cmngr.pairPlayers(ld, p, evenPlayer);
       }
     }
 
@@ -715,7 +728,7 @@ void MainFrame::setupTestScenario(int scenarioID)
     ld.setMatchSystem(MATCH_SYSTEM::RANKING);
 
     // freeze the LS category
-    ERR e = cmngr->freezeConfig(ls);
+    ERR e = cmngr.freezeConfig(ls);
     assert(e == OK);
 
     // prepare an empty list for the not-required initial group assignment
@@ -725,18 +738,18 @@ void MainFrame::setupTestScenario(int scenarioID)
     PlayerPairList initialRanking = ls.getPlayerPairs();
 
     // actually run the category
-    e = cmngr->startCategory(ls, ppListList, initialRanking);
+    e = cmngr.startCategory(ls, ppListList, initialRanking);
     assert(e == OK);
 
     // freeze the LD category
-    e = cmngr->freezeConfig(ld);
+    e = cmngr.freezeConfig(ld);
     assert(e == OK);
 
     // prepare a list for the (faked) initial ranking
     initialRanking = ld.getPlayerPairs();
 
     // actually run the category
-    e = cmngr->startCategory(ld, ppListList, initialRanking);
+    e = cmngr.startCategory(ld, ppListList, initialRanking);
     assert(e == OK);
   };
 
@@ -768,8 +781,7 @@ void MainFrame::setupTestScenario(int scenarioID)
     break;
   }
 
-  emit tournamentOpened(tnmt.get());
-  
+  distributeCurrentDatabasePointerToWidgets();
   enableControls(true);
 
   return;
@@ -914,8 +926,8 @@ void MainFrame::onNewExternalPlayerDatabase()
   }
 
   // actually create and actiate the new database
-  PlayerMngr* pm = tnmt->getPlayerMngr();
-  ERR e = pm->setExternalPlayerDatabase(filename, true);
+  PlayerMngr pm{currentDb.get()};
+  ERR e = pm.setExternalPlayerDatabase(filename, true);
   if (e != OK)
   {
     QMessageBox::warning(this, tr("New player database"), tr("Could not create ") + filename);
@@ -943,12 +955,12 @@ void MainFrame::onSelectExternalPlayerDatabase()
   QString filename = fDlg.selectedFiles().at(0);
 
   // open and activate the database
-  PlayerMngr* pm = tnmt->getPlayerMngr();
-  ERR e = pm->setExternalPlayerDatabase(filename, false);
+  PlayerMngr pm{currentDb.get()};
+  ERR e = pm.setExternalPlayerDatabase(filename, false);
   if (e != OK)
   {
     QString msg = tr("Could not open ") + filename + "\n\n";
-    if (pm->hasExternalPlayerDatabaseOpen())
+    if (pm.hasExternalPlayerDatabaseOpen())
     {
       msg += "Database not changed.";
     } else  {

@@ -11,15 +11,20 @@
 #include <QStyledItemDelegate>
 #include <QFontMetrics>
 
+#include "TournamentDB.h"
+
+using namespace QTournament;
+
 class CatItemDelegate : public QStyledItemDelegate
 {
 public:
-  CatItemDelegate(QObject* parent = 0);
+  CatItemDelegate(TournamentDB* _db, QObject* parent = 0);
   void paint (QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index ) const;
   QSize sizeHint (const QStyleOptionViewItem& option, const QModelIndex& index ) const;
   
 private:
   QFontMetrics fntMetrics;
+  TournamentDB* db;
 } ;
 
 #endif	/* CATITEMDELEGATE_H */

@@ -21,11 +21,12 @@
 #include "DlgSeedingEditor.h"
 #include "ui_DlgSeedingEditor.h"
 
-DlgSeedingEditor::DlgSeedingEditor(QWidget *parent) :
-  QDialog(parent), positionInput(0),
+DlgSeedingEditor::DlgSeedingEditor(TournamentDB* _db, QWidget *parent) :
+  QDialog(parent), db(_db), positionInput(0),
   ui(new Ui::DlgSeedingEditor)
 {
   ui->setupUi(this);
+  ui->lwSeeding->setDatabase(db);
 
   // set the window title
   setWindowTitle(tr("Define seeding"));

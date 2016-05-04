@@ -18,24 +18,20 @@
 
 #include <algorithm>
 
-#include "Tournament.h"
 #include "PlayerMngr.h"
 #include "SeedingListWidget.h"
 
 
 SeedingListWidget::SeedingListWidget(QWidget* parent)
-  :QListWidget(parent), pairDelegate(new PairItemDelegate(nullptr, true))
+  :QListWidget(parent), pairDelegate(nullptr), defaultDelegate(itemDelegate())
 {
-  // assign a delegate to the list widget for drawing the entries
-  setItemDelegate(pairDelegate);
-
 }
 
 //----------------------------------------------------------------------------
 
 SeedingListWidget::~SeedingListWidget()
 {
-  delete pairDelegate;
+  if (defaultDelegate != nullptr) delete defaultDelegate;
 }
 
 //----------------------------------------------------------------------------
@@ -126,15 +122,14 @@ void SeedingListWidget::warpSelectedPlayerTo(int targetRow)
 PlayerPairList SeedingListWidget::getSeedList() const
 {
   PlayerPairList result;
-  auto tnmt = Tournament::getActiveTournament();
-  PlayerMngr* pm = tnmt->getPlayerMngr();
+  PlayerMngr pm{db};
 
   for (int row = 0; row < count(); ++row)
   {
     QListWidgetItem* i = item(row);
     if (i == nullptr) continue;   // shouldn't happen
     int pairId = i->data(Qt::UserRole).toInt();
-    result.push_back(pm->getPlayerPair(pairId));
+    result.push_back(pm.getPlayerPair(pairId));
   }
 
   return result;
@@ -192,6 +187,25 @@ void SeedingListWidget::clearListAndFillFromSeed(const PlayerPairList& seed)
       setCurrentRow(seed.size() - 1);
     }
   }
+}
+
+//----------------------------------------------------------------------------
+
+void SeedingListWidget::setDatabase(TournamentDB* _db)
+{
+  db = _db;
+
+  // assign a delegate to the list widget for drawing the entries
+  if (db != nullptr)
+  {
+    pairDelegate = make_unique<PairItemDelegate>(db, nullptr, true);
+    setItemDelegate(pairDelegate.get());
+  } else {
+    setItemDelegate(defaultDelegate);
+    pairDelegate.reset();
+  }
+
+  setEnabled(db != nullptr);
 }
 
 //----------------------------------------------------------------------------

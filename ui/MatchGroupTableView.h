@@ -25,7 +25,8 @@
 #include <QSortFilterProxyModel>
 #include <QStringListModel>
 
-#include "Tournament.h"
+#include "TournamentDB.h"
+#include "models/MatchGroupTabModel.h"
 //#include "delegates/PlayerItemDelegate.h"
 
 using namespace QTournament;
@@ -42,14 +43,14 @@ public:
   void setFilter(FilterType ft);
   void clearFilter();
   unique_ptr<MatchGroup> getSelectedMatchGroup();
+  void setDatabase(TournamentDB* _db);
   
 public slots:
-  void onTournamentClosed();
-  void onTournamentOpened(Tournament* tnmt);
   void onFilterUpdateTriggered();
   
 private:
-  Tournament* tnmt;
+  TournamentDB* db;
+  MatchGroupTableModel* curDataModel;
   QStringListModel* emptyModel;
   QSortFilterProxyModel* sortedModel;
   //PlayerItemDelegate* itemDelegate;

@@ -17,8 +17,9 @@
  */
 
 #include "MatchGroup.h"
-#include "Tournament.h"
 #include "DbTab.h"
+#include "CatMngr.h"
+#include "MatchMngr.h"
 
 namespace QTournament
 {
@@ -40,8 +41,8 @@ namespace QTournament
   Category MatchGroup::getCategory() const
   {
     int catId = row.getInt(MG_CAT_REF);
-    auto tnmt = Tournament::getActiveTournament();
-    return tnmt->getCatMngr()->getCategoryById(catId);
+    CatMngr cm{db};
+    return cm.getCategoryById(catId);
   }
 
 //----------------------------------------------------------------------------
@@ -62,8 +63,8 @@ namespace QTournament
 
   MatchList MatchGroup::getMatches() const
   {
-    auto tnmt = Tournament::getActiveTournament();
-    return tnmt->getMatchMngr()->getMatchesForMatchGroup(*this);
+    MatchMngr mm{db};
+    return mm.getMatchesForMatchGroup(*this);
   }
 
 //----------------------------------------------------------------------------

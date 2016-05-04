@@ -18,9 +18,10 @@
 
 #include "MatchGroupTableView.h"
 #include "MainFrame.h"
+#include "MatchMngr.h"
 
 MatchGroupTableView::MatchGroupTableView(QWidget* parent)
-  :QTableView(parent), currentFilter(FilterType::NONE)
+  :QTableView(parent), db(nullptr), curDataModel(nullptr), currentFilter(FilterType::NONE)
 {
   // an empty model for clearing the table when
   // no tournament is open
@@ -31,13 +32,8 @@ MatchGroupTableView::MatchGroupTableView(QWidget* parent)
   sortedModel->setSourceModel(emptyModel);
   setModel(sortedModel);
 
-  connect(MainFrame::getMainFramePointer(), &MainFrame::tournamentOpened, this, &MatchGroupTableView::onTournamentOpened);
-  
-  // define a delegate for drawing the player items
-  //itemDelegate = new PlayerItemDelegate(this);
-  //setItemDelegate(itemDelegate);
-  
-  
+  // initiate the model(s) as empty
+  setDatabase(nullptr);
 }
 
 //----------------------------------------------------------------------------
@@ -47,47 +43,11 @@ MatchGroupTableView::~MatchGroupTableView()
   delete emptyModel;
   delete sortedModel;
   //delete itemDelegate;
+  if (curDataModel != nullptr) delete curDataModel;
 }
 
 //----------------------------------------------------------------------------
     
-void MatchGroupTableView::onTournamentOpened(Tournament* _tnmt)
-{
-  tnmt = _tnmt;
-  sortedModel->setSourceModel(tnmt->getMatchGroupTableModel());
-  setColumnHidden(MatchGroupTableModel::STATE_COL_ID, true);  // hide the column containing the internal object state
-  setColumnHidden(MatchGroupTableModel::STAGE_SEQ_COL_ID, true);  // hide the column containing the stage sequence number
-  setEnabled(true);
-  
-  // connect signals from the Tournament and TeamMngr with my slots
-  connect(tnmt, &Tournament::tournamentClosed, this, &MatchGroupTableView::onTournamentClosed, Qt::DirectConnection);
-
-  // receive triggers from the underlying models when a filter update is necessary
-  connect(tnmt->getMatchGroupTableModel(), &MatchGroupTableModel::triggerFilterUpdate, this, &MatchGroupTableView::onFilterUpdateTriggered, Qt::DirectConnection);
-  
-  // resize columns and rows to content once (we do not want permanent automatic resizing)
-  horizontalHeader()->resizeSections(QHeaderView::ResizeToContents);
-  verticalHeader()->resizeSections(QHeaderView::ResizeToContents);
-}
-
-//----------------------------------------------------------------------------
-    
-void MatchGroupTableView::onTournamentClosed()
-{
-  // disconnect from all signals, because
-  // the sending objects don't exist anymore
-  disconnect(tnmt->getMatchGroupTableModel(), &MatchGroupTableModel::triggerFilterUpdate, this, &MatchGroupTableView::onFilterUpdateTriggered);
-  disconnect(tnmt, &Tournament::tournamentClosed, this, &MatchGroupTableView::onTournamentClosed);
-  
-  // invalidate the tournament handle and deactivate the view
-  tnmt = nullptr;
-  sortedModel->setSourceModel(emptyModel);
-  setEnabled(false);
-  
-}
-
-//----------------------------------------------------------------------------
-
 void MatchGroupTableView::setFilter(FilterType ft)
 {
   currentFilter = ft;
@@ -141,11 +101,57 @@ unique_ptr<MatchGroup> MatchGroupTableView::getSelectedMatchGroup()
 
   // return the selected item
   int selectedSourceRow = sortedModel->mapToSource(indexes.at(0)).row();
-  return tnmt->getMatchMngr()->getMatchGroupBySeqNum(selectedSourceRow);
+  MatchMngr mm{db};
+  return mm.getMatchGroupBySeqNum(selectedSourceRow);
 }
 
 //----------------------------------------------------------------------------
     
+void MatchGroupTableView::setDatabase(TournamentDB* _db)
+{
+  // According to the Qt documentation, the selection model
+  // has to be explicitly deleted by the user
+  //
+  // Thus we store the model pointer for later deletion
+  QItemSelectionModel *oldSelectionModel = selectionModel();
+
+  // set the new data model
+  MatchGroupTableModel* newDataModel = nullptr;
+  if (_db != nullptr)
+  {
+    newDataModel = new MatchGroupTableModel(_db);
+    sortedModel->setSourceModel(newDataModel);
+    setColumnHidden(MatchGroupTableModel::STATE_COL_ID, true);  // hide the column containing the internal object state
+    setColumnHidden(MatchGroupTableModel::STAGE_SEQ_COL_ID, true);  // hide the column containing the stage sequence number
+
+    // receive triggers from the underlying models when a filter update is necessary
+    connect(newDataModel, SIGNAL(triggerFilterUpdate()), this, SLOT(onFilterUpdateTriggered()), Qt::DirectConnection);
+
+    // resize columns and rows to content once (we do not want permanent automatic resizing)
+    horizontalHeader()->resizeSections(QHeaderView::ResizeToContents);
+    verticalHeader()->resizeSections(QHeaderView::ResizeToContents);
+
+  } else {
+    sortedModel->setSourceModel(emptyModel);
+  }
+
+  // delete the old data model, if it was a
+  // CategoryTableModel instance
+  if (curDataModel != nullptr)
+  {
+    delete curDataModel;
+  }
+
+  // store the new CategoryTableModel instance, if any
+  curDataModel = newDataModel;
+
+  // delete the old selection model
+  delete oldSelectionModel;
+
+  // update the database pointer and set the widget's enabled state
+  db = _db;
+  setEnabled(db != nullptr);
+}
 
 //----------------------------------------------------------------------------
     

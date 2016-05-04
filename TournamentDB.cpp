@@ -18,6 +18,7 @@
 
 #include <QString>
 #include <QStringList>
+#include <QFile>
 
 #include "TableCreator.h"
 #include "KeyValueTab.h"
@@ -25,17 +26,92 @@
 #include "TournamentDB.h"
 #include "TournamentDataDefs.h"
 #include "HelperFunc.h"
+#include "TournamentErrorCodes.h"
 
 namespace QTournament
 {
 
-TournamentDB::TournamentDB(string fName, bool createNew)
-  : SqliteOverlay::SqliteDatabase(fName, createNew)
-{
-}
+  TournamentDB::TournamentDB(string fName, bool createNew)
+    : SqliteOverlay::SqliteDatabase(fName, createNew)
+  {
+  }
 
-void TournamentDB::populateTables()
-{
+  //----------------------------------------------------------------------------
+
+  unique_ptr<TournamentDB> TournamentDB::createNew(const QString& fName, const TournamentSettings& cfg, ERR* err)
+  {
+    // Check whether the file exists
+    QFile f(fName);
+    if (f.exists())
+    {
+      if (err != nullptr) *err = FILE_ALREADY_EXISTS;
+      return nullptr;
+    }
+
+    // create a new, blank database
+    auto newDb = SqliteOverlay::SqliteDatabase::get<TournamentDB>(fName.toUtf8().constData(), true);
+    if (newDb == nullptr)
+    {
+      if (err != nullptr) *err = DATABASE_ERROR;
+      return nullptr;
+    }
+    newDb->setLogLevel(1);
+    newDb->createIndices();
+
+    // initialize the database
+    auto cfgTab = SqliteOverlay::KeyValueTab::getTab(newDb.get(), TAB_CFG);
+    QString dbVersion = "%1.%2";
+    dbVersion = dbVersion.arg(DB_VERSION_MAJOR).arg(DB_VERSION_MINOR);
+    cfgTab->set(CFG_KEY_DB_VERSION, QString2StdString(dbVersion));
+    cfgTab->set(CFG_KEY_TNMT_NAME, QString2StdString(cfg.tournamentName));
+    cfgTab->set(CFG_KEY_TNMT_ORGA, QString2StdString(cfg.organizingClub));
+    cfgTab->set(CFG_KEY_USE_TEAMS, cfg.useTeams);
+
+    // return the new database pointer
+    if (err != nullptr) *err = OK;
+    return newDb;
+  }
+
+  //----------------------------------------------------------------------------
+
+  unique_ptr<TournamentDB> TournamentDB::openExisting(const QString& fName, ERR* err)
+  {
+    // Check whether the file exists
+    QFile f(fName);
+    if (!(f.exists()))
+    {
+      if (err != nullptr) *err = FILE_NOT_EXISTING;
+      return nullptr;
+    }
+
+    // open an existing database
+    auto newDb = SqliteOverlay::SqliteDatabase::get<TournamentDB>(fName.toUtf8().constData(), false);
+    if (newDb == nullptr)
+    {
+      if (err != nullptr) *err = DATABASE_ERROR;
+      return nullptr;
+    }
+    newDb->setLogLevel(1);
+
+    // check file format compatibiliy
+    if (!(newDb->isCompatibleDatabaseVersion()))
+    {
+      if (err != nullptr) *err = INCOMPATIBLE_FILE_FORMAT;
+      return nullptr;
+
+      // the newly created database object is automatically
+      // destroyed when leaving the scope
+    }
+
+    // return the new database pointer
+    if (err != nullptr) *err = OK;
+    return newDb;
+  }
+
+  //----------------------------------------------------------------------------
+
+  void TournamentDB::populateTables()
+  {
     SqliteOverlay::TableCreator tc{this};
     
     // Generate the key-value-table with the tournament config
@@ -158,177 +234,177 @@ void TournamentDB::populateTables()
     tc.addForeignKey(BV_PAIR1_REF, TAB_PAIRS);
     tc.addForeignKey(BV_PAIR2_REF, TAB_PAIRS);
     tc.createTableAndResetCreator(TAB_BRACKET_VIS);
-}
-
-//----------------------------------------------------------------------------
-
-void TournamentDB::populateViews()
-{
-
-}
-
-//----------------------------------------------------------------------------
-
-void TournamentDB::createIndices()
-{
-  indexCreationHelper(TAB_COURT, GENERIC_NAME_FIELD_NAME);
-  indexCreationHelper(TAB_COURT, GENERIC_SEQNUM_FIELD_NAME, true);
-
-  indexCreationHelper(TAB_TEAM, GENERIC_NAME_FIELD_NAME, true);
-  indexCreationHelper(TAB_TEAM, GENERIC_SEQNUM_FIELD_NAME, true);
-
-  SqliteOverlay::StringList colList{PL_LNAME, PL_FNAME};
-  indexCreationHelper(TAB_PLAYER, GENERIC_SEQNUM_FIELD_NAME, true);
-  indexCreationHelper(TAB_PLAYER, GENERIC_STATE_FIELD_NAME);
-  indexCreationHelper(TAB_PLAYER, PL_FNAME);
-  indexCreationHelper(TAB_PLAYER, PL_LNAME);
-  indexCreationHelper(TAB_PLAYER, "Player_CombinedNames", colList, true);
-
-  indexCreationHelper(TAB_CATEGORY, GENERIC_NAME_FIELD_NAME, true);
-  indexCreationHelper(TAB_CATEGORY, GENERIC_SEQNUM_FIELD_NAME, true);
-  indexCreationHelper(TAB_CATEGORY, GENERIC_STATE_FIELD_NAME);
-
-  indexCreationHelper(TAB_P2C, P2C_CAT_REF);
-  indexCreationHelper(TAB_P2C, P2C_PLAYER_REF);
-
-  indexCreationHelper(TAB_PAIRS, PAIRS_PLAYER1_REF);
-  indexCreationHelper(TAB_PAIRS, PAIRS_PLAYER1_REF);
-  indexCreationHelper(TAB_PAIRS, PAIRS_CAT_REF);
-
-  indexCreationHelper(TAB_MATCH_GROUP, MG_CAT_REF);
-  indexCreationHelper(TAB_MATCH_GROUP, MG_GRP_NUM);
-  indexCreationHelper(TAB_MATCH_GROUP, MG_ROUND);
-  indexCreationHelper(TAB_MATCH_GROUP, MG_STAGE_SEQ_NUM, true);
-
-  indexCreationHelper(TAB_MATCH, MA_GRP_REF);
-  indexCreationHelper(TAB_MATCH, GENERIC_SEQNUM_FIELD_NAME, true);
-  indexCreationHelper(TAB_MATCH, GENERIC_STATE_FIELD_NAME);
-  indexCreationHelper(TAB_MATCH, MA_PAIR1_REF);
-  indexCreationHelper(TAB_MATCH, MA_PAIR2_REF);
-
-  indexCreationHelper(TAB_RANKING, RA_PAIR_REF);
-  indexCreationHelper(TAB_RANKING, RA_CAT_REF);
-  indexCreationHelper(TAB_RANKING, RA_ROUND);
-
-  indexCreationHelper(TAB_BRACKET_VIS, BV_CAT_REF);
-  indexCreationHelper(TAB_BRACKET_VIS, BV_MATCH_REF);
-  indexCreationHelper(TAB_BRACKET_VIS, BV_PAIR1_REF);
-  indexCreationHelper(TAB_BRACKET_VIS, BV_PAIR2_REF);
-
-  //indexCreationHelper(TAB_, );
-}
-
-//----------------------------------------------------------------------------
-
-tuple<int, int> TournamentDB::getVersion()
-{
-  auto cfg = SqliteOverlay::KeyValueTab::getTab(this, TAB_CFG);
-
-  // return an error if no version information is stored in the database
-  if (!(cfg->hasKey(CFG_KEY_DB_VERSION)))
-  {
-    return make_tuple(-1, -1);
   }
 
-  // get the raw version string
-  auto _versionString = cfg->getString2(CFG_KEY_DB_VERSION);
-  if (_versionString->isNull())
+  //----------------------------------------------------------------------------
+
+  void TournamentDB::populateViews()
   {
-    return make_tuple(-1, -1);
-  }
-  QString versionString = stdString2QString(_versionString->get());
-  if (versionString.isEmpty())
-  {
-    return make_tuple(-1, -1);
+
   }
 
-  // try to split it into major / minor
-  int major;
-  int minor;
-  bool isOkay;
-  auto col = versionString.split(".");
-  major = col[0].toInt(&isOkay);
-  if (!isOkay)
+  //----------------------------------------------------------------------------
+
+  void TournamentDB::createIndices()
   {
-    return make_tuple(-1, -1);
+    indexCreationHelper(TAB_COURT, GENERIC_NAME_FIELD_NAME);
+    indexCreationHelper(TAB_COURT, GENERIC_SEQNUM_FIELD_NAME, true);
+
+    indexCreationHelper(TAB_TEAM, GENERIC_NAME_FIELD_NAME, true);
+    indexCreationHelper(TAB_TEAM, GENERIC_SEQNUM_FIELD_NAME, true);
+
+    SqliteOverlay::StringList colList{PL_LNAME, PL_FNAME};
+    indexCreationHelper(TAB_PLAYER, GENERIC_SEQNUM_FIELD_NAME, true);
+    indexCreationHelper(TAB_PLAYER, GENERIC_STATE_FIELD_NAME);
+    indexCreationHelper(TAB_PLAYER, PL_FNAME);
+    indexCreationHelper(TAB_PLAYER, PL_LNAME);
+    indexCreationHelper(TAB_PLAYER, "Player_CombinedNames", colList, true);
+
+    indexCreationHelper(TAB_CATEGORY, GENERIC_NAME_FIELD_NAME, true);
+    indexCreationHelper(TAB_CATEGORY, GENERIC_SEQNUM_FIELD_NAME, true);
+    indexCreationHelper(TAB_CATEGORY, GENERIC_STATE_FIELD_NAME);
+
+    indexCreationHelper(TAB_P2C, P2C_CAT_REF);
+    indexCreationHelper(TAB_P2C, P2C_PLAYER_REF);
+
+    indexCreationHelper(TAB_PAIRS, PAIRS_PLAYER1_REF);
+    indexCreationHelper(TAB_PAIRS, PAIRS_PLAYER1_REF);
+    indexCreationHelper(TAB_PAIRS, PAIRS_CAT_REF);
+
+    indexCreationHelper(TAB_MATCH_GROUP, MG_CAT_REF);
+    indexCreationHelper(TAB_MATCH_GROUP, MG_GRP_NUM);
+    indexCreationHelper(TAB_MATCH_GROUP, MG_ROUND);
+    indexCreationHelper(TAB_MATCH_GROUP, MG_STAGE_SEQ_NUM, true);
+
+    indexCreationHelper(TAB_MATCH, MA_GRP_REF);
+    indexCreationHelper(TAB_MATCH, GENERIC_SEQNUM_FIELD_NAME, true);
+    indexCreationHelper(TAB_MATCH, GENERIC_STATE_FIELD_NAME);
+    indexCreationHelper(TAB_MATCH, MA_PAIR1_REF);
+    indexCreationHelper(TAB_MATCH, MA_PAIR2_REF);
+
+    indexCreationHelper(TAB_RANKING, RA_PAIR_REF);
+    indexCreationHelper(TAB_RANKING, RA_CAT_REF);
+    indexCreationHelper(TAB_RANKING, RA_ROUND);
+
+    indexCreationHelper(TAB_BRACKET_VIS, BV_CAT_REF);
+    indexCreationHelper(TAB_BRACKET_VIS, BV_MATCH_REF);
+    indexCreationHelper(TAB_BRACKET_VIS, BV_PAIR1_REF);
+    indexCreationHelper(TAB_BRACKET_VIS, BV_PAIR2_REF);
+
+    //indexCreationHelper(TAB_, );
   }
-  if (col.length() > 1)
+
+  //----------------------------------------------------------------------------
+
+  tuple<int, int> TournamentDB::getVersion()
   {
-    minor = col[1].toInt(&isOkay);
+    auto cfg = SqliteOverlay::KeyValueTab::getTab(this, TAB_CFG);
+
+    // return an error if no version information is stored in the database
+    if (!(cfg->hasKey(CFG_KEY_DB_VERSION)))
+    {
+      return make_tuple(-1, -1);
+    }
+
+    // get the raw version string
+    auto _versionString = cfg->getString2(CFG_KEY_DB_VERSION);
+    if (_versionString->isNull())
+    {
+      return make_tuple(-1, -1);
+    }
+    QString versionString = stdString2QString(_versionString->get());
+    if (versionString.isEmpty())
+    {
+      return make_tuple(-1, -1);
+    }
+
+    // try to split it into major / minor
+    int major;
+    int minor;
+    bool isOkay;
+    auto col = versionString.split(".");
+    major = col[0].toInt(&isOkay);
     if (!isOkay)
     {
-      return make_tuple(major, -1);
+      return make_tuple(-1, -1);
     }
-  } else {
-    // this is a workaround for old databases
-    // that did only store a major version number
-    // and no minor version number
-    minor = 0;
+    if (col.length() > 1)
+    {
+      minor = col[1].toInt(&isOkay);
+      if (!isOkay)
+      {
+        return make_tuple(major, -1);
+      }
+    } else {
+      // this is a workaround for old databases
+      // that did only store a major version number
+      // and no minor version number
+      minor = 0;
+    }
+
+    return make_tuple(major, minor);
   }
 
-  return make_tuple(major, minor);
-}
+  //----------------------------------------------------------------------------
 
-//----------------------------------------------------------------------------
-
-bool TournamentDB::isCompatibleDatabaseVersion()
-{
-  // get the current file format version
-  int major;
-  int minor;
-  tie(major, minor) = getVersion();
-
-  // condition: major version number must
-  // match the compiled in version and the minor
-  // version number must be less or equal to
-  // the version at compile time
-  return ((major == DB_VERSION_MAJOR) && (minor >= 0) && (minor <= DB_VERSION_MINOR));
-}
-
-//----------------------------------------------------------------------------
-
-bool TournamentDB::needsConversion()
-{
-  // get the current file format version
-  int major;
-  int minor;
-  tie(major, minor) = getVersion();
-
-  // condition: major version number must
-  // match the compiled in version and the minor
-  // version number must be less then
-  // the version at compile time
-  return ((major == DB_VERSION_MAJOR) && (minor >= 0) && (minor < DB_VERSION_MINOR));
-}
-
-//----------------------------------------------------------------------------
-
-bool TournamentDB::convertToLatestDatabaseVersion()
-{
-  // get the current file format version
-  int major;
-  int minor;
-  tie(major, minor) = getVersion();
-
-  if (major != DB_VERSION_MAJOR) return false;
-  if (minor < 0) return false;
-  if (minor > DB_VERSION_MINOR) return false;
-
-  // convert from 2.0 to 2.1
-  if (minor == 0)
+  bool TournamentDB::isCompatibleDatabaseVersion()
   {
-    createIndices();
-    minor = 1;
+    // get the current file format version
+    int major;
+    int minor;
+    tie(major, minor) = getVersion();
+
+    // condition: major version number must
+    // match the compiled in version and the minor
+    // version number must be less or equal to
+    // the version at compile time
+    return ((major == DB_VERSION_MAJOR) && (minor >= 0) && (minor <= DB_VERSION_MINOR));
   }
 
-  // store the new database version
-  QString dbVersion = "%1.%2";
-  dbVersion = dbVersion.arg(DB_VERSION_MAJOR);
-  dbVersion = dbVersion.arg(minor);
-  auto cfg = SqliteOverlay::KeyValueTab::getTab(this, TAB_CFG);
-  cfg->set(CFG_KEY_DB_VERSION, QString2StdString(dbVersion));
+  //----------------------------------------------------------------------------
 
-  return true;
-}
+  bool TournamentDB::needsConversion()
+  {
+    // get the current file format version
+    int major;
+    int minor;
+    tie(major, minor) = getVersion();
+
+    // condition: major version number must
+    // match the compiled in version and the minor
+    // version number must be less then
+    // the version at compile time
+    return ((major == DB_VERSION_MAJOR) && (minor >= 0) && (minor < DB_VERSION_MINOR));
+  }
+
+  //----------------------------------------------------------------------------
+
+  bool TournamentDB::convertToLatestDatabaseVersion()
+  {
+    // get the current file format version
+    int major;
+    int minor;
+    tie(major, minor) = getVersion();
+
+    if (major != DB_VERSION_MAJOR) return false;
+    if (minor < 0) return false;
+    if (minor > DB_VERSION_MINOR) return false;
+
+    // convert from 2.0 to 2.1
+    if (minor == 0)
+    {
+      createIndices();
+      minor = 1;
+    }
+
+    // store the new database version
+    QString dbVersion = "%1.%2";
+    dbVersion = dbVersion.arg(DB_VERSION_MAJOR);
+    dbVersion = dbVersion.arg(minor);
+    auto cfg = SqliteOverlay::KeyValueTab::getTab(this, TAB_CFG);
+    cfg->set(CFG_KEY_DB_VERSION, QString2StdString(dbVersion));
+
+    return true;
+  }
 
 }

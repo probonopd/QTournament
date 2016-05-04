@@ -22,8 +22,9 @@
 #include "TournamentDataDefs.h"
 #include "TournamentDB.h"
 #include "TournamentErrorCodes.h"
-#include "Tournament.h"
 #include "HelperFunc.h"
+#include "CourtMngr.h"
+#include "MatchMngr.h"
 
 namespace QTournament
 {
@@ -61,8 +62,8 @@ namespace QTournament
 
   ERR Court::rename(const QString &newName)
   {
-    auto tnmt = Tournament::getActiveTournament();
-    return tnmt->getCourtMngr()->renameCourt(*this, newName);
+    CourtMngr cm{db};
+    return cm.renameCourt(*this, newName);
   }
 
 //----------------------------------------------------------------------------
@@ -90,8 +91,8 @@ namespace QTournament
 
   unique_ptr<Match> Court::getMatch() const
   {
-    auto tnmt = Tournament::getActiveTournament();
-    return tnmt->getMatchMngr()->getMatchForCourt(*this);
+    MatchMngr mm{db};
+    return mm.getMatchForCourt(*this);
   }
 
 //----------------------------------------------------------------------------

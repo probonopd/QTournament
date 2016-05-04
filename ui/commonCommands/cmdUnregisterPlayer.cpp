@@ -19,11 +19,11 @@
 #include <QObject>
 #include <QMessageBox>
 
-#include "Tournament.h"
 #include "cmdUnregisterPlayer.h"
+#include "PlayerMngr.h"
 
 cmdUnregisterPlayer::cmdUnregisterPlayer(QWidget* p, const Player& _pl)
-  :AbstractCommand(p), pl(_pl)
+  :AbstractCommand(_pl.getDatabaseHandle(), p), pl(_pl)
 {
 
 }
@@ -34,9 +34,9 @@ ERR cmdUnregisterPlayer::exec()
 {
   // set the "wait for registration"-flag
   ERR err;
-  auto tnmt = Tournament::getActiveTournament();
-  auto pm = tnmt->getPlayerMngr();
-  err = pm->setWaitForRegistration(pl, true);
+  PlayerMngr pm{db};
+
+  err = pm.setWaitForRegistration(pl, true);
 
   if (err == OK) return OK; // no error
 

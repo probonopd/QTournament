@@ -8,15 +8,15 @@
 #include "CatTableModel.h"
 
 #include "Category.h"
-#include "Tournament.h"
 #include "CatRoundStatus.h"
 #include "CentralSignalEmitter.h"
+#include "CatMngr.h"
 
 using namespace QTournament;
 using namespace SqliteOverlay;
 
-CategoryTableModel::CategoryTableModel(Tournament* tnmt)
-:QAbstractTableModel(0), db(tnmt->getDatabaseHandle()), catTab((db->getTab(TAB_CATEGORY)))
+CategoryTableModel::CategoryTableModel(TournamentDB* _db)
+:QAbstractTableModel(0), db(_db), catTab((db->getTab(TAB_CATEGORY)))
 {
   CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
   connect(cse, SIGNAL(beginCreateCategory()), this, SLOT(onBeginCreateCategory()), Qt::DirectConnection);
@@ -54,8 +54,8 @@ QVariant CategoryTableModel::data(const QModelIndex& index, int role) const
     if (role != Qt::DisplayRole)
       return QVariant();
     
-    auto tnmt = Tournament::getActiveTournament();
-    Category c = tnmt->getCatMngr()->getCategoryBySeqNum(index.row());
+    CatMngr cm{db};
+    Category c = cm.getCategoryBySeqNum(index.row());
     
     // name
     if (index.column() == COL_NAME)

@@ -19,12 +19,12 @@
 #include <QObject>
 #include <QMessageBox>
 
-#include "Tournament.h"
 #include "cmdBulkRemovePlayersFromCat.h"
 #include "ui/DlgSelectPlayer.h"
+#include "CatMngr.h"
 
 cmdBulkRemovePlayersFromCategory::cmdBulkRemovePlayersFromCategory(QWidget* p, const Category& _cat)
-  :AbstractCommand(p), cat(_cat)
+  :AbstractCommand(_cat.getDatabaseHandle(), p), cat(_cat)
 {
 
 }
@@ -34,18 +34,18 @@ cmdBulkRemovePlayersFromCategory::cmdBulkRemovePlayersFromCategory(QWidget* p, c
 ERR cmdBulkRemovePlayersFromCategory::exec()
 {
   // show a dialog for selecting the players
-  DlgSelectPlayer dlg{parentWidget, DlgSelectPlayer::DLG_CONTEXT::REMOVE_FROM_CATEGORY, &cat};
+  DlgSelectPlayer dlg{db, parentWidget, DlgSelectPlayer::DLG_CONTEXT::REMOVE_FROM_CATEGORY, &cat};
   if (dlg.exec() != QDialog::Accepted)
   {
     return OK;
   }
 
   // remove all selected players from the category
-  auto tnmt = Tournament::getActiveTournament();
-  auto cm = tnmt->getCatMngr();
+  CatMngr cm{db};
+
   for (const Player& pl : dlg.getSelectedPlayers())
   {
-    ERR err = cm->removePlayerFromCategory(pl, cat);
+    ERR err = cm.removePlayerFromCategory(pl, cat);
 
     if (err != OK)
     {

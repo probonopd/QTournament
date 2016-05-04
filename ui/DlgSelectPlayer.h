@@ -21,7 +21,7 @@
 
 #include <QDialog>
 
-#include "Tournament.h"
+#include "TournamentDB.h"
 #include "Player.h"
 #include "Category.h"
 
@@ -43,7 +43,7 @@ public:
     NONE
   };
 
-  explicit DlgSelectPlayer(QWidget *parent = 0, DLG_CONTEXT _ctxt = DLG_CONTEXT::NONE, Category* _cat = nullptr);
+  explicit DlgSelectPlayer(TournamentDB* _db, QWidget *parent = 0, DLG_CONTEXT _ctxt = DLG_CONTEXT::NONE, Category* _cat = nullptr);
   ~DlgSelectPlayer();
   PlayerList getSelectedPlayers() const;
 
@@ -52,6 +52,7 @@ public slots:
 
 private:
   Ui::DlgSelectPlayer *ui;
+  TournamentDB* db;
   DLG_CONTEXT ctxt;
   Category* cat;
 

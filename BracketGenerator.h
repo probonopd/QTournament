@@ -26,7 +26,6 @@
 
 #include <QList>
 
-#include "Tournament.h"
 #include "reports/BracketVisData.h"
 
 namespace QTournament

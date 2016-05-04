@@ -11,8 +11,8 @@
 #include <QPainter>
 #include <QFont>
 
-#include "Tournament.h"
 #include "PlayerPair.h"
+#include "PlayerMngr.h"
 
 #define PAIR_ITEM_ROW_HEIGHT 40
 #define PAIR_ITEM_PLAYERNAME_COL 0, 0, 0
@@ -25,8 +25,8 @@
 
 using namespace QTournament;
 
-PairItemDelegate::PairItemDelegate(QObject* parent, bool _showListIndex)
-: QStyledItemDelegate(parent), fntMetrics(QFontMetrics(QFont())), showListIndex(_showListIndex)
+PairItemDelegate::PairItemDelegate(TournamentDB* _db, QObject* parent, bool _showListIndex)
+: QStyledItemDelegate(parent), db(_db), fntMetrics(QFontMetrics(QFont())), showListIndex(_showListIndex)
 {
 }
 
@@ -34,8 +34,8 @@ PairItemDelegate::PairItemDelegate(QObject* parent, bool _showListIndex)
 
 void PairItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-  auto tnmt = Tournament::getActiveTournament();
-  PlayerPair pp = tnmt->getPlayerMngr()->getPlayerPair(index.data(Qt::UserRole).toInt());
+  PlayerMngr pm{db};
+  PlayerPair pp = pm.getPlayerPair(index.data(Qt::UserRole).toInt());
   QString playerName = pp.getDisplayName();
   QString teamName = pp.getDisplayName_Team();
 
@@ -88,8 +88,8 @@ void PairItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
 
 QSize PairItemDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index ) const
 {
-  auto tnmt = Tournament::getActiveTournament();
-  PlayerPair pp = tnmt->getPlayerMngr()->getPlayerPair(index.data(Qt::UserRole).toInt());
+  PlayerMngr pm{db};
+  PlayerPair pp = pm.getPlayerPair(index.data(Qt::UserRole).toInt());
   QString playerName = pp.getDisplayName();
   QString teamName = pp.getDisplayName_Team();
   

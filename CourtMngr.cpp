@@ -21,7 +21,6 @@
 #include "ClausesAndQueries.h"
 
 #include "CourtMngr.h"
-#include "Tournament.h"
 #include "HelperFunc.h"
 #include "CentralSignalEmitter.h"
 

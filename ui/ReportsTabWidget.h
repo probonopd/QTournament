@@ -48,15 +48,15 @@ public:
   ~ReportsTabWidget();
 
   void updateRepPool();
+  void setDatabase(TournamentDB* _db);
 
 public slots:
-  void onTournamentOpened(Tournament* _tnmt);
-  void onTournamentClosed();
   void onTreeSelectionChanged();
   void onReloadRequested();
   void onResetRequested();
 
 private:
+  TournamentDB* db;
   Ui::ReportsTabWidget *ui;
   std::vector<upAbstractReport> repPool;
   QTreeWidgetItem* treeRoot;
@@ -66,7 +66,6 @@ private:
   void createRootItem();
   void showReport(const QString& repName);
   upSimpleReport curReport;
-  Tournament* tnmt;
   bool isInResetProcedure;
 };
 

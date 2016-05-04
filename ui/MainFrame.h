@@ -24,7 +24,6 @@
 #include <QShortcut>
 
 #include "ui_MainFrame.h"
-#include "Tournament.h"
 
 #define PRG_VERSION_STRING "<DevelopmentSnapshot>"
 
@@ -44,7 +43,7 @@ private:
   void enableControls(bool doEnable = true);
   void setupTestScenario(int scenarioID);
   
-  unique_ptr<Tournament> tnmt;
+  unique_ptr<TournamentDB> currentDb;
   
   QString testFileName;
   
@@ -54,6 +53,8 @@ private:
 
   QShortcut* scToggleTestMenuVisibility;
   bool isTestMenuVisible;
+
+  void distributeCurrentDatabasePointerToWidgets(bool forceNullptr = false);
   
 
 public slots:
@@ -76,9 +77,6 @@ public slots:
 private slots:
   void onToggleTestMenuVisibility();
 
-signals:
-  void tournamentOpened (Tournament* tnmt);
-  void tournamentClosed ();
 };
 
 #endif	/* _MAINFRAME_H */

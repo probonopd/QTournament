@@ -11,14 +11,19 @@
 #include <QStyledItemDelegate>
 #include <QFontMetrics>
 
+#include "TournamentDB.h"
+
+using namespace QTournament;
+
 class PairItemDelegate : public QStyledItemDelegate
 {
 public:
-  PairItemDelegate(QObject* parent = nullptr, bool _showListIndex = false);
+  PairItemDelegate(TournamentDB* _db, QObject* parent = nullptr, bool _showListIndex = false);
   void paint (QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index ) const;
   QSize sizeHint (const QStyleOptionViewItem& option, const QModelIndex& index ) const;
   
 private:
+  TournamentDB* db;
   QFontMetrics fntMetrics;
   bool showListIndex;
 } ;

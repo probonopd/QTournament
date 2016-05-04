@@ -10,7 +10,6 @@
 
 #include "TeamListModel.h"
 #include "TeamMngr.h"
-#include "Tournament.h"
 #include "CentralSignalEmitter.h"
 
 using namespace SqliteOverlay;
@@ -18,8 +17,8 @@ using namespace SqliteOverlay;
 namespace QTournament
 {
 
-  TeamListModel::TeamListModel(Tournament* tnmt)
-  : QAbstractListModel(0), db(tnmt->getDatabaseHandle()), teamTab(db->getTab(TAB_TEAM))
+  TeamListModel::TeamListModel(TournamentDB* _db)
+  : QAbstractListModel(0), db(_db), teamTab(db->getTab(TAB_TEAM))
   {
     CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
     connect(cse, SIGNAL(beginCreateTeam()), this, SLOT(onBeginCreateTeam()), Qt::DirectConnection);
@@ -96,8 +95,8 @@ namespace QTournament
       return false;
     }
     
-    auto tnmt = Tournament::getActiveTournament();
-    Team t = tnmt->getTeamMngr()->getTeamBySeqNum(index.row());
+    TeamMngr tm{db};
+    Team t = tm.getTeamBySeqNum(index.row());
     
     ERR e = t.rename(value.toString());
     

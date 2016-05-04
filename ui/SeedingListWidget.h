@@ -19,6 +19,8 @@
 #ifndef SEEDINGLISTWIDGET_H
 #define SEEDINGLISTWIDGET_H
 
+#include <memory>
+
 #include <QObject>
 #include <QWidget>
 #include <QListWidget>
@@ -26,6 +28,7 @@
 
 #include "PlayerPair.h"
 #include "delegates/PairItemDelegate.h"
+#include "TournamentDB.h"
 
 using namespace QTournament;
 
@@ -46,9 +49,12 @@ public:
   void warpSelectedPlayerTo(int targetRow);
   PlayerPairList getSeedList() const;
   void clearListAndFillFromSeed(const PlayerPairList& seed);
+  void setDatabase(TournamentDB* _db);
 
 private:
-  PairItemDelegate* pairDelegate;
+  TournamentDB* db;
+  unique_ptr<PairItemDelegate> pairDelegate;
+  QAbstractItemDelegate* defaultDelegate;
   QQueue<QListWidgetItem*> selectionQueue;
   void swapListItems(int row1, int row2);
 };

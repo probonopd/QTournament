@@ -26,6 +26,9 @@
 #include "ExternalPlayerDB.h"
 #include "DlgPickPlayerSex.h"
 #include "CentralSignalEmitter.h"
+#include "PlayerMngr.h"
+#include "TeamMngr.h"
+#include "CatMngr.h"
 
 PlayerTabWidget::PlayerTabWidget()
 :QWidget()
@@ -67,6 +70,20 @@ PlayerTabWidget::~PlayerTabWidget()
 {
 }
 
+//----------------------------------------------------------------------------
+
+void PlayerTabWidget::setDatabase(TournamentDB* _db)
+{
+  db = _db;
+
+  // distribute to childs
+  ui.playerView->setDatabase(db);
+
+  setEnabled(db != nullptr);
+}
+
+//----------------------------------------------------------------------------
+
 void PlayerTabWidget::initRegistrationMenu()
 {
   // prepare all actions
@@ -74,7 +91,7 @@ void PlayerTabWidget::initRegistrationMenu()
   actUnregisterAll = new QAction(tr("Unegister all..."), this);
 
   // create the context menu and connect it to the actions
-  registrationMenu = unique_ptr<QMenu>(new QMenu());
+  registrationMenu = make_unique<QMenu>();
   registrationMenu->addAction(actRegisterAll);
   registrationMenu->addAction(actUnregisterAll);
 
@@ -98,7 +115,7 @@ void PlayerTabWidget::initExternalDatabaseMenu()
   actImportCSV = new QAction(tr("Import CSV data to database"), this);
 
   // create the context menu and connect it to the actions
-  extDatabaseMenu = unique_ptr<QMenu>(new QMenu());
+  extDatabaseMenu = make_unique<QMenu>();
   extDatabaseMenu->addAction(actImportFromExtDatabase);
   extDatabaseMenu->addSeparator();
   extDatabaseMenu->addAction(actExportToExtDatabase);
@@ -135,15 +152,14 @@ void PlayerTabWidget::onPlayerDoubleClicked(const QModelIndex& index)
 
 void PlayerTabWidget::onPlayerCountChanged()
 {
-  if (!(Tournament::hasActiveTournament()))
+  if (db == nullptr)
   {
     ui.laPlayerCount->setText(QString()); // no tournament started / opem
     return;
   }
 
-  auto tnmt = Tournament::getActiveTournament();
-  PlayerMngr* pm = tnmt->getPlayerMngr();
-  QString txt = QString::number(pm->getTotalPlayerCount());
+  PlayerMngr pm{db};
+  QString txt = QString::number(pm.getTotalPlayerCount());
   txt += tr(" players in tournament");
   ui.laPlayerCount->setText(txt);
 }
@@ -172,11 +188,10 @@ void PlayerTabWidget::onRegisterAllTriggered()
   if (result != QMessageBox::Yes) return;
 
   // loop over all players and set them to "registered"
-  auto tnmt = Tournament::getActiveTournament();
-  PlayerMngr* pm = tnmt->getPlayerMngr();
-  for (const Player& pl : pm->getAllPlayers())
+  PlayerMngr pm{db};
+  for (const Player& pl : pm.getAllPlayers())
   {
-    pm->setWaitForRegistration(pl, false);
+    pm.setWaitForRegistration(pl, false);
   }
 }
 
@@ -190,13 +205,12 @@ void PlayerTabWidget::onUnregisterAllTriggered()
   if (result != QMessageBox::Yes) return;
 
   // loop over all players and set them to "Wait for registration"
-  auto tnmt = Tournament::getActiveTournament();
-  PlayerMngr* pm = tnmt->getPlayerMngr();
+  PlayerMngr pm{db};
   bool allModified = true;
   ERR err;
-  for (const Player& pl : pm->getAllPlayers())
+  for (const Player& pl : pm.getAllPlayers())
   {
-    err = pm->setWaitForRegistration(pl, true);
+    err = pm.setWaitForRegistration(pl, true);
     if (err != OK) allModified = false;
   }
 
@@ -216,7 +230,7 @@ void PlayerTabWidget::onUnregisterAllTriggered()
 
 void PlayerTabWidget::onImportFromExtDatabase()
 {
-  cmdImportSinglePlayerFromExternalDatabase cmd{this};
+  cmdImportSinglePlayerFromExternalDatabase cmd{db, this};
 
   cmd.exec();
 }
@@ -239,9 +253,8 @@ void PlayerTabWidget::onSyncAllToExtDatabase()
 
 void PlayerTabWidget::onExternalDatabaseChanged()
 {
-  auto tnmt = Tournament::getActiveTournament();
-  PlayerMngr* pm = tnmt->getPlayerMngr();
-  ui.btnExtDatabase->setEnabled(pm->hasExternalPlayerDatabaseOpen());
+  PlayerMngr pm{db};
+  ui.btnExtDatabase->setEnabled(pm.hasExternalPlayerDatabaseOpen());
   onPlayerSelectionChanged(QItemSelection(), QItemSelection());
 }
 
@@ -258,15 +271,14 @@ void PlayerTabWidget::onPlayerSelectionChanged(const QItemSelection&, const QIte
 
 void PlayerTabWidget::onImportCSV()
 {
-  auto tnmt = Tournament::getActiveTournament();
-  PlayerMngr* pm = tnmt->getPlayerMngr();
-  if (!(pm->hasExternalPlayerDatabaseOpen()))
+  PlayerMngr pm{db};
+  if (!(pm.hasExternalPlayerDatabaseOpen()))
   {
     return;
   }
 
   // display a dialog for data input
-  DlgBulkImportToExtDb dlg{this};
+  DlgBulkImportToExtDb dlg{db, this};
   if (dlg.exec() != QDialog::Accepted)
   {
     return;
@@ -283,7 +295,7 @@ void PlayerTabWidget::onImportCSV()
   QList<int> newPlayerIds;
   QList<int> skippedPlayerIds;
   int errorCnt;
-  tie(newPlayerIds, skippedPlayerIds, errorCnt) = pm->getExternalPlayerDatabaseHandle()->bulkImportCSV(csv);
+  tie(newPlayerIds, skippedPlayerIds, errorCnt) = pm.getExternalPlayerDatabaseHandle()->bulkImportCSV(csv);
 
   // do we actually have valid names in the list?
   bool hasValidNames = ((newPlayerIds.length() + skippedPlayerIds.length()) > 0);
@@ -300,13 +312,13 @@ void PlayerTabWidget::onImportCSV()
       return;
     }
 
-    TeamMngr* tm = tnmt->getTeamMngr();
-    CatMngr* cm = tnmt->getCatMngr();
+    TeamMngr tm{db};
+    CatMngr cm{db};
 
     // get the team for adding the players to. The dialog
     // guarantees that the ID is valid
     int targetTeamId = dlg.getTargetTeamId();
-    Team targetTeam = tm->getTeamById(targetTeamId);
+    Team targetTeam = tm.getTeamById(targetTeamId);
     QString targetTeamName = targetTeam.getName();
 
     // shall the players be added to a category as well?
@@ -314,7 +326,7 @@ void PlayerTabWidget::onImportCSV()
     if (dlg.getTargetCatId() > 0)
     {
       // The dialog guarantees that the ID is valid
-      targetCat = cm->getCategory(dlg.getTargetCatId());
+      targetCat = cm.getCategory(dlg.getTargetCatId());
     }
 
     // add the players one by one
@@ -323,7 +335,7 @@ void PlayerTabWidget::onImportCSV()
     int dupeCnt = 0;
     int skipCnt = 0;
     int notAddedToCatCnt = 0;
-    auto extDb = pm->getExternalPlayerDatabaseHandle();
+    auto extDb = pm.getExternalPlayerDatabaseHandle();
     for (int extId : validExtPlayerIds)
     {
       auto extPlayer = extDb->getPlayer(extId);
@@ -336,7 +348,7 @@ void PlayerTabWidget::onImportCSV()
         DlgPickPlayerSex dlg{this, extPlayer->getFirstname() + " " + extPlayer->getLastname()};
         if (dlg.exec() != QDialog::Accepted)
         {
-          skipCnt;
+          ++skipCnt;
           continue;
         }
 
@@ -346,7 +358,7 @@ void PlayerTabWidget::onImportCSV()
       }
 
       // try to add the player to the tournament
-      ERR err = pm->createNewPlayer(extPlayer->getFirstname(), extPlayer->getLastname(), playerSex, targetTeamName);
+      ERR err = pm.createNewPlayer(extPlayer->getFirstname(), extPlayer->getLastname(), playerSex, targetTeamName);
       if (err == NAME_EXISTS)
       {
         ++dupeCnt;
@@ -364,8 +376,8 @@ void PlayerTabWidget::onImportCSV()
       // Add the player to a category as well?
       if (targetCat != nullptr)
       {
-        Player newPlayer = pm->getPlayer(extPlayer->getFirstname(), extPlayer->getLastname());
-        err = cm->addPlayerToCategory(newPlayer, *targetCat);
+        Player newPlayer = pm.getPlayer(extPlayer->getFirstname(), extPlayer->getLastname());
+        err = cm.addPlayerToCategory(newPlayer, *targetCat);
         if ((err != OK) && (err != PLAYER_ALREADY_IN_CATEGORY))
         {
           ++notAddedToCatCnt;

@@ -13,6 +13,7 @@
 #include <QAbstractProxyModel>
 
 #include "Match.h"
+#include "TournamentDB.h"
 
 using namespace QTournament;
 
@@ -29,15 +30,16 @@ public:
   static constexpr int ITEM_TEXT_ROW_HEIGHT = 15;
   static constexpr int ITEM_TEXT_ROW_SKIP = 5;
 
-  CourtItemDelegate(QObject* parent = 0);
+  CourtItemDelegate(TournamentDB* _db, QObject* parent = 0);
   void setProxy(QAbstractProxyModel* _proxy);
   void paint (QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index ) const;
   QSize sizeHint (const QStyleOptionViewItem& option, const QModelIndex& index ) const;
   void setSelectedRow(int _selRow);
   
 private:
-  QFontMetrics fntMetrics;
+  TournamentDB* db;
   QAbstractProxyModel* proxy;
+  QFontMetrics fntMetrics;
   int selectedRow;
 
   void paintMatchInfoCell_Unselected(QPainter* painter, const QStyleOptionViewItem& option, const Match& ma) const;

@@ -8,7 +8,8 @@ QT       += widgets
 
 TARGET = QTournament
 TEMPLATE = app
-QMAKE_CXXFLAGS += -std=c++14 -Wno-unused-parameter
+QMAKE_CXXFLAGS += -Wno-unused-parameter
+CONFIG += c++14
 
 VERSION = 0.3.0
 
@@ -37,7 +38,6 @@ HEADERS += \
     RoundRobinCategory.h \
     Team.h \
     TeamMngr.h \
-    Tournament.h \
     TournamentDataDefs.h \
     TournamentDB.h \
     TournamentErrorCodes.h \
@@ -141,7 +141,6 @@ SOURCES += \
     RoundRobinCategory.cpp \
     Team.cpp \
     TeamMngr.cpp \
-    Tournament.cpp \
     TournamentDB.cpp \
     ui/CatTableView.cpp \
     ui/CatTabWidget.cpp \

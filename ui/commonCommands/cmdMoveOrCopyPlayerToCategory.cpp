@@ -19,12 +19,12 @@
 #include <QObject>
 #include <QMessageBox>
 
-#include "Tournament.h"
 #include "cmdMoveOrCopyPlayerToCategory.h"
 #include "ui/DlgSelectPlayer.h"
+#include "CatMngr.h"
 
 cmdMoveOrCopyPlayerToCategory::cmdMoveOrCopyPlayerToCategory(QWidget* p, const Player& _pl, const Category& _srcCat, const Category& _dstCat, bool _isMove)
-  :AbstractCommand(p), pl(_pl), srcCat(_srcCat), dstCat(_dstCat), isMove(_isMove)
+  :AbstractCommand(_srcCat.getDatabaseHandle(), p), pl(_pl), srcCat(_srcCat), dstCat(_dstCat), isMove(_isMove)
 {
 
 }
@@ -33,8 +33,7 @@ cmdMoveOrCopyPlayerToCategory::cmdMoveOrCopyPlayerToCategory(QWidget* p, const P
 
 ERR cmdMoveOrCopyPlayerToCategory::exec()
 {
-  auto tnmt = Tournament::getActiveTournament();
-  auto cm = tnmt->getCatMngr();
+  CatMngr cm{db};
 
   // check if the player is in the source category
   if (!(srcCat.hasPlayer(pl)))
@@ -65,7 +64,7 @@ ERR cmdMoveOrCopyPlayerToCategory::exec()
   // the target category, this boils down to a simple deletion
   if (isMove && dstCatHasPlayer)
   {
-    ERR err = cm->removePlayerFromCategory(pl, srcCat);
+    ERR err = cm.removePlayerFromCategory(pl, srcCat);
 
     if (err != OK)   // shouldn't happen after the previous check, but anyway...
     {
@@ -77,7 +76,7 @@ ERR cmdMoveOrCopyPlayerToCategory::exec()
   }
 
   // try to add the player to the target category
-  ERR err = cm->addPlayerToCategory(pl, dstCat);
+  ERR err = cm.addPlayerToCategory(pl, dstCat);
   if (err != OK)
   {
     QString msg = tr("The player cannot be added to the target category of this operation.");
@@ -88,7 +87,7 @@ ERR cmdMoveOrCopyPlayerToCategory::exec()
   // if this is a move operation, delete the player from the source
   if (isMove)
   {
-    ERR err = cm->removePlayerFromCategory(pl, srcCat);
+    ERR err = cm.removePlayerFromCategory(pl, srcCat);
 
     if (err != OK)   // shouldn't happen after the previous check, but anyway...
     {

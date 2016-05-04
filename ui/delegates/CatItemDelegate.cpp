@@ -9,9 +9,9 @@
 
 #include <QPainter>
 
-#include "Tournament.h"
 #include "Category.h"
 #include "DelegateItemLED.h"
+#include "CatMngr.h"
 
 #define CAT_ITEM_ROW_HEIGHT 30
 #define CAT_ITEM_STAT_INDICATOR_SIZE 15
@@ -19,8 +19,8 @@
 
 using namespace QTournament;
 
-CatItemDelegate::CatItemDelegate(QObject* parent)
-: QStyledItemDelegate(parent), fntMetrics(QFontMetrics(QFont()))
+CatItemDelegate::CatItemDelegate(TournamentDB* _db, QObject* parent)
+: QStyledItemDelegate(parent), fntMetrics(QFontMetrics(QFont())), db(_db)
 {
 }
 
@@ -29,8 +29,8 @@ CatItemDelegate::CatItemDelegate(QObject* parent)
 void CatItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
   
-  auto tnmt = Tournament::getActiveTournament();
-  Category c = tnmt->getCatMngr()->getCategoryBySeqNum(index.row());
+  CatMngr cm{db};
+  Category c = cm.getCategoryBySeqNum(index.row());
   
   // Paint the background in the selection color, if necessary
   QColor bgColor = option.palette.color(QPalette::Background);

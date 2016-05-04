@@ -22,6 +22,7 @@
 #include "MatchMngr.h"
 #include "CatRoundStatus.h"
 #include "TournamentDB.h"
+#include "reports/AbstractReport.h"
 
 
 MatchMatrix::MatchMatrix(SimpleReportGenerator* _rep, const QString& tabName, const Category& _cat, int _round, int _grpNum)
@@ -221,16 +222,16 @@ upMatch MatchMatrix::getMatchForCell(const PlayerPairList& ppList, int row, int 
 
   // create a direct, low-level database query for the
   // applicable matches
-  auto tnmt = Tournament::getActiveTournament();
-  MatchMngr* mm = tnmt->getMatchMngr();
+  TournamentDB* db = cat.getDatabaseHandle();
+  MatchMngr mm{db};
   QString where = "(%1 = %2 AND %3 = %4) OR (%1 = %4 AND %3 = %2)";
   where = where.arg(MA_PAIR1_REF).arg(ppRow.getPairId());
   where = where.arg(MA_PAIR2_REF).arg(ppCol.getPairId());
-  DbTab* matchTab = tnmt->getDatabaseHandle()->getTab(TAB_MATCH);
+  DbTab* matchTab = db->getTab(TAB_MATCH);
   DbTab::CachingRowIterator it = matchTab->getRowsByWhereClause(where.toUtf8().constData());
   while (!(it.isEnd()))
   {
-    auto ma = mm->getMatch((*it).getId());
+    auto ma = mm.getMatch((*it).getId());
     assert(ma != nullptr);
 
     // check for right category and the right round number

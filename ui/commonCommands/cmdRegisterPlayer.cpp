@@ -19,11 +19,11 @@
 #include <QObject>
 #include <QMessageBox>
 
-#include "Tournament.h"
 #include "cmdRegisterPlayer.h"
+#include "PlayerMngr.h"
 
 cmdRegisterPlayer::cmdRegisterPlayer(QWidget* p, const Player& _pl)
-  :AbstractCommand(p), pl(_pl)
+  :AbstractCommand(_pl.getDatabaseHandle(), p), pl(_pl)
 {
 
 }
@@ -33,9 +33,9 @@ cmdRegisterPlayer::cmdRegisterPlayer(QWidget* p, const Player& _pl)
 ERR cmdRegisterPlayer::exec()
 {
   ERR err;
-  auto tnmt = Tournament::getActiveTournament();
-  auto pm = tnmt->getPlayerMngr();
-  err = pm->setWaitForRegistration(pl, false);
+  PlayerMngr pm{db};
+
+  err = pm.setWaitForRegistration(pl, false);
 
   if (err != OK)   // this shouldn't happen
   {

@@ -17,18 +17,17 @@
  */
 
 #include <QHash>
+#include <QDebug>
 
 #include "SwissLadderCategory.h"
 #include "KO_Config.h"
-#include "Tournament.h"
 #include "CatRoundStatus.h"
 #include "RankingEntry.h"
 #include "RankingMngr.h"
 #include "assert.h"
 #include "BracketGenerator.h"
-
-
-#include <QDebug>
+#include "CatMngr.h"
+#include "PlayerMngr.h"
 
 using namespace SqliteOverlay;
 
@@ -60,13 +59,13 @@ namespace QTournament
 
     PlayerPairList rankedPairs;
     QList<int> rankedPairs_Int;
-    auto tnmt = Tournament::getActiveTournament();
+    CatMngr cm{db};
     if (lastRound == 0)
     {
-      rankedPairs = tnmt->getCatMngr()->getSeeding(*this);
+      rankedPairs = cm.getSeeding(*this);
     } else {
-      RankingMngr* rm = tnmt->getRankingMngr();
-      auto rll = rm->getSortedRanking(*this, lastRound);
+      RankingMngr rm{db};
+      auto rll = rm.getSortedRanking(*this, lastRound);
       assert(rll.size() == 1);
       auto ranking = rll.at(0);
       for (RankingEntry re : ranking)
@@ -92,14 +91,14 @@ namespace QTournament
     // the number of matches for each player. We need this
     // value to figure out who is going to have the next
     // bye in case of an off number of players
-    MatchMngr* mm = tnmt->getMatchMngr();
+    MatchMngr mm{db};
     QStringList pastMatches;
     QHash<int, int> pairId2matchCount;
     for (int id : rankedPairs_Int)
     {
       pairId2matchCount.insert(id, 0);
     }
-    for (MatchGroup mg : mm->getMatchGroupsForCat(*this))
+    for (MatchGroup mg : mm.getMatchGroupsForCat(*this))
     {
       for (Match ma : mg.getMatches())
       {
@@ -259,7 +258,7 @@ namespace QTournament
     // let's fill the already prepared, "empty" matches with the
     // match information from newMatches
     ERR e;
-    auto mg = mm->getMatchGroup(*this, lastRound+1, GROUP_NUM__ITERATION, &e);
+    auto mg = mm.getMatchGroup(*this, lastRound+1, GROUP_NUM__ITERATION, &e);
     assert(mg != nullptr);
     assert(e == OK);
     assert(mg->getMatches().size() == newMatches.size());
@@ -269,10 +268,11 @@ namespace QTournament
       QString matchString = newMatches.at(cnt);
       int pp1Id = matchString.split(",").at(0).toInt();
       int pp2Id = matchString.split(",").at(1).toInt();
-      PlayerPair pp1 = tnmt->getPlayerMngr()->getPlayerPair(pp1Id);
-      PlayerPair pp2 = tnmt->getPlayerMngr()->getPlayerPair(pp2Id);
+      PlayerMngr pm{db};
+      PlayerPair pp1 = pm.getPlayerPair(pp1Id);
+      PlayerPair pp2 = pm.getPlayerPair(pp2Id);
 
-      e = mm->setPlayerPairsForMatch(ma, pp1, pp2);
+      e = mm.setPlayerPairsForMatch(ma, pp1, pp2);
       assert(e == OK);
       ++cnt;
     }
@@ -325,12 +325,11 @@ namespace QTournament
   {
     if (getState() != STAT_CAT_IDLE) return WRONG_STATE;
 
-    auto tnmt = Tournament::getActiveTournament();
-    auto mm = tnmt->getMatchMngr();
+    MatchMngr mm{db};
 
     // make sure we have not been called before; to this end, just
     // check that there have no matches been created for us so far
-    auto allGrp = mm->getMatchGroupsForCat(*this);
+    auto allGrp = mm.getMatchGroupsForCat(*this);
     // do not return an error here, because obviously we have been
     // called successfully before and we only want to avoid
     // double initialization
@@ -347,18 +346,18 @@ namespace QTournament
     for (int r=1; r <= nRounds; ++r)
     {
       ERR e;
-      auto mg = mm->createMatchGroup(*this, r, GROUP_NUM__ITERATION, &e);
+      auto mg = mm.createMatchGroup(*this, r, GROUP_NUM__ITERATION, &e);
       assert(mg != nullptr);
       assert(e == OK);
 
       for (int m=0; m < nMatchesPerRound; ++m)
       {
-        auto ma = mm->createMatch(*mg, &e);
+        auto ma = mm.createMatch(*mg, &e);
         assert(ma != nullptr);
         assert(e == OK);
       }
 
-      mm->closeMatchGroup(*mg);
+      mm.closeMatchGroup(*mg);
     }
 
     // Fill the first round of matches based on the initial seeding
@@ -426,14 +425,13 @@ namespace QTournament
 
   ERR SwissLadderCategory::onRoundCompleted(int round)
   {
-    auto tnmt = Tournament::getActiveTournament();
-    RankingMngr* rm = tnmt->getRankingMngr();
+    RankingMngr rm{db};
     ERR err;
     PlayerPairList allPairs = getPlayerPairs();
 
-    rm->createUnsortedRankingEntriesForLastRound(*this, &err, allPairs);
+    rm.createUnsortedRankingEntriesForLastRound(*this, &err, allPairs);
     if (err != OK) return err;  // shouldn't happen
-    rm->sortRankingEntriesForLastRound(*this, &err);
+    rm.sortRankingEntriesForLastRound(*this, &err);
     if (err != OK) return err;  // shouldn't happen
 
     if (round != calcTotalRoundsCount())

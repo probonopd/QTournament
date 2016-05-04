@@ -28,8 +28,10 @@
 #include <QAction>
 #include <QStringListModel>
 
-#include "Tournament.h"
+#include "TournamentDB.h"
 #include "delegates/MatchItemDelegate.h"
+#include "models/MatchTabModel.h"
+#include "Match.h"
 
 using namespace QTournament;
 
@@ -44,11 +46,8 @@ public:
   virtual ~MatchTableView ();
   unique_ptr<Match> getSelectedMatch() const;
   void updateSelectionAfterDataChange();
+  void setDatabase(TournamentDB* _db);
   
-public slots:
-  void onTournamentClosed();
-  void onTournamentOpened(Tournament* tnmt);
-
 private slots:
   void onSelectionChanged(const QItemSelection&selectedItem, const QItemSelection&deselectedItem);
   void onContextMenuRequested(const QPoint& pos);
@@ -60,10 +59,12 @@ signals:
   void matchSelectionChanged(int newlySelectedMatchId);
 
 private:
-  Tournament* tnmt;
+  TournamentDB* db;
   QStringListModel* emptyModel;
+  MatchTableModel* curDataModel;
   QSortFilterProxyModel* sortedModel;
-  MatchItemDelegate* itemDelegate;
+  unique_ptr<MatchItemDelegate> matchItemDelegate;
+  QAbstractItemDelegate* defaultDelegate;
 
   unique_ptr<QMenu> contextMenu;
   QAction* actPostponeMatch;

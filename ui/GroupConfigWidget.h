@@ -22,6 +22,7 @@
 #include "ui_GroupConfigWidget.h"
 
 #include "KO_Config.h"
+#include "TournamentDB.h"
 
 using namespace QTournament;
 
@@ -34,6 +35,7 @@ public:
   KO_Config getConfig();
   void applyConfig(const KO_Config& cfg);
   void setRequiredPlayersCount(int cnt);
+  void setDatabase(TournamentDB* _db);
 
 signals:
   void groupConfigChanged(const KO_Config& newCfg);
@@ -49,6 +51,7 @@ public slots:
   void onSpinBoxGroupSize3Changed(int newVal);
   
 private:
+  TournamentDB* db;
   Ui::GroupConfigWidget ui;
   void onSpinBoxGroupCountChanged(int spinBoxIndex, int newVal);
   void onSpinBoxGroupSizeChanged(int spinBoxIndex, int newVal);

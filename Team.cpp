@@ -21,7 +21,6 @@
 #include "TournamentDB.h"
 #include "TournamentErrorCodes.h"
 #include "TeamMngr.h"
-#include "Tournament.h"
 
 namespace QTournament
 {
@@ -71,8 +70,8 @@ namespace QTournament
 
   ERR Team::rename(const QString& nn)
   {
-    auto tnmt = Tournament::getActiveTournament();
-    return tnmt->getTeamMngr()->renameTeam(*this, nn);
+    TeamMngr tm{db};
+    return tm.renameTeam(*this, nn);
   }
 
 //----------------------------------------------------------------------------

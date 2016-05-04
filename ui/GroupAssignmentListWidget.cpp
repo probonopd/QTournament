@@ -21,9 +21,10 @@
 #include <QMessageBox>
 
 #include "GroupAssignmentListWidget.h"
+#include "PlayerMngr.h"
 
 GroupAssignmentListWidget::GroupAssignmentListWidget(QWidget* parent)
-:QWidget(parent)
+:QWidget(parent), db(nullptr)
 {
   ui.setupUi(this);
 
@@ -35,20 +36,23 @@ GroupAssignmentListWidget::GroupAssignmentListWidget(QWidget* parent)
   
   // prepare the scroll area for a resizable widget
   ui.scrollAreaWidgetContents->setLayout(ui.grid);
-  ui.scrollArea->setWidgetResizable(true);
-  
+  ui.scrollArea->setWidgetResizable(true);  
 }
 
 //----------------------------------------------------------------------------
     
 GroupAssignmentListWidget::~GroupAssignmentListWidget()
 {
+  teardown();
 }
 
 //----------------------------------------------------------------------------
 
-void GroupAssignmentListWidget::setup(QList<PlayerPairList> ppListList)
+void GroupAssignmentListWidget::setup(TournamentDB* _db, QList<PlayerPairList> ppListList)
 {
+  // store the database handle for later
+  db = _db;
+
   int grpCount = ppListList.count();
   
   // determine the number of list widget in a row
@@ -87,8 +91,10 @@ void GroupAssignmentListWidget::setup(QList<PlayerPairList> ppListList)
     }
     
     // assign a delegate to the list widget for drawing the entries
-    delegate[i] = new PairItemDelegate();
-    lw->setItemDelegate(delegate[i]);
+    QAbstractItemDelegate* oldDefaultDelegate = lw->itemDelegate();
+    delegate[i] = make_unique<PairItemDelegate>(db);
+    lw->setItemDelegate(delegate[i].get());
+    delete oldDefaultDelegate;   // will never be restored, because the complete widget will be deleted when a new database is activated
     
     // connect the row-selection-changed-signal
     QObject::connect(lw, SIGNAL(itemSelectionChanged()), this, SLOT(onRowSelectionChanged()));
@@ -126,7 +132,6 @@ void GroupAssignmentListWidget::teardown()
     if (lwGroup[i] == nullptr) continue;  // unused entry
     delete lwGroup[i];  // this should be redundant to the "delete child" above but it works. Weird.
     delete laGroup[i];  // this should be redundant to the "delete child" above but it works. Weird.
-    delete delegate[i];
     lwGroup[i] = nullptr;
     laGroup[i] = nullptr;
   }
@@ -210,9 +215,9 @@ PlayerPairList GroupAssignmentListWidget::getSelectedPlayerPairs()
     int id1 = selectionQueue.first()->selectedItems()[0]->data(Qt::UserRole).toInt();
     int id2 = selectionQueue.last()->selectedItems()[0]->data(Qt::UserRole).toInt();
     
-    auto tnmt = Tournament::getActiveTournament();
-    result.push_back(tnmt->getPlayerMngr()->getPlayerPair(id1));
-    result.push_back(tnmt->getPlayerMngr()->getPlayerPair(id2));
+    PlayerMngr pm{db};
+    result.push_back(pm.getPlayerPair(id1));
+    result.push_back(pm.getPlayerPair(id2));
   }
   
   return result;
@@ -247,8 +252,7 @@ vector<PlayerPairList> GroupAssignmentListWidget::getGroupAssignments()
   vector<PlayerPairList> result;
   if (!isInitialized) return result;
 
-  auto tnmt = Tournament::getActiveTournament();
-  PlayerMngr* pmngr = tnmt->getPlayerMngr();
+  PlayerMngr pmngr{db};
   for (int i=0; i < MAX_GROUP_COUNT; i++)
   {
     if (lwGroup[i] == nullptr) continue;
@@ -260,13 +264,25 @@ vector<PlayerPairList> GroupAssignmentListWidget::getGroupAssignments()
     {
       QListWidgetItem* it = lw->item(cnt);
       int ppId = it->data(Qt::UserRole).toInt();
-      ppList.push_back(pmngr->getPlayerPair(ppId));
+      ppList.push_back(pmngr.getPlayerPair(ppId));
     }
 
     result.push_back(ppList);
   }
 
   return result;
+}
+
+//----------------------------------------------------------------------------
+
+void GroupAssignmentListWidget::setDatabase(TournamentDB* _db)
+{
+  // delete all existing content before changing the database
+  teardown();
+
+  // set a new database
+  db = _db;
+  setEnabled(db != nullptr);
 }
 
 //----------------------------------------------------------------------------

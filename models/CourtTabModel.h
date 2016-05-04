@@ -27,7 +27,7 @@ namespace QTournament
     static constexpr int COURT_NUM_COL_ID = 0;  // id of the column with the court number
     static constexpr int COLUMN_COUNT = 2;  // number of columns in the model
 
-    CourtTableModel (Tournament* tnmt);
+    CourtTableModel (TournamentDB* _db);
     int rowCount(const QModelIndex & parent = QModelIndex()) const;
     int columnCount(const QModelIndex & parent = QModelIndex()) const;
     QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const;

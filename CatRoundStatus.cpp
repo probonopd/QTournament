@@ -56,8 +56,8 @@ QList<int> CatRoundStatus::getCurrentlyRunningRoundNumbers() const
   int roundToCheck = (lastFinishedRound < 0) ? 1 : lastFinishedRound+1;
 
   // the last round that can possibly in state RUNNING
-  auto tnmt = Tournament::getActiveTournament();
-  int lastRoundToCheck = tnmt->getMatchMngr()->getHighestUsedRoundNumberInCategory(cat);
+  MatchMngr mm{db};
+  int lastRoundToCheck = mm.getHighestUsedRoundNumberInCategory(cat);
 
   // loop through all applicable rounds and check their status
   while (roundToCheck <= lastRoundToCheck)
@@ -82,8 +82,8 @@ QList<int> CatRoundStatus::getCurrentlyRunningRoundNumbers() const
 
 int CatRoundStatus::getHighestGeneratedMatchRound() const
 {
-  auto tnmt = Tournament::getActiveTournament();
-  return tnmt->getMatchMngr()->getHighestUsedRoundNumberInCategory(cat);
+  MatchMngr mm{db};
+  return mm.getHighestUsedRoundNumberInCategory(cat);
 }
 
 //----------------------------------------------------------------------------
@@ -103,8 +103,7 @@ int CatRoundStatus::getCurrentlyRunningRoundNumber() const
 
 int CatRoundStatus::getFinishedRoundsCount() const
 {
-  auto tnmt = Tournament::getActiveTournament();
-  MatchMngr* mm = tnmt->getMatchMngr();
+  MatchMngr mm{db};
 
   int roundNum = 1;
   int lastFinishedRound = NO_ROUNDS_FINISHED_YET;
@@ -112,7 +111,7 @@ int CatRoundStatus::getFinishedRoundsCount() const
   // go through rounds one by one
   while (true)
   {
-    MatchGroupList matchGroupsInThisRound = mm->getMatchGroupsForCat(cat, roundNum);
+    MatchGroupList matchGroupsInThisRound = mm.getMatchGroupsForCat(cat, roundNum);
     // finish searching for rounds when no more groups show up
     // in the search
     if (matchGroupsInThisRound.size() == 0) break;
@@ -157,11 +156,10 @@ tuple<int, int, int> CatRoundStatus::getMatchCountForCurrentRound() const
   int runningMatchCount = 0;
   int totalMatchCount = 0;
 
-  auto tnmt = Tournament::getActiveTournament();
-  auto mm = tnmt->getMatchMngr();
+  MatchMngr mm{db};
   for (int curRound : runningRounds)
   {
-    MatchGroupList matchGroupsInThisRound = mm->getMatchGroupsForCat(cat, curRound);
+    MatchGroupList matchGroupsInThisRound = mm.getMatchGroupsForCat(cat, curRound);
     for (MatchGroup mg : matchGroupsInThisRound)
     {
       for (Match ma : mg.getMatches())

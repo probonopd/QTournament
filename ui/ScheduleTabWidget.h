@@ -24,7 +24,7 @@
 #include <QItemSelectionModel>
 #include <QTimer>
 
-#include "Tournament.h"
+#include "TournamentDB.h"
 #include "Match.h"
 
 namespace Ui {
@@ -44,6 +44,8 @@ public:
   explicit ScheduleTabWidget(QWidget *parent = 0);
   ~ScheduleTabWidget();
 
+  void setDatabase(TournamentDB* _db);
+
 public slots:
   void onBtnStageClicked();
   void onBtnUnstageClicked();
@@ -52,20 +54,18 @@ public slots:
   void onStagedSelectionChanged(const QItemSelection &, const QItemSelection &);
   void onCourtDoubleClicked(const QModelIndex& index);
   void onRoundCompleted(int catId, int round);
-  void onTournamentClosed();
-  void onTournamentOpened(Tournament* _tnmt);
   void onMatchStatusChanged(int matchId, int matchSeqNum, OBJ_STATE fromState, OBJ_STATE toState);
   void onCatStatusChanged();
   void updateProgressBar();
 
 private:
+  TournamentDB* db;
   Ui::ScheduleTabWidget *ui;
   void updateButtons();
   void askAndStoreMatchResult(const Match& ma);
   int estimateRemainingTournamentTime();
   int getAverageMatchDuration();
   QString rawProgressBarString;
-  Tournament* tnmt = nullptr;
   unsigned long totalDuration = INITIAL_AVG_MATCH_DURATION__SECS;
   int totalDurationCnt;
   uint avgStartTime;

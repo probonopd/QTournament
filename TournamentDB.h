@@ -24,28 +24,33 @@
 #include "SqliteDatabase.h"
 
 #include "TournamentDataDefs.h"
+#include "TournamentErrorCodes.h"
 
 namespace QTournament
 {
 
-    class TournamentDB : public SqliteOverlay::SqliteDatabase
-    {
-    public:
+  class TournamentDB : public SqliteOverlay::SqliteDatabase
+  {
+    friend class SqliteOverlay::SqliteDatabase;
 
-        TournamentDB(string fName, bool createNew);
-        virtual void populateTables();
-        virtual void populateViews();
-        void createIndices();
+  public:
+    static unique_ptr<TournamentDB> createNew(const QString& fName, const TournamentSettings& cfg, ERR* err=nullptr);
+    static unique_ptr<TournamentDB> openExisting(const QString& fName, ERR* err=nullptr);
 
-        tuple<int, int> getVersion();
+    virtual void populateTables();
+    virtual void populateViews();
+    void createIndices();
 
-        bool isCompatibleDatabaseVersion();
+    tuple<int, int> getVersion();
 
-        bool needsConversion();
-        bool convertToLatestDatabaseVersion();
+    bool isCompatibleDatabaseVersion();
 
-    private:
-    };
+    bool needsConversion();
+    bool convertToLatestDatabaseVersion();
+
+  private:
+    TournamentDB(string fName, bool createNew);
+  };
 }
 
 #endif	/* TOURNAMENTDB_H */

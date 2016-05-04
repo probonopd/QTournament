@@ -19,12 +19,12 @@
 #include <QObject>
 #include <QMessageBox>
 
-#include "Tournament.h"
 #include "cmdBulkAddPlayerToCat.h"
 #include "ui/DlgSelectPlayer.h"
+#include "CatMngr.h"
 
 cmdBulkAddPlayerToCategory::cmdBulkAddPlayerToCategory(QWidget* p, const Category& _cat)
-  :AbstractCommand(p), cat(_cat)
+  :AbstractCommand(_cat.getDatabaseHandle(), p), cat(_cat)
 {
 
 }
@@ -44,18 +44,17 @@ ERR cmdBulkAddPlayerToCategory::exec()
   }
 
   // show a dialog for selecting the players
-  DlgSelectPlayer dlg{parentWidget, DlgSelectPlayer::DLG_CONTEXT::ADD_TO_CATEGORY, &cat};
+  DlgSelectPlayer dlg{db, parentWidget, DlgSelectPlayer::DLG_CONTEXT::ADD_TO_CATEGORY, &cat};
   if (dlg.exec() != QDialog::Accepted)
   {
     return OK;
   }
 
   // add all selected players to the category
-  auto tnmt = Tournament::getActiveTournament();
-  auto cm = tnmt->getCatMngr();
+  CatMngr cm{db};
   for (const Player& pl : dlg.getSelectedPlayers())
   {
-    ERR err = cm->addPlayerToCategory(pl, cat);
+    ERR err = cm.addPlayerToCategory(pl, cat);
 
     if (err != OK)
     {

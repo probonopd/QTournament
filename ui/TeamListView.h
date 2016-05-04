@@ -19,10 +19,12 @@
 #ifndef TEAMLISTVIEW_H
 #define	TEAMLISTVIEW_H
 
-#include "Tournament.h"
-
 #include <QListView>
 #include <QStringListModel>
+
+#include "TournamentDB.h"
+#include "models/TeamListModel.h"
+
 
 using namespace QTournament;
 
@@ -33,14 +35,12 @@ class TeamListView : public QListView
 public:
   TeamListView (QWidget* parent);
   virtual ~TeamListView();
-  
-public slots:
-  void onTournamentClosed();
-  void onTournamentOpened(Tournament* tnmt);
+  void setDatabase(TournamentDB* _db);
   
 private:
-  Tournament* tnmt;
+  TournamentDB* db;
   QStringListModel* emptyModel;
+  TeamListModel* curDataModel;
 
 };
 

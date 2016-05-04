@@ -24,7 +24,6 @@
 #include <QObject>
 
 #include "reports/AbstractReport.h"
-#include "Tournament.h"
 #include "TournamentDB.h"
 #include "TournamentDataDefs.h"
 

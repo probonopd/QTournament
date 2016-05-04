@@ -24,7 +24,6 @@
 #include "HelperFunc.h"
 #include "Category.h"
 #include "Player.h"
-#include "Tournament.h"
 #include "KO_Config.h"
 #include "CatRoundStatus.h"
 #include "CatMngr.h"
@@ -33,6 +32,8 @@
 #include "TournamentDB.h"
 #include "HelperFunc.h"
 #include "CentralSignalEmitter.h"
+#include "MatchMngr.h"
+#include "PlayerMngr.h"
 
 namespace QTournament
 {
@@ -370,8 +371,6 @@ namespace QTournament
       }
       
       // now we can be sure that all unwanted pairs can be split
-      auto tnmt = Tournament::getActiveTournament();
-      CatMngr* cmngr = tnmt->getCatMngr();
       for (const PlayerPair& pp : allPairs) {
 
         // Skip unpaired players
@@ -381,7 +380,7 @@ namespace QTournament
         if (pp.getPlayer1().getSex() != pp.getPlayer2().getSex()) continue;
 
         // check if we can split "false" mixed pairs (= same sex pairs)
-        cmngr->splitPlayers(c, pp.getPairId());
+        splitPlayers(c, pp.getPairId());
       }
     }
     
@@ -520,24 +519,23 @@ namespace QTournament
     // no matter what
 
     // Step 1: undo calls for running matches in this category
-    auto tnmt = Tournament::getActiveTournament();
-    MatchMngr* mm = tnmt->getMatchMngr();
-    auto runningMatches = mm->getCurrentlyRunningMatches();
+    MatchMngr mm{db};
+    auto runningMatches = mm.getCurrentlyRunningMatches();
     for (const Match& ma : runningMatches)
     {
       if (ma.getCategory() != cat) continue;
 
-      ERR err = mm->undoMatchCall(ma);
+      ERR err = mm.undoMatchCall(ma);
       if (err != OK) return err;   // shouldn't happen
     }
 
     // step 2: un-stage all staged match groups of this category
-    auto stagedMatchGroups = mm->getStagedMatchGroupsOrderedBySequence();
+    auto stagedMatchGroups = mm.getStagedMatchGroupsOrderedBySequence();
     for (const MatchGroup& mg : stagedMatchGroups)
     {
       if (mg.getCategory() != cat) continue;
 
-      ERR err = mm->unstageMatchGroup(mg);
+      ERR err = mm.unstageMatchGroup(mg);
       if (err != OK) return err;   // shouldn't happen
     }
 
@@ -563,7 +561,7 @@ namespace QTournament
     // deletion 3b: match groups, they are refered to only by ranking data and matches
     t = db->getTab(TAB_MATCH);
     auto mgTab = db->getTab(TAB_MATCH_GROUP);
-    for (const MatchGroup& mg : mm->getAllMatchGroups())
+    for (const MatchGroup& mg : mm.getAllMatchGroups())
     {
       if (mg.getCategory() == cat)
       {
@@ -849,13 +847,12 @@ namespace QTournament
   ERR CatMngr::splitPlayers(const Category c, int pairId) const
   {
     SqliteOverlay::DbTab* pairsTab = db->getTab(TAB_PAIRS);
-    auto tnmt = Tournament::getActiveTournament();
-    PlayerMngr* pmngr = tnmt->getPlayerMngr();
+    PlayerMngr pmngr{db};
     try
     {
       SqliteOverlay::TabRow r = pairsTab->operator [](pairId);
-      Player p1 = pmngr->getPlayer(r.getInt(PAIRS_PLAYER1_REF));
-      Player p2 = pmngr->getPlayer(r.getInt(PAIRS_PLAYER2_REF));
+      Player p1 = pmngr.getPlayer(r.getInt(PAIRS_PLAYER1_REF));
+      Player p2 = pmngr.getPlayer(r.getInt(PAIRS_PLAYER2_REF));
       return splitPlayers(c, p1, p2);
     }
     catch (exception e)
@@ -1096,11 +1093,10 @@ namespace QTournament
 
     // determine whether we have at least one RUNING and/or one
     // unfinished match in the category
-    auto tnmt = Tournament::getActiveTournament();
-    auto mm = tnmt->getMatchMngr();
+    MatchMngr mm{db};
     bool hasMatchRunning = false;
     bool hasUnfinishedMatch = false;
-    for (auto mg : mm->getMatchGroupsForCat(c))
+    for (auto mg : mm.getMatchGroupsForCat(c))
     {
       hasMatchRunning = mg.hasMatchesInState(STAT_MA_RUNNING);
       hasUnfinishedMatch = mg.hasMatches__NOT__InState(STAT_MA_FINISHED);

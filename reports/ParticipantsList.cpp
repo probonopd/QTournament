@@ -52,9 +52,8 @@ ParticipantsList::~ParticipantsList()
 
 upSimpleReport ParticipantsList::regenerateReport()
 {
-  auto tnmt = Tournament::getActiveTournament();
-  PlayerMngr* pm = tnmt->getPlayerMngr();
-  PlayerList pl = pm->getAllPlayers();
+  PlayerMngr pm{db};
+  PlayerList pl = pm.getAllPlayers();
 
   upSimpleReport result = createEmptyReport_Portrait();
 
@@ -115,9 +114,8 @@ QStringList ParticipantsList::getReportLocators() const
 
 void ParticipantsList::createNameSortedReport(upSimpleReport& rep) const
 {
-  auto tnmt = Tournament::getActiveTournament();
-  PlayerMngr* pm = tnmt->getPlayerMngr();
-  PlayerList pl = pm->getAllPlayers();
+  PlayerMngr pm{db};
+  PlayerList pl = pm.getAllPlayers();
 
   // do we have any participants at all?
   if (pl.size() == 0) return;
@@ -154,10 +152,9 @@ void ParticipantsList::createNameSortedReport(upSimpleReport& rep) const
 
 void ParticipantsList::createTeamSortedReport(upSimpleReport &rep) const
 {
-  auto tnmt = Tournament::getActiveTournament();
-  TeamMngr* tm = tnmt->getTeamMngr();
+  TeamMngr tm{db};
 
-  vector<Team> tl = tm->getAllTeams();
+  vector<Team> tl = tm.getAllTeams();
 
   // do we have any teams at all?
   if (tl.size() == 0) return;
@@ -188,7 +185,7 @@ void ParticipantsList::createTeamSortedReport(upSimpleReport &rep) const
     printIntermediateHeader(rep, t.getName(), skip);
 
     // get the players of the team and sort them by name
-    PlayerList pl = tm->getPlayersForTeam(t);
+    PlayerList pl = tm.getPlayersForTeam(t);
     std::sort(pl.begin(), pl.end(), PlayerMngr::getPlayerSortFunction_byName());
 
     // write all player names for this team in two columns
@@ -226,11 +223,10 @@ void ParticipantsList::createTeamSortedReport(upSimpleReport &rep) const
 
 void ParticipantsList::createCategorySortedReport(upSimpleReport& rep) const
 {
-  auto tnmt = Tournament::getActiveTournament();
-  CatMngr* cm = tnmt->getCatMngr();
-  TeamMngr* tm = tnmt->getTeamMngr();
+  CatMngr cm{db};
+  TeamMngr tm{db};
 
-  vector<Category> allCats = cm->getAllCategories();
+  vector<Category> allCats = cm.getAllCategories();
 
   if (rep == nullptr) rep = createEmptyReport_Portrait();
 
@@ -290,9 +286,9 @@ void ParticipantsList::createCategorySortedReport(upSimpleReport& rep) const
 
       // create a list of all players in this team
       // and in this category
-      Team team = tm->getTeam(teamName);
+      Team team = tm.getTeam(teamName);
       PlayerList pl;
-      for (Player p : tm->getPlayersForTeam(team))
+      for (Player p : tm.getPlayersForTeam(team))
       {
         if (cat.hasPlayer(p)) pl.push_back(p);
       }

@@ -19,15 +19,16 @@
 #include <QObject>
 #include <QMessageBox>
 
-#include "Tournament.h"
 #include "cmdImportSinglePlayerFromExternalDatabase.h"
 #include "ui/DlgImportPlayer.h"
 #include "ui/DlgPickPlayerSex.h"
 #include "ui/dlgEditPlayer.h"
 #include "cmdCreatePlayerFromDialog.h"
+#include "PlayerMngr.h"
+#include "CatMngr.h"
 
-cmdImportSinglePlayerFromExternalDatabase::cmdImportSinglePlayerFromExternalDatabase(QWidget* p, int _preselectedCatId)
-  :AbstractCommand(p), preselectedCatId(_preselectedCatId)
+cmdImportSinglePlayerFromExternalDatabase::cmdImportSinglePlayerFromExternalDatabase(TournamentDB* _db, QWidget* p, int _preselectedCatId)
+  :AbstractCommand(_db, p), preselectedCatId(_preselectedCatId)
 {
 
 }
@@ -37,16 +38,15 @@ cmdImportSinglePlayerFromExternalDatabase::cmdImportSinglePlayerFromExternalData
 ERR cmdImportSinglePlayerFromExternalDatabase::exec()
 {
   // make sure we have an external database open
-  auto tnmt = Tournament::getActiveTournament();
-  PlayerMngr* pm = tnmt->getPlayerMngr();
-  if (!(pm->hasExternalPlayerDatabaseOpen()))
+  PlayerMngr pm{db};
+  if (!(pm.hasExternalPlayerDatabaseOpen()))
   {
     QString msg = tr("No valid database for player import open.");
     QMessageBox::warning(parentWidget, tr("Import player"), msg);
     return EPD__NOT_OPENED;
   }
 
-  ExternalPlayerDB* extDb = pm->getExternalPlayerDatabaseHandle();
+  ExternalPlayerDB* extDb = pm.getExternalPlayerDatabaseHandle();
 
   // show a search-and-select dialog
   DlgImportPlayer dlg{parentWidget, extDb};
@@ -97,8 +97,8 @@ ERR cmdImportSinglePlayerFromExternalDatabase::exec()
   // category
   if (preselectedCatId > 0)
   {
-    CatMngr* cm = tnmt->getCatMngr();
-    auto cat = cm->getCategory(preselectedCatId);
+    CatMngr cm{db};
+    auto cat = cm.getCategory(preselectedCatId);
 
     // was the provided ID valid? If not, invalidate it
     if (cat == nullptr) preselectedCatId = -1;
@@ -118,10 +118,10 @@ ERR cmdImportSinglePlayerFromExternalDatabase::exec()
   // now we have all player details, so we can prepare
   // the insert-player-dialog to allow the user the
   // selection of a team and possible category assignments
-  DlgEditPlayer dlgCreate{parentWidget, *finalPlayerData, preselectedCatId};
+  DlgEditPlayer dlgCreate{db, parentWidget, *finalPlayerData, preselectedCatId};
 
   // let an external command do the rest of the work
-  cmdCreatePlayerFromDialog cmd{parentWidget, &dlgCreate};
+  cmdCreatePlayerFromDialog cmd{db, parentWidget, &dlgCreate};
   return cmd.exec();
 }
 

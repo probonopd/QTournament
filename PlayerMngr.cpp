@@ -16,18 +16,21 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <stdexcept>
+
+#include <QDebug>
+#include <QList>
+
 #include "PlayerMngr.h"
 #include "Player.h"
 #include "TournamentErrorCodes.h"
 #include "TournamentDataDefs.h"
-#include <stdexcept>
-#include <QtCore/qdebug.h>
-#include <QList>
 #include "HelperFunc.h"
 #include "TeamMngr.h"
-#include "Tournament.h"
 #include "CatMngr.h"
 #include "CentralSignalEmitter.h"
+#include "KeyValueTab.h"
+#include "MatchMngr.h"
 
 using namespace SqliteOverlay;
 
@@ -86,14 +89,13 @@ namespace QTournament
         return INVALID_TEAM;
       }
       
-      auto tnmt = Tournament::getActiveTournament();
-      TeamMngr* tm = tnmt->getTeamMngr();
-      if (!(tm->hasTeam(teamName)))
+      TeamMngr tm{db};
+      if (!(tm.hasTeam(teamName)))
       {
         return INVALID_TEAM;
       }
       
-      Team t = tm->getTeam(teamName);
+      Team t = tm.getTeam(teamName);
       cvc.addIntCol(PL_TEAM_REF, t.getId());
     }
     
@@ -345,8 +347,7 @@ namespace QTournament
     //
 
     PlayerList result;
-    auto tnmt = Tournament::getActiveTournament();
-    PlayerMngr* pm = tnmt->getPlayerMngr();
+    PlayerMngr pm{db};
 
     // have "actual players" already been assigned?
     // if yes, return those values. They overrule everything else
@@ -354,16 +355,16 @@ namespace QTournament
     auto pRef = matchRow.getInt2(MA_ACTUAL_PLAYER1A_REF);
     if (!(pRef->isNull()))
     {
-      result.push_back(pm->getPlayer(pRef->get()));
+      result.push_back(pm.getPlayer(pRef->get()));
 
       pRef = matchRow.getInt2(MA_ACTUAL_PLAYER1B_REF);
-      if (!(pRef->isNull())) result.push_back(pm->getPlayer(pRef->get()));
+      if (!(pRef->isNull())) result.push_back(pm.getPlayer(pRef->get()));
 
       pRef = matchRow.getInt2(MA_ACTUAL_PLAYER2A_REF);
-      if (!(pRef->isNull())) result.push_back(pm->getPlayer(pRef->get()));  // should always be true, since we have a valid player1a
+      if (!(pRef->isNull())) result.push_back(pm.getPlayer(pRef->get()));  // should always be true, since we have a valid player1a
 
       pRef = matchRow.getInt2(MA_ACTUAL_PLAYER2B_REF);
-      if (!(pRef->isNull())) result.push_back(pm->getPlayer(pRef->get()));
+      if (!(pRef->isNull())) result.push_back(pm.getPlayer(pRef->get()));
 
       return result;
     }

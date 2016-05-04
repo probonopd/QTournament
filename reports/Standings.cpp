@@ -29,6 +29,8 @@
 #include "RankingMngr.h"
 #include "RankingEntry.h"
 #include "reports/commonReportElements/plotStandings.h"
+#include "MatchMngr.h"
+#include "MatchGroup.h"
 
 namespace QTournament
 {
@@ -49,9 +51,8 @@ Standings::Standings(TournamentDB* _db, const QString& _name, const Category& _c
 upSimpleReport Standings::regenerateReport()
 {
   // retrieve the ranking(s) for this round
-  auto tnmt = Tournament::getActiveTournament();
-  RankingMngr* rm = tnmt->getRankingMngr();
-  RankingEntryListList rll = rm->getSortedRanking(cat, round);
+  RankingMngr rm{db};
+  RankingEntryListList rll = rm.getSortedRanking(cat, round);
 
   QString repName = cat.getName() + " -- " + tr("Standings after round ") + QString::number(round);
   upSimpleReport result = createEmptyReport_Portrait();
@@ -72,8 +73,8 @@ upSimpleReport Standings::regenerateReport()
   QString subHeader;
   if (!isRoundRobin)
   {
-    MatchMngr* mm = tnmt->getMatchMngr();
-    MatchGroupList mgl = mm->getMatchGroupsForCat(cat, round);
+    MatchMngr mm{db};
+    MatchGroupList mgl = mm.getMatchGroupsForCat(cat, round);
     int matchGroupNumber = mgl.at(0).getGroupNumber();
     MATCH_SYSTEM mSys = cat.getMatchSystem();
     if ((matchGroupNumber < 0) && (matchGroupNumber != GROUP_NUM__ITERATION) &&
@@ -169,11 +170,10 @@ int Standings::determineBestPossibleRankForPlayerAfterRound(const PlayerPair& pp
   // could have had a bye
   unique_ptr<Match> lastMatch = nullptr;
   int _r = round;
-  auto tnmt = Tournament::getActiveTournament();
-  MatchMngr* mm = tnmt->getMatchMngr();
+  MatchMngr mm{db};
   while ((lastMatch == nullptr) && (_r > 0))
   {
-    lastMatch = mm->getMatchForPlayerPairAndRound(pp, _r);
+    lastMatch = mm.getMatchForPlayerPairAndRound(pp, _r);
     if ((lastMatch != nullptr) && (lastMatch->getState() != STAT_MA_FINISHED))
     {
       lastMatch = nullptr;   // skip all matches that are not finished
@@ -228,7 +228,7 @@ int Standings::determineBestPossibleRankForPlayerAfterRound(const PlayerPair& pp
       unique_ptr<Match> nextMatch = nullptr;
       while ((nextMatch == nullptr) && (r <= finalRound))
       {
-        nextMatch = mm->getMatchForPlayerPairAndRound(*w, r);
+        nextMatch = mm.getMatchForPlayerPairAndRound(*w, r);
         ++r;
       }
 
@@ -242,7 +242,7 @@ int Standings::determineBestPossibleRankForPlayerAfterRound(const PlayerPair& pp
 
     TabRow winnerMatchRow = db->getTab(TAB_MATCH)->getSingleRowByWhereClause(where.toUtf8().constData());  // this query must always yield exactly one match
 
-    return mm->getMatch(winnerMatchRow.getId());
+    return mm.getMatch(winnerMatchRow.getId());
   };
 
   //
@@ -257,7 +257,7 @@ int Standings::determineBestPossibleRankForPlayerAfterRound(const PlayerPair& pp
   unique_ptr<Match> nextMatch = nullptr;
   while ((nextMatch == nullptr) && (_r <= finalRound))
   {
-    nextMatch = mm->getMatchForPlayerPairAndRound(pp, _r);
+    nextMatch = mm.getMatchForPlayerPairAndRound(pp, _r);
     ++_r;
   }
 

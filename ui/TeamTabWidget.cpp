@@ -19,9 +19,10 @@
 #include "TeamTabWidget.h"
 
 #include "MainFrame.h"
+#include "TeamMngr.h"
 
 TeamTabWidget::TeamTabWidget()
-:QWidget()
+:QWidget(), db(nullptr)
 {
   ui.setupUi(this);
 }
@@ -30,6 +31,17 @@ TeamTabWidget::TeamTabWidget()
 
 TeamTabWidget::~TeamTabWidget()
 {
+}
+
+//----------------------------------------------------------------------------
+
+void TeamTabWidget::setDatabase(TournamentDB* _db)
+{
+  db = _db;
+
+  ui.teamList->setDatabase(db);
+
+  setEnabled(db != nullptr);
 }
 
 //----------------------------------------------------------------------------
@@ -45,8 +57,8 @@ void TeamTabWidget::onCreateTeamClicked()
   {
     QString teamName = tr("New Team ") + QString::number(cnt);
     
-    auto tnmt = Tournament::getActiveTournament();
-    e = tnmt->getTeamMngr()->createNewTeam(teamName);
+    TeamMngr tm{db};
+    e = tm.createNewTeam(teamName);
     cnt++;
   }
 }

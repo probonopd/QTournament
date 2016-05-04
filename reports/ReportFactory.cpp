@@ -62,8 +62,7 @@ namespace QTournament
   QStringList ReportFactory::getReportCatalogue() const
   {
     QStringList result;
-    auto tnmt = Tournament::getActiveTournament();
-    CatMngr* cm = tnmt->getCatMngr();
+    CatMngr cm{db};
 
     // we can always generate a participants list
     result.append(REP__PARTLIST_BY_NAME);
@@ -72,7 +71,7 @@ namespace QTournament
 
     // we can print result lists for all finished or running rounds
     // in all categories
-    for (Category cat : cm->getAllCategories())
+    for (Category cat : cm.getAllCategories())
     {
       OBJ_STATE catState = cat.getState();
       if ((catState == STAT_CAT_CONFIG) || (catState == STAT_CAT_FROZEN))
@@ -94,9 +93,10 @@ namespace QTournament
 
       // we can also print result lists for all categories with
       // round robin groups
+      MatchMngr mm{db};
       if (cat.getMatchSystem() == GROUPS_WITH_KO)
       {
-        for (MatchGroup mg : tnmt->getMatchMngr()->getMatchGroupsForCat(cat, 1))
+        for (MatchGroup mg : mm.getMatchGroupsForCat(cat, 1))
         {
           int grpNum = mg.getGroupNumber();
           if (grpNum < 0) continue;
@@ -136,7 +136,7 @@ namespace QTournament
 
     // we can print ranking lists for all finished rounds
     // in all categories
-    for (Category cat : cm->getAllCategories())
+    for (Category cat : cm.getAllCategories())
     {
       OBJ_STATE catState = cat.getState();
       if ((catState == STAT_CAT_CONFIG) || (catState == STAT_CAT_FROZEN))
@@ -153,7 +153,7 @@ namespace QTournament
 
     // we brute-force check all categories and rounds for the availability
     // of in-out-lists
-    for (Category cat : cm->getAllCategories())
+    for (Category cat : cm.getAllCategories())
     {
       CatRoundStatus crs = cat.getRoundStatus();
       for (int round=1; round <= crs.getFinishedRoundsCount(); ++round)
@@ -168,7 +168,7 @@ namespace QTournament
     // we brute-force check all categories for the availability
     // of tournament bracket visualization data
     DbTab* tabVis = db->getTab(TAB_BRACKET_VIS);
-    for (Category cat : cm->getAllCategories())
+    for (Category cat : cm.getAllCategories())
     {
       int catId = cat.getId();
       if (tabVis->getMatchCountForColumnValue(BV_CAT_REF, catId) > 0)
@@ -217,14 +217,14 @@ namespace QTournament
       return upAbstractReport(new ParticipantsList(db, REP__PARTLIST_BY_CATEGORY, ParticipantsList::SORT_BY_CATEGORY));
     }
 
-    auto tnmt = Tournament::getActiveTournament();
+    CatMngr cm{db};
 
     // result lists by round
     if (pureRepName == REP__RESULTS)
     {
       int catId = intParam1;
       int round = intParam2;
-      Category cat = tnmt->getCatMngr()->getCategoryById(catId);
+      Category cat = cm.getCategoryById(catId);
       return upAbstractReport(new MatchResultList(db, repName, cat, round));
     }
 
@@ -233,7 +233,7 @@ namespace QTournament
     {
       int catId = intParam1;
       int grpNum = intParam2;
-      Category cat = tnmt->getCatMngr()->getCategoryById(catId);
+      Category cat = cm.getCategoryById(catId);
       return upAbstractReport(new MatchResultList_ByGroup(db, repName, cat, grpNum));
     }
 
@@ -242,7 +242,7 @@ namespace QTournament
     {
       int catId = intParam1;
       int round = intParam2;
-      Category cat = tnmt->getCatMngr()->getCategoryById(catId);
+      Category cat = cm.getCategoryById(catId);
       return upAbstractReport(new Standings(db, repName, cat, round));
     }
 
@@ -251,7 +251,7 @@ namespace QTournament
     {
       int catId = intParam1;
       int round = intParam2;
-      Category cat = tnmt->getCatMngr()->getCategoryById(catId);
+      Category cat = cm.getCategoryById(catId);
       return upAbstractReport(new InOutList(db, repName, cat, round));
     }
 
@@ -267,7 +267,7 @@ namespace QTournament
     {
       int catId = intParam1;
       int round = intParam2;
-      Category cat = tnmt->getCatMngr()->getCategoryById(catId);
+      Category cat = cm.getCategoryById(catId);
       return upAbstractReport(new ResultsAndNextMatches(db, repName, cat, round));
     }
 
@@ -275,7 +275,7 @@ namespace QTournament
     if (pureRepName == REP__BRACKET)
     {
       int catId = intParam1;
-      Category cat = tnmt->getCatMngr()->getCategoryById(catId);
+      Category cat = cm.getCategoryById(catId);
       return upAbstractReport(new BracketSheet(db, repName, cat));
     }
 
@@ -284,7 +284,7 @@ namespace QTournament
     {
       int catId = intParam1;
       int round = intParam2;
-      Category cat = tnmt->getCatMngr()->getCategoryById(catId);
+      Category cat = cm.getCategoryById(catId);
       return upAbstractReport(new MartixAndStandings(db, repName, cat, round));
     }
 

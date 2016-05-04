@@ -28,7 +28,7 @@ namespace QTournament
     static constexpr int MATCH_NUM_COL_ID = 0;  // id of the column with the match number
     static constexpr int COLUMN_COUNT = 6;  // number of columns in the model
 
-    MatchTableModel (Tournament* tnmt);
+    MatchTableModel (TournamentDB* _db);
     int rowCount(const QModelIndex & parent = QModelIndex()) const;
     int columnCount(const QModelIndex & parent = QModelIndex()) const;
     QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const;

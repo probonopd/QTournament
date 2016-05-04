@@ -22,18 +22,24 @@
 #include "ui_dlgGroupAssignment.h"
 
 #include <QList>
+
 #include "PlayerPair.h"
+#include "TournamentDB.h"
+#include "KO_Config.h"
+
+using namespace QTournament;
 
 class dlgGroupAssignment : public QDialog
 {
   Q_OBJECT
 public:
-  dlgGroupAssignment(QWidget* p, Category &_cat);
+  dlgGroupAssignment(TournamentDB* _db, QWidget* p, Category &_cat);
   virtual ~dlgGroupAssignment();
   vector<PlayerPairList> getGroupAssignments();
 
 private:
   Ui::dlgGroupAssignment ui;
+  TournamentDB* db;
   Category& cat;
   KO_Config cfg;
   

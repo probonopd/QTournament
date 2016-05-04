@@ -27,6 +27,8 @@
 #include "Team.h"
 #include "CatRoundStatus.h"
 #include "ui/GuiHelpers.h"
+#include "MatchMngr.h"
+#include "MatchGroup.h"
 
 namespace QTournament
 {
@@ -53,9 +55,8 @@ MatchResultList::MatchResultList(TournamentDB* _db, const QString& _name, const 
 upSimpleReport MatchResultList::regenerateReport()
 {
   // collect the numbers of all match groups in this round
-  auto tnmt = Tournament::getActiveTournament();
-  MatchMngr* mm = tnmt->getMatchMngr();
-  MatchGroupList mgl = mm->getMatchGroupsForCat(cat, round);
+  MatchMngr mm{db};
+  MatchGroupList mgl = mm.getMatchGroupsForCat(cat, round);
   if (mgl.size() > 1)
   {
     std::sort(mgl.begin(), mgl.end(), [](MatchGroup& mg1, MatchGroup& mg2){

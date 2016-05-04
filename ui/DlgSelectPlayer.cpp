@@ -23,9 +23,11 @@
 
 #include "DlgSelectPlayer.h"
 #include "ui_DlgSelectPlayer.h"
+#include "CatMngr.h"
+#include "PlayerMngr.h"
 
-DlgSelectPlayer::DlgSelectPlayer(QWidget *parent, DLG_CONTEXT _ctxt, Category* _cat) :
-  QDialog(parent),
+DlgSelectPlayer::DlgSelectPlayer(TournamentDB* _db, QWidget *parent, DLG_CONTEXT _ctxt, Category* _cat) :
+  QDialog(parent), db(_db),
   ui(new Ui::DlgSelectPlayer), ctxt(_ctxt), cat(_cat)
 {
   ui->setupUi(this);
@@ -37,19 +39,17 @@ DlgSelectPlayer::DlgSelectPlayer(QWidget *parent, DLG_CONTEXT _ctxt, Category* _
     throw std::invalid_argument("Receied empty category reference for player selection dialog!");
   }
 
-  auto tnmt = Tournament::getActiveTournament();
-  auto cm = tnmt->getCatMngr();
-  auto pm = tnmt->getPlayerMngr();
+  PlayerMngr pm{db};
 
   // define the set of players that should be available for selection
   PlayerList applicablePlayers;
   if (ctxt == DLG_CONTEXT::NONE)
   {
-    applicablePlayers = pm->getAllPlayers();
+    applicablePlayers = pm.getAllPlayers();
   }
   else if (ctxt == DLG_CONTEXT::ADD_TO_CATEGORY)
   {
-    for (const Player& pl : pm->getAllPlayers())
+    for (const Player& pl : pm.getAllPlayers())
     {
       if (cat->hasPlayer(pl)) continue;
 
@@ -101,12 +101,11 @@ PlayerList DlgSelectPlayer::getSelectedPlayers() const
 {
   PlayerList result;
 
-  auto tnmt = Tournament::getActiveTournament();
-  PlayerMngr* pm = tnmt->getPlayerMngr();
+  PlayerMngr pm{db};
   for (auto& item : ui->lwPlayers->selectedItems())
   {
     int playerId = item->data(Qt::UserRole).toInt();
-    result.push_back(pm->getPlayer(playerId));
+    result.push_back(pm.getPlayer(playerId));
   }
 
   return result;

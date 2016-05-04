@@ -23,6 +23,7 @@
 
 #include <QObject>
 
+#include "TournamentDB.h"
 
 class TeamTabWidget : public QWidget
 {
@@ -30,7 +31,10 @@ class TeamTabWidget : public QWidget
 public:
   TeamTabWidget ();
   virtual ~TeamTabWidget ();
+  void setDatabase(TournamentDB* _db);
+
 private:
+  TournamentDB* db;
   Ui::TeamTabWidget ui;
   
 public slots:

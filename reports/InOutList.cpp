@@ -73,12 +73,11 @@ upSimpleReport InOutList::regenerateReport()
     result->writeLine(tr("All players are still in the game, no knock-outs yet."));
   } else {
     // sort the outList be the number of rounds that each player survived
-    auto tnmt = Tournament::getActiveTournament();
-    RankingMngr* rm = tnmt->getRankingMngr();
+    RankingMngr rm{db};
     QHash<int, int> ppId2Rounds;
     for (PlayerPair pp : outList)
     {
-      int roundCount = rm->getHighestRoundWithRankingEntryForPlayerPair(cat, pp);
+      int roundCount = rm.getHighestRoundWithRankingEntryForPlayerPair(cat, pp);
       ppId2Rounds.insert(pp.getPairId(), roundCount);
     }
     std::sort(outList.begin(), outList.end(), [&](PlayerPair& pp1, PlayerPair& pp2) {

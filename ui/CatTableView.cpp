@@ -16,13 +16,17 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <stdexcept>
+
+#include <QInputDialog>
+#include <QString>
+#include <QMessageBox>
+
 #include "CatTableView.h"
 #include "MainFrame.h"
 #include "Category.h"
-#include <stdexcept>
-#include <QInputDialog>
-#include <QString>
-#include <QtWidgets/qmessagebox.h>
+#include "CatMngr.h"
+#include "PlayerMngr.h"
 #include "ui/delegates/CatItemDelegate.h"
 #include "ui/DlgSeedingEditor.h"
 #include "ui/dlgGroupAssignment.h"
@@ -34,22 +38,20 @@
 #include "CatMngr.h"
 
 CategoryTableView::CategoryTableView(QWidget* parent)
-:QTableView(parent)
+:QTableView(parent), db(nullptr), curCatTableModel(nullptr), catItemDelegate(nullptr)
 {
   // an empty model for clearing the table when
   // no tournament is open
   emptyModel = new QStringListModel();
-  
-  connect(MainFrame::getMainFramePointer(), &MainFrame::tournamentOpened, this, &CategoryTableView::onTournamentOpened);
+  defaultDelegate = itemDelegate();
 
+  // initiate the model(s) as empty
+  setDatabase(nullptr);
+  
   // handle context menu requests
   setContextMenuPolicy(Qt::CustomContextMenu);
   connect(this, SIGNAL(customContextMenuRequested(const QPoint&)),
           this, SLOT(onContextMenuRequested(const QPoint&)));
-
-  // define a delegate for drawing the category items
-  auto itemDelegate = new CatItemDelegate(this);
-  setItemDelegate(itemDelegate);
 
   // prep the context menu
   initContextMenu();
@@ -60,45 +62,12 @@ CategoryTableView::CategoryTableView(QWidget* parent)
 CategoryTableView::~CategoryTableView()
 {
   delete emptyModel;
+  if (curCatTableModel != nullptr) delete curCatTableModel;
+  if (defaultDelegate != nullptr) delete defaultDelegate;
 }
 
 //----------------------------------------------------------------------------
     
-void CategoryTableView::onTournamentOpened(Tournament* _tnmt)
-{
-  tnmt = _tnmt;
-  setModel(tnmt->getCategoryTableModel());
-  setEnabled(true);
-  
-  // connect signals from the Tournament and TeamMngr with my slots
-  connect(tnmt, &Tournament::tournamentClosed, this, &CategoryTableView::onTournamentClosed);
-  
-  // tell the rest of the category widget, that the model has changed
-  // and that it should update
-  emit catModelChanged();
-}
-
-//----------------------------------------------------------------------------
-    
-void CategoryTableView::onTournamentClosed()
-{
-  // disconnect from all signals, because
-  // the sending objects don't exist anymore
-  disconnect(tnmt, &Tournament::tournamentClosed, this, &CategoryTableView::onTournamentClosed);
-  
-  // invalidate the tournament handle and deactivate the view
-  tnmt = 0;
-  setModel(emptyModel);
-  setEnabled(false);
-  
-  
-  // tell the rest of the category widget, that the model has changed
-  // and that it should update
-  emit catModelChanged();
-}
-
-//----------------------------------------------------------------------------
-
 bool CategoryTableView::isEmptyModel()
 {
   if (model())
@@ -125,7 +94,51 @@ bool CategoryTableView::hasCategorySelected()
     return false;
   }
 
-  return true;  
+  return true;
+}
+
+//----------------------------------------------------------------------------
+
+void CategoryTableView::setDatabase(TournamentDB* _db)
+{
+  // According to the Qt documentation, the selection model
+  // has to be explicitly deleted by the user
+  //
+  // Thus we store the model pointer for later deletion
+  QItemSelectionModel *oldSelectionModel = selectionModel();
+
+  // set the new data model
+  CategoryTableModel* newCatTabModel = nullptr;
+  if (_db != nullptr)
+  {
+    newCatTabModel = new CategoryTableModel(_db);
+    setModel(newCatTabModel);
+
+    // define a delegate for drawing the category items
+    catItemDelegate = make_unique<CatItemDelegate>(_db, this);
+    setItemDelegate(catItemDelegate.get());
+  } else {
+    setModel(emptyModel);
+    setItemDelegate(defaultDelegate);
+  }
+  emit catModelChanged();
+
+  // delete the old data model, if it was a
+  // CategoryTableModel instance
+  if (curCatTableModel != nullptr)
+  {
+    delete curCatTableModel;
+  }
+
+  // store the new CategoryTableModel instance, if any
+  curCatTableModel = newCatTabModel;
+
+  // delete the old selection model
+  delete oldSelectionModel;
+
+  // update the database pointer and set the widget's enabled state
+  db = _db;
+  setEnabled(db != nullptr);
 }
 
 //----------------------------------------------------------------------------
@@ -140,7 +153,8 @@ Category CategoryTableView::getSelectedCategory()
   QModelIndexList indexes = selectionModel()->selection().indexes();
   int selectedSeqNum = indexes.at(0).row();
   
-  return tnmt->getCatMngr()->getCategoryBySeqNum(selectedSeqNum);
+  CatMngr cm{db};
+  return cm.getCategoryBySeqNum(selectedSeqNum);
 }
 
 //----------------------------------------------------------------------------
@@ -152,7 +166,8 @@ void CategoryTableView::onCategoryDoubleClicked(const QModelIndex& index)
     return;
   }
   
-  Category selectedCat = tnmt->getCatMngr()->getCategoryBySeqNum(index.row());
+  CatMngr cm{db};
+  Category selectedCat = cm.getCategoryBySeqNum(index.row());
   
   QString oldName = selectedCat.getName();
   
@@ -181,7 +196,7 @@ void CategoryTableView::onCategoryDoubleClicked(const QModelIndex& index)
 
     // okay, we have a valid name. try to rename the category
     newName = newName.trimmed();
-    ERR e = tnmt->getCatMngr()->renameCategory(selectedCat, newName);
+    ERR e = cm.renameCategory(selectedCat, newName);
 
     if (e == INVALID_NAME)
     {
@@ -211,7 +226,8 @@ void CategoryTableView::onAddCategory()
   {
     QString newCatName = tr("New Category ") + QString::number(cnt);
 
-    e = tnmt->getCatMngr()->createNewCategory(newCatName);
+    CatMngr cm{db};
+    e = cm.createNewCategory(newCatName);
     ++cnt;
   }
 }
@@ -223,10 +239,10 @@ void CategoryTableView::onRemoveCategory()
   if (!(hasCategorySelected())) return;
 
   Category cat = getSelectedCategory();
-  CatMngr* cm = tnmt->getCatMngr();
+  CatMngr cm{db};
 
   // can the category be deleted at all?
-  ERR err = cm->canDeleteCategory(cat);
+  ERR err = cm.canDeleteCategory(cat);
 
   // category is already beyond config state
   // or not all players are removable
@@ -251,7 +267,7 @@ void CategoryTableView::onRemoveCategory()
 
     // okay, force-delete the category
     QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
-    cm->deleteRunningCategory(cat);
+    cm.deleteRunningCategory(cat);
     QApplication::restoreOverrideCursor();
     return;
   }
@@ -273,7 +289,7 @@ void CategoryTableView::onRemoveCategory()
   if (result != QMessageBox::Yes) return;
 
   // we can actually delete the category. Let's go!
-  err = cm->deleteCategory(cat);
+  err = cm.deleteCategory(cat);
   if (err != OK) {
     QString msg = tr("Something went wrong when deleting the category. This shouldn't happen.\n\n");
     msg += tr("For the records: error code = ") + QString::number(static_cast<int> (err));
@@ -321,7 +337,8 @@ void CategoryTableView::onRunCategory()
 
   if (e != OK) return;
 
-  e = tnmt->getCatMngr()->freezeConfig(*selectedCat);
+  CatMngr cm{db};
+  e = cm.freezeConfig(*selectedCat);
   // after we checked for category-specific errors above, we can only see general errors here
   if (e == NOT_ALL_PLAYERS_REGISTERED)
   {
@@ -347,7 +364,7 @@ void CategoryTableView::onRunCategory()
   vector<PlayerPairList> ppListList;
   if (selectedCat->needsGroupInitialization())
   {
-    dlgGroupAssignment dlg(this, *selectedCat);
+    dlgGroupAssignment dlg(db, this, *selectedCat);
     dlg.setModal(true);
     int result = dlg.exec();
 
@@ -370,7 +387,7 @@ void CategoryTableView::onRunCategory()
   PlayerPairList initialRanking;
   if (selectedCat->needsInitialRanking())
   {
-    DlgSeedingEditor dlg{this};
+    DlgSeedingEditor dlg{db, this};
     dlg.initSeedingList(selectedCat->getPlayerPairs());
     dlg.setModal(true);
     int result = dlg.exec();
@@ -476,7 +493,7 @@ void CategoryTableView::onRunCategory()
    * the database.
    */
   QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
-  e = tnmt->getCatMngr()->startCategory(*selectedCat, ppListList, initialRanking);
+  e = cm.startCategory(*selectedCat, ppListList, initialRanking);
   QApplication::restoreOverrideCursor();
   if (e != OK)  // should never happen
   {
@@ -493,9 +510,9 @@ void CategoryTableView::onCloneCategory()
   if (!(hasCategorySelected())) return;
 
   Category cat = getSelectedCategory();
-  CatMngr* cm = tnmt->getCatMngr();
+  CatMngr cm{db};
 
-  ERR err = cm->cloneCategory(cat, tr("Clone"));
+  ERR err = cm.cloneCategory(cat, tr("Clone"));
   if (err == OK) return;
 
   if ((err == INVALID_NAME) || (err == NAME_EXISTS))
@@ -563,7 +580,7 @@ void CategoryTableView::onImportPlayer()
     return;
   }
 
-  cmdImportSinglePlayerFromExternalDatabase cmd{this, getSelectedCategory().getId()};
+  cmdImportSinglePlayerFromExternalDatabase cmd{db, this, getSelectedCategory().getId()};
   cmd.exec();
 }
 
@@ -583,7 +600,7 @@ void CategoryTableView::handleIntermediateSeedingForSelectedCat()
   PlayerPairList seedCandidates = selectedCat->getPlayerPairsForIntermediateSeeding();
   if (seedCandidates.empty()) return;
 
-  DlgSeedingEditor dlg{this};
+  DlgSeedingEditor dlg{db, this};
   dlg.initSeedingList(seedCandidates);
   dlg.setModal(true);
   int result = dlg.exec();
@@ -604,7 +621,8 @@ void CategoryTableView::handleIntermediateSeedingForSelectedCat()
    * If we made it to this point, we can generate matches for the next round(s)
    */
   QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
-  ERR e = tnmt->getCatMngr()->continueWithIntermediateSeeding(*selectedCat, seeding);
+  CatMngr cm{db};
+  ERR e = cm.continueWithIntermediateSeeding(*selectedCat, seeding);
   QApplication::restoreOverrideCursor();
   if (e != OK)  // should never happen
   {
@@ -625,7 +643,8 @@ bool CategoryTableView::unfreezeAndCleanup(unique_ptr<Category> selectedCat)
   if (selectedCat->getState() != STAT_CAT_FROZEN) return false;
 
   // undo all database changes that happened during freezing
-  ERR e = tnmt->getCatMngr()->unfreezeConfig(*selectedCat);
+  CatMngr cm{db};
+  ERR e = cm.unfreezeConfig(*selectedCat);
   if (e != OK) // this should never be true
   {
     QMessageBox::critical(this, tr("Run Category"),
@@ -668,6 +687,8 @@ void CategoryTableView::onContextMenuRequested(const QPoint& pos)
     actRunCategory->setText(tr("Run..."));
   }
 
+  PlayerMngr pm{db};
+
   // enable / disable selection-specific actions
   actAddCategory->setEnabled(true);   // always possible
   actRunCategory->setEnabled(isCellClicked &&
@@ -675,7 +696,7 @@ void CategoryTableView::onContextMenuRequested(const QPoint& pos)
   actRemoveCategory->setEnabled(isCellClicked);
   actCloneCategory->setEnabled(isCellClicked);
   actAddPlayer->setEnabled(canAddPlayers);
-  actImportPlayerToCat->setEnabled(canAddPlayers && tnmt->getPlayerMngr()->hasExternalPlayerDatabaseOpen());
+  actImportPlayerToCat->setEnabled(canAddPlayers && pm.hasExternalPlayerDatabaseOpen());
   actRemovePlayer->setEnabled(isCellClicked);
   actCreateNewPlayerInCat->setEnabled(canAddPlayers);   // TODO: this could be too restrictive for future purposes (e.g., random matches)
 
@@ -698,7 +719,7 @@ void CategoryTableView::initContextMenu()
   actImportPlayerToCat = new QAction(tr("Import player to this category..."), this);
 
   // create the context menu and connect it to the actions
-  contextMenu = unique_ptr<QMenu>(new QMenu());
+  contextMenu = make_unique<QMenu>();
   contextMenu->addAction(actAddCategory);
   contextMenu->addAction(actCloneCategory);
   contextMenu->addSeparator();

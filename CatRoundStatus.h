@@ -19,7 +19,6 @@
 #ifndef CATROUNDSTATUS_H
 #define CATROUNDSTATUS_H
 
-#include "Tournament.h"
 #include "Category.h"
 #include "TournamentDB.h"
 

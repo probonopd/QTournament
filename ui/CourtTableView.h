@@ -25,9 +25,10 @@
 #include <QSortFilterProxyModel>
 #include <QStringListModel>
 
-#include "Tournament.h"
+#include "TournamentDB.h"
 #include "delegates/CourtItemDelegate.h"
 #include "Match.h"
+#include "models/CourtTabModel.h"
 
 using namespace QTournament;
 
@@ -42,10 +43,7 @@ public:
   virtual ~CourtTableView ();
   unique_ptr<Court> getSelectedCourt() const;
   unique_ptr<Match> getSelectedMatch() const;
-
-public slots:
-  void onTournamentClosed();
-  void onTournamentOpened(Tournament* tnmt);
+  void setDatabase(TournamentDB* _db);
 
 private slots:
   void onSelectionChanged(const QItemSelection&selectedItem, const QItemSelection&deselectedItem);
@@ -58,10 +56,12 @@ private slots:
 
 private:
   static constexpr int MAX_NUM_ADD_CALL = 3;
-  Tournament* tnmt;
+  TournamentDB* db;
+  CourtTableModel* curCourtTabModel;
   QStringListModel* emptyModel;
   QSortFilterProxyModel* sortedModel;
-  CourtItemDelegate* itemDelegate;
+  unique_ptr<CourtItemDelegate> courtItemDelegate;
+  QAbstractItemDelegate* defaultDelegate;
 
   unique_ptr<QMenu> contextMenu;
   QAction* actAddCourt;

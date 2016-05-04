@@ -18,8 +18,8 @@
 
 #include "AbstractCommand.h"
 
-AbstractCommand::AbstractCommand(QWidget* _parent)
-  :parentWidget(_parent)
+AbstractCommand::AbstractCommand(TournamentDB* _db, QWidget* _parent)
+  :db(_db), parentWidget(_parent)
 {
 
 }

@@ -24,7 +24,7 @@
 #include "TournamentDataDefs.h"
 #include "TournamentDB.h"
 #include "TournamentErrorCodes.h"
-#include "Tournament.h"
+#include "CatMngr.h"
 
 namespace QTournament
 {
@@ -53,8 +53,8 @@ namespace QTournament
   Category RankingEntry::getCategory() const
   {
     int catId = row.getInt(RA_CAT_REF);
-    auto tnmt = Tournament::getActiveTournament();
-    return tnmt->getCatMngr()->getCategoryById(catId);
+    CatMngr cm{db};
+    return cm.getCategoryById(catId);
   }
 
 //----------------------------------------------------------------------------

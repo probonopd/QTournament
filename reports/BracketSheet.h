@@ -28,7 +28,6 @@
 
 #include "reports/AbstractReport.h"
 #include "BracketVisData.h"
-#include "Tournament.h"
 #include "TournamentDB.h"
 #include "TournamentDataDefs.h"
 

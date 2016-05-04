@@ -23,9 +23,11 @@
 #include "DateAndTime.h"
 
 #include "MatchMngr.h"
-#include "Tournament.h"
 #include "CatRoundStatus.h"
 #include "CentralSignalEmitter.h"
+#include "PlayerMngr.h"
+#include "CourtMngr.h"
+#include "CatMngr.h"
 
 using namespace SqliteOverlay;
 
@@ -433,7 +435,7 @@ namespace QTournament {
     //     match group must be identical
     auto mg = ma.getMatchGroup();
     int mgGroupNumer = mg.getGroupNumber();
-    if ((mgGroupNumer > 0) && (pp.getPairsGroupNum(db) != mgGroupNumer))
+    if ((mgGroupNumer > 0) && (pp.getPairsGroupNum() != mgGroupNumer))
     {
       return GROUP_NUMBER_MISMATCH;
     }
@@ -904,8 +906,8 @@ namespace QTournament {
 
     // from WAITING to READY or BUSY
     bool hasPredecessor = hasUnfinishedMandatoryPredecessor(ma);
-    auto tnmt = Tournament::getActiveTournament();
-    bool playersAvail = ((tnmt->getPlayerMngr()->canAcquirePlayerPairsForMatch(ma)) == OK);
+    PlayerMngr pm{db};
+    bool playersAvail = ((pm.canAcquirePlayerPairsForMatch(ma)) == OK);
     if ((curState == STAT_MA_WAITING) && (!hasPredecessor))
     {
       curState = playersAvail ? STAT_MA_READY : STAT_MA_BUSY;
@@ -1151,8 +1153,8 @@ namespace QTournament {
     TabRow matchRow = tab->getSingleRowByWhereClause(wc);
 
     ERR err;
-    auto tnmt = Tournament::getActiveTournament();
-    auto nextCourt = tnmt->getCourtMngr()->autoSelectNextUnusedCourt(&err, includeManualCourts);
+    CourtMngr cm{db};
+    auto nextCourt = cm.autoSelectNextUnusedCourt(&err, includeManualCourts);
     if (err == OK)
     {
       *matchId = matchRow.getId();
@@ -1192,8 +1194,8 @@ namespace QTournament {
     //
 
     // check the player's availability
-    auto tnmt = Tournament::getActiveTournament();
-    ERR e = tnmt->getPlayerMngr()->canAcquirePlayerPairsForMatch(ma);
+    PlayerMngr pm{db};
+    ERR e = pm.canAcquirePlayerPairsForMatch(ma);
     if (e != OK) return e;  // PLAYER_NOT_IDLE
 
     // check the court's availability
@@ -1269,16 +1271,18 @@ namespace QTournament {
     CentralSignalEmitter::getInstance()->matchStatusChanged(ma.getId(), ma.getSeqNum(), STAT_MA_READY, STAT_MA_RUNNING);
 
     // update the player's status
-    auto tnmt = Tournament::getActiveTournament();
-    e = tnmt->getPlayerMngr()->acquirePlayerPairsForMatch(ma);
+    PlayerMngr pm{db};
+    e = pm.acquirePlayerPairsForMatch(ma);
     assert(e == OK);  // must be, because the condition has been check by canAssignMatchToCourt()
 
     // now we finally acquire the court in the aftermath
-    bool isOkay = tnmt->getCourtMngr()->acquireCourt(court);
+    CourtMngr cm{db};
+    bool isOkay = cm.acquireCourt(court);
     assert(isOkay);
 
     // update the category's state to "PLAYING", if necessary
-    tnmt->getCatMngr()->updateCatStatusFromMatchStatus(ma.getCategory());
+    CatMngr catm{db};
+    catm.updateCatStatusFromMatchStatus(ma.getCategory());
 
     // store the call time in the database
     matchRow.update(MA_START_TIME, UTCTimestamp());
@@ -1291,8 +1295,8 @@ namespace QTournament {
   unique_ptr<Court> MatchMngr::autoAssignMatchToNextAvailCourt(const Match &ma, ERR *err, bool includeManualCourts) const
   {
     ERR e;
-    auto tnmt = Tournament::getActiveTournament();
-    auto nextCourt = tnmt->getCourtMngr()->autoSelectNextUnusedCourt(&e, includeManualCourts);
+    CourtMngr cm{db};
+    auto nextCourt = cm.autoSelectNextUnusedCourt(&e, includeManualCourts);
     if (nextCourt != nullptr)
     {
       *err = assignMatchToCourt(ma, *nextCourt);
@@ -1362,17 +1366,18 @@ namespace QTournament {
 
     // if this was a regular, running match we need to release the court
     // and the players
-    auto tnmt = Tournament::getActiveTournament();
+    PlayerMngr pm{db};
+    CourtMngr cm{db};
     if (oldState == STAT_MA_RUNNING)
     {
       // release the players
-      tnmt->getPlayerMngr()->releasePlayerPairsAfterMatch(ma);
+      pm.releasePlayerPairsAfterMatch(ma);
 
       // release the court
       ERR e;
       auto pCourt = ma.getCourt(&e);
       assert(e == OK);
-      bool isOkay = tnmt->getCourtMngr()->releaseCourt(*pCourt);
+      bool isOkay = cm.releaseCourt(*pCourt);
       assert(isOkay);
     }
 
@@ -1395,7 +1400,8 @@ namespace QTournament {
     resolveSymbolicNamesAfterFinishedMatch(ma);
 
     // update the category's state to "FINALIZED", if necessary
-    tnmt->getCatMngr()->updateCatStatusFromMatchStatus(ma.getCategory());
+    CatMngr catm{db};
+    catm.updateCatStatusFromMatchStatus(ma.getCategory());
 
     // store the finish time in the database
     if (oldState == STAT_MA_RUNNING)   // match was called normally, so we have a start time
@@ -1463,8 +1469,8 @@ namespace QTournament {
 
     // release the players first, because we need the entries
     // in MA_ACTUAL_PLAYER1A_REF etc.
-    auto tnmt = Tournament::getActiveTournament();
-    tnmt->getPlayerMngr()->releasePlayerPairsAfterMatch(ma);
+    PlayerMngr pm{db};
+    pm.releasePlayerPairsAfterMatch(ma);
 
     // store the court the match is running on
     ERR e;
@@ -1489,14 +1495,16 @@ namespace QTournament {
     CentralSignalEmitter::getInstance()->matchStatusChanged(maId, ma.getSeqNum(), STAT_MA_RUNNING, STAT_MA_READY);
 
     // release the court
-    bool isOkay = tnmt->getCourtMngr()->releaseCourt(*pCourt);
+    CourtMngr cm{db};
+    bool isOkay = cm.releaseCourt(*pCourt);
     assert(isOkay);
 
     // update the match group
     updateAllMatchGroupStates(ma.getCategory());
 
     // update the category's state
-    tnmt->getCatMngr()->updateCatStatusFromMatchStatus(ma.getCategory());
+    CatMngr catm{db};
+    catm.updateCatStatusFromMatchStatus(ma.getCategory());
 
     // erase start time from database
     matchRow.updateToNull(MA_START_TIME);
@@ -1590,13 +1598,12 @@ namespace QTournament {
     }
 
     // switch matches from BUSY to READY, if all players are available again
-    auto tnmt = Tournament::getActiveTournament();
     if (toState == STAT_PL_IDLE)
     {
-      PlayerMngr* pm = tnmt->getPlayerMngr();
+      PlayerMngr pm{db};
       for (Match ma : getObjectsByColumnValue<Match>(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_BUSY)))
       {
-        if (pm->canAcquirePlayerPairsForMatch(ma) == OK)
+        if (pm.canAcquirePlayerPairsForMatch(ma) == OK)
         {
           ma.row.update(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_READY));
           cse->matchStatusChanged(ma.getId(), ma.getSeqNum(), STAT_MA_BUSY, STAT_MA_READY);

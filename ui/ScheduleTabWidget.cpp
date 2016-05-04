@@ -25,9 +25,12 @@
 #include "ui/DlgMatchResult.h"
 #include "ui/MainFrame.h"
 #include "CentralSignalEmitter.h"
+#include "MatchMngr.h"
+#include "CatMngr.h"
+#include "CourtMngr.h"
 
 ScheduleTabWidget::ScheduleTabWidget(QWidget *parent) :
-    QDialog(parent),
+    QDialog(parent), db(nullptr),
     ui(new Ui::ScheduleTabWidget)
 {
     ui->setupUi(this);
@@ -36,9 +39,6 @@ ScheduleTabWidget::ScheduleTabWidget(QWidget *parent) :
     ui->mgIdleView->setFilter(MatchGroupTableView::FilterType::IDLE);
     ui->mgStagedView->setFilter(MatchGroupTableView::FilterType::STAGED);
     ui->mgStagedView->sortByColumn(MatchGroupTableModel::STAGE_SEQ_COL_ID, Qt::AscendingOrder);
-
-    // subscribe to the tournament-opened-signal
-    connect(MainFrame::getMainFramePointer(), &MainFrame::tournamentOpened, this, &ScheduleTabWidget::onTournamentOpened);
 
     // react on selection changes in the IDLE match groups view
     connect(ui->mgIdleView->selectionModel(),
@@ -75,7 +75,33 @@ ScheduleTabWidget::ScheduleTabWidget(QWidget *parent) :
 
 ScheduleTabWidget::~ScheduleTabWidget()
 {
-    delete ui;
+  delete ui;
+}
+
+//----------------------------------------------------------------------------
+
+void ScheduleTabWidget::setDatabase(TournamentDB* _db)
+{
+  db = _db;
+
+  ui->mgIdleView->setDatabase(db);
+  ui->mgStagedView->setDatabase(db);
+  ui->tvCourts->setDatabase(db);
+  ui->tvMatches->setDatabase(db);
+
+  if (db != nullptr)
+  {
+    // things to do when we open a new tournament
+    initProgressBarFromDatabase();
+  } else {
+    // things to do when we close a tournament
+
+    // reset the progress bar
+    ui->pbRemainingMatches->setValue(0);
+    ui->pbRemainingMatches->setFormat(QString());
+  }
+
+  setEnabled(db != nullptr);
 }
 
 //----------------------------------------------------------------------------
@@ -86,10 +112,10 @@ void ScheduleTabWidget::onBtnStageClicked()
   auto mg = ui->mgIdleView->getSelectedMatchGroup();
   if (mg == nullptr) return;
 
-  auto mm = tnmt->getMatchMngr();
-  if (mm->canStageMatchGroup(*mg) != OK) return;
+  MatchMngr mm{db};
+  if (mm.canStageMatchGroup(*mg) != OK) return;
 
-  mm->stageMatchGroup(*mg);
+  mm.stageMatchGroup(*mg);
 }
 
 //----------------------------------------------------------------------------
@@ -100,10 +126,10 @@ void ScheduleTabWidget::onBtnUnstageClicked()
   auto mg = ui->mgStagedView->getSelectedMatchGroup();
   if (mg == nullptr) return;
 
-  auto mm = tnmt->getMatchMngr();
-  if (mm->canUnstageMatchGroup(*mg) != OK) return;
+  MatchMngr mm{db};
+  if (mm.canUnstageMatchGroup(*mg) != OK) return;
 
-  mm->unstageMatchGroup(*mg);
+  mm.unstageMatchGroup(*mg);
 }
 
 //----------------------------------------------------------------------------
@@ -111,10 +137,10 @@ void ScheduleTabWidget::onBtnUnstageClicked()
 void ScheduleTabWidget::onBtnScheduleClicked()
 {
   // is at least one match group staged?
-  auto mm = tnmt->getMatchMngr();
-  if (mm->getMaxStageSeqNum() == 0) return;
+  MatchMngr mm{db};
+  if (mm.getMaxStageSeqNum() == 0) return;
 
-  mm->scheduleAllStagedMatchGroups();
+  mm.scheduleAllStagedMatchGroups();
   updateButtons();
 
   // resize columns to fit new matches best
@@ -139,11 +165,11 @@ void ScheduleTabWidget::onStagedSelectionChanged(const QItemSelection& selected,
 
 void ScheduleTabWidget::updateButtons()
 {
-  auto mm = tnmt->getMatchMngr();
+  MatchMngr mm{db};
 
   // update the "stage"-button
   auto mg = ui->mgIdleView->getSelectedMatchGroup();
-  if ((mg != nullptr) && (mm->canStageMatchGroup(*mg) == OK))
+  if ((mg != nullptr) && (mm.canStageMatchGroup(*mg) == OK))
   {
     ui->btnStage->setEnabled(true);
   } else {
@@ -152,7 +178,7 @@ void ScheduleTabWidget::updateButtons()
 
   // update the "unstage"-button
   mg = ui->mgStagedView->getSelectedMatchGroup();
-  if ((mg != nullptr) && (mm->canUnstageMatchGroup(*mg) == OK))
+  if ((mg != nullptr) && (mm.canUnstageMatchGroup(*mg) == OK))
   {
     ui->btnUnstage->setEnabled(true);
   } else {
@@ -160,7 +186,7 @@ void ScheduleTabWidget::updateButtons()
   }
 
   // update the "Schedule"-button
-  ui->btnSchedule->setEnabled(mm->getMaxStageSeqNum() != 0);
+  ui->btnSchedule->setEnabled(mm.getMaxStageSeqNum() != 0);
 }
 
 //----------------------------------------------------------------------------
@@ -183,7 +209,8 @@ void ScheduleTabWidget::onCourtDoubleClicked(const QModelIndex &index)
 
 void ScheduleTabWidget::onRoundCompleted(int catId, int round)
 {
-  Category cat = tnmt->getCatMngr()->getCategoryById(catId);
+  CatMngr cm{db};
+  Category cat = cm.getCategoryById(catId);
 
   QString txt = tr("Round %1 of category %2 finished!").arg(round).arg(cat.getName());
 
@@ -246,8 +273,8 @@ void ScheduleTabWidget::askAndStoreMatchResult(const Match &ma)
   if (confirm != QMessageBox::Yes) return;
 
   // actually store the data and update the internal object states
-  MatchMngr* mm = tnmt->getMatchMngr();
-  mm->setMatchScoreAndFinalizeMatch(ma, *matchResult);
+  MatchMngr mm{db};
+  mm.setMatchScoreAndFinalizeMatch(ma, *matchResult);
 
   // ask the user if the next available match should be started on the
   // now free court
@@ -255,7 +282,7 @@ void ScheduleTabWidget::askAndStoreMatchResult(const Match &ma)
   // first of all, check if there is a next match available
   int nextMatchId;
   int nextCourtId;
-  ERR e = mm->getNextViableMatchCourtPair(&nextMatchId, &nextCourtId, true);
+  ERR e = mm.getNextViableMatchCourtPair(&nextMatchId, &nextCourtId, true);
   if ((e == NO_MATCH_AVAIL) || (nextMatchId < 1))
   {
     return;
@@ -271,9 +298,9 @@ void ScheduleTabWidget::askAndStoreMatchResult(const Match &ma)
   assert(oldCourt != nullptr);
 
   // can we assign the next match to the old court?
-  auto nextMatch = mm->getMatch(nextMatchId);
+  auto nextMatch = mm.getMatch(nextMatchId);
   assert(nextMatch != nullptr);
-  e = mm->canAssignMatchToCourt(*nextMatch, *oldCourt);
+  e = mm.canAssignMatchToCourt(*nextMatch, *oldCourt);
   if (e != OK)
   {
     QString msg = tr("The match cannot be started on this court. Please start the next match manually.");
@@ -291,7 +318,7 @@ void ScheduleTabWidget::askAndStoreMatchResult(const Match &ma)
   {
     // after all the checks before, the following call
     // should always yield "ok"
-    e = mm->assignMatchToCourt(*nextMatch, *oldCourt);
+    e = mm.assignMatchToCourt(*nextMatch, *oldCourt);
     if (e != OK)
     {
       QString msg = tr("An unexpected error occured.\n");
@@ -311,7 +338,8 @@ int ScheduleTabWidget::estimateRemainingTournamentTime()
 {
   // we can't do any estimations if don't have courts
   // to play on
-  int courtCount = tnmt->getCourtMngr()->getActiveCourtCount();
+  CourtMngr cm{db};
+  int courtCount = cm.getActiveCourtCount();
   if (courtCount <= 0) return -1;
 
   QDateTime curDateTime = QDateTime::currentDateTimeUtc();
@@ -320,7 +348,8 @@ int ScheduleTabWidget::estimateRemainingTournamentTime()
   // calculate the average runtime of all running matches
   int totalRuntime = 0;
   int totalRuntimeCnt = 0;
-  auto runningMatches = tnmt->getMatchMngr()->getCurrentlyRunningMatches();
+  MatchMngr mm{db};
+  auto runningMatches = mm.getCurrentlyRunningMatches();
   for (const Match& ma : runningMatches)
   {
     auto startTime = ma.getStartTime();
@@ -340,7 +369,7 @@ int ScheduleTabWidget::estimateRemainingTournamentTime()
   int nTotal;
   int nFinished;
   int nRunning;
-  tie(nTotal, nFinished, nRunning) = tnmt->getMatchMngr()->getMatchStats();
+  tie(nTotal, nFinished, nRunning) = mm.getMatchStats();
   int remainingMatches = nTotal - nFinished;
   int avgMatchDuration = getAverageMatchDuration();
   int remainingTime = (remainingMatches / courtCount) * avgMatchDuration;
@@ -359,7 +388,8 @@ int ScheduleTabWidget::getAverageMatchDuration()
   // calculate the total match duration of all finished matches
   totalDuration = 0;
   totalDurationCnt = 0;
-  for (const Match& ma : tnmt->getMatchMngr()->getFinishedMatches())
+  MatchMngr mm{db};
+  for (const Match& ma : mm.getFinishedMatches())
   {
     int duration = ma.getMatchDuration();
     if (duration < 0) continue;
@@ -374,7 +404,7 @@ int ScheduleTabWidget::getAverageMatchDuration()
 
 void ScheduleTabWidget::updateProgressBar()
 {
-  if (tnmt == nullptr)
+  if (db == nullptr)
   {
     ui->pbRemainingMatches->setFormat(QString());
     ui->pbRemainingMatches->setValue(0);
@@ -404,7 +434,8 @@ void ScheduleTabWidget::initProgressBarFromDatabase()
   // calculate the total match duration of all finished matches
   totalDuration = 0;
   totalDurationCnt = 0;
-  for (const Match& ma : tnmt->getMatchMngr()->getFinishedMatches())
+  MatchMngr mm{db};
+  for (const Match& ma : mm.getFinishedMatches())
   {
     int duration = ma.getMatchDuration();
     if (duration < 0) continue;
@@ -418,24 +449,14 @@ void ScheduleTabWidget::initProgressBarFromDatabase()
 
 //----------------------------------------------------------------------------
 
-void ScheduleTabWidget::onTournamentOpened(Tournament* _tnmt)
-{
-  tnmt = _tnmt;
-  // connect signals from the Tournament and MatchMngr with my slots
-  connect(_tnmt, &Tournament::tournamentClosed, this, &ScheduleTabWidget::onTournamentClosed);
-
-  initProgressBarFromDatabase();
-}
-
-//----------------------------------------------------------------------------
-
 void ScheduleTabWidget::onMatchStatusChanged(int matchId, int matchSeqNum, OBJ_STATE fromState, OBJ_STATE toState)
 {
   // get updated match status counters
+  MatchMngr mm{db};
   int nTotal;
   int nFinished;
   int nRunning;
-  tie(nTotal, nFinished, nRunning) = tnmt->getMatchMngr()->getMatchStats();
+  tie(nTotal, nFinished, nRunning) = mm.getMatchStats();
   int percComplete = (nTotal > 0) ? (nFinished * 100) / nTotal : 0;
 
   // update the match duration counter, if applicable
@@ -473,17 +494,6 @@ void ScheduleTabWidget::onCatStatusChanged()
 
 //----------------------------------------------------------------------------
 
-void ScheduleTabWidget::onTournamentClosed()
-{
-  // reset the progress bar
-  ui->pbRemainingMatches->setValue(0);
-  ui->pbRemainingMatches->setFormat(QString());
-
-  // disconnect from all signals, because
-  // the sending objects don't exist anymore
-  disconnect(tnmt, &Tournament::tournamentClosed, this, &ScheduleTabWidget::onTournamentClosed);
-  tnmt = nullptr;
-}
 
 //----------------------------------------------------------------------------
 

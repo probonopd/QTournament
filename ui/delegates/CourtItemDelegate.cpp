@@ -11,16 +11,16 @@
 
 #include <QDateTime>
 
-#include "Tournament.h"
 #include "Match.h"
 #include "DelegateItemLED.h"
 #include "ui/GuiHelpers.h"
-
+#include "CourtMngr.h"
+#include "MatchGroup.h"
 
 using namespace QTournament;
 
-CourtItemDelegate::CourtItemDelegate(QObject* parent)
-: QStyledItemDelegate(parent), proxy(nullptr), fntMetrics(QFontMetrics(QFont()))
+CourtItemDelegate::CourtItemDelegate(TournamentDB* _db, QObject* parent)
+: QStyledItemDelegate(parent), db(_db), proxy(nullptr), fntMetrics(QFontMetrics(QFont()))
 {
 }
 
@@ -42,8 +42,8 @@ void CourtItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
   {
     row = (proxy->mapToSource(index)).row();
   }
-  auto tnmt = Tournament::getActiveTournament();
-  auto co = tnmt->getCourtMngr()->getCourtBySeqNum(row);
+  CourtMngr cm{db};
+  auto co = cm.getCourtBySeqNum(row);
   auto ma = co->getMatch();
   
   // Fill the cell with the selection color, if necessary

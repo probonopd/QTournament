@@ -31,14 +31,18 @@
 #include <QMenu>
 #include <QAction>
 
+#include "TournamentDB.h"
+
 class PlayerTabWidget : public QWidget
 {
   Q_OBJECT
 public:
   PlayerTabWidget();
   virtual ~PlayerTabWidget ();
+  void setDatabase(TournamentDB* _db);
   
 private:
+  TournamentDB* db;
   Ui::PlayerTabWidget ui;
 
   unique_ptr<QMenu> registrationMenu;

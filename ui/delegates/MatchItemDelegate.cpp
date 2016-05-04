@@ -9,14 +9,14 @@
 
 #include <QPainter>
 
-#include "Tournament.h"
 #include "Match.h"
 #include "DelegateItemLED.h"
+#include "MatchMngr.h"
 
 using namespace QTournament;
 
-MatchItemDelegate::MatchItemDelegate(QObject* parent)
-: QStyledItemDelegate(parent), proxy(nullptr), fntMetrics(QFontMetrics(QFont()))
+MatchItemDelegate::MatchItemDelegate(TournamentDB* _db, QObject* parent)
+: QStyledItemDelegate(parent), db(_db), proxy(nullptr), fntMetrics(QFontMetrics(QFont()))
 {
 }
 
@@ -38,8 +38,8 @@ void MatchItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
   {
     row = (proxy->mapToSource(index)).row();
   }
-  auto tnmt = Tournament::getActiveTournament();
-  auto ma = tnmt->getMatchMngr()->getMatchBySeqNum(row);
+  MatchMngr mm{db};
+  auto ma = mm.getMatchBySeqNum(row);
   
   // Fill the cell with the selection color, if necessary
   if(option.state & QStyle::State_Selected)
