@@ -135,12 +135,6 @@ void MatchTableView::updateSelectionAfterDataChange()
 
 void MatchTableView::setDatabase(TournamentDB* _db)
 {
-  // According to the Qt documentation, the selection model
-  // has to be explicitly deleted by the user
-  //
-  // Thus we store the model pointer for later deletion
-  QItemSelectionModel *oldSelectionModel = selectionModel();
-
   // set the new data model
   MatchTableModel* newDataModel = nullptr;
   if (_db != nullptr)
@@ -186,9 +180,6 @@ void MatchTableView::setDatabase(TournamentDB* _db)
 
   // store the new CategoryTableModel instance, if any
   curDataModel = newDataModel;
-
-  // delete the old selection model
-  delete oldSelectionModel;
 
   // update the database pointer and set the widget's enabled state
   db = _db;
