@@ -330,6 +330,7 @@ void MainFrame::setupTestScenario(int scenarioID)
   cfg.tournamentName = "World Championship";
   cfg.useTeams = true;
   currentDb = TournamentDB::createNew(testFileName, cfg);
+  distributeCurrentDatabasePointerToWidgets();
   
   // the empty scenario
   if (scenarioID == 0)
@@ -781,7 +782,6 @@ void MainFrame::setupTestScenario(int scenarioID)
     break;
   }
 
-  distributeCurrentDatabasePointerToWidgets();
   enableControls(true);
 
   return;

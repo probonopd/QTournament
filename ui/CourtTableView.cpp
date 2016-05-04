@@ -116,7 +116,7 @@ void CourtTableView::setDatabase(TournamentDB* _db)
     sortedModel->sort(CourtTableModel::COURT_NUM_COL_ID, Qt::AscendingOrder);
 
     // update the delegate
-    courtItemDelegate = make_unique<CourtItemDelegate>(db, this);
+    courtItemDelegate = make_unique<CourtItemDelegate>(_db, this);
     courtItemDelegate->setProxy(sortedModel);
     setItemDelegate(courtItemDelegate.get());
 

@@ -107,7 +107,7 @@ void PlayerTableView::setDatabase(TournamentDB* _db)
     sortedModel->setSourceModel(newDataModel);
 
     // define a delegate for drawing the player items
-    playerItemDelegate = make_unique<PlayerItemDelegate>(db, this);
+    playerItemDelegate = make_unique<PlayerItemDelegate>(_db, this);
     playerItemDelegate->setProxy(sortedModel);
     setItemDelegate(playerItemDelegate.get());
 

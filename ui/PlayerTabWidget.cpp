@@ -31,7 +31,7 @@
 #include "CatMngr.h"
 
 PlayerTabWidget::PlayerTabWidget()
-:QWidget()
+:QWidget(), db(nullptr)
 {
   ui.setupUi(this);
 

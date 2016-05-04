@@ -164,7 +164,7 @@ void MatchTableView::setDatabase(TournamentDB* _db)
     sortedModel->sort(MatchTableModel::MATCH_NUM_COL_ID, Qt::AscendingOrder);
 
     // define a delegate for drawing the match items
-    matchItemDelegate = make_unique<MatchItemDelegate>(db, this);
+    matchItemDelegate = make_unique<MatchItemDelegate>(_db, this);
     matchItemDelegate->setProxy(sortedModel);
     setItemDelegate(matchItemDelegate.get());
 
