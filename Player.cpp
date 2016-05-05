@@ -144,7 +144,7 @@ namespace QTournament
 
   vector<Category> Player::getAssignedCategories() const
   {
-    vector<Category> result;
+    CategoryList result;
     auto it = db->getTab(TAB_P2C)->getRowsByColumnValue(P2C_PLAYER_REF, getId());
     
     CatMngr cmngr{db};

@@ -226,7 +226,7 @@ void ParticipantsList::createCategorySortedReport(upSimpleReport& rep) const
   CatMngr cm{db};
   TeamMngr tm{db};
 
-  vector<Category> allCats = cm.getAllCategories();
+  CategoryList allCats = cm.getAllCategories();
 
   if (rep == nullptr) rep = createEmptyReport_Portrait();
 
@@ -324,7 +324,7 @@ QString ParticipantsList::getCommaSepCatListForPlayer(const Player& p) const
 {
   QString result;
 
-  vector<Category> catList = p.getAssignedCategories();
+  CategoryList catList = p.getAssignedCategories();
   std::sort(catList.begin(), catList.end(), CatMngr::getCategorySortFunction_byName());
   for (Category c : catList)
   {

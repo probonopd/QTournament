@@ -55,7 +55,7 @@ namespace QTournament
     unique_ptr<Category> getCategory(int id);
     Category getCategoryById(int id);
     Category getCategoryBySeqNum(int seqNum);
-    vector<Category> getAllCategories();
+    CategoryList getAllCategories();
     QHash<Category, CAT_ADD_STATE> getAllCategoryAddStates(SEX s);
     QHash<Category, CAT_ADD_STATE> getAllCategoryAddStates(const Player& p);
     static std::function<bool (Category&, Category&)> getCategorySortFunction_byName();

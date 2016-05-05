@@ -220,7 +220,7 @@ namespace QTournament
    *
    * @Return QList holding all categories
    */
-  vector<Category> CatMngr::getAllCategories()
+  CategoryList CatMngr::getAllCategories()
   {
     return getAllObjects<Category>();
   }
@@ -636,7 +636,7 @@ namespace QTournament
 
   QHash<Category, CAT_ADD_STATE> CatMngr::getAllCategoryAddStates(SEX s)
   {
-    vector<Category> allCat = getAllCategories();
+    CategoryList allCat = getAllCategories();
     QHash<Category, CAT_ADD_STATE> result;
     
     for (Category& c : allCat)
@@ -651,7 +651,7 @@ namespace QTournament
 
   QHash<Category, CAT_ADD_STATE> CatMngr::getAllCategoryAddStates(const Player& p)
   {
-    vector<Category> allCat = getAllCategories();
+    CategoryList allCat = getAllCategories();
     QHash<Category, CAT_ADD_STATE> result;
     
     for (Category& c : allCat)

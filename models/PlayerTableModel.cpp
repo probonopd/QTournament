@@ -86,7 +86,7 @@ QVariant PlayerTableModel::data(const QModelIndex& index, int role) const
     if (index.column() == 3)
     {
       QString result = "";
-      vector<Category> assignedCats = p->getAssignedCategories();
+      CategoryList assignedCats = p->getAssignedCategories();
       for (int i=0; i < assignedCats.size(); i++)
       {
         result += assignedCats.at(i).getName() + ", ";

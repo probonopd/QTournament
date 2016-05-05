@@ -21,6 +21,7 @@
 
 #include <memory>
 #include <functional>
+#include <vector>
 
 #include <QVariant>
 
@@ -127,6 +128,8 @@ namespace QTournament
     return c.getId(); // bad style: implicit conversion from int to uint...
   }
 
+  typedef vector<Category> CategoryList;
+
 }
-#endif	/* TEAM_H */
+#endif	/* CATEGORY_H */
 

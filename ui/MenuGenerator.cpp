@@ -28,19 +28,28 @@ using namespace QTournament;
 
 void MenuGenerator::allCategories(TournamentDB* db, QMenu* targetMenu)
 {
+  CatMngr cm{db};
+  fromCategoryList(db, cm.getAllCategories(), targetMenu);
+}
+
+//----------------------------------------------------------------------------
+
+void MenuGenerator::fromCategoryList(TournamentDB* db, const CategoryList& catList, QMenu* targetMenu)
+{
   if (targetMenu == nullptr) return;
 
   // remove all previous menu contents
   targetMenu->clear();
 
-  CatMngr cm{db};
+  // stop here if the list of categories is empty
+  if (catList.empty()) return;
 
-  // generate a sorted list of all categories
-  auto allCats = cm.getAllCategories();
-  std::sort(allCats.begin(), allCats.end(), CatMngr::getCategorySortFunction_byName());
+  // generate a sorted list of the requested categories
+  CategoryList cl{catList};
+  std::sort(cl.begin(), cl.end(), CatMngr::getCategorySortFunction_byName());
 
   // create a new action for each category and add it to the menu
-  for (const Category& cat : allCats)
+  for (const Category& cat : cl)
   {
     auto newAction = targetMenu->addAction(cat.getName());
     newAction->setData(cat.getId());

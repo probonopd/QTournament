@@ -994,9 +994,36 @@ void CatTabWidget::onPairedContextMenuRequested(const QPoint& pos)
     return;
   }
 
-  // rebuild dynamic submenus
-  MenuGenerator::allCategories(db, listOfCats_CopyPairSubmenu.get());
-  MenuGenerator::allCategories(db, listOfCats_MovePairSubmenu.get());
+  // rebuild dynamic submenus containing all applicable categories
+  //
+  // Only doubles or mixed categories are suitable targets for
+  // copying or moving player pairs
+  CatMngr cm{db};
+  CategoryList targetCats;
+  auto selCat = ui.catTableView->getSelectedCategory();  // this MUST succeed; a category MUST be selected at his point
+  for (const Category& cat : cm.getAllCategories())
+  {
+    // skip singles
+    if (cat.getMatchType() == SINGLES) continue;
+
+    // skip the selected category because it doesn't make
+    // sense to copy/move if source and target are identical
+    if (cat == selCat) continue;
+
+    targetCats.push_back(cat);
+  }
+  if (targetCats.empty())
+  {
+    // deactivate the copy/move menus completely if no
+    // suitable target categories are available
+    listOfCats_CopyPairSubmenu->setEnabled(false);
+    listOfCats_MovePairSubmenu->setEnabled(false);
+  } else {
+    listOfCats_CopyPairSubmenu->setEnabled(true);
+    listOfCats_MovePairSubmenu->setEnabled(true);
+    MenuGenerator::fromCategoryList(db, targetCats, listOfCats_CopyPairSubmenu.get());
+    MenuGenerator::fromCategoryList(db, targetCats, listOfCats_MovePairSubmenu.get());
+  }
 
   // show the context menu
   QAction* selectedItem = lwPairsContextMenu->exec(globalPos);
