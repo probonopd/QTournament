@@ -302,8 +302,9 @@ void PlayerTabWidget::onImportCSV()
   }
   QList<int> newPlayerIds;
   QList<int> skippedPlayerIds;
+  QHash<int, QString> extId2TeamName;
   int errorCnt;
-  tie(newPlayerIds, skippedPlayerIds, errorCnt) = pm.getExternalPlayerDatabaseHandle()->bulkImportCSV(csv);
+  tie(newPlayerIds, skippedPlayerIds, extId2TeamName, errorCnt) = pm.getExternalPlayerDatabaseHandle()->bulkImportCSV(csv);
 
   // do we actually have valid names in the list?
   bool hasValidNames = ((newPlayerIds.length() + skippedPlayerIds.length()) > 0);
@@ -323,11 +324,11 @@ void PlayerTabWidget::onImportCSV()
     TeamMngr tm{db};
     CatMngr cm{db};
 
-    // get the team for adding the players to. The dialog
+    // get the default team for adding the players to. The dialog
     // guarantees that the ID is valid
-    int targetTeamId = dlg.getTargetTeamId();
-    Team targetTeam = tm.getTeamById(targetTeamId);
-    QString targetTeamName = targetTeam.getName();
+    int defaultTeamId = dlg.getTargetTeamId();
+    Team defaultTeam = tm.getTeamById(defaultTeamId);
+    QString defaultTeamName = defaultTeam.getName();
 
     // shall the players be added to a category as well?
     unique_ptr<Category> targetCat;
@@ -363,6 +364,24 @@ void PlayerTabWidget::onImportCSV()
         // update the database
         playerSex = dlg.getSelectedSex();
         extDb->updatePlayerSexIfUndefined(extId, playerSex);
+      }
+
+      // check if the player comes with a team name provided or
+      // if the player shall be added to the default team
+      QString targetTeamName = extId2TeamName[extId];   // this is guaranteed to succeed; every ID in newPlayerIds and skippedPlayerIds has an entry in the hash
+      if (!(targetTeamName.isEmpty()))
+      {
+        // if the target team doesn't exist, try to create it
+        if (!(tm.hasTeam(targetTeamName)))
+        {
+          ERR e = tm.createNewTeam(targetTeamName);
+
+          // Fall back to the default in case of errors
+          if (e != OK) targetTeamName = defaultTeamName;
+        }
+      } else {
+        // use the default team if no team name was provided in the CSV data
+        targetTeamName = defaultTeamName;
       }
 
       // try to add the player to the tournament

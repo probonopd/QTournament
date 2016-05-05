@@ -83,7 +83,7 @@ namespace QTournament
     upExternalPlayerDatabaseEntry storeNewPlayer(const ExternalPlayerDatabaseEntry& newPlayer);
     bool hasPlayer(const QString& fname, const QString& lname);
     bool updatePlayerSexIfUndefined(int extPlayerId, SEX newSex);
-    tuple<QList<int>, QList<int>, int> bulkImportCSV(const QString& csv);
+    tuple<QList<int>, QList<int>, QHash<int, QString>, int> bulkImportCSV(const QString& csv);
 
   private:
     upExternalPlayerDatabaseEntry row2upEntry(const SqliteOverlay::TabRow& r) const;

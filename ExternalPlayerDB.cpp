@@ -21,6 +21,7 @@
 #include <assert.h>
 
 #include <QStringList>
+#include <QHash>
 
 #include "ExternalPlayerDB.h"
 #include "KeyValueTab.h"
@@ -233,11 +234,12 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  tuple<QList<int>, QList<int>, int> ExternalPlayerDB::bulkImportCSV(const QString& csv)
+  tuple<QList<int>, QList<int>, QHash<int,QString>, int> ExternalPlayerDB::bulkImportCSV(const QString& csv)
   {
     int errorCnt = 0;
     QList<int> newExtPlayerIds;
     QList<int> skippedPlayerIds;
+    QHash<int,QString> extPlayerId2TeamName;
 
     for (QString line : csv.split("\n"))
     {
@@ -277,11 +279,20 @@ namespace QTournament
         }
       }
 
+      // get the player's team name, if provided
+      QString teamName = "";
+      if (col.length() > 3)
+      {
+        teamName = col[3].trimmed();
+      }
+
       // check if the player name already exists
       auto existingPlayer = getPlayer(fName, lName);
       if (existingPlayer != nullptr)
       {
-        skippedPlayerIds.push_back(existingPlayer->getId());
+        int existingId = existingPlayer->getId();
+        skippedPlayerIds.push_back(existingId);
+        extPlayerId2TeamName[existingId] = teamName;
         continue;
       }
 
@@ -290,10 +301,12 @@ namespace QTournament
       auto newPlayer = storeNewPlayer(entry);
       if (newPlayer == nullptr) ++errorCnt;
 
-      newExtPlayerIds.push_back(newPlayer->getId());
+      int newExtPlayerId = newPlayer->getId();
+      newExtPlayerIds.push_back(newExtPlayerId);
+      extPlayerId2TeamName[newExtPlayerId] = teamName;
     }
 
-    return make_tuple(newExtPlayerIds, skippedPlayerIds, errorCnt);
+    return make_tuple(newExtPlayerIds, skippedPlayerIds, extPlayerId2TeamName, errorCnt);
   }
 
   //----------------------------------------------------------------------------
