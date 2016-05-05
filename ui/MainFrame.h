@@ -22,6 +22,7 @@
 #include <memory>
 
 #include <QShortcut>
+#include <QCloseEvent>
 
 #include "ui_MainFrame.h"
 
@@ -37,6 +38,9 @@ public:
   virtual ~MainFrame ();
   static MainFrame* getMainFramePointer();
   
+protected:
+  virtual void closeEvent(QCloseEvent *ev) override;
+
 private:
   Ui::MainFrame ui;
   
@@ -46,8 +50,9 @@ private:
   unique_ptr<TournamentDB> currentDb;
   
   QString testFileName;
+  QString currentDatabaseFileName;
   
-  void closeCurrentTournament();
+  bool closeCurrentTournament();
   
   static MainFrame* mainFramePointer;
 
@@ -55,11 +60,20 @@ private:
   bool isTestMenuVisible;
 
   void distributeCurrentDatabasePointerToWidgets(bool forceNullptr = false);
+  bool saveCurrentDatabaseToFile(const QString& dstFileName);
+  bool execCmdSave();
+  bool execCmdSaveAs();
+  QString askForTournamentFileName(const QString& dlgTitle);
   
 
 public slots:
-  void newTournament ();
+  void newTournament();
   void openTournament();
+  void onSave();
+  void onSaveAs();
+  void onSaveCopy();
+  void onCreateBaseline();
+  void onClose();
   void setupEmptyScenario();
   void setupScenario01();
   void setupScenario02();

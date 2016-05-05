@@ -56,6 +56,9 @@ MainFrame::MainFrame()
 
   testFileName = QDir().absoluteFilePath("tournamentTestFile.tdb");
 
+  // no database file is initially active
+  currentDatabaseFileName.clear();
+
   // prepare an action to toggle the test-menu's visibility
   scToggleTestMenuVisibility = new QShortcut(QKeySequence(Qt::CTRL + Qt::ALT + Qt::Key_T), this);
   scToggleTestMenuVisibility->setContext(Qt::ApplicationShortcut);
@@ -68,8 +71,6 @@ MainFrame::MainFrame()
 
 MainFrame::~MainFrame()
 {
-  closeCurrentTournament();
-
   mainFramePointer = nullptr;
 }
 
@@ -95,38 +96,15 @@ void MainFrame::newTournament()
     return;
   }
 
-  // ask for the file name
-  QFileDialog fDlg{this};
-  fDlg.setAcceptMode(QFileDialog::AcceptSave);
-  fDlg.setNameFilter(tr("QTournament Files (*.tdb)"));
-  result = fDlg.exec();
-
-  if (result != QDialog::Accepted)
+  // close any open tournament
+  if (currentDb != nullptr)
   {
-    return;
-  }
-
-  // get the filename and fix the extension, if necessary
-  QString filename = fDlg.selectedFiles().at(0);
-  QString ext = filename.right(4).toLower();
-  if (ext != ".tdb") filename += ".tdb";
-
-  // if the file exists, delete it.
-  // the user has consented to the deletion in the
-  // dialog
-  if (QFile::exists(filename))
-  {
-    bool removeResult =  QFile::remove(filename);
-
-    if (!removeResult)
-    {
-      QMessageBox::warning(this, tr("New tournament"), tr("Could not delete ") + filename + tr(", no new tournament created."));
-      return;
-    }
+    bool isOkay = closeCurrentTournament();
+    if (!isOkay) return;
   }
 
   ERR err;
-  auto newDb = TournamentDB::createNew(filename, *settings, &err);
+  auto newDb = TournamentDB::createNew(":memory:", *settings, &err);
   if ((err != OK) || (newDb == nullptr))
   {
     // shouldn't happen, because the file has been
@@ -135,18 +113,12 @@ void MainFrame::newTournament()
     return;
   }
 
-  // close other possibly open tournaments
-  if (currentDb != nullptr)
-  {
-    closeCurrentTournament();
-  }
-
   // make the new database the current one
   currentDb = std::move(newDb);
   distributeCurrentDatabasePointerToWidgets();
 
   enableControls(true);
-  setWindowTitle("QTournament - " + settings->tournamentName + "  (" + filename + ")");
+  setWindowTitle("QTournament - " + settings->tournamentName + "  (" + tr("unsaved") + ")");
 }
 
 //----------------------------------------------------------------------------
@@ -168,7 +140,10 @@ void MainFrame::openTournament()
   // get the filename
   QString filename = fDlg.selectedFiles().at(0);
 
-  // try to open the tournament file
+  // try to open the tournament file DIRECTLY
+  //
+  // we operate only temporarily directly on the file
+  // until possible format conversions etc. are completed.
   ERR err;
   auto newDb = TournamentDB::openExisting(filename, &err);
 
@@ -216,18 +191,53 @@ void MainFrame::openTournament()
     }
   }
 
-  // close other possibly open tournaments
+  // close any open tournament
   if (currentDb != nullptr)
   {
-    closeCurrentTournament();
+    bool isOkay = closeCurrentTournament();
+    if (!isOkay) return;
   }
 
-  // open the tournament and distribute the database handle to all widgets
+  // close the temporarily opened tournament database and
+  // re-open it as a copy in memory
+  if (!(newDb->close()))    // this is very unlikely to happen...
+  {
+    QString msg = tr("An internal error occured. No tournament opened.");
+    QMessageBox::warning(this, tr("Open failed"), msg);
+    return;
+  }
+  int dbErr;
+  newDb = SqliteDatabase::get<TournamentDB>(":memory:", true);
+  newDb->restoreFromFile(filename.toUtf8().constData(), &dbErr);
+
+  // handle erros
+  QString msg;
+  if (dbErr == SQLITE_ERROR)
+  {
+    msg = tr("Could not read from the source file:\n\n");
+    msg += filename + "\n\n";
+    msg += tr("The tournament has not been opened.");
+  }
+  else if (dbErr != SQLITE_OK)
+  {
+    msg = tr("A database error occured while opening.\n\n");
+    msg += tr("Internal hint: SQLite error code = %1");
+    msg = msg.arg(dbErr);
+  }
+  if (!(msg.isEmpty()))
+  {
+    QMessageBox::warning(this, tr("Opening failed"), msg);
+    return;
+  }
+
+  // opening was successfull ==> distribute the database handle to all widgets
   QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
   currentDb = std::move(newDb);
   distributeCurrentDatabasePointerToWidgets();
   enableControls(true);
   QApplication::restoreOverrideCursor();
+  currentDatabaseFileName = filename;
+  ui.actionCreate_baseline->setEnabled(true);
 
   // determine the tournament title
   auto cfg = KeyValueTab::getTab(currentDb.get(), TAB_CFG);
@@ -263,20 +273,127 @@ void MainFrame::openTournament()
 
 //----------------------------------------------------------------------------
 
+void MainFrame::onSave()
+{
+  if (currentDb == nullptr) return;
+
+  execCmdSave();
+}
+
+//----------------------------------------------------------------------------
+
+void MainFrame::onSaveAs()
+{
+  if (currentDb == nullptr) return;
+
+  execCmdSaveAs();
+}
+
+//----------------------------------------------------------------------------
+
+void MainFrame::onSaveCopy()
+{
+  if (currentDb == nullptr) return;
+
+  QString dstFileName = askForTournamentFileName(tr("Save a copy"));
+  saveCurrentDatabaseToFile(dstFileName);
+}
+
+//----------------------------------------------------------------------------
+
+void MainFrame::onCreateBaseline()
+{
+  if (currentDb == nullptr) return;
+  if (currentDatabaseFileName.isEmpty()) return;
+
+  // determine the basename of the current database file
+  if (!(currentDatabaseFileName.endsWith(".tdb", Qt::CaseInsensitive)))
+  {
+    QString msg = tr("The current file name is unexpectedly ugly. Can't derive\n");
+    msg += tr("baseline names from it.\n\n");
+    msg += tr("Nothing has been saved.");
+    QMessageBox::warning(this, tr("Baseline creation failed"), msg);
+    return;
+  }
+  QString basename = currentDatabaseFileName.left(currentDatabaseFileName.length() - 4);
+
+  // determine a suitable name for the baseline
+  QString dstName;
+  int cnt = 0;
+  bool nameFound = false;
+  while (!nameFound)
+  {
+    dstName = basename + "__%1.tdb";
+    dstName = dstName.arg(cnt, 4, 10, QLatin1Char{'0'});
+    nameFound = !(QFile::exists(dstName));
+    ++cnt;
+  }
+
+  bool isOkay = saveCurrentDatabaseToFile(dstName);
+  if (isOkay)
+  {
+    QString msg = tr("A snapshot of the current tournament status has been saved to:\n\n%1");
+    msg = msg.arg(dstName);
+    QMessageBox::information(this, "Create baseline", msg);
+  }
+}
+
+//----------------------------------------------------------------------------
+
+void MainFrame::onClose()
+{
+  if (currentDb == nullptr) return;
+
+  if (closeCurrentTournament()) enableControls(false);
+}
+
+//----------------------------------------------------------------------------
+
 void MainFrame::enableControls(bool doEnable)
 {
   ui.centralwidget->setEnabled(doEnable);
   ui.actionSettings->setEnabled(doEnable);
   ui.menuExternal_player_database->setEnabled(doEnable);
+  ui.actionSave->setEnabled(doEnable);
+  ui.actionSave_as->setEnabled(doEnable);
+  ui.actionSave_a_copy->setEnabled(doEnable);
+  ui.actionCreate_baseline->setEnabled(doEnable && !(currentDatabaseFileName.isEmpty()));
+  ui.actionClose->setEnabled(doEnable);
 }
 
 //----------------------------------------------------------------------------
 
-void MainFrame::closeCurrentTournament()
+bool MainFrame::closeCurrentTournament()
 {
-  // close the tournament
+  // close other possibly open tournaments
   if (currentDb != nullptr)
   {
+    QString msg = tr("Warning: all unsaved changes to the current tournament\n");
+    msg += tr("will be lost.\n\n");
+    msg += tr("Do you want to save your changes?");
+
+    QMessageBox msgBox{this};
+    msgBox.setText(msg);
+    msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+    msgBox.setWindowTitle(tr("Save changes?"));
+    msgBox.setIcon(QMessageBox::Warning);
+    int result = msgBox.exec();
+
+    if (result == QMessageBox::Cancel) return false;
+
+    if (result == QMessageBox::Save)
+    {
+      bool isOkay = execCmdSave();
+      if (!isOkay) return false;
+    }
+
+    //
+    // At this point, the user either decided to discard all changes
+    // or the database has been saved successfully
+    //
+    // ==> we can shut the current database down
+    //
+
     // disconnect from the external player database, if any
     PlayerMngr pm{currentDb.get()};
     pm.closeExternalPlayerDatabase();
@@ -288,6 +405,7 @@ void MainFrame::closeCurrentTournament()
     // close the database
     currentDb->close();
     currentDb.reset();
+    currentDatabaseFileName.clear();
   }
   
   // delete the test file, if existing
@@ -297,6 +415,8 @@ void MainFrame::closeCurrentTournament()
   }
   
   enableControls(false);
+
+  return true;
 }
 
 //----------------------------------------------------------------------------
@@ -310,6 +430,104 @@ void MainFrame::distributeCurrentDatabasePointerToWidgets(bool forceNullptr)
   ui.tabTeams->setDatabase(db);
   ui.tabSchedule->setDatabase(db);
   ui.tabReports->setDatabase(db);
+}
+
+//----------------------------------------------------------------------------
+
+bool MainFrame::saveCurrentDatabaseToFile(const QString& dstFileName)
+{
+  // Precondition:
+  // All checks for valid filenames, overwriting of files etc. have to
+  // be done before calling this function.
+  //
+  // This function unconditionally writes to the destination file, whether
+  // it exists or not.
+
+  if (currentDb == nullptr) return false;
+
+  // write the database to the file
+  int dbErr;
+  bool isOkay = currentDb->backupToFile(dstFileName.toUtf8().constData(), &dbErr);
+
+  // handle erros
+  QString msg;
+  if (dbErr == SQLITE_ERROR)
+  {
+    msg = tr("Could not write to the destination file:\n\n");
+    msg += dstFileName + "\n\n";
+    msg += tr("The tournament has not been saved.");
+  }
+  else if (dbErr != SQLITE_OK)
+  {
+    msg = tr("A database error occured while saving.\n\n");
+    msg += tr("Internal hint: SQLite error code = %1");
+    msg = msg.arg(dbErr);
+  }
+  if (!(msg.isEmpty()))
+  {
+    QMessageBox::warning(this, tr("Saving failed"), msg);
+  }
+
+  return isOkay;
+}
+
+//----------------------------------------------------------------------------
+
+bool MainFrame::execCmdSave()
+{
+  if (currentDatabaseFileName.isEmpty())
+  {
+    return execCmdSaveAs();
+  }
+
+  return saveCurrentDatabaseToFile(currentDatabaseFileName);
+}
+
+//----------------------------------------------------------------------------
+
+bool MainFrame::execCmdSaveAs()
+{
+  QString dstFileName = askForTournamentFileName(tr("Save tournament as"));
+  if (dstFileName.isEmpty()) return false;  // user abort counts as "failed"
+
+  bool isOkay = saveCurrentDatabaseToFile(dstFileName);
+
+  if (isOkay)
+  {
+    currentDatabaseFileName = dstFileName;
+    ui.actionCreate_baseline->setEnabled(true);
+
+    // determine the tournament title
+    auto cfg = KeyValueTab::getTab(currentDb.get(), TAB_CFG);
+    QString tnmtTitle = QString(cfg->operator[](CFG_KEY_TNMT_NAME).data());
+    setWindowTitle("QTournament - " + tnmtTitle + "  (" + currentDatabaseFileName + ")");
+  }
+
+  return isOkay;
+}
+
+//----------------------------------------------------------------------------
+
+QString MainFrame::askForTournamentFileName(const QString& dlgTitle)
+{
+  // ask for the file name
+  QFileDialog fDlg{this};
+  fDlg.setAcceptMode(QFileDialog::AcceptSave);
+  fDlg.setNameFilter(tr("QTournament Files (*.tdb)"));
+  fDlg.setWindowTitle(dlgTitle);
+  int result = fDlg.exec();
+
+  if (result != QDialog::Accepted)
+  {
+    return "";
+  }
+
+  // get the filename and fix the extension, if necessary
+  QString filename = fDlg.selectedFiles().at(0);
+  QString ext = filename.right(4).toLower();
+  if (ext != ".tdb") filename += ".tdb";
+
+  return filename;
 }
 
 //----------------------------------------------------------------------------
@@ -872,6 +1090,21 @@ void MainFrame::setupScenario08()
 MainFrame* MainFrame::getMainFramePointer()
 {
   return mainFramePointer;
+}
+
+//----------------------------------------------------------------------------
+
+void MainFrame::closeEvent(QCloseEvent* ev)
+{
+  if (currentDb == nullptr)
+  {
+    ev->accept();
+  } else {
+    bool isOkay = closeCurrentTournament();
+
+    if (!isOkay) ev->ignore();
+    else ev->accept();
+  }
 }
 
 //----------------------------------------------------------------------------
