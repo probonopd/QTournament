@@ -69,6 +69,8 @@ namespace QTournament
 
   class ExternalPlayerDB : public SqliteOverlay::SqliteDatabase
   {
+    friend class SqliteDatabase;
+
   public:
     static unique_ptr<ExternalPlayerDB> createNew(const QString& fname);
     static unique_ptr<ExternalPlayerDB> openExisting(const QString& fname);
@@ -85,7 +87,7 @@ namespace QTournament
 
   private:
     upExternalPlayerDatabaseEntry row2upEntry(const SqliteOverlay::TabRow& r) const;
-    ExternalPlayerDB(const QString& fname, bool createNew);
+    ExternalPlayerDB(const string& fname, bool createNew);
   };
   typedef unique_ptr<ExternalPlayerDB> upExternalPlayerDB;
 }

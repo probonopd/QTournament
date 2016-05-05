@@ -20,6 +20,7 @@
 
 #include <QDebug>
 #include <QList>
+#include <QFile>
 
 #include "PlayerMngr.h"
 #include "Player.h"
@@ -481,6 +482,18 @@ namespace QTournament
   bool PlayerMngr::hasExternalPlayerDatabaseOpen() const
   {
     return (extPlayerDb != nullptr);
+  }
+
+  //----------------------------------------------------------------------------
+
+  bool PlayerMngr::hasExternalPlayerDatabaseAvailable() const
+  {
+    // first criterion: the database must be configured
+    if (!(hasExternalPlayerDatabaseConfigured())) return false;
+
+    // second criterion: the file must exist
+    QString dbName = getExternalDatabaseName();
+    return QFile::exists(dbName);
   }
 
   //----------------------------------------------------------------------------

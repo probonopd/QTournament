@@ -90,6 +90,7 @@ namespace QTournament
 
     // getters and (boolean) queries
     bool hasExternalPlayerDatabaseOpen() const;
+    bool hasExternalPlayerDatabaseAvailable() const;
     bool hasExternalPlayerDatabaseConfigured() const;
     ExternalPlayerDB* getExternalPlayerDatabaseHandle() const;
     QString getExternalDatabaseName() const;
@@ -106,10 +107,8 @@ namespace QTournament
     ERR syncAllPlayersToExternalDatabase();
 
 
-  private:
+  protected:
     upExternalPlayerDB extPlayerDb;
-
-  signals:
   };
 }
 

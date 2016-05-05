@@ -254,7 +254,7 @@ void PlayerTabWidget::onSyncAllToExtDatabase()
 void PlayerTabWidget::onExternalDatabaseChanged()
 {
   PlayerMngr pm{db};
-  ui.btnExtDatabase->setEnabled(pm.hasExternalPlayerDatabaseOpen());
+  ui.btnExtDatabase->setEnabled(pm.hasExternalPlayerDatabaseAvailable());
   onPlayerSelectionChanged(QItemSelection(), QItemSelection());
 }
 
@@ -272,8 +272,16 @@ void PlayerTabWidget::onPlayerSelectionChanged(const QItemSelection&, const QIte
 void PlayerTabWidget::onImportCSV()
 {
   PlayerMngr pm{db};
-  if (!(pm.hasExternalPlayerDatabaseOpen()))
+  if (!(pm.hasExternalPlayerDatabaseAvailable()))
   {
+    return;
+  }
+
+  ERR e = pm.openConfiguredExternalPlayerDatabase();
+  if (!(pm.hasExternalPlayerDatabaseOpen()) || (e != OK))
+  {
+    QString msg = tr("Could not open database for player export!");
+    QMessageBox::warning(this, tr("Export player"), msg);
     return;
   }
 

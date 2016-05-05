@@ -939,7 +939,7 @@ void CatTabWidget::onUnpairedContextMenuRequested(const QPoint& pos)
   listOfCats_MovePlayerSubmenu->setEnabled(isPlayerClicked);
   actCreateNewPlayerInCat->setEnabled(hasCatSelected && canAddPlayers);
   actAddPlayer->setEnabled(canAddPlayers);
-  actImportPlayerToCat->setEnabled(canAddPlayers && pm.hasExternalPlayerDatabaseOpen());
+  actImportPlayerToCat->setEnabled(canAddPlayers && pm.hasExternalPlayerDatabaseAvailable());
   actBulkRemovePlayers->setEnabled(hasCatSelected);
 
   // show the context menu

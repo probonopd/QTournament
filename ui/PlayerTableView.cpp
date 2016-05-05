@@ -166,7 +166,7 @@ void PlayerTableView::onContextMenuRequested(const QPoint& pos)
   actUnregister->setEnabled(isPlayerClicked & (plStat == STAT_PL_IDLE));
 
   PlayerMngr pm{db};
-  bool hasExtDb = pm.hasExternalPlayerDatabaseOpen();
+  bool hasExtDb = pm.hasExternalPlayerDatabaseAvailable();
   actImportFromExtDatabase->setEnabled(hasExtDb);
   actSyncAllToExtDatabase->setEnabled(hasExtDb);
   actExportToExtDatabase->setEnabled(isPlayerClicked && hasExtDb);

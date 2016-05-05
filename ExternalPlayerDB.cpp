@@ -45,8 +45,8 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  ExternalPlayerDB::ExternalPlayerDB(const QString& fname, bool createNew)
-    :SqliteOverlay::SqliteDatabase(QString2StdString(fname), createNew)
+  ExternalPlayerDB::ExternalPlayerDB(const string& fname, bool createNew)
+    :SqliteOverlay::SqliteDatabase(fname, createNew)
   {
 
   }
@@ -56,16 +56,8 @@ namespace QTournament
   unique_ptr<ExternalPlayerDB> ExternalPlayerDB::createNew(const QString& fname)
   {
     // try to create the new database
-    upExternalPlayerDB result;
-    try
-    {
-      auto rawPointer = new ExternalPlayerDB(fname, true);
-      result = upExternalPlayerDB(rawPointer);
-    }
-    catch (exception e)
-    {
-      return nullptr;
-    }
+    upExternalPlayerDB result = SqliteDatabase::get<ExternalPlayerDB>(fname.toUtf8().constData(), true);
+    if (result == nullptr) return nullptr;
 
     // write the database version to the file
     auto cfg = SqliteOverlay::KeyValueTab::getTab(result.get(), TAB_EPD_CFG, true);
@@ -81,16 +73,8 @@ namespace QTournament
   unique_ptr<ExternalPlayerDB> ExternalPlayerDB::openExisting(const QString& fname)
   {
     // try to open the existing database
-    upExternalPlayerDB result;
-    try
-    {
-      auto rawPointer = new ExternalPlayerDB(fname, false);
-      result = upExternalPlayerDB(rawPointer);
-    }
-    catch (exception e)
-    {
-      return nullptr;
-    }
+    upExternalPlayerDB result = SqliteDatabase::get<ExternalPlayerDB>(fname.toUtf8().constData(), false);
+    if (result == nullptr) return nullptr;
 
     // check the database version
     auto cfg = SqliteOverlay::KeyValueTab::getTab(result.get(), TAB_EPD_CFG);
