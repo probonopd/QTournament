@@ -65,7 +65,8 @@ namespace QTournament {
 //----------------------------------------------------------------------------
 
   // ctor for a PlayerPair constructed from a row in TAB_PAIRS identified by its ID
-  PlayerPair::PlayerPair(TournamentDB* db, int ppId)
+  PlayerPair::PlayerPair(TournamentDB* _db, int ppId)
+    :db(_db)
   {
     TabRow row = db->getTab(TAB_PAIRS)->operator [](ppId);
 

@@ -36,7 +36,7 @@ namespace QTournament
     PlayerPair(const Player& p1, int _pairId);
     PlayerPair(const Player& p1);
     PlayerPair(TournamentDB* _db, const SqliteOverlay::TabRow& row);
-    PlayerPair(TournamentDB* db, int ppId);
+    PlayerPair(TournamentDB* _db, int ppId);
 
     // boolean queries
     bool hasPlayer2() const;
