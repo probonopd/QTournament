@@ -94,6 +94,7 @@ public slots:
   void onCopyOrMovePair(const PlayerPair& selPair, int targetCatId, bool isMove);
   void onCreatePlayer();
   void onImportPlayer();
+  void onCategoryRemoved();
 } ;
 
 #endif	/* _CATTABWIDGET_H */

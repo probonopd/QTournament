@@ -48,6 +48,7 @@ namespace QTournament
     void endDeleteCategory() const;
     void beginResetAllModels() const;
     void endResetAllModels() const;
+    void categoryRemovedFromTournament(int invalidCatId, int invalidCatSeqNum);
 
     // Signals emitted by the CourtMngr
     void beginCreateCourt ();

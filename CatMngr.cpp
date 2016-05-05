@@ -601,6 +601,9 @@ namespace QTournament
     // refresh all models and the reports tab
     cse->endResetAllModels();
 
+    // tell all other widgets that a category has been deleted
+    cse->categoryRemovedFromTournament(catId, deletedSeqNum);
+
     return OK;
   }
 

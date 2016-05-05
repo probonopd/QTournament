@@ -56,7 +56,7 @@ CatTabWidget::CatTabWidget()
   
   // connect to the change signal of the group config widget
   connect(ui.grpCfgWidget, &GroupConfigWidget::groupConfigChanged, this, &CatTabWidget::onGroupConfigChanged);
-  
+
   // hide unused settings groups
   ui.gbGroups->hide();
   
@@ -78,6 +78,7 @@ CatTabWidget::CatTabWidget()
   connect(cse, SIGNAL(categoryStatusChanged(Category,OBJ_STATE,OBJ_STATE)), this, SLOT(onCatStateChanged(Category,OBJ_STATE,OBJ_STATE)));
   connect(cse, SIGNAL(playerRenamed(Player)), this, SLOT(onPlayerRenamed(Player)));
   connect(cse, SIGNAL(playerStatusChanged(int,int,OBJ_STATE,OBJ_STATE)), this, SLOT(onPlayerStateChanged(int,int,OBJ_STATE,OBJ_STATE)));
+  connect(cse, SIGNAL(categoryRemovedFromTournament(int,int)), this, SLOT(onCategoryRemoved()));
 
   // tell the list widgets to emit signals if a context menu is requested
   ui.lwUnpaired->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -1120,9 +1121,19 @@ void CatTabWidget::onCreatePlayer()
   ui.catTableView->onCreatePlayer();
 }
 
+//----------------------------------------------------------------------------
+
 void CatTabWidget::onImportPlayer()
 {
   ui.catTableView->onImportPlayer();
+}
+
+//----------------------------------------------------------------------------
+
+void CatTabWidget::onCategoryRemoved()
+{
+  updateControls();
+  updatePairs();
 }
 
 //----------------------------------------------------------------------------
