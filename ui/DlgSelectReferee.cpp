@@ -83,6 +83,20 @@ DlgSelectReferee::DlgSelectReferee(TournamentDB* _db, const Match& _ma, bool _ma
   // fill the player table
   rebuildPlayerList();
 
+  // set the headline
+  QString hdr;
+  QString style = "QLabel { color : %1; };";
+  if (matchIsBeingCalled)
+  {
+    hdr = tr("!! Match call !!");
+    style = style.arg("red");
+  } else {
+    hdr = tr("Pre-assignment");
+    style = style.arg("green");
+  }
+  ui->laHeadline->setText(hdr);
+  ui->laHeadline->setStyleSheet(style);
+
   updateControls();
 }
 
