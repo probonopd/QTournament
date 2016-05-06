@@ -138,6 +138,7 @@ namespace QTournament
     tc.addInt(GENERIC_STATE_FIELD_NAME);
     tc.addInt(PL_SEX);
     tc.addInt(GENERIC_SEQNUM_FIELD_NAME);
+    tc.addInt(PL_REFEREE_COUNT, false, SqliteOverlay::CONFLICT_CLAUSE::__NOT_SET, true, SqliteOverlay::CONFLICT_CLAUSE::FAIL, true, "0");
     tc.addForeignKey(PL_TEAM_REF, TAB_TEAM);
     tc.createTableAndResetCreator(TAB_PLAYER);
     
@@ -423,10 +424,19 @@ namespace QTournament
       isOkay = execNonQuery(sql.toUtf8().constData(), &dbErr);
       if (!isOkay) return false;
 
+      // add the counter for referee activities for each participant
+      colDef = "%1 INTEGER DEFAULT 0 NOT NULL";
+      colDef = colDef.arg(PL_REFEREE_COUNT);
+      sql = sql_base.arg(colDef);
+      isOkay = execNonQuery(sql.toUtf8().constData(), &dbErr);
+      if (!isOkay) return false;
+
       // add configuration keys for the default referee modes
       auto cfg = SqliteOverlay::KeyValueTab::getTab(this, TAB_CFG);
       cfg->set(CFG_KEY_DEFAULT_REFEREE_MODE, 0);
       cfg->set(CFG_KEY_REFEREE_TEAM_ID, -1);
+
+      minor = 2;
     }
 
     // store the new database version

@@ -74,7 +74,7 @@ namespace QTournament
 #define PL_LNAME "LastName"
 #define PL_TEAM_REF "TeamRefId"
 #define PL_SEX "Sex"
-//#define PL_ ""
+#define PL_REFEREE_COUNT "RefereeCount"
 //#define PL_ ""
 //#define PL_ ""
 //#define PL_ ""

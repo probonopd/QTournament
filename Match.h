@@ -78,6 +78,11 @@ namespace QTournament
     QList<QDateTime> getAdditionalCallTimes() const;
     int getMatchDuration() const;
 
+    REFEREE_MODE getRefereeMode() const;
+    upPlayer getAssignedRefree() const;
+    bool hasRefereeAssigned() const;
+    ERR canAssignReferee() const;
+
   private:
     Match (TournamentDB* db, int rowId);
     Match (TournamentDB* db, SqliteOverlay::TabRow row);

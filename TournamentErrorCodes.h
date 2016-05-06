@@ -93,7 +93,8 @@ namespace QTournament
         FILE_ALREADY_EXISTS,
         FILE_NOT_EXISTING,
         INCOMPATIBLE_FILE_FORMAT,
-        DATABASE_ERROR
+        DATABASE_ERROR,
+        MATCH_NEEDS_NO_REFEREE,
     };
 }
 

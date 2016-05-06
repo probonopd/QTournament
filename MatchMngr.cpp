@@ -505,6 +505,86 @@ namespace QTournament {
 
   //----------------------------------------------------------------------------
 
+  ERR MatchMngr::setRefereeMode(const Match& ma, REFEREE_MODE newMode) const
+  {
+    // get the old mode
+    REFEREE_MODE oldMode = ma.getRefereeMode();
+
+    // is there anything to do at all?
+    if (oldMode == newMode) return OK;
+
+    // only allow changes to the referee mode before the match has been called
+    OBJ_STATE stat = ma.getState();
+    if ((stat == STAT_MA_RUNNING) || (stat == STAT_MA_FINISHED))
+    {
+      return MATCH_NOT_CONFIGURALE_ANYMORE;
+    }
+
+    // set the new mode
+    TabRow matchRow = tab->operator [](ma.getId());
+    matchRow.update(MA_REFEREE_MODE, static_cast<int>(newMode));
+
+    // if we go to a more restrictive mode, delete any existing
+    // referee assignments
+    if ((ma.hasRefereeAssigned()) && (newMode != REFEREE_MODE::ALL_PLAYERS))
+    {
+      matchRow.updateToNull(MA_REFEREE_REF);
+    }
+
+    // fake a match-changed-event in order to trigger UI updates
+    CentralSignalEmitter::getInstance()->matchStatusChanged(ma.getId(), ma.getSeqNum(), stat, stat);
+
+    return OK;
+  }
+
+  //----------------------------------------------------------------------------
+
+  ERR MatchMngr::assignReferee(const Match& ma, const Player& p) const
+  {
+    ERR e = ma.canAssignReferee();
+    if (e != OK) return e;
+
+    // don't allow assignments of players that actually
+    // take part in the match
+    PlayerPair pp1 = ma.getPlayerPair1();
+    PlayerPair pp2 = ma.getPlayerPair1();
+    if (pp1.getPlayer1() == p)
+    {
+      return PLAYER_NOT_SUITABLE;
+    }
+    if (pp1.hasPlayer2() && (pp1.getPlayer2() == p))
+    {
+      return PLAYER_NOT_SUITABLE;
+    }
+    if (pp2.getPlayer1() == p)
+    {
+      return PLAYER_NOT_SUITABLE;
+    }
+    if (pp2.hasPlayer2() && (pp2.getPlayer2() == p))
+    {
+      return PLAYER_NOT_SUITABLE;
+    }
+
+    // okay, it is safe to assign the referee
+    TabRow matchRow = tab->operator [](ma.getId());
+    matchRow.update(MA_REFEREE_REF, p.getId());
+
+    // fake a match-changed-event in order to trigger UI updates
+    OBJ_STATE stat = ma.getState();
+    CentralSignalEmitter::getInstance()->matchStatusChanged(ma.getId(), ma.getSeqNum(), stat, stat);
+
+    return OK;
+  }
+
+  //----------------------------------------------------------------------------
+
+  ERR MatchMngr::removeReferee(const Match& ma) const
+  {
+
+  }
+
+  //----------------------------------------------------------------------------
+
   /**
     Checks if any match groups within a category can be promoted to a higher
     state. This can be, for example:

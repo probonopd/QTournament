@@ -335,7 +335,59 @@ namespace QTournament
     return finishedTime - startTime;
   }
 
-//----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
+
+  REFEREE_MODE Match::getRefereeMode() const
+  {
+    int modeId = row.getInt(MA_REFEREE_MODE);
+    return static_cast<REFEREE_MODE>(modeId);
+  }
+
+  //----------------------------------------------------------------------------
+
+  upPlayer Match::getAssignedRefree() const
+  {
+    auto _refereeId = row.getInt2(MA_REFEREE_REF);
+    if (_refereeId->isNull()) return nullptr;
+
+    PlayerMngr pm{db};
+    return pm.getPlayer_up(_refereeId->get());
+  }
+
+  //----------------------------------------------------------------------------
+
+  bool Match::hasRefereeAssigned() const
+  {
+    auto _refereeId = row.getInt2(MA_REFEREE_REF);
+    return (_refereeId->isNull() == false);
+  }
+
+  //----------------------------------------------------------------------------
+
+  ERR Match::canAssignReferee() const
+  {
+    // only allow changes to the referee assignment
+    // if the match is fully defined (all player names determined) and
+    // if the match can be called now or later
+    //
+    // ==> match must be READY or BUSY
+    //
+    OBJ_STATE stat = getState();
+    if ((stat != STAT_MA_BUSY) && (stat != STAT_MA_READY))
+    {
+      return MATCH_NOT_CONFIGURALE_ANYMORE;
+    }
+
+    // don't allow assignments if the mode is set to NONE
+    if (getRefereeMode() == REFEREE_MODE::NONE)
+    {
+      return MATCH_NEEDS_NO_REFEREE;
+    }
+
+    return OK;
+  }
+
+  //----------------------------------------------------------------------------
 
   int Match::getSymbolicPlayerPairName(int playerPos) const
   {

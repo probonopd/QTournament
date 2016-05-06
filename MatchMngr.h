@@ -109,6 +109,11 @@ namespace QTournament
     // configuration of MATCH GROUPS
     ERR closeMatchGroup(const MatchGroup& grp);
 
+    // referee/umpire handling
+    ERR setRefereeMode(const Match& ma, REFEREE_MODE newMode) const;
+    ERR assignReferee(const Match& ma, const Player& p) const;
+    ERR removeReferee(const Match& ma) const;
+
 
   private:
     DbTab* groupTab;

@@ -26,7 +26,8 @@ namespace QTournament
   public:
     static constexpr int STATE_COL_ID = 5;  // id of the column with the match state
     static constexpr int MATCH_NUM_COL_ID = 0;  // id of the column with the match number
-    static constexpr int COLUMN_COUNT = 6;  // number of columns in the model
+    static constexpr int REFEREE_MODE_COL_ID = 6;  // id of the column with the referee node
+    static constexpr int COLUMN_COUNT = 7;  // number of columns in the model
 
     MatchTableModel (TournamentDB* _db);
     int rowCount(const QModelIndex & parent = QModelIndex()) const;

@@ -100,6 +100,26 @@ QVariant MatchTableModel::data(const QModelIndex& index, int role) const
       return static_cast<int>(ma->getState());
     }
 
+    // seventh column: the referee mode for the match
+    if (index.column() == REFEREE_MODE_COL_ID)
+    {
+      REFEREE_MODE mode = ma->getRefereeMode();
+
+      switch (mode)
+      {
+      case REFEREE_MODE::NONE:
+        return tr("None");
+
+      case REFEREE_MODE::HANDWRITTEN:
+        return tr("Manual");
+
+      default:
+        return tr("Pick");
+      }
+
+      return tr("unknown");
+    }
+
     return QString("Not Implemented, row=" + QString::number(index.row()) + ", col=" + QString::number(index.row()));
 }
 
@@ -136,6 +156,9 @@ QVariant MatchTableModel::headerData(int section, Qt::Orientation orientation, i
     }
     if (section == STATE_COL_ID) {
       return tr("State");
+    }
+    if (section == REFEREE_MODE_COL_ID) {
+      return tr("Umpire");
     }
 
     return QString("Not implemented, section=" + QString::number(section));
