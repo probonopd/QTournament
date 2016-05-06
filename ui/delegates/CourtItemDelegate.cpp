@@ -140,18 +140,19 @@ void CourtItemDelegate::paintMatchInfoCell_Selected(QPainter *painter, const QSt
   // draw a status indicator ("LED light")
   //DelegateItemLED{}(painter, r, ITEM_MARGIN, ITEM_STAT_INDICATOR_SIZE, ma->getState(), Qt::blue);
 
-  // split the available space up into three rows of text
-  int vertMargin = (ITEM_ROW_HEIGHT_SELECTED - 3 * ITEM_TEXT_ROW_HEIGHT - 2 * ITEM_TEXT_ROW_SKIP) / 2;
+  // split the available space up into four rows of text
+  int vertMargin = (ITEM_ROW_HEIGHT_SELECTED - 4 * ITEM_TEXT_ROW_HEIGHT - 3 * ITEM_TEXT_ROW_SKIP) / 2;
   // adjust the width to margin on the left and right. Move down to center all rows vertically in the cell.
   QRect row1 = r.adjusted(2 * ITEM_MARGIN, vertMargin, -2 * ITEM_MARGIN, 0);
   row1.setHeight(ITEM_TEXT_ROW_HEIGHT);
   QRect row2 = row1.translated(0, ITEM_TEXT_ROW_HEIGHT + ITEM_TEXT_ROW_SKIP);
   QRect row3 = row2.translated(0, ITEM_TEXT_ROW_HEIGHT + ITEM_TEXT_ROW_SKIP);
+  QRect row4 = row3.translated(0, ITEM_TEXT_ROW_HEIGHT + ITEM_TEXT_ROW_SKIP);
 
   // draw the player names
   GuiHelpers::drawFormattedText(painter, row1, ma.getDisplayName(tr("Winner"), tr("Loser")),
                                 Qt::AlignVCenter|Qt::AlignLeft, true, false,
-                                QFont(), QColor(Qt::white), 1.2);
+                                QFont(), QColor(Qt::yellow), 1.2);
 
   // draw the first info line with the match number and the category
   QString txt = tr("Match number:");
@@ -159,7 +160,7 @@ void CourtItemDelegate::paintMatchInfoCell_Selected(QPainter *painter, const QSt
   txt += tr("Category:");
   txt += " " + ma.getCategory().getName() + "    ";
   txt += tr("Round: ") + QString::number(ma.getMatchGroup().getRound());
-  GuiHelpers::drawFormattedText(painter, row2, txt, Qt::AlignVCenter|Qt::AlignLeft, false, false, 1.0);
+  GuiHelpers::drawFormattedText(painter, row2, txt, Qt::AlignVCenter|Qt::AlignLeft, true, false, QFont(), QColor(Qt::white), 1.0);
 
   // draw a second info line with call times
   QDateTime startTime = ma.getStartTime();
@@ -176,7 +177,27 @@ void CourtItemDelegate::paintMatchInfoCell_Selected(QPainter *painter, const QSt
     }
     txt.chop(2);
   }
-  GuiHelpers::drawFormattedText(painter, row3, txt, Qt::AlignVCenter|Qt::AlignLeft, false, false, 1.0);
+  GuiHelpers::drawFormattedText(painter, row3, txt, Qt::AlignVCenter|Qt::AlignLeft, true, false, QFont(), QColor(Qt::white), 1.0);
+
+  // draw the third info line with umpire information
+  txt = tr("Umpire: ");
+  REFEREE_MODE refMode = ma.getRefereeMode();
+  if (refMode == REFEREE_MODE::NONE)
+  {
+    txt += tr("none");
+  }
+  else if (refMode == REFEREE_MODE::HANDWRITTEN)
+  {
+    txt += tr("manually assigned");
+  }
+  else
+  {
+    upPlayer referee = ma.getAssignedReferee();
+    assert(referee != nullptr);
+    txt += referee->getDisplayName_FirstNameFirst();
+  }
+  GuiHelpers::drawFormattedText(painter, row4, txt, Qt::AlignVCenter|Qt::AlignLeft, true, false, QFont(), QColor(Qt::white), 1.0);
+
 }
 
 //----------------------------------------------------------------------------
