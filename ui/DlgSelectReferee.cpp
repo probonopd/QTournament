@@ -131,6 +131,18 @@ void DlgSelectReferee::onBtnSelectClicked()
   // because otherwise we wouldn't enter this slot because
   // the select button is only available if a player is selected.
   finalPlayerSelection = ui->tabPlayers->getSelectedPlayer();
+
+  // if we were in team selection mode, store the selected team as
+  // the new default team
+  int curFilterModeId = ui->cbFilterMode->currentData().toInt();
+  REFEREE_MODE curFilterMode = static_cast<REFEREE_MODE>(curFilterModeId);
+  if (curFilterMode == REFEREE_MODE::SPECIAL_TEAM)
+  {
+    int curTeamId = ui->cbTeamSelection->currentData().toInt();
+    auto cfg = SqliteOverlay::KeyValueTab::getTab(db, TAB_CFG);
+    cfg->set(CFG_KEY_REFEREE_TEAM_ID, curTeamId);
+  }
+
   accept();
 }
 
@@ -208,7 +220,7 @@ void DlgSelectReferee::rebuildPlayerList()
   // stop here
   if ((curFilterMode == REFEREE_MODE::SPECIAL_TEAM) && (curTeamId < 1))
   {
-    ui->tabPlayers->rebuildPlayerList(PlayerList());
+    ui->tabPlayers->rebuildPlayerList(PlayerList(), ma.getMatchNumber());
     return;
   }
 
@@ -262,7 +274,7 @@ void DlgSelectReferee::rebuildPlayerList()
   }
 
   // add the players to the table
-  ui->tabPlayers->rebuildPlayerList(pList);
+  ui->tabPlayers->rebuildPlayerList(pList, ma.getMatchNumber());
 }
 
 //----------------------------------------------------------------------------
@@ -324,14 +336,14 @@ RefereeTableWidget::RefereeTableWidget(QWidget* parent)
 {
   // prepare the table layout (columns, headers)
   setColumnCount(NUM_TAB_COLUMNS);
-  QStringList horHeaders{"", tr("Player name"), tr("Team"), tr("Uses"), tr("Last match finished")};
+  QStringList horHeaders{"", tr("Player name"), tr("Team"), tr("Uses"), tr("Last match finished"), tr("Next match")};
   setHorizontalHeaderLabels(horHeaders);
   verticalHeader()->hide();
 }
 
 //----------------------------------------------------------------------------
 
-void RefereeTableWidget::rebuildPlayerList(const PlayerList& pList)
+void RefereeTableWidget::rebuildPlayerList(const PlayerList& pList, int selectedMatchNumer)
 {
   // erase everything from the table
   clearContents();
@@ -397,6 +409,25 @@ void RefereeTableWidget::rebuildPlayerList(const PlayerList& pList)
     newItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
     setItem(idxRow, STAT_COL_ID, newItem);
 
+    // add the offset to the next match for the player
+    ma = pm.getNextMatchForPlayer(p);
+    txt = "?";
+    if (ma != nullptr)
+    {
+      int matchNumOffset = ma->getMatchNumber() - selectedMatchNumer;
+
+      if (matchNumOffset > 0) txt = "+ %1";
+      if (matchNumOffset < 0)
+      {
+        txt = "- %1";
+        matchNumOffset *= -1;   // make it positive and insert the "-" manually with a space between "-" and number
+      }
+      txt = txt.arg(matchNumOffset);
+    }
+    newItem = new QTableWidgetItem(txt);
+    newItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+    setItem(idxRow, NEXT_MATCH_DIST_COL_ID, newItem);
+
     idxRow++;
   }
 
@@ -437,10 +468,11 @@ bool RefereeTableWidget::hasPlayerSelected()
 void RefereeTableWidget::resizeEvent(QResizeEvent* event)
 {
   // autosize all column in a fixed ratio
-  int widthIncrement = width() / (REL_WIDTH_NAME + REL_WIDTH_TEAM +  2 * REL_WIDTH_OTHER + REL_WIDTH_STATE);
+  int widthIncrement = width() / (REL_WIDTH_NAME + REL_WIDTH_TEAM +  3 * REL_WIDTH_OTHER + REL_WIDTH_STATE);
   setColumnWidth(STAT_COL_ID, widthIncrement * REL_WIDTH_STATE);
   setColumnWidth(NAME_COL_ID, widthIncrement * REL_WIDTH_NAME);
   setColumnWidth(TEAM_COL_ID, widthIncrement * REL_WIDTH_TEAM);
   setColumnWidth(REFEREE_COUNT_COL_ID, widthIncrement * REL_WIDTH_OTHER);
   setColumnWidth(LAST_FINISH_TIME_COL_ID, widthIncrement * REL_WIDTH_OTHER);
+  setColumnWidth(NEXT_MATCH_DIST_COL_ID, widthIncrement * REL_WIDTH_OTHER);
 }

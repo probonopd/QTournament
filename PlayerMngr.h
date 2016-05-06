@@ -68,6 +68,7 @@ namespace QTournament
     int getTotalPlayerCount() const;
     PlayerPairList getRecentLosers(int maxCnt) const;
     upMatch getLastFinishedMatchForPlayer(const Player& p);
+    upMatch getNextMatchForPlayer(const Player& p);
 
     // player modification
     ERR renamePlayer (Player& p, const QString& newFirst, const QString& newLast);

@@ -876,6 +876,47 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
+  upMatch PlayerMngr::getNextMatchForPlayer(const Player& p)
+  {
+    QString where = "%1 > 0 AND %2 != %3 AND %2 != %4 ORDER BY %5 ASC";
+    where = where.arg(MA_NUM);
+    where = where.arg(GENERIC_STATE_FIELD_NAME);
+    where = where.arg(static_cast<int>(STAT_MA_RUNNING));
+    where = where.arg(static_cast<int>(STAT_MA_FINISHED));
+    where = where.arg(MA_NUM);
+
+    DbTab* matchTab = db->getTab(TAB_MATCH);
+    MatchMngr mm{db};
+    for (const Match& ma : getObjectsByWhereClause<Match>(matchTab, where.toUtf8().constData()))
+    {
+      if (ma.hasPlayerPair1())
+      {
+        PlayerPair pp = ma.getPlayerPair1();
+        if (pp.getPlayer1() == p) return mm.getMatch(ma.getId());
+
+        if (pp.hasPlayer2())
+        {
+          if (pp.getPlayer2() == p) return mm.getMatch(ma.getId());
+        }
+      }
+
+      if (ma.hasPlayerPair2())
+      {
+        PlayerPair pp = ma.getPlayerPair2();
+        if (pp.getPlayer1() == p) return mm.getMatch(ma.getId());
+
+        if (pp.hasPlayer2())
+        {
+          if (pp.getPlayer2() == p) return mm.getMatch(ma.getId());
+        }
+      }
+    }
+
+    return nullptr;
+  }
+
+  //----------------------------------------------------------------------------
+
 
   //----------------------------------------------------------------------------
 

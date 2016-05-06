@@ -59,16 +59,17 @@ public:
   static constexpr int TEAM_COL_ID = 2;
   static constexpr int REFEREE_COUNT_COL_ID = 3;
   static constexpr int LAST_FINISH_TIME_COL_ID = 4;
-  static constexpr int NUM_TAB_COLUMNS = 5;
+  static constexpr int NEXT_MATCH_DIST_COL_ID = 5;
+  static constexpr int NUM_TAB_COLUMNS = 6;
   RefereeTableWidget(QWidget* parent=0);
 
-  void rebuildPlayerList(const PlayerList& pList);
+  void rebuildPlayerList(const PlayerList& pList, int selectedMatchNumer);
   upPlayer getSelectedPlayer();
   bool hasPlayerSelected();
 
 protected:
-  static constexpr int REL_WIDTH_NAME = 30;
-  static constexpr int REL_WIDTH_TEAM = 20;
+  static constexpr int REL_WIDTH_NAME = 25;
+  static constexpr int REL_WIDTH_TEAM = 25;
   static constexpr int REL_WIDTH_OTHER = 10;
   static constexpr int REL_WIDTH_STATE = 1;
 
