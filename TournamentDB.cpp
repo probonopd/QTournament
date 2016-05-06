@@ -195,6 +195,8 @@ namespace QTournament
     tc.addInt(MA_PAIR2_SYMBOLIC_VAL);
     tc.addInt(MA_WINNER_RANK);
     tc.addInt(MA_LOSER_RANK);
+    tc.addInt(MA_REFEREE_MODE, false, SqliteOverlay::CONFLICT_CLAUSE::__NOT_SET, true, SqliteOverlay::CONFLICT_CLAUSE::ROLLBACK, true, "0");
+    tc.addForeignKey(MA_REFEREE_REF, TAB_PLAYER, SqliteOverlay::CONSISTENCY_ACTION::RESTRICT);
     tc.createTableAndResetCreator(TAB_MATCH);
 
     // Generate a table with ranking information
@@ -395,6 +397,34 @@ namespace QTournament
     {
       createIndices();
       minor = 1;
+    }
+
+    // convert from 2.1 to 2.2
+    if (minor == 1)
+    {
+      // add the referee columns in the match tables
+      QString sql_base = "ALTER TABLE %1 ADD COLUMN %2";
+      sql_base = sql_base.arg(TAB_MATCH);
+
+      QString colDef = "%1 INTEGER DEFAULT 0 NOT NULL";
+      colDef = colDef.arg(MA_REFEREE_MODE);
+      QString sql = sql_base.arg(colDef);
+
+      int dbErr;
+      bool isOkay = execNonQuery(sql.toUtf8().constData(), &dbErr);
+      if (!isOkay) return false;
+
+      colDef = "%1 INTEGER DEFAULT NULL REFERENCES %2(id) ON DELETE RESTRICT";
+      colDef = colDef.arg(MA_REFEREE_REF);
+      colDef = colDef.arg(TAB_PLAYER);
+      sql = sql_base.arg(colDef);
+      isOkay = execNonQuery(sql.toUtf8().constData(), &dbErr);
+      if (!isOkay) return false;
+
+      // add configuration keys for the default referee modes
+      auto cfg = SqliteOverlay::KeyValueTab::getTab(this, TAB_CFG);
+      cfg->set(CFG_KEY_DEFAULT_REFEREE_MODE, 0);
+      cfg->set(CFG_KEY_REFEREE_TEAM_ID, -1);
     }
 
     // store the new database version

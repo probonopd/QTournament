@@ -24,7 +24,7 @@
 namespace QTournament
 {
 #define DB_VERSION_MAJOR 2
-#define DB_VERSION_MINOR 1
+#define DB_VERSION_MINOR 2
 #define MIN_REQUIRED_DB_VERSION 2
 
 //----------------------------------------------------------------------------
@@ -61,8 +61,8 @@ namespace QTournament
 #define CFG_KEY_TNMT_ORGA "OrganizingClub"
 #define CFG_KEY_USE_TEAMS "UseTeams"
 #define CFG_KEY_EXT_PLAYER_DB "ExternalPlayerDatabase"
-//#define CFG_KEY_ ""
-//#define CFG_KEY_ ""
+#define CFG_KEY_DEFAULT_REFEREE_MODE "DefaultRefereeMode"
+#define CFG_KEY_REFEREE_TEAM_ID "RefereeTeamId"
 //#define CFG_KEY_ ""
 //#define CFG_KEY_ ""
 //#define CFG_KEY_ ""
@@ -167,8 +167,8 @@ namespace QTournament
 #define MA_PAIR2_SYMBOLIC_VAL  "PlayerPair2SymbolicValue"
 #define MA_WINNER_RANK  "WinnerRank"
 #define MA_LOSER_RANK  "LoserRank"
-//#define MA_  ""
-//#define MA_  ""
+#define MA_REFEREE_MODE  "RefereeMode"
+#define MA_REFEREE_REF  "RefereeRefId"
 //#define MA_  ""
 //#define MA_  ""
 //#define MA_  ""
@@ -303,6 +303,10 @@ namespace QTournament
   
 //----------------------------------------------------------------------------
 
+  //
+  // IMPORTANT: only append new states AT THE END of the list or otherwise the
+  // state IDs change and we break compatibility with older database versions!
+  //
   enum OBJ_STATE {
     STAT_PL_IDLE,
     STAT_PL_PLAYING,
@@ -330,6 +334,7 @@ namespace QTournament
     STAT_CO_AVAIL,        // The court is empty and can be assigned to a match
     STAT_CO_BUSY,         // The court is being used by a match
     STAT_CO_DISABLED,     // The court cannot be used (temporarily)
+    STAT_PL_REFEREE,      // Player is currently acting as a referee/umpire for a match
   };
   
 //----------------------------------------------------------------------------
@@ -376,7 +381,15 @@ namespace QTournament
     SEMI,
     QUARTER,
     L16
-  };  
+  };
+
+enum class REFEREE_MODE {
+  NONE = 0,           // no umpire for the match
+  HANDWRITTEN,    // the umpire's name is inserted manually be the user on the match sheet
+  ALL_PLAYERS,    // the umpire is selected upon match start among all players
+  RECENT_LOSERS,  // the umpire is selected upon match start among the recent losers
+  SPECIAL_TEAM    // the umpire is selected upon match start among the members of a special team (--> dedicated umpires)
+};
 
 //----------------------------------------------------------------------------
 
