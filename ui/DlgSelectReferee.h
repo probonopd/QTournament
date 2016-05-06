@@ -29,6 +29,7 @@ public slots:
   void onPlayerSelectionChanged();
   void onBtnSelectClicked();
   void onBtnNoneClicked();
+  void onPlayerDoubleClicked();
 
 private:
   Ui::DlgSelectReferee *ui;

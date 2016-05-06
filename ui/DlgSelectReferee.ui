@@ -379,6 +379,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>tabPlayers</sender>
+   <signal>itemDoubleClicked(QTableWidgetItem*)</signal>
+   <receiver>DlgSelectReferee</receiver>
+   <slot>onPlayerDoubleClicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>383</x>
+     <y>410</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>383</x>
+     <y>337</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>onFilterModeChanged()</slot>
@@ -386,5 +402,6 @@
   <slot>onPlayerSelectionChanged()</slot>
   <slot>onBtnSelectClicked()</slot>
   <slot>onBtnNoneClicked()</slot>
+  <slot>onPlayerDoubleClicked()</slot>
  </slots>
 </ui>

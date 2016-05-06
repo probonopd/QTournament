@@ -144,6 +144,16 @@ void DlgSelectReferee::onBtnNoneClicked()
 
 //----------------------------------------------------------------------------
 
+void DlgSelectReferee::onPlayerDoubleClicked()
+{
+  if (!(ui->tabPlayers->hasPlayerSelected())) return;
+
+  // double click means: select the player and exit
+  onBtnSelectClicked();
+}
+
+//----------------------------------------------------------------------------
+
 void DlgSelectReferee::updateControls()
 {
   // disable the team selection drop box if the filter
@@ -351,11 +361,13 @@ void RefereeTableWidget::rebuildPlayerList(const PlayerList& pList)
 
     // add the player's team
     newItem = new QTableWidgetItem(p.getTeam().getName());
+    newItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
     setItem(idxRow, TEAM_COL_ID, newItem);
 
     // add the player's referee count
     int refereeCount = p.getRefereeCount();
     newItem = new QTableWidgetItem(QString::number(refereeCount));
+    newItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
     setItem(idxRow, REFEREE_COUNT_COL_ID, newItem);
 
     // add the time of the last finished match
@@ -367,6 +379,7 @@ void RefereeTableWidget::rebuildPlayerList(const PlayerList& pList)
       txt = finishTime.toString("HH:mm");
     }
     newItem = new QTableWidgetItem(txt);
+    newItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
     setItem(idxRow, LAST_FINISH_TIME_COL_ID, newItem);
 
     // add the player's status as a color indication in
@@ -381,6 +394,7 @@ void RefereeTableWidget::rebuildPlayerList(const PlayerList& pList)
       bckCol = QColor(255, 255, 255); // white
     }
     newItem->setBackgroundColor(bckCol);
+    newItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
     setItem(idxRow, STAT_COL_ID, newItem);
 
     idxRow++;
