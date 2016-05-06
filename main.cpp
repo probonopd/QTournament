@@ -40,7 +40,10 @@ int main(int argc, char *argv[])
   app.installTranslator(&qtTranslator);
   
   QTranslator tournamentTranslator;
-  tournamentTranslator.load(app.applicationDirPath() + "/tournament_" + QLocale::system().name());
+  //tournamentTranslator.load(app.applicationDirPath() + "/tournament_" + QLocale::system().name());
+  //
+  // Only temporary: hard-coded German translation while in debug mode
+  tournamentTranslator.load(app.applicationDirPath() + "/../tournament_de");
   app.installTranslator(&tournamentTranslator);
   
   MainFrame w;
