@@ -21,6 +21,7 @@
 #include <QMessageBox>
 #include <QFileDialog>
 #include <QFile>
+#include <QTime>
 
 #include "MainFrame.h"
 #include "MatchMngr.h"
@@ -74,6 +75,11 @@ MainFrame::MainFrame()
   autosaveTimer = make_unique<QTimer>(this);
   connect(autosaveTimer.get(), SIGNAL(timeout()), this, SLOT(onAutosaveTimerElapsed()));
   autosaveTimer->start(AUTOSAVE_INTERVALL__MS);
+
+  // prepare a status bar label that shows the last autosave time
+  lastAutosaveTimeStatusLabel = new QLabel(statusBar());
+  lastAutosaveTimeStatusLabel->clear();
+  statusBar()->addPermanentWidget(lastAutosaveTimeStatusLabel);
 }
 
 //----------------------------------------------------------------------------
@@ -127,6 +133,8 @@ void MainFrame::newTournament()
   distributeCurrentDatabasePointerToWidgets();
 
   lastDirtyState = false;
+  lastAutosaveDirtyCounterValue = 0;
+  onAutosaveTimerElapsed();
   enableControls(true);
   updateWindowTitle();
 }
@@ -249,6 +257,8 @@ void MainFrame::openTournament()
   currentDatabaseFileName = filename;
   ui.actionCreate_baseline->setEnabled(true);
   lastDirtyState = false;
+  lastAutosaveDirtyCounterValue = 0;
+  onAutosaveTimerElapsed();
 
   // show the tournament name in the main window's title
   updateWindowTitle();
@@ -305,7 +315,14 @@ void MainFrame::onSaveCopy()
   if (currentDb == nullptr) return;
 
   QString dstFileName = askForTournamentFileName(tr("Save a copy"));
-  saveCurrentDatabaseToFile(dstFileName);
+  if (dstFileName.isEmpty()) return;
+
+  bool isOkay = saveCurrentDatabaseToFile(dstFileName);
+  if (isOkay)
+  {
+    lastAutosaveDirtyCounterValue = currentDb->getDirtyCounter();
+    onAutosaveTimerElapsed();
+  }
 }
 
 //----------------------------------------------------------------------------
@@ -418,6 +435,7 @@ bool MainFrame::closeCurrentTournament()
     currentDb->close();
     currentDb.reset();
     currentDatabaseFileName.clear();
+    onAutosaveTimerElapsed();
   }
   
   // delete the test file, if existing
@@ -427,6 +445,7 @@ bool MainFrame::closeCurrentTournament()
   }
   
   lastDirtyState = false;
+  onAutosaveTimerElapsed();
   enableControls(false);
   updateWindowTitle();
 
@@ -497,7 +516,14 @@ bool MainFrame::execCmdSave()
   }
 
   bool isOkay = saveCurrentDatabaseToFile(currentDatabaseFileName);
-  if (isOkay) currentDb->resetDirtyFlag();
+  if (isOkay)
+  {
+    currentDb->resetDirtyFlag();
+
+    // reset the autosave state machine and status indication
+    lastAutosaveDirtyCounterValue = currentDb->getDirtyCounter();
+    onAutosaveTimerElapsed();
+  }
 
   return isOkay;
 }
@@ -518,6 +544,10 @@ bool MainFrame::execCmdSaveAs()
     currentDb->resetDirtyFlag();
     currentDatabaseFileName = dstFileName;
     ui.actionCreate_baseline->setEnabled(true);
+
+    // reset the autosave state machine and status indication
+    lastAutosaveDirtyCounterValue = currentDb->getDirtyCounter();
+    onAutosaveTimerElapsed();
 
     // show the file name in the window title
     updateWindowTitle();
@@ -1312,7 +1342,40 @@ void MainFrame::onDirtyFlagPollTimerElapsed()
 
 void MainFrame::onAutosaveTimerElapsed()
 {
+  if (currentDb == nullptr)
+  {
+    lastAutosaveTimeStatusLabel->clear();
+    return;
+  }
 
+  if (!(currentDb->isDirty()))
+  {
+    lastAutosaveTimeStatusLabel->clear();
+    return;
+  }
+
+  QString msg = tr("Last autosave: ");
+  if (currentDatabaseFileName.isEmpty())
+  {
+    lastAutosaveTimeStatusLabel->setText(msg + tr("not yet possible"));
+    return;
+  }
+
+  // do we need an autosave?
+  if (currentDb->getDirtyCounter() != lastAutosaveDirtyCounterValue)
+  {
+    QString fname = currentDatabaseFileName + ".autosave";
+    bool isOkay = saveCurrentDatabaseToFile(fname);
+
+    if (isOkay)
+    {
+      msg += QTime::currentTime().toString("HH:mm:ss");
+      lastAutosaveDirtyCounterValue = currentDb->getDirtyCounter();
+    } else {
+      msg += tr("failed");
+    }
+    lastAutosaveTimeStatusLabel->setText(msg);
+  }
 }
 
 //----------------------------------------------------------------------------

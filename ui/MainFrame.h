@@ -77,6 +77,9 @@ private:
   bool lastDirtyState;
   int lastAutosaveDirtyCounterValue;
 
+  // a label for the status bar that shows the last autosave
+  QLabel* lastAutosaveTimeStatusLabel;
+
 
 public slots:
   void newTournament();
