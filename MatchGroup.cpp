@@ -107,7 +107,7 @@ namespace QTournament
     // instead of looping through all matches in the group
     QString where = "%1 = %2 AND %3 != %4";
     where = where.arg(MA_GRP_REF).arg(getId());
-    where = where.arg(GENERIC_NAME_FIELD_NAME).arg(static_cast<int>(stat));
+    where = where.arg(GENERIC_STATE_FIELD_NAME).arg(static_cast<int>(stat));
 
     return (matchTab->getMatchCountForWhereClause(where.toUtf8().constData()) > 0);
   }
