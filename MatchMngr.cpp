@@ -547,7 +547,7 @@ namespace QTournament {
     // don't allow assignments of players that actually
     // take part in the match
     PlayerPair pp1 = ma.getPlayerPair1();
-    PlayerPair pp2 = ma.getPlayerPair1();
+    PlayerPair pp2 = ma.getPlayerPair2();
     if (pp1.getPlayer1() == p)
     {
       return PLAYER_NOT_SUITABLE;
@@ -1277,7 +1277,7 @@ namespace QTournament {
 
     //
     // TODO: we shouldn't be able to start matches if the
-    // associated category is a state other than PLAYING
+    // associated category is in a state other than PLAYING
     // or IDLE. In particular, we shouldn't call games
     // if we're in WAITING_FOR_SEEDING.
     //
@@ -1289,6 +1289,18 @@ namespace QTournament {
     PlayerMngr pm{db};
     ERR e = pm.canAcquirePlayerPairsForMatch(ma);
     if (e != OK) return e;  // PLAYER_NOT_IDLE
+
+    // check if we have the necessary umpire, if required
+    REFEREE_MODE refMode = ma.getRefereeMode();
+    if ((refMode != REFEREE_MODE::NONE) && (refMode != REFEREE_MODE::HANDWRITTEN))
+    {
+      upPlayer referee = ma.getAssignedReferee();
+
+      if (referee == nullptr) return MATCH_NEEDS_REFEREE;
+
+      // check if the assigned referee is available
+      if (referee->getState() != STAT_PL_IDLE) return REFEREE_NOT_IDLE;
+    }
 
     // check the court's availability
     OBJ_STATE stat = court.getState();
@@ -1367,6 +1379,20 @@ namespace QTournament {
     e = pm.acquirePlayerPairsForMatch(ma);
     assert(e == OK);  // must be, because the condition has been check by canAssignMatchToCourt()
 
+    // acquire the referee, if any
+    REFEREE_MODE refMode = ma.getRefereeMode();
+    if ((refMode != REFEREE_MODE::NONE) && (refMode != REFEREE_MODE::HANDWRITTEN))
+    {
+      upPlayer referee = ma.getAssignedReferee();
+
+      // the following assertion must hold,
+      // because the conditions have been check by canAssignMatchToCourt()
+      assert(referee != nullptr);
+      assert(referee->getState() == STAT_PL_IDLE);
+
+      referee->setState(STAT_PL_REFEREE);
+    }
+
     // now we finally acquire the court in the aftermath
     CourtMngr cm{db};
     bool isOkay = cm.acquireCourt(court);
@@ -1378,6 +1404,18 @@ namespace QTournament {
 
     // store the call time in the database
     matchRow.update(MA_START_TIME, UTCTimestamp());
+
+    // check all matches that are currently "READY" because
+    // due to the player allocation, some of them might have
+    // become "BUSY"
+    MatchMngr mm{db};
+    for (const MatchGroup& mg : mm.getAllMatchGroups())
+    {
+      for (const Match& otherMatch : mg.getMatches())
+      {
+        if (otherMatch.getState() == STAT_MA_READY) updateMatchStatus(otherMatch);
+      }
+    }
 
     return OK;
   }
@@ -1465,6 +1503,13 @@ namespace QTournament {
       // release the players
       pm.releasePlayerPairsAfterMatch(ma);
 
+      // release the umpire, if any
+      upPlayer referee = ma.getAssignedReferee();
+      if ((referee != nullptr) && (referee->getState() == STAT_PL_REFEREE))
+      {
+        referee->setState(STAT_PL_IDLE);
+      }
+
       // release the court
       ERR e;
       auto pCourt = ma.getCourt(&e);
@@ -1511,6 +1556,18 @@ namespace QTournament {
       auto specialCat = ma.getCategory().convertToSpecializedObject();
       specialCat->onRoundCompleted(lastFinishedRoundAfterMatch);
       cse->roundCompleted(ma.getCategory().getId(), lastFinishedRoundAfterMatch);
+    }
+
+    // check all matches that are currently "BUSY" because
+    // due to the player release, some of them might have
+    // become "READY"
+    MatchMngr mm{db};
+    for (const MatchGroup& mg : mm.getAllMatchGroups())
+    {
+      for (const Match& otherMatch : mg.getMatches())
+      {
+        if (otherMatch.getState() == STAT_MA_BUSY) updateMatchStatus(otherMatch);
+      }
     }
 
 
@@ -1563,6 +1620,13 @@ namespace QTournament {
     // in MA_ACTUAL_PLAYER1A_REF etc.
     PlayerMngr pm{db};
     pm.releasePlayerPairsAfterMatch(ma);
+
+    // release the umpire, if any
+    upPlayer referee = ma.getAssignedReferee();
+    if ((referee != nullptr) && (referee->getState() == STAT_PL_REFEREE))
+    {
+      referee->setState(STAT_PL_IDLE);
+    }
 
     // store the court the match is running on
     ERR e;

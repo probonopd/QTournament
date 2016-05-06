@@ -95,6 +95,8 @@ namespace QTournament
         INCOMPATIBLE_FILE_FORMAT,
         DATABASE_ERROR,
         MATCH_NEEDS_NO_REFEREE,
+        MATCH_NEEDS_REFEREE,
+        REFEREE_NOT_IDLE
     };
 }
 

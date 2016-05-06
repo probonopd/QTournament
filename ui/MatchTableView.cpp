@@ -512,9 +512,57 @@ void MatchTableView::execCall(const Match& ma, const Court& co)
 {
   MatchMngr mm{db};
 
+  // check if we need to ask the user for a referee
+  ERR err = mm.canAssignMatchToCourt(ma, co);
+  if (err == MATCH_NEEDS_REFEREE)
+  {
+    // make sure we can assign a referee
+    if (ma.canAssignReferee() != OK)
+    {
+      QString msg = tr("An unexpected error occured: the match needs an umpire,\n");
+      msg += tr("but an umpire can't be assigned right now.\n\n");
+      msg += tr("The match cannot be started.");
+      QMessageBox::critical(this, tr("Match call failed"), msg);
+      return;
+    }
+
+    // let the user pick the referee
+    DlgSelectReferee dlg{db, ma, true, this};
+    int result = dlg.exec();
+    if (result != QDialog::Accepted)
+    {
+      return;
+    }
+
+    upPlayer selPlayer = dlg.getFinalPlayerSelection();
+    if (selPlayer == nullptr)
+    {
+      // the user selected to continue without referee
+      err = mm.setRefereeMode(ma, REFEREE_MODE::NONE);
+      if (err != OK)
+      {
+        QString msg = tr("Can't continue without umpire, because an\n");
+        msg += tr("unexpected error occured.\n\n");
+        msg += tr("The match cannot be started.");
+        QMessageBox::critical(this, tr("Match call failed"), msg);
+        return;
+      }
+    } else {
+      // actually do the assignment
+      err = mm.assignReferee(ma, *selPlayer);
+      if (err != OK)
+      {
+        QString msg = tr("Could not assign umpire to match.\n");
+        msg += tr("Maybe you tried to assign one of the players as umpire?");
+        QMessageBox::warning(this, tr("Umpire assignment failed"), msg);
+        return;
+      }
+    }
+  }
+
   // all necessary pre-checks should have been performed before
   // so that the following call should always yield "ok"
-  ERR err = mm.canAssignMatchToCourt(ma, co);
+  err = mm.canAssignMatchToCourt(ma, co);
   if (err != OK)
   {
     QString msg = tr("An unexpected error occured.\n");
