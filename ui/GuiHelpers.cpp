@@ -113,6 +113,23 @@ QString GuiHelpers::prepCall(const QTournament::Match &ma, const QTournament::Co
   call += tr("        versus\n\n");
   call += ma.getPlayerPair2().getCallName(tr("and")) + ",\n\n";
   call += tr("match number ") + QString::number(ma.getMatchNumber()) + tr(" on court number ") + QString::number(co.getNumber());
+  call += ".";
+
+  // add the umpire's name, if necessary
+  QTournament::REFEREE_MODE refMode = ma.getRefereeMode();
+  if ((refMode != QTournament::REFEREE_MODE::NONE) && ((refMode != QTournament::REFEREE_MODE::HANDWRITTEN)))
+  {
+    QTournament::upPlayer referee = ma.getAssignedReferee();
+    if (referee != nullptr)
+    {
+      call += "\n\n\n";
+      call += tr("Umpire is ");
+      call += referee->getDisplayName_FirstNameFirst();
+      call += ".";
+    }
+  }
+
+  // add additional calls, if applicable
   if (nCall > 0)
   {
     call += "\n\n";
