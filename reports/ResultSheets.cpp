@@ -164,6 +164,8 @@ void ResultSheets::onMatchSelectionChanged(int newlySelectedMatchId)
   }
 }
 
+//----------------------------------------------------------------------------
+
 void ResultSheets::printMatchData(upSimpleReport& rep, const Match& ma) const
 {
   QString header = tr("Match Number: ") + QString::number(ma.getMatchNumber());
@@ -238,6 +240,20 @@ void ResultSheets::printMatchData(upSimpleReport& rep, const Match& ma) const
     txt += "\t__________     \t:\t     __________";
     rep->writeLine(txt, RESULTSHEET_GAMELABEL_STYLE);
     rep->skip(6.5);
+  }
+
+  // print umpire information
+  REFEREE_MODE refMode = ma.getRefereeMode();
+  if (refMode != REFEREE_MODE::NONE)
+  {
+    QString txt = tr("Umpire: ");
+    upPlayer referee = ma.getAssignedReferee();
+
+    if ((refMode != REFEREE_MODE::HANDWRITTEN) && (referee != nullptr))
+    {
+      txt += referee->getDisplayName_FirstNameFirst();
+    }
+    rep->writeLine(txt, RESULTSHEET_GAMELABEL_STYLE);
   }
 }
 
