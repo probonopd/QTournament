@@ -379,7 +379,9 @@ namespace QTournament
     }
 
     // don't allow assignments if the mode is set to NONE
-    if (getRefereeMode() == REFEREE_MODE::NONE)
+    // or to HANDWRITTEN
+    REFEREE_MODE mod = getRefereeMode();
+    if ((mod == REFEREE_MODE::NONE) || (mod == REFEREE_MODE::HANDWRITTEN))
     {
       return MATCH_NEEDS_NO_REFEREE;
     }

@@ -203,6 +203,10 @@ void MatchTableView::onContextMenuRequested(const QPoint& pos)
   auto ma = getSelectedMatch();
   if (ma == nullptr) return;  // shouldn't happen
 
+  // enable / disable the action for assigning umpires, depending
+  // on the current umpire mode and match state
+  actAssignReferee->setEnabled(ma->canAssignReferee() == OK);
+
   // show the context menu
   updateContextMenu();
   QAction* selectedItem = contextMenu->exec(globalPos);
@@ -233,6 +237,25 @@ void MatchTableView::onContextMenuRequested(const QPoint& pos)
     }
 
     execCall(*ma, *co);;
+  }
+
+  // another hack:
+  // if the selected item has non-empty user data, one of the umpire modes
+  // has been selected.
+  //
+  // try to assign the new umpire mode to the match
+  if (!(selectedItem->data().isNull()))
+  {
+    int modeId = selectedItem->data().toInt();
+    REFEREE_MODE refMode = static_cast<REFEREE_MODE>(modeId);
+
+    MatchMngr mm{db};
+    ERR e = mm.setRefereeMode(*ma, refMode);
+    if (e != OK)
+    {
+      QMessageBox::warning(this, tr("Set umpire mode"),
+                           tr("The mode can't be set for this match."));
+    }
   }
 }
 
@@ -334,6 +357,24 @@ void MatchTableView::initContextMenu()
 
   contextMenu->addSeparator();
   courtSelectionMenu = contextMenu->addMenu(tr("Call match on court..."));
+
+  // submenus for umpire functions
+  contextMenu->addSeparator();
+  refereeMode_submenu = contextMenu->addMenu(tr("Set umpire mode"));
+  auto newAction = refereeMode_submenu->addAction(tr("None"));
+  newAction->setData(static_cast<int>(REFEREE_MODE::NONE));
+  refereeMode_submenu->addSeparator();
+  newAction = refereeMode_submenu->addAction(tr("Pick from all players"));
+  newAction->setData(static_cast<int>(REFEREE_MODE::ALL_PLAYERS));
+  newAction = refereeMode_submenu->addAction(tr("Pick from recent losers"));
+  newAction->setData(static_cast<int>(REFEREE_MODE::RECENT_LOSERS));
+  newAction = refereeMode_submenu->addAction(tr("Pick from special team"));
+  newAction->setData(static_cast<int>(REFEREE_MODE::SPECIAL_TEAM));
+  refereeMode_submenu->addSeparator();
+  newAction = refereeMode_submenu->addAction(tr("Manual"));
+  newAction->setData(static_cast<int>(REFEREE_MODE::HANDWRITTEN));
+  actAssignReferee = new QAction(tr("Assign umpire..."), this);
+  contextMenu->addAction(actAssignReferee);
 
   // connect actions and slots
   connect(actWalkoverP1, SIGNAL(triggered(bool)), this, SLOT(onWalkoverP1Triggered()));

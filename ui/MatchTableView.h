@@ -73,6 +73,9 @@ private:
   QAction* actWalkoverP1;
   QAction* actWalkoverP2;
 
+  QMenu* refereeMode_submenu;
+  QAction* actAssignReferee;
+
   void initContextMenu();
   void updateContextMenu();
   void execWalkover(int playerNum);
