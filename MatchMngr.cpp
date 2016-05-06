@@ -1516,6 +1516,7 @@ namespace QTournament {
       if ((referee != nullptr) && (referee->getState() == STAT_PL_REFEREE))
       {
         referee->setState(STAT_PL_IDLE);
+        pm.increaseRefereeCountForPlayer(*referee);
       }
 
       // release the court

@@ -917,6 +917,14 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
+  void PlayerMngr::increaseRefereeCountForPlayer(const Player& p)
+  {
+    int oldCount = p.getRefereeCount();
+    p.row.update(PL_REFEREE_COUNT, oldCount + 1);
+  }
+
+  //----------------------------------------------------------------------------
+
 
   //----------------------------------------------------------------------------
 
