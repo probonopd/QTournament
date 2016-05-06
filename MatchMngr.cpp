@@ -569,6 +569,10 @@ namespace QTournament {
     TabRow matchRow = tab->operator [](ma.getId());
     matchRow.update(MA_REFEREE_REF, p.getId());
 
+    // maybe the match status changes after the assignment, because we're now
+    // waiting for a busy referee to become available
+    updateMatchStatus(ma);
+
     // fake a match-changed-event in order to trigger UI updates
     OBJ_STATE stat = ma.getState();
     CentralSignalEmitter::getInstance()->matchStatusChanged(ma.getId(), ma.getSeqNum(), stat, stat);
@@ -588,6 +592,10 @@ namespace QTournament {
 
     TabRow matchRow = tab->operator [](ma.getId());
     matchRow.updateToNull(MA_REFEREE_REF);
+
+    // maybe the match status changes after the removal, because we're not
+    // waiting anymore for a busy referee to become available
+    updateMatchStatus(ma);
 
     // fake a match-changed-event in order to trigger UI updates
     CentralSignalEmitter::getInstance()->matchStatusChanged(ma.getId(), ma.getSeqNum(), stat, stat);
@@ -1665,6 +1673,18 @@ namespace QTournament {
     // erase start time from database
     matchRow.updateToNull(MA_START_TIME);
     matchRow.updateToNull(MA_ADDITIONAL_CALL_TIMES);
+
+    // check all matches that are currently "BUSY" because
+    // due to the player release, some of them might have
+    // become "READY"
+    MatchMngr mm{db};
+    for (const MatchGroup& mg : mm.getAllMatchGroups())
+    {
+      for (const Match& otherMatch : mg.getMatches())
+      {
+        if (otherMatch.getState() == STAT_MA_BUSY) updateMatchStatus(otherMatch);
+      }
+    }
 
     return OK;
   }

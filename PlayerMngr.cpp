@@ -291,6 +291,19 @@ namespace QTournament
       if (p.getState() != STAT_PL_IDLE) return PLAYER_NOT_IDLE;
     }
 
+    // check for the referee, if any
+    REFEREE_MODE refMode = ma.getRefereeMode();
+    if ((refMode != REFEREE_MODE::NONE) && (refMode != REFEREE_MODE::HANDWRITTEN))
+    {
+      upPlayer referee = ma.getAssignedReferee();
+
+      // maybe no referee has been assigned yet. That's okay for now.
+      if (referee == nullptr) return OK;
+
+      // if a referee has been assigned, check its availability
+      if (referee->getState() != STAT_PL_IDLE) return REFEREE_NOT_IDLE;
+    }
+
     return OK;
   }
 
