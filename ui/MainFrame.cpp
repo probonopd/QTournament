@@ -39,7 +39,7 @@ MainFrame* MainFrame::mainFramePointer = nullptr;
 //----------------------------------------------------------------------------
 
 MainFrame::MainFrame()
-  :currentDb(nullptr)
+  :currentDb(nullptr), lastAutosaveDirtyCounterValue(0), lastDirtyState(false)
 {
   if (MainFrame::mainFramePointer != nullptr)
   {
@@ -65,6 +65,15 @@ MainFrame::MainFrame()
   connect(scToggleTestMenuVisibility, SIGNAL(activated()), this, SLOT(onToggleTestMenuVisibility()));
   isTestMenuVisible = true;
   onToggleTestMenuVisibility();
+
+  // initialize timers for polling the database's dirty flag
+  // and for triggering the autosave function
+  dirtyFlagPollTimer = make_unique<QTimer>(this);
+  connect(dirtyFlagPollTimer.get(), SIGNAL(timeout()), this, SLOT(onDirtyFlagPollTimerElapsed()));
+  dirtyFlagPollTimer->start(DIRTY_FLAG_POLL_INTERVALL__MS);
+  autosaveTimer = make_unique<QTimer>(this);
+  connect(autosaveTimer.get(), SIGNAL(timeout()), this, SLOT(onAutosaveTimerElapsed()));
+  autosaveTimer->start(AUTOSAVE_INTERVALL__MS);
 }
 
 //----------------------------------------------------------------------------
@@ -117,8 +126,9 @@ void MainFrame::newTournament()
   currentDb = std::move(newDb);
   distributeCurrentDatabasePointerToWidgets();
 
+  lastDirtyState = false;
   enableControls(true);
-  setWindowTitle("QTournament - " + settings->tournamentName + "  (" + tr("unsaved") + ")");
+  updateWindowTitle();
 }
 
 //----------------------------------------------------------------------------
@@ -238,11 +248,10 @@ void MainFrame::openTournament()
   QApplication::restoreOverrideCursor();
   currentDatabaseFileName = filename;
   ui.actionCreate_baseline->setEnabled(true);
+  lastDirtyState = false;
 
-  // determine the tournament title
-  auto cfg = KeyValueTab::getTab(currentDb.get(), TAB_CFG);
-  QString tnmtTitle = QString(cfg->operator[](CFG_KEY_TNMT_NAME).data());
-  setWindowTitle("QTournament - " + tnmtTitle + "  (" + filename + ")");
+  // show the tournament name in the main window's title
+  updateWindowTitle();
 
   // open the external player database file, if configured
   PlayerMngr pm(currentDb.get());
@@ -368,23 +377,26 @@ bool MainFrame::closeCurrentTournament()
   // close other possibly open tournaments
   if (currentDb != nullptr)
   {
-    QString msg = tr("Warning: all unsaved changes to the current tournament\n");
-    msg += tr("will be lost.\n\n");
-    msg += tr("Do you want to save your changes?");
-
-    QMessageBox msgBox{this};
-    msgBox.setText(msg);
-    msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
-    msgBox.setWindowTitle(tr("Save changes?"));
-    msgBox.setIcon(QMessageBox::Warning);
-    int result = msgBox.exec();
-
-    if (result == QMessageBox::Cancel) return false;
-
-    if (result == QMessageBox::Save)
+    if (currentDb->isDirty())
     {
-      bool isOkay = execCmdSave();
-      if (!isOkay) return false;
+      QString msg = tr("Warning: all unsaved changes to the current tournament\n");
+      msg += tr("will be lost.\n\n");
+      msg += tr("Do you want to save your changes?");
+
+      QMessageBox msgBox{this};
+      msgBox.setText(msg);
+      msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+      msgBox.setWindowTitle(tr("Save changes?"));
+      msgBox.setIcon(QMessageBox::Warning);
+      int result = msgBox.exec();
+
+      if (result == QMessageBox::Cancel) return false;
+
+      if (result == QMessageBox::Save)
+      {
+        bool isOkay = execCmdSave();
+        if (!isOkay) return false;
+      }
     }
 
     //
@@ -414,7 +426,9 @@ bool MainFrame::closeCurrentTournament()
     QFile::remove(testFileName);
   }
   
+  lastDirtyState = false;
   enableControls(false);
+  updateWindowTitle();
 
   return true;
 }
@@ -475,18 +489,25 @@ bool MainFrame::saveCurrentDatabaseToFile(const QString& dstFileName)
 
 bool MainFrame::execCmdSave()
 {
+  if (currentDb == nullptr) return false;
+
   if (currentDatabaseFileName.isEmpty())
   {
     return execCmdSaveAs();
   }
 
-  return saveCurrentDatabaseToFile(currentDatabaseFileName);
+  bool isOkay = saveCurrentDatabaseToFile(currentDatabaseFileName);
+  if (isOkay) currentDb->resetDirtyFlag();
+
+  return isOkay;
 }
 
 //----------------------------------------------------------------------------
 
 bool MainFrame::execCmdSaveAs()
 {
+  if (currentDb == nullptr) return false;
+
   QString dstFileName = askForTournamentFileName(tr("Save tournament as"));
   if (dstFileName.isEmpty()) return false;  // user abort counts as "failed"
 
@@ -494,13 +515,12 @@ bool MainFrame::execCmdSaveAs()
 
   if (isOkay)
   {
+    currentDb->resetDirtyFlag();
     currentDatabaseFileName = dstFileName;
     ui.actionCreate_baseline->setEnabled(true);
 
-    // determine the tournament title
-    auto cfg = KeyValueTab::getTab(currentDb.get(), TAB_CFG);
-    QString tnmtTitle = QString(cfg->operator[](CFG_KEY_TNMT_NAME).data());
-    setWindowTitle("QTournament - " + tnmtTitle + "  (" + currentDatabaseFileName + ")");
+    // show the file name in the window title
+    updateWindowTitle();
   }
 
   return isOkay;
@@ -528,6 +548,30 @@ QString MainFrame::askForTournamentFileName(const QString& dlgTitle)
   if (ext != ".tdb") filename += ".tdb";
 
   return filename;
+}
+
+//----------------------------------------------------------------------------
+
+void MainFrame::updateWindowTitle()
+{
+  QString title = "QTournament";
+
+  if (currentDb != nullptr)
+  {
+    // determine the tournament title
+    auto cfg = KeyValueTab::getTab(currentDb.get(), TAB_CFG);
+    QString tnmtTitle = QString(cfg->operator[](CFG_KEY_TNMT_NAME).data());
+    title += " - " + tnmtTitle + " (%1)";
+
+    // insert the current filename, if any
+    title = currentDatabaseFileName.isEmpty() ? title.arg(tr("unsaved")) : title.arg(currentDatabaseFileName);
+
+    // append an asterisk to the windows title if the
+    // database has changed since the last saving
+    if (currentDb->isDirty()) title += " *";
+  }
+
+  setWindowTitle(title);
 }
 
 //----------------------------------------------------------------------------
@@ -1249,6 +1293,26 @@ void MainFrame::onToggleTestMenuVisibility()
   }
 
   isTestMenuVisible = !isTestMenuVisible;
+}
+
+//----------------------------------------------------------------------------
+
+void MainFrame::onDirtyFlagPollTimerElapsed()
+{
+  if (currentDb == nullptr) return;
+
+  if (currentDb->isDirty() != lastDirtyState)
+  {
+    lastDirtyState = !lastDirtyState;
+    updateWindowTitle();
+  }
+}
+
+//----------------------------------------------------------------------------
+
+void MainFrame::onAutosaveTimerElapsed()
+{
+
 }
 
 //----------------------------------------------------------------------------

@@ -565,13 +565,20 @@ namespace QTournament
     // store the pointer to the new database and
     // overwrite the database config key with
     // the new filename
+    //
+    // do this only if the database name actually changed
     extPlayerDb = std::move(extDb);
     auto cfg = KeyValueTab::getTab(db, TAB_CFG, false);
     if (cfg == nullptr)
     {
       throw runtime_error("Config table not found -- this shouldn't happen!");
     }
-    cfg->set(CFG_KEY_EXT_PLAYER_DB, fname.toUtf8().constData());
+    string _oldFileName = (*cfg)[CFG_KEY_EXT_PLAYER_DB];
+    QString oldFileName = QString::fromUtf8(_oldFileName.data());
+    if (oldFileName != fname)
+    {
+      cfg->set(CFG_KEY_EXT_PLAYER_DB, fname.toUtf8().constData());
+    }
 
     CentralSignalEmitter::getInstance()->externalPlayerDatabaseChanged();
 

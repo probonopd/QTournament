@@ -23,6 +23,7 @@
 
 #include <QShortcut>
 #include <QCloseEvent>
+#include <QTimer>
 
 #include "ui_MainFrame.h"
 
@@ -64,7 +65,18 @@ private:
   bool execCmdSave();
   bool execCmdSaveAs();
   QString askForTournamentFileName(const QString& dlgTitle);
-  
+
+  void updateWindowTitle();
+
+  // timers for polling the database's dirty flag
+  // and triggering the autosave function
+  static constexpr int DIRTY_FLAG_POLL_INTERVALL__MS = 1000;
+  static constexpr int AUTOSAVE_INTERVALL__MS = 120000;
+  unique_ptr<QTimer> dirtyFlagPollTimer;
+  unique_ptr<QTimer> autosaveTimer;
+  bool lastDirtyState;
+  int lastAutosaveDirtyCounterValue;
+
 
 public slots:
   void newTournament();
@@ -90,6 +102,8 @@ public slots:
 
 private slots:
   void onToggleTestMenuVisibility();
+  void onDirtyFlagPollTimerElapsed();
+  void onAutosaveTimerElapsed();
 
 };
 
