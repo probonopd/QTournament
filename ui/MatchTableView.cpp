@@ -27,6 +27,7 @@
 #include "SignalRelay.h"
 #include "MatchMngr.h"
 #include "CourtMngr.h"
+#include "DlgSelectReferee.h"
 
 MatchTableView::MatchTableView(QWidget* parent)
   :QTableView(parent), db(nullptr), curDataModel(nullptr)
@@ -336,6 +337,17 @@ void MatchTableView::onMatchDoubleClicked(const QModelIndex& index)
 
 //----------------------------------------------------------------------------
 
+void MatchTableView::onAssignedRefereeTriggered()
+{
+  auto ma = getSelectedMatch();
+  if (ma == nullptr) return;
+
+  DlgSelectReferee dlg{db, *ma, false, this};
+  dlg.exec();
+}
+
+//----------------------------------------------------------------------------
+
 void MatchTableView::initContextMenu()
 {
   // prepare all actions
@@ -379,6 +391,7 @@ void MatchTableView::initContextMenu()
   // connect actions and slots
   connect(actWalkoverP1, SIGNAL(triggered(bool)), this, SLOT(onWalkoverP1Triggered()));
   connect(actWalkoverP2, SIGNAL(triggered(bool)), this, SLOT(onWalkoverP2Triggered()));
+  connect(actAssignReferee, SIGNAL(triggered(bool)), this, SLOT(onAssignedRefereeTriggered()));
 
   updateContextMenu();
 }

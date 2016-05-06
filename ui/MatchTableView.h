@@ -54,6 +54,7 @@ private slots:
   void onWalkoverP1Triggered();
   void onWalkoverP2Triggered();
   void onMatchDoubleClicked(const QModelIndex& index);
+  void onAssignedRefereeTriggered();
 
 signals:
   void matchSelectionChanged(int newlySelectedMatchId);

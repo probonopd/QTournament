@@ -125,7 +125,8 @@ HEADERS += \
     HelperFunc.h \
     TournamentDatabaseObjectManager.h \
     TournamentDatabaseObject.h \
-    CentralSignalEmitter.h
+    CentralSignalEmitter.h \
+    ui/DlgSelectReferee.h
 
 SOURCES += \
     Category.cpp \
@@ -226,7 +227,8 @@ SOURCES += \
     HelperFunc.cpp \
     TournamentDatabaseObjectManager.cpp \
     TournamentDatabaseObject.cpp \
-    CentralSignalEmitter.cpp
+    CentralSignalEmitter.cpp \
+    ui/DlgSelectReferee.cpp
 
 RESOURCES += \
     tournament.qrc
@@ -251,7 +253,8 @@ FORMS += \
     ui/DlgSelectPlayer.ui \
     ui/DlgPickPlayerSex.ui \
     ui/DlgImportPlayer.ui \
-    ui/DlgBulkImportToExtDb.ui
+    ui/DlgBulkImportToExtDb.ui \
+    ui/DlgSelectReferee.ui
 
 TRANSLATIONS = tournament_de.ts
 
