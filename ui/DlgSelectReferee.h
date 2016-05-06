@@ -21,11 +21,14 @@ public:
   static constexpr int MAX_NUM_LOSERS = 30;
   explicit DlgSelectReferee(TournamentDB* _db, const Match& _ma, bool _matchIsBeingCalled, QWidget *parent = 0);
   ~DlgSelectReferee();
+  upPlayer getFinalPlayerSelection();
 
 public slots:
   void onFilterModeChanged();
   void onTeamSelectionChanged();
   void onPlayerSelectionChanged();
+  void onBtnSelectClicked();
+  void onBtnNoneClicked();
 
 private:
   Ui::DlgSelectReferee *ui;
@@ -39,6 +42,8 @@ private:
   void resizeTabColumns();
 
   PlayerList getPlayerList_recentLosers();
+
+  upPlayer finalPlayerSelection;
 };
 
 //----------------------------------------------------------------------------

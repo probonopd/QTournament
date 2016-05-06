@@ -580,7 +580,19 @@ namespace QTournament {
 
   ERR MatchMngr::removeReferee(const Match& ma) const
   {
+    OBJ_STATE stat = ma.getState();
+    if ((stat == STAT_MA_RUNNING) || (stat == STAT_MA_FINISHED))
+    {
+      return MATCH_NOT_CONFIGURALE_ANYMORE;
+    }
 
+    TabRow matchRow = tab->operator [](ma.getId());
+    matchRow.updateToNull(MA_REFEREE_REF);
+
+    // fake a match-changed-event in order to trigger UI updates
+    CentralSignalEmitter::getInstance()->matchStatusChanged(ma.getId(), ma.getSeqNum(), stat, stat);
+
+    return OK;
   }
 
   //----------------------------------------------------------------------------

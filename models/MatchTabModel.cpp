@@ -105,6 +105,18 @@ QVariant MatchTableModel::data(const QModelIndex& index, int role) const
     {
       REFEREE_MODE mode = ma->getRefereeMode();
 
+      // if there is already a referee assigned, display
+      // the referee name
+      if ((mode != REFEREE_MODE::NONE) && (mode != REFEREE_MODE::HANDWRITTEN))
+      {
+        upPlayer referee = ma->getAssignedReferee();
+        if (referee != nullptr)
+        {
+          return referee->getDisplayName();
+        }
+      }
+
+      // in all other cases, display the referee selection mode
       switch (mode)
       {
       case REFEREE_MODE::NONE:

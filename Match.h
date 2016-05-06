@@ -80,7 +80,7 @@ namespace QTournament
     int getMatchDuration() const;
 
     REFEREE_MODE getRefereeMode() const;
-    upPlayer getAssignedRefree() const;
+    upPlayer getAssignedReferee() const;
     bool hasRefereeAssigned() const;
     ERR canAssignReferee() const;
 

@@ -54,7 +54,8 @@ private slots:
   void onWalkoverP1Triggered();
   void onWalkoverP2Triggered();
   void onMatchDoubleClicked(const QModelIndex& index);
-  void onAssignedRefereeTriggered();
+  void onAssignRefereeTriggered();
+  void onRemoveRefereeTriggered();
 
 signals:
   void matchSelectionChanged(int newlySelectedMatchId);
@@ -76,6 +77,7 @@ private:
 
   QMenu* refereeMode_submenu;
   QAction* actAssignReferee;
+  QAction* actRemoveReferee;
 
   void initContextMenu();
   void updateContextMenu();

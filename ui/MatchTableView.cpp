@@ -207,6 +207,7 @@ void MatchTableView::onContextMenuRequested(const QPoint& pos)
   // enable / disable the action for assigning umpires, depending
   // on the current umpire mode and match state
   actAssignReferee->setEnabled(ma->canAssignReferee() == OK);
+  actRemoveReferee->setEnabled(ma->hasRefereeAssigned());
 
   // show the context menu
   updateContextMenu();
@@ -337,13 +338,58 @@ void MatchTableView::onMatchDoubleClicked(const QModelIndex& index)
 
 //----------------------------------------------------------------------------
 
-void MatchTableView::onAssignedRefereeTriggered()
+void MatchTableView::onAssignRefereeTriggered()
 {
   auto ma = getSelectedMatch();
   if (ma == nullptr) return;
 
+  // make sure we can assign a referee
+  if (ma->canAssignReferee() != OK) return;
+
+  // let the user pick the referee
   DlgSelectReferee dlg{db, *ma, false, this};
-  dlg.exec();
+  int result = dlg.exec();
+  if (result != QDialog::Accepted)
+  {
+    return;
+  }
+
+  upPlayer selPlayer = dlg.getFinalPlayerSelection();
+  if (selPlayer == nullptr) return;
+
+  // actually do the assignment
+  MatchMngr mm{db};
+  ERR e = mm.assignReferee(*ma, *selPlayer);
+  if (e != OK)
+  {
+    QString msg = tr("Could not assign umpire to match.\n");
+    msg += tr("Maybe you tried to assign one of the players as umpire?");
+    QMessageBox::warning(this, tr("Umpire assignment failed"), msg);
+  }
+}
+
+//----------------------------------------------------------------------------
+
+void MatchTableView::onRemoveRefereeTriggered()
+{
+  auto ma = getSelectedMatch();
+  if (ma == nullptr) return;
+
+  // make sure there is a referee assigned
+  if (!(ma->hasRefereeAssigned()))
+  {
+    return;
+  }
+
+  // try to remove the assignment
+  MatchMngr mm{db};
+  ERR e = mm.removeReferee(*ma);
+  if (e != OK)
+  {
+    QString msg = tr("Could not remove umpire assignment from match.\n");
+    msg += tr("Some unexpected error occured.");
+    QMessageBox::warning(this, tr("Umpire removal failed"), msg);
+  }
 }
 
 //----------------------------------------------------------------------------
@@ -386,12 +432,15 @@ void MatchTableView::initContextMenu()
   newAction = refereeMode_submenu->addAction(tr("Manual"));
   newAction->setData(static_cast<int>(REFEREE_MODE::HANDWRITTEN));
   actAssignReferee = new QAction(tr("Assign umpire..."), this);
+  actRemoveReferee = new QAction(tr("Remove assigned umpire"), this);
   contextMenu->addAction(actAssignReferee);
+  contextMenu->addAction(actRemoveReferee);
 
   // connect actions and slots
   connect(actWalkoverP1, SIGNAL(triggered(bool)), this, SLOT(onWalkoverP1Triggered()));
   connect(actWalkoverP2, SIGNAL(triggered(bool)), this, SLOT(onWalkoverP2Triggered()));
-  connect(actAssignReferee, SIGNAL(triggered(bool)), this, SLOT(onAssignedRefereeTriggered()));
+  connect(actAssignReferee, SIGNAL(triggered(bool)), this, SLOT(onAssignRefereeTriggered()));
+  connect(actRemoveReferee, SIGNAL(triggered(bool)), this, SLOT(onRemoveRefereeTriggered()));
 
   updateContextMenu();
 }

@@ -356,7 +356,7 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  upPlayer Match::getAssignedRefree() const
+  upPlayer Match::getAssignedReferee() const
   {
     auto _refereeId = row.getInt2(MA_REFEREE_REF);
     if (_refereeId->isNull()) return nullptr;

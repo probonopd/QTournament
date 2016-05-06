@@ -95,6 +95,13 @@ DlgSelectReferee::~DlgSelectReferee()
 
 //----------------------------------------------------------------------------
 
+upPlayer DlgSelectReferee::getFinalPlayerSelection()
+{
+  return std::move(finalPlayerSelection);
+}
+
+//----------------------------------------------------------------------------
+
 void DlgSelectReferee::onFilterModeChanged()
 {
   rebuildPlayerList();
@@ -114,6 +121,25 @@ void DlgSelectReferee::onTeamSelectionChanged()
 void DlgSelectReferee::onPlayerSelectionChanged()
 {
   updateControls();
+}
+
+//----------------------------------------------------------------------------
+
+void DlgSelectReferee::onBtnSelectClicked()
+{
+  // the following call must yield a valid player (not nullptr)
+  // because otherwise we wouldn't enter this slot because
+  // the select button is only available if a player is selected.
+  finalPlayerSelection = ui->tabPlayers->getSelectedPlayer();
+  accept();
+}
+
+//----------------------------------------------------------------------------
+
+void DlgSelectReferee::onBtnNoneClicked()
+{
+  finalPlayerSelection = nullptr;
+  accept();
 }
 
 //----------------------------------------------------------------------------
@@ -320,6 +346,7 @@ void RefereeTableWidget::rebuildPlayerList(const PlayerList& pList)
     // add the player's name
     QTableWidgetItem* newItem = new QTableWidgetItem(p.getDisplayName());
     newItem->setData(Qt::UserRole, p.getId());
+    newItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
     setItem(idxRow, NAME_COL_ID, newItem);
 
     // add the player's team
@@ -384,9 +411,11 @@ upPlayer RefereeTableWidget::getSelectedPlayer()
   return pm.getPlayer_up(playerId);
 }
 
+//----------------------------------------------------------------------------
+
 bool RefereeTableWidget::hasPlayerSelected()
 {
-  return ((currentRow() > 0) && (currentItem() != nullptr));
+  return ((currentRow() >= 0) && (currentItem() != nullptr));
 }
 
 //----------------------------------------------------------------------------

@@ -335,7 +335,7 @@
    <sender>btnSelect</sender>
    <signal>clicked()</signal>
    <receiver>DlgSelectReferee</receiver>
-   <slot>accept()</slot>
+   <slot>onBtnSelectClicked()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>133</x>
@@ -363,10 +363,28 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>btnNone</sender>
+   <signal>clicked()</signal>
+   <receiver>DlgSelectReferee</receiver>
+   <slot>onBtnNoneClicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>383</x>
+     <y>652</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>383</x>
+     <y>337</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>onFilterModeChanged()</slot>
   <slot>onTeamSelectionChanged()</slot>
   <slot>onPlayerSelectionChanged()</slot>
+  <slot>onBtnSelectClicked()</slot>
+  <slot>onBtnNoneClicked()</slot>
  </slots>
 </ui>
