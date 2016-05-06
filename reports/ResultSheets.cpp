@@ -42,6 +42,16 @@ ResultSheets::ResultSheets(TournamentDB* _db, const QString& _name, int _numMatc
 
 //----------------------------------------------------------------------------
 
+ResultSheets::ResultSheets(TournamentDB* _db, const Match& singleMatchForPrinting)
+  :AbstractReport(_db, "Dummy"), numMatches(1), firstMatchNum(singleMatchForPrinting.getMatchNumber())
+{
+  // No connection to the SignalRelay here!
+  // We are completely independent.
+  // If this constructor is used, the object is only transient for immediate printing.
+}
+
+//----------------------------------------------------------------------------
+
 upSimpleReport ResultSheets::regenerateReport()
 {
   upSimpleReport result = createEmptyReport_Portrait();
