@@ -271,6 +271,17 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
+  QDateTime Match::getFinishTime() const
+  {
+    auto finishTime = row.getInt2(MA_FINISH_TIME);
+    if (finishTime->isNull()) return QDateTime();   // return null-time as error indicator
+    uint epochSecs = finishTime->get();   // Hmmm... conversion from int to unit... should work until 2035 or something
+
+    return QDateTime::fromTime_t(epochSecs);
+  }
+
+//----------------------------------------------------------------------------
+
   bool Match::addAddtionalCallTime() const
   {
     QDateTime curDateTime = QDateTime::currentDateTimeUtc();

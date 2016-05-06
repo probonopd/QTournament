@@ -74,6 +74,7 @@ namespace QTournament
     bool isWalkoverPossible() const;
 
     QDateTime getStartTime() const;
+    QDateTime getFinishTime() const;
     bool addAddtionalCallTime() const;
     QList<QDateTime> getAdditionalCallTimes() const;
     int getMatchDuration() const;

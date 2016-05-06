@@ -815,6 +815,54 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
+  PlayerPairList PlayerMngr::getRecentLosers(int maxCnt) const
+  {
+    if (maxCnt < 0) return PlayerPairList();
+
+    // search for up to maxCnt recently finished matches
+    WhereClause wc;
+    DbTab* matchTab = db->getTab(TAB_MATCH);
+    wc.addIntCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_FINISHED));
+    wc.setOrderColumn_Desc(MA_FINISH_TIME);
+    wc.setLimit(maxCnt);
+    MatchList ml = getObjectsByWhereClause<Match>(matchTab, wc);
+
+    // extract the losers from these matches
+    PlayerPairList result;
+    for (const Match& ma : ml)
+    {
+      auto loser = ma.getLoser();
+      if (loser == nullptr) continue;   // we will return less than maxCnt result, if we have matches with a draw in the list
+
+      result.push_back(*loser);
+    }
+
+    return result;
+  }
+
+  //----------------------------------------------------------------------------
+
+  upMatch PlayerMngr::getLastFinishedMatchForPlayer(const Player& p)
+  {
+    QString sql = "SELECT id FROM %1 WHERE %2=%3 OR %4=%3 OR %5=%3 OR %6=%3 ORDER BY %7 DESC LIMIT 1";
+    sql = sql.arg(TAB_MATCH);
+    sql = sql.arg(MA_ACTUAL_PLAYER1A_REF);
+    sql = sql.arg(p.getId());
+    sql = sql.arg(MA_ACTUAL_PLAYER1B_REF);
+    sql = sql.arg(MA_ACTUAL_PLAYER2A_REF);
+    sql = sql.arg(MA_ACTUAL_PLAYER2B_REF);
+    sql = sql.arg(MA_FINISH_TIME);
+
+    int matchId;
+    bool isOk = db->execScalarQueryInt(sql.toUtf8().constData(), &matchId, nullptr);
+    if (!isOk) return nullptr;  // no match found
+
+    MatchMngr mm{db};
+    return mm.getMatch(matchId);
+  }
+
+  //----------------------------------------------------------------------------
+
 
   //----------------------------------------------------------------------------
 

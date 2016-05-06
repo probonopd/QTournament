@@ -10,6 +10,8 @@
 #include "Team.h"
 #include "TeamMngr.h"
 #include "PlayerMngr.h"
+#include "HelperFunc.h"
+#include "delegates/DelegateItemLED.h"
 
 DlgSelectReferee::DlgSelectReferee(TournamentDB* _db, const Match& _ma, bool _matchIsBeingCalled, QWidget *parent) :
   QDialog(parent),
@@ -181,15 +183,46 @@ void DlgSelectReferee::rebuildPlayerList()
   if (curFilterMode == REFEREE_MODE::ALL_PLAYERS)
   {
     pList = pm.getAllPlayers();
+
+    // sort players alphabetically
+    std::sort(pList.begin(), pList.end(), [](const Player& p1, const Player& p2) {
+      return p1.getDisplayName() < p2.getDisplayName();
+    });
   }
   if (curFilterMode == REFEREE_MODE::SPECIAL_TEAM)
   {
     Team selTeam = tm.getTeamById(curTeamId);
     pList = tm.getPlayersForTeam(selTeam);
+
+    // sort players alphabetically
+    std::sort(pList.begin(), pList.end(), [](const Player& p1, const Player& p2) {
+      return p1.getDisplayName() < p2.getDisplayName();
+    });
   }
   if (curFilterMode == REFEREE_MODE::RECENT_LOSERS)
   {
     pList = getPlayerList_recentLosers();
+
+    // players are already sorted
+  }
+
+  // if we currently calling the match, only players in state IDLE
+  // may be selected
+  //
+  // the following approach is not really elegant: we simply check
+  // for all players that are not IDLE and remove them from the set,
+  // no matter if they have been in the set before.
+  //
+  // TODO: make this a bit more elegant...
+  if (matchIsBeingCalled)
+  {
+    for (const Player& p : pm.getAllPlayers())
+    {
+      if (p.getState() != STAT_PL_IDLE)
+      {
+        eraseAllValuesFromVector<Player>(pList, p);
+      }
+    }
   }
 
   // add the players to the table
@@ -200,7 +233,49 @@ void DlgSelectReferee::rebuildPlayerList()
 
 PlayerList DlgSelectReferee::getPlayerList_recentLosers()
 {
-  return PlayerList();
+  PlayerMngr pm{db};
+  PlayerPairList ppList = pm.getRecentLosers(MAX_NUM_LOSERS);
+
+  PlayerList result;
+  for (const PlayerPair& pp : ppList)
+  {
+    Player p = pp.getPlayer1();
+
+    // if this player is already a referee, skip this player
+    if (p.getState() == STAT_PL_REFEREE) continue;
+
+    // if this is a doubles pair: is one of the players
+    // already servicing as a referee? If yes, this pair
+    // has no more duties
+    if (pp.hasPlayer2())
+    {
+      Player p2 = pp.getPlayer2();
+      if (p2.getState() == STAT_PL_REFEREE) continue;
+
+      // okay, both players are currently not acting as
+      // an umpire. For fairness reasons, we continue
+      // with the player that has the lowest referee count
+      if (p2.getRefereeCount() < p.getRefereeCount())
+      {
+        p = p2;
+      }
+    }
+
+    // at this point, we have a "qualified" player
+    // stored in "p", even for a doubles pair.
+    //
+    // Before we add this player to the result list,
+    // make sure that the player is not already in it
+    if (std::find(result.begin(), result.end(), p) != result.end())
+    {
+      continue;
+    }
+
+    // finally, we can add "p" to the result list
+    result.push_back(p);
+  }
+
+  return result;
 }
 
 
@@ -213,7 +288,7 @@ RefereeTableWidget::RefereeTableWidget(QWidget* parent)
 {
   // prepare the table layout (columns, headers)
   setColumnCount(NUM_TAB_COLUMNS);
-  QStringList horHeaders{tr("Player name"), tr("Team"), tr("Uses")};
+  QStringList horHeaders{"", tr("Player name"), tr("Team"), tr("Uses"), tr("Last match finished")};
   setHorizontalHeaderLabels(horHeaders);
   verticalHeader()->hide();
 }
@@ -226,26 +301,64 @@ void RefereeTableWidget::rebuildPlayerList(const PlayerList& pList)
   clearContents();
   setRowCount(0);
 
-  // populate the table rows
-  setRowCount(pList.size());
-  int idxRow = 0;
-  for (const Player& p : pList)
-  {
-    QTableWidgetItem* newItem = new QTableWidgetItem(p.getDisplayName());
-    newItem->setData(Qt::UserRole, p.getId());
-    setItem(idxRow, NAME_COL_ID, newItem);
-
-    idxRow++;
-  }
-
   // grab the current database handle from the first entry
   // in the player list
   if (pList.empty())
   {
     db = nullptr;
+    return;
   } else {
     db = pList.at(0).getDatabaseHandle();
   }
+
+  // populate the table rows
+  PlayerMngr pm{db};
+  setRowCount(pList.size());
+  int idxRow = 0;
+  for (const Player& p : pList)
+  {
+    // add the player's name
+    QTableWidgetItem* newItem = new QTableWidgetItem(p.getDisplayName());
+    newItem->setData(Qt::UserRole, p.getId());
+    setItem(idxRow, NAME_COL_ID, newItem);
+
+    // add the player's team
+    newItem = new QTableWidgetItem(p.getTeam().getName());
+    setItem(idxRow, TEAM_COL_ID, newItem);
+
+    // add the player's referee count
+    int refereeCount = p.getRefereeCount();
+    newItem = new QTableWidgetItem(QString::number(refereeCount));
+    setItem(idxRow, REFEREE_COUNT_COL_ID, newItem);
+
+    // add the time of the last finished match
+    auto ma = pm.getLastFinishedMatchForPlayer(p);
+    QString txt = "--";
+    if (ma != nullptr)
+    {
+      QDateTime finishTime = ma->getFinishTime();
+      txt = finishTime.toString("HH:mm");
+    }
+    newItem = new QTableWidgetItem(txt);
+    setItem(idxRow, LAST_FINISH_TIME_COL_ID, newItem);
+
+    // add the player's status as a color indication in
+    // the first column
+    newItem = new QTableWidgetItem("");
+    OBJ_STATE plStat = p.getState();
+    QColor bckCol;
+    if (DelegateItemLED::state2color.contains(plStat))
+    {
+      bckCol = DelegateItemLED::state2color[plStat];
+    } else {
+      bckCol = QColor(255, 255, 255); // white
+    }
+    newItem->setBackgroundColor(bckCol);
+    setItem(idxRow, STAT_COL_ID, newItem);
+
+    idxRow++;
+  }
+
 }
 
 //----------------------------------------------------------------------------
@@ -281,8 +394,10 @@ bool RefereeTableWidget::hasPlayerSelected()
 void RefereeTableWidget::resizeEvent(QResizeEvent* event)
 {
   // autosize all column in a fixed ratio
-  int widthIncrement = width() / (REL_WIDTH_NAME + REL_WIDTH_TEAM +  1 * REL_WIDTH_OTHER);
+  int widthIncrement = width() / (REL_WIDTH_NAME + REL_WIDTH_TEAM +  2 * REL_WIDTH_OTHER + REL_WIDTH_STATE);
+  setColumnWidth(STAT_COL_ID, widthIncrement * REL_WIDTH_STATE);
   setColumnWidth(NAME_COL_ID, widthIncrement * REL_WIDTH_NAME);
   setColumnWidth(TEAM_COL_ID, widthIncrement * REL_WIDTH_TEAM);
   setColumnWidth(REFEREE_COUNT_COL_ID, widthIncrement * REL_WIDTH_OTHER);
+  setColumnWidth(LAST_FINISH_TIME_COL_ID, widthIncrement * REL_WIDTH_OTHER);
 }

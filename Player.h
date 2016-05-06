@@ -55,6 +55,7 @@ namespace QTournament
     SEX getSex() const;
     Team getTeam() const;
     vector<Category> getAssignedCategories() const;
+    int getRefereeCount() const;
 
   private:
     Player (TournamentDB* db, int rowId);

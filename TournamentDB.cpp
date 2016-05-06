@@ -424,7 +424,9 @@ namespace QTournament
       isOkay = execNonQuery(sql.toUtf8().constData(), &dbErr);
       if (!isOkay) return false;
 
-      // add the counter for referee activities for each participant
+      // add the counter for referee activities for each participant in the players table
+      sql_base = "ALTER TABLE %1 ADD COLUMN %2";
+      sql_base = sql_base.arg(TAB_PLAYER);
       colDef = "%1 INTEGER DEFAULT 0 NOT NULL";
       colDef = colDef.arg(PL_REFEREE_COUNT);
       sql = sql_base.arg(colDef);
