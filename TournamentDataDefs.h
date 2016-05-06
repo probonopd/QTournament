@@ -366,11 +366,22 @@ namespace QTournament
   
 //----------------------------------------------------------------------------
 
+  enum class REFEREE_MODE {
+    NONE = 0,           // no umpire for the match
+    HANDWRITTEN,    // the umpire's name is inserted manually be the user on the match sheet
+    ALL_PLAYERS,    // the umpire is selected upon match start among all players
+    RECENT_LOSERS,  // the umpire is selected upon match start among the recent losers
+    SPECIAL_TEAM    // the umpire is selected upon match start among the members of a special team (--> dedicated umpires)
+  };
+
+//----------------------------------------------------------------------------
+
   class TournamentSettings
   {
   public:
     QString tournamentName;
     QString organizingClub;
+    REFEREE_MODE refereeMode;
     bool useTeams;
   } ;
 
@@ -382,14 +393,6 @@ namespace QTournament
     QUARTER,
     L16
   };
-
-enum class REFEREE_MODE {
-  NONE = 0,           // no umpire for the match
-  HANDWRITTEN,    // the umpire's name is inserted manually be the user on the match sheet
-  ALL_PLAYERS,    // the umpire is selected upon match start among all players
-  RECENT_LOSERS,  // the umpire is selected upon match start among the recent losers
-  SPECIAL_TEAM    // the umpire is selected upon match start among the members of a special team (--> dedicated umpires)
-};
 
 //----------------------------------------------------------------------------
 

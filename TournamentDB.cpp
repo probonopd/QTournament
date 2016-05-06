@@ -66,6 +66,8 @@ namespace QTournament
     cfgTab->set(CFG_KEY_TNMT_NAME, QString2StdString(cfg.tournamentName));
     cfgTab->set(CFG_KEY_TNMT_ORGA, QString2StdString(cfg.organizingClub));
     cfgTab->set(CFG_KEY_USE_TEAMS, cfg.useTeams);
+    cfgTab->set(CFG_KEY_REFEREE_TEAM_ID, -1);
+    cfgTab->set(CFG_KEY_DEFAULT_REFEREE_MODE, static_cast<int>(cfg.refereeMode));
 
     // return the new database pointer
     if (err != nullptr) *err = OK;

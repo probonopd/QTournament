@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>242</height>
+    <height>300</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -51,6 +51,29 @@
      </item>
      <item>
       <spacer name="verticalSpacer_2">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>40</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_3">
+       <property name="text">
+        <string>Default umpire mode:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="cbUmpire"/>
+     </item>
+     <item>
+      <spacer name="verticalSpacer_4">
        <property name="orientation">
         <enum>Qt::Vertical</enum>
        </property>
@@ -176,9 +199,26 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>cbUmpire</sender>
+   <signal>currentIndexChanged(int)</signal>
+   <receiver>DlgTournamentSettings</receiver>
+   <slot>onUmpireSelectionChanged()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>199</x>
+     <y>179</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>199</x>
+     <y>149</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>onTournamentNameChanged()</slot>
   <slot>onOrgaNameChanged()</slot>
+  <slot>onUmpireSelectionChanged()</slot>
  </slots>
 </ui>

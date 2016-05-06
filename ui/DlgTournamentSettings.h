@@ -41,6 +41,7 @@ public:
 public slots:
   void onTournamentNameChanged();
   void onOrgaNameChanged();
+  void onUmpireSelectionChanged();
 
 private:
   Ui::DlgTournamentSettings *ui;

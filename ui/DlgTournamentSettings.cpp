@@ -24,6 +24,16 @@ DlgTournamentSettings::DlgTournamentSettings(QWidget *parent) :
   ui(new Ui::DlgTournamentSettings)
 {
   ui->setupUi(this);
+
+  // fill the combo box for the umpire mode
+  ui->cbUmpire->clear();
+  ui->cbUmpire->addItem(tr("<Please select>"), -1);
+  ui->cbUmpire->addItem(tr("No umpires"), static_cast<int>(QTournament::REFEREE_MODE::NONE));
+  ui->cbUmpire->addItem(tr("Handwritten assignment"), static_cast<int>(QTournament::REFEREE_MODE::HANDWRITTEN));
+  ui->cbUmpire->addItem(tr("Pick from all players"), static_cast<int>(QTournament::REFEREE_MODE::ALL_PLAYERS));
+  ui->cbUmpire->addItem(tr("Pick from recent losers"), static_cast<int>(QTournament::REFEREE_MODE::RECENT_LOSERS));
+  ui->cbUmpire->addItem(tr("Pick from special team"), static_cast<int>(QTournament::REFEREE_MODE::SPECIAL_TEAM));
+
   updateButtons();
 }
 
@@ -42,6 +52,9 @@ std::unique_ptr<QTournament::TournamentSettings> DlgTournamentSettings::getTourn
   QString orgName = ui->leOrgaClub->text().trimmed();
   if (orgName.isEmpty()) return nullptr;
 
+  int refereeModeId = ui->cbUmpire->currentData().toInt();
+  if (refereeModeId < 0) return nullptr;
+
   // the next attribute is always "1" for the time being;
   // maybe I'll add the possibility of having a "team-free"
   // tournament sometime later
@@ -51,6 +64,7 @@ std::unique_ptr<QTournament::TournamentSettings> DlgTournamentSettings::getTourn
   result->organizingClub = orgName;
   result->tournamentName = tName;
   result->useTeams = useTeams;
+  result->refereeMode = static_cast<QTournament::REFEREE_MODE>(refereeModeId);
 
   return std::unique_ptr<QTournament::TournamentSettings>(result);
 }
@@ -69,6 +83,13 @@ void DlgTournamentSettings::onOrgaNameChanged()
 
 //----------------------------------------------------------------------------
 
+void DlgTournamentSettings::onUmpireSelectionChanged()
+{
+  updateButtons();
+}
+
+//----------------------------------------------------------------------------
+
 void DlgTournamentSettings::updateButtons()
 {
   bool okayButtonEnabled = true;
@@ -77,6 +98,10 @@ void DlgTournamentSettings::updateButtons()
     okayButtonEnabled = false;
   }
   if (ui->leTournamentName->text().trimmed().isEmpty())
+  {
+    okayButtonEnabled = false;
+  }
+  if (ui->cbUmpire->currentData().toInt() < 0)
   {
     okayButtonEnabled = false;
   }
