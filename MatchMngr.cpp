@@ -28,6 +28,7 @@
 #include "PlayerMngr.h"
 #include "CourtMngr.h"
 #include "CatMngr.h"
+#include "KeyValueTab.h"
 
 using namespace SqliteOverlay;
 
@@ -242,6 +243,10 @@ namespace QTournament {
       return nullptr;
     }
 
+    // determine the default referee mode for the new match
+    auto cfg = SqliteOverlay::KeyValueTab::getTab(db, TAB_CFG);
+    int defaultRefereeModeId = cfg->getInt(CFG_KEY_DEFAULT_REFEREE_MODE);
+
     // Okay, parameters are valid
     // create a new match entry in the database
     ColumnValueClause cvc;
@@ -251,6 +256,7 @@ namespace QTournament {
     cvc.addIntCol(MA_PAIR2_SYMBOLIC_VAL, 0);   // default: no symbolic name
     cvc.addIntCol(MA_WINNER_RANK, -1);         // default: no rank, no knock out
     cvc.addIntCol(MA_LOSER_RANK, -1);         // default: no rank, no knock out
+    cvc.addIntCol(MA_REFEREE_MODE, defaultRefereeModeId);
     CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
     cse->beginCreateMatch();
     int newId = tab->insertRow(cvc);
