@@ -285,6 +285,20 @@ void MatchTableView::onMatchDoubleClicked(const QModelIndex& index)
   auto ma = getSelectedMatch();
   if (ma == nullptr) return;
 
+  // special case: if the user double-clicked the umpire-column,
+  // we do not call the match, but we present the dialog for
+  // selecting an umpire, if possible and meaningful
+  if (index.column() == MatchTableModel::REFEREE_MODE_COL_ID)
+  {
+    REFEREE_MODE refMode = ma->getRefereeMode();
+    if (ma->canAssignReferee() == OK)
+    {
+      onAssignRefereeTriggered();
+    }
+
+    return;  // do not proceed with a match call
+  }
+
   CourtMngr cm{db};
   MatchMngr mm{db};
 
