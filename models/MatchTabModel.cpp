@@ -125,8 +125,14 @@ QVariant MatchTableModel::data(const QModelIndex& index, int role) const
       case REFEREE_MODE::HANDWRITTEN:
         return tr("Manual");
 
-      default:
-        return tr("Pick");
+      case REFEREE_MODE::ALL_PLAYERS:
+        return tr("Pick from all players");
+
+      case REFEREE_MODE::RECENT_LOSERS:
+        return tr("Pick from losers");
+
+      case REFEREE_MODE::SPECIAL_TEAM:
+        return tr("Pick from team");
       }
 
       return tr("unknown");
