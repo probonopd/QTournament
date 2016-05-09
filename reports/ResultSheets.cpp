@@ -249,7 +249,7 @@ void ResultSheets::printMatchData(upSimpleReport& rep, const Match& ma) const
     txt += tr("Game:");
     txt += "\t__________     \t:\t     __________";
     rep->writeLine(txt, RESULTSHEET_GAMELABEL_STYLE);
-    rep->skip(6.5);
+    rep->skip(4.5);
   }
 
   // print umpire information
