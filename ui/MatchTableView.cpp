@@ -18,8 +18,6 @@
 
 #include <QMessageBox>
 
-#include "SimpleReportViewer.h"
-
 #include "MatchTableView.h"
 #include "MainFrame.h"
 
@@ -30,7 +28,7 @@
 #include "MatchMngr.h"
 #include "CourtMngr.h"
 #include "DlgSelectReferee.h"
-#include "reports/ResultSheets.h"
+#include "ui/commonCommands/cmdAssignRefereeToMatch.h"
 
 MatchTableView::MatchTableView(QWidget* parent)
   :QTableView(parent), db(nullptr), curDataModel(nullptr)
@@ -290,12 +288,7 @@ void MatchTableView::onMatchDoubleClicked(const QModelIndex& index)
   // selecting an umpire, if possible and meaningful
   if (index.column() == MatchTableModel::REFEREE_MODE_COL_ID)
   {
-    REFEREE_MODE refMode = ma->getRefereeMode();
-    if (ma->canAssignReferee() == OK)
-    {
-      onAssignRefereeTriggered();
-    }
-
+    onAssignRefereeTriggered();
     return;  // do not proceed with a match call
   }
 
@@ -360,29 +353,8 @@ void MatchTableView::onAssignRefereeTriggered()
   auto ma = getSelectedMatch();
   if (ma == nullptr) return;
 
-  // make sure we can assign a referee
-  if (ma->canAssignReferee() != OK) return;
-
-  // let the user pick the referee
-  DlgSelectReferee dlg{db, *ma, false, this};
-  int result = dlg.exec();
-  if (result != QDialog::Accepted)
-  {
-    return;
-  }
-
-  upPlayer selPlayer = dlg.getFinalPlayerSelection();
-  if (selPlayer == nullptr) return;
-
-  // actually do the assignment
-  MatchMngr mm{db};
-  ERR e = mm.assignReferee(*ma, *selPlayer);
-  if (e != OK)
-  {
-    QString msg = tr("Could not assign umpire to match.\n");
-    msg += tr("Maybe you tried to assign one of the players as umpire?");
-    QMessageBox::warning(this, tr("Umpire assignment failed"), msg);
-  }
+  cmdAssignRefereeToMatch cmd{this, *ma, false};
+  cmd.exec();
 }
 
 //----------------------------------------------------------------------------
@@ -533,68 +505,9 @@ void MatchTableView::execCall(const Match& ma, const Court& co)
   ERR err = mm.canAssignMatchToCourt(ma, co);
   if (err == MATCH_NEEDS_REFEREE)
   {
-    // make sure we can assign a referee
-    if (ma.canAssignReferee() != OK)
-    {
-      QString msg = tr("An unexpected error occured: the match needs an umpire,\n");
-      msg += tr("but an umpire can't be assigned right now.\n\n");
-      msg += tr("The match cannot be started.");
-      QMessageBox::critical(this, tr("Match call failed"), msg);
-      return;
-    }
-
-    // let the user pick the referee
-    DlgSelectReferee dlg{db, ma, true, this};
-    int result = dlg.exec();
-    if (result != QDialog::Accepted)
-    {
-      return;
-    }
-
-    upPlayer selPlayer = dlg.getFinalPlayerSelection();
-    if (selPlayer == nullptr)
-    {
-      // the user selected to continue without referee
-      err = mm.setRefereeMode(ma, REFEREE_MODE::NONE);
-      if (err != OK)
-      {
-        QString msg = tr("Can't continue without umpire, because an\n");
-        msg += tr("unexpected error occured.\n\n");
-        msg += tr("The match cannot be started.");
-        QMessageBox::critical(this, tr("Match call failed"), msg);
-        return;
-      }
-    } else {
-      // actually do the assignment
-      err = mm.assignReferee(ma, *selPlayer);
-      if (err != OK)
-      {
-        QString msg = tr("Could not assign umpire to match.\n");
-        msg += tr("Maybe you tried to assign one of the players as umpire?");
-        QMessageBox::warning(this, tr("Umpire assignment failed"), msg);
-        return;
-      }
-
-      // ask the user if we should print a new result sheet with
-      // the freshly assigned referee name
-      QString msg = tr("Do you want to print a new result with the\n");
-      msg += tr("updated umpire name for this match?");
-      result = QMessageBox::question(this, tr("Print result sheet?"), msg);
-      if (result == QMessageBox::Yes)
-      {
-        // create a report instance that is locked to show only one match
-        ResultSheets sheet{db, ma};
-
-        // let the report object create the actual output
-        upSimpleReport rep = sheet.regenerateReport();
-
-        // create an invisible report viewer and directly trigger
-        // the print reaction
-        SimpleReportLib::SimpleReportViewer viewer{this};
-        viewer.setReport(rep.get());
-        viewer.onBtnPrintClicked();
-      }
-    }
+    cmdAssignRefereeToMatch cmd{this, ma, true};
+    err = cmd.exec();
+    if (err != OK) return;
   }
 
   // all necessary pre-checks should have been performed before
