@@ -501,13 +501,23 @@ void MatchTableView::execCall(const Match& ma, const Court& co)
 {
   MatchMngr mm{db};
 
+  // this is a flag that tells us to remove the
+  // umpire assignment in case we cancel the call
+  bool callStartedWithUnassignedReferee = false;
+
   // check if we need to ask the user for a referee
   ERR err = mm.canAssignMatchToCourt(ma, co);
   if (err == MATCH_NEEDS_REFEREE)
   {
+    callStartedWithUnassignedReferee = true;
     cmdAssignRefereeToMatch cmd{this, ma, true};
     err = cmd.exec();
     if (err != OK) return;
+
+    // if the match still needs a referee, the user
+    // has canceled the selection dialog
+    err = mm.canAssignMatchToCourt(ma, co);
+    if (err == MATCH_NEEDS_REFEREE) return;
   }
 
   // all necessary pre-checks should have been performed before
@@ -519,6 +529,13 @@ void MatchTableView::execCall(const Match& ma, const Court& co)
     msg += tr("Sorry, this shouldn't happen.\n");
     msg += tr("The match cannot be started.");
     QMessageBox::critical(this, tr("Assign match to court"), msg);
+
+    // restore the initial referee-state, if necessary
+    if (callStartedWithUnassignedReferee)
+    {
+      mm.removeReferee(ma);
+    }
+
     return;
   }
 
@@ -537,10 +554,25 @@ void MatchTableView::execCall(const Match& ma, const Court& co)
       msg += tr("Sorry, this shouldn't happen.\n");
       msg += tr("The match cannot be started.");
       QMessageBox::critical(this, tr("Assign match to court"), msg);
+
+      // restore the initial referee-state, if necessary
+      if (callStartedWithUnassignedReferee)
+      {
+        mm.removeReferee(ma);
+      }
+
     }
     updateSelectionAfterDataChange();
+
     return;
   }
+
+  // restore the initial referee-state, if necessary
+  if (callStartedWithUnassignedReferee)
+  {
+    mm.removeReferee(ma);
+  }
+
   QMessageBox::information(this, tr("Assign match to court"), tr("Call cancled, match not started"));
 }
 
