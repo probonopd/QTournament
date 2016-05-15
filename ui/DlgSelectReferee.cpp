@@ -13,9 +13,9 @@
 #include "HelperFunc.h"
 #include "delegates/DelegateItemLED.h"
 
-DlgSelectReferee::DlgSelectReferee(TournamentDB* _db, const Match& _ma, bool _matchIsBeingCalled, QWidget *parent) :
+DlgSelectReferee::DlgSelectReferee(TournamentDB* _db, const Match& _ma, REFEREE_ACTION _refAction, QWidget *parent) :
   QDialog(parent),
-  ui(new Ui::DlgSelectReferee), db(_db), ma(_ma), matchIsBeingCalled(_matchIsBeingCalled)
+  ui(new Ui::DlgSelectReferee), db(_db), ma(_ma), refAction(_refAction)
 {
   ui->setupUi(this);
 
@@ -75,10 +75,7 @@ DlgSelectReferee::DlgSelectReferee(TournamentDB* _db, const Match& _ma, bool _ma
 
   // if the dialog is executed when the match is NOT BEING CALLED (--> we have a "pre-assignment)
   // then continuing without an umpire is no option
-  if (!matchIsBeingCalled)
-  {
-    ui->btnNone->setHidden(true);
-  }
+  ui->btnNone->setHidden(refAction != REFEREE_ACTION::MATCH_CALL);
 
   // fill the player table
   rebuildPlayerList();
@@ -86,13 +83,22 @@ DlgSelectReferee::DlgSelectReferee(TournamentDB* _db, const Match& _ma, bool _ma
   // set the headline
   QString hdr;
   QString style = "QLabel { color : %1; };";
-  if (matchIsBeingCalled)
+  switch (refAction)
   {
-    hdr = tr("!! Match call !!");
-    style = style.arg("red");
-  } else {
+  case REFEREE_ACTION::PRE_ASSIGN:
     hdr = tr("Pre-assignment");
     style = style.arg("green");
+    break;
+
+  case REFEREE_ACTION::MATCH_CALL:
+    hdr = tr("!! Match call !!");
+    style = style.arg("red");
+    break;
+
+  case REFEREE_ACTION::SWAP:
+    hdr = tr("Umpire swap");
+    style = style.arg("green");
+    break;
   }
   ui->laHeadline->setText(hdr);
   ui->laHeadline->setStyleSheet(style);
@@ -268,7 +274,7 @@ void DlgSelectReferee::rebuildPlayerList()
     // players are already sorted
   }
 
-  // if we currently calling the match, only players in state IDLE
+  // if we currently calling the match or swapping the umpire, only players in state IDLE
   // may be selected
   //
   // the following approach is not really elegant: we simply check
@@ -276,7 +282,7 @@ void DlgSelectReferee::rebuildPlayerList()
   // no matter if they have been in the set before.
   //
   // TODO: make this a bit more elegant...
-  if (matchIsBeingCalled)
+  if (refAction != REFEREE_ACTION::PRE_ASSIGN)
   {
     for (const Player& p : pm.getAllPlayers())
     {

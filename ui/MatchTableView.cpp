@@ -207,7 +207,7 @@ void MatchTableView::onContextMenuRequested(const QPoint& pos)
 
   // enable / disable the action for assigning umpires, depending
   // on the current umpire mode and match state
-  actAssignReferee->setEnabled(ma->canAssignReferee() == OK);
+  actAssignReferee->setEnabled(ma->canAssignReferee(REFEREE_ACTION::PRE_ASSIGN) == OK);
   actRemoveReferee->setEnabled(ma->hasRefereeAssigned());
 
   // show the context menu
@@ -353,7 +353,7 @@ void MatchTableView::onAssignRefereeTriggered()
   auto ma = getSelectedMatch();
   if (ma == nullptr) return;
 
-  cmdAssignRefereeToMatch cmd{this, *ma, false};
+  cmdAssignRefereeToMatch cmd{this, *ma, REFEREE_ACTION::PRE_ASSIGN};
   cmd.exec();
 }
 
@@ -510,7 +510,7 @@ void MatchTableView::execCall(const Match& ma, const Court& co)
   if (err == MATCH_NEEDS_REFEREE)
   {
     callStartedWithUnassignedReferee = true;
-    cmdAssignRefereeToMatch cmd{this, ma, true};
+    cmdAssignRefereeToMatch cmd{this, ma, REFEREE_ACTION::MATCH_CALL};
     err = cmd.exec();
     if (err != OK) return;
 

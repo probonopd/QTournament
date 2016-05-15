@@ -163,7 +163,7 @@ namespace QTournament {
   
   //----------------------------------------------------------------------------
 
-  MatchGroupList MatchMngr::getAllMatchGroups()
+  MatchGroupList MatchMngr::getAllMatchGroups() const
   {
     return getAllObjects<MatchGroup>(groupTab);
   }
@@ -545,9 +545,9 @@ namespace QTournament {
 
   //----------------------------------------------------------------------------
 
-  ERR MatchMngr::assignReferee(const Match& ma, const Player& p) const
+  ERR MatchMngr::assignReferee(const Match& ma, const Player& p, REFEREE_ACTION refAction) const
   {
-    ERR e = ma.canAssignReferee();
+    ERR e = ma.canAssignReferee(refAction);
     if (e != OK) return e;
 
     // don't allow assignments of players that actually
@@ -571,9 +571,33 @@ namespace QTournament {
       return PLAYER_NOT_SUITABLE;
     }
 
+    // ensure that the player is IDLE when calling a match or
+    // swapping the umpire
+    if ((refAction != REFEREE_ACTION::PRE_ASSIGN) && (p.getState() != STAT_PL_IDLE))
+    {
+      return PLAYER_NOT_SUITABLE;
+    }
+
+    // store the currently assigned referee
+    upPlayer currentReferee = ma.getAssignedReferee();
+
     // okay, it is safe to assign the referee
     TabRow matchRow = tab->operator [](ma.getId());
     matchRow.update(MA_REFEREE_REF, p.getId());
+
+    // if we're swapping the umpire, we have to update the player states as well
+    //
+    // Note: when calling the match, the player states are updated by assignMatchToCourt()
+    CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
+    if (refAction == REFEREE_ACTION::SWAP)
+    {
+      assert(currentReferee != nullptr);
+      currentReferee->setState(STAT_PL_IDLE);
+      cse->playerStatusChanged(currentReferee->getId(), currentReferee->getSeqNum(), STAT_PL_REFEREE, STAT_PL_IDLE);
+
+      p.setState(STAT_PL_REFEREE);
+      cse->playerStatusChanged(p.getId(), p.getSeqNum(), STAT_PL_IDLE, STAT_PL_REFEREE);
+    }
 
     // maybe the match status changes after the assignment, because we're now
     // waiting for a busy referee to become available
@@ -581,7 +605,34 @@ namespace QTournament {
 
     // fake a match-changed-event in order to trigger UI updates
     OBJ_STATE stat = ma.getState();
-    CentralSignalEmitter::getInstance()->matchStatusChanged(ma.getId(), ma.getSeqNum(), stat, stat);
+    cse->matchStatusChanged(ma.getId(), ma.getSeqNum(), stat, stat);
+
+    // in case we're calling a match or swapping the umpire:
+    //
+    // check all matches that are currently "READY" because
+    // due to the player allocation, some of them might have
+    // become "BUSY"
+    for (const MatchGroup& mg : getAllMatchGroups())
+    {
+      for (const Match& otherMatch : mg.getMatches())
+      {
+        OBJ_STATE otherStat = otherMatch.getState();
+
+        // upon match call, other matches can only switch from READY to BUSY
+        // because we're allocating players
+        if ((refAction == REFEREE_ACTION::MATCH_CALL) && (otherStat == STAT_MA_READY))
+        {
+          updateMatchStatus(otherMatch);
+        }
+
+        // upon umpire swap, other matches can switch from READY to BUSY or from BUSY to READY
+        // because we're allocating the new umpire and release the old umpire
+        if ((refAction == REFEREE_ACTION::SWAP) && ((otherStat == STAT_MA_READY) || (otherStat == STAT_MA_BUSY)))
+        {
+          updateMatchStatus(otherMatch);
+        }
+      }
+    }
 
     return OK;
   }
@@ -1422,8 +1473,7 @@ namespace QTournament {
     // check all matches that are currently "READY" because
     // due to the player allocation, some of them might have
     // become "BUSY"
-    MatchMngr mm{db};
-    for (const MatchGroup& mg : mm.getAllMatchGroups())
+    for (const MatchGroup& mg : getAllMatchGroups())
     {
       for (const Match& otherMatch : mg.getMatches())
       {

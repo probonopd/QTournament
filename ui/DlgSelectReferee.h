@@ -19,7 +19,7 @@ class DlgSelectReferee : public QDialog
 
 public:
   static constexpr int MAX_NUM_LOSERS = 30;
-  explicit DlgSelectReferee(TournamentDB* _db, const Match& _ma, bool _matchIsBeingCalled, QWidget *parent = 0);
+  explicit DlgSelectReferee(TournamentDB* _db, const Match& _ma, REFEREE_ACTION _refAction, QWidget *parent = 0);
   ~DlgSelectReferee();
   upPlayer getFinalPlayerSelection();
 
@@ -35,7 +35,7 @@ private:
   Ui::DlgSelectReferee *ui;
   TournamentDB* db;
   Match ma;
-  bool matchIsBeingCalled;
+  REFEREE_ACTION refAction;
   void updateControls();
 
   void initTeamList(int defaultTeamId = -1);

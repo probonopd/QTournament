@@ -53,6 +53,7 @@ private slots:
   void onWalkoverP2Triggered();
   void onActionUndoCallTriggered();
   void onActionAddCallTriggered();
+  void onActionSwapRefereeTriggered();
 
 private:
   static constexpr int MAX_NUM_ADD_CALL = 3;
@@ -71,6 +72,7 @@ private:
   QAction* actWalkoverP1;
   QAction* actWalkoverP2;
   QAction* actAddCall;
+  QAction* actSwapReferee;
 
   void initContextMenu();
   void updateContextMenu(bool isRowClicked);

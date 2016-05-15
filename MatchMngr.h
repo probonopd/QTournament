@@ -69,7 +69,7 @@ namespace QTournament
 
     // retrievers / enumerators for MATCH GROUPS
     MatchGroupList getMatchGroupsForCat(const Category& cat, int round=-1) const;
-    MatchGroupList getAllMatchGroups();
+    MatchGroupList getAllMatchGroups() const;
     unique_ptr<MatchGroup> getMatchGroup(const Category& cat, const int round, const int grpNum,  ERR* err);
     unique_ptr<MatchGroup> getMatchGroupBySeqNum(int mgSeqNum);
     MatchGroupList getStagedMatchGroupsOrderedBySequence() const;
@@ -111,7 +111,7 @@ namespace QTournament
 
     // referee/umpire handling
     ERR setRefereeMode(const Match& ma, REFEREE_MODE newMode) const;
-    ERR assignReferee(const Match& ma, const Player& p) const;
+    ERR assignReferee(const Match& ma, const Player& p, REFEREE_ACTION refAction) const;
     ERR removeReferee(const Match& ma) const;
 
 

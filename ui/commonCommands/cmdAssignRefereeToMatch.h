@@ -31,13 +31,13 @@ class cmdAssignRefereeToMatch : public QObject, AbstractCommand
   Q_OBJECT
 
 public:
-  cmdAssignRefereeToMatch(QWidget* p, const Match& _ma, bool _isMatchCall);
+  cmdAssignRefereeToMatch(QWidget* p, const Match& _ma, REFEREE_ACTION _refAction);
   virtual ERR exec() override;
   virtual ~cmdAssignRefereeToMatch() {}
 
 protected:
   Match ma;
-  bool isMatchCall;
+  REFEREE_ACTION refAction;
 };
 
 #endif // CMDASSIGNREFEREETOMATCH_H

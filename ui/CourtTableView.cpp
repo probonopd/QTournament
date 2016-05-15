@@ -22,6 +22,7 @@
 #include "CourtMngr.h"
 #include "MatchMngr.h"
 #include "ui/GuiHelpers.h"
+#include "ui/commonCommands/cmdAssignRefereeToMatch.h"
 
 CourtTableView::CourtTableView(QWidget* parent)
   :QTableView(parent), db(nullptr), curCourtTabModel(nullptr)
@@ -163,6 +164,7 @@ void CourtTableView::initContextMenu()
   actUndoCall = new QAction(tr("Undo call"), this);
   actFinishMatch = new QAction(tr("Finish match"), this);
   actAddCall = new QAction(tr("Repeat call"), this);
+  actSwapReferee = new QAction(tr("Swap umpire"), this);
 
   // create sub-actions for the walkover-selection
   actWalkoverP1 = new QAction("P1", this);  // this is just a dummy
@@ -174,6 +176,7 @@ void CourtTableView::initContextMenu()
   connect(actWalkoverP2, SIGNAL(triggered(bool)), this, SLOT(onWalkoverP2Triggered()));
   connect(actUndoCall, SIGNAL(triggered(bool)), this, SLOT(onActionUndoCallTriggered()));
   connect(actAddCall, SIGNAL(triggered(bool)), this, SLOT(onActionAddCallTriggered()));
+  connect(actSwapReferee, SIGNAL(triggered(bool)), this, SLOT(onActionSwapRefereeTriggered()));
 
   // create the context menu and connect it to the actions
   contextMenu = make_unique<QMenu>();
@@ -183,6 +186,8 @@ void CourtTableView::initContextMenu()
   walkoverSelectionMenu->addAction(actWalkoverP1);
   walkoverSelectionMenu->addAction(actWalkoverP2);
   contextMenu->addAction(actUndoCall);
+  contextMenu->addSeparator();
+  contextMenu->addAction(actSwapReferee);
   contextMenu->addSeparator();
   contextMenu->addAction(actAddCourt);
 
@@ -316,6 +321,21 @@ void CourtTableView::onActionAddCallTriggered()
     return;
   }
   QMessageBox::information(this, tr("Repeat call"), tr("Call cancled"));
+}
+
+//----------------------------------------------------------------------------
+
+void CourtTableView::onActionSwapRefereeTriggered()
+{
+  auto ma = getSelectedMatch();
+  if (ma == nullptr) return;
+
+  // see if we can assign a new referee
+  if (ma->canAssignReferee(REFEREE_ACTION::SWAP) != OK) return;
+
+  // trigger the assign-umpire-procedure
+  cmdAssignRefereeToMatch cmd{this, *ma, REFEREE_ACTION::SWAP};
+  cmd.exec();
 }
 
 //----------------------------------------------------------------------------

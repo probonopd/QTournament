@@ -375,17 +375,33 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  ERR Match::canAssignReferee() const
+  ERR Match::canAssignReferee(REFEREE_ACTION refAction) const
   {
     // only allow changes to the referee assignment
     // if the match is fully defined (all player names determined) and
     // if the match can be called now or later
     //
-    // ==> match must be READY or BUSY
+    // we also allow assignments if the match is running and has already
+    // a referee assigned. This is for swapping a referee in mid-game
+    //
+    // ==> match must be (READY) or (BUSY) or (RUNNING and hasRefereeAssigned is true)
     //
     OBJ_STATE stat = getState();
-    if ((stat != STAT_MA_BUSY) && (stat != STAT_MA_READY))
+    if ((refAction == REFEREE_ACTION::PRE_ASSIGN) || (refAction == REFEREE_ACTION::MATCH_CALL))
     {
+      if (!((stat == STAT_MA_BUSY) || (stat == STAT_MA_READY)))
+      {
+        return MATCH_NOT_CONFIGURALE_ANYMORE;
+      }
+    }
+    else if (refAction == REFEREE_ACTION::SWAP)
+    {
+      if (!((stat == STAT_MA_RUNNING) && (hasRefereeAssigned() == true)))
+      {
+        return MATCH_NOT_CONFIGURALE_ANYMORE;
+      }
+    } else {
+      // default
       return MATCH_NOT_CONFIGURALE_ANYMORE;
     }
 

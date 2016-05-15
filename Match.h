@@ -40,6 +40,13 @@ namespace QTournament
 {
   class MatchGroup;
 
+  enum class REFEREE_ACTION
+  {
+    PRE_ASSIGN,
+    MATCH_CALL,
+    SWAP,
+  };
+
   class Match : public TournamentDatabaseObject
   {
     friend class MatchMngr;
@@ -82,7 +89,7 @@ namespace QTournament
     REFEREE_MODE getRefereeMode() const;
     upPlayer getAssignedReferee() const;
     bool hasRefereeAssigned() const;
-    ERR canAssignReferee() const;
+    ERR canAssignReferee(REFEREE_ACTION refAction) const;
 
   private:
     Match (TournamentDB* db, int rowId);
