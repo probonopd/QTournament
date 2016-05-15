@@ -253,7 +253,7 @@ void ResultSheets::printMatchData(upSimpleReport& rep, const Match& ma) const
   }
 
   // print umpire information
-  REFEREE_MODE refMode = ma.getRefereeMode();
+  REFEREE_MODE refMode = ma.get_EFFECTIVE_RefereeMode();
   if (refMode != REFEREE_MODE::NONE)
   {
     QString txt = tr("Umpire: ");

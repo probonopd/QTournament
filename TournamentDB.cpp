@@ -198,7 +198,7 @@ namespace QTournament
     tc.addInt(MA_PAIR2_SYMBOLIC_VAL);
     tc.addInt(MA_WINNER_RANK);
     tc.addInt(MA_LOSER_RANK);
-    tc.addInt(MA_REFEREE_MODE, false, SqliteOverlay::CONFLICT_CLAUSE::__NOT_SET, true, SqliteOverlay::CONFLICT_CLAUSE::ROLLBACK, true, "0");
+    tc.addInt(MA_REFEREE_MODE, false, SqliteOverlay::CONFLICT_CLAUSE::__NOT_SET, true, SqliteOverlay::CONFLICT_CLAUSE::ROLLBACK, true, "-1");
     tc.addForeignKey(MA_REFEREE_REF, TAB_PLAYER, SqliteOverlay::CONSISTENCY_ACTION::RESTRICT);
     tc.createTableAndResetCreator(TAB_MATCH);
 

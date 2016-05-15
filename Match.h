@@ -86,7 +86,8 @@ namespace QTournament
     QList<QDateTime> getAdditionalCallTimes() const;
     int getMatchDuration() const;
 
-    REFEREE_MODE getRefereeMode() const;
+    REFEREE_MODE get_RAW_RefereeMode() const;
+    REFEREE_MODE get_EFFECTIVE_RefereeMode() const;
     upPlayer getAssignedReferee() const;
     bool hasRefereeAssigned() const;
     ERR canAssignReferee(REFEREE_ACTION refAction) const;

@@ -25,6 +25,7 @@
 #include "MatchMngr.h"
 #include "PlayerMngr.h"
 #include "CourtMngr.h"
+#include "KeyValueTab.h"
 
 namespace QTournament
 {
@@ -348,10 +349,27 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  REFEREE_MODE Match::getRefereeMode() const
+  REFEREE_MODE Match::get_RAW_RefereeMode() const
   {
     int modeId = row.getInt(MA_REFEREE_MODE);
     return static_cast<REFEREE_MODE>(modeId);
+  }
+
+  //----------------------------------------------------------------------------
+
+  REFEREE_MODE Match::get_EFFECTIVE_RefereeMode() const
+  {
+    REFEREE_MODE mode = get_RAW_RefereeMode();
+    if (mode == REFEREE_MODE::USE_DEFAULT)
+    {
+      auto cfg = KeyValueTab::getTab(db, TAB_CFG, false);
+      int tnmtDefaultRefereeModeId = cfg->getInt(CFG_KEY_DEFAULT_REFEREE_MODE);
+      mode = static_cast<REFEREE_MODE>(tnmtDefaultRefereeModeId);
+    }
+
+    assert(mode != REFEREE_MODE::USE_DEFAULT);
+
+    return mode;
   }
 
   //----------------------------------------------------------------------------
@@ -407,7 +425,7 @@ namespace QTournament
 
     // don't allow assignments if the mode is set to NONE
     // or to HANDWRITTEN
-    REFEREE_MODE mod = getRefereeMode();
+    REFEREE_MODE mod = get_EFFECTIVE_RefereeMode();
     if ((mod == REFEREE_MODE::NONE) || (mod == REFEREE_MODE::HANDWRITTEN))
     {
       return MATCH_NEEDS_NO_REFEREE;

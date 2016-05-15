@@ -181,7 +181,7 @@ void CourtItemDelegate::paintMatchInfoCell_Selected(QPainter *painter, const QSt
 
   // draw the third info line with umpire information
   txt = tr("Umpire: ");
-  REFEREE_MODE refMode = ma.getRefereeMode();
+  REFEREE_MODE refMode = ma.get_RAW_RefereeMode();
   if (refMode == REFEREE_MODE::NONE)
   {
     txt += tr("none");

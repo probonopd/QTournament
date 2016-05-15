@@ -116,7 +116,7 @@ QString GuiHelpers::prepCall(const QTournament::Match &ma, const QTournament::Co
   call += ".";
 
   // add the umpire's name, if necessary
-  QTournament::REFEREE_MODE refMode = ma.getRefereeMode();
+  QTournament::REFEREE_MODE refMode = ma.get_EFFECTIVE_RefereeMode();
   if ((refMode != QTournament::REFEREE_MODE::NONE) && ((refMode != QTournament::REFEREE_MODE::HANDWRITTEN)))
   {
     QTournament::upPlayer referee = ma.getAssignedReferee();

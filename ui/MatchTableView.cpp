@@ -420,6 +420,9 @@ void MatchTableView::initContextMenu()
   refereeMode_submenu->addSeparator();
   newAction = refereeMode_submenu->addAction(tr("Manual"));
   newAction->setData(static_cast<int>(REFEREE_MODE::HANDWRITTEN));
+  refereeMode_submenu->addSeparator();
+  newAction = refereeMode_submenu->addAction(tr("Use tournament default"));
+  newAction->setData(static_cast<int>(REFEREE_MODE::USE_DEFAULT));
   actAssignReferee = new QAction(tr("Assign umpire..."), this);
   actRemoveReferee = new QAction(tr("Remove assigned umpire"), this);
   contextMenu->addAction(actAssignReferee);

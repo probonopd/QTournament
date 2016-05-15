@@ -43,7 +43,7 @@ DlgSelectReferee::DlgSelectReferee(TournamentDB* _db, const Match& _ma, REFEREE_
   ui->cbFilterMode->addItem(tr("All players"), static_cast<int>(REFEREE_MODE::ALL_PLAYERS));
   ui->cbFilterMode->addItem(tr("Recent losers"), static_cast<int>(REFEREE_MODE::RECENT_LOSERS));
   ui->cbFilterMode->addItem(tr("Special team member"), static_cast<int>(REFEREE_MODE::SPECIAL_TEAM));
-  REFEREE_MODE curRefMode = ma.getRefereeMode();
+  REFEREE_MODE curRefMode = ma.get_EFFECTIVE_RefereeMode();
   switch (curRefMode)
   {
   case REFEREE_MODE::ALL_PLAYERS:

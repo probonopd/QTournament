@@ -243,10 +243,6 @@ namespace QTournament {
       return nullptr;
     }
 
-    // determine the default referee mode for the new match
-    auto cfg = SqliteOverlay::KeyValueTab::getTab(db, TAB_CFG);
-    int defaultRefereeModeId = cfg->getInt(CFG_KEY_DEFAULT_REFEREE_MODE);
-
     // Okay, parameters are valid
     // create a new match entry in the database
     ColumnValueClause cvc;
@@ -256,7 +252,7 @@ namespace QTournament {
     cvc.addIntCol(MA_PAIR2_SYMBOLIC_VAL, 0);   // default: no symbolic name
     cvc.addIntCol(MA_WINNER_RANK, -1);         // default: no rank, no knock out
     cvc.addIntCol(MA_LOSER_RANK, -1);         // default: no rank, no knock out
-    cvc.addIntCol(MA_REFEREE_MODE, defaultRefereeModeId);
+    cvc.addIntCol(MA_REFEREE_MODE, -1);        // -1: use current tournament default
     CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
     cse->beginCreateMatch();
     int newId = tab->insertRow(cvc);
@@ -514,7 +510,7 @@ namespace QTournament {
   ERR MatchMngr::setRefereeMode(const Match& ma, REFEREE_MODE newMode) const
   {
     // get the old mode
-    REFEREE_MODE oldMode = ma.getRefereeMode();
+    REFEREE_MODE oldMode = ma.get_RAW_RefereeMode();
 
     // is there anything to do at all?
     if (oldMode == newMode) return OK;
@@ -1356,7 +1352,7 @@ namespace QTournament {
     if (e != OK) return e;  // PLAYER_NOT_IDLE
 
     // check if we have the necessary umpire, if required
-    REFEREE_MODE refMode = ma.getRefereeMode();
+    REFEREE_MODE refMode = ma.get_EFFECTIVE_RefereeMode();
     if ((refMode != REFEREE_MODE::NONE) && (refMode != REFEREE_MODE::HANDWRITTEN))
     {
       upPlayer referee = ma.getAssignedReferee();
@@ -1445,7 +1441,7 @@ namespace QTournament {
     assert(e == OK);  // must be, because the condition has been check by canAssignMatchToCourt()
 
     // acquire the referee, if any
-    REFEREE_MODE refMode = ma.getRefereeMode();
+    REFEREE_MODE refMode = ma.get_EFFECTIVE_RefereeMode();
     if ((refMode != REFEREE_MODE::NONE) && (refMode != REFEREE_MODE::HANDWRITTEN))
     {
       upPlayer referee = ma.getAssignedReferee();
@@ -1456,6 +1452,26 @@ namespace QTournament {
       assert(referee->getState() == STAT_PL_IDLE);
 
       referee->setState(STAT_PL_REFEREE);
+    }
+
+    // store the effective referee-mode at call time.
+    //
+    // This is necessary because cmdAssignRefereeToMatch wouldn't work
+    // correctly if the referee mode is USE DEFAULT and we change the
+    // default mode e.g. to NONE after the match has been called. The
+    // same applies to the CourtItemDelegate.
+    //
+    // Note: since we overwrite the mode in the match tab, the old mode not
+    // restored when undoing the match call.
+    if (ma.get_RAW_RefereeMode() == REFEREE_MODE::USE_DEFAULT)
+    {
+      // Note: we don't use setRefereeMode() here, because a few lines
+      // above we've already changed to match state to RUNNING and
+      // setRefereeMode() refuses to update matches in state RUNNING.
+      // So we have to hard-code the mode change here
+      auto cfg = KeyValueTab::getTab(db, TAB_CFG, false);
+      int tnmtDefaultRefereeModeId = cfg->getInt(CFG_KEY_DEFAULT_REFEREE_MODE);
+      ma.row.update(MA_REFEREE_MODE, tnmtDefaultRefereeModeId);
     }
 
     // now we finally acquire the court in the aftermath

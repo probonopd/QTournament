@@ -38,7 +38,8 @@ cmdAssignRefereeToMatch::cmdAssignRefereeToMatch(QWidget* p, const QTournament::
 ERR cmdAssignRefereeToMatch::exec()
 {
   // do we actually need to assign an umpire?
-  REFEREE_MODE refMode = ma.getRefereeMode();
+  REFEREE_MODE refMode = (refAction == REFEREE_ACTION::SWAP) ? ma.get_RAW_RefereeMode() : ma.get_EFFECTIVE_RefereeMode();
+  assert(refMode != REFEREE_MODE::USE_DEFAULT);
   if ((refMode == REFEREE_MODE::NONE) || (refMode == REFEREE_MODE::HANDWRITTEN))
   {
     return OK;   // nothing to do for us

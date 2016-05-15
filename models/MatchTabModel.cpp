@@ -12,6 +12,7 @@
 #include "../ui/GuiHelpers.h"
 #include "CentralSignalEmitter.h"
 #include "MatchMngr.h"
+#include "KeyValueTab.h"
 
 using namespace QTournament;
 using namespace SqliteOverlay;
@@ -103,11 +104,13 @@ QVariant MatchTableModel::data(const QModelIndex& index, int role) const
     // seventh column: the referee mode for the match
     if (index.column() == REFEREE_MODE_COL_ID)
     {
-      REFEREE_MODE mode = ma->getRefereeMode();
+      REFEREE_MODE mode = ma->get_EFFECTIVE_RefereeMode();
 
       // if there is already a referee assigned, display
       // the referee name
-      if ((mode != REFEREE_MODE::NONE) && (mode != REFEREE_MODE::HANDWRITTEN))
+      if ((mode == REFEREE_MODE::ALL_PLAYERS) ||
+          (mode == REFEREE_MODE::RECENT_LOSERS) ||
+          (mode == REFEREE_MODE::SPECIAL_TEAM))
       {
         upPlayer referee = ma->getAssignedReferee();
         if (referee != nullptr)

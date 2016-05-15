@@ -292,7 +292,7 @@ namespace QTournament
     }
 
     // check for the referee, if any
-    REFEREE_MODE refMode = ma.getRefereeMode();
+    REFEREE_MODE refMode = ma.get_EFFECTIVE_RefereeMode();
     if ((refMode != REFEREE_MODE::NONE) && (refMode != REFEREE_MODE::HANDWRITTEN))
     {
       upPlayer referee = ma.getAssignedReferee();
