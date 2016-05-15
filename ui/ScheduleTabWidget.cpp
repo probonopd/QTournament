@@ -106,6 +106,13 @@ void ScheduleTabWidget::setDatabase(TournamentDB* _db)
 
 //----------------------------------------------------------------------------
 
+void ScheduleTabWidget::updateRefereeColumn()
+{
+  ui->tvMatches->updateRefereeColumn();
+}
+
+//----------------------------------------------------------------------------
+
 void ScheduleTabWidget::onBtnStageClicked()
 {
   // lets check if a valid match group is selected

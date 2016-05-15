@@ -46,6 +46,9 @@ public:
 
   void setDatabase(TournamentDB* _db);
 
+  void updateRefereeColumn();
+
+
 public slots:
   void onBtnStageClicked();
   void onBtnUnstageClicked();

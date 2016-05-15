@@ -149,7 +149,7 @@
   </action>
   <action name="actionSettings">
    <property name="enabled">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="text">
     <string>&amp;Settings...</string>
@@ -646,6 +646,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>actionSettings</sender>
+   <signal>triggered()</signal>
+   <receiver>MainFrame</receiver>
+   <slot>onEditTournamentSettings()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>508</x>
+     <y>379</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>newTournament()</slot>
@@ -668,5 +684,6 @@
   <slot>onSaveCopy()</slot>
   <slot>onCreateBaseline()</slot>
   <slot>onClose()</slot>
+  <slot>onEditTournamentSettings()</slot>
  </slots>
 </ui>

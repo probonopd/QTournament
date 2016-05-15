@@ -190,6 +190,13 @@ QVariant MatchTableModel::headerData(int section, Qt::Orientation orientation, i
 
 //----------------------------------------------------------------------------
 
+QModelIndex MatchTableModel::getIndex(int row, int col)
+{
+  return createIndex(row, col);
+}
+
+//----------------------------------------------------------------------------
+
 void MatchTableModel::onBeginCreateMatch()
 {
   int newPos = matchTab->length();

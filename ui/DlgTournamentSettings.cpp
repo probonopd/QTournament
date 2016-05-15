@@ -16,25 +16,41 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "KeyValueTab.h"
+
 #include "DlgTournamentSettings.h"
 #include "ui_DlgTournamentSettings.h"
 
 DlgTournamentSettings::DlgTournamentSettings(QWidget *parent) :
   QDialog(parent),
-  ui(new Ui::DlgTournamentSettings)
+  ui(new Ui::DlgTournamentSettings), db(nullptr)
 {
   ui->setupUi(this);
 
-  // fill the combo box for the umpire mode
-  ui->cbUmpire->clear();
-  ui->cbUmpire->addItem(tr("<Please select>"), -1);
-  ui->cbUmpire->addItem(tr("No umpires"), static_cast<int>(QTournament::REFEREE_MODE::NONE));
-  ui->cbUmpire->addItem(tr("Handwritten assignment"), static_cast<int>(QTournament::REFEREE_MODE::HANDWRITTEN));
-  ui->cbUmpire->addItem(tr("Pick from all players"), static_cast<int>(QTournament::REFEREE_MODE::ALL_PLAYERS));
-  ui->cbUmpire->addItem(tr("Pick from recent losers"), static_cast<int>(QTournament::REFEREE_MODE::RECENT_LOSERS));
-  ui->cbUmpire->addItem(tr("Pick from special team"), static_cast<int>(QTournament::REFEREE_MODE::SPECIAL_TEAM));
+  fillRefereeComboBox(true);
 
   updateButtons();
+}
+
+//----------------------------------------------------------------------------
+
+DlgTournamentSettings::DlgTournamentSettings(TournamentDB* _db, QWidget* parent) :
+  QDialog(parent),
+  ui(new Ui::DlgTournamentSettings), db(_db)
+{
+  ui->setupUi(this);
+
+  fillRefereeComboBox(false);
+
+  // initialize the controls with the existing values
+  auto cfg = SqliteOverlay::KeyValueTab::getTab(db, TAB_CFG, false);
+  string tmp = (*cfg)[CFG_KEY_TNMT_ORGA];
+  ui->leOrgaClub->setText(QString::fromUtf8(tmp.c_str()));
+  tmp = (*cfg)[CFG_KEY_TNMT_NAME];
+  ui->leTournamentName->setText(QString::fromUtf8(tmp.c_str()));
+  int tnmtDefaultRefereeModeId = cfg->getInt(CFG_KEY_DEFAULT_REFEREE_MODE);
+  int idx = ui->cbUmpire->findData(tnmtDefaultRefereeModeId);
+  ui->cbUmpire->setCurrentIndex(idx);
 }
 
 //----------------------------------------------------------------------------
@@ -107,6 +123,19 @@ void DlgTournamentSettings::updateButtons()
   }
 
   ui->btnOkay->setEnabled(okayButtonEnabled);
+}
+
+//----------------------------------------------------------------------------
+
+void DlgTournamentSettings::fillRefereeComboBox(bool includeSelectHint)
+{
+  ui->cbUmpire->clear();
+  if (includeSelectHint) ui->cbUmpire->addItem(tr("<Please select>"), -1);
+  ui->cbUmpire->addItem(tr("No umpires"), static_cast<int>(QTournament::REFEREE_MODE::NONE));
+  ui->cbUmpire->addItem(tr("Handwritten assignment"), static_cast<int>(QTournament::REFEREE_MODE::HANDWRITTEN));
+  ui->cbUmpire->addItem(tr("Pick from all players"), static_cast<int>(QTournament::REFEREE_MODE::ALL_PLAYERS));
+  ui->cbUmpire->addItem(tr("Pick from recent losers"), static_cast<int>(QTournament::REFEREE_MODE::RECENT_LOSERS));
+  ui->cbUmpire->addItem(tr("Pick from special team"), static_cast<int>(QTournament::REFEREE_MODE::SPECIAL_TEAM));
 }
 
 //----------------------------------------------------------------------------

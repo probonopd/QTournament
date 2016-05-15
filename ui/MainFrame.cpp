@@ -1312,6 +1312,65 @@ void MainFrame::onInfoMenuTriggered()
 
 //----------------------------------------------------------------------------
 
+void MainFrame::onEditTournamentSettings()
+{
+  if (currentDb == nullptr) return;
+
+  // show a dialog for setting the tournament parameters
+  DlgTournamentSettings dlg{currentDb.get(), this};
+  dlg.setModal(true);
+  int result = dlg.exec();
+
+  if (result != QDialog::Accepted)
+  {
+    return;
+  }
+
+  // get the new settings
+  unique_ptr<TournamentSettings> newSettings = dlg.getTournamentSettings();
+  if (newSettings == nullptr)
+  {
+    QMessageBox::warning(this, tr("Edit tournament settings"),
+                         tr("The tournament settings could not be updated."));
+    return;
+  }
+
+  // check for changes and apply them.
+  //
+  // start with the tournament organizer
+  auto cfg = SqliteOverlay::KeyValueTab::getTab(currentDb.get(), TAB_CFG, false);
+  string tmp = (*cfg)[CFG_KEY_TNMT_ORGA];
+  QString oldTnmtOrga = QString::fromUtf8(tmp.c_str());
+  if (oldTnmtOrga != newSettings->organizingClub)
+  {
+    tmp = (newSettings->organizingClub).toUtf8().constData();
+    cfg->set(CFG_KEY_TNMT_ORGA, tmp);
+  }
+
+  // the tournament name
+  tmp = (*cfg)[CFG_KEY_TNMT_NAME];
+  QString oldTnmtName = QString::fromUtf8(tmp.c_str());
+  if (oldTnmtName != newSettings->tournamentName)
+  {
+    tmp = (newSettings->tournamentName).toUtf8().constData();
+    cfg->set(CFG_KEY_TNMT_NAME, tmp);
+
+    // refresh the window title to show the new name
+    updateWindowTitle();
+  }
+
+  // the umpire mode
+  int oldRefereeModeId = cfg->getInt(CFG_KEY_DEFAULT_REFEREE_MODE);
+  REFEREE_MODE oldRefereeMode = static_cast<REFEREE_MODE>(oldRefereeModeId);
+  if (oldRefereeMode != newSettings->refereeMode)
+  {
+    cfg->set(CFG_KEY_DEFAULT_REFEREE_MODE, static_cast<int>(newSettings->refereeMode));
+    ui.tabSchedule->updateRefereeColumn();
+  }
+}
+
+//----------------------------------------------------------------------------
+
 void MainFrame::onToggleTestMenuVisibility()
 {
   ui.menubar->clear();

@@ -102,6 +102,7 @@ public slots:
   void onNewExternalPlayerDatabase();
   void onSelectExternalPlayerDatabase();
   void onInfoMenuTriggered();
+  void onEditTournamentSettings();
 
 private slots:
   void onToggleTestMenuVisibility();

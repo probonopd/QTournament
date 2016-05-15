@@ -35,6 +35,8 @@ namespace QTournament
     QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const;
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
 
+    QModelIndex getIndex(int row, int col);
+
   private:
     TournamentDB* db;
     SqliteOverlay::DbTab* matchTab;

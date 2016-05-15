@@ -190,6 +190,17 @@ void MatchTableView::setDatabase(TournamentDB* _db)
 
 //----------------------------------------------------------------------------
 
+void MatchTableView::updateRefereeColumn()
+{
+  if (db == nullptr) return;
+
+  QModelIndex topLeft = curDataModel->getIndex(0, MatchTableModel::REFEREE_MODE_COL_ID);
+  QModelIndex bottomRight = curDataModel->getIndex(curDataModel->rowCount(), MatchTableModel::REFEREE_MODE_COL_ID);
+  dataChanged(topLeft, bottomRight);
+}
+
+//----------------------------------------------------------------------------
+
 void MatchTableView::onContextMenuRequested(const QPoint& pos)
 {
   // map from scroll area coordinates to global widget coordinates

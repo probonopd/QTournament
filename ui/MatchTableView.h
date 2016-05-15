@@ -47,6 +47,7 @@ public:
   unique_ptr<Match> getSelectedMatch() const;
   void updateSelectionAfterDataChange();
   void setDatabase(TournamentDB* _db);
+  void updateRefereeColumn();
   
 private slots:
   void onSelectionChanged(const QItemSelection&selectedItem, const QItemSelection&deselectedItem);

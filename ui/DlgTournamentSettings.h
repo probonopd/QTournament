@@ -24,17 +24,25 @@
 #include <QDialog>
 
 #include "TournamentDataDefs.h"
+#include "TournamentDB.h"
 
 namespace Ui {
   class DlgTournamentSettings;
 }
+
+using namespace QTournament;
 
 class DlgTournamentSettings : public QDialog
 {
   Q_OBJECT
 
 public:
+  // ctor for new tournament
   explicit DlgTournamentSettings(QWidget *parent = 0);
+
+  // ctor for editing settings of existing tournaments
+  explicit DlgTournamentSettings(TournamentDB* _db, QWidget *parent = 0);
+
   ~DlgTournamentSettings();
   std::unique_ptr<QTournament::TournamentSettings> getTournamentSettings() const;
 
@@ -46,6 +54,8 @@ public slots:
 private:
   Ui::DlgTournamentSettings *ui;
   void updateButtons();
+  TournamentDB* db;
+  void fillRefereeComboBox(bool includeSelectHint);
 };
 
 #endif // DLGTOURNAMENTSETTINGS_H
