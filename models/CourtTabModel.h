@@ -9,6 +9,7 @@
 #define	COURTTABLEMODEL_H
 
 #include <QAbstractTableModel>
+#include <QTimer>
 
 #include "DbTab.h"
 #include "TournamentDB.h"
@@ -25,7 +26,10 @@ namespace QTournament
 
   public:
     static constexpr int COURT_NUM_COL_ID = 0;  // id of the column with the court number
-    static constexpr int COLUMN_COUNT = 2;  // number of columns in the model
+    static constexpr int DURATION_COL_ID = 2;  // id of the column with match duration
+    static constexpr int COLUMN_COUNT = 3;  // number of columns in the model
+
+    static constexpr int DURATION_UPDATE_PERIOD__MS = 10000;   // update every 10 seconds
 
     CourtTableModel (TournamentDB* _db);
     int rowCount(const QModelIndex & parent = QModelIndex()) const;
@@ -36,11 +40,13 @@ namespace QTournament
   private:
     TournamentDB* db;
     SqliteOverlay::DbTab* courtTab;
-    
+    unique_ptr<QTimer> durationUpdateTimer;
+
   public slots:
     void onBeginCreateCourt();
     void onEndCreateCourt(int newCourtSeqNum);
     void onCourtStatusChanged(int courtId, int courtSeqNum);
+    void onDurationUpdateTimerElapsed();
 
   };
 

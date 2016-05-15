@@ -334,17 +334,24 @@ namespace QTournament
 
   int Match::getMatchDuration() const
   {
-    if (getState() != STAT_MA_FINISHED) return -1;
+    OBJ_STATE stat = getState();
+    if ((stat != STAT_MA_FINISHED) && (stat != STAT_MA_RUNNING)) return -1;
 
     auto _startTime = row.getInt2(MA_START_TIME);
     if (_startTime->isNull()) return -1;
     int startTime = _startTime->get();
 
-    auto _finishTime = row.getInt2(MA_FINISH_TIME);
-    if (_finishTime->isNull()) return -1;
-    int finishedTime = _finishTime->get();
+    int finishTime;
+    if (stat == STAT_MA_FINISHED)
+    {
+      auto _finishTime = row.getInt2(MA_FINISH_TIME);
+      if (_finishTime->isNull()) return -1;
+      finishTime = _finishTime->get();
+    } else {
+      finishTime = QDateTime::currentDateTimeUtc().toTime_t();
+    }
 
-    return finishedTime - startTime;
+    return finishTime - startTime;
   }
 
   //----------------------------------------------------------------------------

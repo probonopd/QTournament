@@ -95,7 +95,13 @@ void CourtItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
 
   } else {
     // for any other column just draw the plain text content
-    painter->drawText(option.rect, Qt::AlignCenter, index.data(Qt::DisplayRole).toString());
+    if (isItemSelected)
+    {
+      GuiHelpers::drawFormattedText(painter, option.rect, index.data(Qt::DisplayRole).toString(),
+                                    Qt::AlignVCenter|Qt::AlignCenter, true, false, QFont(), QColor(Qt::white), 1.0);
+    } else {
+      painter->drawText(option.rect, Qt::AlignCenter, index.data(Qt::DisplayRole).toString());
+    }
   }
  
   

@@ -13,6 +13,7 @@
 #include "../ui/GuiHelpers.h"
 #include "CourtMngr.h"
 #include "CentralSignalEmitter.h"
+#include "MatchMngr.h"
 
 using namespace QTournament;
 using namespace SqliteOverlay;
@@ -24,6 +25,11 @@ CourtTableModel::CourtTableModel(TournamentDB* _db)
   connect(cse, SIGNAL(beginCreateCourt()), this, SLOT(onBeginCreateCourt()), Qt::DirectConnection);
   connect(cse, SIGNAL(endCreateCourt(int)), this, SLOT(onEndCreateCourt(int)), Qt::DirectConnection);
   connect(cse, SIGNAL(courtStatusChanged(int,int,OBJ_STATE,OBJ_STATE)), this, SLOT(onCourtStatusChanged(int,int)), Qt::DirectConnection);
+
+  // a timer for updatng the match duration
+  durationUpdateTimer = make_unique<QTimer>(this);
+  connect(durationUpdateTimer.get(), SIGNAL(timeout()), this, SLOT(onDurationUpdateTimerElapsed()));
+  durationUpdateTimer->start(DURATION_UPDATE_PERIOD__MS);
 }
 
 //----------------------------------------------------------------------------
@@ -73,8 +79,28 @@ QVariant CourtTableModel::data(const QModelIndex& index, int role) const
       return "(FIX: need to look up match data)";
     }
 
+    // third column: match duration in minutes
+    if (index.column() == DURATION_COL_ID)
+    {
+      if (co == nullptr) return "??";
 
-    return QString("Not Implemented, row=" + QString::number(index.row()) + ", col=" + QString::number(index.row()));
+      MatchMngr mm{db};
+      upMatch ma = mm.getMatchForCourt(*co);
+      if (ma == nullptr) return QString(); // empty court
+
+      int duration = ma->getMatchDuration();
+      if (duration < 0) return "??";
+
+      // create a hour::minute string
+      int hours = duration / 3600;
+      int minutes = (duration % 3600) / 60;
+      QString result = "%1:%2";
+      result = result.arg(hours).arg(minutes, 2, 10, QLatin1Char('0'));
+      return result;
+    }
+
+
+    return QString("Not Implemented, row=" + QString::number(index.row()) + ", col=" + QString::number(index.column()));
 }
 
 //----------------------------------------------------------------------------
@@ -98,6 +124,9 @@ QVariant CourtTableModel::headerData(int section, Qt::Orientation orientation, i
     }
     if (section == 1) {
       return tr("Match");
+    }
+    if (section == DURATION_COL_ID) {
+      return tr("Duration");
     }
 
     return QString("Not implemented, section=" + QString::number(section));
@@ -126,6 +155,15 @@ void CourtTableModel::onCourtStatusChanged(int courtId, int courtSeqNum)
 {
   QModelIndex startIdx = createIndex(courtSeqNum, 0);
   QModelIndex endIdx = createIndex(courtSeqNum, COLUMN_COUNT-1);
+  emit dataChanged(startIdx, endIdx);
+}
+
+//----------------------------------------------------------------------------
+
+void CourtTableModel::onDurationUpdateTimerElapsed()
+{
+  QModelIndex startIdx = createIndex(0, DURATION_COL_ID);
+  QModelIndex endIdx = createIndex(rowCount(), DURATION_COL_ID);
   emit dataChanged(startIdx, endIdx);
 }
 
