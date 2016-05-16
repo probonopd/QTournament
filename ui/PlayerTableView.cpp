@@ -44,6 +44,9 @@ PlayerTableView::PlayerTableView(QWidget* parent)
   sortedModel->setSourceModel(emptyModel);
   setModel(sortedModel);
 
+  // set an initial default sorting column
+  sortByColumn(PlayerTableModel::COL_NAME, Qt::AscendingOrder);
+
   // initiate the model(s) as empty
   setDatabase(nullptr);
 

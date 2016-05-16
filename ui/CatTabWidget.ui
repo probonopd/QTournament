@@ -48,6 +48,9 @@
           <property name="selectionBehavior">
            <enum>QAbstractItemView::SelectRows</enum>
           </property>
+          <property name="sortingEnabled">
+           <bool>true</bool>
+          </property>
          </widget>
         </item>
        </layout>
@@ -573,7 +576,7 @@ for each round</string>
   <slot>onBtnRunCatClicked()</slot>
  </slots>
  <buttongroups>
-  <buttongroup name="rbgMatchType"/>
   <buttongroup name="rbgSex"/>
+  <buttongroup name="rbgMatchType"/>
  </buttongroups>
 </ui>

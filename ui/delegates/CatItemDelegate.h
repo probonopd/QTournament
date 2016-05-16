@@ -10,6 +10,7 @@
 
 #include <QStyledItemDelegate>
 #include <QFontMetrics>
+#include <QAbstractProxyModel>
 
 #include "TournamentDB.h"
 
@@ -19,12 +20,14 @@ class CatItemDelegate : public QStyledItemDelegate
 {
 public:
   CatItemDelegate(TournamentDB* _db, QObject* parent = 0);
+  void setProxy(QAbstractProxyModel* _proxy);
   void paint (QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index ) const;
   QSize sizeHint (const QStyleOptionViewItem& option, const QModelIndex& index ) const;
   
 private:
-  QFontMetrics fntMetrics;
   TournamentDB* db;
+  QAbstractProxyModel* proxy;
+  QFontMetrics fntMetrics;
 } ;
 
 #endif	/* CATITEMDELEGATE_H */

@@ -62,8 +62,6 @@ public slots:
   void onCreatePlayerClicked();
   void onPlayerDoubleClicked(const QModelIndex& index);
   void onPlayerCountChanged();
-  void onTournamentOpened();
-  void onTournamentClosed();
   void onRegisterAllTriggered();
   void onUnregisterAllTriggered();
   void onImportFromExtDatabase();

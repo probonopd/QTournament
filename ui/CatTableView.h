@@ -20,6 +20,7 @@
 #define	CATTABLEVIEW_H
 
 #include <QTableView>
+#include <QSortFilterProxyModel>
 #include <QStringListModel>
 
 #include "TournamentDB.h"
@@ -43,6 +44,7 @@ public:
   
 public slots:
   void onCategoryDoubleClicked(const QModelIndex& index);
+  QModelIndex mapToSource(const QModelIndex& proxyIndex);
   void onAddCategory();
   void onRemoveCategory();
   void onRunCategory();
@@ -62,6 +64,7 @@ private:
   TournamentDB* db;
   QStringListModel* emptyModel;
   CategoryTableModel* curCatTableModel;
+  QSortFilterProxyModel* sortedModel;
   unique_ptr<CatItemDelegate> catItemDelegate;
   QAbstractItemDelegate* defaultDelegate;
 

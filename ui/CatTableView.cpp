@@ -45,6 +45,14 @@ CategoryTableView::CategoryTableView(QWidget* parent)
   emptyModel = new QStringListModel();
   defaultDelegate = itemDelegate();
 
+  // prepare a proxy model to support sorting by columns
+  sortedModel = new QSortFilterProxyModel();
+  sortedModel->setSourceModel(emptyModel);
+  setModel(sortedModel);
+
+  // set an initial default sorting column
+  sortByColumn(CategoryTableModel::COL_NAME, Qt::AscendingOrder);
+
   // initiate the model(s) as empty
   setDatabase(nullptr);
   
@@ -62,6 +70,7 @@ CategoryTableView::CategoryTableView(QWidget* parent)
 CategoryTableView::~CategoryTableView()
 {
   delete emptyModel;
+  delete sortedModel;
   if (curCatTableModel != nullptr) delete curCatTableModel;
   if (defaultDelegate != nullptr) delete defaultDelegate;
 }
@@ -105,20 +114,21 @@ void CategoryTableView::setDatabase(TournamentDB* _db)
   // has to be explicitly deleted by the user
   //
   // Thus we store the model pointer for later deletion
-  QItemSelectionModel *oldSelectionModel = selectionModel();
+  // QItemSelectionModel *oldSelectionModel = selectionModel();
 
   // set the new data model
   CategoryTableModel* newCatTabModel = nullptr;
   if (_db != nullptr)
   {
     newCatTabModel = new CategoryTableModel(_db);
-    setModel(newCatTabModel);
+    sortedModel->setSourceModel(newCatTabModel);
 
     // define a delegate for drawing the category items
     catItemDelegate = make_unique<CatItemDelegate>(_db, this);
+    catItemDelegate->setProxy(sortedModel);
     setItemDelegate(catItemDelegate.get());
   } else {
-    setModel(emptyModel);
+    sortedModel->setSourceModel(emptyModel);
     setItemDelegate(defaultDelegate);
   }
   emit catModelChanged();
@@ -134,7 +144,7 @@ void CategoryTableView::setDatabase(TournamentDB* _db)
   curCatTableModel = newCatTabModel;
 
   // delete the old selection model
-  delete oldSelectionModel;
+  //delete oldSelectionModel;
 
   // update the database pointer and set the widget's enabled state
   db = _db;
@@ -151,10 +161,10 @@ Category CategoryTableView::getSelectedCategory()
   }
   
   QModelIndexList indexes = selectionModel()->selection().indexes();
-  int selectedSeqNum = indexes.at(0).row();
   
   CatMngr cm{db};
-  return cm.getCategoryBySeqNum(selectedSeqNum);
+  int selectedSourceRow = sortedModel->mapToSource(indexes.at(0)).row();
+  return cm.getCategoryBySeqNum(selectedSourceRow);
 }
 
 //----------------------------------------------------------------------------
@@ -212,6 +222,13 @@ void CategoryTableView::onCategoryDoubleClicked(const QModelIndex& index)
       continue;
     }
   }
+}
+
+//----------------------------------------------------------------------------
+
+QModelIndex CategoryTableView::mapToSource(const QModelIndex& proxyIndex)
+{
+  return sortedModel->mapToSource(proxyIndex);
 }
 
 //----------------------------------------------------------------------------

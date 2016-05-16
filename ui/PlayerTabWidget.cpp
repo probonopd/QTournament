@@ -38,11 +38,6 @@ PlayerTabWidget::PlayerTabWidget()
   // prepare a label with the total number of players
   onPlayerCountChanged();
 
-  // subscribe to the tournament-opened- and -closed-signal
-  auto mf = MainFrame::getMainFramePointer();
-  connect(mf, SIGNAL(tournamentOpened(Tournament*)), this, SLOT(onTournamentOpened()), Qt::DirectConnection);
-  connect(mf, SIGNAL(tournamentClosed()), this, SLOT(onTournamentClosed()), Qt::DirectConnection);
-
   // initialize the registration popup menu
   initRegistrationMenu();
 
@@ -162,20 +157,6 @@ void PlayerTabWidget::onPlayerCountChanged()
   QString txt = QString::number(pm.getTotalPlayerCount());
   txt += tr(" players in tournament");
   ui.laPlayerCount->setText(txt);
-}
-
-//----------------------------------------------------------------------------
-
-void PlayerTabWidget::onTournamentOpened()
-{
-  onPlayerCountChanged();
-}
-
-//----------------------------------------------------------------------------
-
-void PlayerTabWidget::onTournamentClosed()
-{
-  onPlayerCountChanged();
 }
 
 //----------------------------------------------------------------------------

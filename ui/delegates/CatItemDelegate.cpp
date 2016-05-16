@@ -20,17 +20,31 @@
 using namespace QTournament;
 
 CatItemDelegate::CatItemDelegate(TournamentDB* _db, QObject* parent)
-: QStyledItemDelegate(parent), fntMetrics(QFontMetrics(QFont())), db(_db)
+: QStyledItemDelegate(parent), db(_db), proxy(nullptr), fntMetrics(QFontMetrics(QFont()))
 {
+}
+
+//----------------------------------------------------------------------------
+
+void CatItemDelegate::setProxy(QAbstractProxyModel* _proxy)
+{
+  proxy = _proxy;
 }
 
 //----------------------------------------------------------------------------
 
 void CatItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-  
+  // if necessary, apply a conversion between the proxy model's row number
+  // and the source model's row number
+  int row = index.row();
+  if (proxy)
+  {
+    row = (proxy->mapToSource(index)).row();
+  }
+
   CatMngr cm{db};
-  Category c = cm.getCategoryBySeqNum(index.row());
+  Category c = cm.getCategoryBySeqNum(row);
   
   // Paint the background in the selection color, if necessary
   QColor bgColor = option.palette.color(QPalette::Background);

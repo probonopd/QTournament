@@ -37,7 +37,6 @@ class MainFrame : public QMainWindow
 public:
   MainFrame ();
   virtual ~MainFrame ();
-  static MainFrame* getMainFramePointer();
   
 protected:
   virtual void closeEvent(QCloseEvent *ev) override;
@@ -55,8 +54,6 @@ private:
   
   bool closeCurrentTournament();
   
-  static MainFrame* mainFramePointer;
-
   QShortcut* scToggleTestMenuVisibility;
   bool isTestMenuVisible;
 

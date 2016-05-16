@@ -65,7 +65,7 @@ QVariant PlayerTableModel::data(const QModelIndex& index, int role) const
     // no check for a nullptr here, the call above MUST succeed
     
     // first column: name
-    if (index.column() == 0)
+    if (index.column() == COL_NAME)
     {
       return p->getDisplayName();
     }
@@ -114,7 +114,7 @@ QVariant PlayerTableModel::headerData(int section, Qt::Orientation orientation, 
   
   if (orientation == Qt::Horizontal)
   {
-    if (section == 0) {
+    if (section == COL_NAME) {
       return tr("Name");
     }
 
