@@ -221,22 +221,52 @@ namespace QTournament {
       throw std::invalid_argument("Max len for display name too short!");
     }
     
+    Team t1 = getPlayer1().getTeam();
     if (hasPlayer2())
     {
-      // reserve space for " / " if we have two players
-      maxLen = (maxLen == 0) ? 0 : maxLen - 3;
-      
-      // and cut the max len in half
-      if ((maxLen % 2) != 0)
+      // if we have different teams, return "team 1 / team 2", else return just "team"
+      Team t2 = getPlayer2().getTeam();
+      if (t1 != t2)
       {
-	maxLen -= 1;
+        // reserve space for " / "
+        maxLen = (maxLen == 0) ? 0 : maxLen - 3;
+
+        // determine the full length of both team names
+        QString name1 = t1.getName();
+        QString name2 = t2.getName();
+
+        // if there is no length limit, return both full names
+        if (maxLen == 0)
+        {
+          return name1 + " / " + name2;
+        }
+
+        // if both fit in the specified length ==> okay!
+        int len1 = name1.length();
+        int len2 = name2.length();
+        if ((len1 + len2) <= maxLen)
+        {
+          return name1 + " / " + name2;
+        }
+
+        // calculate by how much we exceed the max length
+        // add distribute the delta over both names
+        int diff = (len1 + len2) - maxLen;
+        if ((diff % 2) != 0)
+        {
+          ++diff;
+        }
+        diff = diff / 2;
+
+        // shorten both names by "diff" characters
+        name1 = name1.left(len1 - diff);
+        name2 = name2.left(len2 - diff);
+
+        return name1 + " / " + name2;
       }
-      maxLen = maxLen / 2;
-      
-      return getPlayer1().getTeam().getName(maxLen) + " / " + getPlayer2().getTeam().getName(maxLen);
     }
     
-    return getPlayer1().getTeam().getName(maxLen);
+    return t1.getName(maxLen);
   }
 
 //----------------------------------------------------------------------------

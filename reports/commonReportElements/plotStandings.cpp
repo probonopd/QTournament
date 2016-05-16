@@ -35,10 +35,11 @@ QRectF plotStandings::plot(const QPointF& topLeft)
   SimpleReportLib::TabSet ts;
   ts.addTab(6, SimpleReportLib::TAB_JUSTIFICATION::TAB_RIGHT);  // the rank
   ts.addTab(10, SimpleReportLib::TAB_JUSTIFICATION::TAB_LEFT);   // the name
+  ts.addTab(75, SimpleReportLib::TAB_JUSTIFICATION::TAB_LEFT);   // the team
   // a pair of three tabs for each matches, games and points
   for (int i=0; i< 3; ++i)
   {
-    double colonPos = 120 + i*30.0;
+    double colonPos = 150 + i*15.0;
     ts.addTab(colonPos - 1.0,  SimpleReportLib::TAB_RIGHT);  // first number
     ts.addTab(colonPos,  SimpleReportLib::TAB_CENTER);  // colon
     ts.addTab(colonPos + 1.0,  SimpleReportLib::TAB_LEFT);  // second number
@@ -46,9 +47,10 @@ QRectF plotStandings::plot(const QPointF& topLeft)
   SimpleReportLib::TableWriter tw(ts);
   tw.setHeader(1, tr("Rank"));
   tw.setHeader(2, tr("Player"));
-  tw.setHeader(4, tr("Matches"));
-  tw.setHeader(7, tr("Games"));
-  tw.setHeader(10, tr("Points"));
+  tw.setHeader(3, tr("Team"));
+  tw.setHeader(5, tr("Matches"));
+  tw.setHeader(8, tr("Games"));
+  tw.setHeader(11, tr("Points"));
 
   bool hasAtLeastOneEntry = false;
   for (RankingEntry re : rel)
@@ -64,7 +66,8 @@ QRectF plotStandings::plot(const QPointF& topLeft)
     rowContent << QString::number(curRank);
 
     auto pp = re.getPlayerPair();
-    rowContent << ((pp != nullptr) ? (*pp).getDisplayName() : "??");
+    rowContent << ((pp != nullptr) ? (*pp).getDisplayName(53) : "??");
+    rowContent << ((pp != nullptr) ? (*pp).getDisplayName_Team(53) : "??");
 
     if (pp != nullptr)
     {
