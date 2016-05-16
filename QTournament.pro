@@ -127,7 +127,8 @@ HEADERS += \
     TournamentDatabaseObject.h \
     CentralSignalEmitter.h \
     ui/DlgSelectReferee.h \
-    ui/commonCommands/cmdAssignRefereeToMatch.h
+    ui/commonCommands/cmdAssignRefereeToMatch.h \
+    ui/commonCommands/cmdCallMatch.h
 
 SOURCES += \
     Category.cpp \
@@ -230,7 +231,8 @@ SOURCES += \
     TournamentDatabaseObject.cpp \
     CentralSignalEmitter.cpp \
     ui/DlgSelectReferee.cpp \
-    ui/commonCommands/cmdAssignRefereeToMatch.cpp
+    ui/commonCommands/cmdAssignRefereeToMatch.cpp \
+    ui/commonCommands/cmdCallMatch.cpp
 
 RESOURCES += \
     tournament.qrc

@@ -28,6 +28,7 @@
 #include "MatchMngr.h"
 #include "CatMngr.h"
 #include "CourtMngr.h"
+#include "ui/commonCommands/cmdCallMatch.h"
 
 ScheduleTabWidget::ScheduleTabWidget(QWidget *parent) :
     QDialog(parent), db(nullptr),
@@ -304,39 +305,11 @@ void ScheduleTabWidget::askAndStoreMatchResult(const Match &ma)
   auto oldCourt = ma.getCourt();
   assert(oldCourt != nullptr);
 
-  // can we assign the next match to the old court?
+  // try to start the match on the old court
   auto nextMatch = mm.getMatch(nextMatchId);
   assert(nextMatch != nullptr);
-  e = mm.canAssignMatchToCourt(*nextMatch, *oldCourt);
-  if (e != OK)
-  {
-    QString msg = tr("The match cannot be started on this court. Please start the next match manually.");
-    QMessageBox::critical(this, tr("Next Match"), msg);
-    return;
-  }
-
-  // ok, we're all set. Call the match
-  //
-  // TODO: this is redundant code
-  QString call = GuiHelpers::prepCall(*nextMatch, *oldCourt);
-  int result = QMessageBox::question(this, tr("Assign match to court"), call);
-
-  if (result == QMessageBox::Yes)
-  {
-    // after all the checks before, the following call
-    // should always yield "ok"
-    e = mm.assignMatchToCourt(*nextMatch, *oldCourt);
-    if (e != OK)
-    {
-      QString msg = tr("An unexpected error occured.\n");
-      msg += tr("Sorry, this shouldn't happen.\n");
-      msg += tr("The match cannot be started.");
-      QMessageBox::critical(this, tr("Assign match to court"), msg);
-    }
-    ui->tvMatches->updateSelectionAfterDataChange();
-    return;
-  }
-  QMessageBox::information(this, tr("Assign match to court"), tr("Call cancled, match not started."));
+  cmdCallMatch cmd{this, *nextMatch, *oldCourt};
+  cmd.exec();
 }
 
 //----------------------------------------------------------------------------
