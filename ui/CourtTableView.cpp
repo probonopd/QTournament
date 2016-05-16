@@ -221,6 +221,18 @@ void CourtTableView::updateContextMenu(bool isRowClicked)
     actWalkoverP1->setText(ma->getPlayerPair1().getDisplayName());
     actWalkoverP2->setText(ma->getPlayerPair2().getDisplayName());
   }
+
+  // disable "swap umpire" if we have no umpire in the match
+  if (ma != nullptr)
+  {
+    REFEREE_MODE refMode = ma->get_RAW_RefereeMode();
+    bool canSwapReferee = ((refMode != REFEREE_MODE::NONE) &&
+                          (refMode != REFEREE_MODE::HANDWRITTEN) &&
+                          (refMode != REFEREE_MODE::USE_DEFAULT));
+    actSwapReferee->setEnabled(canSwapReferee);
+  } else {
+    actSwapReferee->setEnabled(false);
+  }
 }
 
 //----------------------------------------------------------------------------
