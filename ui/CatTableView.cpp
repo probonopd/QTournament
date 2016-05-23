@@ -153,6 +153,29 @@ void CategoryTableView::setDatabase(TournamentDB* _db)
 
 //----------------------------------------------------------------------------
 
+void CategoryTableView::resizeEvent(QResizeEvent *event)
+{
+  // distribute the available space evenly over the columns
+  int nCol = model()->columnCount();
+  int colWidth = (nCol > 0) ? width() / nCol : 0;
+  int totalWidth = 0;
+  for (int i=0; i < nCol; ++i)
+  {
+    if (i != (nCol - 1))
+    {
+      setColumnWidth(i, colWidth);
+      totalWidth += colWidth;
+    } else {
+      // compensate for rounding errors by setting
+      // the width of the last column to the not already
+      // "consumed" width
+      setColumnWidth(i, width() - totalWidth);
+    }
+  }
+}
+
+//----------------------------------------------------------------------------
+
 Category CategoryTableView::getSelectedCategory()
 {
   if (!(hasCategorySelected()))
