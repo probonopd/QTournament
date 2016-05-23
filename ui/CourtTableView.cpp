@@ -52,6 +52,9 @@ CourtTableView::CourtTableView(QWidget* parent)
   connect(this, SIGNAL(customContextMenuRequested(const QPoint&)),
           this, SLOT(onContextMenuRequested(const QPoint&)));
 
+  // handle double clicks on a column header
+  connect(horizontalHeader(), SIGNAL(sectionDoubleClicked(int)), this, SLOT(onSectionHeaderDoubleClicked()));
+
   // setup the context menu and its actions
   initContextMenu();
 }
@@ -385,6 +388,13 @@ void CourtTableView::onActionSwapRefereeTriggered()
   // trigger the assign-umpire-procedure
   cmdAssignRefereeToMatch cmd{this, *ma, REFEREE_ACTION::SWAP};
   cmd.exec();
+}
+
+//----------------------------------------------------------------------------
+
+void CourtTableView::onSectionHeaderDoubleClicked()
+{
+  autosizeColumns();
 }
 
 //----------------------------------------------------------------------------

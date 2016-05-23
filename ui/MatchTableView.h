@@ -66,6 +66,7 @@ private slots:
   void onMatchDoubleClicked(const QModelIndex& index);
   void onAssignRefereeTriggered();
   void onRemoveRefereeTriggered();
+  void onSectionHeaderDoubleClicked();
 
 signals:
   void matchSelectionChanged(int newlySelectedMatchId);

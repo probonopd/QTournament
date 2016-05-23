@@ -59,6 +59,7 @@ private slots:
   void onActionUndoCallTriggered();
   void onActionAddCallTriggered();
   void onActionSwapRefereeTriggered();
+  void onSectionHeaderDoubleClicked();
 
 private:
   static constexpr int MAX_NUM_ADD_CALL = 3;

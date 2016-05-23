@@ -60,6 +60,9 @@ MatchTableView::MatchTableView(QWidget* parent)
   connect(this, SIGNAL(customContextMenuRequested(const QPoint&)),
           this, SLOT(onContextMenuRequested(const QPoint&)));
 
+  // handle double clicks on a column header
+  connect(horizontalHeader(), SIGNAL(sectionDoubleClicked(int)), this, SLOT(onSectionHeaderDoubleClicked()));
+
   // setup the context menu
   initContextMenu();
 
@@ -462,6 +465,13 @@ void MatchTableView::onRemoveRefereeTriggered()
     msg += tr("Some unexpected error occured.");
     QMessageBox::warning(this, tr("Umpire removal failed"), msg);
   }
+}
+
+//----------------------------------------------------------------------------
+
+void MatchTableView::onSectionHeaderDoubleClicked()
+{
+  autosizeColumns();
 }
 
 //----------------------------------------------------------------------------

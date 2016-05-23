@@ -200,6 +200,7 @@
    <header>ui/MatchTableView.h</header>
    <slots>
     <slot>onMatchDoubleClicked(QModelIndex)</slot>
+    <slot>onSectionHeaderDoubleClicked()</slot>
    </slots>
   </customwidget>
   <customwidget>
