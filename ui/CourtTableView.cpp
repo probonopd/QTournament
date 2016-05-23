@@ -17,6 +17,8 @@
  */
 
 #include <QMessageBox>
+#include <QScrollBar>
+
 #include "CourtTableView.h"
 #include "MainFrame.h"
 #include "CourtMngr.h"
@@ -137,6 +139,41 @@ void CourtTableView::setDatabase(TournamentDB* _db)
   // update the database pointer and set the widget's enabled state
   db = _db;
   setEnabled(db != nullptr);
+
+  // initialize column widths
+  autosizeColumns();
+}
+
+//----------------------------------------------------------------------------
+
+void CourtTableView::resizeEvent(QResizeEvent* event)
+{
+  // call parent function
+  QTableView::resizeEvent(event);
+
+  // resize all columns
+  autosizeColumns();
+
+  // finish event processing
+  event->accept();
+}
+
+//----------------------------------------------------------------------------
+
+void CourtTableView::autosizeColumns()
+{
+  // assign a fixed width to the court number and the duration and
+  // leave the rest for the match info
+  int widthAvail = width();
+  if ((verticalScrollBar() != nullptr) && (verticalScrollBar()->isVisible()))
+  {
+    widthAvail -= verticalScrollBar()->width();
+  }
+  int matchColWidth = widthAvail -  2 * ABS_NUMERIC_COL_WIDTH;
+
+  setColumnWidth(CourtTableModel::COURT_NUM_COL_ID, ABS_NUMERIC_COL_WIDTH);
+  setColumnWidth(1, matchColWidth);
+  setColumnWidth(CourtTableModel::DURATION_COL_ID, ABS_NUMERIC_COL_WIDTH);
 }
 
 //----------------------------------------------------------------------------

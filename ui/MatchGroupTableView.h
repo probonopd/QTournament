@@ -46,7 +46,8 @@ public:
   void setDatabase(TournamentDB* _db);
   
 protected:
-  static constexpr int HIDDEN_COLUMN_COUNT = 2;
+  static constexpr int REL_NUMERIC_COL_WIDTH = 2;
+  static constexpr int REL_CATEGORY_COL_WIDTH = 3;
   virtual void resizeEvent(QResizeEvent *event) override;
   void autosizeColumns();
 

@@ -226,7 +226,7 @@ void MatchTableView::autosizeColumns()
   // distribute the available space according to relative column widths
   int totalUnits = (REL_NUMERIC_COL_WIDTH + // Match number
                     REL_MATCH_COL_WIDTH + // Match details
-                    REL_NUMERIC_COL_WIDTH + // category
+                    REL_CAT_COL_WIDTH + // category
                     REL_NUMERIC_COL_WIDTH + // round
                     REL_NUMERIC_COL_WIDTH + // group
                     REL_REFEREE_COL_WIDTH); // referee
@@ -253,7 +253,7 @@ void MatchTableView::autosizeColumns()
 
   myWidthSetter(MatchTableModel::MATCH_NUM_COL_ID, numericColWidth);
   myWidthSetter(1, REL_MATCH_COL_WIDTH * unitWidth);  // Match details
-  myWidthSetter(2, numericColWidth);  // category
+  myWidthSetter(2, REL_CAT_COL_WIDTH * unitWidth);  // category
   myWidthSetter(3, numericColWidth);  // round
   myWidthSetter(4, numericColWidth);  // group
 

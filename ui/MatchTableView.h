@@ -50,10 +50,11 @@ public:
   void updateRefereeColumn();
   
 protected:
-  static constexpr int MAX_NUMERIC_COL_WIDTH = 90;
-  static constexpr int REL_NUMERIC_COL_WIDTH = 2;
-  static constexpr int REL_MATCH_COL_WIDTH = 11;
-  static constexpr int REL_REFEREE_COL_WIDTH = 6;
+  static constexpr int MAX_NUMERIC_COL_WIDTH = 85;
+  static constexpr int REL_NUMERIC_COL_WIDTH = 8;
+  static constexpr int REL_CAT_COL_WIDTH = 10;
+  static constexpr int REL_MATCH_COL_WIDTH = 57;
+  static constexpr int REL_REFEREE_COL_WIDTH = 18;
   virtual void resizeEvent(QResizeEvent *event) override;
   void autosizeColumns();
 

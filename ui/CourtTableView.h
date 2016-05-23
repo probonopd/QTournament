@@ -45,6 +45,11 @@ public:
   unique_ptr<Match> getSelectedMatch() const;
   void setDatabase(TournamentDB* _db);
 
+protected:
+  static constexpr int ABS_NUMERIC_COL_WIDTH = 80;
+  virtual void resizeEvent(QResizeEvent *event) override;
+  void autosizeColumns();
+
 private slots:
   void onSelectionChanged(const QItemSelection&selectedItem, const QItemSelection&deselectedItem);
   void onContextMenuRequested(const QPoint& pos);

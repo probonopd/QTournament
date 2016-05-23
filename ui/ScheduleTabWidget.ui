@@ -17,7 +17,7 @@
    <item>
     <layout class="QVBoxLayout" name="verticalLayout" stretch="5,0">
      <item>
-      <layout class="QHBoxLayout" name="horizontalLayout_5" stretch="3,6,5">
+      <layout class="QHBoxLayout" name="horizontalLayout_5" stretch="2,8,4">
        <item>
         <layout class="QVBoxLayout" name="verticalLayout_3">
          <item>

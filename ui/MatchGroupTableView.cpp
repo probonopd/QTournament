@@ -162,28 +162,36 @@ void MatchGroupTableView::resizeEvent(QResizeEvent *event)
 
 void MatchGroupTableView::autosizeColumns()
 {
-  // distribute the available space evenly over the columns
+  // distribute the available space according to relative column widths
+  int totalUnits = (REL_CATEGORY_COL_WIDTH + // category name
+                    REL_NUMERIC_COL_WIDTH + // round
+                    REL_NUMERIC_COL_WIDTH + // group
+                    REL_NUMERIC_COL_WIDTH); // match count
+
+  // calc the available width
   int widthAvail = width();
   if ((verticalScrollBar() != nullptr) && (verticalScrollBar()->isVisible()))
   {
     widthAvail -= verticalScrollBar()->width();
   }
-  int nCol = model()->columnCount() - HIDDEN_COLUMN_COUNT;
-  int colWidth = (nCol > 0) ? widthAvail / nCol : 0;
-  int totalWidth = 0;
-  for (int i=0; i < nCol; ++i)
-  {
-    if (i != (nCol - 1))
-    {
-      setColumnWidth(i, colWidth);
-      totalWidth += colWidth;
-    } else {
-      // compensate for rounding errors by setting
-      // the width of the last column to the not already
-      // "consumed" width
-      setColumnWidth(i, widthAvail - totalWidth);
-    }
-  }
+  int unitWidth = widthAvail / totalUnits;
+
+  // a little lambda that sets the column width and
+  // aggregates it in a dedicated local variable
+  int usedWidth = 0;
+  auto myWidthSetter = [&](int colId, int newColWidth) {
+    setColumnWidth(colId, newColWidth);
+    usedWidth += newColWidth;
+  };
+
+  myWidthSetter(0, REL_CATEGORY_COL_WIDTH * unitWidth);
+  myWidthSetter(1, REL_NUMERIC_COL_WIDTH * unitWidth);
+  myWidthSetter(2, REL_NUMERIC_COL_WIDTH * unitWidth);
+
+  // assign the remaining width to the last column. This accounts for
+  // rounding errors when dividing / multiplying pixel widths and makes
+  // that we always used the full width of the widget
+  myWidthSetter(3, widthAvail - usedWidth);  // referee
 }
 
 //----------------------------------------------------------------------------
