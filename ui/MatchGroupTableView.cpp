@@ -122,11 +122,6 @@ void MatchGroupTableView::setDatabase(TournamentDB* _db)
 
     // receive triggers from the underlying models when a filter update is necessary
     connect(newDataModel, SIGNAL(triggerFilterUpdate()), this, SLOT(onFilterUpdateTriggered()), Qt::DirectConnection);
-
-    // resize columns and rows to content once (we do not want permanent automatic resizing)
-    horizontalHeader()->resizeSections(QHeaderView::ResizeToContents);
-    verticalHeader()->resizeSections(QHeaderView::ResizeToContents);
-
   } else {
     sortedModel->setSourceModel(emptyModel);
   }
@@ -144,9 +139,28 @@ void MatchGroupTableView::setDatabase(TournamentDB* _db)
   // update the database pointer and set the widget's enabled state
   db = _db;
   setEnabled(db != nullptr);
+
+  // initialize column widths
+  autosizeColumns();
 }
 
+//----------------------------------------------------------------------------
+
 void MatchGroupTableView::resizeEvent(QResizeEvent *event)
+{
+  // call parent function
+  QTableView::resizeEvent(event);
+
+  // resize all columns
+  autosizeColumns();
+
+  // finish event processing
+  event->accept();
+}
+
+//----------------------------------------------------------------------------
+
+void MatchGroupTableView::autosizeColumns()
 {
   // distribute the available space evenly over the columns
   int widthAvail = width();
@@ -171,9 +185,6 @@ void MatchGroupTableView::resizeEvent(QResizeEvent *event)
     }
   }
 }
-
-//----------------------------------------------------------------------------
-    
 
 //----------------------------------------------------------------------------
     

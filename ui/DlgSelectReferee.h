@@ -75,7 +75,7 @@ protected:
 
   TournamentDB* db;
 
-  virtual void resizeEvent(QResizeEvent *event) override;
+  virtual void resizeEvent(QResizeEvent *_event) override;
 };
 
 #endif // DLGSELECTREFEREE_H

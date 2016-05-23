@@ -49,6 +49,14 @@ public:
   void setDatabase(TournamentDB* _db);
   void updateRefereeColumn();
   
+protected:
+  static constexpr int MAX_NUMERIC_COL_WIDTH = 90;
+  static constexpr int REL_NUMERIC_COL_WIDTH = 2;
+  static constexpr int REL_MATCH_COL_WIDTH = 11;
+  static constexpr int REL_REFEREE_COL_WIDTH = 6;
+  virtual void resizeEvent(QResizeEvent *event) override;
+  void autosizeColumns();
+
 private slots:
   void onSelectionChanged(const QItemSelection&selectedItem, const QItemSelection&deselectedItem);
   void onContextMenuRequested(const QPoint& pos);

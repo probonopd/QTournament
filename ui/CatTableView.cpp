@@ -155,6 +155,9 @@ void CategoryTableView::setDatabase(TournamentDB* _db)
 
 void CategoryTableView::resizeEvent(QResizeEvent *event)
 {
+  // call parent function
+  QTableView::resizeEvent(event);
+
   // distribute the available space evenly over the columns
   int nCol = model()->columnCount();
   int colWidth = (nCol > 0) ? width() / nCol : 0;
@@ -172,6 +175,9 @@ void CategoryTableView::resizeEvent(QResizeEvent *event)
       setColumnWidth(i, width() - totalWidth);
     }
   }
+
+  // finish event processing
+  event->accept();
 }
 
 //----------------------------------------------------------------------------

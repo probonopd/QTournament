@@ -1,5 +1,6 @@
 
 #include <QMessageBox>
+#include <QResizeEvent>
 
 #include "DlgSelectReferee.h"
 #include "ui_DlgSelectReferee.h"
@@ -485,8 +486,11 @@ bool RefereeTableWidget::hasPlayerSelected()
 
 //----------------------------------------------------------------------------
 
-void RefereeTableWidget::resizeEvent(QResizeEvent* event)
+void RefereeTableWidget::resizeEvent(QResizeEvent* _event)
 {
+  // call the parent handler
+  QTableView::resizeEvent(_event);
+
   // autosize all column in a fixed ratio
   int widthIncrement = width() / (REL_WIDTH_NAME + REL_WIDTH_TEAM +  3 * REL_WIDTH_OTHER + REL_WIDTH_STATE);
   setColumnWidth(STAT_COL_ID, widthIncrement * REL_WIDTH_STATE);
@@ -495,4 +499,7 @@ void RefereeTableWidget::resizeEvent(QResizeEvent* event)
   setColumnWidth(REFEREE_COUNT_COL_ID, widthIncrement * REL_WIDTH_OTHER);
   setColumnWidth(LAST_FINISH_TIME_COL_ID, widthIncrement * REL_WIDTH_OTHER);
   setColumnWidth(NEXT_MATCH_DIST_COL_ID, widthIncrement * REL_WIDTH_OTHER);
+
+  // finish event processing
+  _event->accept();
 }

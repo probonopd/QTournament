@@ -48,6 +48,7 @@ public:
 protected:
   static constexpr int HIDDEN_COLUMN_COUNT = 2;
   virtual void resizeEvent(QResizeEvent *event) override;
+  void autosizeColumns();
 
 public slots:
   void onFilterUpdateTriggered();

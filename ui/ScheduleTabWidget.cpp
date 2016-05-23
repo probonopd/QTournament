@@ -150,9 +150,6 @@ void ScheduleTabWidget::onBtnScheduleClicked()
 
   mm.scheduleAllStagedMatchGroups();
   updateButtons();
-
-  // resize columns to fit new matches best
-  ui->tvMatches->horizontalHeader()->resizeSections(QHeaderView::ResizeToContents);
 }
 
 //----------------------------------------------------------------------------

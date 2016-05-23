@@ -17,6 +17,8 @@
  */
 
 #include <QMessageBox>
+#include <QScrollBar>
+#include <QResizeEvent>
 
 #include "MatchTableView.h"
 #include "MainFrame.h"
@@ -166,8 +168,8 @@ void MatchTableView::setDatabase(TournamentDB* _db)
     setItemDelegate(matchItemDelegate.get());
 
     // resize columns and rows to content once (we do not want permanent automatic resizing)
-    horizontalHeader()->resizeSections(QHeaderView::ResizeToContents);
-    verticalHeader()->resizeSections(QHeaderView::ResizeToContents);
+    //horizontalHeader()->resizeSections(QHeaderView::ResizeToContents);
+    //verticalHeader()->resizeSections(QHeaderView::ResizeToContents);
 
   } else {
     sortedModel->setSourceModel(emptyModel);
@@ -187,6 +189,9 @@ void MatchTableView::setDatabase(TournamentDB* _db)
   // update the database pointer and set the widget's enabled state
   db = _db;
   setEnabled(db != nullptr);
+
+  // trigger a resizing of the displayed columns
+  autosizeColumns();
 }
 
 //----------------------------------------------------------------------------
@@ -198,6 +203,64 @@ void MatchTableView::updateRefereeColumn()
   QModelIndex topLeft = curDataModel->getIndex(0, MatchTableModel::REFEREE_MODE_COL_ID);
   QModelIndex bottomRight = curDataModel->getIndex(curDataModel->rowCount(), MatchTableModel::REFEREE_MODE_COL_ID);
   dataChanged(topLeft, bottomRight);
+}
+
+//----------------------------------------------------------------------------
+
+void MatchTableView::resizeEvent(QResizeEvent* event)
+{
+  // call parent handler
+  QTableView::resizeEvent(event);
+
+  // resize all columns
+  autosizeColumns();
+
+  // finish event processing
+  event->accept();
+}
+
+//----------------------------------------------------------------------------
+
+void MatchTableView::autosizeColumns()
+{
+  // distribute the available space according to relative column widths
+  int totalUnits = (REL_NUMERIC_COL_WIDTH + // Match number
+                    REL_MATCH_COL_WIDTH + // Match details
+                    REL_NUMERIC_COL_WIDTH + // category
+                    REL_NUMERIC_COL_WIDTH + // round
+                    REL_NUMERIC_COL_WIDTH + // group
+                    REL_REFEREE_COL_WIDTH); // referee
+
+  int widthAvail = width();
+  if ((verticalScrollBar() != nullptr) && (verticalScrollBar()->isVisible()))
+  {
+    widthAvail -= verticalScrollBar()->width();
+  }
+  int unitWidth = widthAvail / totalUnits;
+
+  // determine a max width for numeric columns
+  int numericColWidth = REL_NUMERIC_COL_WIDTH * unitWidth;
+  if (numericColWidth > MAX_NUMERIC_COL_WIDTH) numericColWidth = MAX_NUMERIC_COL_WIDTH;
+
+  int usedWidth = 0;
+
+  // a little lambda that sets the column width and
+  // aggregates it in a dedicated local variable
+  auto myWidthSetter = [&](int colId, int newColWidth) {
+    setColumnWidth(colId, newColWidth);
+    usedWidth += newColWidth;
+  };
+
+  myWidthSetter(MatchTableModel::MATCH_NUM_COL_ID, numericColWidth);
+  myWidthSetter(1, REL_MATCH_COL_WIDTH * unitWidth);  // Match details
+  myWidthSetter(2, numericColWidth);  // category
+  myWidthSetter(3, numericColWidth);  // round
+  myWidthSetter(4, numericColWidth);  // group
+
+  // assign the remaining width to the referee. This accounts for
+  // rounding errors when dividing / multiplying pixel widths and makes
+  // that we always used the full width of the widget
+  myWidthSetter(MatchTableModel::REFEREE_MODE_COL_ID, widthAvail - usedWidth);  // referee
 }
 
 //----------------------------------------------------------------------------
