@@ -200,13 +200,10 @@ Category CategoryTableView::getSelectedCategory()
 
 void CategoryTableView::onCategoryDoubleClicked(const QModelIndex& index)
 {
-  if (!(index.isValid()))
-  {
-    return;
-  }
-  
+  if (!(hasCategorySelected())) return;
+
   CatMngr cm{db};
-  Category selectedCat = cm.getCategoryBySeqNum(index.row());
+  Category selectedCat = getSelectedCategory();
   
   QString oldName = selectedCat.getName();
   
