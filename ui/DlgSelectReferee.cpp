@@ -492,7 +492,7 @@ void RefereeTableWidget::resizeEvent(QResizeEvent* _event)
   QTableView::resizeEvent(_event);
 
   // autosize all column in a fixed ratio
-  int widthIncrement = width() / (REL_WIDTH_NAME + REL_WIDTH_TEAM +  3 * REL_WIDTH_OTHER + REL_WIDTH_STATE);
+  double widthIncrement = width() / (REL_WIDTH_NAME + REL_WIDTH_TEAM +  3.0 * REL_WIDTH_OTHER + REL_WIDTH_STATE);
   setColumnWidth(STAT_COL_ID, widthIncrement * REL_WIDTH_STATE);
   setColumnWidth(NAME_COL_ID, widthIncrement * REL_WIDTH_NAME);
   setColumnWidth(TEAM_COL_ID, widthIncrement * REL_WIDTH_TEAM);

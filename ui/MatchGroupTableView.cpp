@@ -174,7 +174,7 @@ void MatchGroupTableView::autosizeColumns()
   {
     widthAvail -= verticalScrollBar()->width();
   }
-  int unitWidth = widthAvail / totalUnits;
+  double unitWidth = widthAvail / (1.0 * totalUnits);
 
   // a little lambda that sets the column width and
   // aggregates it in a dedicated local variable

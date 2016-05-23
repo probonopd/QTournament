@@ -236,7 +236,7 @@ void MatchTableView::autosizeColumns()
   {
     widthAvail -= verticalScrollBar()->width();
   }
-  int unitWidth = widthAvail / totalUnits;
+  double unitWidth = widthAvail / (1.0 * totalUnits);
 
   // determine a max width for numeric columns
   int numericColWidth = REL_NUMERIC_COL_WIDTH * unitWidth;
