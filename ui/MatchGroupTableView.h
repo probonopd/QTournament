@@ -45,6 +45,10 @@ public:
   unique_ptr<MatchGroup> getSelectedMatchGroup();
   void setDatabase(TournamentDB* _db);
   
+protected:
+  static constexpr int HIDDEN_COLUMN_COUNT = 2;
+  virtual void resizeEvent(QResizeEvent *event) override;
+
 public slots:
   void onFilterUpdateTriggered();
   

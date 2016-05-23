@@ -43,7 +43,6 @@ public:
   void setDatabase(TournamentDB* _db);
 
 protected:
-  static constexpr int NUM_COLUMNS = 8;
   virtual void resizeEvent(QResizeEvent *event) override;
   
 public slots:

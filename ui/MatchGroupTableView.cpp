@@ -16,6 +16,8 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <QScrollBar>
+
 #include "MatchGroupTableView.h"
 #include "MainFrame.h"
 #include "MatchMngr.h"
@@ -142,6 +144,32 @@ void MatchGroupTableView::setDatabase(TournamentDB* _db)
   // update the database pointer and set the widget's enabled state
   db = _db;
   setEnabled(db != nullptr);
+}
+
+void MatchGroupTableView::resizeEvent(QResizeEvent *event)
+{
+  // distribute the available space evenly over the columns
+  int widthAvail = width();
+  if ((verticalScrollBar() != nullptr) && (verticalScrollBar()->isVisible()))
+  {
+    widthAvail -= verticalScrollBar()->width();
+  }
+  int nCol = model()->columnCount() - HIDDEN_COLUMN_COUNT;
+  int colWidth = (nCol > 0) ? widthAvail / nCol : 0;
+  int totalWidth = 0;
+  for (int i=0; i < nCol; ++i)
+  {
+    if (i != (nCol - 1))
+    {
+      setColumnWidth(i, colWidth);
+      totalWidth += colWidth;
+    } else {
+      // compensate for rounding errors by setting
+      // the width of the last column to the not already
+      // "consumed" width
+      setColumnWidth(i, widthAvail - totalWidth);
+    }
+  }
 }
 
 //----------------------------------------------------------------------------
