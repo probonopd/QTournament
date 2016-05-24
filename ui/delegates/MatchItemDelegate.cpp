@@ -41,11 +41,19 @@ void MatchItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
   MatchMngr mm{db};
   auto ma = mm.getMatchBySeqNum(row);
   
+  painter->save();
+
   // Fill the cell with the selection color, if necessary
   if(option.state & QStyle::State_Selected)
   {
     QColor bgColor = option.palette.color(QPalette::Highlight);
     painter->fillRect(option.rect, bgColor);
+
+    // draw text in highlighted cells in white bold text
+    painter->setPen(QPen(QColor(Qt::white)));
+    QFont fnt;
+    fnt.setBold(true);
+    painter->setFont(fnt);
   }
   
   QRect r = option.rect;
@@ -64,7 +72,7 @@ void MatchItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
     painter->drawText(option.rect, Qt::AlignCenter, index.data(Qt::DisplayRole).toString());
   }
  
-  
+  painter->restore();
 }
 
 //----------------------------------------------------------------------------

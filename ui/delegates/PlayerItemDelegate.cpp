@@ -59,8 +59,9 @@ void PlayerItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& op
   {
     bgColor = option.palette.color(QPalette::Highlight);
 
-    // use light gray for selected players in state WAIT_FOR_REGISTRATION
-    if (plStat == STAT_PL_WAIT_FOR_REGISTRATION) txtColor = QColor(Qt::lightGray);
+    // use light gray for selected players in state WAIT_FOR_REGISTRATION,
+    // else use white text
+    txtColor = (plStat == STAT_PL_WAIT_FOR_REGISTRATION) ? QColor(Qt::lightGray) : QColor(Qt::white);
   } else {
     if (p->getSex() == F) bgColor = QColor(PLAYER_ITEM_FEMALE_BG_COL);
   }

@@ -45,6 +45,8 @@ void CatItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& optio
 
   CatMngr cm{db};
   Category c = cm.getCategoryBySeqNum(row);
+
+  painter->save();
   
   // Paint the background in the selection color, if necessary
   QColor bgColor = option.palette.color(QPalette::Background);
@@ -52,6 +54,12 @@ void CatItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& optio
   {
     bgColor = option.palette.color(QPalette::Highlight);
     painter->fillRect(option.rect, bgColor);
+
+    // draw text in highlighted cells in white bold text
+    painter->setPen(QPen(QColor(Qt::white)));
+    QFont fnt;
+    fnt.setBold(true);
+    painter->setFont(fnt);
   }
   
   QRect r = option.rect;
@@ -70,7 +78,7 @@ void CatItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& optio
     painter->drawText(option.rect, Qt::AlignCenter, index.data(Qt::DisplayRole).toString());
   }
  
-  
+  painter->restore();
 }
 
 //----------------------------------------------------------------------------
