@@ -240,7 +240,7 @@ QSizeF GuiHelpers::drawTwoLinePlayerPairNames(QPainter* painter, int topLeftX, i
 
   // convert topLeftY to the baseline position
   double yBaseline1 = topLeftY + fm.ascent();
-  double yBaseline2 = yBaseline1 + fm.height() * percLineSpace;
+  double yBaseline2 = yBaseline1 + fm.height() * (1 + percLineSpace);
 
   //
   // draw the left block right aligned
@@ -300,9 +300,110 @@ QSizeF GuiHelpers::drawTwoLinePlayerPairNames(QPainter* painter, int topLeftX, i
   //
   // determine the overall extensions of the text block
   //
-  double h = hasTwoLines ? fm.height() * (1 + percLineSpace) : fm.height();
+  double h = hasTwoLines ? fm.height() * (2 + percLineSpace) : fm.height();
   double w = maxX - topLeftX;
   return QSizeF(w, h);
+}
+
+//----------------------------------------------------------------------------
+
+void GuiHelpers::drawTwoLinePlayerPairNames_Centered(QPainter* painter, const QRectF rect, const QTournament::Match& ma,
+                                                     const QString& localWinnerName, const QString localLoserName,
+                                                     double percLineSpace, bool isBold, bool isItalics, QFont fnt, QColor fntColor, double fntSizeFac)
+{
+  //
+  // step 1: get the text items to be drawn. The overall layout is as follows
+  //
+  //               row1Left : row1Right
+  //               row2Left   row2Right
+  //
+  // where the left text block is right aligned and the right text block is left aligned
+  // and everything is horizontally and vertically centered in rect
+  //
+  QString row1Left;
+  QString row2Left;
+  QString row1Right;
+  QString row2Right;
+  bool isDoubles;
+  ma.getDisplayNameTextItems(localWinnerName, localLoserName, row1Left, row2Left, row1Right, row2Right, isDoubles);
+
+  //
+  // now do the actual drawing
+  //
+  // initial note: we don't call drawFormattedText() here to avoid double
+  // initialization of font objects, font metrics etc.
+  //
+
+  // prepare the font
+  fnt.setItalic(isItalics);
+  fnt.setBold(isBold);
+  fnt.setPointSizeF(fnt.pointSizeF() * fntSizeFac);
+
+  // prepare font metrics
+  QFontMetricsF fm{fnt};
+
+  // prepare the paint device
+  painter->save();
+  painter->setPen(QPen(fntColor));
+  painter->setFont(fnt);
+
+  // prepare a flag that indicates that we have
+  // at least one block with two lines
+  bool hasTwoLines = !(row2Left.isEmpty() && row2Right.isEmpty());
+
+  // determine the overall text width
+  QString colon = " : ";
+  double r1LeftWidth = fm.width(row1Left);
+  double r2LeftWidth = fm.width(row2Left);
+  double r1RightWidth = fm.width(row1Right);
+  double r2RightWidth = fm.width(row2Right);
+  double maxLeftWidth = max(r1LeftWidth, r2LeftWidth);
+  double maxRightWidth = max(r1RightWidth, r2RightWidth);
+  double totalWidth = maxLeftWidth + fm.width(colon) + maxRightWidth;
+
+  // calculate the side margin
+  double horMargin = (rect.width() - totalWidth) / 2.0;
+  if (horMargin < 0) horMargin = 0;
+
+  // calculate the top/bottom margin
+  double textHeight = hasTwoLines ? fm.height() * (2 + percLineSpace) : fm.height();
+  double vertMargin = (rect.height() - textHeight) / 2.0;
+  if (vertMargin < 0) vertMargin = 0;
+
+  // calculate the top left x positions of all four items
+  double r1LeftX0 = rect.x() + horMargin + maxLeftWidth - r1LeftWidth;
+  double r2LeftX0 = rect.x() + horMargin + maxLeftWidth - r2LeftWidth;
+  double rightX0 = rect.x() + rect.width() - horMargin - maxRightWidth;  // is identical for both rows ==> left-alignment!
+
+  // calculate the top lext x position of the colon string
+  double colonLeftX0 = rect.x() + horMargin + maxLeftWidth;
+
+  // calculate the baseline positions
+  double yBaseline1 = rect.y() + vertMargin + fm.ascent();
+  double yBaseline2 = yBaseline1 + (1 + percLineSpace) * fm.height();
+
+  //
+  // let the drawing begin
+  //
+  // draw row 1
+  painter->drawText(r1LeftX0, yBaseline1, row1Left);
+  painter->drawText(rightX0, yBaseline1, row1Right);
+
+  // draw row 2, if any
+  if (!(row2Left.isEmpty()))
+  {
+    painter->drawText(r2LeftX0, yBaseline2, row2Left);
+  }
+  if (!(row2Right.isEmpty()))
+  {
+    painter->drawText(rightX0, yBaseline2, row2Right);
+  }
+
+  // draw the colon
+  painter->drawText(colonLeftX0, yBaseline1, colon);
+
+  // done
+  painter->restore();
 }
 
 //----------------------------------------------------------------------------

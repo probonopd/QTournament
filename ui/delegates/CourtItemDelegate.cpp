@@ -168,7 +168,8 @@ void CourtItemDelegate::paintMatchInfoCell_Selected(QPainter *painter, const QSt
   QRect r = option.rect;
   int x0 = r.x() + ITEM_MARGIN;
   int y0 = r.y() + vertMargin;
-  GuiHelpers::drawTwoLinePlayerPairNames(painter, x0, y0, ma, "", "", 1.15, true, false, largeFont, QColor(Qt::yellow));
+  QRectF playerRect(r.x(), r.y() + vertMargin, r.width(), playerNameHeight - 2 * ITEM_MARGIN);
+  GuiHelpers::drawTwoLinePlayerPairNames_Centered(painter, playerRect, ma, "", "", ITEM_TEXT_ROW_SKIP_PERC, true, false, largeFont, QColor(Qt::yellow));
 
   // draw the first info line with the match number and the category
   QString txt = tr("Match number:");
@@ -222,26 +223,13 @@ void CourtItemDelegate::paintMatchInfoCell_Selected(QPainter *painter, const QSt
 
 void CourtItemDelegate::paintMatchInfoCell_Unselected(QPainter *painter, const QStyleOptionViewItem &option, const Match &ma) const
 {
-  // do we need one or two rows for the player names?
-  bool isDoubles = ma.getPlayerPair1().hasPlayer2();
+  // calculate the position of the text baseline
+  double vertMargin = (ITEM_ROW_HEIGHT - fntMetrics.height()) / 2.0;
+  double yBaseline = option.rect.y() + vertMargin + fntMetrics.ascent();
 
-  // calc the vertical margin
-  // because we want the content to be vertically centered in the cell,
-  // the vertical margin depends on the match type
-  //
-
-  // estimate the height of the player name block
-  double playerNameHeight = fntMetrics_Large.height();
-  if (isDoubles) playerNameHeight *= (2 + ITEM_TEXT_ROW_SKIP_PERC);
-
-  // put everything together and calculate the margin
-  double vertMargin = (ITEM_ROW_HEIGHT - playerNameHeight) / 2.0;
-
-  // draw the player names
-  QRect r = option.rect;
-  int x0 = r.x() + ITEM_MARGIN;
-  int y0 = r.y() + vertMargin;
-  GuiHelpers::drawTwoLinePlayerPairNames(painter, x0, y0, ma, "", "", 1.15, false, false, normalFont);
+  // draw a simple, single line match info
+  GuiHelpers::drawFormattedText(painter, option.rect.x() + ITEM_MARGIN, yBaseline,
+                                ma.getDisplayName("", ""));
 }
 
 //----------------------------------------------------------------------------

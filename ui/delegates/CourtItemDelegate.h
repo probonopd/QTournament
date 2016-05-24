@@ -22,7 +22,7 @@ class CourtItemDelegate : public QStyledItemDelegate
   Q_OBJECT
 
 public:
-  static constexpr int ITEM_ROW_HEIGHT = 40;
+  static constexpr int ITEM_ROW_HEIGHT = 30;
   static constexpr int ITEM_ROW_HEIGHT_SELECTED = 140;
   static constexpr int ITEM_MARGIN = 5;
 
