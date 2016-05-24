@@ -25,9 +25,11 @@
 #include <QPainter>
 #include <QFont>
 #include <QColor>
+#include <QSizeF>
 
 #include "Match.h"
 #include "Court.h"
+#include "PlayerPair.h"
 
 class GuiHelpers : public QObject
 {
@@ -43,8 +45,15 @@ public:
   static void drawFormattedText(QPainter* painter, QRect r, const QString& s, int alignmentFlags=Qt::AlignVCenter|Qt::AlignLeft,
                                 bool isBold=false, bool isItalics=false, QFont fnt=QFont(), QColor fntColor = QColor(0,0,0),
                                 double fntSizeFac = 1.0);
+  static void drawFormattedText(QPainter* painter, int x0, int yBaseline, const QString& s, bool isBold=false, bool isItalics=false,
+                                QFont fnt=QFont(), QColor fntColor = QColor(0,0,0), double fntSizeFac = 1.0);
   static void drawFormattedText(QPainter* painter, QRect r, const QString& s, int alignmentFlags=Qt::AlignVCenter|Qt::AlignLeft,
                                 bool isBold=false, bool isItalics=false, double fntSizeFac = 1.0);
+  static QSizeF getFormattedTextSize(QPainter* painter, const QString& s, bool isBold=false, bool isItalics=false,
+                                    QFont fnt=QFont(), double fntSizeFac = 1.0);
+  static QSizeF drawTwoLinePlayerPairNames(QPainter* painter, int topLeftX, int topLeftY, const QTournament::Match& ma, const QString& localWinnerName, const QString localLoserName,
+                                         double percLineSpace=1.15, bool isBold=false, bool isItalics=false, QFont fnt=QFont(), QColor fntColor = QColor(0,0,0),
+                                         double fntSizeFac = 1.0);
   static void execWalkover(QWidget* parent, const QTournament::Match& ma, int playerNum);
 };
 

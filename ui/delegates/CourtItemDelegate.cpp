@@ -20,8 +20,13 @@
 using namespace QTournament;
 
 CourtItemDelegate::CourtItemDelegate(TournamentDB* _db, QObject* parent)
-: QStyledItemDelegate(parent), db(_db), proxy(nullptr), fntMetrics(QFontMetrics(QFont()))
+: QStyledItemDelegate(parent), db(_db), proxy(nullptr), normalFont(QFont()),
+  fntMetrics(QFontMetricsF(normalFont)),
+  fntMetrics_Large(fntMetrics)  // this a dummy value only
 {
+  largeFont = QFont();
+  largeFont.setPointSizeF(largeFont.pointSizeF() * LARGE_TEXT_SIZE_FAC);
+  fntMetrics_Large = QFontMetricsF(largeFont);
 }
 
 //----------------------------------------------------------------------------
@@ -98,9 +103,9 @@ void CourtItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
     if (isItemSelected)
     {
       GuiHelpers::drawFormattedText(painter, option.rect, index.data(Qt::DisplayRole).toString(),
-                                    Qt::AlignVCenter|Qt::AlignCenter, true, false, QFont(), QColor(Qt::white), 1.0);
+                                    Qt::AlignVCenter|Qt::AlignCenter, true, false, normalFont, QColor(Qt::white), 1.0);
     } else {
-      painter->drawText(option.rect, Qt::AlignCenter, index.data(Qt::DisplayRole).toString());
+      painter->drawText(option.rect, Qt::AlignVCenter|Qt::AlignCenter, index.data(Qt::DisplayRole).toString());
     }
   }
  
@@ -112,12 +117,7 @@ void CourtItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
 QSize CourtItemDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index ) const
 {
   QString txt = index.data(Qt::DisplayRole).toString();
-  int width = fntMetrics.width(txt) + 2 * ITEM_MARGIN;
-  
-  if (index.column() == 1)
-  {
-    width += ITEM_MARGIN + ITEM_STAT_INDICATOR_SIZE;
-  }
+  int width = fntMetrics.width(txt) + 2 * ITEM_MARGIN;   // this is actually a wrong value for doubles matches, but it's worst case estimate
   
   // this doesn't work, because option.state is not yet updated
   // to QtStyle::State_Selected when sizeHint is called for a freshly
@@ -141,24 +141,34 @@ void CourtItemDelegate::setSelectedRow(int _selRow)
 
 void CourtItemDelegate::paintMatchInfoCell_Selected(QPainter *painter, const QStyleOptionViewItem &option, const Match &ma) const
 {
-  QRect r = option.rect;
+  // do we need one or two rows for the player names?
+  bool isDoubles = ma.getPlayerPair1().hasPlayer2();
 
-  // draw a status indicator ("LED light")
-  //DelegateItemLED{}(painter, r, ITEM_MARGIN, ITEM_STAT_INDICATOR_SIZE, ma->getState(), Qt::blue);
+  // calc the vertical margin
+  // because we want the content to be vertically centered in the cell,
+  // the vertical margin depends on the match type
+  //
 
-  // split the available space up into four rows of text
-  int vertMargin = (ITEM_ROW_HEIGHT_SELECTED - 4 * ITEM_TEXT_ROW_HEIGHT - 3 * ITEM_TEXT_ROW_SKIP) / 2;
-  // adjust the width to margin on the left and right. Move down to center all rows vertically in the cell.
-  QRect row1 = r.adjusted(2 * ITEM_MARGIN, vertMargin, -2 * ITEM_MARGIN, 0);
-  row1.setHeight(ITEM_TEXT_ROW_HEIGHT);
-  QRect row2 = row1.translated(0, ITEM_TEXT_ROW_HEIGHT + ITEM_TEXT_ROW_SKIP);
-  QRect row3 = row2.translated(0, ITEM_TEXT_ROW_HEIGHT + ITEM_TEXT_ROW_SKIP);
-  QRect row4 = row3.translated(0, ITEM_TEXT_ROW_HEIGHT + ITEM_TEXT_ROW_SKIP);
+  // start with the height of the info rows
+  double infoBlockHeight = (3 + 2 * ITEM_TEXT_ROW_SKIP_PERC) * fntMetrics.height();
+
+  // now estimate the height of the player name block
+  //
+  // include 2 * ITEM_MARGIN as some extra space between the player names
+  // and the info block
+  double playerNameHeight = (1 + ITEM_TEXT_ROW_SKIP_PERC) * fntMetrics_Large.height();
+  if (isDoubles) playerNameHeight *= 2;
+  playerNameHeight += 2 * ITEM_MARGIN;
+
+  // put everything together and calculate the margin
+  double totalTextHeight = playerNameHeight + infoBlockHeight;
+  double vertMargin = (ITEM_ROW_HEIGHT_SELECTED - totalTextHeight) / 2.0;
 
   // draw the player names
-  GuiHelpers::drawFormattedText(painter, row1, ma.getDisplayName(tr("Winner"), tr("Loser")),
-                                Qt::AlignVCenter|Qt::AlignLeft, true, false,
-                                QFont(), QColor(Qt::yellow), 1.2);
+  QRect r = option.rect;
+  int x0 = r.x() + ITEM_MARGIN;
+  int y0 = r.y() + vertMargin;
+  GuiHelpers::drawTwoLinePlayerPairNames(painter, x0, y0, ma, "", "", 1.15, true, false, largeFont, QColor(Qt::yellow));
 
   // draw the first info line with the match number and the category
   QString txt = tr("Match number:");
@@ -166,7 +176,8 @@ void CourtItemDelegate::paintMatchInfoCell_Selected(QPainter *painter, const QSt
   txt += tr("Category:");
   txt += " " + ma.getCategory().getName() + "    ";
   txt += tr("Round: ") + QString::number(ma.getMatchGroup().getRound());
-  GuiHelpers::drawFormattedText(painter, row2, txt, Qt::AlignVCenter|Qt::AlignLeft, true, false, QFont(), QColor(Qt::white), 1.0);
+  double baseline = y0 + playerNameHeight + fntMetrics.ascent();
+  GuiHelpers::drawFormattedText(painter, x0, baseline, txt, true, false, normalFont, QColor(Qt::white));
 
   // draw a second info line with call times
   QDateTime startTime = ma.getStartTime();
@@ -183,7 +194,8 @@ void CourtItemDelegate::paintMatchInfoCell_Selected(QPainter *painter, const QSt
     }
     txt.chop(2);
   }
-  GuiHelpers::drawFormattedText(painter, row3, txt, Qt::AlignVCenter|Qt::AlignLeft, true, false, QFont(), QColor(Qt::white), 1.0);
+  baseline += fntMetrics.height() * (1 + ITEM_TEXT_ROW_SKIP_PERC);
+  GuiHelpers::drawFormattedText(painter, x0, baseline, txt, true, false, normalFont, QColor(Qt::white));
 
   // draw the third info line with umpire information
   txt = tr("Umpire: ");
@@ -202,23 +214,34 @@ void CourtItemDelegate::paintMatchInfoCell_Selected(QPainter *painter, const QSt
     assert(referee != nullptr);
     txt += referee->getDisplayName_FirstNameFirst();
   }
-  GuiHelpers::drawFormattedText(painter, row4, txt, Qt::AlignVCenter|Qt::AlignLeft, true, false, QFont(), QColor(Qt::white), 1.0);
-
+  baseline += fntMetrics.height() * (1 + ITEM_TEXT_ROW_SKIP_PERC);
+  GuiHelpers::drawFormattedText(painter, x0, baseline, txt, true, false, normalFont, QColor(Qt::white));
 }
 
 //----------------------------------------------------------------------------
 
 void CourtItemDelegate::paintMatchInfoCell_Unselected(QPainter *painter, const QStyleOptionViewItem &option, const Match &ma) const
 {
+  // do we need one or two rows for the player names?
+  bool isDoubles = ma.getPlayerPair1().hasPlayer2();
+
+  // calc the vertical margin
+  // because we want the content to be vertically centered in the cell,
+  // the vertical margin depends on the match type
+  //
+
+  // estimate the height of the player name block
+  double playerNameHeight = fntMetrics_Large.height();
+  if (isDoubles) playerNameHeight *= (2 + ITEM_TEXT_ROW_SKIP_PERC);
+
+  // put everything together and calculate the margin
+  double vertMargin = (ITEM_ROW_HEIGHT - playerNameHeight) / 2.0;
+
+  // draw the player names
   QRect r = option.rect;
-
-  // draw a status indicator ("LED light")
-  //DelegateItemLED{}(painter, r, ITEM_MARGIN, ITEM_STAT_INDICATOR_SIZE, ma->getState(), Qt::blue);
-
-  // draw the name
-  r.adjust(2 * ITEM_MARGIN + ITEM_STAT_INDICATOR_SIZE, 0, 0, 0);
-  QString txt = ma.getDisplayName(tr("Winner"), tr("Loser"));
-  painter->drawText(r, Qt::AlignVCenter|Qt::AlignLeft, txt);
+  int x0 = r.x() + ITEM_MARGIN;
+  int y0 = r.y() + vertMargin;
+  GuiHelpers::drawTwoLinePlayerPairNames(painter, x0, y0, ma, "", "", 1.15, false, false, normalFont);
 }
 
 //----------------------------------------------------------------------------

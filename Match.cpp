@@ -119,14 +119,29 @@ namespace QTournament
     return num->get();
   }
 
-//----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
 
-  QString Match::getDisplayName(const QString& localWinnerName, const QString& localLoserName) const
+  void Match::getDisplayNameTextItems(const QString& localWinnerName, const QString& localLoserName,
+                                      QString& row1Left_out, QString& row2Left_out,
+                                      QString& row1Right_out, QString& row2Right_out,
+                                      bool& isDoubles) const
   {
-    QString name1 = "??";
+    //
+    // get the text items to be drawn for a match. The overall layout is as follows
+    //
+    //               row1Left : row1Right
+    //               row2Left   row2Right
+    //
+    row1Left_out = "??";
+    row2Left_out = "";
     if (hasPlayerPair1())
     {
-      name1 = getPlayerPair1().getDisplayName();
+      QTournament::PlayerPair pp = getPlayerPair1();
+      row1Left_out = pp.getPlayer1().getDisplayName();
+      if (pp.hasPlayer2())
+      {
+        row2Left_out = pp.getPlayer2().getDisplayName();
+      }
     }
 
     // maybe, the name of player pair 1 is only symbolic
@@ -134,24 +149,47 @@ namespace QTournament
     int symName1 = getSymbolicPlayerPair1Name();
     if (symName1 != 0)
     {
-      name1 = (symName1 > 0) ? localWinnerName : localLoserName;
-      name1 += " #" + QString::number(abs(symName1));
+      row1Left_out = (symName1 > 0) ? localWinnerName : localLoserName;
+      row1Left_out += " #" + QString::number(abs(symName1));
+      row2Left_out.clear();
     }
 
-    QString name2 = "??";
+    //
+    // do the same for player pair 2
+    //
+    row1Right_out = "??";
+    row2Right_out = "";
     if (hasPlayerPair2())
     {
-      name2 = getPlayerPair2().getDisplayName();
+      QTournament::PlayerPair pp = getPlayerPair2();
+      row1Right_out = pp.getPlayer1().getDisplayName();
+      if (pp.hasPlayer2())
+      {
+        row2Right_out = pp.getPlayer2().getDisplayName();
+      }
     }
-
-    // maybe, the name of player pair 1 is only symbolic
-    // as of now
     int symName2 = getSymbolicPlayerPair2Name();
     if (symName2 != 0)
     {
-      name2 = (symName2 > 0) ? localWinnerName : localLoserName;
-      name2 += " #" + QString::number(abs(symName2));
+      row1Right_out = (symName1 > 0) ? localWinnerName : localLoserName;
+      row1Right_out += " #" + QString::number(abs(symName1));
+      row2Right_out.clear();
     }
+  }
+
+//----------------------------------------------------------------------------
+
+  QString Match::getDisplayName(const QString& localWinnerName, const QString& localLoserName) const
+  {
+    QString row1Left;
+    QString row2Left;
+    QString row1Right;
+    QString row2Right;
+    bool isDoubles;
+    getDisplayNameTextItems(localWinnerName, localLoserName, row1Left, row2Left, row1Right, row2Right, isDoubles);
+
+    QString name1 = row2Left.isEmpty() ? row1Left : row1Left + " / " + row2Left;
+    QString name2 = row2Right.isEmpty() ? row1Right : row1Right + " / " + row2Right;
 
     return name1 + " : " + name2;
   }

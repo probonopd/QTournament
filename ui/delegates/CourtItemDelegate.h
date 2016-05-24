@@ -9,7 +9,7 @@
 #define	COURTITEMDELEGATE_H
 
 #include <QStyledItemDelegate>
-#include <QFontMetrics>
+#include <QFontMetricsF>
 #include <QAbstractProxyModel>
 
 #include "Match.h"
@@ -22,13 +22,12 @@ class CourtItemDelegate : public QStyledItemDelegate
   Q_OBJECT
 
 public:
-  static constexpr int ITEM_ROW_HEIGHT = 30;
-  static constexpr int ITEM_ROW_HEIGHT_SELECTED = 120;
-  static constexpr int ITEM_STAT_INDICATOR_SIZE = 15;
+  static constexpr int ITEM_ROW_HEIGHT = 40;
+  static constexpr int ITEM_ROW_HEIGHT_SELECTED = 140;
   static constexpr int ITEM_MARGIN = 5;
 
-  static constexpr int ITEM_TEXT_ROW_HEIGHT = 15;
-  static constexpr int ITEM_TEXT_ROW_SKIP = 5;
+  static constexpr double LARGE_TEXT_SIZE_FAC = 1.2;
+  static constexpr double ITEM_TEXT_ROW_SKIP_PERC = 0.2;
 
   CourtItemDelegate(TournamentDB* _db, QObject* parent = 0);
   void setProxy(QAbstractProxyModel* _proxy);
@@ -39,7 +38,10 @@ public:
 private:
   TournamentDB* db;
   QAbstractProxyModel* proxy;
-  QFontMetrics fntMetrics;
+  QFont normalFont;
+  QFont largeFont;
+  QFontMetricsF fntMetrics;
+  QFontMetricsF fntMetrics_Large;
   int selectedRow;
 
   void paintMatchInfoCell_Unselected(QPainter* painter, const QStyleOptionViewItem& option, const Match& ma) const;

@@ -19,6 +19,7 @@
 #include "GuiHelpers.h"
 
 #include <QMessageBox>
+#include <QFontMetricsF>
 
 #include "TournamentDataDefs.h"
 #include "MatchMngr.h"
@@ -160,9 +161,148 @@ void GuiHelpers::drawFormattedText(QPainter *painter, QRect r, const QString &s,
 
 //----------------------------------------------------------------------------
 
+void GuiHelpers::drawFormattedText(QPainter* painter, int x0, int yBaseline, const QString& s, bool isBold, bool isItalics, QFont fnt, QColor fntColor, double fntSizeFac)
+{
+  fnt.setItalic(isItalics);
+  fnt.setBold(isBold);
+  fnt.setPointSizeF(fnt.pointSizeF() * fntSizeFac);
+
+  painter->save();
+  painter->setPen(QPen(fntColor));
+  painter->setFont(fnt);
+  painter->drawText(x0, yBaseline, s);
+  painter->restore();
+}
+
+//----------------------------------------------------------------------------
+
 void GuiHelpers::drawFormattedText(QPainter *painter, QRect r, const QString &s, int alignmentFlags, bool isBold, bool isItalics, double fntSizeFac)
 {
   drawFormattedText(painter, r, s, alignmentFlags, isBold, isItalics, QFont(), QColor(0,0,0), fntSizeFac);
+}
+
+//----------------------------------------------------------------------------
+
+QSizeF GuiHelpers::getFormattedTextSize(QPainter* painter, const QString& s, bool isBold, bool isItalics, QFont fnt, double fntSizeFac)
+{
+  fnt.setItalic(isItalics);
+  fnt.setBold(isBold);
+  fnt.setPointSizeF(fnt.pointSizeF() * fntSizeFac);
+
+  QFontMetricsF fm{fnt};
+  return fm.boundingRect(s).size();
+}
+
+//----------------------------------------------------------------------------
+
+QSizeF GuiHelpers::drawTwoLinePlayerPairNames(QPainter* painter, int topLeftX, int topLeftY, const QTournament::Match& ma,
+                                              const QString& localWinnerName, const QString localLoserName,
+                                              double percLineSpace, bool isBold, bool isItalics, QFont fnt, QColor fntColor, double fntSizeFac)
+{
+  //
+  // step 1: get the text items to be drawn. The overall layout is as follows
+  //
+  //               row1Left : row1Right
+  //               row2Left   row2Right
+  //
+  // where the left text block is right aligned and the right text block is left aligned
+  //
+  QString row1Left;
+  QString row2Left;
+  QString row1Right;
+  QString row2Right;
+  bool isDoubles;
+  ma.getDisplayNameTextItems(localWinnerName, localLoserName, row1Left, row2Left, row1Right, row2Right, isDoubles);
+
+  //
+  // now do the actual drawing
+  //
+  // initial note: we don't call drawFormattedText() here to avoid double
+  // initialization of font objects, font metrics etc.
+  //
+
+  // prepare the font
+  fnt.setItalic(isItalics);
+  fnt.setBold(isBold);
+  fnt.setPointSizeF(fnt.pointSizeF() * fntSizeFac);
+
+  // prepare font metrics
+  QFontMetricsF fm{fnt};
+
+  // prepare the paint device
+  painter->save();
+  painter->setPen(QPen(fntColor));
+  painter->setFont(fnt);
+
+  // prepare a flag that indicates that we have
+  // at least one block with two lines
+  bool hasTwoLines = false;
+
+  // convert topLeftY to the baseline position
+  double yBaseline1 = topLeftY + fm.ascent();
+  double yBaseline2 = yBaseline1 + fm.height() * percLineSpace;
+
+  //
+  // draw the left block right aligned
+  //
+  // if this is not a doubles pair, our job is easy
+  double maxX = -1;
+  if (row2Left.isEmpty())
+  {
+    painter->drawText(topLeftX, yBaseline1, row1Left);
+    maxX = topLeftX + fm.width(row1Left);
+  } else {
+    // okay, two players in this pair.
+    // determine the top right corner of the text
+    double width1 = fm.width(row1Left);
+    double width2 = fm.width(row2Left);
+    double maxWidth = (width1 > width2) ? width1 : width2;
+    maxX = topLeftX + maxWidth;
+
+    // determine the top left corner of the first and second line
+    double topLeftX1 = maxX - width1;
+    double topLeftX2 = maxX - width2;
+
+    // actually draw the text
+    painter->drawText(topLeftX1, yBaseline1, row1Left);
+    painter->drawText(topLeftX2, yBaseline2, row2Left);
+
+    // set the two-lines-flag
+    hasTwoLines = true;
+  }
+
+  // draw the colon in row 1
+  QString colon = " : ";
+  painter->drawText(maxX, yBaseline1, colon);
+  maxX += fm.width(colon);
+
+  //
+  // draw the right block left aligned
+  //
+  // this is easy, because left-alignment is the default
+  painter->drawText(maxX, yBaseline1, row1Right);
+  double width1 = fm.width(row1Right);
+
+  double width2 = -1;
+  if (!(row2Right.isEmpty()))
+  {
+    painter->drawText(maxX, yBaseline2, row2Right);
+    width2 = fm.width(row1Right);
+
+    // set the two-lines-flag
+    hasTwoLines = true;
+  }
+  maxX += (width1 > width2) ? width1 : width2;
+
+  // we're done with painting
+  painter->restore();
+
+  //
+  // determine the overall extensions of the text block
+  //
+  double h = hasTwoLines ? fm.height() * (1 + percLineSpace) : fm.height();
+  double w = maxX - topLeftX;
+  return QSizeF(w, h);
 }
 
 //----------------------------------------------------------------------------

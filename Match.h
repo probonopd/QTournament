@@ -63,6 +63,10 @@ namespace QTournament
     PlayerPair getPlayerPair1() const;
     PlayerPair getPlayerPair2() const;
     int getMatchNumber() const;
+    void getDisplayNameTextItems(const QString& localWinnerName, const QString& localLoserName,
+                                 QString& row1Left_out, QString& row2Left_out,
+                                 QString& row1Right_out, QString& row2Right_out,
+                                 bool& isDoubles) const;
     QString getDisplayName(const QString& localWinnerName, const QString& localLoserName) const;
 
     unique_ptr<MatchScore> getScore(ERR *err=nullptr) const;
