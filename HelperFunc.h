@@ -1,6 +1,6 @@
 /*
  *    This is QTournament, a badminton tournament management program.
- *    Copyright (C) 2014 - 2015  Volker Knollmann
+ *    Copyright (C) 2014 - 2016  Volker Knollmann
  *
  *    This program is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@
 
 #include <string>
 #include <functional>
+#include <vector>
 
 #include <QString>
 
