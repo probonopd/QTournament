@@ -24,9 +24,11 @@ Build final release version of QTournament
 
   * Merge 'dev' with 'staged' and finally 'staged' with 'master'
 
+  * Add / modify the (future) version numbers in the build scripts for the shell
+
   * Commit and push all changes
 
-  * Compile release version for Linux and Windows
+  * Compile release version for Linux and Windows using the shell build scripts
 
   * Make sure everything works fine (esp. under Windows)
 
