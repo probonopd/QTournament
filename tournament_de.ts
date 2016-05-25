@@ -862,17 +862,17 @@ Die internen Daten zu dieser Disziplin sind vermutlich defekt.</translation>
 <context>
     <name>CourtItemDelegate</name>
     <message>
-        <location filename="ui/delegates/CourtItemDelegate.cpp" line="75"/>
+        <location filename="ui/delegates/CourtItemDelegate.cpp" line="87"/>
         <source>(free)</source>
         <translation>(frei)</translation>
     </message>
     <message>
-        <location filename="ui/delegates/CourtItemDelegate.cpp" line="79"/>
+        <location filename="ui/delegates/CourtItemDelegate.cpp" line="91"/>
         <source>(free, manual match assignment only)</source>
         <translation>(frei, nur manuelle Spielzuweisung)</translation>
     </message>
     <message>
-        <location filename="ui/delegates/CourtItemDelegate.cpp" line="83"/>
+        <location filename="ui/delegates/CourtItemDelegate.cpp" line="95"/>
         <source>(disabled)</source>
         <translation>(deaktiviert)</translation>
     </message>
@@ -885,42 +885,42 @@ Die internen Daten zu dieser Disziplin sind vermutlich defekt.</translation>
         <translation type="vanished">Verlierer</translation>
     </message>
     <message>
-        <location filename="ui/delegates/CourtItemDelegate.cpp" line="175"/>
+        <location filename="ui/delegates/CourtItemDelegate.cpp" line="187"/>
         <source>Match number:</source>
         <translation>Spielnummer:</translation>
     </message>
     <message>
-        <location filename="ui/delegates/CourtItemDelegate.cpp" line="177"/>
+        <location filename="ui/delegates/CourtItemDelegate.cpp" line="189"/>
         <source>Category:</source>
         <translation>Disziplin:</translation>
     </message>
     <message>
-        <location filename="ui/delegates/CourtItemDelegate.cpp" line="179"/>
+        <location filename="ui/delegates/CourtItemDelegate.cpp" line="191"/>
         <source>Round: </source>
         <translation>Runde:</translation>
     </message>
     <message>
-        <location filename="ui/delegates/CourtItemDelegate.cpp" line="186"/>
+        <location filename="ui/delegates/CourtItemDelegate.cpp" line="198"/>
         <source>Start time: </source>
         <translation>Aufrufzeit:</translation>
     </message>
     <message>
-        <location filename="ui/delegates/CourtItemDelegate.cpp" line="191"/>
+        <location filename="ui/delegates/CourtItemDelegate.cpp" line="203"/>
         <source>additional calls at </source>
         <translation>Weitere Aufrufe um </translation>
     </message>
     <message>
-        <location filename="ui/delegates/CourtItemDelegate.cpp" line="202"/>
+        <location filename="ui/delegates/CourtItemDelegate.cpp" line="214"/>
         <source>Umpire: </source>
         <translation>Schiedsrichter: </translation>
     </message>
     <message>
-        <location filename="ui/delegates/CourtItemDelegate.cpp" line="206"/>
+        <location filename="ui/delegates/CourtItemDelegate.cpp" line="218"/>
         <source>none</source>
         <translation>ohne</translation>
     </message>
     <message>
-        <location filename="ui/delegates/CourtItemDelegate.cpp" line="210"/>
+        <location filename="ui/delegates/CourtItemDelegate.cpp" line="222"/>
         <source>manually assigned</source>
         <translation>wird manuell zugewiesen</translation>
     </message>
@@ -1329,37 +1329,37 @@ Die internen Daten zu dieser Disziplin sind vermutlich defekt.</translation>
         <translation>Abbrechen</translation>
     </message>
     <message>
-        <location filename="ui/DlgSelectReferee.cpp" line="44"/>
+        <location filename="ui/DlgSelectReferee.cpp" line="61"/>
         <source>All players</source>
         <translation>Alle Spieler</translation>
     </message>
     <message>
-        <location filename="ui/DlgSelectReferee.cpp" line="45"/>
+        <location filename="ui/DlgSelectReferee.cpp" line="62"/>
         <source>Recent losers</source>
         <translation>Letzte Verlierer</translation>
     </message>
     <message>
-        <location filename="ui/DlgSelectReferee.cpp" line="46"/>
+        <location filename="ui/DlgSelectReferee.cpp" line="63"/>
         <source>Special team member</source>
         <translation>Spezielles Team</translation>
     </message>
     <message>
-        <location filename="ui/DlgSelectReferee.cpp" line="90"/>
+        <location filename="ui/DlgSelectReferee.cpp" line="107"/>
         <source>Pre-assignment</source>
         <translation>Vorabzuweisung</translation>
     </message>
     <message>
-        <location filename="ui/DlgSelectReferee.cpp" line="95"/>
+        <location filename="ui/DlgSelectReferee.cpp" line="112"/>
         <source>!! Match call !!</source>
         <translation>!! Spielaufruf !!</translation>
     </message>
     <message>
-        <location filename="ui/DlgSelectReferee.cpp" line="100"/>
+        <location filename="ui/DlgSelectReferee.cpp" line="117"/>
         <source>Umpire swap</source>
         <translation>Schiedsrichter wechseln</translation>
     </message>
     <message>
-        <location filename="ui/DlgSelectReferee.cpp" line="221"/>
+        <location filename="ui/DlgSelectReferee.cpp" line="238"/>
         <source>&lt;Please select&gt;</source>
         <translation>&lt;Bitte auswählen&gt;</translation>
     </message>
@@ -2236,7 +2236,8 @@ Die internen Daten zu dieser Disziplin sind vermutlich defekt.</translation>
     </message>
     <message>
         <location filename="ui/MainFrame.cpp" line="1270"/>
-        <source>© Volker Knollmann, 2014 - 2015&lt;br&gt;&lt;br&gt;</source>
+        <source>© Volker Knollmann, 2014 - 2016&lt;br&gt;&lt;br&gt;</source>
+        <oldsource>© Volker Knollmann, 2014 - 2015&lt;br&gt;&lt;br&gt;</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2350,12 +2351,12 @@ Die internen Daten zu dieser Disziplin sind vermutlich defekt.</translation>
 <context>
     <name>MatchItemDelegate</name>
     <message>
-        <location filename="ui/delegates/MatchItemDelegate.cpp" line="69"/>
+        <location filename="ui/delegates/MatchItemDelegate.cpp" line="80"/>
         <source>Winner</source>
         <translation>Gewinner</translation>
     </message>
     <message>
-        <location filename="ui/delegates/MatchItemDelegate.cpp" line="69"/>
+        <location filename="ui/delegates/MatchItemDelegate.cpp" line="80"/>
         <source>Loser</source>
         <translation>Verlierer</translation>
     </message>
@@ -2412,12 +2413,12 @@ Die internen Daten zu dieser Disziplin sind vermutlich defekt.</translation>
         <location filename="ui/MatchTableView.cpp" line="341"/>
         <location filename="ui/MatchTableView.cpp" line="503"/>
         <source>Set umpire mode</source>
-        <translation type="unfinished"></translation>
+        <translation>Schiedsrichtermodus setzen</translation>
     </message>
     <message>
         <location filename="ui/MatchTableView.cpp" line="342"/>
         <source>The mode can&apos;t be set for this match.</source>
-        <translation type="unfinished"></translation>
+        <translation>Der Modus kann für dieses Spiel nicht verwendet werden.</translation>
     </message>
     <message>
         <location filename="ui/MatchTableView.cpp" line="383"/>
@@ -2504,17 +2505,18 @@ Die internen Daten zu dieser Disziplin sind vermutlich defekt.</translation>
         <location filename="ui/MatchTableView.cpp" line="464"/>
         <source>Could not remove umpire assignment from match.
 </source>
-        <translation type="unfinished"></translation>
+        <translation>Konnte die Schiedsrichter-Zuweisung für dieses Spiel nicht aufheben.
+</translation>
     </message>
     <message>
         <location filename="ui/MatchTableView.cpp" line="465"/>
         <source>Some unexpected error occured.</source>
-        <translation type="unfinished"></translation>
+        <translation>Es ist ein unerwarteter Fehler aufgetreten.</translation>
     </message>
     <message>
         <location filename="ui/MatchTableView.cpp" line="466"/>
         <source>Umpire removal failed</source>
-        <translation type="unfinished"></translation>
+        <translation>Entfernen der Schiedsrichterzuweisung fehlgeschlagen</translation>
     </message>
     <message>
         <location filename="ui/MatchTableView.cpp" line="482"/>
@@ -2534,42 +2536,42 @@ Die internen Daten zu dieser Disziplin sind vermutlich defekt.</translation>
     <message>
         <location filename="ui/MatchTableView.cpp" line="504"/>
         <source>None</source>
-        <translation type="unfinished"></translation>
+        <translation>Kein Schiedsrichter</translation>
     </message>
     <message>
         <location filename="ui/MatchTableView.cpp" line="507"/>
         <source>Pick from all players</source>
-        <translation type="unfinished"></translation>
+        <translation>Aus allen Spielern wählen</translation>
     </message>
     <message>
         <location filename="ui/MatchTableView.cpp" line="509"/>
         <source>Pick from recent losers</source>
-        <translation type="unfinished"></translation>
+        <translation>Aus letzten Verlierern wählen</translation>
     </message>
     <message>
         <location filename="ui/MatchTableView.cpp" line="511"/>
         <source>Pick from special team</source>
-        <translation type="unfinished"></translation>
+        <translation>Aus speziellem Team wählen</translation>
     </message>
     <message>
         <location filename="ui/MatchTableView.cpp" line="514"/>
         <source>Manual</source>
-        <translation type="unfinished"></translation>
+        <translation>Manuelle Zuweisung</translation>
     </message>
     <message>
         <location filename="ui/MatchTableView.cpp" line="517"/>
         <source>Use tournament default</source>
-        <translation type="unfinished"></translation>
+        <translation>Standardeinstellung des Turniers verwenden</translation>
     </message>
     <message>
         <location filename="ui/MatchTableView.cpp" line="519"/>
         <source>Assign umpire...</source>
-        <translation type="unfinished"></translation>
+        <translation>Schiedsrichter zuweisen...</translation>
     </message>
     <message>
         <location filename="ui/MatchTableView.cpp" line="520"/>
         <source>Remove assigned umpire</source>
-        <translation type="unfinished"></translation>
+        <translation>Schiedsrichterzuweisung aufheben</translation>
     </message>
     <message>
         <source>Call cancled, match not started</source>
@@ -2669,12 +2671,12 @@ Die internen Daten zu dieser Disziplin sind vermutlich defekt.</translation>
     <message>
         <location filename="ui/PlayerTabWidget.cpp" line="264"/>
         <source>Could not open database for player export!</source>
-        <translation type="unfinished"></translation>
+        <translation>Konnte die Datenbank nicht für den Spielerexport öffnen!</translation>
     </message>
     <message>
         <location filename="ui/PlayerTabWidget.cpp" line="265"/>
         <source>Export player</source>
-        <translation type="unfinished">Spieler exportieren</translation>
+        <translation>Spieler exportieren</translation>
     </message>
     <message>
         <location filename="ui/PlayerTabWidget.cpp" line="280"/>
@@ -3043,52 +3045,52 @@ Die internen Daten zu dieser Disziplin sind vermutlich defekt.</translation>
 <context>
     <name>QTournament::CategoryTableModel</name>
     <message>
-        <location filename="models/CatTableModel.cpp" line="188"/>
+        <location filename="models/CatTableModel.cpp" line="200"/>
         <source>Name</source>
         <translation>Name</translation>
     </message>
     <message>
-        <location filename="models/CatTableModel.cpp" line="192"/>
+        <location filename="models/CatTableModel.cpp" line="204"/>
         <source>Finished rounds</source>
         <translation>Gespielte
 Runden</translation>
     </message>
     <message>
-        <location filename="models/CatTableModel.cpp" line="196"/>
+        <location filename="models/CatTableModel.cpp" line="208"/>
         <source>Current round</source>
         <translation>Laufende
 Runde</translation>
     </message>
     <message>
-        <location filename="models/CatTableModel.cpp" line="200"/>
+        <location filename="models/CatTableModel.cpp" line="212"/>
         <source>Total matches
 in current round</source>
         <translation>Anzahl Spiele
 in laufener Runde</translation>
     </message>
     <message>
-        <location filename="models/CatTableModel.cpp" line="204"/>
+        <location filename="models/CatTableModel.cpp" line="216"/>
         <source>Unfinished matches
 in current round</source>
         <translation>Unfertige Spiele
 in laufender Runde</translation>
     </message>
     <message>
-        <location filename="models/CatTableModel.cpp" line="208"/>
+        <location filename="models/CatTableModel.cpp" line="220"/>
         <source>Running matches
 in current round</source>
         <translation>Laufende Spiele
 in laufender Runde</translation>
     </message>
     <message>
-        <location filename="models/CatTableModel.cpp" line="212"/>
+        <location filename="models/CatTableModel.cpp" line="224"/>
         <source>Waiting matches
 in current round</source>
         <translation>Wartende Spiele
 in laufender Runde</translation>
     </message>
     <message>
-        <location filename="models/CatTableModel.cpp" line="216"/>
+        <location filename="models/CatTableModel.cpp" line="228"/>
         <source>Total rounds</source>
         <translation>Runden
 insgesamt</translation>
@@ -3097,19 +3099,19 @@ insgesamt</translation>
 <context>
     <name>QTournament::CourtTableModel</name>
     <message>
-        <location filename="models/CourtTabModel.cpp" line="123"/>
+        <location filename="models/CourtTabModel.cpp" line="134"/>
         <source>Court</source>
         <translation>Feld</translation>
     </message>
     <message>
-        <location filename="models/CourtTabModel.cpp" line="126"/>
+        <location filename="models/CourtTabModel.cpp" line="137"/>
         <source>Match</source>
         <translation>Spiel</translation>
     </message>
     <message>
-        <location filename="models/CourtTabModel.cpp" line="129"/>
+        <location filename="models/CourtTabModel.cpp" line="140"/>
         <source>Duration</source>
-        <translation type="unfinished"></translation>
+        <translation>Dauer</translation>
     </message>
 </context>
 <context>
@@ -3212,32 +3214,32 @@ insgesamt</translation>
 <context>
     <name>QTournament::MatchGroupTableModel</name>
     <message>
-        <location filename="models/MatchGroupTabModel.cpp" line="132"/>
+        <location filename="models/MatchGroupTabModel.cpp" line="143"/>
         <source>Category</source>
         <translation>Disziplin</translation>
     </message>
     <message>
-        <location filename="models/MatchGroupTabModel.cpp" line="135"/>
+        <location filename="models/MatchGroupTabModel.cpp" line="146"/>
         <source>Round</source>
         <translation>Runde</translation>
     </message>
     <message>
-        <location filename="models/MatchGroupTabModel.cpp" line="138"/>
+        <location filename="models/MatchGroupTabModel.cpp" line="149"/>
         <source>Group</source>
         <translation>Gruppe</translation>
     </message>
     <message>
-        <location filename="models/MatchGroupTabModel.cpp" line="141"/>
+        <location filename="models/MatchGroupTabModel.cpp" line="152"/>
         <source>Matches</source>
         <translation>Spiele</translation>
     </message>
     <message>
-        <location filename="models/MatchGroupTabModel.cpp" line="144"/>
+        <location filename="models/MatchGroupTabModel.cpp" line="155"/>
         <source>State</source>
         <translation>Zustand</translation>
     </message>
     <message>
-        <location filename="models/MatchGroupTabModel.cpp" line="147"/>
+        <location filename="models/MatchGroupTabModel.cpp" line="158"/>
         <source>StageSeqNum</source>
         <translation>SeqNummer</translation>
     </message>
@@ -3321,79 +3323,79 @@ insgesamt</translation>
 <context>
     <name>QTournament::MatchTableModel</name>
     <message>
-        <location filename="models/MatchTabModel.cpp" line="75"/>
+        <location filename="models/MatchTabModel.cpp" line="86"/>
         <source>Winner</source>
         <translation>Gewinner</translation>
     </message>
     <message>
-        <location filename="models/MatchTabModel.cpp" line="75"/>
+        <location filename="models/MatchTabModel.cpp" line="86"/>
         <source>Loser</source>
         <translation>Verlierer</translation>
     </message>
     <message>
-        <location filename="models/MatchTabModel.cpp" line="126"/>
+        <location filename="models/MatchTabModel.cpp" line="137"/>
         <source>None</source>
-        <translation type="unfinished"></translation>
+        <translation>Kein Schiedsrichter</translation>
     </message>
     <message>
-        <location filename="models/MatchTabModel.cpp" line="129"/>
+        <location filename="models/MatchTabModel.cpp" line="140"/>
         <source>Manual</source>
-        <translation type="unfinished"></translation>
+        <translation>Manuelle Zuweisung</translation>
     </message>
     <message>
-        <location filename="models/MatchTabModel.cpp" line="132"/>
+        <location filename="models/MatchTabModel.cpp" line="143"/>
         <source>Pick from all players</source>
-        <translation type="unfinished"></translation>
+        <translation>Aus allen Spielern wählen</translation>
     </message>
     <message>
-        <location filename="models/MatchTabModel.cpp" line="135"/>
+        <location filename="models/MatchTabModel.cpp" line="146"/>
         <source>Pick from losers</source>
-        <translation type="unfinished"></translation>
+        <translation>Aus letzten Verlierern wählen</translation>
     </message>
     <message>
-        <location filename="models/MatchTabModel.cpp" line="138"/>
+        <location filename="models/MatchTabModel.cpp" line="149"/>
         <source>Pick from team</source>
-        <translation type="unfinished"></translation>
+        <translation>Aus speziellem Team wählen</translation>
     </message>
     <message>
-        <location filename="models/MatchTabModel.cpp" line="141"/>
+        <location filename="models/MatchTabModel.cpp" line="152"/>
         <source>unknown</source>
-        <translation type="unfinished"></translation>
+        <translation>unbekannt</translation>
     </message>
     <message>
-        <location filename="models/MatchTabModel.cpp" line="164"/>
+        <location filename="models/MatchTabModel.cpp" line="175"/>
         <source>Number</source>
         <translation>Nummer</translation>
     </message>
     <message>
-        <location filename="models/MatchTabModel.cpp" line="167"/>
+        <location filename="models/MatchTabModel.cpp" line="178"/>
         <source>Match</source>
         <translation>Spiel</translation>
     </message>
     <message>
-        <location filename="models/MatchTabModel.cpp" line="170"/>
+        <location filename="models/MatchTabModel.cpp" line="181"/>
         <source>Category</source>
         <translation>Disziplin</translation>
     </message>
     <message>
-        <location filename="models/MatchTabModel.cpp" line="173"/>
+        <location filename="models/MatchTabModel.cpp" line="184"/>
         <source>Round</source>
         <translation>Runde</translation>
     </message>
     <message>
-        <location filename="models/MatchTabModel.cpp" line="176"/>
+        <location filename="models/MatchTabModel.cpp" line="187"/>
         <source>Group</source>
         <translation>Gruppe</translation>
     </message>
     <message>
-        <location filename="models/MatchTabModel.cpp" line="179"/>
+        <location filename="models/MatchTabModel.cpp" line="190"/>
         <source>State</source>
         <translation>Zustand</translation>
     </message>
     <message>
-        <location filename="models/MatchTabModel.cpp" line="182"/>
+        <location filename="models/MatchTabModel.cpp" line="193"/>
         <source>Umpire</source>
-        <translation type="unfinished"></translation>
+        <translation>Schiedsrichter</translation>
     </message>
 </context>
 <context>
@@ -3496,17 +3498,17 @@ insgesamt</translation>
 <context>
     <name>QTournament::PlayerTableModel</name>
     <message>
-        <location filename="models/PlayerTableModel.cpp" line="118"/>
+        <location filename="models/PlayerTableModel.cpp" line="129"/>
         <source>Name</source>
         <translation>Name</translation>
     </message>
     <message>
-        <location filename="models/PlayerTableModel.cpp" line="126"/>
+        <location filename="models/PlayerTableModel.cpp" line="137"/>
         <source>Team Name</source>
         <translation>Team</translation>
     </message>
     <message>
-        <location filename="models/PlayerTableModel.cpp" line="130"/>
+        <location filename="models/PlayerTableModel.cpp" line="141"/>
         <source>Categories</source>
         <translation>Disziplinen</translation>
     </message>
@@ -3714,27 +3716,27 @@ insgesamt</translation>
 <context>
     <name>RefereeTableWidget</name>
     <message>
-        <location filename="ui/DlgSelectReferee.cpp" line="360"/>
+        <location filename="ui/DlgSelectReferee.cpp" line="377"/>
         <source>Player name</source>
         <translation>Spieler</translation>
     </message>
     <message>
-        <location filename="ui/DlgSelectReferee.cpp" line="360"/>
+        <location filename="ui/DlgSelectReferee.cpp" line="377"/>
         <source>Team</source>
         <translation>Team</translation>
     </message>
     <message>
-        <location filename="ui/DlgSelectReferee.cpp" line="360"/>
+        <location filename="ui/DlgSelectReferee.cpp" line="377"/>
         <source>Uses</source>
         <translation>Einsätze</translation>
     </message>
     <message>
-        <location filename="ui/DlgSelectReferee.cpp" line="360"/>
+        <location filename="ui/DlgSelectReferee.cpp" line="377"/>
         <source>Last match finished</source>
         <translation>Letztes Spielende</translation>
     </message>
     <message>
-        <location filename="ui/DlgSelectReferee.cpp" line="360"/>
+        <location filename="ui/DlgSelectReferee.cpp" line="377"/>
         <source>Next match</source>
         <translation>Nächstes Spiel</translation>
     </message>
@@ -3925,48 +3927,55 @@ insgesamt</translation>
         <location filename="ui/commonCommands/cmdAssignRefereeToMatch.cpp" line="56"/>
         <source>An unexpected error occured: the match needs an umpire,
 </source>
-        <translation type="unfinished"></translation>
+        <translation>Es ist ein unerwarteter Fehler aufgetreten: Das Spiel benötigt einen Schiedsrichter,
+</translation>
     </message>
     <message>
         <location filename="ui/commonCommands/cmdAssignRefereeToMatch.cpp" line="57"/>
         <source>but an umpire can&apos;t be assigned right now.
 
 </source>
-        <translation type="unfinished"></translation>
+        <translation>aber ein Schiedsrichter kann gerade nicht zugewiesen werden.
+
+</translation>
     </message>
     <message>
         <location filename="ui/commonCommands/cmdAssignRefereeToMatch.cpp" line="58"/>
         <source>The match cannot be started.</source>
-        <translation type="unfinished"></translation>
+        <translation>Das Spiel kann daher nicht gestartet werden.</translation>
     </message>
     <message>
         <location filename="ui/commonCommands/cmdAssignRefereeToMatch.cpp" line="61"/>
         <source>It is currently not possible to assign
 </source>
-        <translation type="unfinished"></translation>
+        <translation>Es ist momentan nicht möglich, diesem Spiel
+</translation>
     </message>
     <message>
         <location filename="ui/commonCommands/cmdAssignRefereeToMatch.cpp" line="62"/>
         <source>an umpire to this match. Maybe the match has
 </source>
-        <translation type="unfinished"></translation>
+        <translation>einen Schiedsrichter zuzuweisen. Wurde das Spiel möglicherweise
+</translation>
     </message>
     <message>
         <location filename="ui/commonCommands/cmdAssignRefereeToMatch.cpp" line="63"/>
         <source>already been started or finished?
 </source>
-        <translation type="unfinished"></translation>
+        <translation>bereits gestartet oder beendet?
+</translation>
     </message>
     <message>
         <location filename="ui/commonCommands/cmdAssignRefereeToMatch.cpp" line="65"/>
         <source>It is currently not possible to swap
 </source>
-        <translation type="unfinished"></translation>
+        <translation>Es ist momentan nicht möglich, den bereits zugewiesenen
+</translation>
     </message>
     <message>
         <location filename="ui/commonCommands/cmdAssignRefereeToMatch.cpp" line="66"/>
         <source>the assigned umpire for this match.</source>
-        <translation type="unfinished"></translation>
+        <translation>Schiedsrichter für dieses Spiel auszutauschen.</translation>
     </message>
     <message>
         <location filename="ui/commonCommands/cmdAssignRefereeToMatch.cpp" line="68"/>
@@ -3979,40 +3988,42 @@ insgesamt</translation>
         <location filename="ui/commonCommands/cmdAssignRefereeToMatch.cpp" line="101"/>
         <location filename="ui/commonCommands/cmdAssignRefereeToMatch.cpp" line="116"/>
         <source>Umpire assignment failed</source>
-        <translation type="unfinished"></translation>
+        <translation>Schiedsrichterzuweisung fehlgeschlagen</translation>
     </message>
     <message>
         <location filename="ui/commonCommands/cmdAssignRefereeToMatch.cpp" line="93"/>
         <location filename="ui/commonCommands/cmdAssignRefereeToMatch.cpp" line="100"/>
         <source>Cannot continue without umpire!</source>
-        <translation type="unfinished"></translation>
+        <translation>Kann nicht ohne Schiedsrichter fortfahren!</translation>
     </message>
     <message>
         <location filename="ui/commonCommands/cmdAssignRefereeToMatch.cpp" line="114"/>
         <source>Could not assign umpire to match.
 </source>
-        <translation type="unfinished"></translation>
+        <translation>Konnte dem Spiel keinen Schiedsrichter zuweisen.
+</translation>
     </message>
     <message>
         <location filename="ui/commonCommands/cmdAssignRefereeToMatch.cpp" line="115"/>
         <source>Maybe you tried to assign one of the players as umpire?</source>
-        <translation type="unfinished"></translation>
+        <translation>Haben sie möglicherweise versucht, einen der Spieler als Schiedsrichter zu verwenden?</translation>
     </message>
     <message>
         <location filename="ui/commonCommands/cmdAssignRefereeToMatch.cpp" line="124"/>
         <source>Do you want to print a new result with the
 </source>
-        <translation type="unfinished"></translation>
+        <translation>Möchten Sie einen neuen Ergebniszettel mit dem
+</translation>
     </message>
     <message>
         <location filename="ui/commonCommands/cmdAssignRefereeToMatch.cpp" line="125"/>
         <source>updated umpire name for this match?</source>
-        <translation type="unfinished"></translation>
+        <translation>aktualisierten Namen des Schiedsrichters für dieses Spiel drucken?</translation>
     </message>
     <message>
         <location filename="ui/commonCommands/cmdAssignRefereeToMatch.cpp" line="126"/>
         <source>Print result sheet?</source>
-        <translation type="unfinished"></translation>
+        <translation>Ergebniszettel drucken?</translation>
     </message>
 </context>
 <context>
@@ -4077,20 +4088,22 @@ insgesamt</translation>
         <location filename="ui/commonCommands/cmdCallMatch.cpp" line="92"/>
         <source>An unexpected error occured.
 </source>
-        <translation type="unfinished"></translation>
+        <translation>Es ist ein unerwarteter Fehler aufgetreten.
+</translation>
     </message>
     <message>
         <location filename="ui/commonCommands/cmdCallMatch.cpp" line="68"/>
         <location filename="ui/commonCommands/cmdCallMatch.cpp" line="93"/>
         <source>Sorry, this shouldn&apos;t happen.
 </source>
-        <translation type="unfinished"></translation>
+        <translation>Das sollte nicht vorkommen.
+</translation>
     </message>
     <message>
         <location filename="ui/commonCommands/cmdCallMatch.cpp" line="69"/>
         <location filename="ui/commonCommands/cmdCallMatch.cpp" line="94"/>
         <source>The match cannot be started.</source>
-        <translation type="unfinished"></translation>
+        <translation>Das Spiel konnte nicht gestartet werden.</translation>
     </message>
     <message>
         <location filename="ui/commonCommands/cmdCallMatch.cpp" line="70"/>
@@ -4098,12 +4111,12 @@ insgesamt</translation>
         <location filename="ui/commonCommands/cmdCallMatch.cpp" line="95"/>
         <location filename="ui/commonCommands/cmdCallMatch.cpp" line="116"/>
         <source>Assign match to court</source>
-        <translation type="unfinished">Spielaufruf</translation>
+        <translation>Spielaufruf</translation>
     </message>
     <message>
         <location filename="ui/commonCommands/cmdCallMatch.cpp" line="116"/>
         <source>Call cancled, match not started</source>
-        <translation type="unfinished"></translation>
+        <translation>Aufruf abgebrochen, Spiel nicht gestartet</translation>
     </message>
 </context>
 <context>
@@ -4178,12 +4191,14 @@ insgesamt</translation>
         <source>No valid database for player export available.
 
 </source>
-        <translation type="unfinished">Keine gültige Spielerdatenbank für das Importieren des Spielers vorhanden.</translation>
+        <translation>Keine gültige Spielerdatenbank für das Exportieren von Spielern vorhanden.
+
+</translation>
     </message>
     <message>
         <location filename="ui/commonCommands/cmdExportPlayerToExternalDatabase.cpp" line="40"/>
         <source>Is the database configured and the file existing?</source>
-        <translation type="unfinished"></translation>
+        <translation>Haben Sie eine Spielerdatenbank konfiguriert und existiert die zugehörige Datei?</translation>
     </message>
     <message>
         <location filename="ui/commonCommands/cmdExportPlayerToExternalDatabase.cpp" line="41"/>
@@ -4195,7 +4210,7 @@ insgesamt</translation>
     <message>
         <location filename="ui/commonCommands/cmdExportPlayerToExternalDatabase.cpp" line="47"/>
         <source>Could not open database for player export!</source>
-        <translation type="unfinished"></translation>
+        <translation>Konnte die Datenbank nicht für den Spielerexport öffnen!</translation>
     </message>
     <message>
         <location filename="ui/commonCommands/cmdExportPlayerToExternalDatabase.cpp" line="59"/>
@@ -4224,7 +4239,9 @@ insgesamt</translation>
 
 </source>
         <oldsource>No valid database for player import open.</oldsource>
-        <translation type="unfinished">Keine gültige Spielerdatenbank für das Importieren des Spielers vorhanden.</translation>
+        <translation>Keine gültige Spielerdatenbank für das Exportieren von Spielern vorhanden.
+
+</translation>
     </message>
     <message>
         <location filename="ui/commonCommands/cmdImportSinglePlayerFromExternalDatabase.cpp" line="71"/>
@@ -4242,18 +4259,18 @@ insgesamt</translation>
     <message>
         <location filename="ui/commonCommands/cmdImportSinglePlayerFromExternalDatabase.cpp" line="45"/>
         <source>Is the database configured and the file existing?</source>
-        <translation type="unfinished"></translation>
+        <translation>Haben Sie eine Spielerdatenbank konfiguriert und existiert die zugehörige Datei?</translation>
     </message>
     <message>
         <location filename="ui/commonCommands/cmdImportSinglePlayerFromExternalDatabase.cpp" line="46"/>
         <location filename="ui/commonCommands/cmdImportSinglePlayerFromExternalDatabase.cpp" line="53"/>
         <source>Export player</source>
-        <translation type="unfinished">Spieler exportieren</translation>
+        <translation>Spieler exportieren</translation>
     </message>
     <message>
         <location filename="ui/commonCommands/cmdImportSinglePlayerFromExternalDatabase.cpp" line="52"/>
         <source>Could not open database for player export!</source>
-        <translation type="unfinished"></translation>
+        <translation>Konnte die Datenbank nicht für den Spielerexport öffnen!</translation>
     </message>
     <message>
         <location filename="ui/commonCommands/cmdImportSinglePlayerFromExternalDatabase.cpp" line="118"/>
@@ -4580,7 +4597,7 @@ insgesamt</translation>
     <message>
         <location filename="reports/commonReportElements/plotStandings.cpp" line="50"/>
         <source>Team</source>
-        <translation type="unfinished">Team</translation>
+        <translation>Team</translation>
     </message>
     <message>
         <location filename="reports/commonReportElements/plotStandings.cpp" line="51"/>
