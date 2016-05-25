@@ -171,8 +171,8 @@ namespace QTournament
     int symName2 = getSymbolicPlayerPair2Name();
     if (symName2 != 0)
     {
-      row1Right_out = (symName1 > 0) ? localWinnerName : localLoserName;
-      row1Right_out += " #" + QString::number(abs(symName1));
+      row1Right_out = (symName2 > 0) ? localWinnerName : localLoserName;
+      row1Right_out += " #" + QString::number(abs(symName2));
       row2Right_out.clear();
     }
   }

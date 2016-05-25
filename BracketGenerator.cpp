@@ -93,7 +93,7 @@ namespace QTournament
       // and split each match into two new ones.
       //
       // Basic rule: the sum of the player ranks that
-      // make up a match must be (nAtual + 1).
+      // make up a match must be (nActual + 1).
       //
       // Example:
       //  * Finals: nActual = 2, (nActual+1) = 3,
@@ -552,7 +552,7 @@ namespace QTournament
     // earlier to the later matches)
     //
     // std::sort constantly produces memory leaks by reading / writing beyond the end of the list. So I've
-    // finally decided to use my own primitive sorting algorithm that is optimized on simplicity, not efficiency
+    // finally decided to use my own primitive sorting algorithm that is optimized for simplicity, not efficiency
     //
     //std::sort(bracketMatches.begin(), bracketMatches.end(), getBracketMatchSortFunction_earlyRoundsFirst());
     lazyAndInefficientVectorSortFunc<BracketMatchData>(bracketMatches, getBracketMatchSortFunction_earlyRoundsFirst());

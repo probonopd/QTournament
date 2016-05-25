@@ -121,7 +121,7 @@ ERR cmdAssignRefereeToMatch::exec()
   // new result sheet with the freshly umpire name
   if (refAction == REFEREE_ACTION::MATCH_CALL)
   {
-    QString msg = tr("Do you want to print a new result with the\n");
+    QString msg = tr("Do you want to print a new result sheet with the\n");
     msg += tr("updated umpire name for this match?");
     result = QMessageBox::question(parentWidget, tr("Print result sheet?"), msg);
     if (result == QMessageBox::Yes)
