@@ -4010,8 +4010,10 @@ insgesamt</translation>
     </message>
     <message>
         <location filename="ui/commonCommands/cmdAssignRefereeToMatch.cpp" line="124"/>
-        <source>Do you want to print a new result with the
+        <source>Do you want to print a new result sheet with the
 </source>
+        <oldsource>Do you want to print a new result with the
+</oldsource>
         <translation>Möchten Sie einen neuen Ergebniszettel mit dem
 </translation>
     </message>
