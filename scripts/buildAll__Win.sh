@@ -9,7 +9,7 @@ MINGW64_BIN=/d/PortablePrograms/msys64/mingw64/bin
 # define the source code versions to be used
 DBOVERLAY_VERSION=0.2.0
 REPORTLIB_VERSION=0.3.0
-QTOURNAMENT_VERSION=master
+QTOURNAMENT_VERSION=0.4.0-RC1
 
 #
 # No changes below this point!

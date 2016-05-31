@@ -6,7 +6,7 @@ DBOVERLAY_VERSION=0.2.0
 
 REPORTLIB_VERSION=0.3.0
 
-QTOURNAMENT_VERSION=master
+QTOURNAMENT_VERSION=0.4.0-RC1
 
 #
 #
@@ -25,11 +25,17 @@ QTOURNAMENT_BASE_URL=https://github.com/Foorgol/QTournament/archive
 mkdir -p $BUILD_DIR
 cd $BUILD_DIR
 
-if false; then
+# make sure we are in the right directory
+ACTUAL_DIR=$(pwd)
+if [ $ACTUAL_DIR != $BUILD_DIR ]; then
+	echo Could not enter build directory!
+	exit 1
+fi
+
 #
 # remove any stale, old files
 #
-rm -rf SqliteOverlay SimpleReportGeneratorLib Qt
+rm -rf SqliteOverlay SimpleReportGeneratorLib Qt dist
 
 #
 # download and build SQLiteOverlayLib
@@ -74,8 +80,6 @@ qmake CONFIG+="release" QTournament.pro
 make
 cd ..
 cd ..
-
-fi
 
 #
 # pack everything
