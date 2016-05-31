@@ -19,7 +19,7 @@
 #ifndef TEAMLISTMODEL_H
 #define	TEAMLISTMODEL_H
 
-#include <QAbstractListModel>
+#include <QAbstractTableModel>
 
 #include "TournamentDataDefs.h"
 #include "TournamentDB.h"
@@ -31,18 +31,21 @@ namespace QTournament
 
   class Tournament;
 
-  class TeamListModel : public QAbstractListModel
+  class TeamTableModel : public QAbstractTableModel
   {
     Q_OBJECT
 
   public:
-    TeamListModel (TournamentDB* _db);
+    static constexpr int NAME_COL_ID = 0;
+    static constexpr int MEMBER_COUNT_COL_ID = 1;
+    static constexpr int COL_COUNT = 2;
+
+    TeamTableModel (TournamentDB* _db);
     int rowCount (const QModelIndex &parent = QModelIndex ()) const;
-    QVariant data (const QModelIndex &index, int role) const;
+    int columnCount(const QModelIndex & parent = QModelIndex()) const;
+    QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const;
     QVariant headerData (int section, Qt::Orientation orientation,
                          int role = Qt::DisplayRole) const;
-    Qt::ItemFlags flags(const QModelIndex &index) const;
-    bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole);
     
   private:
     TournamentDB* db;

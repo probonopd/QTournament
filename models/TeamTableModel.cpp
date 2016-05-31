@@ -19,7 +19,7 @@
 #include <Qt>
 #include <QMessageBox>
 
-#include "TeamListModel.h"
+#include "TeamTableModel.h"
 #include "TeamMngr.h"
 #include "CentralSignalEmitter.h"
 
@@ -28,8 +28,8 @@ using namespace SqliteOverlay;
 namespace QTournament
 {
 
-  TeamListModel::TeamListModel(TournamentDB* _db)
-  : QAbstractListModel(0), db(_db), teamTab(db->getTab(TAB_TEAM))
+  TeamTableModel::TeamTableModel(TournamentDB* _db)
+  : QAbstractTableModel(0), db(_db), teamTab(db->getTab(TAB_TEAM))
   {
     CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
     connect(cse, SIGNAL(beginCreateTeam()), this, SLOT(onBeginCreateTeam()), Qt::DirectConnection);
@@ -39,14 +39,21 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  int TeamListModel::rowCount(const QModelIndex& parent) const
+  int TeamTableModel::rowCount(const QModelIndex& parent) const
   {
     return teamTab->length();
   }
 
 //----------------------------------------------------------------------------
+
+  int TeamTableModel::columnCount(const QModelIndex& parent) const
+  {
+    return COL_COUNT;
+  }
+
+//----------------------------------------------------------------------------
   
-  QVariant TeamListModel::data(const QModelIndex& index, int role) const
+  QVariant TeamTableModel::data(const QModelIndex& index, int role) const
   {
     if (!index.isValid())
       return QVariant();
@@ -54,26 +61,52 @@ namespace QTournament
     if (index.row() >= teamTab->length())
       return QVariant();
 
-    if (role == Qt::DisplayRole)
+    if (role != Qt::DisplayRole)
+      return QVariant();
+
+    TeamMngr tm{db};
+    Team t = tm.getTeamBySeqNum(index.row());
+
+    if (index.column() == NAME_COL_ID)
     {
-      string name = teamTab->getSingleRowByColumnValue(GENERIC_SEQNUM_FIELD_NAME, index.row())[GENERIC_NAME_FIELD_NAME];
-      return QString::fromUtf8(name.data());
+      return t.getName();
     }
 
-    else
-      return QVariant();
+    if (index.column() == MEMBER_COUNT_COL_ID)
+    {
+      return 42;
+    }
+
+    return QString("Not implemented");
   }
 
 //----------------------------------------------------------------------------
 
-  QVariant TeamListModel::headerData(int section, Qt::Orientation orientation, int role) const
+  QVariant TeamTableModel::headerData(int section, Qt::Orientation orientation, int role) const
   {
-    return QVariant();
+    if (role != Qt::DisplayRole)
+    {
+      return QVariant();
+    }
+
+    if (orientation == Qt::Horizontal)
+    {
+      if (section == NAME_COL_ID) {
+        return tr("Name");
+      }
+      if (section == MEMBER_COUNT_COL_ID) {
+        return tr("Size");
+      }
+
+      return QString("Not implemented");
+    }
+
+    return (section + 1);
   }
 
 //----------------------------------------------------------------------------
 
-  void TeamListModel::onBeginCreateTeam()
+  void TeamTableModel::onBeginCreateTeam()
   {
     int newPos = teamTab->length();
     beginInsertRows(QModelIndex(), newPos, newPos);
@@ -81,42 +114,14 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  void TeamListModel::onEndCreateTeam(int newTeamSeqNum)
+  void TeamTableModel::onEndCreateTeam(int newTeamSeqNum)
   {
     endInsertRows();
   }
 
 //----------------------------------------------------------------------------
 
-  Qt::ItemFlags TeamListModel::flags(const QModelIndex& index) const
-  {
-    if (!index.isValid()) {
-      return Qt::ItemIsEnabled;
-    }
-
-    return QAbstractItemModel::flags(index) | Qt::ItemIsEditable;
-  }
-
-//----------------------------------------------------------------------------
-
-  bool TeamListModel::setData(const QModelIndex& index, const QVariant& value, int role)
-  {
-    if (!(index.isValid()) || (role != Qt::EditRole))
-    {
-      return false;
-    }
-    
-    TeamMngr tm{db};
-    Team t = tm.getTeamBySeqNum(index.row());
-    
-    ERR e = t.rename(value.toString());
-    
-    return (e == OK);
-  }
-
-//----------------------------------------------------------------------------
-
-  void TeamListModel::onTeamRenamed(int teamSeqNum)
+  void TeamTableModel::onTeamRenamed(int teamSeqNum)
   {
     QModelIndex index = QAbstractItemModel::createIndex(teamSeqNum, 0);
     emit dataChanged(index, index);

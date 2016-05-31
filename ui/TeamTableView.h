@@ -19,29 +19,29 @@
 #ifndef TEAMLISTVIEW_H
 #define	TEAMLISTVIEW_H
 
-#include <QListView>
+#include <QTableView>
 #include <QStringListModel>
 
 #include "TournamentDB.h"
-#include "models/TeamListModel.h"
+#include "models/TeamTableModel.h"
 #include "ui/delegates/TeamItemDelegate.h"
 
 
 using namespace QTournament;
 
-class TeamListView : public QListView
+class TeamTableView : public QTableView
 {
   Q_OBJECT
   
 public:
-  TeamListView (QWidget* parent);
-  virtual ~TeamListView();
+  TeamTableView (QWidget* parent);
+  virtual ~TeamTableView();
   void setDatabase(TournamentDB* _db);
   
 private:
   TournamentDB* db;
   QStringListModel* emptyModel;
-  TeamListModel* curDataModel;
+  TeamTableModel* curDataModel;
   unique_ptr<TeamItemDelegate> teamItemDelegate;
   QAbstractItemDelegate* defaultDelegate;
 

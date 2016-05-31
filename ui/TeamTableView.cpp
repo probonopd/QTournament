@@ -16,30 +16,27 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <QtWidgets/qwidget.h>
-#include <QtWidgets/qmessagebox.h>
+#include <QWidget>
+#include <QMessageBox>
 
-#include "TeamListView.h"
+#include "TeamTableView.h"
 #include "MainFrame.h"
 
-TeamListView::TeamListView(QWidget* parent)
-:QListView(parent), db(nullptr), curDataModel(nullptr), teamItemDelegate(nullptr)
+TeamTableView::TeamTableView(QWidget* parent)
+:QTableView(parent), db(nullptr), curDataModel(nullptr), teamItemDelegate(nullptr)
 {
   // an empty model for clearing the list when
   // no tournament is open
   emptyModel = new QStringListModel();
   defaultDelegate = itemDelegate();
 
-  // all rows shall have the same size
-  setUniformItemSizes(true);
-  
   // initiate the model(s) as empty
   setDatabase(nullptr);
 }
 
 //----------------------------------------------------------------------------
     
-TeamListView::~TeamListView()
+TeamTableView::~TeamTableView()
 {
   delete emptyModel;
   if (curDataModel != nullptr) delete curDataModel;
@@ -48,7 +45,7 @@ TeamListView::~TeamListView()
 
 //----------------------------------------------------------------------------
 
-void TeamListView::setDatabase(TournamentDB* _db)
+void TeamTableView::setDatabase(TournamentDB* _db)
 {
   // According to the Qt documentation, the selection model
   // has to be explicitly deleted by the user
@@ -57,10 +54,10 @@ void TeamListView::setDatabase(TournamentDB* _db)
   QItemSelectionModel *oldSelectionModel = selectionModel();
 
   // set the new data model
-  TeamListModel* newDataModel = nullptr;
+  TeamTableModel* newDataModel = nullptr;
   if (_db != nullptr)
   {
-    newDataModel = new TeamListModel(_db);
+    newDataModel = new TeamTableModel(_db);
     setModel(newDataModel);
 
     // define a delegate for drawing the category items

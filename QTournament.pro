@@ -50,13 +50,11 @@ HEADERS += \
     ui/MainFrame.h \
     ui/PlayerTableView.h \
     ui/PlayerTabWidget.h \
-    ui/TeamListView.h \
     ui/TeamTabWidget.h \
     ui/delegates/PairItemDelegate.h \
     ui/delegates/PlayerItemDelegate.h \
     models/CatTableModel.h \
     models/PlayerTableModel.h \
-    models/TeamListModel.h \
     Match.h \
     RoundRobinGenerator.h \
     ui/delegates/CatItemDelegate.h \
@@ -129,7 +127,9 @@ HEADERS += \
     ui/DlgSelectReferee.h \
     ui/commonCommands/cmdAssignRefereeToMatch.h \
     ui/commonCommands/cmdCallMatch.h \
-    ui/delegates/TeamItemDelegate.h
+    ui/delegates/TeamItemDelegate.h \
+    models/TeamTableModel.h \
+    ui/TeamTableView.h
 
 SOURCES += \
     Category.cpp \
@@ -155,13 +155,11 @@ SOURCES += \
     ui/MainFrame.cpp \
     ui/PlayerTableView.cpp \
     ui/PlayerTabWidget.cpp \
-    ui/TeamListView.cpp \
     ui/TeamTabWidget.cpp \
     ui/delegates/PairItemDelegate.cpp \
     ui/delegates/PlayerItemDelegate.cpp \
     models/CatTableModel.cpp \
     models/PlayerTableModel.cpp \
-    models/TeamListModel.cpp \
     Match.cpp \
     RoundRobinGenerator.cpp \
     ui/delegates/CatItemDelegate.cpp \
@@ -234,7 +232,9 @@ SOURCES += \
     ui/DlgSelectReferee.cpp \
     ui/commonCommands/cmdAssignRefereeToMatch.cpp \
     ui/commonCommands/cmdCallMatch.cpp \
-    ui/delegates/TeamItemDelegate.cpp
+    ui/delegates/TeamItemDelegate.cpp \
+    models/TeamTableModel.cpp \
+    ui/TeamTableView.cpp
 
 RESOURCES += \
     tournament.qrc
