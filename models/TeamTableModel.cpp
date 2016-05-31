@@ -74,7 +74,7 @@ namespace QTournament
 
     if (index.column() == MEMBER_COUNT_COL_ID)
     {
-      return 42;
+      return t.getMemberCount();
     }
 
     return QString("Not implemented");

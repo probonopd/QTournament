@@ -19,9 +19,11 @@
 #include <QWidget>
 #include <QMessageBox>
 #include <QScrollBar>
+#include <QInputDialog>
 
 #include "TeamTableView.h"
 #include "MainFrame.h"
+#include "TeamMngr.h"
 
 TeamTableView::TeamTableView(QWidget* parent)
 :QTableView(parent), db(nullptr), curDataModel(nullptr), teamItemDelegate(nullptr)
@@ -30,6 +32,14 @@ TeamTableView::TeamTableView(QWidget* parent)
   // no tournament is open
   emptyModel = new QStringListModel();
   defaultDelegate = itemDelegate();
+
+  // prepare a proxy model to support sorting by columns
+  sortedModel = new QSortFilterProxyModel();
+  sortedModel->setSourceModel(emptyModel);
+  setModel(sortedModel);
+
+  // set an initial default sorting column
+  sortByColumn(TeamTableModel::NAME_COL_ID, Qt::AscendingOrder);
 
   // initiate the model(s) as empty
   setDatabase(nullptr);
@@ -40,6 +50,7 @@ TeamTableView::TeamTableView(QWidget* parent)
 TeamTableView::~TeamTableView()
 {
   delete emptyModel;
+  delete sortedModel;
   if (curDataModel != nullptr) delete curDataModel;
   if (defaultDelegate != nullptr) delete defaultDelegate;
 }
@@ -52,21 +63,21 @@ void TeamTableView::setDatabase(TournamentDB* _db)
   // has to be explicitly deleted by the user
   //
   // Thus we store the model pointer for later deletion
-  QItemSelectionModel *oldSelectionModel = selectionModel();
+  //QItemSelectionModel *oldSelectionModel = selectionModel();
 
   // set the new data model
   TeamTableModel* newDataModel = nullptr;
   if (_db != nullptr)
   {
     newDataModel = new TeamTableModel(_db);
-    setModel(newDataModel);
+    sortedModel->setSourceModel(newDataModel);
 
     // define a delegate for drawing the category items
     teamItemDelegate = make_unique<TeamItemDelegate>(_db, this);
-    //teamItemDelegate->setProxy(sortedModel);
+    teamItemDelegate->setProxy(sortedModel);
     setItemDelegate(teamItemDelegate.get());
   } else {
-    setModel(emptyModel);
+    sortedModel->setSourceModel(emptyModel);
     setItemDelegate(defaultDelegate);
   }
 
@@ -81,11 +92,36 @@ void TeamTableView::setDatabase(TournamentDB* _db)
   curDataModel = newDataModel;
 
   // delete the old selection model
-  delete oldSelectionModel;
+  //delete oldSelectionModel;
 
   // update the database pointer and set the widget's enabled state
   db = _db;
   setEnabled(db != nullptr);
+
+  // update the column size
+  autosizeColumns();
+}
+
+//----------------------------------------------------------------------------
+
+unique_ptr<Team> TeamTableView::getSelectedTeam()
+{
+  // make sure we have a non-empty model
+  auto mod = model();
+  if (mod == nullptr) return nullptr;
+  if (mod->rowCount() == 0) return nullptr;
+
+  // make sure we have one item selected
+  QModelIndexList indexes = selectionModel()->selection().indexes();
+  if (indexes.count() == 0)
+  {
+    return nullptr;
+  }
+
+  // return the selected item
+  TeamMngr tm{db};
+  int selectedSourceRow = sortedModel->mapToSource(indexes.at(0)).row();
+  return tm.getTeamBySeqNum_up(selectedSourceRow);
 }
 
 //----------------------------------------------------------------------------
@@ -120,6 +156,66 @@ void TeamTableView::autosizeColumns()
   // set the column widths
   setColumnWidth(TeamTableModel::NAME_COL_ID, nameColWidth);
   setColumnWidth(TeamTableModel::MEMBER_COUNT_COL_ID, sizeColWidth);
+}
+
+//----------------------------------------------------------------------------
+
+void TeamTableView::onTeamDoubleClicked(const QModelIndex& index)
+{
+  unique_ptr<Team> selectedTeam = getSelectedTeam();
+  if (selectedTeam == nullptr) return;
+
+  QString oldName = selectedTeam->getName();
+
+  bool isOk = false;
+  while (!isOk)
+  {
+    QString newName = QInputDialog::getText(this, tr("Rename team"), tr("Enter new team name:"),
+      QLineEdit::Normal, oldName, &isOk);
+
+    if (!isOk)
+    {
+      return;  // the user hit cancel
+    }
+
+    if (newName.isEmpty())
+    {
+      QMessageBox::critical(this, tr("Rename team"), tr("The new name may not be empty!"));
+      isOk = false;
+      continue;
+    }
+
+    if (oldName == newName)
+    {
+      return;
+    }
+
+    // okay, we have a valid name. try to rename the team
+    newName = newName.trimmed();
+    TeamMngr tm{db};
+    ERR e = tm.renameTeam(*selectedTeam, newName);
+
+    if (e == INVALID_NAME)
+    {
+      QMessageBox::critical(this, tr("Rename team"), tr("The name you entered is invalid (e.g., too long)"));
+      isOk = false;
+      continue;
+    }
+
+    if (e == NAME_EXISTS)
+    {
+      QMessageBox::critical(this, tr("Rename team"), tr("A team of this name already exists"));
+      isOk = false;
+      continue;
+    }
+  }
+}
+
+//----------------------------------------------------------------------------
+
+QModelIndex TeamTableView::mapToSource(const QModelIndex& proxyIndex)
+{
+  return sortedModel->mapToSource(proxyIndex);
 }
 
 //----------------------------------------------------------------------------

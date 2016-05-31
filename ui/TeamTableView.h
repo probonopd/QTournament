@@ -21,10 +21,12 @@
 
 #include <QTableView>
 #include <QStringListModel>
+#include <QSortFilterProxyModel>
 
 #include "TournamentDB.h"
 #include "models/TeamTableModel.h"
 #include "ui/delegates/TeamItemDelegate.h"
+#include "Team.h"
 
 
 using namespace QTournament;
@@ -37,6 +39,7 @@ public:
   TeamTableView (QWidget* parent);
   virtual ~TeamTableView();
   void setDatabase(TournamentDB* _db);
+  unique_ptr<Team> getSelectedTeam();
   
 protected:
   static constexpr int REL_NAME_COL_WIDTH = 10;
@@ -48,10 +51,15 @@ protected:
   virtual void resizeEvent(QResizeEvent *event) override;
   void autosizeColumns();
 
+public slots:
+  void onTeamDoubleClicked(const QModelIndex& index);
+  QModelIndex mapToSource(const QModelIndex& proxyIndex);
+
 private:
   TournamentDB* db;
   QStringListModel* emptyModel;
   TeamTableModel* curDataModel;
+  QSortFilterProxyModel* sortedModel;
   unique_ptr<TeamItemDelegate> teamItemDelegate;
   QAbstractItemDelegate* defaultDelegate;
 

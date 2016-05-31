@@ -53,6 +53,9 @@
    <class>TeamTableView</class>
    <extends>QTableView</extends>
    <header>ui/TeamTableView.h</header>
+   <slots>
+    <slot>onTeamDoubleClicked(QModelIndex)</slot>
+   </slots>
   </customwidget>
  </customwidgets>
  <resources>
@@ -72,6 +75,22 @@
     <hint type="destinationlabel">
      <x>499</x>
      <y>317</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>teamList</sender>
+   <signal>doubleClicked(QModelIndex)</signal>
+   <receiver>teamList</receiver>
+   <slot>onTeamDoubleClicked(QModelIndex)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>499</x>
+     <y>333</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>499</x>
+     <y>333</y>
     </hint>
    </hints>
   </connection>

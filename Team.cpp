@@ -76,6 +76,14 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
+  int Team::getMemberCount() const
+  {
+    DbTab* playerTab = db->getTab(TAB_PLAYER);
+    return playerTab->getMatchCountForColumnValue(PL_TEAM_REF, getId());
+  }
+
+//----------------------------------------------------------------------------
+
 
 //----------------------------------------------------------------------------
 

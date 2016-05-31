@@ -37,6 +37,7 @@ namespace QTournament
   public:
     QString getName(int maxLen=0) const;
     ERR rename(const QString& newName);
+    int getMemberCount() const;
 
   private:
     Team (TournamentDB* db, int rowId);

@@ -167,6 +167,13 @@ namespace QTournament
     }
   }
 
+  //----------------------------------------------------------------------------
+
+  unique_ptr<Team> TeamMngr::getTeamBySeqNum_up(int seqNum)
+  {
+    return getSingleObjectByColumnValue<Team>(GENERIC_SEQNUM_FIELD_NAME, seqNum);
+  }
+
 //----------------------------------------------------------------------------
 
   Team TeamMngr::getTeamById(int id)

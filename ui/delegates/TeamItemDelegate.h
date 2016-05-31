@@ -34,13 +34,13 @@ public:
   static constexpr int ITEM_MARGIN = 5;
 
   TeamItemDelegate(TournamentDB* _db, QObject* parent = 0);
-  //void setProxy(QAbstractProxyModel* _proxy);
+  void setProxy(QAbstractProxyModel* _proxy);
   void paint (QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index ) const;
   QSize sizeHint (const QStyleOptionViewItem& option, const QModelIndex& index ) const;
   
 private:
   TournamentDB* db;
-  //QAbstractProxyModel* proxy;
+  QAbstractProxyModel* proxy;
   QFontMetrics fntMetrics;
 } ;
 

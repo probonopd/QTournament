@@ -28,16 +28,16 @@
 using namespace QTournament;
 
 TeamItemDelegate::TeamItemDelegate(TournamentDB* _db, QObject* parent)
-: QStyledItemDelegate(parent), db(_db), /*proxy(nullptr),*/ fntMetrics(QFontMetrics(QFont()))
+: QStyledItemDelegate(parent), db(_db), proxy(nullptr), fntMetrics(QFontMetrics(QFont()))
 {
 }
 
 //----------------------------------------------------------------------------
 
-/*void TeamItemDelegate::setProxy(QAbstractProxyModel* _proxy)
+void TeamItemDelegate::setProxy(QAbstractProxyModel* _proxy)
 {
   proxy = _proxy;
-}*/
+}
 
 //----------------------------------------------------------------------------
 
@@ -46,10 +46,10 @@ void TeamItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
   // if necessary, apply a conversion between the proxy model's row number
   // and the source model's row number
   int row = index.row();
-  //if (proxy)
-  //{
-  //  row = (proxy->mapToSource(index)).row();
-  //}
+  if (proxy)
+  {
+    row = (proxy->mapToSource(index)).row();
+  }
 
   painter->save();
   

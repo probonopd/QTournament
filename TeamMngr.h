@@ -47,6 +47,7 @@ namespace QTournament
     vector<Team> getAllTeams();
     ERR renameTeam (Team& t, const QString& nn);
     Team getTeamBySeqNum (int seqNum);
+    unique_ptr<Team> getTeamBySeqNum_up(int seqNum);
     Team getTeamById (int id);
     ERR changeTeamAssigment(const Player& p, const Team& newTeam);
 
