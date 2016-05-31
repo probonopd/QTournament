@@ -902,7 +902,7 @@ Die internen Daten zu dieser Disziplin sind vermutlich defekt.</translation>
     <message>
         <location filename="ui/delegates/CourtItemDelegate.cpp" line="198"/>
         <source>Start time: </source>
-        <translation>Aufrufzeit:</translation>
+        <translation>Aufrufzeit: </translation>
     </message>
     <message>
         <location filename="ui/delegates/CourtItemDelegate.cpp" line="203"/>
