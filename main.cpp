@@ -35,6 +35,8 @@ int main(int argc, char *argv[])
   QApplication app(argc, argv);
   
   QTranslator qtTranslator;
+  // Only temporary: hard-coded German translation while in debug mode
+  //qtTranslator.load("qt_de", QLibraryInfo::location(QLibraryInfo::TranslationsPath));
   qtTranslator.load("qt_" + QLocale::system().name(),
                     QLibraryInfo::location(QLibraryInfo::TranslationsPath));
   app.installTranslator(&qtTranslator);

@@ -613,7 +613,7 @@ void MatchTableView::showMatchBusyReason(const Match& ma)
     // maybe the player is busy in another match
     if (plStat == STAT_PL_PLAYING)
     {
-      QString result = "%1 is playing";
+      QString result = tr("%1 is playing");
       result = result.arg(pl.getDisplayName_FirstNameFirst());
 
       // try to retrieve the court number where the player
@@ -630,7 +630,7 @@ void MatchTableView::showMatchBusyReason(const Match& ma)
     // maybe the player is acting as an umpire
     if (plStat == STAT_PL_REFEREE)
     {
-      QString result = "%1 is umpire";
+      QString result = tr("%1 is umpire");
       result = result.arg(pl.getDisplayName_FirstNameFirst());
 
       // try to retrieve the court number where the player
