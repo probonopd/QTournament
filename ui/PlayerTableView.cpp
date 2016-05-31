@@ -17,6 +17,7 @@
  */
 
 #include <QMessageBox>
+#include <QScrollBar>
 
 #include "PlayerTableView.h"
 #include "MainFrame.h"
@@ -54,6 +55,9 @@ PlayerTableView::PlayerTableView(QWidget* parent)
   setContextMenuPolicy(Qt::CustomContextMenu);
   connect(this, SIGNAL(customContextMenuRequested(const QPoint&)),
           this, SLOT(onContextMenuRequested(const QPoint&)));
+
+  // handle double clicks on a column header
+  connect(horizontalHeader(), SIGNAL(sectionDoubleClicked(int)), this, SLOT(onSectionHeaderDoubleClicked()));
 
   // setup the context menu
   initContextMenu();
@@ -94,6 +98,44 @@ unique_ptr<Player> PlayerTableView::getSelectedPlayer() const
 
 //----------------------------------------------------------------------------
 
+void PlayerTableView::resizeEvent(QResizeEvent* event)
+{
+  // call parent function
+  QTableView::resizeEvent(event);
+
+  autosizeColumns();
+
+  // finish event processing
+  event->accept();
+}
+
+//----------------------------------------------------------------------------
+
+void PlayerTableView::autosizeColumns()
+{
+  // distribute the available space over the columns but
+  // set a maximum to prevent too wide name fields
+  int widthAvail = width();
+  if ((verticalScrollBar() != nullptr) && (verticalScrollBar()->isVisible()))
+  {
+    widthAvail -= verticalScrollBar()->width();
+  }
+  double unitWidth = widthAvail / (1.0 * TOTAL_WIDTH_UNITS);
+  bool isWidthExceeded = (widthAvail >= MAX_TOTAL_COL_WIDTH);
+  int nameColWidth = isWidthExceeded ? MAX_NAME_COL_WIDTH : unitWidth * REL_NAME_COL_WIDTH;
+  int sexColWidth = isWidthExceeded ? MAX_SEX_COL_WIDTH : unitWidth * REL_SEX_COL_WIDTH;
+  int teamColWidth = isWidthExceeded ? MAX_TEAM_COL_WIDTH : unitWidth * REL_TEAM_COL_WIDTH;
+  int catColWidth = isWidthExceeded ? MAX_CAT_COL_WIDTH : unitWidth * REL_CAT_COL_WIDTH;
+
+  // set the column widths
+  setColumnWidth(0, nameColWidth);
+  setColumnWidth(1, sexColWidth);
+  setColumnWidth(2, teamColWidth);
+  setColumnWidth(3, catColWidth);
+}
+
+//----------------------------------------------------------------------------
+
 void PlayerTableView::setDatabase(TournamentDB* _db)
 {
   // set the new data model
@@ -130,6 +172,9 @@ void PlayerTableView::setDatabase(TournamentDB* _db)
   // update the database pointer and set the widget's enabled state
   db = _db;
   setEnabled(db != nullptr);
+
+  // trigger a resizing of the displayed columns
+  autosizeColumns();
 }
 
 //----------------------------------------------------------------------------
@@ -176,6 +221,13 @@ void PlayerTableView::onContextMenuRequested(const QPoint& pos)
 
   // show the context menu
   QAction* selectedItem = contextMenu->exec(globalPos);
+}
+
+//----------------------------------------------------------------------------
+
+void PlayerTableView::onSectionHeaderDoubleClicked()
+{
+  autosizeColumns();
 }
 
 //----------------------------------------------------------------------------
