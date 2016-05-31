@@ -308,15 +308,6 @@ void MatchTableView::onContextMenuRequested(const QPoint& pos)
     if (co == nullptr) return;  // shouldn't happen
 
     // call the match on the selected court
-    MatchMngr mm{db};
-    ERR e = mm.canAssignMatchToCourt(*ma, *co);
-    if (e != OK)
-    {
-      QMessageBox::warning(this, tr("Call match"),
-                           tr("Match can't be called on the selected court."));
-      return;
-    }
-
     cmdCallMatch cmd{this, *ma, *co};
     if (cmd.exec() == OK)
     {

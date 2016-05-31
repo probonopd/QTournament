@@ -284,6 +284,12 @@ void ScheduleTabWidget::askAndStoreMatchResult(const Match &ma)
   // ask the user if the next available match should be started on the
   // now free court
   //
+  // only do this if the court is not limited to manual match assignment
+  //
+  auto oldCourt = ma.getCourt();
+  assert(oldCourt != nullptr);
+  if (oldCourt->isManualAssignmentOnly()) return;
+
   // first of all, check if there is a next match available
   int nextMatchId;
   int nextCourtId;
@@ -299,8 +305,6 @@ void ScheduleTabWidget::askAndStoreMatchResult(const Match &ma)
 
   // instead of the court determined by getNextViableMatchCourtPair we use
   // the court of the previous match
-  auto oldCourt = ma.getCourt();
-  assert(oldCourt != nullptr);
 
   // try to start the match on the old court
   auto nextMatch = mm.getMatch(nextMatchId);
