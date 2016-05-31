@@ -75,6 +75,9 @@ void PlayerTabWidget::setDatabase(TournamentDB* _db)
   ui.playerView->setDatabase(db);
 
   setEnabled(db != nullptr);
+
+  // update the player count information
+  onPlayerCountChanged();
 }
 
 //----------------------------------------------------------------------------
