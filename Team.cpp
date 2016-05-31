@@ -84,6 +84,17 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
+  int Team::getUnregisteredMemberCount() const
+  {
+    WhereClause wc;
+    wc.addIntCol(PL_TEAM_REF, getId());
+    wc.addIntCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_PL_WAIT_FOR_REGISTRATION));
+    DbTab* playerTab = db->getTab(TAB_PLAYER);
+    return playerTab->getMatchCountForWhereClause(wc);
+  }
+
+//----------------------------------------------------------------------------
+
 
 //----------------------------------------------------------------------------
 

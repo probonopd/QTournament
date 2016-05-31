@@ -77,6 +77,13 @@ namespace QTournament
       return t.getMemberCount();
     }
 
+    if (index.column() == UNREGISTERED_MEMBER_COUNT_COL_ID)
+    {
+      int unreg = t.getUnregisteredMemberCount();
+      if (unreg > 0) return unreg;
+      return QString();
+    }
+
     return QString("Not implemented");
   }
 
@@ -96,6 +103,9 @@ namespace QTournament
       }
       if (section == MEMBER_COUNT_COL_ID) {
         return tr("Size");
+      }
+      if (section == UNREGISTERED_MEMBER_COUNT_COL_ID) {
+        return tr("Not reg.");
       }
 
       return QString("Not implemented");

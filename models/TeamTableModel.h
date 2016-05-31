@@ -38,7 +38,8 @@ namespace QTournament
   public:
     static constexpr int NAME_COL_ID = 0;
     static constexpr int MEMBER_COUNT_COL_ID = 1;
-    static constexpr int COL_COUNT = 2;
+    static constexpr int UNREGISTERED_MEMBER_COUNT_COL_ID = 2;
+    static constexpr int COL_COUNT = 3;
 
     TeamTableModel (TournamentDB* _db);
     int rowCount (const QModelIndex &parent = QModelIndex ()) const;

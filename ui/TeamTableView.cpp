@@ -152,10 +152,12 @@ void TeamTableView::autosizeColumns()
   bool isWidthExceeded = (widthAvail >= MAX_TOTAL_COL_WIDTH);
   int nameColWidth = isWidthExceeded ? MAX_NAME_COL_WIDTH : unitWidth * REL_NAME_COL_WIDTH;
   int sizeColWidth = isWidthExceeded ? MAX_SIZE_COL_WIDTH : unitWidth * REL_SIZE_COL_WIDTH;
+  int unregColWidth = isWidthExceeded ? MAX_UNREG_COL_WIDTH : unitWidth * REL_UNREG_COL_WIDTH;
 
   // set the column widths
   setColumnWidth(TeamTableModel::NAME_COL_ID, nameColWidth);
   setColumnWidth(TeamTableModel::MEMBER_COUNT_COL_ID, sizeColWidth);
+  setColumnWidth(TeamTableModel::UNREGISTERED_MEMBER_COUNT_COL_ID, unregColWidth);
 }
 
 //----------------------------------------------------------------------------
