@@ -23,6 +23,7 @@
 
 #include "Team.h"
 #include "TeamMngr.h"
+#include "models/TeamTableModel.h"
 
 using namespace QTournament;
 
@@ -50,9 +51,6 @@ void TeamItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
   //  row = (proxy->mapToSource(index)).row();
   //}
 
-  TeamMngr tm{db};
-  Team t = tm.getTeamBySeqNum(row);
-
   painter->save();
   
   // Paint the background in the selection color, if necessary
@@ -71,17 +69,23 @@ void TeamItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
   
   QRect r = option.rect;
   
-  // paint logic for the first column, the name
-  if (index.column() == 0)
+  // paint the cell content and adjust the alignment
+  // according to the content
+  int align = 0;
+  if (index.column() == TeamTableModel::NAME_COL_ID)
   {
-    // draw the name
+    align = Qt::AlignVCenter|Qt::AlignLeft;
+
+    // add a margin on the left
     r.adjust(ITEM_MARGIN, 0, 0, 0);
-    QString txt = t.getName();
-    painter->drawText(r, Qt::AlignVCenter|Qt::AlignLeft, txt);
+
   } else {
-    painter->drawText(option.rect, Qt::AlignCenter, index.data(Qt::DisplayRole).toString());
+
+    align = Qt::AlignVCenter|Qt::AlignCenter;
+
   }
- 
+  painter->drawText(r, align, index.data(Qt::DisplayRole).toString());
+
   painter->restore();
 }
 
