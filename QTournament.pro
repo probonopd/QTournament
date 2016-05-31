@@ -128,7 +128,8 @@ HEADERS += \
     CentralSignalEmitter.h \
     ui/DlgSelectReferee.h \
     ui/commonCommands/cmdAssignRefereeToMatch.h \
-    ui/commonCommands/cmdCallMatch.h
+    ui/commonCommands/cmdCallMatch.h \
+    ui/delegates/TeamItemDelegate.h
 
 SOURCES += \
     Category.cpp \
@@ -232,7 +233,8 @@ SOURCES += \
     CentralSignalEmitter.cpp \
     ui/DlgSelectReferee.cpp \
     ui/commonCommands/cmdAssignRefereeToMatch.cpp \
-    ui/commonCommands/cmdCallMatch.cpp
+    ui/commonCommands/cmdCallMatch.cpp \
+    ui/delegates/TeamItemDelegate.cpp
 
 RESOURCES += \
     tournament.qrc

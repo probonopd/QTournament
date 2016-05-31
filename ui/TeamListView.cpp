@@ -23,11 +23,15 @@
 #include "MainFrame.h"
 
 TeamListView::TeamListView(QWidget* parent)
-:QListView(parent), db(nullptr), curDataModel(nullptr)
+:QListView(parent), db(nullptr), curDataModel(nullptr), teamItemDelegate(nullptr)
 {
   // an empty model for clearing the list when
   // no tournament is open
   emptyModel = new QStringListModel();
+  defaultDelegate = itemDelegate();
+
+  // all rows shall have the same size
+  setUniformItemSizes(true);
   
   // initiate the model(s) as empty
   setDatabase(nullptr);
@@ -39,6 +43,7 @@ TeamListView::~TeamListView()
 {
   delete emptyModel;
   if (curDataModel != nullptr) delete curDataModel;
+  if (defaultDelegate != nullptr) delete defaultDelegate;
 }
 
 //----------------------------------------------------------------------------
@@ -57,8 +62,14 @@ void TeamListView::setDatabase(TournamentDB* _db)
   {
     newDataModel = new TeamListModel(_db);
     setModel(newDataModel);
+
+    // define a delegate for drawing the category items
+    teamItemDelegate = make_unique<TeamItemDelegate>(_db, this);
+    //teamItemDelegate->setProxy(sortedModel);
+    setItemDelegate(teamItemDelegate.get());
   } else {
     setModel(emptyModel);
+    setItemDelegate(defaultDelegate);
   }
 
   // delete the old data model, if it was a

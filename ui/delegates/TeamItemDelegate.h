@@ -16,36 +16,33 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef TEAMLISTVIEW_H
-#define	TEAMLISTVIEW_H
+#ifndef TEAMITEMDELEGATE_H
+#define	TEAMITEMDELEGATE_H
 
-#include <QListView>
-#include <QStringListModel>
+#include <QStyledItemDelegate>
+#include <QFontMetrics>
+#include <QAbstractProxyModel>
 
 #include "TournamentDB.h"
-#include "models/TeamListModel.h"
-#include "ui/delegates/TeamItemDelegate.h"
-
 
 using namespace QTournament;
 
-class TeamListView : public QListView
+class TeamItemDelegate : public QStyledItemDelegate
 {
-  Q_OBJECT
-  
 public:
-  TeamListView (QWidget* parent);
-  virtual ~TeamListView();
-  void setDatabase(TournamentDB* _db);
+  static constexpr int ITEM_HEIGHT = 25;
+  static constexpr int ITEM_MARGIN = 5;
+
+  TeamItemDelegate(TournamentDB* _db, QObject* parent = 0);
+  //void setProxy(QAbstractProxyModel* _proxy);
+  void paint (QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index ) const;
+  QSize sizeHint (const QStyleOptionViewItem& option, const QModelIndex& index ) const;
   
 private:
   TournamentDB* db;
-  QStringListModel* emptyModel;
-  TeamListModel* curDataModel;
-  unique_ptr<TeamItemDelegate> teamItemDelegate;
-  QAbstractItemDelegate* defaultDelegate;
+  //QAbstractProxyModel* proxy;
+  QFontMetrics fntMetrics;
+} ;
 
-};
-
-#endif	/* TEAMLISTVIEW_H */
+#endif	/* TEAMITEMDELEGATE_H */
 
