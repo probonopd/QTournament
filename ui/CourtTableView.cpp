@@ -205,7 +205,7 @@ void CourtTableView::initContextMenu()
   actFinishMatch = new QAction(tr("Finish match"), this);
   actAddCall = new QAction(tr("Repeat call"), this);
   actSwapReferee = new QAction(tr("Swap umpire"), this);
-  actToggleAssignmentMode = new QAction(tr("Only manual match assignment"), this);
+  actToggleAssignmentMode = new QAction(tr("Only manual match assignment on this court"), this);
   actToggleAssignmentMode->setCheckable(true);
 
   // create sub-actions for the walkover-selection
@@ -268,7 +268,7 @@ void CourtTableView::updateContextMenu(bool isRowClicked)
   }
 
   // disable "swap umpire" if we have no umpire in the match
-  if (ma != nullptr)
+  if ((ma != nullptr) && isRowClicked)
   {
     REFEREE_MODE refMode = ma->get_RAW_RefereeMode();
     bool canSwapReferee = ((refMode != REFEREE_MODE::NONE) &&
