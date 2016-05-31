@@ -18,6 +18,7 @@
 
 #include <QWidget>
 #include <QMessageBox>
+#include <QScrollBar>
 
 #include "TeamTableView.h"
 #include "MainFrame.h"
@@ -85,6 +86,40 @@ void TeamTableView::setDatabase(TournamentDB* _db)
   // update the database pointer and set the widget's enabled state
   db = _db;
   setEnabled(db != nullptr);
+}
+
+//----------------------------------------------------------------------------
+
+void TeamTableView::resizeEvent(QResizeEvent* event)
+{
+  // call parent function
+  QTableView::resizeEvent(event);
+
+  autosizeColumns();
+
+  // finish event processing
+  event->accept();
+}
+
+//----------------------------------------------------------------------------
+
+void TeamTableView::autosizeColumns()
+{
+  // distribute the available space over the columns but
+  // set a maximum to prevent too wide name fields
+  int widthAvail = width();
+  if ((verticalScrollBar() != nullptr) && (verticalScrollBar()->isVisible()))
+  {
+    widthAvail -= verticalScrollBar()->width();
+  }
+  double unitWidth = widthAvail / (1.0 * TOTAL_WIDTH_UNITS);
+  bool isWidthExceeded = (widthAvail >= MAX_TOTAL_COL_WIDTH);
+  int nameColWidth = isWidthExceeded ? MAX_NAME_COL_WIDTH : unitWidth * REL_NAME_COL_WIDTH;
+  int sizeColWidth = isWidthExceeded ? MAX_SIZE_COL_WIDTH : unitWidth * REL_SIZE_COL_WIDTH;
+
+  // set the column widths
+  setColumnWidth(TeamTableModel::NAME_COL_ID, nameColWidth);
+  setColumnWidth(TeamTableModel::MEMBER_COUNT_COL_ID, sizeColWidth);
 }
 
 //----------------------------------------------------------------------------

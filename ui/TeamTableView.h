@@ -38,6 +38,16 @@ public:
   virtual ~TeamTableView();
   void setDatabase(TournamentDB* _db);
   
+protected:
+  static constexpr int REL_NAME_COL_WIDTH = 10;
+  static constexpr int REL_SIZE_COL_WIDTH = 2;
+  static constexpr int MAX_NAME_COL_WIDTH = 350;
+  static constexpr int MAX_SIZE_COL_WIDTH = (MAX_NAME_COL_WIDTH / (REL_NAME_COL_WIDTH * 1.0)) * REL_SIZE_COL_WIDTH;
+  static constexpr int MAX_TOTAL_COL_WIDTH = MAX_NAME_COL_WIDTH + MAX_SIZE_COL_WIDTH;
+  static constexpr int TOTAL_WIDTH_UNITS = REL_NAME_COL_WIDTH + REL_SIZE_COL_WIDTH;
+  virtual void resizeEvent(QResizeEvent *event) override;
+  void autosizeColumns();
+
 private:
   TournamentDB* db;
   QStringListModel* emptyModel;
