@@ -374,6 +374,14 @@ void MatchTableView::onMatchDoubleClicked(const QModelIndex& index)
     return;  // do not proceed with a match call
   }
 
+  // special case: if the match is busy, we show information
+  // why the match can't be called
+  if (ma->getState() == STAT_MA_BUSY)
+  {
+    showMatchBusyReason(*ma);
+    return;  // do not proceed with a match call
+  }
+
   CourtMngr cm{db};
   MatchMngr mm{db};
 
@@ -589,6 +597,118 @@ void MatchTableView::execWalkover(int playerNum)
   if (ma == nullptr) return; // shouldn't happen
   if ((playerNum != 1) && (playerNum != 2)) return; // shouldn't happen
   GuiHelpers::execWalkover(this, *ma, playerNum);
+}
+
+//----------------------------------------------------------------------------
+
+void MatchTableView::showMatchBusyReason(const Match& ma)
+{
+  if (ma.getState() != STAT_MA_BUSY)
+  {
+    return;
+  }
+
+  QString txt = tr("The match cannot be called because:\n\n");
+
+  //--------------------
+  //
+  // a little helper function that return the "busy reason" for
+  // a single player
+  auto getBusyReasonForPlayer = [](const Player& pl)
+  {
+    OBJ_STATE plStat = pl.getState();
+    if (plStat == STAT_PL_IDLE) return QString();
+
+    // maybe the player is busy in another match
+    if (plStat == STAT_PL_PLAYING)
+    {
+      QString result = "%1 is playing";
+      result = result.arg(pl.getDisplayName_FirstNameFirst());
+
+      // try to retrieve the court number where the player
+      // is the referee
+      unique_ptr<Court> co = pl.getMatchCourt();
+      if (co != nullptr)
+      {
+        result += tr(" on court %1");
+        result = result.arg(co->getNumber());
+      }
+      return result;
+    }
+
+    // maybe the player is acting as an umpire
+    if (plStat == STAT_PL_REFEREE)
+    {
+      QString result = "%1 is umpire";
+      result = result.arg(pl.getDisplayName_FirstNameFirst());
+
+      // try to retrieve the court number where the player
+      // is the referee
+      unique_ptr<Court> co = pl.getRefereeCourt();
+      if (co != nullptr)
+      {
+        result += tr(" on court %1");
+        result = result.arg(co->getNumber());
+      }
+      return result;
+    }
+
+    return pl.getDisplayName_FirstNameFirst() + tr(" is not available (but why???)");
+  };
+  //
+  //--------------------
+
+  // check all assigned players for their absence reason
+  PlayerList pl;
+  PlayerPair pp = ma.getPlayerPair1();
+  pl.push_back(pp.getPlayer1());
+  if (pp.hasPlayer2())
+  {
+    pl.push_back(pp.getPlayer2());
+  }
+  pp = ma.getPlayerPair2();
+  pl.push_back(pp.getPlayer1());
+  if (pp.hasPlayer2())
+  {
+    pl.push_back(pp.getPlayer2());
+  }
+  QString reason;
+  for (const Player& p : pl)
+  {
+    QString r = getBusyReasonForPlayer(p);
+    if (!(r.isEmpty()))
+    {
+      if (!(reason.isEmpty()))
+      {
+        reason += ",\n\n";
+      }
+      reason += "   - " + r;
+    }
+  }
+
+  // if this match has already an umpire assigned, we need to
+  // check the umpire's availability as well
+  REFEREE_MODE refMode = ma.get_EFFECTIVE_RefereeMode();
+  if ((refMode != REFEREE_MODE::NONE) && (refMode != REFEREE_MODE::HANDWRITTEN))
+  {
+    upPlayer referee = ma.getAssignedReferee();
+    if (referee != nullptr)
+    {
+      QString r = getBusyReasonForPlayer(*referee);
+
+      if (!(r.isEmpty()))
+      {
+        if (!(reason.isEmpty()))
+        {
+          reason += ",\n\n";
+        }
+        reason += "   - " + tr("Umpire ") + r;
+      }
+    }
+  }
+
+  txt += reason;
+  QMessageBox::information(this, tr("Match status"), txt);
 }
 
 //----------------------------------------------------------------------------

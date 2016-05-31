@@ -93,6 +93,7 @@ private:
   void initContextMenu();
   void updateContextMenu();
   void execWalkover(int playerNum);
+  void showMatchBusyReason(const Match& ma);
 };
 
 #endif	/* MATCHTABLEVIEW_H */

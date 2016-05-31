@@ -33,6 +33,7 @@
 #include "TournamentErrorCodes.h"
 #include "Team.h"
 //#include "Category.h"
+#include "Court.h"
 
 
 namespace QTournament
@@ -56,6 +57,8 @@ namespace QTournament
     Team getTeam() const;
     vector<Category> getAssignedCategories() const;
     int getRefereeCount() const;
+    unique_ptr<Court> getRefereeCourt() const;
+    unique_ptr<Court> getMatchCourt() const;
 
   private:
     Player (TournamentDB* db, int rowId);

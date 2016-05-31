@@ -26,6 +26,8 @@
 #include "PlayerMngr.h"
 #include "CatMngr.h"
 #include "TeamMngr.h"
+#include "MatchMngr.h"
+#include "CourtMngr.h"
 
 namespace QTournament
 {
@@ -163,6 +165,55 @@ namespace QTournament
   int Player::getRefereeCount() const
   {
     return row.getInt(PL_REFEREE_COUNT);
+  }
+
+  //----------------------------------------------------------------------------
+
+  unique_ptr<Court> Player::getRefereeCourt() const
+  {
+    if (getState() != STAT_PL_REFEREE) return nullptr;
+
+    // find the court on which the player is umpire
+    DbTab* matchTab = db->getTab(TAB_MATCH);
+    WhereClause wc;
+    wc.addIntCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_RUNNING));
+    wc.addIntCol(MA_REFEREE_REF, getId());
+
+    // do we have a matching match entry?
+    if (matchTab->getMatchCountForWhereClause(wc) == 0) return nullptr;
+    TabRow r = matchTab->getSingleRowByWhereClause(wc);
+    MatchMngr mm{db};
+    upMatch ma = mm.getMatch(r.getId());
+    if (ma == nullptr) return nullptr;
+
+    return ma->getCourt();
+  }
+
+  //----------------------------------------------------------------------------
+
+  unique_ptr<Court> Player::getMatchCourt() const
+  {
+    if (getState() != STAT_PL_PLAYING) return nullptr;
+
+    // find the court on which the player is playing
+    //
+    // for this, we simply search all courts because this is
+    // easier that searching in all player pairs the player
+    // could be part of
+    CourtMngr cm{db};
+    for (const Court& co : cm.getAllCourts())
+    {
+      if (co.getState() != STAT_CO_BUSY) continue;
+      upMatch ma = co.getMatch();
+      if (ma == nullptr) continue;
+
+      for (const Player& pl : ma->determineActualPlayers())
+      {
+        if (pl == *this) return cm.getCourt(co.getId());
+      }
+    }
+
+    return nullptr;
   }
 
 //----------------------------------------------------------------------------
