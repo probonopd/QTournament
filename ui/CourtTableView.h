@@ -60,6 +60,7 @@ private slots:
   void onActionAddCallTriggered();
   void onActionSwapRefereeTriggered();
   void onSectionHeaderDoubleClicked();
+  void onActionToggleMatchAssignmentModeTriggered();
 
 private:
   static constexpr int MAX_NUM_ADD_CALL = 3;
@@ -79,6 +80,7 @@ private:
   QAction* actWalkoverP2;
   QAction* actAddCall;
   QAction* actSwapReferee;
+  QAction* actToggleAssignmentMode;
 
   void initContextMenu();
   void updateContextMenu(bool isRowClicked);

@@ -205,6 +205,8 @@ void CourtTableView::initContextMenu()
   actFinishMatch = new QAction(tr("Finish match"), this);
   actAddCall = new QAction(tr("Repeat call"), this);
   actSwapReferee = new QAction(tr("Swap umpire"), this);
+  actToggleAssignmentMode = new QAction(tr("Only manual match assignment"), this);
+  actToggleAssignmentMode->setCheckable(true);
 
   // create sub-actions for the walkover-selection
   actWalkoverP1 = new QAction("P1", this);  // this is just a dummy
@@ -217,6 +219,7 @@ void CourtTableView::initContextMenu()
   connect(actUndoCall, SIGNAL(triggered(bool)), this, SLOT(onActionUndoCallTriggered()));
   connect(actAddCall, SIGNAL(triggered(bool)), this, SLOT(onActionAddCallTriggered()));
   connect(actSwapReferee, SIGNAL(triggered(bool)), this, SLOT(onActionSwapRefereeTriggered()));
+  connect(actToggleAssignmentMode, SIGNAL(triggered(bool)), this, SLOT(onActionToggleMatchAssignmentModeTriggered()));
 
   // create the context menu and connect it to the actions
   contextMenu = make_unique<QMenu>();
@@ -228,6 +231,8 @@ void CourtTableView::initContextMenu()
   contextMenu->addAction(actUndoCall);
   contextMenu->addSeparator();
   contextMenu->addAction(actSwapReferee);
+  contextMenu->addSeparator();
+  contextMenu->addAction(actToggleAssignmentMode);
   contextMenu->addSeparator();
   contextMenu->addAction(actAddCourt);
 
@@ -272,6 +277,14 @@ void CourtTableView::updateContextMenu(bool isRowClicked)
     actSwapReferee->setEnabled(canSwapReferee);
   } else {
     actSwapReferee->setEnabled(false);
+  }
+
+  // show the state of the "manual assignment"
+  unique_ptr<Court> co = getSelectedCourt();
+  actToggleAssignmentMode->setEnabled(isRowClicked);
+  if (co != nullptr)
+  {
+    actToggleAssignmentMode->setChecked(co->isManualAssignmentOnly());
   }
 }
 
@@ -395,6 +408,17 @@ void CourtTableView::onActionSwapRefereeTriggered()
 void CourtTableView::onSectionHeaderDoubleClicked()
 {
   autosizeColumns();
+}
+
+//----------------------------------------------------------------------------
+
+void CourtTableView::onActionToggleMatchAssignmentModeTriggered()
+{
+  unique_ptr<Court> co = getSelectedCourt();
+  if (co == nullptr) return;
+
+  bool isManual = co->isManualAssignmentOnly();
+  co->setManualAssignment(!isManual);
 }
 
 //----------------------------------------------------------------------------
