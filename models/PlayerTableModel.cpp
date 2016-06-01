@@ -55,7 +55,7 @@ int PlayerTableModel::rowCount(const QModelIndex& parent) const
 
 int PlayerTableModel::columnCount(const QModelIndex& parent) const
 {
-  return 4;  // four columns: player's name, sex, team and assigned categories
+  return COLUMN_COUNT;  // four columns: player's name, sex, team and assigned categories
 }
 
 //----------------------------------------------------------------------------
@@ -110,6 +110,12 @@ QVariant PlayerTableModel::data(const QModelIndex& index, int role) const
       
       return result;
     }
+
+    // fifth column: and empty column just for filling the view
+    if (index.column() == FILL_COL)
+    {
+      return QVariant();
+    }
     
     return QString("Not Implemented");
 }
@@ -140,7 +146,11 @@ QVariant PlayerTableModel::headerData(int section, Qt::Orientation orientation, 
     if (section == 3) {
       return tr("Categories");
     }
-    
+
+    if (section == FILL_COL) {
+      return QVariant();
+    }
+
     return QString("Not implemented");
   }
   

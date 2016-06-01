@@ -132,6 +132,16 @@ void PlayerTableView::autosizeColumns()
   setColumnWidth(1, sexColWidth);
   setColumnWidth(2, teamColWidth);
   setColumnWidth(3, catColWidth);
+
+  // set the width of the fill column to what's left
+  int fillWidth = widthAvail - (nameColWidth + sexColWidth + teamColWidth + catColWidth);
+  if (fillWidth > 0)
+  {
+    setColumnHidden(PlayerTableModel::FILL_COL, false);
+    setColumnWidth(PlayerTableModel::FILL_COL, fillWidth);
+  } else {
+    setColumnHidden(PlayerTableModel::FILL_COL, true);
+  }
 }
 
 //----------------------------------------------------------------------------

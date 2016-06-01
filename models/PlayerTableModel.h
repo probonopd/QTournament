@@ -36,8 +36,9 @@ namespace QTournament
     Q_OBJECT
 
   public:
-    static constexpr int COLUMN_COUNT = 4;  // number of columns in the model
+    static constexpr int COLUMN_COUNT = 5;  // number of columns in the model
     static constexpr int COL_NAME = 0;
+    static constexpr int FILL_COL = 4;   // an extra column (empty) just to fill up the empty space in the view
 
     PlayerTableModel (TournamentDB* _db);
     int rowCount(const QModelIndex & parent = QModelIndex()) const;
