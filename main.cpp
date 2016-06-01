@@ -45,7 +45,12 @@ int main(int argc, char *argv[])
   tournamentTranslator.load(app.applicationDirPath() + "/tournament_" + QLocale::system().name());
   //
   // Only temporary: hard-coded German translation while in debug mode
-  //tournamentTranslator.load(app.applicationDirPath() + "/../tournament_de");
+  /*
+#ifdef __IS_WINDOWS_BUILD
+  tournamentTranslator.load(app.applicationDirPath() + "/../../QTournament/tournament_de");
+#else
+  tournamentTranslator.load(app.applicationDirPath() + "/../tournament_de");
+#endif*/
   app.installTranslator(&tournamentTranslator);
   
   MainFrame w;

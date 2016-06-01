@@ -46,7 +46,8 @@ public:
   void setDatabase(TournamentDB* _db);
 
 protected:
-  static constexpr int ABS_NUMERIC_COL_WIDTH = 80;
+  static constexpr int ABS_COURT_COL_WIDTH = 40;
+  static constexpr int ABS_DURATION_COL_WIDTH = 60;
   virtual void resizeEvent(QResizeEvent *event) override;
   void autosizeColumns();
 

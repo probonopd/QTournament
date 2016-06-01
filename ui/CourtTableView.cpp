@@ -172,11 +172,11 @@ void CourtTableView::autosizeColumns()
   {
     widthAvail -= verticalScrollBar()->width();
   }
-  int matchColWidth = widthAvail -  2 * ABS_NUMERIC_COL_WIDTH;
+  int matchColWidth = widthAvail -  ABS_COURT_COL_WIDTH - ABS_DURATION_COL_WIDTH;
 
-  setColumnWidth(CourtTableModel::COURT_NUM_COL_ID, ABS_NUMERIC_COL_WIDTH);
+  setColumnWidth(CourtTableModel::COURT_NUM_COL_ID, ABS_COURT_COL_WIDTH);
   setColumnWidth(1, matchColWidth);
-  setColumnWidth(CourtTableModel::DURATION_COL_ID, ABS_NUMERIC_COL_WIDTH);
+  setColumnWidth(CourtTableModel::DURATION_COL_ID, ABS_DURATION_COL_WIDTH);
 }
 
 //----------------------------------------------------------------------------
