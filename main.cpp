@@ -37,10 +37,18 @@ int main(int argc, char *argv[])
   QTranslator qtTranslator;
   // Only temporary: hard-coded German translation while in debug mode
   //qtTranslator.load("qt_de", QLibraryInfo::location(QLibraryInfo::TranslationsPath));
-  qtTranslator.load("qt_" + QLocale::system().name(),
+
+  // try to load the basic Qt translations either from the Qt installation (system-wide)
+  // or from a copy deployed along with the application (on non-Qt computers)
+  bool isLoaded = qtTranslator.load("qt_" + QLocale::system().name(),
                     QLibraryInfo::location(QLibraryInfo::TranslationsPath));
+  if (!isLoaded)
+  {
+    qtTranslator.load(app.applicationDirPath() + "/qt_" + QLocale::system().name());
+  }
   app.installTranslator(&qtTranslator);
   
+  // load the application specific translations
   QTranslator tournamentTranslator;
   tournamentTranslator.load(app.applicationDirPath() + "/tournament_" + QLocale::system().name());
   //
