@@ -6,26 +6,18 @@ BUILD_DIR=/tmp/buildQTournament
 # the base path of the build tool binaries
 MINGW64_BIN=/d/PortablePrograms/msys64/mingw64/bin
 
-# define the source code versions to be used
-DBOVERLAY_VERSION=0.2.0
-REPORTLIB_VERSION=0.3.0
-#QTOURNAMENT_VERSION=0.4.0-RC1
-QTOURNAMENT_VERSION=master
-
 #
 # No changes below this point!
 #
+
+source ./buildBasics.sh
+
 PATH=$PATH:$MINGW64_BIN
 
 export CXX=g++.exe
 export CC=gcc.exe
 CMAKE_GENERATOR=MSYS\ Makefiles
 CMAKE_BIN=/d/PortablePrograms/msys64/mingw64/bin/cmake.exe
-
-# Guthub URLs for the code download
-DBOVERLAY_BASEURL=https://github.com/Foorgol/SqliteOverlay/archive
-REPORTLIB_BASEURL=https://github.com/Foorgol/SimpleReportGeneratorLib/archive
-QTOURNAMENT_BASEURL=https://github.com/Foorgol/QTournament/archive
 
 # create the build dir
 mkdir -p $BUILD_DIR
@@ -44,9 +36,9 @@ rm -rf dist
 rm -rf SqliteOverlay Qt dist *zip
 
 # download sources
-wget $DBOVERLAY_BASEURL/$DBOVERLAY_VERSION.zip -O SqliteOverlay-$DBOVERLAY_VERSION.zip
-wget $REPORTLIB_BASEURL/$REPORTLIB_VERSION.zip -O SimpleReportGeneratorLib-$REPORTLIB_VERSION.zip
-wget $QTOURNAMENT_BASEURL/$QTOURNAMENT_VERSION.zip -O QTournament-$QTOURNAMENT_VERSION.zip
+wget $DBOVERLAY_BASE_URL/$DBOVERLAY_VERSION.zip -O SqliteOverlay-$DBOVERLAY_VERSION.zip
+wget $REPORTLIB_BASE_URL/$REPORTLIB_VERSION.zip -O SimpleReportGeneratorLib-$REPORTLIB_VERSION.zip
+wget $QTOURNAMENT_BASE_URL/$QTOURNAMENT_VERSION.zip -O QTournament-$QTOURNAMENT_VERSION.zip
 
 # Unzip and build the database overlay
 unzip SqliteOverlay-$DBOVERLAY_VERSION.zip
