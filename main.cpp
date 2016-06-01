@@ -22,6 +22,7 @@
 
 #include <QDebug>
 #include <QFile>
+#include <QLocale>
 
 #include "ui/MainFrame.h"
 
@@ -40,17 +41,18 @@ int main(int argc, char *argv[])
 
   // try to load the basic Qt translations either from the Qt installation (system-wide)
   // or from a copy deployed along with the application (on non-Qt computers)
-  bool isLoaded = qtTranslator.load("qt_" + QLocale::system().name(),
-                    QLibraryInfo::location(QLibraryInfo::TranslationsPath));
+  QString appPath = app.applicationDirPath();
+  QString transPath = QLibraryInfo::location(QLibraryInfo::TranslationsPath);
+  bool isLoaded = qtTranslator.load(QLocale(), "qt", "_", appPath, ".qm");
   if (!isLoaded)
   {
-    qtTranslator.load(app.applicationDirPath() + "/qt_" + QLocale::system().name());
+    isLoaded = qtTranslator.load(QLocale(), "qt", "_", transPath, ".qm");
   }
-  app.installTranslator(&qtTranslator);
+  if (isLoaded) app.installTranslator(&qtTranslator);
   
   // load the application specific translations
   QTranslator tournamentTranslator;
-  tournamentTranslator.load(app.applicationDirPath() + "/tournament_" + QLocale::system().name());
+  tournamentTranslator.load(QLocale(), "tournament", "_", appPath, ".qm");
   //
   // Only temporary: hard-coded German translation while in debug mode
   /*
