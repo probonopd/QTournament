@@ -124,5 +124,5 @@ cp $MINGW64_BIN/../share/qt5/plugins/printsupport/windowsprintersupport.dll prin
 cp ../Qt/qmake/QTournament/tournament_*qm .
 
 # zip everything
-zip QTournament-$QTOURNAMENT_VERSION.zip *
+zip -r QTournament-$QTOURNAMENT_VERSION.zip *
 
