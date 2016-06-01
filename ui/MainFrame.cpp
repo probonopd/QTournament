@@ -1282,8 +1282,12 @@ void MainFrame::onInfoMenuTriggered()
   msg += tr("along with this program. If not, see <a href='http://www.gnu.org/licenses/'>http://www.gnu.org/licenses/</a>.<br><br>");
 
   msg += tr("The source code for this program is hosted on Github:<br>");
-  msg += "<a href='https://github.com/Foorgol/QTournament'>https://github.com/Foorgol/QTournament</a><br>";
+  msg += "<a href='https://github.com/Foorgol/QTournament'>https://github.com/Foorgol/QTournament</a><br><br>";
 
+  msg += tr("For more information please visit:<br>");
+  msg += "<a href='http://vkserv.de/qtournament'>http://vkserv.de/qtournament</a> (German)<br>";
+  msg += "<a href='http://vkserv.de/qtournament'>http://vkserv.de/en/qtournament</a> (English)<br><br>";
+  msg += "or send an email to <a href='mailto:QTournament@vkserv.de'>QTournament@vkserv.de</a>";
   msg = msg.arg(PRG_VERSION_STRING);
 
   QMessageBox msgBox{this};
