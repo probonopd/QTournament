@@ -9,7 +9,8 @@ MINGW64_BIN=/d/PortablePrograms/msys64/mingw64/bin
 # define the source code versions to be used
 DBOVERLAY_VERSION=0.2.0
 REPORTLIB_VERSION=0.3.0
-QTOURNAMENT_VERSION=0.4.0-RC1
+#QTOURNAMENT_VERSION=0.4.0-RC1
+QTOURNAMENT_VERSION=master
 
 #
 # No changes below this point!
@@ -122,6 +123,7 @@ cp $MINGW64_BIN/../share/qt5/plugins/printsupport/windowsprintersupport.dll prin
 
 #translation file(s)
 cp ../Qt/qmake/QTournament/tournament_*qm .
+cp $MINGW64_BIN/../share/qt5/translations/qt_de.qm .
 
 # zip everything
 zip -r QTournament-$QTOURNAMENT_VERSION.zip *
