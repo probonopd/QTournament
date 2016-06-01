@@ -86,5 +86,5 @@ cp ../Qt/QTournament/tournament_de.qm .
 echo '#!/bin/bash' > QTournament
 echo 'LD_LIBRARY_PATH=. ./QTournament_bin' >> QTournament
 chmod u+x QTournament
-zip QTournament-$QTOURNAMENT_VERSION.zip *
+zip QTournament-Linux-$QTOURNAMENT_VERSION.zip *
 
