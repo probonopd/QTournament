@@ -207,9 +207,27 @@ void AbstractReport::printMatchList(upSimpleReport& rep, const MatchList& maList
     rowContent << "";  // first column not used
     rowContent << QString::number(ma.getMatchNumber());
 
-    QString pNames = ma.getPlayerPair1().getDisplayName();
+    QString pNames;
+    if (ma.hasPlayerPair1())
+    {
+      pNames = ma.getPlayerPair1().getDisplayName();
+    } else {
+      // the match is not yet complete
+      // and thus can't be displayed in the report
+      continue;
+    }
+
     pNames += "   :   ";
-    pNames += ma.getPlayerPair2().getDisplayName();
+
+    if (ma.hasPlayerPair2())
+    {
+      pNames += ma.getPlayerPair2().getDisplayName();
+    } else {
+      // the match is not yet complete
+      // and thus can't be displayed in the report
+      continue;
+    }
+
     rowContent << pNames;
 
     if (withGroupColumn && (grpNum > 0))
