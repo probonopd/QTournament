@@ -140,8 +140,33 @@ namespace QTournament
       // the object behind tmp is automatically deleted
       // when we leave this scope.
      }
-      return result;
+    return result;
+  }
+
+  //----------------------------------------------------------------------------
+
+  ExternalPlayerDatabaseEntryList ExternalPlayerDB::getAllPlayers()
+  {
+    SqliteOverlay::DbTab* playerTab = getTab(TAB_EPD_PLAYER);
+    SqliteOverlay::WhereClause wc;
+    wc.addIntCol("id", ">", 0);   // match all rows
+    wc.setOrderColumn_Asc(EPD_PL_LNAME);  // sort by last name first
+    wc.setOrderColumn_Asc(EPD_PL_FNAME);  // then by given name
+    auto it = playerTab->getRowsByWhereClause(wc);
+    ExternalPlayerDatabaseEntryList result;
+    while (!(it.isEnd()))
+    {
+      auto tmp = row2upEntry(*it);
+
+      result.push_back(*tmp);   // the QList creates a copy internally
+
+      ++it;
+
+      // the object behind tmp is automatically deleted
+      // when we leave this scope.
     }
+    return result;
+  }
 
   //----------------------------------------------------------------------------
 

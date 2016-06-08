@@ -45,6 +45,9 @@ public slots:
 private:
   Ui::DlgImportPlayer *ui;
   ExternalPlayerDB* extDb;
+  void addPlayerEntryToListWidget(const ExternalPlayerDatabaseEntryList& entryList);
+  ExternalPlayerDatabaseEntryList allDatabaseEntries;
+  bool isViewFiltered;
 
 private slots:
   void onNameListSelectionChanged();

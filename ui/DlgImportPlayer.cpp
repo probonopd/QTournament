@@ -24,11 +24,19 @@
 DlgImportPlayer::DlgImportPlayer(QWidget *parent, ExternalPlayerDB* _extDb) :
   QDialog(parent),
   ui(new Ui::DlgImportPlayer),
-  extDb(_extDb)
+  extDb(_extDb), isViewFiltered(false)
 {
   ui->setupUi(this);
 
+  // Fill the list with all names in the database
   ui->lwNames->clear();
+  if (extDb != nullptr)
+  {
+    allDatabaseEntries = extDb->getAllPlayers();
+    addPlayerEntryToListWidget(allDatabaseEntries);
+  }
+
+  // initialize all other widgets
   ui->leSearchString->clear();
   ui->leSearchString->setFocus();
   ui->btnImport->setEnabled(false);
@@ -71,6 +79,17 @@ int DlgImportPlayer::exec()
 
 //----------------------------------------------------------------------------
 
+void DlgImportPlayer::addPlayerEntryToListWidget(const ExternalPlayerDatabaseEntryList& entryList)
+{
+  for (const ExternalPlayerDatabaseEntry& entry : entryList)
+  {
+    auto newItem = new QListWidgetItem(entry.getDisplayName(), ui->lwNames);
+    newItem->setData(Qt::UserRole, entry.getId());
+  }
+}
+
+//----------------------------------------------------------------------------
+
 void DlgImportPlayer::onNameListSelectionChanged()
 {
   auto selItems = ui->lwNames->selectedItems();
@@ -82,9 +101,6 @@ void DlgImportPlayer::onNameListSelectionChanged()
 
 void DlgImportPlayer::onSearchStringChanged()
 {
-  // clear the old search results
-  ui->lwNames->clear();
-
   // get and trim the search string
   QString searchString = ui->leSearchString->text();
   searchString = searchString.trimmed();
@@ -95,6 +111,16 @@ void DlgImportPlayer::onSearchStringChanged()
   {
     ui->btnImport->setEnabled(false);
 
+    // the the name list contained a previous search
+    // result, we invalidate the previous search and
+    // show all names
+    if (isViewFiltered)
+    {
+      ui->lwNames->clear();
+      addPlayerEntryToListWidget(allDatabaseEntries);
+      isViewFiltered = false;
+    }
+
     return;
   }
 
@@ -102,11 +128,9 @@ void DlgImportPlayer::onSearchStringChanged()
   auto matchingEntries = extDb->searchForMatchingPlayers(searchString);
 
   // update the list widget with the search results
-  for (const ExternalPlayerDatabaseEntry& entry : matchingEntries)
-  {
-    auto newItem = new QListWidgetItem(entry.getDisplayName(), ui->lwNames);
-    newItem->setData(Qt::UserRole, entry.getId());
-  }
+  ui->lwNames->clear();
+  addPlayerEntryToListWidget(matchingEntries);
+  isViewFiltered = true;
 }
 
 //----------------------------------------------------------------------------

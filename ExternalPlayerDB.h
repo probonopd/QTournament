@@ -78,6 +78,7 @@ namespace QTournament
     virtual void populateViews();
 
     ExternalPlayerDatabaseEntryList searchForMatchingPlayers(const QString& substring);
+    ExternalPlayerDatabaseEntryList getAllPlayers();
     upExternalPlayerDatabaseEntry getPlayer(int id);
     upExternalPlayerDatabaseEntry getPlayer(const QString& fname, const QString& lname);
     upExternalPlayerDatabaseEntry storeNewPlayer(const ExternalPlayerDatabaseEntry& newPlayer);
