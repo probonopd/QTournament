@@ -634,16 +634,21 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  unique_ptr<Player> PlayerMngr::importPlayerFromExternalDatabase(ERR* err, int extPlayerId, SEX sexOverride) const
+  unique_ptr<Player> PlayerMngr::importPlayerFromExternalDatabase(ERR* err, int extPlayerId, SEX sexOverride)
   {
+    // if no player database has been opened by this instance of the PlayerMngr,
+    // try to open the database
     if (extPlayerDb == nullptr)
     {
-      if (err != nullptr)
+      ERR e = openConfiguredExternalPlayerDatabase();
+      if (e != OK)
       {
-        *err = EPD__NOT_OPENED;
+        if (err != nullptr)
+        {
+          *err = e;
+        }
+        return nullptr;
       }
-
-      return nullptr;
     }
 
     // check the ID's validity
@@ -668,7 +673,7 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  ERR PlayerMngr::exportPlayerToExternalDatabase(int playerId) const
+  ERR PlayerMngr::exportPlayerToExternalDatabase(int playerId)
   {
     auto p = getPlayer_up(playerId);
     if (p == nullptr)
@@ -681,11 +686,17 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  ERR PlayerMngr::exportPlayerToExternalDatabase(const Player& p) const
+  ERR PlayerMngr::exportPlayerToExternalDatabase(const Player& p)
   {
+    // if no player database has been opened by this instance of the PlayerMngr,
+    // try to open the database
     if (extPlayerDb == nullptr)
     {
-      return EPD__NOT_OPENED;
+      ERR err = openConfiguredExternalPlayerDatabase();
+      if (err != OK)
+      {
+        return err;
+      }
     }
 
     auto extPlayer = extPlayerDb->getPlayer(p.getFirstName(), p.getLastName());
@@ -711,9 +722,15 @@ namespace QTournament
 
   ERR PlayerMngr::syncAllPlayersToExternalDatabase()
   {
+    // if no player database has been opened by this instance of the PlayerMngr,
+    // try to open the database
     if (extPlayerDb == nullptr)
     {
-      return EPD__NOT_OPENED;
+      ERR err = openConfiguredExternalPlayerDatabase();
+      if (err != OK)
+      {
+        return err;
+      }
     }
 
     for (const Player& p : getAllPlayers())
