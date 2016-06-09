@@ -31,6 +31,7 @@ class CatTabPlayerItemDelegate : public QStyledItemDelegate
 public:
   static constexpr int ITEM_HEIGHT = 20;
   static constexpr int ITEM_LEFT_MARGIN = 5;
+  static constexpr int NUMBER_TEXT_GAP = 3;
   CatTabPlayerItemDelegate(QObject* parent = nullptr, bool _showListIndex = true);
   void paint (QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index ) const;
   QSize sizeHint (const QStyleOptionViewItem& option, const QModelIndex& index ) const;
@@ -38,7 +39,7 @@ public:
 private:
   QFontMetrics fntMetrics;
   bool showListIndex;
-  QString getItemText(const QModelIndex& index) const;
+  int maxNumberColumnWidth;
 } ;
 
 #endif	/* CATTABPLAYERITEMDELEGATE_H */

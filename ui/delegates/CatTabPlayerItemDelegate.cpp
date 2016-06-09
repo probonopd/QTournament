@@ -30,14 +30,14 @@ using namespace QTournament;
 CatTabPlayerItemDelegate::CatTabPlayerItemDelegate(QObject* parent, bool _showListIndex)
 : QStyledItemDelegate(parent), fntMetrics(QFontMetrics(QFont())), showListIndex(_showListIndex)
 {
+  // determine the maximum width of the index number column
+  maxNumberColumnWidth = fntMetrics.width("88.");
 }
 
 //----------------------------------------------------------------------------
 
 void CatTabPlayerItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-  QString itemText = getItemText(index);
-
   painter->save();
   
   // Paint the background in the selection color if necessary
@@ -58,33 +58,23 @@ void CatTabPlayerItemDelegate::paint(QPainter* painter, const QStyleOptionViewIt
   // add the left margin
   r.adjust(ITEM_LEFT_MARGIN, 0, 0, 0);
 
+  // paint the row number
+  QRect numberRect = r;
+  numberRect.setWidth(maxNumberColumnWidth);
+  painter->drawText(numberRect, Qt::AlignVCenter|Qt::AlignRight, QString::number(index.row() + 1) + ".");
+
   // paint the text
-  painter->drawText(r, Qt::AlignVCenter|Qt::AlignLeft, itemText);
+  QRect textRect = r;
+  textRect.adjust(maxNumberColumnWidth + NUMBER_TEXT_GAP, 0, 0, 0);
+  painter->drawText(textRect, Qt::AlignVCenter|Qt::AlignLeft, index.data().toString());
   painter->restore();
-}
-
-//----------------------------------------------------------------------------
-
-QString CatTabPlayerItemDelegate::getItemText(const QModelIndex& index) const
-{
-  QString itemText = index.data().toString();
-
-  // Preceed the item with an index number?
-  if (showListIndex)
-  {
-    itemText = QString::number(index.row() + 1) + ". " + itemText;
-  }
-
-  return itemText;
 }
 
 //----------------------------------------------------------------------------
 
 QSize CatTabPlayerItemDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index ) const
 {
-  QString txt = getItemText(index);
-
-  int width = fntMetrics.width(txt);
+  int width = maxNumberColumnWidth + NUMBER_TEXT_GAP + fntMetrics.width(index.data().toString());
   width += ITEM_LEFT_MARGIN;
   
   return QSize(width, ITEM_HEIGHT);
