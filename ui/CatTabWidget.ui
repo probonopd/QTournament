@@ -260,6 +260,9 @@ for each round</string>
         <property name="selectionMode">
          <enum>QAbstractItemView::MultiSelection</enum>
         </property>
+        <property name="sortingEnabled">
+         <bool>true</bool>
+        </property>
        </widget>
       </item>
       <item>
@@ -349,6 +352,9 @@ for each round</string>
        <widget class="QListWidget" name="lwPaired">
         <property name="selectionMode">
          <enum>QAbstractItemView::MultiSelection</enum>
+        </property>
+        <property name="sortingEnabled">
+         <bool>true</bool>
         </property>
        </widget>
       </item>
@@ -582,7 +588,7 @@ for each round</string>
   <slot>onBtnRunCatClicked()</slot>
  </slots>
  <buttongroups>
-  <buttongroup name="rbgMatchType"/>
   <buttongroup name="rbgSex"/>
+  <buttongroup name="rbgMatchType"/>
  </buttongroups>
 </ui>

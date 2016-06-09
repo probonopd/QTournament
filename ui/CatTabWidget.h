@@ -24,6 +24,7 @@
 
 #include "ui_CatTabWidget.h"
 #include "TournamentDB.h"
+#include "ui/delegates/CatTabPlayerItemDelegate.h"
 
 class CatTabWidget : public QDialog
 {
@@ -60,6 +61,8 @@ private:
   void initContextMenu();
   upPlayer lwUnpaired_getSelectedPlayer() const;
   unique_ptr<PlayerPair> lwPaired_getSelectedPair() const;
+
+  unique_ptr<CatTabPlayerItemDelegate> playerItemDelegate;
 
 public slots:
   void onCatModelChanged();

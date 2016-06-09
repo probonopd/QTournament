@@ -129,7 +129,8 @@ HEADERS += \
     ui/commonCommands/cmdCallMatch.h \
     ui/delegates/TeamItemDelegate.h \
     models/TeamTableModel.h \
-    ui/TeamTableView.h
+    ui/TeamTableView.h \
+    ui/delegates/CatTabPlayerItemDelegate.h
 
 SOURCES += \
     Category.cpp \
@@ -234,7 +235,8 @@ SOURCES += \
     ui/commonCommands/cmdCallMatch.cpp \
     ui/delegates/TeamItemDelegate.cpp \
     models/TeamTableModel.cpp \
-    ui/TeamTableView.cpp
+    ui/TeamTableView.cpp \
+    ui/delegates/CatTabPlayerItemDelegate.cpp
 
 RESOURCES += \
     tournament.qrc

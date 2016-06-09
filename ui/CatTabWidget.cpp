@@ -85,6 +85,11 @@ CatTabWidget::CatTabWidget()
   connect(ui.lwUnpaired, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(onUnpairedContextMenuRequested(QPoint)));
   ui.lwPaired->setContextMenuPolicy(Qt::CustomContextMenu);
   connect(ui.lwPaired, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(onPairedContextMenuRequested(QPoint)));
+
+  // create a delegate for painting indexed, sorted player names
+  playerItemDelegate = make_unique<CatTabPlayerItemDelegate>(this, true);
+  ui.lwUnpaired->setItemDelegate(playerItemDelegate.get());
+  ui.lwPaired->setItemDelegate(playerItemDelegate.get());
 }
 
 //----------------------------------------------------------------------------
@@ -338,25 +343,19 @@ void CatTabWidget::updatePairs()
   Category selCat = ui.catTableView->getSelectedCategory();
   PlayerPairList pairList = selCat.getPlayerPairs();
   
-  int nextPairedItemCount = 1;
-  int nextUnPairedItemCount = 1;
   for (int i=0; i < pairList.size(); i++)
   {
     PlayerPair pp = pairList.at(i);
     
     if (pp.hasPlayer2())
     {
-      QString itemLabel = QString("%1. %2").arg(nextPairedItemCount).arg(pp.getDisplayName(0, true));
-      QListWidgetItem* item = new QListWidgetItem(itemLabel);
+      QListWidgetItem* item = new QListWidgetItem(pp.getDisplayName(0, true));
       item->setData(Qt::UserRole, pp.getPairId());
       ui.lwPaired->addItem(item);
-      ++nextPairedItemCount;
     } else {
-      QString itemLabel = QString("%1. %2").arg(nextUnPairedItemCount).arg(pp.getDisplayName(0, true));
-      QListWidgetItem* item = new QListWidgetItem(itemLabel);
+      QListWidgetItem* item = new QListWidgetItem(pp.getDisplayName(0, true));
       item->setData(Qt::UserRole, pp.getPlayer1().getId());
       ui.lwUnpaired->addItem(item);
-      ++nextUnPairedItemCount;
     }
   }
   
