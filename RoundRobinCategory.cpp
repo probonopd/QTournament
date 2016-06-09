@@ -61,8 +61,14 @@ namespace QTournament
       return UNPAIRED_PLAYERS;
     }
     
-    // make sure we have a valid group configuration
+    // make sure we have at least three players
     PlayerPairList pp = getPlayerPairs();
+    if (pp.size() < 3)
+    {
+      return INVALID_PLAYER_COUNT;
+    }
+
+    // make sure we have a valid group configuration
     KO_Config cfg = KO_Config(getParameter_string(GROUP_CONFIG));
     if (!(cfg.isValid(pp.size())))
     {

@@ -348,6 +348,15 @@ void CategoryTableView::onRunCategory()
 
   unique_ptr<Category> selectedCat = getSelectedCategory().convertToSpecializedObject();
 
+  // make sure that the category contains at least three players
+  int playerCount = selectedCat->getAllPlayersInCategory().size();
+  if (playerCount < 3)
+  {
+    QMessageBox::critical(this, tr("Run Category"),
+      tr("You need to have at least three players in a category!"));
+    return;
+  }
+
   // branch here to another function if the action was triggered to
   // continue a category that's waiting in state STAT_CAT_WAIT_FOR_INTERMEDIATE_SEEDING
   if (selectedCat->getState() == STAT_CAT_WAIT_FOR_INTERMEDIATE_SEEDING)
@@ -367,6 +376,11 @@ void CategoryTableView::onRunCategory()
   {
     QMessageBox::critical(this, tr("Run Category"),
       tr("This category has unpaired players!\nPlease pair all players before starting the matches."));
+  }
+  else if (e == INVALID_PLAYER_COUNT)
+  {
+    QMessageBox::critical(this, tr("Run Category"),
+      tr("The number of players / player pairs in this category is not sufficient\nto start the category."));
   }
   else if (e == INVALID_KO_CONFIG)
   {

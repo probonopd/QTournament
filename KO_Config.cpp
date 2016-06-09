@@ -75,7 +75,7 @@ namespace QTournament {
     }
     
     // if provided by the caller, also check the number of players
-    if (opponentCount > 0)
+    if (opponentCount >= 0)
     {
       return (opponentCount == grpDefs.getTotalPlayerCount());
     }
