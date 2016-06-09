@@ -36,7 +36,7 @@ DlgSelectPlayer::DlgSelectPlayer(TournamentDB* _db, QWidget *parent, DLG_CONTEXT
   // our context is NONE
   if ((ctxt != DLG_CONTEXT::NONE) && (cat == nullptr))
   {
-    throw std::invalid_argument("Receied empty category reference for player selection dialog!");
+    throw std::invalid_argument("Received empty category reference for player selection dialog!");
   }
 
   PlayerMngr pm{db};
@@ -86,6 +86,9 @@ DlgSelectPlayer::DlgSelectPlayer(TournamentDB* _db, QWidget *parent, DLG_CONTEXT
   ui->lwPlayers->clearSelection();
   ui->btnCancel->setEnabled(true);
   ui->btnOkay->setEnabled(false);
+
+  // react to item double clicks
+  //connect(ui->lwPlayers, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(onItemDoubleClicked(QListWidgetItem*)));
 }
 
 //----------------------------------------------------------------------------
@@ -135,6 +138,15 @@ void DlgSelectPlayer::onItemSelectionChanged()
   bool hasItemsSelected = (selItems.length() > 0);
 
   ui->btnOkay->setEnabled(hasItemsSelected);
+}
+
+//----------------------------------------------------------------------------
+
+void DlgSelectPlayer::onItemDoubleClicked(QListWidgetItem* item)
+{
+  if (item == nullptr) return;
+
+  accept();
 }
 
 //----------------------------------------------------------------------------

@@ -102,8 +102,25 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>lwPlayers</sender>
+   <signal>itemDoubleClicked(QListWidgetItem*)</signal>
+   <receiver>DlgSelectPlayer</receiver>
+   <slot>onItemDoubleClicked(QListWidgetItem*)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>199</x>
+     <y>144</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>199</x>
+     <y>149</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>onItemSelectionChanged()</slot>
+  <slot>onItemDoubleClicked(QListWidgetItem*)</slot>
  </slots>
 </ui>

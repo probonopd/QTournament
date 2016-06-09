@@ -20,6 +20,7 @@
 #define DLGSELECTPLAYER_H
 
 #include <QDialog>
+#include <QListWidgetItem>
 
 #include "TournamentDB.h"
 #include "Player.h"
@@ -58,6 +59,7 @@ private:
 
 private slots:
   void onItemSelectionChanged();
+  void onItemDoubleClicked(QListWidgetItem* item);
 };
 
 #endif // DLGSELECTPLAYER_H
