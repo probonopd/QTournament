@@ -19,7 +19,16 @@
      <item>
       <widget class="QLabel" name="label">
        <property name="text">
-        <string>Enter comma-separated player names, one per line:</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enter comma-separated player names below, one per line. The format is:&lt;/p&gt;&lt;p&gt;Last name, given name, m/f, (team name)&lt;/p&gt;&lt;p&gt;&amp;quot;m&amp;quot; or &amp;quot;f&amp;quot; denotes &amp;quot;male&amp;quot; or &amp;quot;female&amp;quot;. The team name is optional and only necessary when importing the players directly to the tournament. If the players are imported to the tournament and no team name is provided, the default team selected below will be used. Non-existing teams will be newly created.&lt;/p&gt;&lt;p&gt;All input is case-sensitive (e.g., &amp;quot;Team 1&amp;quot; is different from &amp;quot;team 1&amp;quot; and is different from &amp;quot;Team1&amp;quot;).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="textFormat">
+        <enum>Qt::RichText</enum>
+       </property>
+       <property name="scaledContents">
+        <bool>false</bool>
+       </property>
+       <property name="wordWrap">
+        <bool>true</bool>
        </property>
       </widget>
      </item>

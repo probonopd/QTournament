@@ -89,7 +89,7 @@ void DlgBulkImportToExtDb::initDropBoxes()
   std::sort(teamList.begin(), teamList.end(), [](Team& t1, Team& t2) {
     return t1.getName() < t2.getName();
   });
-  ui->cbTeam->addItem(tr("<Select team>"), -1);
+  ui->cbTeam->addItem(tr("<Select default team>"), -1);
   for (const Team& team : teamList)
   {
     ui->cbTeam->addItem(team.getName(), team.getId());

@@ -1009,34 +1009,39 @@ Die internen Daten zu dieser Disziplin sind vermutlich defekt.</translation>
         <translation>CSV-Daten in die Spielerdatenbank importieren</translation>
     </message>
     <message>
-        <location filename="ui/DlgBulkImportToExtDb.ui" line="22"/>
         <source>Enter comma-separated player names, one per line:</source>
-        <translation>Komma-getrennte Spielernamen enigeben, einen pro Zeile:</translation>
+        <translation type="vanished">Komma-getrennte Spielernamen enigeben, einen pro Zeile:</translation>
     </message>
     <message>
-        <location filename="ui/DlgBulkImportToExtDb.ui" line="34"/>
+        <location filename="ui/DlgBulkImportToExtDb.ui" line="22"/>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enter comma-separated player names below, one per line. The format is:&lt;/p&gt;&lt;p&gt;Last name, given name, m/f, (team name)&lt;/p&gt;&lt;p&gt;&amp;quot;m&amp;quot; or &amp;quot;f&amp;quot; denotes &amp;quot;male&amp;quot; or &amp;quot;female&amp;quot;. The team name is optional and only necessary when importing the players directly to the tournament. If the players are imported to the tournament and no team name is provided, the default team selected below will be used. Non-existing teams will be newly created.&lt;/p&gt;&lt;p&gt;All input is case-sensitive (e.g., &amp;quot;Team 1&amp;quot; is different from &amp;quot;team 1&amp;quot; and is different from &amp;quot;Team1&amp;quot;).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Bitte komma-getrennte Spielerdaten im Textfeld unten eingeben, ein Spieler pro Zeile. Das Format ist:&lt;/p&gt;&lt;p&gt;Nachname, Vorname, m/f, (Teamname)&lt;/p&gt;&lt;p&gt;&amp;quot;m&amp;quot; oder &amp;quot;f&amp;quot; kennzeichnen das Geschlecht (weiblich = &amp;quot;f&amp;quot;, nicht &amp;quot;w&amp;quot;!!). Der Teamname ist optional und nur erforderlich, wenn die Spieler zugleich dem Turnier hinzugefügt werden sollen. Wenn die Spieler dem Turnier hinzugefügt werden sollen und es ist kein Teamname angegeben, wird das unten auszuwählende Standardteam verwendet. Nicht existierende Teams werden automatisch neu angelegt.&lt;/p&gt;&lt;p&gt;Bei allen Eingaben ist die Groß-/Kleinschreibung relevant (z. B. ist &amp;quot;Team 1&amp;quot; etwas anderes als &amp;quot;team 1&amp;quot; oder als &amp;quot;Team1&amp;quot;).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgBulkImportToExtDb.ui" line="43"/>
         <source>also add all valid players to the tournament</source>
         <translation>Spieler auch dem Turnier hinzufügen</translation>
     </message>
     <message>
-        <location filename="ui/DlgBulkImportToExtDb.ui" line="55"/>
+        <location filename="ui/DlgBulkImportToExtDb.ui" line="64"/>
         <source>also add all valid player to this category:</source>
         <translation>Spieler auch dieser Disziplin hinzufügen:</translation>
     </message>
     <message>
-        <location filename="ui/DlgBulkImportToExtDb.ui" line="73"/>
+        <location filename="ui/DlgBulkImportToExtDb.ui" line="82"/>
         <source>Cancel</source>
         <translation>Abbrechen</translation>
     </message>
     <message>
-        <location filename="ui/DlgBulkImportToExtDb.ui" line="80"/>
+        <location filename="ui/DlgBulkImportToExtDb.ui" line="89"/>
         <source>Import</source>
         <translation>Importieren</translation>
     </message>
     <message>
         <location filename="ui/DlgBulkImportToExtDb.cpp" line="92"/>
-        <source>&lt;Select team&gt;</source>
-        <translation>&lt;Team auswählen&gt;</translation>
+        <source>&lt;Select default team&gt;</source>
+        <oldsource>&lt;Select team&gt;</oldsource>
+        <translation>&lt;Standardteam auswählen&gt;</translation>
     </message>
     <message>
         <location filename="ui/DlgBulkImportToExtDb.cpp" line="106"/>
