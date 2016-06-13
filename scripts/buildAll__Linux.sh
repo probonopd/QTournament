@@ -83,6 +83,7 @@ cp ../SqliteOverlay/release/libSqliteOverlay.so.0.2.0 libSqliteOverlay.so.0
 cp ../Qt/SimpleReportGeneratorLib/release/libSimpleReportGenerator.so.0.3.0 libSimpleReportGenerator.so.0
 cp ../Qt/QTournament/QTournament QTournament_bin
 cp ../Qt/QTournament/tournament_de.qm .
+cp ../Qt/QTournament/LICENSE.TXT .
 echo '#!/bin/bash' > QTournament
 echo 'LD_LIBRARY_PATH=. ./QTournament_bin' >> QTournament
 chmod u+x QTournament

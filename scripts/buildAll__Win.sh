@@ -117,6 +117,9 @@ cp $MINGW64_BIN/../share/qt5/plugins/printsupport/windowsprintersupport.dll prin
 cp ../Qt/qmake/QTournament/tournament_*qm .
 cp $MINGW64_BIN/../share/qt5/translations/*_de.qm .
 
+# License file
+cp ../Qt/qmake/QTournament/LICENSE.TXT .
+
 # zip everything
 zip -r QTournament-Win-$QTOURNAMENT_VERSION.zip *
 
