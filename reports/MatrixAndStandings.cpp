@@ -54,7 +54,7 @@ MartixAndStandings::MartixAndStandings(TournamentDB* _db, const QString& _name, 
   {
     KO_Config cfg = KO_Config(cat.getParameter_string(GROUP_CONFIG));
     int numGroupRounds = cfg.getNumRounds();
-    if (crs.getFinishedRoundsCount() > numGroupRounds)
+    if (round > numGroupRounds)
     {
       throw std::runtime_error("Requested matrix and standings report for elimination phase of category.");
     }
