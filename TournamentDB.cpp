@@ -154,6 +154,8 @@ namespace QTournament
     tc.addInt(CAT_DRAW_SCORE);
     tc.addVarchar(CAT_GROUP_CONFIG, 50);
     tc.addVarchar(CAT_BRACKET_VIS_DATA, 50);
+    tc.addInt(CAT_ROUND_ROBIN_ITERATIONS, false, SqliteOverlay::CONFLICT_CLAUSE::__NOT_SET,
+              true, SqliteOverlay::CONFLICT_CLAUSE::FAIL, true, "1");
     tc.createTableAndResetCreator(TAB_CATEGORY);
     
     // Generate the table holding the player-to-category mapping
@@ -439,6 +441,24 @@ namespace QTournament
       cfg->set(CFG_KEY_REFEREE_TEAM_ID, -1);
 
       minor = 2;
+    }
+
+    // convert from 2.2 to 2.3
+    if (minor == 2)
+    {
+      // add the category column with the number of round robin iterations
+      QString sql_base = "ALTER TABLE %1 ADD COLUMN %2";
+      sql_base = sql_base.arg(TAB_CATEGORY);
+
+      QString colDef = "%1 INTEGER DEFAULT 1 NOT NULL";
+      colDef = colDef.arg(CAT_ROUND_ROBIN_ITERATIONS);
+      QString sql = sql_base.arg(colDef);
+
+      int dbErr;
+      bool isOkay = execNonQuery(sql.toUtf8().constData(), &dbErr);
+      if (!isOkay) return false;
+
+      minor = 3;
     }
 
     // store the new database version

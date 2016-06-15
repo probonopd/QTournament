@@ -24,7 +24,7 @@
 namespace QTournament
 {
 #define DB_VERSION_MAJOR 2
-#define DB_VERSION_MINOR 2
+#define DB_VERSION_MINOR 3
 #define MIN_REQUIRED_DB_VERSION 2
 
 //----------------------------------------------------------------------------
@@ -120,7 +120,7 @@ namespace QTournament
 #define CAT_DRAW_SCORE "DrawScore"
 #define CAT_GROUP_CONFIG "GroupConfig"
 #define CAT_BRACKET_VIS_DATA "BracketVisData"
-//#define CAT_ ""
+#define CAT_ROUND_ROBIN_ITERATIONS "RoundRobinIterations"
 //#define CAT_ ""
 //#define CAT_ ""
 //#define CAT_ ""
@@ -288,7 +288,8 @@ namespace QTournament
     ALLOW_DRAW,
     WIN_SCORE,
     DRAW_SCORE,
-    GROUP_CONFIG
+    GROUP_CONFIG,
+    ROUND_ROBIN_ITERATIONS
     
   };
   

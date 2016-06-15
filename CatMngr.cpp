@@ -688,6 +688,16 @@ namespace QTournament
       c.row.update(CAT_GROUP_CONFIG, v.toString().toUtf8().constData());
       return true;
     }
+    if (p == ROUND_ROBIN_ITERATIONS)
+    {
+      bool isOk;
+      int iterations = v.toInt(&isOk);
+      if (!isOk) return false;
+
+      if (iterations <= 0) return false;
+      c.row.update(CAT_ROUND_ROBIN_ITERATIONS, iterations);
+      return true;
+    }
     
     return false;
   }
