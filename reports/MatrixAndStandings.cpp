@@ -89,19 +89,44 @@ upSimpleReport MartixAndStandings::regenerateReport()
   if (round > 0) rll = rm.getSortedRanking(cat, round);
   if (round < 0) rll = rm.getSortedRanking(cat, -round - 1);   // see below for the bad hack about negative round numbers
 
+  // if we are in round robins with multiple iterations,
+  // create a subhead indicating the current iteration number
+  QString subHead;
+  MATCH_SYSTEM msys = cat.getMatchSystem();
+  int curIteration = -1;
+  if (msys == ROUND_ROBIN)
+  {
+    unique_ptr<PureRoundRobinCategory> rrCat = PureRoundRobinCategory::getFromGenericCat(cat);
+    if (rrCat->getIterationCount() > 1)
+    {
+      int rpi = rrCat->getRoundCountPerIteration();
+      curIteration = (abs(round) - 1) / rpi;  // will be >= 0 even if round==0
+      ++curIteration;
+      subHead = tr("%1. Iteration");
+      subHead = subHead.arg(curIteration);
+    }
+  }
+
+  // determine the report name / headline
   QString repName = cat.getName() + " -- ";
   if (round <= 0)
   {
     repName += tr("Initial matches");
+    if (curIteration > 0)
+    {
+      repName += tr(", %1. Iteration");
+      repName = repName.arg(curIteration);
+      subHead.clear();
+    }
   } else {
     repName += tr("Match matrix and standings after round ") + QString::number(round);
   }
+
   upSimpleReport result = createEmptyReport_Portrait();
-  setHeaderAndHeadline(result.get(), repName);
+  setHeaderAndHeadline(result.get(), repName, subHead);
   result->skip((round <= 0) ? 15 : 5);
 
   // determine the number of match groups
-  MATCH_SYSTEM msys = cat.getMatchSystem();
   int nGroups = 1;  // round robin
   if (msys == GROUPS_WITH_KO)
   {
