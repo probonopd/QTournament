@@ -42,7 +42,10 @@ namespace QTournament
     virtual std::function<bool(RankingEntry& a, RankingEntry& b)> getLessThanFunction() override;
     virtual ERR onRoundCompleted(int round) override;
     virtual PlayerPairList getRemainingPlayersAfterRound(int round, ERR *err) const override;
-    
+    int getRoundCountPerIteration() const;
+    int getIterationCount() const;
+    static unique_ptr<PureRoundRobinCategory> getFromGenericCat(const Category& cat);
+
   private:
     PureRoundRobinCategory (TournamentDB* db, int rowId);
     PureRoundRobinCategory (TournamentDB* db, SqliteOverlay::TabRow row);

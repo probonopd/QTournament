@@ -44,6 +44,38 @@ namespace QTournament
   {
   }
 
+  //----------------------------------------------------------------------------
+
+  int PureRoundRobinCategory::getRoundCountPerIteration() const
+  {
+    OBJ_STATE stat = getState();
+    if ((stat == STAT_CAT_CONFIG) || (stat == STAT_CAT_FROZEN))
+    {
+      return -1;   // category not yet fully configured; can't calc rounds
+    }
+
+    PlayerPairList allPairs = getPlayerPairs();
+    int nPairs = allPairs.size();
+
+    return ((nPairs % 2) == 0) ? (nPairs-1) : nPairs;
+  }
+
+  //----------------------------------------------------------------------------
+
+  int PureRoundRobinCategory::getIterationCount() const
+  {
+    return getParameter_int(ROUND_ROBIN_ITERATIONS);  // simple wrapper function
+  }
+
+  //----------------------------------------------------------------------------
+
+  unique_ptr<PureRoundRobinCategory> PureRoundRobinCategory::getFromGenericCat(const Category& cat)
+  {
+    MATCH_SYSTEM msys = cat.getMatchSystem();
+
+    return (msys == ROUND_ROBIN) ? unique_ptr<PureRoundRobinCategory>(new PureRoundRobinCategory(cat.db, cat.row)) : nullptr;
+  }
+
 //----------------------------------------------------------------------------
 
   ERR PureRoundRobinCategory::canFreezeConfig()
@@ -108,24 +140,27 @@ namespace QTournament
       int nMatches = (nPlayers / 2) * calcTotalRoundsCount();
       progressNotificationQueue->reset(nMatches);
     }
-    ERR e = generateGroupMatches(allPairs, GROUP_NUM__ITERATION, 1, progressNotificationQueue);
-    return e;
+    int iterationCount = getIterationCount();
+    int roundsPerIteration = getRoundCountPerIteration();
+    ERR e;
+    for (int i=0; i < iterationCount; ++i)
+    {
+      int firstRoundNum = (i * roundsPerIteration) + 1;
+      e = generateGroupMatches(allPairs, GROUP_NUM__ITERATION, firstRoundNum, progressNotificationQueue);
+      if (e != OK) return e;
+    }
+    return OK;
   }
 
 //----------------------------------------------------------------------------
 
   int PureRoundRobinCategory::calcTotalRoundsCount() const
   {
-    OBJ_STATE stat = getState();
-    if ((stat == STAT_CAT_CONFIG) || (stat == STAT_CAT_FROZEN))
-    {
-      return -1;   // category not yet fully configured; can't calc rounds
-    }
+    int roundsPerIteration = getRoundCountPerIteration();
+    if (roundsPerIteration < 1) return -1;  // category not yet configured
 
-    PlayerPairList allPairs = getPlayerPairs();
-    int nPairs = allPairs.size();
-
-    return ((nPairs % 2) == 0) ? (nPairs-1) : nPairs;
+    // done
+    return getIterationCount() * roundsPerIteration;
   }
 
 //----------------------------------------------------------------------------

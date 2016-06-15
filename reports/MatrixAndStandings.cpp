@@ -31,6 +31,7 @@
 #include "reports/commonReportElements/plotStandings.h"
 #include "reports/commonReportElements/MatchMatrix.h"
 #include "MatchMngr.h"
+#include "PureRoundRobinCategory.h"
 
 namespace QTournament
 {
@@ -60,7 +61,7 @@ MartixAndStandings::MartixAndStandings(TournamentDB* _db, const QString& _name, 
     }
   }
 
-  if (round == 0)
+  if (round <= 0)
   {
     return;   // matrix for initial matches
   }
@@ -86,20 +87,46 @@ upSimpleReport MartixAndStandings::regenerateReport()
   RankingMngr rm{db};
   RankingEntryListList rll;
   if (round > 0) rll = rm.getSortedRanking(cat, round);
+  if (round < 0) rll = rm.getSortedRanking(cat, -round - 1);   // see below for the bad hack about negative round numbers
 
+  // if we are in round robins with multiple iterations,
+  // create a subhead indicating the current iteration number
+  QString subHead;
+  MATCH_SYSTEM msys = cat.getMatchSystem();
+  int curIteration = -1;
+  if (msys == ROUND_ROBIN)
+  {
+    unique_ptr<PureRoundRobinCategory> rrCat = PureRoundRobinCategory::getFromGenericCat(cat);
+    if (rrCat->getIterationCount() > 1)
+    {
+      int rpi = rrCat->getRoundCountPerIteration();
+      curIteration = (abs(round) - 1) / rpi;  // will be >= 0 even if round==0
+      ++curIteration;
+      subHead = tr("%1. Iteration");
+      subHead = subHead.arg(curIteration);
+    }
+  }
+
+  // determine the report name / headline
   QString repName = cat.getName() + " -- ";
-  if (round == 0)
+  if (round <= 0)
   {
     repName += tr("Initial matches");
+    if (curIteration > 0)
+    {
+      repName += tr(", %1. Iteration");
+      repName = repName.arg(curIteration);
+      subHead.clear();
+    }
   } else {
     repName += tr("Match matrix and standings after round ") + QString::number(round);
   }
+
   upSimpleReport result = createEmptyReport_Portrait();
-  setHeaderAndHeadline(result.get(), repName);
-  result->skip((round == 0) ? 15 : 5);
+  setHeaderAndHeadline(result.get(), repName, subHead);
+  result->skip((round <= 0) ? 15 : 5);
 
   // determine the number of match groups
-  MATCH_SYSTEM msys = cat.getMatchSystem();
   int nGroups = 1;  // round robin
   if (msys == GROUPS_WITH_KO)
   {
@@ -123,8 +150,8 @@ upSimpleReport MartixAndStandings::regenerateReport()
     auto plotRect = matrix.plot();
     result->skip(plotRect.size().height() + 3.0);
 
-    // plot the standing, if available
-    if (round > 0)
+    // plot the standings, if available
+    if (round != 0)
     {
       if (rll.empty() || ((rll.size() == 1) && (rll.at(0).size() == 0)))
       {
@@ -149,7 +176,7 @@ upSimpleReport MartixAndStandings::regenerateReport()
     // start a new page after every second matrix
     if ((cnt % 2) == 0)
     {
-      result->skip((round == 0) ? 30 : 10);
+      result->skip((round <= 0) ? 30 : 10);
     } else if (cnt < (nGroups - 1)){
       result->startNextPage();
       result->skip(10);
@@ -172,6 +199,26 @@ QStringList MartixAndStandings::getReportLocators() const
 
   QString loc = tr("Matrix and Standings::");
   loc += cat.getName() + "::";
+
+  // insert the number of the iteration, if applicable
+  MATCH_SYSTEM msys = cat.getMatchSystem();
+  if (msys == ROUND_ROBIN)
+  {
+    unique_ptr<PureRoundRobinCategory> rrCat = PureRoundRobinCategory::getFromGenericCat(cat);
+    if (rrCat != nullptr)   // should always be true
+    {
+      // if we play more than one iteration, add another
+      // location "sub-tree" for the iteration number
+      if (rrCat->getIterationCount() > 1)
+      {
+        int rpi = rrCat->getRoundCountPerIteration();
+        int curIteration = (abs(round) - 1) / rpi;  // will be >= 0 even if round==0
+        loc += tr("%1. Iteration::");
+        loc = loc.arg(curIteration + 1);
+      }
+    }
+  }
+
   if (round > 0)
   {
     loc += tr("after round ") + QString::number(round);

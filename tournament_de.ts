@@ -89,44 +89,49 @@
         <translation>Einstellungen f. Gruppenspiele</translation>
     </message>
     <message>
-        <location filename="ui/CatTabWidget.ui" line="223"/>
+        <location filename="ui/CatTabWidget.ui" line="229"/>
+        <source>Play two iterations</source>
+        <translation>zwei Durchgänge</translation>
+    </message>
+    <message>
+        <location filename="ui/CatTabWidget.ui" line="239"/>
         <source>Settings for Random Matches</source>
         <oldsource>Settings for Swiss Ladder</oldsource>
         <translation>Einstellungen f. Zufallsspiele</translation>
     </message>
     <message>
-        <location filename="ui/CatTabWidget.ui" line="229"/>
+        <location filename="ui/CatTabWidget.ui" line="245"/>
         <source>New, random partners
 for each round</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="ui/CatTabWidget.ui" line="243"/>
+        <location filename="ui/CatTabWidget.ui" line="259"/>
         <source>Players / Pairs</source>
         <translation>Spieler und Paarungen</translation>
     </message>
     <message>
-        <location filename="ui/CatTabWidget.ui" line="274"/>
+        <location filename="ui/CatTabWidget.ui" line="290"/>
         <source>Pair ---&gt;</source>
         <translation>Paarung ---&gt;</translation>
     </message>
     <message>
-        <location filename="ui/CatTabWidget.ui" line="281"/>
+        <location filename="ui/CatTabWidget.ui" line="297"/>
         <source>&lt;--- Split</source>
         <translation>&lt;--- Auflösen</translation>
     </message>
     <message>
-        <location filename="ui/CatTabWidget.ui" line="324"/>
+        <location filename="ui/CatTabWidget.ui" line="340"/>
         <source>Random ---&gt;</source>
         <translation>Zufällige Paarungen</translation>
     </message>
     <message>
-        <location filename="ui/CatTabWidget.ui" line="334"/>
+        <location filename="ui/CatTabWidget.ui" line="350"/>
         <source>&lt;--- Randomize All ---&gt;</source>
         <translation>&lt;--- Alle Verwürfeln ---&gt;</translation>
     </message>
     <message>
-        <location filename="ui/CatTabWidget.ui" line="344"/>
+        <location filename="ui/CatTabWidget.ui" line="360"/>
         <source>Avoid same team pairs</source>
         <translation>Gleiche Teams vermeiden</translation>
     </message>
@@ -156,122 +161,122 @@ for each round</source>
         <translation>Jeder gegen jeden</translation>
     </message>
     <message>
-        <location filename="ui/CatTabWidget.cpp" line="380"/>
+        <location filename="ui/CatTabWidget.cpp" line="396"/>
         <source>Remove this player from category</source>
         <translation>Den Spieler aus dieser Disziplin entfernen</translation>
     </message>
     <message>
-        <location filename="ui/CatTabWidget.cpp" line="381"/>
+        <location filename="ui/CatTabWidget.cpp" line="397"/>
         <source>Register</source>
         <translation>Anmelden</translation>
     </message>
     <message>
-        <location filename="ui/CatTabWidget.cpp" line="382"/>
+        <location filename="ui/CatTabWidget.cpp" line="398"/>
         <source>Undo registration</source>
         <translation>Anmeldung zurücksetzen</translation>
     </message>
     <message>
-        <location filename="ui/CatTabWidget.cpp" line="383"/>
+        <location filename="ui/CatTabWidget.cpp" line="399"/>
         <source>Add player(s)...</source>
         <translation>Spieler hinzufügen...</translation>
     </message>
     <message>
-        <location filename="ui/CatTabWidget.cpp" line="384"/>
+        <location filename="ui/CatTabWidget.cpp" line="400"/>
         <source>Remove player(s)...</source>
         <translation>Spieler entfernen...</translation>
     </message>
     <message>
-        <location filename="ui/CatTabWidget.cpp" line="385"/>
+        <location filename="ui/CatTabWidget.cpp" line="401"/>
         <source>Create new player in this category...</source>
         <translation>Einen neuen Spieler für diese Disziplin anlegen...</translation>
     </message>
     <message>
-        <location filename="ui/CatTabWidget.cpp" line="386"/>
+        <location filename="ui/CatTabWidget.cpp" line="402"/>
         <source>Import player to this category...</source>
         <translation>Spieler in diese Disziplin importieren...</translation>
     </message>
     <message>
-        <location filename="ui/CatTabWidget.cpp" line="391"/>
+        <location filename="ui/CatTabWidget.cpp" line="407"/>
         <source>Copy player to</source>
         <translation>Spieler kopieren nach</translation>
     </message>
     <message>
-        <location filename="ui/CatTabWidget.cpp" line="393"/>
+        <location filename="ui/CatTabWidget.cpp" line="409"/>
         <source>Move player to</source>
         <translation>Spieler verschieben nach</translation>
     </message>
     <message>
-        <location filename="ui/CatTabWidget.cpp" line="421"/>
+        <location filename="ui/CatTabWidget.cpp" line="437"/>
         <source>Split</source>
         <translation>Paarung auflösen</translation>
     </message>
     <message>
-        <location filename="ui/CatTabWidget.cpp" line="426"/>
+        <location filename="ui/CatTabWidget.cpp" line="442"/>
         <source>Copy pair to</source>
         <translation>Paarung kopieren nach</translation>
     </message>
     <message>
-        <location filename="ui/CatTabWidget.cpp" line="428"/>
+        <location filename="ui/CatTabWidget.cpp" line="444"/>
         <source>Move pair to</source>
         <translation>Paarung verschieben nach</translation>
     </message>
     <message>
-        <location filename="ui/CatTabWidget.cpp" line="576"/>
+        <location filename="ui/CatTabWidget.cpp" line="592"/>
         <source>Need exactly two selected players for pairing!</source>
         <translation>Es müssen genau zwei Spieler ausgewählt werden!</translation>
     </message>
     <message>
-        <location filename="ui/CatTabWidget.cpp" line="576"/>
-        <location filename="ui/CatTabWidget.cpp" line="589"/>
-        <location filename="ui/CatTabWidget.cpp" line="598"/>
+        <location filename="ui/CatTabWidget.cpp" line="592"/>
+        <location filename="ui/CatTabWidget.cpp" line="605"/>
+        <location filename="ui/CatTabWidget.cpp" line="614"/>
         <source>Pairing impossible</source>
         <translation>Paarung kann nicht angelegt werden</translation>
     </message>
     <message>
-        <location filename="ui/CatTabWidget.cpp" line="589"/>
+        <location filename="ui/CatTabWidget.cpp" line="605"/>
         <source>These two players can&apos;t be paired for this category!</source>
         <translation>Diese beiden Spieler können in dieser Disziplin keine Doppelpaarung bilden!</translation>
     </message>
     <message>
-        <location filename="ui/CatTabWidget.cpp" line="598"/>
+        <location filename="ui/CatTabWidget.cpp" line="614"/>
         <source>Something went wrong during pairing. This shouldn&apos;t happen. For the records: Error code = </source>
         <translation>Beim Bilden der Paarung ist etwas schiefgelaufen. Das sollte nicht passieren. Fürs Protokoll: Fehlercode = </translation>
     </message>
     <message>
-        <location filename="ui/CatTabWidget.cpp" line="627"/>
+        <location filename="ui/CatTabWidget.cpp" line="643"/>
         <source>Something went wrong during splitting. This shouldn&apos;t happen. For the records: Error code = </source>
         <translation>Beim Auflösen der Doppelpaarung ist etwas schiefgelaufen. Das sollte nicht passieren. Fürs Protokoll: Fehlercode = </translation>
     </message>
     <message>
-        <location filename="ui/CatTabWidget.cpp" line="627"/>
+        <location filename="ui/CatTabWidget.cpp" line="643"/>
         <source>Splitting impossible</source>
         <translation>Paarung kann nicht aufgelöst werden</translation>
     </message>
     <message>
-        <location filename="ui/CatTabWidget.cpp" line="656"/>
-        <location filename="ui/CatTabWidget.cpp" line="682"/>
-        <location filename="ui/CatTabWidget.cpp" line="734"/>
+        <location filename="ui/CatTabWidget.cpp" line="672"/>
+        <location filename="ui/CatTabWidget.cpp" line="698"/>
+        <location filename="ui/CatTabWidget.cpp" line="750"/>
         <source>Error</source>
         <translation>Fehler</translation>
     </message>
     <message>
-        <location filename="ui/CatTabWidget.cpp" line="656"/>
+        <location filename="ui/CatTabWidget.cpp" line="672"/>
         <source>Could change match type. Error number = </source>
         <translation>Konnte den Spieltyp nicht ändern. Fehlercode = </translation>
     </message>
     <message>
-        <location filename="ui/CatTabWidget.cpp" line="682"/>
-        <location filename="ui/CatTabWidget.cpp" line="734"/>
+        <location filename="ui/CatTabWidget.cpp" line="698"/>
+        <location filename="ui/CatTabWidget.cpp" line="750"/>
         <source>Could change sex. Error number = </source>
         <translation>Konnte das Geschlecht nicht ändern. Fehlercode = </translation>
     </message>
     <message>
-        <location filename="ui/CatTabWidget.cpp" line="703"/>
+        <location filename="ui/CatTabWidget.cpp" line="719"/>
         <source>Please deactivate &apos;Don&apos;t care&apos; by selecting a specific sex!</source>
         <translation>Bitte &quot;Egal&quot; durch die Auswahl von &quot;Herren&quot; oder &quot;Damen&quot; deaktivieren!</translation>
     </message>
     <message>
-        <location filename="ui/CatTabWidget.cpp" line="704"/>
+        <location filename="ui/CatTabWidget.cpp" line="720"/>
         <source>Change category sex</source>
         <translation>Disziplin ändern</translation>
     </message>
@@ -3243,37 +3248,52 @@ insgesamt</translation>
 <context>
     <name>QTournament::MartixAndStandings</name>
     <message>
-        <location filename="reports/MatrixAndStandings.cpp" line="93"/>
+        <location filename="reports/MatrixAndStandings.cpp" line="105"/>
+        <source>%1. Iteration</source>
+        <translation>%1. Durchgang</translation>
+    </message>
+    <message>
+        <location filename="reports/MatrixAndStandings.cpp" line="114"/>
         <source>Initial matches</source>
         <translation>Erste Spiele</translation>
     </message>
     <message>
-        <location filename="reports/MatrixAndStandings.cpp" line="95"/>
+        <location filename="reports/MatrixAndStandings.cpp" line="117"/>
+        <source>, %1. Iteration</source>
+        <translation>, %1. Durchgang</translation>
+    </message>
+    <message>
+        <location filename="reports/MatrixAndStandings.cpp" line="122"/>
         <source>Match matrix and standings after round </source>
         <translation>Spielematrix und Platzierungen nach Runde </translation>
     </message>
     <message>
-        <location filename="reports/MatrixAndStandings.cpp" line="118"/>
+        <location filename="reports/MatrixAndStandings.cpp" line="145"/>
         <source>Group </source>
         <translation>Gruppe </translation>
     </message>
     <message>
-        <location filename="reports/MatrixAndStandings.cpp" line="131"/>
+        <location filename="reports/MatrixAndStandings.cpp" line="158"/>
         <source>There are no standings for this round yet.</source>
         <translation>Für diese Runde gibt es noch keine Platzierungen.</translation>
     </message>
     <message>
-        <location filename="reports/MatrixAndStandings.cpp" line="173"/>
+        <location filename="reports/MatrixAndStandings.cpp" line="200"/>
         <source>Matrix and Standings::</source>
         <translation>Matrix und Platzierungen::</translation>
     </message>
     <message>
-        <location filename="reports/MatrixAndStandings.cpp" line="177"/>
+        <location filename="reports/MatrixAndStandings.cpp" line="216"/>
+        <source>%1. Iteration::</source>
+        <translation>%1. Durchgang::</translation>
+    </message>
+    <message>
+        <location filename="reports/MatrixAndStandings.cpp" line="224"/>
         <source>after round </source>
         <translation>nach Runde </translation>
     </message>
     <message>
-        <location filename="reports/MatrixAndStandings.cpp" line="179"/>
+        <location filename="reports/MatrixAndStandings.cpp" line="226"/>
         <source>initial matches</source>
         <translation>erste Spiele</translation>
     </message>

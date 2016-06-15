@@ -29,6 +29,7 @@
 #include "ResultSheets.h"
 #include "BracketSheet.h"
 #include "MatrixAndStandings.h"
+#include "PureRoundRobinCategory.h"
 
 namespace QTournament
 {
@@ -124,6 +125,17 @@ namespace QTournament
       {
         // initial matches
         result.append(genRepName(REP__MATRIX_AND_STANDINGS, cat, 0));
+        unique_ptr<PureRoundRobinCategory> rrCat = PureRoundRobinCategory::getFromGenericCat(cat);
+        int rpi = rrCat->getRoundCountPerIteration();
+        int itCnt = rrCat->getIterationCount();
+        for (int i=1; i < itCnt; ++i)
+        {
+          int firstRoundInIteration = i * rpi + 1;
+
+          // note: negative round numbers denote: plot initial matches for the iteration
+          // that starts with abs(firstRoundInIteration)
+          result.append(genRepName(REP__MATRIX_AND_STANDINGS, cat, -firstRoundInIteration));
+        }
 
         // a matrix for each finished round
         for (int round = 1; round <= numFinishedRounds; ++round)
@@ -321,10 +333,7 @@ namespace QTournament
   {
     QString repName = repBaseName;
     repName += "," + QString::number(intParam1);
-    if (intParam2 > 0)
-    {
-     repName += "," + QString::number(intParam2);
-    }
+    repName += "," + QString::number(intParam2);
 
     return repName;
   }

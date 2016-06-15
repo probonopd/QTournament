@@ -140,13 +140,14 @@ void CatTabWidget::updateControls()
     ui.gbGeneric->setEnabled(false);
     ui.gbGroups->hide();
     ui.gbRandom->hide();
+    ui.gbRoundRobin->hide();
     return;
   }
   
   Category selectedCat = ui.catTableView->getSelectedCategory();
   
   //
-  // if made it to this point, we can be sure to have a valid category selected
+  // if we made it to this point, we can be sure to have a valid category selected
   //
   SEX sex = selectedCat.getSex();
   MATCH_TYPE mt = selectedCat.getMatchType();
@@ -164,6 +165,7 @@ void CatTabWidget::updateControls()
   {
     ui.gbGroups->show();
     ui.gbRandom->hide();
+    ui.gbRoundRobin->hide();
     
     // read the current group settings from the database and
     // copy them to the widget
@@ -174,11 +176,24 @@ void CatTabWidget::updateControls()
   {
     ui.gbGroups->hide();
     ui.gbRandom->show();
+    ui.gbRoundRobin->hide();
+  }
+  else if (ms == ROUND_ROBIN)
+  {
+    ui.gbGroups->hide();
+    ui.gbRandom->hide();
+    ui.gbRoundRobin->show();
+
+    // read the number of iterations that are
+    // currently configured for this category
+    int it = selectedCat.getParameter_int(ROUND_ROBIN_ITERATIONS);
+    ui.cbRoundRobinTwoIterations->setChecked(it > 1);
   }
   else
   {
     ui.gbGroups->hide();
     ui.gbRandom->hide();
+    ui.gbRoundRobin->hide();
   }
   
   // update the match type
@@ -277,6 +292,7 @@ void CatTabWidget::updateControls()
   // because the category is no longer in state CONFIG
   ui.gbGroups->setEnabled(isEditEnabled);
   ui.gbRandom->setEnabled(isEditEnabled);
+  ui.gbRoundRobin->setEnabled(isEditEnabled);
 
   // change the label of the "run" button and enable or
   // disable it
@@ -1133,6 +1149,20 @@ void CatTabWidget::onCategoryRemoved()
 {
   updateControls();
   updatePairs();
+}
+
+//----------------------------------------------------------------------------
+
+void CatTabWidget::onTwoIterationsChanged()
+{
+  if (!(ui.catTableView->hasCategorySelected()))
+  {
+    return;
+  }
+
+  int it = (ui.cbRoundRobinTwoIterations->isChecked()) ? 2 : 1;
+  Category selCat = ui.catTableView->getSelectedCategory();
+  selCat.setParameter(ROUND_ROBIN_ITERATIONS, it);
 }
 
 //----------------------------------------------------------------------------

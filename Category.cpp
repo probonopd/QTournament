@@ -241,7 +241,10 @@ namespace QTournament
 
     case GROUP_CONFIG:
       return QString::fromUtf8(row[CAT_GROUP_CONFIG].data());
-      /*  
+
+    case ROUND_ROBIN_ITERATIONS:
+      return row.getInt(CAT_ROUND_ROBIN_ITERATIONS);
+      /*
       case :
 	return row[];
       

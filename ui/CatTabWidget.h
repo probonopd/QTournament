@@ -98,6 +98,7 @@ public slots:
   void onCreatePlayer();
   void onImportPlayer();
   void onCategoryRemoved();
+  void onTwoIterationsChanged();
 } ;
 
 #endif	/* _CATTABWIDGET_H */
