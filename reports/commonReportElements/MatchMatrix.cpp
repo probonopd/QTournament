@@ -23,7 +23,7 @@
 #include "CatRoundStatus.h"
 #include "TournamentDB.h"
 #include "reports/AbstractReport.h"
-
+#include "PureRoundRobinCategory.h"
 
 MatchMatrix::MatchMatrix(SimpleReportGenerator* _rep, const QString& tabName, const Category& _cat, int _round, int _grpNum)
   :AbstractReportElement(_rep), tableName(tabName), cat(_cat), round(_round), grpNum(_grpNum)
@@ -54,7 +54,7 @@ MatchMatrix::MatchMatrix(SimpleReportGenerator* _rep, const QString& tabName, co
   } else {
     if (grpNum != -1)   // grpNum must be -1 for round robin categories
     {
-      throw invalid_argument("Requested match matrix an invalid group number");
+      throw invalid_argument("Requested match matrix with an invalid group number");
     }
   }
 
@@ -88,7 +88,8 @@ QRectF MatchMatrix::plot(const QPointF& topLeft)
   // determine the maximum round number up to
   // which will be searched for matches
   int maxRoundNum = 99999;  // default: search in whole category
-  if (cat.getMatchSystem() == GROUPS_WITH_KO)
+  MATCH_SYSTEM msys = cat.getMatchSystem();
+  if (msys == GROUPS_WITH_KO)
   {
     KO_Config cfg = cat.getParameter_string(GROUP_CONFIG);
 
@@ -96,6 +97,21 @@ QRectF MatchMatrix::plot(const QPointF& topLeft)
     // group phase, because otherwise we might end up displaying
     // matches from the KO phase
     maxRoundNum = cfg.getNumRounds();
+  }
+
+  // determine the minimum round number from that on
+  // we will search for matches.
+  // This offset is needed when playing multiple round robin iterations
+  int minRoundNum = 1;
+  if (msys == ROUND_ROBIN)
+  {
+    unique_ptr<PureRoundRobinCategory> rrCat = PureRoundRobinCategory::getFromGenericCat(cat);
+    if ((rrCat != nullptr) && (round > 0))
+    {
+      int rpi = rrCat->getRoundCountPerIteration();
+      int curIteration = (round - 1) / rpi;  // will be >= 0 even if round==0
+      minRoundNum = curIteration * rpi + 1;
+    }
   }
 
   // get the textstyle for the table contents
@@ -132,7 +148,7 @@ QRectF MatchMatrix::plot(const QPointF& topLeft)
       // get the cell's content
       QString txt;
       CELL_CONTENT_TYPE cct;
-      tie(cct, txt) = getCellContent(ppList, r, c, maxRoundNum);
+      tie(cct, txt) = getCellContent(ppList, r, c, minRoundNum, maxRoundNum);
 
       // special case: content == tableName
       if (cct == CELL_CONTENT_TYPE::TITLE)
@@ -210,7 +226,7 @@ QRectF MatchMatrix::plot(const QPointF& topLeft)
 
 //----------------------------------------------------------------------------
 
-upMatch MatchMatrix::getMatchForCell(const PlayerPairList& ppList, int row, int col, int maxRound) const
+upMatch MatchMatrix::getMatchForCell(const PlayerPairList& ppList, int row, int col, int minRound, int maxRound) const
 {
   if ((row < 1) || (col < 1) || (row > ppList.size()) || (col > ppList.size()))
   {
@@ -235,7 +251,8 @@ upMatch MatchMatrix::getMatchForCell(const PlayerPairList& ppList, int row, int 
     assert(ma != nullptr);
 
     // check for right category and the right round number
-    if ((ma->getCategory() == cat) && (ma->getMatchGroup().getRound() <= maxRound))
+    int r = ma->getMatchGroup().getRound();
+    if ((ma->getCategory() == cat) && (r >= minRound) && (r <= maxRound))
     {
       return ma;
     }
@@ -289,7 +306,7 @@ QStringList MatchMatrix::getSortedMatchScoreStrings(const Match& ma, const Playe
 
 //----------------------------------------------------------------------------
 
-tuple<MatchMatrix::CELL_CONTENT_TYPE, QString> MatchMatrix::getCellContent(const PlayerPairList& ppList, int row, int col, int maxRound) const
+tuple<MatchMatrix::CELL_CONTENT_TYPE, QString> MatchMatrix::getCellContent(const PlayerPairList& ppList, int row, int col, int minRound, int maxRound) const
 {
   // the table name goes in the top-left corner
   if ((row == 0) && (col == 0))
@@ -308,7 +325,7 @@ tuple<MatchMatrix::CELL_CONTENT_TYPE, QString> MatchMatrix::getCellContent(const
   // or the match number, if applicable
   if ((row > 0) && (col > row))
   {
-    auto ma = getMatchForCell(ppList, row, col, maxRound);
+    auto ma = getMatchForCell(ppList, row, col, minRound, maxRound);
 
     if (ma == nullptr)
     {

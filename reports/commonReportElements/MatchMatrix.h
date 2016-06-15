@@ -76,9 +76,9 @@ protected:
   int round;
   int grpNum;
 
-  upMatch getMatchForCell(const PlayerPairList& ppList, int row, int col, int maxRound) const;
+  upMatch getMatchForCell(const PlayerPairList& ppList, int row, int col, int minRound, int maxRound) const;
   QStringList getSortedMatchScoreStrings(const Match& ma, const PlayerPair& ppRow, const PlayerPair& ppCol) const;
-  tuple<CELL_CONTENT_TYPE, QString> getCellContent(const PlayerPairList& ppList, int row, int col, int maxRound) const;
+  tuple<CELL_CONTENT_TYPE, QString> getCellContent(const PlayerPairList& ppList, int row, int col, int minRound, int maxRound) const;
   QString getTruncatedPlayerNames(const PlayerPair& pp, const TextStyle* style, double maxWidth) const;
 };
 

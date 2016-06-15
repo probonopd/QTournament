@@ -31,6 +31,7 @@
 #include "reports/commonReportElements/plotStandings.h"
 #include "reports/commonReportElements/MatchMatrix.h"
 #include "MatchMngr.h"
+#include "PureRoundRobinCategory.h"
 
 namespace QTournament
 {
@@ -172,6 +173,26 @@ QStringList MartixAndStandings::getReportLocators() const
 
   QString loc = tr("Matrix and Standings::");
   loc += cat.getName() + "::";
+
+  // insert the number of the iteration, if applicable
+  MATCH_SYSTEM msys = cat.getMatchSystem();
+  if (msys == ROUND_ROBIN)
+  {
+    unique_ptr<PureRoundRobinCategory> rrCat = PureRoundRobinCategory::getFromGenericCat(cat);
+    if (rrCat != nullptr)   // should always be true
+    {
+      // if we play more than one iteration, add another
+      // location "sub-tree" for the iteration number
+      if (rrCat->getIterationCount() > 1)
+      {
+        int rpi = rrCat->getRoundCountPerIteration();
+        int curIteration = (round - 1) / rpi;  // will be >= 0 even if round==0
+        loc += tr("%1. Iteration::");
+        loc = loc.arg(curIteration + 1);
+      }
+    }
+  }
+
   if (round > 0)
   {
     loc += tr("after round ") + QString::number(round);

@@ -67,6 +67,15 @@ namespace QTournament
     return getParameter_int(ROUND_ROBIN_ITERATIONS);  // simple wrapper function
   }
 
+  //----------------------------------------------------------------------------
+
+  unique_ptr<PureRoundRobinCategory> PureRoundRobinCategory::getFromGenericCat(const Category& cat)
+  {
+    MATCH_SYSTEM msys = cat.getMatchSystem();
+
+    return (msys == ROUND_ROBIN) ? unique_ptr<PureRoundRobinCategory>(new PureRoundRobinCategory(cat.db, cat.row)) : nullptr;
+  }
+
 //----------------------------------------------------------------------------
 
   ERR PureRoundRobinCategory::canFreezeConfig()

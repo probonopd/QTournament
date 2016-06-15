@@ -22,6 +22,7 @@
 #include <memory>
 #include <functional>
 #include <vector>
+#include <type_traits>
 
 #include <QVariant>
 
