@@ -26,14 +26,15 @@
 #include "PureRoundRobinCategory.h"
 
 MatchMatrix::MatchMatrix(SimpleReportGenerator* _rep, const QString& tabName, const Category& _cat, int _round, int _grpNum)
-  :AbstractReportElement(_rep), tableName(tabName), cat(_cat), round(_round), grpNum(_grpNum)
+  :AbstractReportElement(_rep), tableName(tabName), cat(_cat), round(_round), grpNum(_grpNum), showMatchNumbersOnly(round <= 0)
 {
-  if (round < 0)
+  MATCH_SYSTEM msys = cat.getMatchSystem();
+
+  if ((msys != ROUND_ROBIN) && (round < 0))
   {
     throw invalid_argument("Requested match matrix for invalid round number (too low)");
   }
 
-  MATCH_SYSTEM msys = cat.getMatchSystem();
   if ((msys != ROUND_ROBIN) && (msys != GROUPS_WITH_KO))
   {
     throw invalid_argument("Requested match matrix for invalid category (wrong match system)");
@@ -58,8 +59,15 @@ MatchMatrix::MatchMatrix(SimpleReportGenerator* _rep, const QString& tabName, co
     }
   }
 
-  if (round == 0)
+  if (round <= 0)
   {
+    if (msys != ROUND_ROBIN)
+    {
+      round = 0;    // just a caveat, should actually never be reached
+    }
+
+    round = -round;
+
     return;   // matrix for initial matches
   }
 
@@ -102,6 +110,8 @@ QRectF MatchMatrix::plot(const QPointF& topLeft)
   // determine the minimum round number from that on
   // we will search for matches.
   // This offset is needed when playing multiple round robin iterations
+  //
+  // also update maxRoundNum as the upper limit of the search radius
   int minRoundNum = 1;
   if (msys == ROUND_ROBIN)
   {
@@ -111,6 +121,7 @@ QRectF MatchMatrix::plot(const QPointF& topLeft)
       int rpi = rrCat->getRoundCountPerIteration();
       int curIteration = (round - 1) / rpi;  // will be >= 0 even if round==0
       minRoundNum = curIteration * rpi + 1;
+      maxRoundNum = (curIteration + 1) * rpi;
     }
   }
 
@@ -338,7 +349,7 @@ tuple<MatchMatrix::CELL_CONTENT_TYPE, QString> MatchMatrix::getCellContent(const
     // if the match is later than "round", print only
     // the match number. The same applies if the match
     // is not yet finished
-    if ((maRound > round) || (maStat != STAT_MA_FINISHED))
+    if ((maRound > round) || (maStat != STAT_MA_FINISHED) || (showMatchNumbersOnly))
     {
       int maNum = ma->getMatchNumber();
       if (maNum < 0)

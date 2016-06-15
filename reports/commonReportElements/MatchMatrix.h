@@ -75,6 +75,7 @@ protected:
   Category cat;
   int round;
   int grpNum;
+  bool showMatchNumbersOnly;
 
   upMatch getMatchForCell(const PlayerPairList& ppList, int row, int col, int minRound, int maxRound) const;
   QStringList getSortedMatchScoreStrings(const Match& ma, const PlayerPair& ppRow, const PlayerPair& ppCol) const;

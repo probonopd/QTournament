@@ -144,6 +144,7 @@ namespace QTournament
     KO_Config ko{src.getParameter_string(GROUP_CONFIG)};
     isOk = clone.setParameter(GROUP_CONFIG, ko.toString());
     assert(isOk);
+    setCatParameter(clone, ROUND_ROBIN_ITERATIONS, src.getParameter_int(ROUND_ROBIN_ITERATIONS));
 
     // Do not copy the BracketVisData here, because the clone is still in
     // CONFIG and BracketVisData is created when starting the cat

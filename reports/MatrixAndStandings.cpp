@@ -61,7 +61,7 @@ MartixAndStandings::MartixAndStandings(TournamentDB* _db, const QString& _name, 
     }
   }
 
-  if (round == 0)
+  if (round <= 0)
   {
     return;   // matrix for initial matches
   }
@@ -87,9 +87,10 @@ upSimpleReport MartixAndStandings::regenerateReport()
   RankingMngr rm{db};
   RankingEntryListList rll;
   if (round > 0) rll = rm.getSortedRanking(cat, round);
+  if (round < 0) rll = rm.getSortedRanking(cat, -round - 1);   // see below for the bad hack about negative round numbers
 
   QString repName = cat.getName() + " -- ";
-  if (round == 0)
+  if (round <= 0)
   {
     repName += tr("Initial matches");
   } else {
@@ -97,7 +98,7 @@ upSimpleReport MartixAndStandings::regenerateReport()
   }
   upSimpleReport result = createEmptyReport_Portrait();
   setHeaderAndHeadline(result.get(), repName);
-  result->skip((round == 0) ? 15 : 5);
+  result->skip((round <= 0) ? 15 : 5);
 
   // determine the number of match groups
   MATCH_SYSTEM msys = cat.getMatchSystem();
@@ -124,8 +125,8 @@ upSimpleReport MartixAndStandings::regenerateReport()
     auto plotRect = matrix.plot();
     result->skip(plotRect.size().height() + 3.0);
 
-    // plot the standing, if available
-    if (round > 0)
+    // plot the standings, if available
+    if (round != 0)
     {
       if (rll.empty() || ((rll.size() == 1) && (rll.at(0).size() == 0)))
       {
@@ -150,7 +151,7 @@ upSimpleReport MartixAndStandings::regenerateReport()
     // start a new page after every second matrix
     if ((cnt % 2) == 0)
     {
-      result->skip((round == 0) ? 30 : 10);
+      result->skip((round <= 0) ? 30 : 10);
     } else if (cnt < (nGroups - 1)){
       result->startNextPage();
       result->skip(10);
@@ -186,7 +187,7 @@ QStringList MartixAndStandings::getReportLocators() const
       if (rrCat->getIterationCount() > 1)
       {
         int rpi = rrCat->getRoundCountPerIteration();
-        int curIteration = (round - 1) / rpi;  // will be >= 0 even if round==0
+        int curIteration = (abs(round) - 1) / rpi;  // will be >= 0 even if round==0
         loc += tr("%1. Iteration::");
         loc = loc.arg(curIteration + 1);
       }
