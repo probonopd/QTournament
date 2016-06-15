@@ -218,6 +218,22 @@
        </widget>
       </item>
       <item>
+       <widget class="QGroupBox" name="gbRoundRobin">
+        <property name="title">
+         <string>Settings for Round Robin Matches</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_5">
+         <item>
+          <widget class="QCheckBox" name="cbRoundRobinTwoIterations">
+           <property name="text">
+            <string>Play two iterations</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
        <widget class="QGroupBox" name="gbRandom">
         <property name="title">
          <string>Settings for Random Matches</string>
@@ -573,6 +589,22 @@ for each round</string>
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>cbRoundRobinTwoIterations</sender>
+   <signal>clicked()</signal>
+   <receiver>CatTabWidget</receiver>
+   <slot>onTwoIterationsChanged()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>851</x>
+     <y>230</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>563</x>
+     <y>428</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>onCbDrawChanged(bool)</slot>
@@ -586,9 +618,10 @@ for each round</string>
   <slot>onBtnAddCatClicked()</slot>
   <slot>onMatchSystemChanged(int)</slot>
   <slot>onBtnRunCatClicked()</slot>
+  <slot>onTwoIterationsChanged()</slot>
  </slots>
  <buttongroups>
-  <buttongroup name="rbgSex"/>
   <buttongroup name="rbgMatchType"/>
+  <buttongroup name="rbgSex"/>
  </buttongroups>
 </ui>
