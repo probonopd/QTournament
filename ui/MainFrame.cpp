@@ -30,6 +30,7 @@
 #include "TeamMngr.h"
 #include "CatMngr.h"
 #include "ui/DlgTournamentSettings.h"
+#include "CourtMngr.h"
 
 using namespace QTournament;
 
@@ -121,6 +122,17 @@ void MainFrame::newTournament()
   currentDb = std::move(newDb);
   distributeCurrentDatabasePointerToWidgets();
 
+  // create the initial number of courts
+  CourtMngr cm{currentDb.get()};
+  for (int i=0; i < dlg.getCourtCount(); ++i)
+  {
+    ERR err;
+    cm.createNewCourt(i+1, QString::number(i+1), &err);
+
+    // no error checking here. Creation at this point must always succeed.
+  }
+
+  // prepare for autosaving
   lastDirtyState = false;
   lastAutosaveDirtyCounterValue = 0;
   onAutosaveTimerElapsed();

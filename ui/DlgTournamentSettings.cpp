@@ -51,6 +51,11 @@ DlgTournamentSettings::DlgTournamentSettings(TournamentDB* _db, QWidget* parent)
   int tnmtDefaultRefereeModeId = cfg->getInt(CFG_KEY_DEFAULT_REFEREE_MODE);
   int idx = ui->cbUmpire->findData(tnmtDefaultRefereeModeId);
   ui->cbUmpire->setCurrentIndex(idx);
+
+  // hide the "number of courts" spin box because we only want
+  // to show it when creating the tournament
+  ui->laCourtCount->hide();
+  ui->sbCourtCount->hide();
 }
 
 //----------------------------------------------------------------------------
@@ -74,7 +79,7 @@ std::unique_ptr<QTournament::TournamentSettings> DlgTournamentSettings::getTourn
   // the next attribute is always "1" for the time being;
   // maybe I'll add the possibility of having a "team-free"
   // tournament sometime later
-  bool useTeams = ui->cbUseTeams->isChecked();
+  bool useTeams = true;
 
   QTournament::TournamentSettings* result = new QTournament::TournamentSettings();
   result->organizingClub = orgName;
@@ -83,6 +88,13 @@ std::unique_ptr<QTournament::TournamentSettings> DlgTournamentSettings::getTourn
   result->refereeMode = static_cast<QTournament::REFEREE_MODE>(refereeModeId);
 
   return std::unique_ptr<QTournament::TournamentSettings>(result);
+}
+
+//----------------------------------------------------------------------------
+
+int DlgTournamentSettings::getCourtCount() const
+{
+  return ui->sbCourtCount->value();
 }
 
 //----------------------------------------------------------------------------

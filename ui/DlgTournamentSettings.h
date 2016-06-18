@@ -46,6 +46,8 @@ public:
   ~DlgTournamentSettings();
   std::unique_ptr<QTournament::TournamentSettings> getTournamentSettings() const;
 
+  int getCourtCount() const;
+
 public slots:
   void onTournamentNameChanged();
   void onOrgaNameChanged();
