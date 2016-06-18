@@ -55,6 +55,8 @@ namespace QTournament
     void endCreateCourt (int newCourtSeqNum);
     void courtRenamed (const Court& p);
     void courtStatusChanged(int courtId, int courtSeqNum, OBJ_STATE fromState, OBJ_STATE toState);
+    void beginDeleteCourt(int courtSeqNum);
+    void endDeleteCourt();
 
     // Signals emitted by the MatchMngr
     void beginCreateMatchGroup ();

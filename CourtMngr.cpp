@@ -241,6 +241,59 @@ namespace QTournament
     return true;
   }
 
+  //----------------------------------------------------------------------------
+
+  ERR CourtMngr::disableCourt(const Court& co)
+  {
+    OBJ_STATE stat = co.getState();
+
+    if (stat == STAT_CO_DISABLED) return OK;   // nothing to do for us
+
+    // prohibit a state change if the court is in use
+    if (stat == STAT_CO_BUSY) return COURT_BUSY;
+
+    // change the court state and emit a change event
+    co.setState(STAT_CO_DISABLED);
+    CentralSignalEmitter::getInstance()->courtStatusChanged(co.getId(), co.getSeqNum(), stat, STAT_CO_DISABLED);
+    return OK;
+  }
+
+  //----------------------------------------------------------------------------
+
+  ERR CourtMngr::enableCourt(const Court& co)
+  {
+    OBJ_STATE stat = co.getState();
+
+    if (stat != STAT_CO_DISABLED) return COURT_NOT_DISABLED;
+
+    // change the court state and emit a change event
+    co.setState(STAT_CO_AVAIL);
+    CentralSignalEmitter::getInstance()->courtStatusChanged(co.getId(), co.getSeqNum(), STAT_CO_DISABLED, STAT_CO_AVAIL);
+    return OK;
+  }
+
+  //----------------------------------------------------------------------------
+
+  ERR CourtMngr::deleteCourt(const Court& co)
+  {
+    // check if the court has already been used in the past
+    auto matchTab = db->getTab(TAB_MATCH);
+    if (matchTab->getMatchCountForColumnValue(MA_COURT_REF, co.getId()) > 0)
+    {
+      return COURT_ALREADY_USED;
+    }
+
+    // after this check it is safe to delete to court because we won't
+    // harm the database integrity
+    CentralSignalEmitter* cse =CentralSignalEmitter::getInstance();
+    cse->beginDeleteCourt(co.getSeqNum());
+    int dbErr;
+    tab->deleteRowsByColumnValue("id", co.getId(), &dbErr);
+    cse->endDeleteCourt();
+
+    return (dbErr == SQLITE_DONE) ? OK : DATABASE_ERROR;
+  }
+
 //----------------------------------------------------------------------------
 
   unique_ptr<Court> CourtMngr::autoSelectNextUnusedCourt(ERR *err, bool includeManual) const

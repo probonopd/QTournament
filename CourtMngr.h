@@ -59,6 +59,11 @@ namespace QTournament
     bool acquireCourt(const Court& co);
     bool releaseCourt(const Court& co);
 
+    ERR disableCourt(const Court& co);
+    ERR enableCourt(const Court& co);
+
+    ERR deleteCourt(const Court& co);
+
   private:
 
   signals:

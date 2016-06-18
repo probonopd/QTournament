@@ -96,7 +96,9 @@ namespace QTournament
         DATABASE_ERROR,
         MATCH_NEEDS_NO_REFEREE,
         MATCH_NEEDS_REFEREE,
-        REFEREE_NOT_IDLE
+        REFEREE_NOT_IDLE,
+        COURT_NOT_DISABLED,
+        COURT_ALREADY_USED,
     };
 }
 
