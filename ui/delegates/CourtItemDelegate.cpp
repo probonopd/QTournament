@@ -82,20 +82,25 @@ void CourtItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
       OBJ_STATE stat = co->getState();
       bool manual = co->isManualAssignmentOnly();
 
+      // set a default color for text items
+      QColor txtCol = isItemSelected ? QColor(Qt::white) : QColor(Qt::darkGray);
+
       if ((stat == STAT_CO_AVAIL) && !manual)
       {
         label = tr("(free)");
+        txtCol = isItemSelected ? QColor(Qt::green) : QColor(Qt::darkGreen);
       }
       else if ((stat == STAT_CO_AVAIL) && manual)
       {
         label = tr("(free, manual match assignment only)");
+        txtCol = isItemSelected ? QColor(Qt::green) : QColor(Qt::darkGreen);
       }
       else if (stat == STAT_CO_DISABLED)
       {
         label = tr("(disabled)");
+        txtCol = QColor(Qt::red);
       }
-      QColor txtCol = isItemSelected ? QColor(Qt::white) : QColor(Qt::darkGray);
-      GuiHelpers::drawFormattedText(painter, option.rect, label, Qt::AlignVCenter | Qt::AlignCenter, false, true, QFont(), txtCol);
+      GuiHelpers::drawFormattedText(painter, option.rect, label, Qt::AlignVCenter | Qt::AlignCenter, isItemSelected, true, QFont(), txtCol);
       //painter->drawText(option.rect, Qt::AlignCenter, label);
       return;
     }

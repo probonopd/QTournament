@@ -58,7 +58,8 @@ namespace QTournament
     void onEndCreateCourt(int newCourtSeqNum);
     void onCourtStatusChanged(int courtId, int courtSeqNum);
     void onDurationUpdateTimerElapsed();
-
+    void onBeginDeleteCourt(int courtSeqNum);
+    void onEndDeleteCourt();
   };
 
 }

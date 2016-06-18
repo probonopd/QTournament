@@ -62,6 +62,8 @@ private slots:
   void onActionSwapRefereeTriggered();
   void onSectionHeaderDoubleClicked();
   void onActionToggleMatchAssignmentModeTriggered();
+  void onActionToogleEnableStateTriggered();
+  void onActionDeleteCourtTriggered();
 
 private:
   static constexpr int MAX_NUM_ADD_CALL = 3;
@@ -74,6 +76,7 @@ private:
 
   unique_ptr<QMenu> contextMenu;
   QAction* actAddCourt;
+  QAction* actDelCourt;
   QAction* actUndoCall;
   QAction* actFinishMatch;
   QMenu* walkoverSelectionMenu;
@@ -82,6 +85,7 @@ private:
   QAction* actAddCall;
   QAction* actSwapReferee;
   QAction* actToggleAssignmentMode;
+  QAction* actToggleEnableState;
 
   void initContextMenu();
   void updateContextMenu(bool isRowClicked);

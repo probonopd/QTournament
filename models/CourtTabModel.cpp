@@ -36,6 +36,8 @@ CourtTableModel::CourtTableModel(TournamentDB* _db)
   connect(cse, SIGNAL(beginCreateCourt()), this, SLOT(onBeginCreateCourt()), Qt::DirectConnection);
   connect(cse, SIGNAL(endCreateCourt(int)), this, SLOT(onEndCreateCourt(int)), Qt::DirectConnection);
   connect(cse, SIGNAL(courtStatusChanged(int,int,OBJ_STATE,OBJ_STATE)), this, SLOT(onCourtStatusChanged(int,int)), Qt::DirectConnection);
+  connect(cse, SIGNAL(beginDeleteCourt(int)), this, SLOT(onBeginDeleteCourt(int)), Qt::DirectConnection);
+  connect(cse, SIGNAL(endDeleteCourt()), this, SLOT(onEndDeleteCourt()), Qt::DirectConnection);
 
   // a timer for updatng the match duration
   durationUpdateTimer = make_unique<QTimer>(this);
@@ -176,6 +178,20 @@ void CourtTableModel::onDurationUpdateTimerElapsed()
   QModelIndex startIdx = createIndex(0, DURATION_COL_ID);
   QModelIndex endIdx = createIndex(rowCount(), DURATION_COL_ID);
   emit dataChanged(startIdx, endIdx);
+}
+
+//----------------------------------------------------------------------------
+
+void CourtTableModel::onBeginDeleteCourt(int courtSeqNum)
+{
+  beginRemoveRows(QModelIndex(), courtSeqNum, courtSeqNum);
+}
+
+//----------------------------------------------------------------------------
+
+void CourtTableModel::onEndDeleteCourt()
+{
+  endRemoveRows();
 }
 
 //----------------------------------------------------------------------------

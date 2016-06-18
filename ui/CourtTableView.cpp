@@ -207,6 +207,9 @@ void CourtTableView::initContextMenu()
   actSwapReferee = new QAction(tr("Swap umpire"), this);
   actToggleAssignmentMode = new QAction(tr("Only manual match assignment on this court"), this);
   actToggleAssignmentMode->setCheckable(true);
+  actToggleEnableState = new QAction(tr("Court disabled"), this);
+  actToggleEnableState->setCheckable(true);
+  actDelCourt = new QAction(tr("Delete court"), this);
 
   // create sub-actions for the walkover-selection
   actWalkoverP1 = new QAction("P1", this);  // this is just a dummy
@@ -220,6 +223,8 @@ void CourtTableView::initContextMenu()
   connect(actAddCall, SIGNAL(triggered(bool)), this, SLOT(onActionAddCallTriggered()));
   connect(actSwapReferee, SIGNAL(triggered(bool)), this, SLOT(onActionSwapRefereeTriggered()));
   connect(actToggleAssignmentMode, SIGNAL(triggered(bool)), this, SLOT(onActionToggleMatchAssignmentModeTriggered()));
+  connect(actToggleEnableState, SIGNAL(triggered(bool)), this, SLOT(onActionToogleEnableStateTriggered()));
+  connect(actDelCourt, SIGNAL(triggered()), this, SLOT(onActionDeleteCourtTriggered()));
 
   // create the context menu and connect it to the actions
   contextMenu = make_unique<QMenu>();
@@ -233,8 +238,10 @@ void CourtTableView::initContextMenu()
   contextMenu->addAction(actSwapReferee);
   contextMenu->addSeparator();
   contextMenu->addAction(actToggleAssignmentMode);
+  contextMenu->addAction(actToggleEnableState);
   contextMenu->addSeparator();
   contextMenu->addAction(actAddCourt);
+  contextMenu->addAction(actDelCourt);
 
   updateContextMenu(false);
 }
@@ -259,6 +266,7 @@ void CourtTableView::updateContextMenu(bool isRowClicked)
 
   // enable / disable actions that depend on a selected row
   actAddCourt->setEnabled(!isRowClicked);
+  actDelCourt->setEnabled(isRowClicked);
 
   // update the player pair names for the walkover menu
   if (ma != nullptr)
@@ -285,6 +293,17 @@ void CourtTableView::updateContextMenu(bool isRowClicked)
   if (co != nullptr)
   {
     actToggleAssignmentMode->setChecked(co->isManualAssignmentOnly());
+  }
+
+  // show the enable state
+  if ((co != nullptr) && isRowClicked)
+  {
+    OBJ_STATE coStat = co->getState();
+    actToggleEnableState->setEnabled(coStat != STAT_CO_BUSY);
+    actToggleEnableState->setChecked(coStat == STAT_CO_DISABLED);
+  } else {
+    actToggleEnableState->setEnabled(false);
+    actToggleEnableState->setChecked(false);
   }
 }
 
@@ -419,6 +438,70 @@ void CourtTableView::onActionToggleMatchAssignmentModeTriggered()
 
   bool isManual = co->isManualAssignmentOnly();
   co->setManualAssignment(!isManual);
+}
+
+//----------------------------------------------------------------------------
+
+void CourtTableView::onActionToogleEnableStateTriggered()
+{
+  unique_ptr<Court> co = getSelectedCourt();
+  if (co == nullptr) return;
+
+  CourtMngr cm{db};
+  if (co->getState() == STAT_CO_DISABLED)
+  {
+    cm.enableCourt(*co);
+  } else {
+    cm.disableCourt(*co);
+  }
+}
+
+//----------------------------------------------------------------------------
+
+void CourtTableView::onActionDeleteCourtTriggered()
+{
+  unique_ptr<Court> co = getSelectedCourt();
+  if (co == nullptr) return;
+
+  // ask a safety question
+  QString msg = tr("You are about to delete\n\n");
+  msg += tr("     Court %1\n\n");
+  msg += tr("Proceed and delete?");
+  msg = msg.arg(co->getNumber());
+  int result = QMessageBox::question(this, tr("Delete court"), msg);
+  if (result !=  QMessageBox::Yes) return;
+
+  CourtMngr cm{db};
+  ERR e = cm.deleteCourt(*co);
+
+  if (e == COURT_ALREADY_USED)
+  {
+    QString msg = tr("The court has already been used for matches and thus\n");
+    msg += tr("it can't be deleted for technical reasons.\n\n");
+    msg += tr("Please consider disabling the court instead of deleting it.");
+
+    QMessageBox::warning(this, tr("Delete court"), msg);
+    return;
+  }
+
+  if (e == DATABASE_ERROR)
+  {
+    QString msg = tr("A database error occured when trying to delete the court.\n");
+    msg += tr("The court can't be deleted.\n\n");
+    msg += tr("Please consider disabling the court instead of deleting it.");
+
+    QMessageBox::warning(this, tr("Delete court"), msg);
+    return;
+  }
+
+  if (e != OK)
+  {
+    QString msg = tr("Some error occured when trying to delete the court.\n\n");
+    msg += tr("The court can't be deleted.\n\n");
+
+    QMessageBox::warning(this, tr("Delete court"), msg);
+    return;
+  }
 }
 
 //----------------------------------------------------------------------------

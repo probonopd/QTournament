@@ -286,9 +286,11 @@ namespace QTournament
     // after this check it is safe to delete to court because we won't
     // harm the database integrity
     CentralSignalEmitter* cse =CentralSignalEmitter::getInstance();
-    cse->beginDeleteCourt(co.getSeqNum());
+    int oldSeqNum = co.getSeqNum();
+    cse->beginDeleteCourt(oldSeqNum);
     int dbErr;
     tab->deleteRowsByColumnValue("id", co.getId(), &dbErr);
+    fixSeqNumberAfterDelete(tab, oldSeqNum);
     cse->endDeleteCourt();
 
     return (dbErr == SQLITE_DONE) ? OK : DATABASE_ERROR;
