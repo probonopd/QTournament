@@ -90,7 +90,7 @@ namespace QTournament
     // While we're walking through all matches, count
     // the number of matches for each player. We need this
     // value to figure out who is going to have the next
-    // bye in case of an off number of players
+    // bye in case of an odd number of players
     MatchMngr mm{db};
     QStringList pastMatches;
     QHash<int, int> pairId2matchCount;
@@ -128,7 +128,7 @@ namespace QTournament
 
     // if necessary, determine the player with the next bye. This
     // is basically the lowest ranked player unless this player
-    // already had a bye in a preious round.
+    // already had a bye in a previous round.
     // In this case, it's the second-to-lowest ranked and so on
     if ((pairCount % 2) != 0)
     {
@@ -154,17 +154,17 @@ namespace QTournament
     // a helper function that determines the next
     // index of an unused player pair
     QList<int> usedPairs;
-    auto findNextUnusedPairIndex = [&](int minIndex)
+    auto findNextUnusedPairRank = [&](int minRank)
     {
-      int result = minIndex;
-      while (minIndex < pairCount)
+      int rank = minRank;
+      while (rank < pairCount)
       {
-        int pairId = rankedPairs_Int.at(result);
+        int pairId = rankedPairs_Int.at(rank);
         if (!(usedPairs.contains(pairId)))
         {
-          return result;
+          return rank;
         }
-        ++result;
+        ++rank;
       }
       return -1;
     };
@@ -176,33 +176,33 @@ namespace QTournament
     // the algorithm uses two indices: one for the first player, the
     // other one for the second player.
     QStringList newMatches;
-    int firstIndex = 0;
-    int secondIndex = 1;
+    int pair1Rank = 0;
+    int pair2Rank = 1;
     while ((pairCount - usedPairs.size()) > 1)   // one pair may be unsed in categories with an odd number of participants
     {
       // determine the smallest two indexes of unused players
-      if (firstIndex < 0)
+      if (pair1Rank < 0)
       {
         // find the next two unused players
-        firstIndex = findNextUnusedPairIndex(0);
-        assert(firstIndex >= 0);
-        secondIndex = findNextUnusedPairIndex(firstIndex + 1);
-        assert(secondIndex > firstIndex);
+        pair1Rank = findNextUnusedPairRank(0);
+        assert(pair1Rank >= 0);
+        pair2Rank = findNextUnusedPairRank(pair1Rank + 1);
+        assert(pair2Rank > pair1Rank);
       }
 
       // keep the first pair fix while searching for
       // a second pair that results in a unique match
-      while ((secondIndex > 0) && (secondIndex < pairCount))
+      while ((pair2Rank > 0) && (pair2Rank < pairCount))
       {
         // create a CSV-string with the player pair IDs making up the match
         QString newMatchString = "%1,%2";
-        newMatchString = newMatchString.arg(rankedPairs_Int.at(firstIndex));
-        newMatchString = newMatchString.arg(rankedPairs_Int.at(secondIndex));
+        newMatchString = newMatchString.arg(rankedPairs_Int.at(pair1Rank));
+        newMatchString = newMatchString.arg(rankedPairs_Int.at(pair2Rank));
 
         // check if this match has been played before
         if (pastMatches.contains(newMatchString))
         {
-          secondIndex = findNextUnusedPairIndex(++secondIndex);  // try next combination
+          pair2Rank = findNextUnusedPairRank(++pair2Rank);  // try next combination
           continue;
         }
 
@@ -210,15 +210,15 @@ namespace QTournament
         newMatches.append(newMatchString);
 
         // mark the involved players as "used"
-        usedPairs.append(rankedPairs_Int.at(firstIndex));
-        usedPairs.append(rankedPairs_Int.at(secondIndex));
+        usedPairs.append(rankedPairs_Int.at(pair1Rank));
+        usedPairs.append(rankedPairs_Int.at(pair2Rank));
 
         // set firstIndex to -1 to indicate "match found"
-        firstIndex = -1;
+        pair1Rank = -1;
         break;
       }
 
-      while ((firstIndex > 0) && (secondIndex < 0))
+      while ((pair1Rank > 0) && (pair2Rank < 0))
       {
         // oh well, we are in trouble... we couldn't find
         // a match combination that hasn't been played before
@@ -238,13 +238,13 @@ namespace QTournament
         usedPairs.removeAll(pp2Id);
 
         // find the corresponding indices for the two pairs
-        firstIndex = rankedPairs_Int.indexOf(pp1Id);
-        secondIndex = rankedPairs_Int.indexOf(pp2Id);
+        pair1Rank = rankedPairs_Int.indexOf(pp1Id);
+        pair2Rank = rankedPairs_Int.indexOf(pp2Id);
 
         // continue with the next index beyond the previously
         // determined partner pair (read: skip the previously
         // found solution)
-        secondIndex = findNextUnusedPairIndex(++secondIndex);
+        pair2Rank = findNextUnusedPairRank(++pair2Rank);
 
         // if this search for a new "secondIndex" does not
         // yield any result, we continue in our while loop
