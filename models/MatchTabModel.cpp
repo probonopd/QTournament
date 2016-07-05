@@ -29,7 +29,7 @@ using namespace QTournament;
 using namespace SqliteOverlay;
 
 MatchTableModel::MatchTableModel(TournamentDB* _db)
-:QAbstractTableModel(0), db(_db), matchTab((db->getTab(TAB_MATCH)))
+:QAbstractTableModel(0), db(_db), matchTab((db->getTab(TAB_MATCH))), matchTimePredictor(nullptr)
 {
   CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
   connect(cse, SIGNAL(beginCreateMatch()), this, SLOT(onBeginCreateMatch()), Qt::DirectConnection);
@@ -37,6 +37,13 @@ MatchTableModel::MatchTableModel(TournamentDB* _db)
   connect(cse, SIGNAL(matchStatusChanged(int,int,OBJ_STATE,OBJ_STATE)), this, SLOT(onMatchStatusChanged(int,int)), Qt::DirectConnection);
   connect(cse, SIGNAL(beginResetAllModels()), this, SLOT(onBeginResetModel()), Qt::DirectConnection);
   connect(cse, SIGNAL(endResetAllModels()), this, SLOT(onEndResetModel()), Qt::DirectConnection);
+  connect(cse, SIGNAL(endCreateCourt(int)), this, SLOT(recalcPrediction()), Qt::DirectConnection);
+  connect(cse, SIGNAL(endDeleteCourt()), this, SLOT(recalcPrediction()), Qt::DirectConnection);
+  connect(cse, SIGNAL(courtStatusChanged(int,int,OBJ_STATE,OBJ_STATE)), this, SLOT(recalcPrediction()), Qt::DirectConnection);
+
+  // create and initialize a new match time predictor
+  matchTimePredictor = make_unique<MatchTimePredictor>(db);
+  predictedMatchTimes = matchTimePredictor->getMatchTimePrediction();
 }
 
 //----------------------------------------------------------------------------
@@ -152,6 +159,35 @@ QVariant MatchTableModel::data(const QModelIndex& index, int role) const
       return tr("unknown");
     }
 
+    // for all following columns, we need the
+    // estimated start/finish time for the match
+    MatchTimePrediction mtp = getMatchTimePredictionForMatch(*ma);
+
+    // the estimated start time
+    if (index.column() == EST_START_COL_ID)
+    {
+      time_t t = mtp.estStartTime__UTC;
+      if (t == 0) return "??";
+      QDateTime start = QDateTime::fromTime_t(t);
+      return start.toString("HH:mm");
+    }
+
+    // the estimated finish time
+    if (index.column() == EST_END_COL_ID)
+    {
+      time_t t = mtp.estFinishTime__UTC;
+      if (t == 0) return "??";
+      QDateTime start = QDateTime::fromTime_t(t);
+      return start.toString("HH:mm");
+    }
+
+    // the estimated court
+    if (index.column() == EST_COURT_COL_ID)
+    {
+      if (mtp.estCourtNum < 1) return "??";
+      return mtp.estCourtNum;
+    }
+
     return QString("Not Implemented, row=" + QString::number(index.row()) + ", col=" + QString::number(index.row()));
 }
 
@@ -192,6 +228,15 @@ QVariant MatchTableModel::headerData(int section, Qt::Orientation orientation, i
     if (section == REFEREE_MODE_COL_ID) {
       return tr("Umpire");
     }
+    if (section == EST_START_COL_ID) {
+      return tr("Start");
+    }
+    if (section == EST_END_COL_ID) {
+      return tr("Finish");
+    }
+    if (section == EST_COURT_COL_ID) {
+      return tr("Court");
+    }
 
     return QString("Not implemented, section=" + QString::number(section));
   }
@@ -208,6 +253,31 @@ QModelIndex MatchTableModel::getIndex(int row, int col)
 
 //----------------------------------------------------------------------------
 
+MatchTimePrediction MatchTableModel::getMatchTimePredictionForMatch(const Match& ma) const
+{
+  int maId = ma.getId();
+
+  // find the value for the match in the prediction list
+  auto it = find_if(predictedMatchTimes.begin(), predictedMatchTimes.end(),
+                    [&maId](const MatchTimePrediction& mtp) { return (mtp.matchId == maId);});
+
+  // return an "empty" match time prediction if we have no match
+  if (it == predictedMatchTimes.end())
+  {
+    MatchTimePrediction mtp;
+    mtp.estCourtNum = -1;
+    mtp.estFinishTime__UTC = 0;
+    mtp.estStartTime__UTC = 0;
+    mtp.matchId = maId;
+    return mtp;
+  }
+
+  // in all other cases return the data set we've just found
+  return *it;
+}
+
+//----------------------------------------------------------------------------
+
 void MatchTableModel::onBeginCreateMatch()
 {
   int newPos = matchTab->length();
@@ -217,6 +287,7 @@ void MatchTableModel::onBeginCreateMatch()
 
 void MatchTableModel::onEndCreateMatch(int newMatchSeqNum)
 {
+  predictedMatchTimes = matchTimePredictor->getMatchTimePrediction();
   endInsertRows();
 }
 
@@ -226,6 +297,7 @@ void MatchTableModel::onMatchStatusChanged(int matchId, int matchSeqNum)
 {
   QModelIndex startIdx = createIndex(matchSeqNum, 0);
   QModelIndex endIdx = createIndex(matchSeqNum, COLUMN_COUNT-1);
+  predictedMatchTimes = matchTimePredictor->getMatchTimePrediction();
   emit dataChanged(startIdx, endIdx);
 }
 
@@ -240,7 +312,18 @@ void MatchTableModel::onBeginResetModel()
 
 void MatchTableModel::onEndResetModel()
 {
+  predictedMatchTimes = matchTimePredictor->getMatchTimePrediction();
   endResetModel();
+}
+
+//----------------------------------------------------------------------------
+
+void MatchTableModel::recalcPrediction()
+{
+  predictedMatchTimes = matchTimePredictor->getMatchTimePrediction();
+  QModelIndex startIdx = createIndex(0, EST_START_COL_ID);
+  QModelIndex endIdx = createIndex(rowCount(), EST_COURT_COL_ID);
+  emit dataChanged(startIdx, endIdx);
 }
 
 //----------------------------------------------------------------------------

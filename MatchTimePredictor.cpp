@@ -66,7 +66,8 @@ namespace QTournament {
     // determine the available, not disabled courts
     CourtMngr cm{db};
     CourtList allCourts = cm.getAllCourts();
-    remove_if(allCourts.begin(), allCourts.end(), [](Court& c){ return (c.getState() == STAT_CO_DISABLED);});
+    allCourts.erase(remove_if(allCourts.begin(), allCourts.end(), [](Court& c){ return (c.getState() == STAT_CO_DISABLED);}),
+        allCourts.end());
 
     // if we don't have any courts at all, we can't make any predictions
     if (allCourts.size() == 0)
@@ -143,8 +144,8 @@ namespace QTournament {
       // prepare a new prediction element
       struct MatchTimePrediction mtp;
       mtp.matchId = matchRow.getId();
-      mtp.estStartTime__UTC = coFree;
-      mtp.estFinishTime__UTC = coFree + avgMatchTime;
+      mtp.estStartTime__UTC = coFree + GRACE_TIME_BETWEEN_MATCHES__SECS;
+      mtp.estFinishTime__UTC = mtp.estStartTime__UTC + avgMatchTime;
       mtp.estCourtNum = coNum;
 
       // store the element
@@ -154,7 +155,12 @@ namespace QTournament {
       //
       // this means implicitly that this court is last to become
       // available again and so we push it at the of the court list
-      courtFreeList.push_back(make_tuple(coNum, coFree + avgMatchTime));
+      courtFreeList.push_back(make_tuple(coNum, mtp.estFinishTime__UTC));
+
+      // store the finish time of the match as the predicted
+      // tournament end  ==>  the variable finally holds the
+      // predicted finish time of the last scheduled match
+      predictedTournamentEnd = mtp.estFinishTime__UTC;
 
       // next match
       ++it;
@@ -203,6 +209,7 @@ namespace QTournament {
       // update the accumulated match time
       totalMatchTime_secs += (finishTime - startTime);
       lastMatchFinishTime = finishTime;  // we've ordered the results by finish time, see above
+      ++nMatches;
 
       ++it;
     }

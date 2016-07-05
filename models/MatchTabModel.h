@@ -19,11 +19,13 @@
 #ifndef MATCHTABLEMODEL_H
 #define	MATCHTABLEMODEL_H
 
+#include <vector>
 #include <QAbstractTableModel>
 
 #include "DbTab.h"
 #include "TournamentDB.h"
 #include "Match.h"
+#include "MatchTimePredictor.h"
 
 namespace QTournament
 {
@@ -38,7 +40,10 @@ namespace QTournament
     static constexpr int STATE_COL_ID = 5;  // id of the column with the match state
     static constexpr int MATCH_NUM_COL_ID = 0;  // id of the column with the match number
     static constexpr int REFEREE_MODE_COL_ID = 6;  // id of the column with the referee node
-    static constexpr int COLUMN_COUNT = 7;  // number of columns in the model
+    static constexpr int EST_START_COL_ID = 7;  // id of the column with the estimated start time
+    static constexpr int EST_END_COL_ID = 8;  // id of the column with the estimated finish time
+    static constexpr int EST_COURT_COL_ID = 9;  // id of the column with the estimated court
+    static constexpr int COLUMN_COUNT = 10;  // number of columns in the model
 
     MatchTableModel (TournamentDB* _db);
     int rowCount(const QModelIndex & parent = QModelIndex()) const;
@@ -51,6 +56,9 @@ namespace QTournament
   private:
     TournamentDB* db;
     SqliteOverlay::DbTab* matchTab;
+    unique_ptr<MatchTimePredictor> matchTimePredictor;
+    vector<MatchTimePrediction> predictedMatchTimes;
+    MatchTimePrediction getMatchTimePredictionForMatch(const Match& ma) const;
     
   public slots:
     void onBeginCreateMatch();
@@ -58,6 +66,7 @@ namespace QTournament
     void onMatchStatusChanged(int matchId, int matchSeqNum);
     void onBeginResetModel();
     void onEndResetModel();
+    void recalcPrediction();
 
   };
 

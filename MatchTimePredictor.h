@@ -51,12 +51,14 @@ namespace QTournament
 
   private:
     static constexpr int DEFAULT_MATCH_TIME__SECS = 25 * 60;  // 25 minutes
+    static constexpr int GRACE_TIME_BETWEEN_MATCHES__SECS = 60;
     static constexpr int NUM_INITIALLY_ASSUMED_MATCHES = 5;
 
     TournamentDB* db;
     unsigned long totalMatchTime_secs;
     int nMatches;
     time_t lastMatchFinishTime;
+    time_t predictedTournamentEnd;
 
     void updateAvgMatchTimeFromDatabase();
   };

@@ -232,7 +232,10 @@ void MatchTableView::autosizeColumns()
                     REL_CAT_COL_WIDTH + // category
                     REL_NUMERIC_COL_WIDTH + // round
                     REL_NUMERIC_COL_WIDTH + // group
-                    REL_REFEREE_COL_WIDTH); // referee
+                    REL_REFEREE_COL_WIDTH + // referee
+                    REL_NUMERIC_COL_WIDTH + // est. start time
+                    REL_NUMERIC_COL_WIDTH + // est. finish time
+                    REL_NUMERIC_COL_WIDTH); // estimated court
 
   int widthAvail = width();
   if ((verticalScrollBar() != nullptr) && (verticalScrollBar()->isVisible()))
@@ -259,6 +262,9 @@ void MatchTableView::autosizeColumns()
   myWidthSetter(2, REL_CAT_COL_WIDTH * unitWidth);  // category
   myWidthSetter(3, numericColWidth);  // round
   myWidthSetter(4, numericColWidth);  // group
+  myWidthSetter(MatchTableModel::EST_START_COL_ID, numericColWidth);   // start time
+  myWidthSetter(MatchTableModel::EST_END_COL_ID, numericColWidth);   // finish time
+  myWidthSetter(MatchTableModel::EST_COURT_COL_ID, numericColWidth);   // court time
 
   // assign the remaining width to the referee. This accounts for
   // rounding errors when dividing / multiplying pixel widths and makes
