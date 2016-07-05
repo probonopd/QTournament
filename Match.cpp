@@ -303,7 +303,7 @@ namespace QTournament
   {
     auto startTime = row.getInt2(MA_START_TIME);
     if (startTime->isNull()) return QDateTime();   // return null-time as error indicator
-    uint epochSecs = startTime->get();   // Hmmm... conversion from int to unit... should work until 2035 or something
+    uint epochSecs = startTime->get();   // Hmmm... conversion from int to uint... should work until 2035 or something
 
     return QDateTime::fromTime_t(epochSecs);
   }
@@ -314,7 +314,7 @@ namespace QTournament
   {
     auto finishTime = row.getInt2(MA_FINISH_TIME);
     if (finishTime->isNull()) return QDateTime();   // return null-time as error indicator
-    uint epochSecs = finishTime->get();   // Hmmm... conversion from int to unit... should work until 2035 or something
+    uint epochSecs = finishTime->get();   // Hmmm... conversion from int to uint... should work until 2035 or something
 
     return QDateTime::fromTime_t(epochSecs);
   }
