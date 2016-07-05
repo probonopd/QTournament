@@ -11,7 +11,7 @@ TournamentProgressBar::TournamentProgressBar(QWidget* parentWidget)
 {
   // prep the raw status string
   rawStatusString = tr("%1 matches in total, %2 scheduled, %3 running, %4 finished (%5 %) ; ");
-  rawStatusString += tr("avg. match duration: %6 min. ; last scheduled match finished: %7 (%8)");
+  rawStatusString += tr("avg. match duration: %6 min. ; last scheduled match finished at %7 (%8)");
 
   // set the progressbar range to 0...100
   setMinimum(0);
@@ -94,8 +94,7 @@ void TournamentProgressBar::updateProgressBar()
     int minutes = (remainSecs - hours * 3600) / 60;
 
     QString s = tr("%1 h %2 min.");
-    s = s.arg(hours).arg(minutes);
-
+    s = s.arg(hours).arg(minutes, 2, 10, QLatin1Char('0'));
     txt = txt.arg(s);
   } else {
     txt = txt.arg("??").arg("??");
