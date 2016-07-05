@@ -54,13 +54,14 @@ ScheduleTabWidget::ScheduleTabWidget(QWidget *parent) :
     // react to changes in round,  match or category status
     CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
     connect(cse, SIGNAL(roundCompleted(int,int)), this, SLOT(onRoundCompleted(int,int)));
-    //connect(cse, SIGNAL(matchStatusChanged(int,int,OBJ_STATE,OBJ_STATE)), this, SLOT(onMatchStatusChanged(int,int,OBJ_STATE,OBJ_STATE)));
-    //connect(cse, SIGNAL(categoryStatusChanged(Category,OBJ_STATE,OBJ_STATE)), this, SLOT(onCatStatusChanged()));
 
     // default all buttons to "disabled"
     ui->btnSchedule->setEnabled(false);
     ui->btnStage->setEnabled(false);
     ui->btnUnstage->setEnabled(false);
+
+    // make the btnHideStagingArea button as small as possible
+    ui->btnHideStagingArea->setMaximumWidth(20);
 
 }
 
@@ -208,6 +209,21 @@ void ScheduleTabWidget::onRoundCompleted(int catId, int round)
   QString txt = tr("Round %1 of category %2 finished!").arg(round).arg(cat.getName());
 
   QMessageBox::information(this, tr("Round finished"), txt);
+}
+
+//----------------------------------------------------------------------------
+
+void ScheduleTabWidget::onBtnHideStagingAreaClicked()
+{
+  bool setToVisible = !(ui->stagingWidget->isVisible());
+  ui->stagingWidget->setVisible(setToVisible);
+
+  if (setToVisible)
+  {
+    ui->btnHideStagingArea->setText("◀");
+  } else {
+    ui->btnHideStagingArea->setText("▶");
+  }
 }
 
 //----------------------------------------------------------------------------

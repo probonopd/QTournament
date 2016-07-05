@@ -19,113 +19,126 @@
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_5" stretch="4,15,9">
        <item>
-        <layout class="QVBoxLayout" name="verticalLayout_3">
-         <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_4">
-           <item>
-            <widget class="QLabel" name="label_2">
-             <property name="text">
-              <string>Staged match groups:</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="btnSchedule">
-             <property name="text">
-              <string>Add all --&gt;</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <widget class="MatchGroupTableView" name="mgStagedView">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-             <horstretch>0</horstretch>
-             <verstretch>1</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="horizontalScrollBarPolicy">
-            <enum>Qt::ScrollBarAlwaysOff</enum>
-           </property>
-           <property name="selectionMode">
-            <enum>QAbstractItemView::SingleSelection</enum>
-           </property>
-           <property name="selectionBehavior">
-            <enum>QAbstractItemView::SelectRows</enum>
-           </property>
-           <property name="sortingEnabled">
-            <bool>false</bool>
-           </property>
-           <attribute name="verticalHeaderVisible">
-            <bool>false</bool>
-           </attribute>
-          </widget>
-         </item>
-         <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_3">
-           <item>
-            <widget class="QPushButton" name="btnStage">
-             <property name="text">
-              <string>^^</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="btnUnstage">
-             <property name="text">
-              <string>vv</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <widget class="QLabel" name="laAvail">
-           <property name="text">
-            <string>Available match groups:</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="MatchGroupTableView" name="mgIdleView">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-             <horstretch>0</horstretch>
-             <verstretch>2</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="horizontalScrollBarPolicy">
-            <enum>Qt::ScrollBarAlwaysOff</enum>
-           </property>
-           <property name="selectionMode">
-            <enum>QAbstractItemView::SingleSelection</enum>
-           </property>
-           <property name="selectionBehavior">
-            <enum>QAbstractItemView::SelectRows</enum>
-           </property>
-           <property name="sortingEnabled">
-            <bool>true</bool>
-           </property>
-           <attribute name="horizontalHeaderVisible">
-            <bool>true</bool>
-           </attribute>
-           <attribute name="verticalHeaderVisible">
-            <bool>false</bool>
-           </attribute>
-          </widget>
-         </item>
-        </layout>
+        <widget class="QWidget" name="stagingWidget" native="true">
+         <layout class="QVBoxLayout" name="verticalLayout_3">
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_4">
+            <item>
+             <widget class="QLabel" name="label_2">
+              <property name="text">
+               <string>Staged match groups:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="btnSchedule">
+              <property name="text">
+               <string>Add all ►</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="MatchGroupTableView" name="mgStagedView">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+              <horstretch>0</horstretch>
+              <verstretch>1</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="horizontalScrollBarPolicy">
+             <enum>Qt::ScrollBarAlwaysOff</enum>
+            </property>
+            <property name="selectionMode">
+             <enum>QAbstractItemView::SingleSelection</enum>
+            </property>
+            <property name="selectionBehavior">
+             <enum>QAbstractItemView::SelectRows</enum>
+            </property>
+            <property name="sortingEnabled">
+             <bool>false</bool>
+            </property>
+            <attribute name="verticalHeaderVisible">
+             <bool>false</bool>
+            </attribute>
+           </widget>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_3">
+            <item>
+             <widget class="QPushButton" name="btnStage">
+              <property name="text">
+               <string>▲</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="btnUnstage">
+              <property name="text">
+               <string>▼</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="QLabel" name="laAvail">
+            <property name="text">
+             <string>Available match groups:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="MatchGroupTableView" name="mgIdleView">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+              <horstretch>0</horstretch>
+              <verstretch>2</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="horizontalScrollBarPolicy">
+             <enum>Qt::ScrollBarAlwaysOff</enum>
+            </property>
+            <property name="selectionMode">
+             <enum>QAbstractItemView::SingleSelection</enum>
+            </property>
+            <property name="selectionBehavior">
+             <enum>QAbstractItemView::SelectRows</enum>
+            </property>
+            <property name="sortingEnabled">
+             <bool>true</bool>
+            </property>
+            <attribute name="horizontalHeaderVisible">
+             <bool>true</bool>
+            </attribute>
+            <attribute name="verticalHeaderVisible">
+             <bool>false</bool>
+            </attribute>
+           </widget>
+          </item>
+         </layout>
+        </widget>
        </item>
        <item>
         <layout class="QVBoxLayout" name="verticalLayout_4">
          <item>
-          <widget class="QLabel" name="label_3">
-           <property name="text">
-            <string>Next matches:</string>
-           </property>
-          </widget>
+          <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,20">
+           <item>
+            <widget class="QPushButton" name="btnHideStagingArea">
+             <property name="text">
+              <string>◀</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="label_3">
+             <property name="text">
+              <string>Next matches:</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </item>
          <item>
           <widget class="MatchTableView" name="tvMatches">
@@ -217,54 +230,6 @@
  <resources/>
  <connections>
   <connection>
-   <sender>btnStage</sender>
-   <signal>clicked()</signal>
-   <receiver>ScheduleTabWidget</receiver>
-   <slot>onBtnStageClicked()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>79</x>
-     <y>189</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>442</x>
-     <y>244</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>btnUnstage</sender>
-   <signal>clicked()</signal>
-   <receiver>ScheduleTabWidget</receiver>
-   <slot>onBtnUnstageClicked()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>219</x>
-     <y>189</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>442</x>
-     <y>244</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>btnSchedule</sender>
-   <signal>clicked()</signal>
-   <receiver>ScheduleTabWidget</receiver>
-   <slot>onBtnScheduleClicked()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>223</x>
-     <y>25</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>442</x>
-     <y>244</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>tvMatches</sender>
    <signal>doubleClicked(QModelIndex)</signal>
    <receiver>tvMatches</receiver>
@@ -296,6 +261,70 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>btnHideStagingArea</sender>
+   <signal>clicked()</signal>
+   <receiver>ScheduleTabWidget</receiver>
+   <slot>onBtnHideStagingAreaClicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>298</x>
+     <y>23</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>442</x>
+     <y>244</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>btnSchedule</sender>
+   <signal>clicked()</signal>
+   <receiver>ScheduleTabWidget</receiver>
+   <slot>onBtnScheduleClicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>200</x>
+     <y>31</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>442</x>
+     <y>244</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>btnStage</sender>
+   <signal>clicked()</signal>
+   <receiver>ScheduleTabWidget</receiver>
+   <slot>onBtnStageClicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>74</x>
+     <y>179</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>442</x>
+     <y>244</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>btnUnstage</sender>
+   <signal>clicked()</signal>
+   <receiver>ScheduleTabWidget</receiver>
+   <slot>onBtnUnstageClicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>187</x>
+     <y>179</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>442</x>
+     <y>244</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>onBtnStageClicked()</slot>
@@ -303,5 +332,6 @@
   <slot>onBtnScheduleClicked()</slot>
   <slot>onCourtDoubleClicked(QModelIndex)</slot>
   <slot>onMatchSelectionChanged()</slot>
+  <slot>onBtnHideStagingAreaClicked()</slot>
  </slots>
 </ui>
