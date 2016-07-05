@@ -54,22 +54,14 @@ ScheduleTabWidget::ScheduleTabWidget(QWidget *parent) :
     // react to changes in round,  match or category status
     CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
     connect(cse, SIGNAL(roundCompleted(int,int)), this, SLOT(onRoundCompleted(int,int)));
-    connect(cse, SIGNAL(matchStatusChanged(int,int,OBJ_STATE,OBJ_STATE)), this, SLOT(onMatchStatusChanged(int,int,OBJ_STATE,OBJ_STATE)));
-    connect(cse, SIGNAL(categoryStatusChanged(Category,OBJ_STATE,OBJ_STATE)), this, SLOT(onCatStatusChanged()));
+    //connect(cse, SIGNAL(matchStatusChanged(int,int,OBJ_STATE,OBJ_STATE)), this, SLOT(onMatchStatusChanged(int,int,OBJ_STATE,OBJ_STATE)));
+    //connect(cse, SIGNAL(categoryStatusChanged(Category,OBJ_STATE,OBJ_STATE)), this, SLOT(onCatStatusChanged()));
 
     // default all buttons to "disabled"
     ui->btnSchedule->setEnabled(false);
     ui->btnStage->setEnabled(false);
     ui->btnUnstage->setEnabled(false);
 
-    // initial status bar value
-    QString rawProgressBarString = tr("No match status available");
-    updateProgressBar();
-
-    // create a timer for cyclic updates of the remaining tournament time
-    progressbarUpdateTimer = make_unique<QTimer>(this);
-    connect(progressbarUpdateTimer.get(), SIGNAL(timeout()), this, SLOT(updateProgressBar()));
-    progressbarUpdateTimer->start(PROGRESSBAR_UPDATE_INTERVAL__SECS * 1000);
 }
 
 //----------------------------------------------------------------------------
@@ -89,17 +81,13 @@ void ScheduleTabWidget::setDatabase(TournamentDB* _db)
   ui->mgStagedView->setDatabase(db);
   ui->tvCourts->setDatabase(db);
   ui->tvMatches->setDatabase(db);
+  ui->pbRemainingMatches->setDatabase(db);
 
   if (db != nullptr)
   {
     // things to do when we open a new tournament
-    initProgressBarFromDatabase();
   } else {
     // things to do when we close a tournament
-
-    // reset the progress bar
-    ui->pbRemainingMatches->setValue(0);
-    ui->pbRemainingMatches->setFormat(QString());
   }
 
   setEnabled(db != nullptr);
@@ -315,163 +303,6 @@ void ScheduleTabWidget::askAndStoreMatchResult(const Match &ma)
 
 //----------------------------------------------------------------------------
 
-int ScheduleTabWidget::estimateRemainingTournamentTime()
-{
-  // we can't do any estimations if don't have courts
-  // to play on
-  CourtMngr cm{db};
-  int courtCount = cm.getActiveCourtCount();
-  if (courtCount <= 0) return -1;
-
-  QDateTime curDateTime = QDateTime::currentDateTimeUtc();
-  uint epochNow = curDateTime.toTime_t();
-
-  // calculate the average runtime of all running matches
-  int totalRuntime = 0;
-  int totalRuntimeCnt = 0;
-  MatchMngr mm{db};
-  auto runningMatches = mm.getCurrentlyRunningMatches();
-  for (const Match& ma : runningMatches)
-  {
-    auto startTime = ma.getStartTime();
-    if (startTime.isNull()) continue;
-
-    uint startTimeSecs = startTime.toTime_t();
-
-    // calculate the time the match is already running
-    int runtime = epochNow - startTimeSecs;
-
-    // sum everything up
-    totalRuntime += runtime;
-    ++totalRuntimeCnt;
-  }
-
-  // calculate the overall remaining playing time for all unfinished matches
-  int nTotal;
-  int nFinished;
-  int nRunning;
-  tie(nTotal, nFinished, nRunning) = mm.getMatchStats();
-  int remainingMatches = nTotal - nFinished;
-  int avgMatchDuration = getAverageMatchDuration();
-  int remainingTime = (remainingMatches / courtCount) * avgMatchDuration;
-  remainingTime += ((remainingMatches % courtCount) == 0) ? 0 : avgMatchDuration;
-
-  // subtract the time already "consumed" by the running matches (averaged)
-  remainingTime -= (totalRuntimeCnt > 0) ? totalRuntime / totalRuntimeCnt : 0;
-
-  return remainingTime;
-}
-
-//----------------------------------------------------------------------------
-
-int ScheduleTabWidget::getAverageMatchDuration()
-{
-  // calculate the total match duration of all finished matches
-  totalDuration = 0;
-  totalDurationCnt = 0;
-  MatchMngr mm{db};
-  for (const Match& ma : mm.getFinishedMatches())
-  {
-    int duration = ma.getMatchDuration();
-    if (duration < 0) continue;
-    totalDuration += duration;
-    ++totalDurationCnt;
-  }
-
-  return (totalDurationCnt > 0) ? totalDuration / totalDurationCnt : INITIAL_AVG_MATCH_DURATION__SECS;
-}
-
-//----------------------------------------------------------------------------
-
-void ScheduleTabWidget::updateProgressBar()
-{
-  if (db == nullptr)
-  {
-    ui->pbRemainingMatches->setFormat(QString());
-    ui->pbRemainingMatches->setValue(0);
-    return;
-  }
-
-  QString txt = rawProgressBarString;
-  int timeRemain = estimateRemainingTournamentTime();
-  if (timeRemain < 0)
-  {
-    txt = txt.arg(tr("<unknown>"));
-  } else {
-    int hours = timeRemain / 3600;
-    int minutes = (timeRemain % 3600) / 60;
-    QString s = "%1 h %2 min";
-    s = s.arg(hours);
-    s = s.arg(minutes, 2, 10, QLatin1Char('0'));
-    txt = txt.arg(s);
-  }
-  ui->pbRemainingMatches->setFormat(txt);
-}
-
-//----------------------------------------------------------------------------
-
-void ScheduleTabWidget::initProgressBarFromDatabase()
-{
-  // calculate the total match duration of all finished matches
-  totalDuration = 0;
-  totalDurationCnt = 0;
-  MatchMngr mm{db};
-  for (const Match& ma : mm.getFinishedMatches())
-  {
-    int duration = ma.getMatchDuration();
-    if (duration < 0) continue;
-    totalDuration += duration;
-    ++totalDurationCnt;
-  }
-
-  // update the progress bar using dummy match parameters
-  onMatchStatusChanged(-1, -1, STAT_MA_FINISHED, STAT_MA_FINISHED);
-}
-
-//----------------------------------------------------------------------------
-
-void ScheduleTabWidget::onMatchStatusChanged(int matchId, int matchSeqNum, OBJ_STATE fromState, OBJ_STATE toState)
-{
-  // get updated match status counters
-  MatchMngr mm{db};
-  int nTotal;
-  int nFinished;
-  int nRunning;
-  tie(nTotal, nFinished, nRunning) = mm.getMatchStats();
-  int percComplete = (nTotal > 0) ? (nFinished * 100) / nTotal : 0;
-
-  // update the match duration counter, if applicable
-  /*if ((toState == STAT_MA_FINISHED) && (matchId > 0))
-  {
-    auto ma = tnmt->getMatchMngr()->getMatch(matchId);
-    assert(ma != nullptr);
-    int duration = ma->getMatchDuration();
-
-    if (duration >= 0)
-    {
-      totalDuration += duration;
-      ++totalDurationCnt;
-    }
-  }*/
-
-  // put everything into a status string
-  rawProgressBarString = tr("%1 matches in total, %2 finished (%3 %), %5 unfinished, %4 running");
-  rawProgressBarString = rawProgressBarString.arg(nTotal).arg(nFinished).arg(percComplete).arg(nRunning).arg(nTotal - nFinished);
-  rawProgressBarString += "   " + tr("Avg. match duration: %1 min., est. remaining tournament time: %2");
-  rawProgressBarString = rawProgressBarString.arg(getAverageMatchDuration() / 60);
-
-  // update the progress bar
-  ui->pbRemainingMatches->setValue(percComplete);
-  updateProgressBar();
-}
-
-//----------------------------------------------------------------------------
-
-void ScheduleTabWidget::onCatStatusChanged()
-{
-  // update the progress bar using dummy match parameters
-  onMatchStatusChanged(-1, -1, STAT_MA_FINISHED, STAT_MA_FINISHED);
-}
 
 //----------------------------------------------------------------------------
 

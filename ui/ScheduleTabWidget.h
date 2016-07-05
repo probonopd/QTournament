@@ -57,24 +57,13 @@ public slots:
   void onStagedSelectionChanged(const QItemSelection &, const QItemSelection &);
   void onCourtDoubleClicked(const QModelIndex& index);
   void onRoundCompleted(int catId, int round);
-  void onMatchStatusChanged(int matchId, int matchSeqNum, OBJ_STATE fromState, OBJ_STATE toState);
-  void onCatStatusChanged();
-  void updateProgressBar();
 
 private:
   TournamentDB* db;
   Ui::ScheduleTabWidget *ui;
   void updateButtons();
   void askAndStoreMatchResult(const Match& ma);
-  int estimateRemainingTournamentTime();
-  int getAverageMatchDuration();
-  QString rawProgressBarString;
-  unsigned long totalDuration = INITIAL_AVG_MATCH_DURATION__SECS;
-  int totalDurationCnt;
-  uint avgStartTime;
-  unique_ptr<QTimer> progressbarUpdateTimer;
 
-  void initProgressBarFromDatabase();
 };
 
 #endif // SCHEDULETABWIDGET_H

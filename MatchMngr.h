@@ -62,7 +62,7 @@ namespace QTournament
     unique_ptr<Match> getMatchBySeqNum(int maSeqNum) const;
     unique_ptr<Match> getMatchByMatchNum(int maNum) const;
     unique_ptr<Match> getMatch(int id) const;
-    tuple<int, int, int> getMatchStats() const;
+    tuple<int, int, int, int> getMatchStats() const;
 
     // boolean hasXXXXX functions for MATCHES
     bool hasMatchesInCategory(const Category& cat, int round=-1) const;

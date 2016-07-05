@@ -27,6 +27,7 @@
 #include "MatchMngr.h"
 #include "Match.h"
 #include "TournamentDataDefs.h"
+#include "CentralSignalEmitter.h"
 
 namespace QTournament {
 
@@ -73,6 +74,7 @@ namespace QTournament {
     // if we don't have any courts at all, we can't make any predictions
     if (allCourts.size() == 0)
     {
+      CentralSignalEmitter::getInstance()->matchTimePredictionChanged(-1, 0);
       return vector<MatchTimePrediction>();
     }
 
@@ -89,15 +91,31 @@ namespace QTournament {
     for (const Court& c : allCourts)
     {
       int coNum = c.getNumber();
+
+      // default value for empty courts
       int finishTime = now - GRACE_TIME_BETWEEN_MATCHES__SECS;  // will be added again later
 
       upMatch ma = mm.getMatchForCourt(c);
       if (ma != nullptr)
       {
         QDateTime start = ma->getStartTime();
-        if (!(start.isNull()))  // getStartTime returns NULL-time on error
+        if (!(start.isNull()))  // getStartTime returns NULL-time on error or if court is empty
         {
           finishTime = start.toTime_t() + avgMatchTime;
+
+          // handle a special case here:
+          //
+          // if the court is in use and the avgMatchTime is
+          // less than the actual running time of the match,
+          // the predicted finishTime can be in the past!
+          //
+          // in this case we simply assume that the court
+          // will be ready in five minutes because the match
+          // must be close to its end
+          if (finishTime < now)
+          {
+            finishTime = now + COURTS_IS_BUSY_AND_PREDICTION_WRONG__CORRECTION_OFFSET__SECS;
+          }
         }
       }
 
@@ -121,6 +139,9 @@ namespace QTournament {
       // by court number
       return (c1Free < c2Free);
     });
+
+
+
 
     // prepare the result vector
     vector<MatchTimePrediction> result;
@@ -179,6 +200,9 @@ namespace QTournament {
       // next match
       ++it;
     }
+
+    // inform everyone about the latest statistics
+    CentralSignalEmitter::getInstance()->matchTimePredictionChanged(avgMatchTime, predictedTournamentEnd);
 
     return result;
   }

@@ -1078,6 +1078,12 @@ namespace QTournament
     // do the individual prep of the first round
     ERR result = specializedCat->prepareFirstRound(progressNotificationQueue);
 
+    // trigger another signal for updating match counters, match time
+    // predictions etc.
+    //
+    // this shouldn't do any harm
+    CentralSignalEmitter::getInstance()->categoryStatusChanged(c, STAT_CAT_IDLE, STAT_CAT_IDLE);
+
     // indicate the completeness of the initialization to the queue, if necessary
     if (progressNotificationQueue != nullptr)
     {

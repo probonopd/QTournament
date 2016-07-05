@@ -175,7 +175,7 @@
       </layout>
      </item>
      <item>
-      <widget class="QProgressBar" name="pbRemainingMatches">
+      <widget class="TournamentProgressBar" name="pbRemainingMatches">
        <property name="value">
         <number>24</number>
        </property>
@@ -207,6 +207,11 @@
    <class>CourtTableView</class>
    <extends>QTableView</extends>
    <header>ui/CourtTableView.h</header>
+  </customwidget>
+  <customwidget>
+   <class>TournamentProgressBar</class>
+   <extends>QProgressBar</extends>
+   <header>ui/TournamentProgressBar.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

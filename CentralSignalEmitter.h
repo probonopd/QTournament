@@ -83,6 +83,9 @@ namespace QTournament
     void teamRenamed(int teamSeqNum);
     void teamAssignmentChanged(const Player& affectedPlayer, const Team& oldTeam, const Team& newTeam);
 
+    // Signals emitted by the MatchTimePredictor
+    void matchTimePredictionChanged(int newAvgMatchDuration, time_t finishOfLastScheduledMatch__UTC);
+
   public slots:
 
   private:

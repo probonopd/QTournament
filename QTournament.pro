@@ -131,7 +131,8 @@ HEADERS += \
     models/TeamTableModel.h \
     ui/TeamTableView.h \
     ui/delegates/CatTabPlayerItemDelegate.h \
-    MatchTimePredictor.h
+    MatchTimePredictor.h \
+    ui/TournamentProgressBar.h
 
 SOURCES += \
     Category.cpp \
@@ -238,7 +239,8 @@ SOURCES += \
     models/TeamTableModel.cpp \
     ui/TeamTableView.cpp \
     ui/delegates/CatTabPlayerItemDelegate.cpp \
-    MatchTimePredictor.cpp
+    MatchTimePredictor.cpp \
+    ui/TournamentProgressBar.cpp
 
 RESOURCES += \
     tournament.qrc

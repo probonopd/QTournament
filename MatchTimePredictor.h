@@ -21,6 +21,8 @@
 
 #include <vector>
 
+#include <QObject>
+
 #include "DbTab.h"
 #include "TournamentDB.h"
 
@@ -39,8 +41,10 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  class MatchTimePredictor
+  class MatchTimePredictor : public QObject
   {
+    Q_OBJECT
+
   public:
     // ctor
     MatchTimePredictor(TournamentDB* _db);
@@ -52,6 +56,7 @@ namespace QTournament
   private:
     static constexpr int DEFAULT_MATCH_TIME__SECS = 25 * 60;  // 25 minutes
     static constexpr int GRACE_TIME_BETWEEN_MATCHES__SECS = 60;
+    static constexpr int COURTS_IS_BUSY_AND_PREDICTION_WRONG__CORRECTION_OFFSET__SECS = 5 * 60;
     static constexpr int NUM_INITIALLY_ASSUMED_MATCHES = 5;
 
     TournamentDB* db;

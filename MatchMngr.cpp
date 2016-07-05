@@ -1799,7 +1799,7 @@ namespace QTournament {
 
   //----------------------------------------------------------------------------
 
-  tuple<int, int, int> MatchMngr::getMatchStats() const
+  tuple<int, int, int, int> MatchMngr::getMatchStats() const
   {
     // get the total number of matches
     int nTotal = tab->length();
@@ -1810,7 +1810,12 @@ namespace QTournament {
     // get the number of finished matches
     int nFinished = tab->getMatchCountForColumnValue(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_FINISHED));
 
-    return make_tuple(nTotal, nFinished, nRunning);
+    // get the number of scheduled matches
+    WhereClause wc;
+    wc.addIntCol(MA_NUM, ">", 0);
+    int nScheduled = tab->getMatchCountForWhereClause(wc) - nRunning - nFinished;
+
+    return make_tuple(nTotal, nScheduled, nRunning, nFinished);
   }
 
   //----------------------------------------------------------------------------
