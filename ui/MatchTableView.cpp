@@ -69,6 +69,11 @@ MatchTableView::MatchTableView(QWidget* parent)
   // register for an ackward signal relay mechanism in order
   // to give reports access to the currently selected match
   SignalRelay::getInstance()->registerSender(this);
+
+  // prepare a timer that periodically updates the predicted start / finish times for matches
+  predictionUpdateTimer = make_unique<QTimer>(this);
+  connect(predictionUpdateTimer.get(), SIGNAL(timeout()), this, SLOT(onMatchTimePredictionUpdate()));
+  predictionUpdateTimer->start(PREDICTION_UPDATE_INTERVAL__MS);
 }
 
 //----------------------------------------------------------------------------
@@ -477,6 +482,16 @@ void MatchTableView::onRemoveRefereeTriggered()
 void MatchTableView::onSectionHeaderDoubleClicked()
 {
   autosizeColumns();
+}
+
+//----------------------------------------------------------------------------
+
+void MatchTableView::onMatchTimePredictionUpdate()
+{
+  if (curDataModel != nullptr)
+  {
+    curDataModel->recalcPrediction();
+  }
 }
 
 //----------------------------------------------------------------------------

@@ -27,6 +27,7 @@
 #include <QMenu>
 #include <QAction>
 #include <QStringListModel>
+#include <QTimer>
 
 #include "TournamentDB.h"
 #include "delegates/MatchItemDelegate.h"
@@ -67,11 +68,13 @@ private slots:
   void onAssignRefereeTriggered();
   void onRemoveRefereeTriggered();
   void onSectionHeaderDoubleClicked();
+  void onMatchTimePredictionUpdate();
 
 signals:
   void matchSelectionChanged(int newlySelectedMatchId);
 
 private:
+  static constexpr int PREDICTION_UPDATE_INTERVAL__MS = 10 * 1000; // update every 10 secs
   TournamentDB* db;
   QStringListModel* emptyModel;
   MatchTableModel* curDataModel;
@@ -89,6 +92,8 @@ private:
   QMenu* refereeMode_submenu;
   QAction* actAssignReferee;
   QAction* actRemoveReferee;
+
+  unique_ptr<QTimer> predictionUpdateTimer;
 
   void initContextMenu();
   void updateContextMenu();

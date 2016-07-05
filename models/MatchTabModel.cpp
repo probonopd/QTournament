@@ -34,7 +34,7 @@ MatchTableModel::MatchTableModel(TournamentDB* _db)
   CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
   connect(cse, SIGNAL(beginCreateMatch()), this, SLOT(onBeginCreateMatch()), Qt::DirectConnection);
   connect(cse, SIGNAL(endCreateMatch(int)), this, SLOT(onEndCreateMatch(int)), Qt::DirectConnection);
-  connect(cse, SIGNAL(matchStatusChanged(int,int,OBJ_STATE,OBJ_STATE)), this, SLOT(onMatchStatusChanged(int,int)), Qt::DirectConnection);
+  connect(cse, SIGNAL(matchStatusChanged(int,int,OBJ_STATE,OBJ_STATE)), this, SLOT(onMatchStatusChanged(int,int,OBJ_STATE,OBJ_STATE)), Qt::DirectConnection);
   connect(cse, SIGNAL(beginResetAllModels()), this, SLOT(onBeginResetModel()), Qt::DirectConnection);
   connect(cse, SIGNAL(endResetAllModels()), this, SLOT(onEndResetModel()), Qt::DirectConnection);
   connect(cse, SIGNAL(endCreateCourt(int)), this, SLOT(recalcPrediction()), Qt::DirectConnection);
@@ -287,18 +287,27 @@ void MatchTableModel::onBeginCreateMatch()
 
 void MatchTableModel::onEndCreateMatch(int newMatchSeqNum)
 {
-  predictedMatchTimes = matchTimePredictor->getMatchTimePrediction();
   endInsertRows();
+  //recalcPrediction();   // matches are created as INCOMPLETE and do not affect the schedule
 }
 
 //----------------------------------------------------------------------------
 
-void MatchTableModel::onMatchStatusChanged(int matchId, int matchSeqNum)
+void MatchTableModel::onMatchStatusChanged(int matchId, int matchSeqNum, OBJ_STATE fromState, OBJ_STATE toState)
 {
   QModelIndex startIdx = createIndex(matchSeqNum, 0);
   QModelIndex endIdx = createIndex(matchSeqNum, COLUMN_COUNT-1);
-  predictedMatchTimes = matchTimePredictor->getMatchTimePrediction();
   emit dataChanged(startIdx, endIdx);
+
+  // no need for recalculation match times here:
+  //
+  // started / finished matches are captured via the court status change
+  // and trigger an immediate update
+  //
+  // all other changes (e.g. adding matches to the schedule) will be
+  // captured by a periodic update every 10 seconds
+
+  return;
 }
 
 //----------------------------------------------------------------------------
@@ -312,7 +321,7 @@ void MatchTableModel::onBeginResetModel()
 
 void MatchTableModel::onEndResetModel()
 {
-  predictedMatchTimes = matchTimePredictor->getMatchTimePrediction();
+  recalcPrediction();
   endResetModel();
 }
 

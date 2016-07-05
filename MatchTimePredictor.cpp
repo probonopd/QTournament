@@ -18,6 +18,7 @@
 
 #include <ctime>
 #include <deque>
+#include <cmath>
 
 #include <QDateTime>
 
@@ -75,16 +76,20 @@ namespace QTournament {
       return vector<MatchTimePrediction>();
     }
 
+    // take all recently finished matches into account
+    // for the average match time
+    updateAvgMatchTimeFromDatabase();
+    int avgMatchTime = getAverageMatchTime__secs();
+
     // set up a list of court numbers along with the
     // expected time when they'll be free again
     MatchMngr mm{db};
     time_t now = time(nullptr);
-    int avgMatchTime = getAverageMatchTime__secs();
     deque<tuple<int, int>> courtFreeList;
     for (const Court& c : allCourts)
     {
       int coNum = c.getNumber();
-      int finishTime = now;
+      int finishTime = now - GRACE_TIME_BETWEEN_MATCHES__SECS;  // will be added again later
 
       upMatch ma = mm.getMatchForCourt(c);
       if (ma != nullptr)
@@ -141,11 +146,20 @@ namespace QTournament {
       tie(coNum, coFree) = courtFreeList.front();
       courtFreeList.pop_front();
 
+      // calc start and finish time
+      //
+      // round start and finish time to full minutes
+      // to achieve synchronized / harmonized UI updates
+      time_t start = coFree + GRACE_TIME_BETWEEN_MATCHES__SECS;
+      time_t finish = start + avgMatchTime;
+      start = round(start / 60.0) * 60;
+      finish = round(finish / 60.0) * 60;
+
       // prepare a new prediction element
       struct MatchTimePrediction mtp;
       mtp.matchId = matchRow.getId();
-      mtp.estStartTime__UTC = coFree + GRACE_TIME_BETWEEN_MATCHES__SECS;
-      mtp.estFinishTime__UTC = mtp.estStartTime__UTC + avgMatchTime;
+      mtp.estStartTime__UTC = start;
+      mtp.estFinishTime__UTC = finish;
       mtp.estCourtNum = coNum;
 
       // store the element
@@ -155,12 +169,12 @@ namespace QTournament {
       //
       // this means implicitly that this court is last to become
       // available again and so we push it at the of the court list
-      courtFreeList.push_back(make_tuple(coNum, mtp.estFinishTime__UTC));
+      courtFreeList.push_back(make_tuple(coNum, finish));
 
       // store the finish time of the match as the predicted
       // tournament end  ==>  the variable finally holds the
       // predicted finish time of the last scheduled match
-      predictedTournamentEnd = mtp.estFinishTime__UTC;
+      predictedTournamentEnd = finish;
 
       // next match
       ++it;
