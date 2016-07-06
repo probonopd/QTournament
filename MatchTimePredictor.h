@@ -67,7 +67,6 @@ namespace QTournament
     unsigned long totalMatchTime_secs;
     int nMatches;
     time_t lastMatchFinishTime;
-    time_t predictedTournamentEnd;
 
     vector<MatchTimePrediction> lastPrediction;
 

@@ -160,7 +160,6 @@ namespace QTournament {
     if (allCourts.size() == 0)
     {
       lastPrediction.clear();
-      predictedTournamentEnd = 0;
       CentralSignalEmitter::getInstance()->matchTimePredictionChanged(-1, 0);
       return;
     }
@@ -308,17 +307,13 @@ namespace QTournament {
         needsAnotherSorting = (coNum != coNumOld);
       }
 
-      // store the finish time of the match as the predicted
-      // tournament end  ==>  the variable finally holds the
-      // predicted finish time of the last scheduled match
-      predictedTournamentEnd = finish;
-
       // next match
       ++it;
     }
 
     // inform everyone about the latest statistics
-    CentralSignalEmitter::getInstance()->matchTimePredictionChanged(avgMatchTime, predictedTournamentEnd);
+    time_t endOfLastMatch = result.back().estFinishTime__UTC;
+    CentralSignalEmitter::getInstance()->matchTimePredictionChanged(avgMatchTime, endOfLastMatch);
 
     // cache the result
     lastPrediction = result;
@@ -332,7 +327,6 @@ namespace QTournament {
     nMatches = 0;
     lastMatchFinishTime = 0;
     lastPrediction.clear();
-    predictedTournamentEnd = 0;
 
     updateAvgMatchTimeFromDatabase();
     updatePrediction();  // will emit signals to reset e.g., the progess bar in the scheduler.
