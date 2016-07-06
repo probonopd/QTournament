@@ -35,6 +35,7 @@ namespace QTournament {
     :db(_db), totalMatchTime_secs(0), nMatches(0), lastMatchFinishTime(0)
   {
     updateAvgMatchTimeFromDatabase();
+    updatePrediction();
   }
 
   //----------------------------------------------------------------------------
@@ -65,6 +66,91 @@ namespace QTournament {
 
   vector<MatchTimePrediction> MatchTimePredictor::getMatchTimePrediction()
   {
+    updatePrediction();
+
+    return lastPrediction;
+  }
+
+  //----------------------------------------------------------------------------
+
+  MatchTimePrediction MatchTimePredictor::getPredictionForMatch(const Match& ma, bool refreshCache)
+  {
+    if (refreshCache)
+    {
+      updatePrediction();
+    }
+
+    int maId = ma.getId();
+
+    // find the value for the match in the prediction list
+    auto it = find_if(lastPrediction.begin(), lastPrediction.end(),
+                      [&maId](const MatchTimePrediction& mtp) { return (mtp.matchId == maId);});
+
+    // return an "empty" match time prediction if we have no match
+    if (it == lastPrediction.end())
+    {
+      MatchTimePrediction mtp;
+      mtp.estCourtNum = -1;
+      mtp.estFinishTime__UTC = 0;
+      mtp.estStartTime__UTC = 0;
+      mtp.matchId = maId;
+      return mtp;
+    }
+
+    // in all other cases return the data set we've just found
+    return *it;
+  }
+
+  //----------------------------------------------------------------------------
+
+  void MatchTimePredictor::updateAvgMatchTimeFromDatabase()
+  {
+    // find all matches that have been finished since the last update
+    WhereClause wc;
+    wc.addIntCol(MA_FINISH_TIME, ">", lastMatchFinishTime);
+    wc.addIntCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_FINISHED));
+    wc.setOrderColumn_Asc(MA_FINISH_TIME);
+
+    DbTab* maTab = db->getTab(TAB_MATCH);
+    auto it = maTab->getRowsByWhereClause(wc);
+    while (!(it.isEnd()))
+    {
+      TabRow row = *it;
+
+      // treat all times as ints, that's easier
+
+      // check for the existence of the timestamps, because
+      // walkovers might not have one
+      auto _startTime = row.getInt2(MA_START_TIME);
+      if (_startTime->isNull())
+      {
+        ++it;
+        continue;
+      }
+      int startTime = _startTime->get();
+
+      auto _finishTime = row.getInt2(MA_FINISH_TIME);
+      if (_finishTime->isNull())
+      {
+        ++it;
+        continue;
+      }
+      int finishTime = _finishTime->get();
+
+
+      // update the accumulated match time
+      totalMatchTime_secs += (finishTime - startTime);
+      lastMatchFinishTime = finishTime;  // we've ordered the results by finish time, see above
+      ++nMatches;
+
+      ++it;
+    }
+  }
+
+  //----------------------------------------------------------------------------
+
+  void MatchTimePredictor::updatePrediction()
+  {
     // determine the available, not disabled courts
     CourtMngr cm{db};
     CourtList allCourts = cm.getAllCourts();
@@ -74,8 +160,10 @@ namespace QTournament {
     // if we don't have any courts at all, we can't make any predictions
     if (allCourts.size() == 0)
     {
+      lastPrediction.clear();
+      predictedTournamentEnd = 0;
       CentralSignalEmitter::getInstance()->matchTimePredictionChanged(-1, 0);
-      return vector<MatchTimePrediction>();
+      return;
     }
 
     // take all recently finished matches into account
@@ -233,53 +321,8 @@ namespace QTournament {
     // inform everyone about the latest statistics
     CentralSignalEmitter::getInstance()->matchTimePredictionChanged(avgMatchTime, predictedTournamentEnd);
 
-    return result;
-  }
-
-  //----------------------------------------------------------------------------
-
-  void MatchTimePredictor::updateAvgMatchTimeFromDatabase()
-  {
-    // find all matches that have been finished since the last update
-    WhereClause wc;
-    wc.addIntCol(MA_FINISH_TIME, ">", lastMatchFinishTime);
-    wc.addIntCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_FINISHED));
-    wc.setOrderColumn_Asc(MA_FINISH_TIME);
-
-    DbTab* maTab = db->getTab(TAB_MATCH);
-    auto it = maTab->getRowsByWhereClause(wc);
-    while (!(it.isEnd()))
-    {
-      TabRow row = *it;
-
-      // treat all times as ints, that's easier
-
-      // check for the existence of the timestamps, because
-      // walkovers might not have one
-      auto _startTime = row.getInt2(MA_START_TIME);
-      if (_startTime->isNull())
-      {
-        ++it;
-        continue;
-      }
-      int startTime = _startTime->get();
-
-      auto _finishTime = row.getInt2(MA_FINISH_TIME);
-      if (_finishTime->isNull())
-      {
-        ++it;
-        continue;
-      }
-      int finishTime = _finishTime->get();
-
-
-      // update the accumulated match time
-      totalMatchTime_secs += (finishTime - startTime);
-      lastMatchFinishTime = finishTime;  // we've ordered the results by finish time, see above
-      ++nMatches;
-
-      ++it;
-    }
+    // cache the result
+    lastPrediction = result;
   }
 
   //----------------------------------------------------------------------------

@@ -16,6 +16,8 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <vector>
+
 #include <QMessageBox>
 #include <QScrollBar>
 
@@ -30,6 +32,8 @@
 #include "PlayerMngr.h"
 #include "TeamMngr.h"
 #include "CatMngr.h"
+#include "Match.h"
+#include "MatchTimePredictor.h"
 
 PlayerTableView::PlayerTableView(QWidget* parent)
 :QTableView(parent), db(nullptr), curDataModel(nullptr)
@@ -202,9 +206,9 @@ void PlayerTableView::onContextMenuRequested(const QPoint& pos)
   QPoint globalPos = viewport()->mapToGlobal(pos);
 
   // resolve the click coordinates to the table row
-  //int clickedRow = rowAt(pos.y());
-  //int clickedCol = columnAt(pos.x());
-  //bool isRowClicked = ((clickedRow >= 0) && (clickedCol >= 0));
+  int clickedRow = rowAt(pos.y());
+  int clickedCol = columnAt(pos.x());
+  bool isRowClicked = ((clickedRow >= 0) && (clickedCol >= 0));
 
   // get the player status for enabling / disabling state-dependent actions
   auto selPlayer = getSelectedPlayer();
@@ -216,12 +220,12 @@ void PlayerTableView::onContextMenuRequested(const QPoint& pos)
   // in other cases, we may also try to edit or delete
   // players
   actAddPlayer->setEnabled(true);   // always possible
-  actEditPlayer->setEnabled(isPlayerClicked);
-  //actShowNextMatchesForPlayer->setEnabled(isPlayerClicked);
-  actShowNextMatchesForPlayer->setEnabled(false);  // not yet implemented
-  actRemovePlayer->setEnabled(isPlayerClicked);
-  actRegister->setEnabled(isPlayerClicked & (plStat == STAT_PL_WAIT_FOR_REGISTRATION));
-  actUnregister->setEnabled(isPlayerClicked & (plStat == STAT_PL_IDLE));
+  actEditPlayer->setEnabled(isPlayerClicked & isRowClicked);
+  actShowNextMatchesForPlayer->setEnabled(isPlayerClicked & isRowClicked);
+  //actShowNextMatchesForPlayer->setEnabled(false);  // not yet implemented
+  actRemovePlayer->setEnabled(isPlayerClicked & isRowClicked);
+  actRegister->setEnabled(isPlayerClicked & (plStat == STAT_PL_WAIT_FOR_REGISTRATION) & isRowClicked);
+  actUnregister->setEnabled(isPlayerClicked & (plStat == STAT_PL_IDLE) & isRowClicked);
 
   PlayerMngr pm{db};
   bool hasExtDb = pm.hasExternalPlayerDatabaseAvailable();
@@ -385,7 +389,46 @@ void PlayerTableView::onRemovePlayerTriggered()
 
 void PlayerTableView::onShowNextMatchesForPlayerTriggered()
 {
+  auto selectedPlayer = getSelectedPlayer();
+  if (selectedPlayer == nullptr) return;
 
+  PlayerMngr pm{db};
+  vector<Match> nextMatches = pm.getAllScheduledMatchesForPlayer(*selectedPlayer);
+
+  QString msg;
+  if (nextMatches.empty())
+  {
+    msg = tr("%1 has currently no scheduled matches.");
+    msg = msg.arg(selectedPlayer->getDisplayName_FirstNameFirst());
+  } else {
+    msg = tr("Next scheduled matches for %1:\n\n");
+    msg = msg.arg(selectedPlayer->getDisplayName_FirstNameFirst());
+
+    // get a new MatchTimePredictor for retrieving the
+    // estimated start times
+    MatchTimePredictor predictor{db};
+
+    for (const Match& ma : nextMatches)
+    {
+      QString maTxt = "#%1, %2, round %3 ; estimated call at %4\n";
+      maTxt = maTxt.arg(ma.getMatchNumber());
+      maTxt = maTxt.arg(ma.getCategory().getName());
+      maTxt = maTxt.arg(ma.getMatchGroup().getRound());
+
+      MatchTimePrediction mtp = predictor.getPredictionForMatch(ma);
+      if (mtp.estStartTime__UTC > 0)
+      {
+        QDateTime start = QDateTime::fromTime_t(mtp.estStartTime__UTC);
+        maTxt = maTxt.arg(start.toString("HH:mm"));
+      } else {
+        maTxt = maTxt.arg("??");
+      }
+
+      msg += maTxt;
+    }
+  }
+
+  QMessageBox::information(this, "Next matches for player", msg);
 }
 
 //----------------------------------------------------------------------------

@@ -57,7 +57,6 @@ namespace QTournament
     TournamentDB* db;
     SqliteOverlay::DbTab* matchTab;
     unique_ptr<MatchTimePredictor> matchTimePredictor;
-    vector<MatchTimePrediction> predictedMatchTimes;
     MatchTimePrediction getMatchTimePredictionForMatch(const Match& ma) const;
     
   public slots:

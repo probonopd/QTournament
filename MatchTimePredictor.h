@@ -25,6 +25,7 @@
 
 #include "DbTab.h"
 #include "TournamentDB.h"
+#include "Match.h"
 
 using namespace std;
 using namespace SqliteOverlay;
@@ -52,6 +53,8 @@ namespace QTournament
     // getters
     int getAverageMatchTime__secs();
     vector<MatchTimePrediction> getMatchTimePrediction();
+    MatchTimePrediction getPredictionForMatch(const Match& ma, bool refreshCache = false);
+    void updatePrediction();
 
   private:
     static constexpr int DEFAULT_MATCH_TIME__SECS = 25 * 60;  // 25 minutes
@@ -64,6 +67,8 @@ namespace QTournament
     int nMatches;
     time_t lastMatchFinishTime;
     time_t predictedTournamentEnd;
+
+    vector<MatchTimePrediction> lastPrediction;
 
     void updateAvgMatchTimeFromDatabase();
   };

@@ -43,7 +43,6 @@ MatchTableModel::MatchTableModel(TournamentDB* _db)
 
   // create and initialize a new match time predictor
   matchTimePredictor = make_unique<MatchTimePredictor>(db);
-  predictedMatchTimes = matchTimePredictor->getMatchTimePrediction();
 }
 
 //----------------------------------------------------------------------------
@@ -161,7 +160,7 @@ QVariant MatchTableModel::data(const QModelIndex& index, int role) const
 
     // for all following columns, we need the
     // estimated start/finish time for the match
-    MatchTimePrediction mtp = getMatchTimePredictionForMatch(*ma);
+    MatchTimePrediction mtp = matchTimePredictor->getPredictionForMatch(*ma);
 
     // the estimated start time
     if (index.column() == EST_START_COL_ID)
@@ -253,31 +252,6 @@ QModelIndex MatchTableModel::getIndex(int row, int col)
 
 //----------------------------------------------------------------------------
 
-MatchTimePrediction MatchTableModel::getMatchTimePredictionForMatch(const Match& ma) const
-{
-  int maId = ma.getId();
-
-  // find the value for the match in the prediction list
-  auto it = find_if(predictedMatchTimes.begin(), predictedMatchTimes.end(),
-                    [&maId](const MatchTimePrediction& mtp) { return (mtp.matchId == maId);});
-
-  // return an "empty" match time prediction if we have no match
-  if (it == predictedMatchTimes.end())
-  {
-    MatchTimePrediction mtp;
-    mtp.estCourtNum = -1;
-    mtp.estFinishTime__UTC = 0;
-    mtp.estStartTime__UTC = 0;
-    mtp.matchId = maId;
-    return mtp;
-  }
-
-  // in all other cases return the data set we've just found
-  return *it;
-}
-
-//----------------------------------------------------------------------------
-
 void MatchTableModel::onBeginCreateMatch()
 {
   int newPos = matchTab->length();
@@ -329,7 +303,7 @@ void MatchTableModel::onEndResetModel()
 
 void MatchTableModel::recalcPrediction()
 {
-  predictedMatchTimes = matchTimePredictor->getMatchTimePrediction();
+  matchTimePredictor->updatePrediction();
   QModelIndex startIdx = createIndex(0, EST_START_COL_ID);
   QModelIndex endIdx = createIndex(rowCount(), EST_COURT_COL_ID);
   emit dataChanged(startIdx, endIdx);
