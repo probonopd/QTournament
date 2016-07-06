@@ -28,6 +28,8 @@
 #include "Match.h"
 #include "TournamentDataDefs.h"
 #include "CentralSignalEmitter.h"
+#include "MatchMngr.h"
+#include "CatMngr.h"
 
 namespace QTournament {
 
@@ -39,7 +41,7 @@ namespace QTournament {
 
   //----------------------------------------------------------------------------
 
-  int MatchTimePredictor::getAverageMatchTime__secs()
+  int MatchTimePredictor::getGlobalAverageMatchDuration__secs()
   {
     // return pure database ("reality") values if we have a sufficiently
     // large number of real matches
@@ -59,6 +61,26 @@ namespace QTournament {
                                      (NUM_INITIALLY_ASSUMED_MATCHES - nMatches) * DEFAULT_MATCH_TIME__SECS;
 
     return matchTimeBlended / ((long) NUM_INITIALLY_ASSUMED_MATCHES);
+  }
+
+  //----------------------------------------------------------------------------
+
+  int MatchTimePredictor::getAverageMatchDurationForCat__secs(const Category& cat)
+  {
+    int catId = cat.getId();
+    int cnt;
+    unsigned long catTime;
+    tie(cnt, catTime) = catId2MatchTime[catId];
+    if (cnt < NUM_INITIALLY_ASSUMED_MATCHES)
+    {
+      // blend with the global average if we don't have enough
+      // data points in this cat
+      int avg = getGlobalAverageMatchDuration__secs();
+      catTime += (NUM_INITIALLY_ASSUMED_MATCHES - cnt) * avg;
+      cnt = NUM_INITIALLY_ASSUMED_MATCHES;
+    }
+
+    return catTime / cnt;
   }
 
   //----------------------------------------------------------------------------
@@ -104,6 +126,19 @@ namespace QTournament {
 
   void MatchTimePredictor::updateAvgMatchTimeFromDatabase()
   {
+    // ensure that we have catId2MatchTime entry for each category
+    CatMngr cm{db};
+    for (const Category& c : cm.getAllCategories())
+    {
+      int catId = c.getId();
+      auto it = catId2MatchTime.find(catId);
+      if (it != catId2MatchTime.end()) continue;
+
+      // insert an empty element
+      tuple<int, unsigned long> empty = make_tuple(0, 0);
+      catId2MatchTime[catId] = empty;
+    }
+
     // find all matches that have been finished since the last update
     WhereClause wc;
     wc.addIntCol(MA_FINISH_TIME, ">", lastMatchFinishTime);
@@ -112,6 +147,7 @@ namespace QTournament {
 
     DbTab* maTab = db->getTab(TAB_MATCH);
     auto it = maTab->getRowsByWhereClause(wc);
+    MatchMngr mm{db};
     while (!(it.isEnd()))
     {
       TabRow row = *it;
@@ -137,8 +173,18 @@ namespace QTournament {
       int finishTime = _finishTime->get();
 
 
-      // update the accumulated match time
-      totalMatchTime_secs += (finishTime - startTime);
+      // update the accumulated match times
+      int matchDuration_secs = finishTime - startTime;
+      totalMatchTime_secs += matchDuration_secs;
+      auto ma = mm.getMatch(row.getId());   // this is very expensive in terms of cycles and DB queries... especially since basically all information is already at hand
+      int catId = ma->getCategory().getId();
+      int cnt;
+      unsigned long catTime;
+      tie(cnt, catTime) = catId2MatchTime[catId];  // a key for this value MUST exist, see above
+      ++cnt;
+      catTime += matchDuration_secs;
+      catId2MatchTime[catId] = make_tuple(cnt, catTime);
+
       lastMatchFinishTime = finishTime;  // we've ordered the results by finish time, see above
       ++nMatches;
 
@@ -167,7 +213,6 @@ namespace QTournament {
     // take all recently finished matches into account
     // for the average match time
     updateAvgMatchTimeFromDatabase();
-    int avgMatchTime = getAverageMatchTime__secs();
 
     // set up a list of court numbers along with the
     // expected time when they'll be free again
@@ -185,6 +230,7 @@ namespace QTournament {
       if (ma != nullptr)
       {
         QDateTime start = ma->getStartTime();
+        int avgMatchTime = getAverageMatchDurationForCat__secs(*ma);
         if (!(start.isNull()))  // getStartTime returns NULL-time on error or if court is empty
         {
           finishTime = start.toTime_t() + avgMatchTime;
@@ -246,6 +292,8 @@ namespace QTournament {
     while (!(it.isEnd()))
     {
       TabRow matchRow = *it;
+      auto ma = mm.getMatch(matchRow.getId());
+      int avgMatchTime = getAverageMatchDurationForCat__secs(*ma);
 
       // get the earliest available court, which is always the first
       // court in the list
@@ -312,8 +360,8 @@ namespace QTournament {
     }
 
     // inform everyone about the latest statistics
-    time_t endOfLastMatch = result.back().estFinishTime__UTC;
-    CentralSignalEmitter::getInstance()->matchTimePredictionChanged(avgMatchTime, endOfLastMatch);
+    time_t endOfLastMatch = result.size() > 0 ? result.back().estFinishTime__UTC : 0;
+    CentralSignalEmitter::getInstance()->matchTimePredictionChanged(getGlobalAverageMatchDuration__secs(), endOfLastMatch);
 
     // cache the result
     lastPrediction = result;
@@ -327,6 +375,7 @@ namespace QTournament {
     nMatches = 0;
     lastMatchFinishTime = 0;
     lastPrediction.clear();
+    catId2MatchTime.clear();
 
     updateAvgMatchTimeFromDatabase();
     updatePrediction();  // will emit signals to reset e.g., the progess bar in the scheduler.

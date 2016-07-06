@@ -20,6 +20,8 @@
 #define MATCHTIMEPREDICTOR_H
 
 #include <vector>
+#include <unordered_map>
+#include <tuple>
 
 #include <QObject>
 
@@ -51,7 +53,9 @@ namespace QTournament
     MatchTimePredictor(TournamentDB* _db);
 
     // getters
-    int getAverageMatchTime__secs();
+    int getGlobalAverageMatchDuration__secs();
+    inline int getAverageMatchDurationForCat__secs(const Match& matchInCat) { return getAverageMatchDurationForCat__secs(matchInCat.getCategory()); }
+    int getAverageMatchDurationForCat__secs(const Category& cat);
     vector<MatchTimePrediction> getMatchTimePrediction();
     MatchTimePrediction getPredictionForMatch(const Match& ma, bool refreshCache = false);
     void updatePrediction();
@@ -67,6 +71,8 @@ namespace QTournament
     unsigned long totalMatchTime_secs;
     int nMatches;
     time_t lastMatchFinishTime;
+
+    unordered_map<int, tuple<int, unsigned long>> catId2MatchTime;
 
     vector<MatchTimePrediction> lastPrediction;
 
