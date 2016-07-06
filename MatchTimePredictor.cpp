@@ -34,8 +34,7 @@ namespace QTournament {
   MatchTimePredictor::MatchTimePredictor(TournamentDB* _db)
     :db(_db), totalMatchTime_secs(0), nMatches(0), lastMatchFinishTime(0)
   {
-    updateAvgMatchTimeFromDatabase();
-    updatePrediction();
+    resetPrediction();
   }
 
   //----------------------------------------------------------------------------
@@ -323,6 +322,20 @@ namespace QTournament {
 
     // cache the result
     lastPrediction = result;
+  }
+
+  //----------------------------------------------------------------------------
+
+  void MatchTimePredictor::resetPrediction()
+  {
+    totalMatchTime_secs = 0;
+    nMatches = 0;
+    lastMatchFinishTime = 0;
+    lastPrediction.clear();
+    predictedTournamentEnd = 0;
+
+    updateAvgMatchTimeFromDatabase();
+    updatePrediction();  // will emit signals to reset e.g., the progess bar in the scheduler.
   }
 
   //----------------------------------------------------------------------------

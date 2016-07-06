@@ -295,6 +295,7 @@ void MatchTableModel::onBeginResetModel()
 
 void MatchTableModel::onEndResetModel()
 {
+  matchTimePredictor->resetPrediction();
   recalcPrediction();
   endResetModel();
 }

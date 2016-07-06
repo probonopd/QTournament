@@ -55,6 +55,7 @@ namespace QTournament
     vector<MatchTimePrediction> getMatchTimePrediction();
     MatchTimePrediction getPredictionForMatch(const Match& ma, bool refreshCache = false);
     void updatePrediction();
+    void resetPrediction();
 
   private:
     static constexpr int DEFAULT_MATCH_TIME__SECS = 25 * 60;  // 25 minutes
