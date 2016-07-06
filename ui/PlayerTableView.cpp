@@ -410,7 +410,7 @@ void PlayerTableView::onShowNextMatchesForPlayerTriggered()
 
     for (const Match& ma : nextMatches)
     {
-      QString maTxt = "#%1, %2, round %3 ; estimated call at %4\n";
+      QString maTxt = "   Match %1, %2, round %3 ; estimated call at %4\n\n";
       maTxt = maTxt.arg(ma.getMatchNumber());
       maTxt = maTxt.arg(ma.getCategory().getName());
       maTxt = maTxt.arg(ma.getMatchGroup().getRound());
