@@ -122,9 +122,9 @@ namespace QTournament {
       courtFreeList.push_back(make_tuple(coNum, finishTime));
     }
 
-    // sort the list so that the earliest free court is first
-    std::sort(courtFreeList.begin(), courtFreeList.end(),
-              [](const tuple<int, int>& c1, const tuple<int, int>& c2) {
+    // define a lambda for sorting courts according to their
+    // availability
+    auto courtSortFunc = [](const tuple<int, int>& c1, const tuple<int, int>& c2) {
       int c1Num;
       int c1Free;
       int c2Num;
@@ -138,10 +138,10 @@ namespace QTournament {
       // if they become available at the same time, sort
       // by court number
       return (c1Free < c2Free);
-    });
+    };
 
-
-
+    // sort the list so that the earliest free court is first
+    std::sort(courtFreeList.begin(), courtFreeList.end(), courtSortFunc);
 
     // prepare the result vector
     vector<MatchTimePrediction> result;
@@ -156,6 +156,7 @@ namespace QTournament {
     DbTab* maTab = db->getTab(TAB_MATCH);
     auto it = maTab->getRowsByWhereClause(wc);
 
+    bool needsAnotherSorting = true;   // explanation at the end of the while() loop
     while (!(it.isEnd()))
     {
       TabRow matchRow = *it;
@@ -191,6 +192,34 @@ namespace QTournament {
       // this means implicitly that this court is last to become
       // available again and so we push it at the of the court list
       courtFreeList.push_back(make_tuple(coNum, finish));
+
+      // exception: if we have currently running matches that last already
+      // significantly longer than avgMatchTime, the pushed_back court is NOT
+      // correctly positioned at the end of the list. Example: run two matches
+      // on court 1 while there's still the first match on court 2 ongoing. In
+      // this case, court 1 needs to go BEFORE court 2 and court 2 remains at the
+      // end of the list.
+      //
+      // to solve this, we simply sort the list after every match BUT to avoid
+      // unnecessary sort/runtime/comparisons in every loop iteration, we stop
+      // doing this once the added element is still at the end of the deque AFTER sorting.
+      //
+      // if this criterion is met, no match longer than avgMatchTime is in the deque
+      // and we may safely assume that the element push to the end of the list will
+      // always represent the court that will be available last.
+      if (needsAnotherSorting)
+      {
+        std::sort(courtFreeList.begin(), courtFreeList.end(), courtSortFunc);
+
+        // check the element at the end of the list
+        int coNumOld = coNum;
+        tie(coNum, coFree) = courtFreeList.back();
+
+        // stop sorting if it is still the same that we pushed there
+        // earlier. or positively phrased: sort as long as the last
+        // element does not remain the last element after sorting
+        needsAnotherSorting = (coNum != coNumOld);
+      }
 
       // store the finish time of the match as the predicted
       // tournament end  ==>  the variable finally holds the
