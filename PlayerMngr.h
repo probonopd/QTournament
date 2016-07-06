@@ -69,6 +69,7 @@ namespace QTournament
     PlayerPairList getRecentLosers(int maxCnt) const;
     upMatch getLastFinishedMatchForPlayer(const Player& p);
     upMatch getNextMatchForPlayer(const Player& p);
+    vector<Match> getAllScheduledMatchesForPlayer(const Player& p, bool findFirstOnly = false);
 
     // referee functions
     void increaseRefereeCountForPlayer(const Player& p);

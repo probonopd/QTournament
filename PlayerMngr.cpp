@@ -895,6 +895,20 @@ namespace QTournament
 
   upMatch PlayerMngr::getNextMatchForPlayer(const Player& p)
   {
+    vector<Match> allNextMatches = getAllScheduledMatchesForPlayer(p, true);
+    if (allNextMatches.empty()) return nullptr;
+
+    MatchMngr mm{db};
+    return mm.getMatch(allNextMatches.at(0).getId());
+  }
+
+  //----------------------------------------------------------------------------
+
+  vector<Match> PlayerMngr::getAllScheduledMatchesForPlayer(const Player &p, bool findFirstOnly)
+  {
+    vector<Match> result;
+
+    // get all scheduled matches
     QString where = "%1 > 0 AND %2 != %3 AND %2 != %4 ORDER BY %5 ASC";
     where = where.arg(MA_NUM);
     where = where.arg(GENERIC_STATE_FIELD_NAME);
@@ -909,27 +923,48 @@ namespace QTournament
       if (ma.hasPlayerPair1())
       {
         PlayerPair pp = ma.getPlayerPair1();
-        if (pp.getPlayer1() == p) return mm.getMatch(ma.getId());
+        if (pp.getPlayer1() == p)
+        {
+          result.push_back(ma);
+          continue;
+        }
 
         if (pp.hasPlayer2())
         {
-          if (pp.getPlayer2() == p) return mm.getMatch(ma.getId());
+          if (pp.getPlayer2() == p)
+          {
+            result.push_back(ma);
+            continue;
+          }
         }
       }
 
       if (ma.hasPlayerPair2())
       {
         PlayerPair pp = ma.getPlayerPair2();
-        if (pp.getPlayer1() == p) return mm.getMatch(ma.getId());
+        if (pp.getPlayer1() == p)
+        {
+          result.push_back(ma);
+          continue;
+        }
 
         if (pp.hasPlayer2())
         {
-          if (pp.getPlayer2() == p) return mm.getMatch(ma.getId());
+          if (pp.getPlayer2() == p)
+          {
+            result.push_back(ma);
+            continue;
+          }
         }
       }
+
+      // stop the loop if we only need one match
+      // (okay, since we use "continue" above, we make at least one
+      // extra cycle after the first match before we hit this "if")
+      if (findFirstOnly && (!(result.empty()))) return result;
     }
 
-    return nullptr;
+    return result;
   }
 
   //----------------------------------------------------------------------------
