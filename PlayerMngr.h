@@ -31,7 +31,7 @@
 #include "PlayerPair.h"
 #include "TournamentDataDefs.h"
 #include "TournamentErrorCodes.h"
-#include "DbTab.h"
+#include <SqliteOverlay/DbTab.h>
 #include "TournamentDatabaseObjectManager.h"
 #include "Match.h"
 #include "ExternalPlayerDB.h"

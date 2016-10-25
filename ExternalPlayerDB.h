@@ -25,9 +25,9 @@
 
 #include <QHash>
 
-#include "SqliteDatabase.h"
-#include "DbTab.h"
-#include "TabRow.h"
+#include <SqliteOverlay/SqliteDatabase.h>
+#include <SqliteOverlay/DbTab.h>
+#include <SqliteOverlay/TabRow.h>
 
 #include "TournamentDataDefs.h"
 

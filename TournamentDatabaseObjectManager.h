@@ -21,8 +21,8 @@
 
 #include <QString>
 
-#include "GenericObjectManager.h"
-#include "DbTab.h"
+#include <SqliteOverlay/GenericObjectManager.h>
+#include <SqliteOverlay/DbTab.h>
 
 #include "TournamentDB.h"
 

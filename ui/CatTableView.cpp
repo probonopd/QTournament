@@ -554,7 +554,7 @@ void CategoryTableView::onRunCategory()
   QApplication::restoreOverrideCursor();
   if (e != OK)  // should never happen
   {
-    throw runtime_error("Unexpected error when starting the category");
+    throw std::runtime_error("Unexpected error when starting the category");
   }
 
   QMessageBox::information(this, tr("Start category"), tr("Category successfully started!"));
@@ -683,7 +683,7 @@ void CategoryTableView::handleIntermediateSeedingForSelectedCat()
   QApplication::restoreOverrideCursor();
   if (e != OK)  // should never happen
   {
-    throw runtime_error("Unexpected error when applying intermediate seeding");
+    throw std::runtime_error("Unexpected error when applying intermediate seeding");
   }
   QMessageBox::information(this, tr("Continue category"), tr("Matches successfully generated!"));
 }

@@ -21,8 +21,8 @@
 
 #include <memory>
 
-#include "TabRow.h"
-#include "GenericObjectManager.h"
+#include <SqliteOverlay/TabRow.h>
+#include <SqliteOverlay/GenericObjectManager.h>
 
 #include "TournamentDatabaseObject.h"
 #include "TournamentDB.h"

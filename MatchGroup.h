@@ -21,9 +21,9 @@
 
 #include <vector>
 
-#include "TabRow.h"
-#include "DbTab.h"
-#include "GenericObjectManager.h"
+#include <SqliteOverlay/TabRow.h>
+#include <SqliteOverlay/DbTab.h>
+#include <SqliteOverlay/GenericObjectManager.h>
 
 #include "TournamentDatabaseObject.h"
 #include "TournamentDB.h"

@@ -22,7 +22,7 @@
 #include <QAbstractTableModel>
 #include <QTimer>
 
-#include "DbTab.h"
+#include <SqliteOverlay/DbTab.h>
 #include "TournamentDB.h"
 #include "Court.h"
 

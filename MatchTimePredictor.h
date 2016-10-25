@@ -25,7 +25,7 @@
 
 #include <QObject>
 
-#include "DbTab.h"
+#include <SqliteOverlay/DbTab.h>
 #include "TournamentDB.h"
 #include "Match.h"
 

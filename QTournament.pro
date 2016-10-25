@@ -25,6 +25,9 @@ win32 {
   DEFINES += "__IS_WINDOWS_BUILD"
 }
 
+# linking against BOOST fails if this is not set
+DEFINES += "BOOST_LOG_DYN_LINK=1"
+
 HEADERS += \
     Category.h \
     CatMngr.h \
@@ -278,13 +281,15 @@ else:unix:CONFIG(debug, debug|release): LIBS += -L$$PWD/../SimpleReportGenerator
 INCLUDEPATH += $$PWD/../SimpleReportGeneratorLib
 DEPENDPATH += $$PWD/../SimpleReportGeneratorLib
 
-win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../../SqliteOverlay/release/ -lSqliteOverlay
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../../SqliteOverlay/debug/ -lSqliteOverlay
-else:unix:!macx:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../SqliteOverlay/debug/ -lSqliteOverlay
-else:unix:!macx:CONFIG(release, debug|release): LIBS += -L$$PWD/../../SqliteOverlay/release/ -lSqliteOverlay
+LIBS += -lSqliteOverlay -lSloppy -lboost_filesystem -lboost_system -lboost_log -lboost_log_setup -lboost_date_time -lboost_thread -lboost_regex -lboost_chrono -lboost_atomic
 
-win32: INCLUDEPATH += $$PWD/../../../SqliteOverlay
-else:unix:!macx: INCLUDEPATH += $$PWD/../../SqliteOverlay
+#win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../../SqliteOverlay/release/ -lSqliteOverlay
+#else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../../SqliteOverlay/debug/ -lSqliteOverlay
+#else:unix:!macx:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../SqliteOverlay/debug/ -lSqliteOverlay
+#else:unix:!macx:CONFIG(release, debug|release): LIBS += -L$$PWD/../../SqliteOverlay/release/ -lSqliteOverlay
+
+#win32: INCLUDEPATH += $$PWD/../../../SqliteOverlay
+#else:unix:!macx: INCLUDEPATH += $$PWD/../../SqliteOverlay
 
 #INCLUDEPATH += $$PWD/../../SqliteOverlay
-DEPENDPATH += $$PWD/../../SqliteOverlay
+#DEPENDPATH += $$PWD/../../SqliteOverlay

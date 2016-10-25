@@ -26,7 +26,7 @@
 #include "TournamentDatabaseObjectManager.h"
 #include "TournamentDatabaseObject.h"
 #include "TournamentDB.h"
-#include "TabRow.h"
+#include <SqliteOverlay/TabRow.h>
 #include "Category.h"
 #include "Match.h"
 #include "MatchMngr.h"

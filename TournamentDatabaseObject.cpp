@@ -18,7 +18,7 @@
 
 #include <stdexcept>
 
-#include "TabRow.h"
+#include <SqliteOverlay/TabRow.h>
 
 #include "TournamentDatabaseObject.h"
 #include "TournamentDB.h"

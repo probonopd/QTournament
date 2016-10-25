@@ -24,9 +24,9 @@
 #include <QHash>
 
 #include "ExternalPlayerDB.h"
-#include "KeyValueTab.h"
-#include "TableCreator.h"
-#include "ClausesAndQueries.h"
+#include <SqliteOverlay/KeyValueTab.h>
+#include <SqliteOverlay/TableCreator.h>
+#include <SqliteOverlay/ClausesAndQueries.h>
 
 #include "HelperFunc.h"
 #include "TournamentDataDefs.h"
@@ -64,7 +64,7 @@ namespace QTournament
     auto cfg = SqliteOverlay::KeyValueTab::getTab(result.get(), TAB_EPD_CFG, true);
     cfg->set(CFG_KEY_EPD_DB_VERSION, EXT_PLAYER_DB_VERSION);
 
-    result->setLogLevel(1);
+    result->setLogLevel(Sloppy::Logger::SeverityLevel::error);
 
     return result;
   }
@@ -85,7 +85,7 @@ namespace QTournament
       return nullptr;
     }
 
-    result->setLogLevel(1);
+    result->setLogLevel(Sloppy::Logger::SeverityLevel::error);
 
     return result;
   }

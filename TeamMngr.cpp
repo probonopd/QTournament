@@ -18,7 +18,7 @@
 
 #include <stdexcept>
 
-#include "KeyValueTab.h"
+#include <SqliteOverlay/KeyValueTab.h>
 
 #include "TeamMngr.h"
 #include "TournamentErrorCodes.h"

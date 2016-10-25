@@ -20,8 +20,8 @@
 #include <QStringList>
 #include <QFile>
 
-#include "TableCreator.h"
-#include "KeyValueTab.h"
+#include <SqliteOverlay/TableCreator.h>
+#include <SqliteOverlay/KeyValueTab.h>
 
 #include "TournamentDB.h"
 #include "TournamentDataDefs.h"
@@ -55,7 +55,7 @@ namespace QTournament
       if (err != nullptr) *err = DATABASE_ERROR;
       return nullptr;
     }
-    newDb->setLogLevel(1);
+    newDb->setLogLevel(Sloppy::Logger::SeverityLevel::error);
     newDb->createIndices();
 
     // initialize the database
@@ -93,7 +93,7 @@ namespace QTournament
       if (err != nullptr) *err = DATABASE_ERROR;
       return nullptr;
     }
-    newDb->setLogLevel(1);
+    newDb->setLogLevel(Sloppy::Logger::SeverityLevel::error);
 
     // check file format compatibiliy
     if (!(newDb->isCompatibleDatabaseVersion()))
@@ -260,7 +260,7 @@ namespace QTournament
     indexCreationHelper(TAB_TEAM, GENERIC_NAME_FIELD_NAME, true);
     indexCreationHelper(TAB_TEAM, GENERIC_SEQNUM_FIELD_NAME, true);
 
-    SqliteOverlay::StringList colList{PL_LNAME, PL_FNAME};
+    Sloppy::StringList colList{PL_LNAME, PL_FNAME};
     indexCreationHelper(TAB_PLAYER, GENERIC_SEQNUM_FIELD_NAME, true);
     indexCreationHelper(TAB_PLAYER, GENERIC_STATE_FIELD_NAME);
     indexCreationHelper(TAB_PLAYER, PL_FNAME);

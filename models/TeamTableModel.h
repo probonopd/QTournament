@@ -23,7 +23,7 @@
 
 #include "TournamentDataDefs.h"
 #include "TournamentDB.h"
-#include "DbTab.h"
+#include <SqliteOverlay/DbTab.h>
 #include "Team.h"
 
 namespace QTournament

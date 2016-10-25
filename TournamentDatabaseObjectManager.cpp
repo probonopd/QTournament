@@ -16,8 +16,8 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "ClausesAndQueries.h"
-#include "TabRow.h"
+#include <SqliteOverlay/ClausesAndQueries.h>
+#include <SqliteOverlay/TabRow.h>
 
 #include "TournamentDatabaseObjectManager.h"
 #include "HelperFunc.h"

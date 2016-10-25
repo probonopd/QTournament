@@ -22,7 +22,7 @@
 #include "DlgSelectReferee.h"
 #include "ui_DlgSelectReferee.h"
 
-#include "KeyValueTab.h"
+#include <SqliteOverlay/KeyValueTab.h>
 
 #include "PlayerPair.h"
 #include "Team.h"

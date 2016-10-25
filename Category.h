@@ -28,7 +28,7 @@
 
 #include "TournamentDatabaseObject.h"
 #include "TournamentDB.h"
-#include "TabRow.h"
+#include <SqliteOverlay/TabRow.h>
 #include "Player.h"
 #include "PlayerPair.h"
 #include "TournamentErrorCodes.h"

@@ -22,7 +22,7 @@
 #include <vector>
 #include <QAbstractTableModel>
 
-#include "DbTab.h"
+#include <SqliteOverlay/DbTab.h>
 #include "TournamentDB.h"
 #include "Match.h"
 #include "MatchTimePredictor.h"

@@ -16,7 +16,7 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "KeyValueTab.h"
+#include <SqliteOverlay/KeyValueTab.h>
 
 #include "DlgTournamentSettings.h"
 #include "ui_DlgTournamentSettings.h"

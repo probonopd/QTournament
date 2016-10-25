@@ -23,7 +23,7 @@
 #include "../ui/GuiHelpers.h"
 #include "CentralSignalEmitter.h"
 #include "MatchMngr.h"
-#include "KeyValueTab.h"
+#include <SqliteOverlay/KeyValueTab.h>
 
 using namespace QTournament;
 using namespace SqliteOverlay;

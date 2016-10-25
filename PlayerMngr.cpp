@@ -30,7 +30,7 @@
 #include "TeamMngr.h"
 #include "CatMngr.h"
 #include "CentralSignalEmitter.h"
-#include "KeyValueTab.h"
+#include <SqliteOverlay/KeyValueTab.h>
 #include "MatchMngr.h"
 
 using namespace SqliteOverlay;
@@ -81,7 +81,7 @@ namespace QTournament
     auto cfg = KeyValueTab::getTab(db, TAB_CFG, false);
     if (cfg == nullptr)
     {
-      throw runtime_error("Config table not found -- this shouldn't happen!");
+      throw std::runtime_error("Config table not found -- this shouldn't happen!");
     }
     if (cfg->getInt(CFG_KEY_USE_TEAMS) != 0)
     {
@@ -516,7 +516,7 @@ namespace QTournament
     auto cfg = KeyValueTab::getTab(db, TAB_CFG, false);
     if (cfg == nullptr)
     {
-      throw runtime_error("Config table not found -- this shouldn't happen!");
+      throw std::runtime_error("Config table not found -- this shouldn't happen!");
     }
 
     if (!(cfg->hasKey(CFG_KEY_EXT_PLAYER_DB)))
@@ -546,7 +546,7 @@ namespace QTournament
     auto cfg = KeyValueTab::getTab(db, TAB_CFG, false);
     if (cfg == nullptr)
     {
-      throw runtime_error("Config table not found -- this shouldn't happen!");
+      throw std::runtime_error("Config table not found -- this shouldn't happen!");
     }
     return QString::fromUtf8(cfg->operator[](CFG_KEY_EXT_PLAYER_DB).data());
   }
@@ -584,7 +584,7 @@ namespace QTournament
     auto cfg = KeyValueTab::getTab(db, TAB_CFG, false);
     if (cfg == nullptr)
     {
-      throw runtime_error("Config table not found -- this shouldn't happen!");
+      throw std::runtime_error("Config table not found -- this shouldn't happen!");
     }
     string _oldFileName = (*cfg)[CFG_KEY_EXT_PLAYER_DB];
     QString oldFileName = QString::fromUtf8(_oldFileName.data());
@@ -610,7 +610,7 @@ namespace QTournament
     auto cfg = KeyValueTab::getTab(db, TAB_CFG, false);
     if (cfg == nullptr)
     {
-      throw runtime_error("Config table not found -- this shouldn't happen!");
+      throw std::runtime_error("Config table not found -- this shouldn't happen!");
     }
     QString playerDbName = QString::fromUtf8(cfg->operator[](CFG_KEY_EXT_PLAYER_DB).data());
 

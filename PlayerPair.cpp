@@ -319,7 +319,7 @@ namespace QTournament {
 
     if (pairId <= 0)
     {
-      throw runtime_error("Queried PlayerPair does not yet exist in the database");
+      throw std::runtime_error("Queried PlayerPair does not yet exist in the database");
     }
 
     TabRow pairRow = db->getTab(TAB_PAIRS)->operator [](pairId);

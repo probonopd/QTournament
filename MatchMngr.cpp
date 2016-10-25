@@ -20,7 +20,7 @@
 
 #include <QDateTime>
 
-#include "DateAndTime.h"
+#include <Sloppy/DateTime/DateAndTime.h>
 
 #include "MatchMngr.h"
 #include "CatRoundStatus.h"
@@ -28,7 +28,7 @@
 #include "PlayerMngr.h"
 #include "CourtMngr.h"
 #include "CatMngr.h"
-#include "KeyValueTab.h"
+#include <SqliteOverlay/KeyValueTab.h>
 
 using namespace SqliteOverlay;
 

@@ -18,7 +18,7 @@
 
 #include <stdexcept>
 
-#include "ClausesAndQueries.h"
+#include <SqliteOverlay/ClausesAndQueries.h>
 
 #include "RankingEntry.h"
 #include "TournamentDataDefs.h"

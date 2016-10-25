@@ -21,8 +21,8 @@
 
 #include <QString>
 
-#include "TabRow.h"
-#include "GenericDatabaseObject.h"
+#include <SqliteOverlay/TabRow.h>
+#include <SqliteOverlay/GenericDatabaseObject.h>
 #include "TournamentDB.h"
 
 namespace QTournament

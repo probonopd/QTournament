@@ -24,12 +24,12 @@
 
 #include <QList>
 
-#include "ClausesAndQueries.h"
-#include "GenericObjectManager.h"
+#include <SqliteOverlay/ClausesAndQueries.h>
+#include <SqliteOverlay/GenericObjectManager.h>
 
 #include "TournamentDatabaseObject.h"
 #include "TournamentDB.h"
-#include "TabRow.h"
+#include <SqliteOverlay/TabRow.h>
 #include "TournamentErrorCodes.h"
 #include "Category.h"
 #include "PlayerPair.h"

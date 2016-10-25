@@ -18,7 +18,7 @@
 
 #include <memory>
 
-#include "ClausesAndQueries.h"
+#include <SqliteOverlay/ClausesAndQueries.h>
 
 #include "BracketVisData.h"
 #include "CatMngr.h"

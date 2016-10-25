@@ -228,7 +228,7 @@ void MainFrame::openTournament()
   int dbErr;
   newDb = SqliteDatabase::get<TournamentDB>(":memory:", true);
   newDb->restoreFromFile(filename.toUtf8().constData(), &dbErr);
-  newDb->setLogLevel(1);
+  newDb->setLogLevel(Sloppy::Logger::SeverityLevel::error);
 
   // handle erros
   QString msg;

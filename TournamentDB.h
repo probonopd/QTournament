@@ -21,7 +21,7 @@
 
 #include <tuple>
 
-#include "SqliteDatabase.h"
+#include <SqliteOverlay/SqliteDatabase.h>
 
 #include "TournamentDataDefs.h"
 #include "TournamentErrorCodes.h"

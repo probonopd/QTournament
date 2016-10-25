@@ -27,7 +27,7 @@
 #include "Player.h"
 #include "TournamentDataDefs.h"
 #include "TournamentErrorCodes.h"
-#include "DbTab.h"
+#include <SqliteOverlay/DbTab.h>
 #include "TournamentDatabaseObjectManager.h"
 
 using namespace SqliteOverlay;

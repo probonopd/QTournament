@@ -23,7 +23,7 @@
 
 #include <QString>
 
-#include "KeyValueTab.h"
+#include <SqliteOverlay/KeyValueTab.h>
 
 #include "TournamentDB.h"
 #include "SimpleReportGenerator.h"

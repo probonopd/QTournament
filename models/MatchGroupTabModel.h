@@ -21,7 +21,7 @@
 
 #include <QAbstractTableModel>
 
-#include "DbTab.h"
+#include <SqliteOverlay/DbTab.h>
 #include "TournamentDB.h"
 #include "MatchGroup.h"
 

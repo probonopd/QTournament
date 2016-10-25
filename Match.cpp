@@ -25,7 +25,7 @@
 #include "MatchMngr.h"
 #include "PlayerMngr.h"
 #include "CourtMngr.h"
-#include "KeyValueTab.h"
+#include <SqliteOverlay/KeyValueTab.h>
 
 namespace QTournament
 {
@@ -88,7 +88,7 @@ namespace QTournament
   {
     if (!(hasPlayerPair1()))
     {
-      throw runtime_error("Invalid request for PlayerPair1 of a match");
+      throw std::runtime_error("Invalid request for PlayerPair1 of a match");
     }
 
     int ppId = row.getInt(MA_PAIR1_REF);
@@ -102,7 +102,7 @@ namespace QTournament
   {
     if (!(hasPlayerPair2()))
     {
-      throw runtime_error("Invalid request for PlayerPair2 of a match");
+      throw std::runtime_error("Invalid request for PlayerPair2 of a match");
     }
 
     int ppId = row.getInt(MA_PAIR2_REF);
