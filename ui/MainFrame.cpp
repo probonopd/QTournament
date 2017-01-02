@@ -1,6 +1,6 @@
 /*
  *    This is QTournament, a badminton tournament management program.
- *    Copyright (C) 2014 - 2016  Volker Knollmann
+ *    Copyright (C) 2014 - 2017  Volker Knollmann
  *
  *    This program is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -1279,7 +1279,7 @@ void MainFrame::onSelectExternalPlayerDatabase()
 void MainFrame::onInfoMenuTriggered()
 {
   QString msg = tr("This is QTournament version %1.<br>");
-  msg += tr("© Volker Knollmann, 2014 - 2016<br><br>");
+  msg += tr("© Volker Knollmann, 2014 - 2017<br><br>");
   msg += tr("This program is free software: you can redistribute it and/or modify ");
   msg += tr("it under the terms of the GNU General Public License as published by ");
   msg += tr("the Free Software Foundation, either version 3 of the License, or ");
