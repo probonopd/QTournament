@@ -281,6 +281,8 @@ else:unix:CONFIG(debug, debug|release): LIBS += -L$$PWD/../SimpleReportGenerator
 INCLUDEPATH += $$PWD/../SimpleReportGeneratorLib
 DEPENDPATH += $$PWD/../SimpleReportGeneratorLib
 
+win32: INCLUDEPATH += D:/PortablePrograms/msys64/usr/local/include
+
 LIBS += -lSqliteOverlay -lSloppy -lboost_filesystem -lboost_system -lboost_log -lboost_log_setup -lboost_date_time -lboost_thread -lboost_regex -lboost_chrono -lboost_atomic
 
 #win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../../SqliteOverlay/release/ -lSqliteOverlay
