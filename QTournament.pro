@@ -283,7 +283,10 @@ DEPENDPATH += $$PWD/../SimpleReportGeneratorLib
 
 win32: INCLUDEPATH += D:/PortablePrograms/msys64/usr/local/include
 
-LIBS += -lSqliteOverlay -lSloppy -lboost_filesystem -lboost_system -lboost_log -lboost_log_setup -lboost_date_time -lboost_thread -lboost_regex -lboost_chrono -lboost_atomic
+win32: LIBS += -lboost_filesystem-mt -lboost_system-mt -lboost_log-mt -lboost_log_setup-mt -lboost_date_time-mt -lboost_thread-mt -lboost_regex-mt -lboost_chrono-mt -lboost_atomic-mt -Ld:/PortablePrograms/msys64/usr/local/lib
+else: LIBS += -lboost_filesystem -lboost_system -lboost_log -lboost_log_setup -lboost_date_time -lboost_thread -lboost_regex -lboost_chrono -lboost_atomic
+
+LIBS += -lSqliteOverlay -lSloppy  
 
 #win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../../SqliteOverlay/release/ -lSqliteOverlay
 #else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../../SqliteOverlay/debug/ -lSqliteOverlay

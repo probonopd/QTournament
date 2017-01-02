@@ -114,7 +114,16 @@ for f in libbz2-*.dll \
 	libsqlite3-0.dll \
 	libstdc++-*.dll \
 	libwinpthread-*.dll \
-	Qt5Core.dll \
+        libboost_filesystem-mt.dll \
+        libboost_system-mt.dll \
+        libboost_log-mt.dll \
+        libboost_log_setup-mt.dll \
+        libboost_date_time-mt.dll \
+        libboost_thread-mt.dll \
+        libboost_regex-mt.dll \
+        libboost_chrono-mt.dll \
+        libboost_atomic-mt.dll \
+        Qt5Core.dll \
 	Qt5Gui.dll \
 	Qt5PrintSupport.dll \
 	Qt5Widgets.dll \
