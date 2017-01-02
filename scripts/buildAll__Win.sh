@@ -33,12 +33,25 @@ fi
 rm -rf dist
 
 # clean the build tree by removing old build files
-rm -rf SqliteOverlay Qt dist *zip
+rm -rf SqliteOverlay libSloppy Qt dist *zip
 
 # download sources
+wget $SLOPPY_BASE_URL/$SLOPPY_VERSION.zip -O libSloppy-$SLOPPY_VERSION.zip
 wget $DBOVERLAY_BASE_URL/$DBOVERLAY_VERSION.zip -O SqliteOverlay-$DBOVERLAY_VERSION.zip
 wget $REPORTLIB_BASE_URL/$REPORTLIB_VERSION.zip -O SimpleReportGeneratorLib-$REPORTLIB_VERSION.zip
 wget $QTOURNAMENT_BASE_URL/$QTOURNAMENT_VERSION.zip -O QTournament-$QTOURNAMENT_VERSION.zip
+
+# Unzip and build libSloppy
+unzip libSloppy-$SLOPPY_VERSION.zip
+mv libSloppy-$SLOPPY_VERSION libSloppy
+cd libSloppy
+mkdir release
+cd release
+$CMAKE_BIN -DCMAKE_BUILD_TYPE=Release -G "$CMAKE_GENERATOR" ..
+make
+make install
+cd ..
+cd ..
 
 # Unzip and build the database overlay
 unzip SqliteOverlay-$DBOVERLAY_VERSION.zip
@@ -48,6 +61,7 @@ mkdir release
 cd release
 $CMAKE_BIN -DCMAKE_BUILD_TYPE=Release -G "$CMAKE_GENERATOR" ..
 make
+make install
 cd ..
 cd ..
 
@@ -75,6 +89,7 @@ cd ..
 # copy all generated files along with their dependencies
 # to one folder
 mkdir dist
+cp libSloppy/release/libSloppy.dll dist
 cp SqliteOverlay/release/libSqliteOverlay.dll dist
 cp Qt/qmake/SimpleReportGeneratorLib/release/SimpleReportGenerator0.dll dist
 cp Qt/qmake/QTournament/release/QTournament.exe dist
