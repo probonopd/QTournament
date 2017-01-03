@@ -31,6 +31,21 @@ fi
 rm -rf SqliteOverlay SimpleReportGeneratorLib Qt dist
 
 #
+# download and build libSloppy
+#
+wget $SLOPPY_BASE_URL/$SLOPPY_VERSION.zip
+unzip $SLOPPY_VERSION.zip
+mv libSloppy-$SLOPPY_VERSION libSloppy
+rm *zip
+cd libSloppy
+mkdir release
+cd release
+cmake -DCMAKE_BUILD_TYPE=Release ..
+make
+cd ..
+cd ..
+
+#
 # download and build SQLiteOverlayLib
 #
 wget $DBOVERLAY_BASE_URL/$DBOVERLAY_VERSION.zip
@@ -79,8 +94,9 @@ cd ..
 #
 mkdir dist
 cd dist
-cp ../SqliteOverlay/release/libSqliteOverlay.so.0.2.0 libSqliteOverlay.so.0
-cp ../Qt/SimpleReportGeneratorLib/release/libSimpleReportGenerator.so.0.3.0 libSimpleReportGenerator.so.0
+cp ../libSloppy/release/libSloppy.so.$SLOPPY_VERSION libSloppy.so.0
+cp ../SqliteOverlay/release/libSqliteOverlay.so.$DBOVERLAY_VERSION libSqliteOverlay.so.0
+cp ../Qt/SimpleReportGeneratorLib/release/libSimpleReportGenerator.so.$REPORTLIB_VERSION libSimpleReportGenerator.so.0
 cp ../Qt/QTournament/QTournament QTournament_bin
 cp ../Qt/QTournament/tournament_de.qm .
 cp ../Qt/QTournament/LICENSE.TXT .
