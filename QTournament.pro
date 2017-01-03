@@ -135,7 +135,9 @@ HEADERS += \
     ui/TeamTableView.h \
     ui/delegates/CatTabPlayerItemDelegate.h \
     MatchTimePredictor.h \
-    ui/TournamentProgressBar.h
+    ui/TournamentProgressBar.h \
+    ui/MatchLogTabWidget.h \
+    ui/MatchLogTable.h
 
 SOURCES += \
     Category.cpp \
@@ -243,7 +245,9 @@ SOURCES += \
     ui/TeamTableView.cpp \
     ui/delegates/CatTabPlayerItemDelegate.cpp \
     MatchTimePredictor.cpp \
-    ui/TournamentProgressBar.cpp
+    ui/TournamentProgressBar.cpp \
+    ui/MatchLogTabWidget.cpp \
+    ui/MatchLogTable.cpp
 
 RESOURCES += \
     tournament.qrc
@@ -269,7 +273,8 @@ FORMS += \
     ui/DlgPickPlayerSex.ui \
     ui/DlgImportPlayer.ui \
     ui/DlgBulkImportToExtDb.ui \
-    ui/DlgSelectReferee.ui
+    ui/DlgSelectReferee.ui \
+    ui/MatchLogTabWidget.ui
 
 TRANSLATIONS = tournament_de.ts
 

@@ -29,7 +29,7 @@
          <bool>true</bool>
         </property>
         <property name="currentIndex">
-         <number>0</number>
+         <number>5</number>
         </property>
         <widget class="TeamTabWidget" name="tabTeams">
          <property name="enabled">
@@ -61,6 +61,11 @@
           <string>Reports</string>
          </attribute>
         </widget>
+        <widget class="MatchLogTabWidget" name="tabMatchLog">
+         <attribute name="title">
+          <string>Match Log</string>
+         </attribute>
+        </widget>
        </widget>
       </item>
      </layout>
@@ -73,19 +78,19 @@
      <x>0</x>
      <y>0</y>
      <width>1017</width>
-     <height>19</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuTournament">
     <property name="title">
-     <string>Tournament</string>
+     <string>To&amp;urnament</string>
     </property>
     <widget class="QMenu" name="menuExternal_player_database">
      <property name="enabled">
       <bool>false</bool>
      </property>
      <property name="title">
-      <string>External player database</string>
+      <string>&amp;External player database</string>
      </property>
      <addaction name="actionNewExtDatabase"/>
      <addaction name="actionSelectExtDatabase"/>
@@ -108,7 +113,7 @@
    </widget>
    <widget class="QMenu" name="menuTesting">
     <property name="title">
-     <string>Testing</string>
+     <string>Testi&amp;ng</string>
     </property>
     <addaction name="actionEmpty"/>
     <addaction name="actionScenario01"/>
@@ -122,7 +127,7 @@
    </widget>
    <widget class="QMenu" name="menuAbout_QTournament">
     <property name="title">
-     <string>About QTournament</string>
+     <string>About &amp;QTournament</string>
     </property>
     <addaction name="actionInfo"/>
    </widget>
@@ -162,62 +167,62 @@
   </action>
   <action name="actionEmpty">
    <property name="text">
-    <string>Empty</string>
+    <string>&amp;Empty</string>
    </property>
   </action>
   <action name="actionScenario01">
    <property name="text">
-    <string>Scenario01</string>
+    <string>&amp;Scenario01</string>
    </property>
   </action>
   <action name="actionScenario02">
    <property name="text">
-    <string>Scenario02</string>
+    <string>S&amp;cenario02</string>
    </property>
   </action>
   <action name="actionScenario03">
    <property name="text">
-    <string>Scenario03</string>
+    <string>Sce&amp;nario03</string>
    </property>
   </action>
   <action name="actionScenario04">
    <property name="text">
-    <string>Scenario04</string>
+    <string>Scena&amp;rio04</string>
    </property>
   </action>
   <action name="actionScenario05">
    <property name="text">
-    <string>Scenario05</string>
+    <string>Scenar&amp;io05</string>
    </property>
   </action>
   <action name="actionScenario06">
    <property name="text">
-    <string>Scenario06</string>
+    <string>Scenari&amp;o06</string>
    </property>
   </action>
   <action name="actionScenario07">
    <property name="text">
-    <string>Scenario07</string>
+    <string>Scenario&amp;07</string>
    </property>
   </action>
   <action name="actionScenario08">
    <property name="text">
-    <string>Scenario08</string>
+    <string>Scenario0&amp;8</string>
    </property>
   </action>
   <action name="actionNewExtDatabase">
    <property name="text">
-    <string>New...</string>
+    <string>&amp;New...</string>
    </property>
   </action>
   <action name="actionSelectExtDatabase">
    <property name="text">
-    <string>Select...</string>
+    <string>&amp;Select...</string>
    </property>
   </action>
   <action name="actionInfo">
    <property name="text">
-    <string>Info...</string>
+    <string>&amp;Info...</string>
    </property>
   </action>
   <action name="actionSave">
@@ -225,7 +230,7 @@
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>Save...</string>
+    <string>Sa&amp;ve...</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+S</string>
@@ -247,7 +252,7 @@
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>Save a copy...</string>
+    <string>Save a co&amp;py...</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Alt+S</string>
@@ -258,7 +263,7 @@
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>Create baseline</string>
+    <string>&amp;Create baseline</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+B</string>
@@ -269,7 +274,7 @@
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>Close...</string>
+    <string>C&amp;lose...</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+W</string>
@@ -305,6 +310,12 @@
    <class>ReportsTabWidget</class>
    <extends>QWidget</extends>
    <header>ui/ReportsTabWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>MatchLogTabWidget</class>
+   <extends>QWidget</extends>
+   <header>ui/MatchLogTabWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

@@ -465,6 +465,7 @@ void MainFrame::distributeCurrentDatabasePointerToWidgets(bool forceNullptr)
   ui.tabTeams->setDatabase(db);
   ui.tabSchedule->setDatabase(db);
   ui.tabReports->setDatabase(db);
+  ui.tabMatchLog->setDatabase(db);
 }
 
 //----------------------------------------------------------------------------
