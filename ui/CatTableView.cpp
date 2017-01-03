@@ -440,6 +440,7 @@ void CategoryTableView::onRunCategory()
     }
   }
 
+
   // check if we need a seeded ranking, e.g. for single / double elimination rounds
   PlayerPairList initialRanking;
   if (selectedCat->needsInitialRanking())
@@ -758,7 +759,7 @@ void CategoryTableView::onContextMenuRequested(const QPoint& pos)
   actCreateNewPlayerInCat->setEnabled(canAddPlayers);   // TODO: this could be too restrictive for future purposes (e.g., random matches)
 
   // show the context menu
-  QAction* selectedItem = contextMenu->exec(globalPos);
+  contextMenu->exec(globalPos);
 }
 
 //----------------------------------------------------------------------------

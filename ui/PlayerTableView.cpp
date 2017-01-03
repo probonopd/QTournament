@@ -234,7 +234,7 @@ void PlayerTableView::onContextMenuRequested(const QPoint& pos)
   actExportToExtDatabase->setEnabled(isPlayerClicked && hasExtDb);
 
   // show the context menu
-  QAction* selectedItem = contextMenu->exec(globalPos);
+  contextMenu->exec(globalPos);
 }
 
 //----------------------------------------------------------------------------

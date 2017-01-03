@@ -435,7 +435,6 @@ void BracketSheet::drawBracketTextItem(int bracketX0, int bracketY0, int ySpan, 
   }
 
   assert(style != nullptr);  // the style must have been created before!
-  double txtHeight = style->getFontSize_MM();
 
   // prepare common points for all text elements
   double p1x;
@@ -566,6 +565,9 @@ void BracketSheet::drawBracketTextItem(int bracketX0, int bracketY0, int ySpan, 
 QString BracketSheet::getTruncatedPlayerName(const Player& p, const QString& postfix, double maxWidth, SimpleReportLib::TextStyle* style) const
 {
   int fullLen = p.getDisplayName().length();
+
+  // we can't have truncated names of less than six characters
+  if (fullLen < 6) return p.getDisplayName() + postfix;
 
   QString truncName;
   for (int len = fullLen; len > 3; --len)
