@@ -20,9 +20,11 @@
 #define MATCHLOGTABLE_H
 
 #include <QTableWidget>
+#include <QAbstractItemDelegate>
 
 #include "TournamentDB.h"
 #include "Match.h"
+#include "delegates/MatchLogItemDelegate.h"
 
 using namespace QTournament;
 
@@ -39,9 +41,12 @@ public:
   static constexpr int IDX_COURT_COL = 5;
 
   MatchLogTable(QWidget* parent);
-  virtual ~MatchLogTable() {}
+  virtual ~MatchLogTable();
 
   void setDatabase(TournamentDB* _db);
+
+private slots:
+  void onSelectionChanged(const QItemSelection&selectedItem, const QItemSelection&deselectedItem);
 
 protected:
   static constexpr int MAX_NUMERIC_COL_WIDTH = 90;
@@ -49,6 +54,8 @@ protected:
   static constexpr int REL_WIDTH_MATCH_INFO = 10;
 
   TournamentDB* db;
+  QAbstractItemDelegate* defaultDelegate;
+  unique_ptr<MatchLogItemDelegate> logItemDelegate;
 
   virtual void resizeEvent(QResizeEvent *_event) override;
   void autosizeColumns();

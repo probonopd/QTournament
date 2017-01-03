@@ -41,6 +41,21 @@ MatchLogTable::MatchLogTable(QWidget* parent)
   // set selection mode to "row" and "single"
   setSelectionMode(QAbstractItemView::SingleSelection);
   setSelectionBehavior(QAbstractItemView::SelectRows);
+
+  // store the default delegate for later
+  defaultDelegate = itemDelegate();
+
+  // react on selection changes
+  connect(selectionModel(),
+    SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
+    SLOT(onSelectionChanged(const QItemSelection&, const QItemSelection&)));
+}
+
+//----------------------------------------------------------------------------
+
+MatchLogTable::~MatchLogTable()
+{
+  if (defaultDelegate != nullptr) delete defaultDelegate;
 }
 
 //----------------------------------------------------------------------------
@@ -55,11 +70,37 @@ void MatchLogTable::setDatabase(TournamentDB* _db)
 
   if (db != nullptr)
   {
+    // update the delegate
+    logItemDelegate = make_unique<MatchLogItemDelegate>(db, this);
+    setItemDelegate(logItemDelegate.get());
+
+    // add already finished matches to the table
     fillFromDatabase();
+
   } else {
+    setItemDelegate(defaultDelegate);
   }
 
   setEnabled(db != nullptr);
+
+  // initialize column widths
+  autosizeColumns();
+}
+
+//----------------------------------------------------------------------------
+
+void MatchLogTable::onSelectionChanged(const QItemSelection& selectedItem, const QItemSelection& deselectedItem)
+{
+  resizeRowsToContents();
+  for (auto item : selectedItem)
+  {
+    logItemDelegate->setSelectedRow(item.top());
+    resizeRowToContents(item.top());
+  }
+  for (auto item : deselectedItem)
+  {
+    resizeRowToContents(item.top());
+  }
 }
 
 //----------------------------------------------------------------------------

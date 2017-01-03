@@ -137,7 +137,8 @@ HEADERS += \
     MatchTimePredictor.h \
     ui/TournamentProgressBar.h \
     ui/MatchLogTabWidget.h \
-    ui/MatchLogTable.h
+    ui/MatchLogTable.h \
+    ui/delegates/MatchLogItemDelegate.h
 
 SOURCES += \
     Category.cpp \
@@ -247,7 +248,8 @@ SOURCES += \
     MatchTimePredictor.cpp \
     ui/TournamentProgressBar.cpp \
     ui/MatchLogTabWidget.cpp \
-    ui/MatchLogTable.cpp
+    ui/MatchLogTable.cpp \
+    ui/delegates/MatchLogItemDelegate.cpp
 
 RESOURCES += \
     tournament.qrc
