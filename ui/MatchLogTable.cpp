@@ -189,4 +189,13 @@ void MatchLogTable::prependMatch(const Match& ma)
     setCellItem(IDX_DURATION_COL, tr("walkover"), matchId);
   }
 
+  // the court
+  auto co = ma.getCourt();
+  if (co != nullptr)
+  {
+    QString cn = QString::number(co->getNumber());
+    setCellItem(IDX_COURT_COL, cn, matchId);
+  } else {
+    setCellItem(IDX_COURT_COL, "--", matchId);
+  }
 }
