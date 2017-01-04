@@ -23,6 +23,7 @@
 
 #include "TournamentDataDefs.h"
 #include "MatchMngr.h"
+#include "TournamentDataDefs.h"
 
 GuiHelpers::GuiHelpers()
 {
@@ -309,7 +310,8 @@ QSizeF GuiHelpers::drawTwoLinePlayerPairNames(QPainter* painter, int topLeftX, i
 
 void GuiHelpers::drawTwoLinePlayerPairNames_Centered(QPainter* painter, const QRectF rect, const QTournament::Match& ma,
                                                      const QString& localWinnerName, const QString localLoserName,
-                                                     double percLineSpace, bool isBold, bool isItalics, QFont fnt, QColor fntColor, double fntSizeFac)
+                                                     double percLineSpace, bool isBold, bool isItalics, QFont fnt, QColor fntColor, double fntSizeFac,
+                                                     QColor winnerNameColor, QColor loserNameColor)
 {
   //
   // step 1: get the text items to be drawn. The overall layout is as follows
@@ -326,6 +328,28 @@ void GuiHelpers::drawTwoLinePlayerPairNames_Centered(QPainter* painter, const QR
   QString row2Right;
   bool isDoubles;
   ma.getDisplayNameTextItems(localWinnerName, localLoserName, row1Left, row2Left, row1Right, row2Right, isDoubles);
+
+  // determine the colors for the left and the right block
+  QColor leftColor{fntColor};
+  QColor rightColor{fntColor};
+  if (ma.getState() == QTournament::OBJ_STATE::STAT_MA_FINISHED)
+  {
+    auto w = ma.getWinner();
+    auto l = ma.getLoser();
+
+    if ((w != nullptr) && (l != nullptr))
+    {
+      auto pp1 = ma.getPlayerPair1();
+      if (*w == pp1)
+      {
+        leftColor = winnerNameColor;
+        rightColor = loserNameColor;
+      } else {
+        leftColor = loserNameColor;
+        rightColor = winnerNameColor;
+      }
+    }
+  }
 
   //
   // now do the actual drawing
@@ -344,7 +368,6 @@ void GuiHelpers::drawTwoLinePlayerPairNames_Centered(QPainter* painter, const QR
 
   // prepare the paint device
   painter->save();
-  painter->setPen(QPen(fntColor));
   painter->setFont(fnt);
 
   // prepare a flag that indicates that we have
@@ -385,21 +408,25 @@ void GuiHelpers::drawTwoLinePlayerPairNames_Centered(QPainter* painter, const QR
   //
   // let the drawing begin
   //
-  // draw row 1
-  painter->drawText(r1LeftX0, yBaseline1, row1Left);
-  painter->drawText(rightX0, yBaseline1, row1Right);
 
-  // draw row 2, if any
+  // draw the left block
+  painter->setPen(QPen(leftColor));
+  painter->drawText(r1LeftX0, yBaseline1, row1Left);
   if (!(row2Left.isEmpty()))
   {
     painter->drawText(r2LeftX0, yBaseline2, row2Left);
   }
+
+  // draw the right block
+  painter->setPen(QPen(rightColor));
+  painter->drawText(rightX0, yBaseline1, row1Right);
   if (!(row2Right.isEmpty()))
   {
     painter->drawText(rightX0, yBaseline2, row2Right);
   }
 
   // draw the colon
+  painter->setPen(QPen(fntColor));
   painter->drawText(colonLeftX0, yBaseline1, colon);
 
   // done

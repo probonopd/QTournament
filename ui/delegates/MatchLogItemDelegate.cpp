@@ -132,7 +132,37 @@ void MatchLogItemDelegate::paintMatchInfoCell_Selected(QPainter* painter, const 
   int x0 = r.x() + ITEM_MARGIN;
   int y0 = r.y() + vertMargin;
   QRectF playerRect(r.x(), r.y() + vertMargin, r.width(), playerNameHeight - 2 * ITEM_MARGIN);
-  GuiHelpers::drawTwoLinePlayerPairNames_Centered(painter, playerRect, ma, "", "", ITEM_TEXT_ROW_SKIP_PERC, true, false, largeFont, QColor(Qt::yellow));
+  GuiHelpers::drawTwoLinePlayerPairNames_Centered(painter, playerRect, ma, "", "", ITEM_TEXT_ROW_SKIP_PERC, true, false, largeFont, QColor(Qt::white));
+
+  // draw the match result below the player names
+  auto sc = ma.getScore();
+  QString txt;
+  if (sc != nullptr)
+  {
+    txt = sc->toString();
+    txt.replace(",", ", ");
+  }
+  QRectF scoreRect(r.x(), y0 + playerNameHeight, r.width(), fntMetrics_Large.height() + 2 * ITEM_MARGIN);
+  GuiHelpers::drawFormattedText(painter, scoreRect.toRect(), txt, Qt::AlignVCenter|Qt::AlignCenter, true, false, normalFont, QColor(Qt::white));
+
+  // draw category and round in the top left of the box
+  txt = tr("Category:");
+  txt += " " + ma.getCategory().getName() + ", ";
+  txt += tr("Round ") + QString::number(ma.getMatchGroup().getRound());
+  double baseline = y0 + fntMetrics.ascent();
+  GuiHelpers::drawFormattedText(painter, x0, baseline, txt, true, false, normalFont, QColor(Qt::white));
+
+  // add the umpire, if any
+  txt = tr("Umpire: ");
+  auto ref = ma.getAssignedReferee();
+  if (ref != nullptr)
+  {
+    txt += ref->getDisplayName_FirstNameFirst();
+  } else {
+    txt += "--";
+  }
+  baseline += fntMetrics.height() * (1 + ITEM_TEXT_ROW_SKIP_PERC);
+  GuiHelpers::drawFormattedText(painter, x0, baseline, txt, true, false, normalFont, QColor(Qt::white));
 
   return;
 
@@ -143,7 +173,6 @@ void MatchLogItemDelegate::paintMatchInfoCell_Selected(QPainter* painter, const 
   txt += " " + QString::number(ma.getMatchNumber()) + "    ";
   txt += tr("Category:");
   txt += " " + ma.getCategory().getName() + "    ";
-  txt += tr("Round: ") + QString::number(ma.getMatchGroup().getRound());
   double baseline = y0 + playerNameHeight + fntMetrics.ascent();
   GuiHelpers::drawFormattedText(painter, x0, baseline, txt, true, false, normalFont, QColor(Qt::white));
 
