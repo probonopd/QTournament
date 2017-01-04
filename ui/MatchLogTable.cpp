@@ -23,6 +23,7 @@
 
 #include "MatchLogTable.h"
 #include "MatchMngr.h"
+#include "CentralSignalEmitter.h"
 
 MatchLogTable::MatchLogTable(QWidget* parent)
   :QTableWidget(parent), db{nullptr}
@@ -49,6 +50,10 @@ MatchLogTable::MatchLogTable(QWidget* parent)
   connect(selectionModel(),
     SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
     SLOT(onSelectionChanged(const QItemSelection&, const QItemSelection&)));
+
+  // connect to match status changes
+  connect(CentralSignalEmitter::getInstance(), SIGNAL(matchStatusChanged(int,int,OBJ_STATE,OBJ_STATE)), this,
+          SLOT(onMatchStatusChanged(int,int,OBJ_STATE,OBJ_STATE)), Qt::DirectConnection);
 }
 
 //----------------------------------------------------------------------------
@@ -85,6 +90,18 @@ void MatchLogTable::setDatabase(TournamentDB* _db)
 
   // initialize column widths
   autosizeColumns();
+}
+
+//----------------------------------------------------------------------------
+
+void MatchLogTable::onMatchStatusChanged(int maId, int maSeqNum, OBJ_STATE oldStat, OBJ_STATE newStat)
+{
+  if (newStat != STAT_MA_FINISHED) return;
+  if (db == nullptr) return;
+
+  MatchMngr mm{db};
+  auto ma = mm.getMatch(maId);
+  if (ma != nullptr) prependMatch(*ma);
 }
 
 //----------------------------------------------------------------------------

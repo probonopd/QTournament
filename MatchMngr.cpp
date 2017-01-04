@@ -1569,8 +1569,13 @@ namespace QTournament {
     TabRow matchRow = tab->operator [](maId);
     matchRow.update(cvc);
 
-    CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
+    // store the finish time in the database
+    if (oldState == STAT_MA_RUNNING)   // match was called normally, so we have a start time
+    {
+      matchRow.update(MA_FINISH_TIME, UTCTimestamp());
+    }
 
+    CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
     cse->matchResultUpdated(maId, maSeqNum);
     cse->matchStatusChanged(maId, maSeqNum, oldState, STAT_MA_FINISHED);
 
@@ -1620,12 +1625,6 @@ namespace QTournament {
     // update the category's state to "FINALIZED", if necessary
     CatMngr catm{db};
     catm.updateCatStatusFromMatchStatus(ma.getCategory());
-
-    // store the finish time in the database
-    if (oldState == STAT_MA_RUNNING)   // match was called normally, so we have a start time
-    {
-      matchRow.update(MA_FINISH_TIME, UTCTimestamp());
-    }
 
     // get the round status AFTER the match and check whether
     // we'e just finished a round

@@ -45,6 +45,9 @@ public:
 
   void setDatabase(TournamentDB* _db);
 
+public slots:
+  void onMatchStatusChanged(int maId, int maSeqNum, OBJ_STATE oldStat, OBJ_STATE newStat);
+
 private slots:
   void onSelectionChanged(const QItemSelection&selectedItem, const QItemSelection&deselectedItem);
 
