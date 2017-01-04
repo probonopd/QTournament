@@ -1569,8 +1569,9 @@ namespace QTournament {
     TabRow matchRow = tab->operator [](maId);
     matchRow.update(cvc);
 
-    // store the finish time in the database
-    if (oldState == STAT_MA_RUNNING)   // match was called normally, so we have a start time
+    // store the finish time in the database, but only if this is not
+    // a walkover and only if the match was started regularly
+    if ((oldState == STAT_MA_RUNNING) && !isWalkover)   // match was called normally, so we have a start time
     {
       matchRow.update(MA_FINISH_TIME, UTCTimestamp());
     }

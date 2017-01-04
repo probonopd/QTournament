@@ -254,9 +254,15 @@ upSimpleReport BracketSheet::regenerateReport()
         int matchNum = ma->getMatchNumber();
         if (stat == STAT_MA_FINISHED)
         {
-          auto score = ma->getScore();
-          QString scTxt = score->toString();
-          scTxt.replace(",", "  ");
+          QString scTxt;
+          if (ma->isWonByWalkover())
+          {
+            scTxt = tr("walkover");
+          } else {
+            auto score = ma->getScore();
+            scTxt = score->toString();
+            scTxt.replace(",", "  ");
+          }
           drawBracketTextItem(x0, y0, spanY, orientation, scTxt, BRACKET_TEXT_ELEMENT::SCORE);
         }
         else if (matchNum > 0)

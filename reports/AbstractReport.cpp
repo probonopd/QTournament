@@ -253,6 +253,14 @@ void AbstractReport::printMatchList(upSimpleReport& rep, const MatchList& maList
         rowContent << ":";
         rowContent << QString::number(get<1>(sc));
       }
+
+      // if this was a walkover, add a note in
+      // the unused space for the 3rd game
+      if (ma.isWonByWalkover())
+      {
+        rowContent << "";
+        rowContent << QObject::tr("(walkover)");
+      }
     }
 
     tw.appendRow(rowContent);

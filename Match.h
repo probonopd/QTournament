@@ -83,6 +83,7 @@ namespace QTournament
     int getLoserRank() const;
 
     bool isWalkoverPossible() const;
+    bool isWonByWalkover() const;
 
     QDateTime getStartTime() const;
     QDateTime getFinishTime() const;

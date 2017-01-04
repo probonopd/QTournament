@@ -210,12 +210,18 @@ QRectF MatchMatrix::plot(const QPointF& topLeft)
         for (QString gameScore : txt.split("\n"))
         {
           gameScore = gameScore.trimmed();
-          QString sc1 = gameScore.split(" : ").at(0);
-          QString sc2 = gameScore.split(" : ").at(1);
-          if (sc2.endsWith(",")) sc2.chop(1);
+          QStringList scores = gameScore.split(" : ");
+          if (scores.length() > 1)
+          {
+            QString sc1 = scores.at(0);
+            QString sc2 = scores.at(1);
+            if (sc2.endsWith(",")) sc2.chop(1);
 
-          QString s = "%1 : %2\n";
-          swappedScore += s.arg(sc2).arg(sc1);
+            QString s = "%1 : %2\n";
+            swappedScore += s.arg(sc2).arg(sc1);
+          } else {
+            swappedScore += gameScore + "\n";  // in this case, the value of "gamescore" is "walkover";
+          }
         }
         swappedScore.chop(1);
         auto mirroredCell = grid.getCell(c, r);
@@ -377,6 +383,12 @@ tuple<MatchMatrix::CELL_CONTENT_TYPE, QString> MatchMatrix::getCellContent(const
         txt += l + "\n";
       }
       txt.chop(1);
+
+      // add a line "walkover", if necessary
+      if (ma->isWonByWalkover())
+      {
+        txt += "\n" + tr("walkover");
+      }
 
       return make_tuple(CELL_CONTENT_TYPE::SCORE, txt);
     }

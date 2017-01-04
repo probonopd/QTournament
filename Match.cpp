@@ -299,6 +299,19 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
+  bool Match::isWonByWalkover() const
+  {
+    OBJ_STATE stat = getState();
+    if (stat != STAT_MA_FINISHED) return false;
+
+    // if the match is finished but has no starting time, it
+    // has been won by a walkover
+    QDateTime fTime = getFinishTime();
+    return (!(fTime.isValid()));
+  }
+
+//----------------------------------------------------------------------------
+
   QDateTime Match::getStartTime() const
   {
     auto startTime = row.getInt2(MA_START_TIME);
