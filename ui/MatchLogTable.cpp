@@ -31,7 +31,8 @@ MatchLogTable::MatchLogTable(QWidget* parent)
   setDatabase(nullptr);
 
   // prepare the table layout (columns, headers)
-  QStringList horHeaders{tr("#"), tr("Match Info"), tr("Start"), tr("Finish"), tr("Duration"), tr("Court")};
+  QStringList horHeaders{tr("Number"), tr("Category"), tr("Round"), tr("Group"), tr("Match Info"),
+                         tr("Start"), tr("Finish"), tr("Duration"), tr("Court"), tr("Umpire")};
   setColumnCount(horHeaders.length());
   setHorizontalHeaderLabels(horHeaders);
   verticalHeader()->hide();
@@ -82,6 +83,10 @@ void MatchLogTable::setDatabase(TournamentDB* _db)
     // add already finished matches to the table
     fillFromDatabase();
 
+    // resize columns and rows to content once (we do not want permanent automatic resizing)
+    horizontalHeader()->resizeSections(QHeaderView::ResizeToContents);
+    verticalHeader()->resizeSections(QHeaderView::ResizeToContents);
+
   } else {
     setItemDelegate(defaultDelegate);
   }
@@ -102,6 +107,7 @@ void MatchLogTable::onMatchStatusChanged(int maId, int maSeqNum, OBJ_STATE oldSt
   MatchMngr mm{db};
   auto ma = mm.getMatch(maId);
   if (ma != nullptr) prependMatch(*ma);
+  resizeRowToContents(0);
 }
 
 //----------------------------------------------------------------------------
@@ -140,11 +146,15 @@ void MatchLogTable::autosizeColumns()
 {
   // distribute the available space according to relative column widths
   int totalUnits = (REL_WIDTH_NUMERIC_COL + // Match number
+                    REL_WIDTH_NUMERIC_COL + // category
+                    REL_WIDTH_NUMERIC_COL + // round
+                    REL_WIDTH_NUMERIC_COL + // group
                     REL_WIDTH_MATCH_INFO + // Match details
                     REL_WIDTH_NUMERIC_COL + // start
                     REL_WIDTH_NUMERIC_COL + // finish
                     REL_WIDTH_NUMERIC_COL + // duration
-                    REL_WIDTH_NUMERIC_COL); // court
+                    REL_WIDTH_NUMERIC_COL + // court
+                    REL_WIDTH_UMPIRE_COL);  // umpire
 
   int widthAvail = width();
   if ((verticalScrollBar() != nullptr) && (verticalScrollBar()->isVisible()))
@@ -167,10 +177,14 @@ void MatchLogTable::autosizeColumns()
   };
 
   myWidthSetter(IDX_MATCH_NUM_COL, numericColWidth);
+  myWidthSetter(IDX_CAT_COL, numericColWidth);
+  myWidthSetter(IDX_ROUND_COL, numericColWidth);
+  myWidthSetter(IDX_GRP_COL, numericColWidth);
   myWidthSetter(IDX_START_TIME_COL, numericColWidth);
   myWidthSetter(IDX_FINISH_TIME_COL, numericColWidth);
   myWidthSetter(IDX_DURATION_COL, numericColWidth);
   myWidthSetter(IDX_COURT_COL, numericColWidth);
+  myWidthSetter(IDX_UMPIRE_COL, REL_WIDTH_UMPIRE_COL * unitWidth);
 
   // assign the remaining width to the match info. This accounts for
   // rounding errors when dividing / multiplying pixel widths and makes
@@ -218,6 +232,20 @@ void MatchLogTable::prependMatch(const Match& ma)
   // add the match number
   setCellItem(IDX_MATCH_NUM_COL, QString::number(ma.getMatchNumber()), matchId);
 
+  // add category and round
+  setCellItem(IDX_CAT_COL, ma.getCategory().getName(), matchId);
+  auto grp = ma.getMatchGroup();
+  setCellItem(IDX_ROUND_COL, QString::number(grp.getRound()), matchId);
+
+  // add the group number, if any
+  int grpNum = grp.getGroupNumber();
+  if (grpNum > 0)
+  {
+    setCellItem(IDX_GRP_COL, QString::number(grpNum), matchId);
+  } else {
+    setCellItem(IDX_GRP_COL, "--", matchId);
+  }
+
   // add only empty text for the match info. the content will be displayed
   // by the delegate
   setCellItem(IDX_MATCH_INFO_COL, "", matchId);
@@ -255,5 +283,14 @@ void MatchLogTable::prependMatch(const Match& ma)
     setCellItem(IDX_COURT_COL, cn, matchId);
   } else {
     setCellItem(IDX_COURT_COL, "--", matchId);
+  }
+
+  // the umpire
+  auto ump = ma.getAssignedReferee();
+  if (ump != nullptr)
+  {
+    setCellItem(IDX_UMPIRE_COL, ump->getDisplayName_FirstNameFirst(), matchId);
+  } else {
+    setCellItem(IDX_UMPIRE_COL, "--", matchId);
   }
 }

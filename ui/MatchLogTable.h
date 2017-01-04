@@ -34,11 +34,15 @@ class MatchLogTable : public QTableWidget
 
 public:
   static constexpr int IDX_MATCH_NUM_COL = 0;
-  static constexpr int IDX_MATCH_INFO_COL = 1;
-  static constexpr int IDX_START_TIME_COL = 2;
-  static constexpr int IDX_FINISH_TIME_COL = 3;
-  static constexpr int IDX_DURATION_COL = 4;
-  static constexpr int IDX_COURT_COL = 5;
+  static constexpr int IDX_CAT_COL = 1;
+  static constexpr int IDX_ROUND_COL = 2;
+  static constexpr int IDX_GRP_COL = 3;
+  static constexpr int IDX_MATCH_INFO_COL = 4;
+  static constexpr int IDX_START_TIME_COL = 5;
+  static constexpr int IDX_FINISH_TIME_COL = 6;
+  static constexpr int IDX_DURATION_COL = 7;
+  static constexpr int IDX_COURT_COL = 8;
+  static constexpr int IDX_UMPIRE_COL = 9;
 
   MatchLogTable(QWidget* parent);
   virtual ~MatchLogTable();
@@ -55,6 +59,7 @@ protected:
   static constexpr int MAX_NUMERIC_COL_WIDTH = 90;
   static constexpr int REL_WIDTH_NUMERIC_COL = 1;
   static constexpr int REL_WIDTH_MATCH_INFO = 10;
+  static constexpr int REL_WIDTH_UMPIRE_COL = 2;
 
   TournamentDB* db;
   QAbstractItemDelegate* defaultDelegate;

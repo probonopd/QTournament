@@ -32,8 +32,8 @@ class MatchLogItemDelegate : public QStyledItemDelegate
   Q_OBJECT
 
 public:
-  static constexpr int ITEM_ROW_HEIGHT = 30;
-  static constexpr int ITEM_ROW_HEIGHT_SELECTED = 140;
+  static constexpr int ITEM_ROW_HEIGHT = 60;
+  //static constexpr int ITEM_ROW_HEIGHT_SELECTED = 140;
   static constexpr int ITEM_MARGIN = 5;
 
   static constexpr double LARGE_TEXT_SIZE_FAC = 1.2;
@@ -53,8 +53,7 @@ protected:
   QFontMetricsF fntMetrics_Large;
   int selectedRow;
 
-  void paintMatchInfoCell_Unselected(QPainter* painter, const QStyleOptionViewItem& option, const Match& ma) const;
-  void paintMatchInfoCell_Selected(QPainter* painter, const QStyleOptionViewItem& option, const Match& ma) const;
+  void paintMatchInfoCell(QPainter* painter, const QStyleOptionViewItem& option, const Match& ma, bool isSelected) const;
 
 };
 

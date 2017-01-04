@@ -38,7 +38,6 @@ MatchLogItemDelegate::MatchLogItemDelegate(TournamentDB* _db, QObject* parent)
 
 void MatchLogItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-  int row = index.row();
   MatchMngr mm{db};
   int matchId = index.data(Qt::UserRole).toInt();
   auto ma = mm.getMatch(matchId);
@@ -54,15 +53,9 @@ void MatchLogItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& 
   }
 
   // paint logic for the second column, the match description
-  if (index.column() == 1)
+  if (index.column() == 4)
   {
-    if(isItemSelected)
-    {
-      paintMatchInfoCell_Selected(painter, option, *ma);
-    } else {
-      paintMatchInfoCell_Unselected(painter, option, *ma);
-    }
-
+    paintMatchInfoCell(painter, option, *ma, isItemSelected);
   } else {
     // for any other column just draw the plain text content
     if (isItemSelected)
@@ -87,10 +80,10 @@ QSize MatchLogItemDelegate::sizeHint(const QStyleOptionViewItem& option, const Q
   // selected item
   //int height = (option.state & QStyle::State_Selected) ? ITEM_ROW_HEIGHT_SELECTED : ITEM_ROW_HEIGHT;
 
-  int row = index.row();
-  int height = (row == selectedRow) ? ITEM_ROW_HEIGHT_SELECTED : ITEM_ROW_HEIGHT;
+  //int row = index.row();
+  //int height = (row == selectedRow) ? ITEM_ROW_HEIGHT_SELECTED : ITEM_ROW_HEIGHT;
 
-  return QSize(width, height);
+  return QSize(width, ITEM_ROW_HEIGHT);
 }
 
 //----------------------------------------------------------------------------
@@ -102,141 +95,71 @@ void MatchLogItemDelegate::setSelectedRow(int _selRow)
 
 //----------------------------------------------------------------------------
 
-void MatchLogItemDelegate::paintMatchInfoCell_Selected(QPainter* painter, const QStyleOptionViewItem& option, const Match& ma) const
+void MatchLogItemDelegate::paintMatchInfoCell(QPainter* painter, const QStyleOptionViewItem& option, const Match& ma, bool isSelected) const
 {
-  // do we need one or two rows for the player names?
-  bool isDoubles = ma.getPlayerPair1().hasPlayer2();
+  // get the left and the right part of the player names
+  auto ppLeft = ma.getPlayerPair1();
+  auto ppRight = ma.getPlayerPair2();
+  QString txtLeft = ppLeft.getDisplayName();
+  QString txtRight = ppRight.getDisplayName();
 
-  // calc the vertical margin
-  // because we want the content to be vertically centered in the cell,
-  // the vertical margin depends on the match type
-  //
-
-  // start with the height of the info rows
-  double infoBlockHeight = (3 + 2 * ITEM_TEXT_ROW_SKIP_PERC) * fntMetrics.height();
-
-  // now estimate the height of the player name block
-  //
-  // include 2 * ITEM_MARGIN as some extra space between the player names
-  // and the info block
-  double playerNameHeight = (1 + ITEM_TEXT_ROW_SKIP_PERC) * fntMetrics_Large.height();
-  if (isDoubles) playerNameHeight *= 2;
-  playerNameHeight += 2 * ITEM_MARGIN;
-
-  // put everything together and calculate the margin
-  double totalTextHeight = playerNameHeight + infoBlockHeight;
-  double vertMargin = (ITEM_ROW_HEIGHT_SELECTED - totalTextHeight) / 2.0;
-
-  // draw the player names
-  QRect r = option.rect;
-  int x0 = r.x() + ITEM_MARGIN;
-  int y0 = r.y() + vertMargin;
-  QRectF playerRect(r.x(), r.y() + vertMargin, r.width(), playerNameHeight - 2 * ITEM_MARGIN);
-  GuiHelpers::drawTwoLinePlayerPairNames_Centered(painter, playerRect, ma, "", "", ITEM_TEXT_ROW_SKIP_PERC, true, false, largeFont, QColor(Qt::white));
-
-  // draw the match result below the player names
+  // get the score string
   auto sc = ma.getScore();
-  QString txt;
+  QString txtScore;
   if (sc != nullptr)
   {
-    txt = sc->toString();
-    txt.replace(",", ", ");
-  }
-  QRectF scoreRect(r.x(), y0 + playerNameHeight, r.width(), fntMetrics_Large.height() + 2 * ITEM_MARGIN);
-  GuiHelpers::drawFormattedText(painter, scoreRect.toRect(), txt, Qt::AlignVCenter|Qt::AlignCenter, true, false, normalFont, QColor(Qt::white));
-
-  // draw category and round in the top left of the box
-  txt = tr("Category:");
-  txt += " " + ma.getCategory().getName() + ", ";
-  txt += tr("Round ") + QString::number(ma.getMatchGroup().getRound());
-  double baseline = y0 + fntMetrics.ascent();
-  GuiHelpers::drawFormattedText(painter, x0, baseline, txt, true, false, normalFont, QColor(Qt::white));
-
-  // add the umpire, if any
-  txt = tr("Umpire: ");
-  auto ref = ma.getAssignedReferee();
-  if (ref != nullptr)
-  {
-    txt += ref->getDisplayName_FirstNameFirst();
+    txtScore = sc->toString();
+    txtScore.replace(",", ",   ");
+    txtScore.replace(":", " : ");
   } else {
-    txt += "--";
+    txtScore = "--";
   }
-  baseline += fntMetrics.height() * (1 + ITEM_TEXT_ROW_SKIP_PERC);
-  GuiHelpers::drawFormattedText(painter, x0, baseline, txt, true, false, normalFont, QColor(Qt::white));
 
-  // add the court
-  txt = tr("Court: ");
-  auto co = ma.getCourt();
-  if (co != nullptr)
+  // determine the colors for the score, the left and the right string
+  QColor scoreColor(isSelected ? Qt::white : Qt::black);
+  QColor leftColor(isSelected ? Qt::white : Qt::black);   // default: black / white
+  QColor rightColor(isSelected ? Qt::white : Qt::black);
+  if (ma.getState() == QTournament::OBJ_STATE::STAT_MA_FINISHED)
   {
-    txt += QString::number(co->getNumber());
-  } else {
-    txt += "--";
-  }
-  baseline += fntMetrics.height() * (1 + ITEM_TEXT_ROW_SKIP_PERC);
-  GuiHelpers::drawFormattedText(painter, x0, baseline, txt, true, false, normalFont, QColor(Qt::white));
+    auto w = ma.getWinner();
+    auto l = ma.getLoser();
 
-  return;
-
-  /*
-
-  // draw the first info line with the match number and the category
-  QString txt = tr("Match number:");
-  txt += " " + QString::number(ma.getMatchNumber()) + "    ";
-  txt += tr("Category:");
-  txt += " " + ma.getCategory().getName() + "    ";
-  double baseline = y0 + playerNameHeight + fntMetrics.ascent();
-  GuiHelpers::drawFormattedText(painter, x0, baseline, txt, true, false, normalFont, QColor(Qt::white));
-
-  // draw a second info line with call times
-  QDateTime startTime = ma.getStartTime();
-  assert(startTime.isValid());
-  txt = tr("Start time: ") + startTime.toString("HH:mm");
-
-  auto callTimeList = ma.getAdditionalCallTimes();
-  if (!(callTimeList.isEmpty()))
-  {
-    txt += ", " + tr("additional calls at ");
-    for (QDateTime call : callTimeList)
+    if ((w != nullptr) && (l != nullptr))
     {
-      txt += call.toString("HH:mm") + ", ";
+      if (*w == ppLeft)
+      {
+        leftColor = QColor{Qt::green};
+        rightColor = QColor{Qt::red};
+      } else {
+        leftColor = QColor{Qt::red};
+        rightColor = QColor{Qt::green};
+      }
     }
-    txt.chop(2);
   }
-  baseline += fntMetrics.height() * (1 + ITEM_TEXT_ROW_SKIP_PERC);
-  GuiHelpers::drawFormattedText(painter, x0, baseline, txt, true, false, normalFont, QColor(Qt::white));
 
-  // draw the third info line with umpire information
-  txt = tr("Umpire: ");
-  REFEREE_MODE refMode = ma.get_RAW_RefereeMode();
-  if (refMode == REFEREE_MODE::NONE)
-  {
-    txt += tr("none");
-  }
-  else if (refMode == REFEREE_MODE::HANDWRITTEN)
-  {
-    txt += tr("manually assigned");
-  }
-  else
-  {
-    upPlayer referee = ma.getAssignedReferee();
-    assert(referee != nullptr);
-    txt += referee->getDisplayName_FirstNameFirst();
-  }
-  baseline += fntMetrics.height() * (1 + ITEM_TEXT_ROW_SKIP_PERC);
-  GuiHelpers::drawFormattedText(painter, x0, baseline, txt, true, false, normalFont, QColor(Qt::white));
-  */
+  // now estimate the height of the two text rows
+  double textHeight = (2 + ITEM_TEXT_ROW_SKIP_PERC) * fntMetrics.height();
+
+  // calc the vertical margin
+  QRect r = option.rect;
+  double vertMargin = (r.height() - textHeight) / 2.0;
+
+  // draw the left player names
+  int x0 = r.x() + ITEM_MARGIN;
+  int y0 = r.y() + vertMargin;
+  double baseline = y0 + fntMetrics.ascent();
+  GuiHelpers::drawFormattedText(painter, x0, baseline, txtLeft, isSelected, false, normalFont, leftColor);
+
+  // draw the colon and the right player names
+  double leftNameWidth = GuiHelpers::getFormattedTextSize(painter, txtLeft, isSelected, false, normalFont).width();
+  double colonWidth = GuiHelpers::getFormattedTextSize(painter, ":", isSelected, false, normalFont).width();
+  GuiHelpers::drawFormattedText(painter, x0 + leftNameWidth + 2 * ITEM_MARGIN, baseline, ":", isSelected, false, normalFont, scoreColor);
+  GuiHelpers::drawFormattedText(painter, x0 + leftNameWidth + 4 * ITEM_MARGIN + colonWidth, baseline, txtRight, isSelected, false, normalFont, rightColor);
+
+
+  // second line: draw the match score
+  baseline += (1 + ITEM_TEXT_ROW_SKIP_PERC) * fntMetrics.height();
+  GuiHelpers::drawFormattedText(painter, x0, baseline, txtScore, isSelected, false, normalFont, scoreColor);
 }
 
 //----------------------------------------------------------------------------
-
-void MatchLogItemDelegate::paintMatchInfoCell_Unselected(QPainter* painter, const QStyleOptionViewItem& option, const Match& ma) const
-{
-  // calculate the position of the text baseline
-  double vertMargin = (ITEM_ROW_HEIGHT - fntMetrics.height()) / 2.0;
-  double yBaseline = option.rect.y() + vertMargin + fntMetrics.ascent();
-
-  // draw a simple, single line match info
-  GuiHelpers::drawFormattedText(painter, option.rect.x() + ITEM_MARGIN, yBaseline,
-                                ma.getDisplayName("", ""));
-}
