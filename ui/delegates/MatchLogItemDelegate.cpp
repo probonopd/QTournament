@@ -164,6 +164,18 @@ void MatchLogItemDelegate::paintMatchInfoCell_Selected(QPainter* painter, const 
   baseline += fntMetrics.height() * (1 + ITEM_TEXT_ROW_SKIP_PERC);
   GuiHelpers::drawFormattedText(painter, x0, baseline, txt, true, false, normalFont, QColor(Qt::white));
 
+  // add the court
+  txt = tr("Court: ");
+  auto co = ma.getCourt();
+  if (co != nullptr)
+  {
+    txt += QString::number(co->getNumber());
+  } else {
+    txt += "--";
+  }
+  baseline += fntMetrics.height() * (1 + ITEM_TEXT_ROW_SKIP_PERC);
+  GuiHelpers::drawFormattedText(painter, x0, baseline, txt, true, false, normalFont, QColor(Qt::white));
+
   return;
 
   /*
