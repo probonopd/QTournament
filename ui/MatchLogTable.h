@@ -44,7 +44,6 @@ protected:
   virtual void hook_onTournamentOpened() override;
 
   void fillFromDatabase();
-  void prependMatch(const Match& ma);
 };
 
 #endif // MATCHLOGTABLE_H

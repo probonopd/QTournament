@@ -34,10 +34,11 @@ namespace QTournament
     :db{_p.getDatabaseHandle()}, p{_p}, lastPlayedMatchId{-1},
       currentMatchId{-1}, nextMatchId{-1}, lastUmpireMatchId{-1},
       currentUmpireMatchId{-1}, nextUmpireMatchId{-1},
-      finishCount{0}, walkoverCount{0}
+      finishCount{0}, walkoverCount{0}, scheduledCount{0},
+      umpireFinishedCount{0}
   {
-    initMatchIds();
     initMatchLists();
+    initMatchIds();
   }
 
   //----------------------------------------------------------------------------
@@ -96,6 +97,8 @@ namespace QTournament
     {
       OBJ_STATE stat = ma.getState();
 
+      if (stat == STAT_MA_FINISHED) ++umpireFinishedCount;
+
       if (ma.getState() == STAT_MA_RUNNING)
       {
         currentUmpireMatchId = ma.getId();
@@ -129,9 +132,13 @@ namespace QTournament
     // the currently running match and the last finished match
     lastFinishTime = QDateTime{};   // set to "invalid"
     nextMatchNum = -1;
-    for (const Match& ma : matchesAsUmpire)
+    for (const Match& ma : matchesAsPlayer)
     {
       OBJ_STATE stat = ma.getState();
+      int maNum = ma.getMatchNumber();
+
+      // count all scheduled matches
+      if (maNum != MATCH_NUM_NOT_ASSIGNED) ++scheduledCount;
 
       if (stat == STAT_MA_RUNNING)
       {
@@ -149,15 +156,14 @@ namespace QTournament
           {
             lastFinishTime = fTime;
             lastPlayedMatchId = ma.getId();
-            continue;
           }
         } else {
           // invalid finish time indicates a walkover
           ++walkoverCount;
         }
+        continue;
       }
 
-      int maNum = ma.getMatchNumber();
       if ((maNum != MATCH_NUM_NOT_ASSIGNED) && ((maNum < nextMatchNum) || (nextMatchNum < 0)))
       {
         nextMatchNum = maNum;

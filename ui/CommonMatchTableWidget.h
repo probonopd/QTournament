@@ -49,6 +49,12 @@ public:
 
   void setDatabase(TournamentDB* _db);
 
+  void insertMatch(int beforeRowIdx, const Match& ma);
+  void appendMatch(const Match& ma);
+  void appendMatchList(const QList<Match> maList) {
+    for (const Match& ma : maList) appendMatch(ma);
+  }
+
 protected slots:
   void onSelectionChanged(const QItemSelection&selectedItem, const QItemSelection&deselectedItem);
 
@@ -64,9 +70,6 @@ protected:
 
   virtual void resizeEvent(QResizeEvent *_event) override;
   void autosizeColumns();
-
-  void fillFromDatabase();
-  void prependMatch(const Match& ma);
 
   virtual void hook_onTournamentOpened() {}
   virtual void hook_onTournamentClosed() {}

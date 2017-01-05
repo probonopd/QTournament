@@ -29,6 +29,7 @@
 #include "ui/commonCommands/cmdImportSinglePlayerFromExternalDatabase.h"
 #include "ui/commonCommands/cmdExportPlayerToExternalDatabase.h"
 #include "ui/commonCommands/cmdCreatePlayerFromDialog.h"
+#include "ui/DlgPlayerProfile.h"
 #include "PlayerMngr.h"
 #include "TeamMngr.h"
 #include "CatMngr.h"
@@ -501,6 +502,18 @@ void PlayerTableView::onSyncAllToExtDatabase()
 
 //----------------------------------------------------------------------------
 
+void PlayerTableView::onShowPlayerProfile()
+{
+  auto p = getSelectedPlayer();
+  if (p == nullptr) return;
+
+  DlgPlayerProfile dlg{*p, this};
+
+  dlg.exec();
+}
+
+//----------------------------------------------------------------------------
+
 void PlayerTableView::initContextMenu()
 {
   // prepare all actions
@@ -513,6 +526,7 @@ void PlayerTableView::initContextMenu()
   actImportFromExtDatabase = new QAction(tr("Import player..."), this);
   actExportToExtDatabase = new QAction(tr("Export selected player..."), this);
   actSyncAllToExtDatabase = new QAction(tr("Sync all players to database"), this);
+  actShowPlayerProfile = new QAction(tr("Show extended player info..."), this);
 
   // create the context menu and connect it to the actions
   contextMenu = make_unique<QMenu>();
@@ -522,6 +536,7 @@ void PlayerTableView::initContextMenu()
   contextMenu->addAction(actAddPlayer);
   contextMenu->addAction(actEditPlayer);
   contextMenu->addSeparator();
+  contextMenu->addAction(actShowPlayerProfile);
   contextMenu->addAction(actShowNextMatchesForPlayer);
   contextMenu->addSeparator();
   contextMenu->addAction(actRemovePlayer);
@@ -540,6 +555,7 @@ void PlayerTableView::initContextMenu()
   connect(actExportToExtDatabase, SIGNAL(triggered(bool)), this, SLOT(onExportToExtDatabase()));
   connect(actImportFromExtDatabase, SIGNAL(triggered(bool)), this, SLOT(onImportFromExtDatabase()));
   connect(actSyncAllToExtDatabase, SIGNAL(triggered(bool)), this, SLOT(onSyncAllToExtDatabase()));
+  connect(actShowPlayerProfile, SIGNAL(triggered(bool)), this, SLOT(onShowPlayerProfile()));
 }
 
 //----------------------------------------------------------------------------

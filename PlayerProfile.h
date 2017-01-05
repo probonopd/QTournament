@@ -46,12 +46,18 @@ namespace QTournament
     unique_ptr<Match> getCurrentUmpireMatch() const;
     unique_ptr<Match> getNextUmpireMatch() const;
 
-    QList<Match> getMatchesAsPlayer() const;
-    QList<Match> getMatchesAsUmpire() const;
+    QList<Match> getMatchesAsPlayer() const { return matchesAsPlayer; }
+    QList<Match> getMatchesAsUmpire() const { return matchesAsUmpire; }
 
     int getWalkoverCount() const { return walkoverCount; }
     int getFinishCount() const { return finishCount; }  // includes walkovers
     int getActuallyPlayedCount() const { return (finishCount - walkoverCount); }
+    int getScheduledMatchesCount() const { return scheduledCount; }
+    int getYetToBePlayedCount() const { return (matchesAsPlayer.length() - finishCount); }
+    int getScheduledAndNotFinishedCount() const { return (scheduledCount - finishCount); }
+    int getOthersCount() const { return (matchesAsPlayer.length() - scheduledCount); }
+    int getUmpireFinishedCount() const { return umpireFinishedCount; }
+    int getUmpireScheduledAndNotFinishedCount() const { return (matchesAsUmpire.length() - umpireFinishedCount); }
 
   protected:
     TournamentDB* db;
@@ -65,6 +71,8 @@ namespace QTournament
     int nextUmpireMatchId;
     int finishCount;
     int walkoverCount;
+    int scheduledCount;
+    int umpireFinishedCount;
 
     QList<Match> matchesAsPlayer;
     QList<Match> matchesAsUmpire;

@@ -66,6 +66,7 @@ public slots:
   void onImportFromExtDatabase();
   void onExportToExtDatabase();
   void onSyncAllToExtDatabase();
+  void onShowPlayerProfile();
 
 private slots:
   void onContextMenuRequested(const QPoint& pos);
@@ -89,6 +90,7 @@ private:
   QAction* actImportFromExtDatabase;
   QAction* actExportToExtDatabase;
   QAction* actSyncAllToExtDatabase;
+  QAction* actShowPlayerProfile;
 
   void initContextMenu();
 };
