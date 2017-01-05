@@ -137,6 +137,7 @@ HEADERS += \
     MatchTimePredictor.h \
     ui/TournamentProgressBar.h \
     ui/MatchLogTabWidget.h \
+    ui/CommonMatchTableWidget.h \
     ui/MatchLogTable.h \
     ui/delegates/MatchLogItemDelegate.h \
     PlayerProfile.h \
@@ -250,6 +251,7 @@ SOURCES += \
     MatchTimePredictor.cpp \
     ui/TournamentProgressBar.cpp \
     ui/MatchLogTabWidget.cpp \
+    ui/CommonMatchTableWidget.cpp \
     ui/MatchLogTable.cpp \
     ui/delegates/MatchLogItemDelegate.cpp \
     PlayerProfile.cpp \
