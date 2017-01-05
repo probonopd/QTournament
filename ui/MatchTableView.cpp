@@ -116,11 +116,11 @@ void MatchTableView::onSelectionChanged(const QItemSelection& selectedItem, cons
   for (auto item : selectedItem)
   {
     matchItemDelegate->setSelectedRow(item.top());
-    //resizeRowToContents(item.top());
+    resizeRowToContents(item.top());
   }
   for (auto item : deselectedItem)
   {
-    //resizeRowToContents(item.top());
+    resizeRowToContents(item.top());
   }
 
   // emit a signal containing the newly selected match

@@ -138,7 +138,8 @@ HEADERS += \
     ui/TournamentProgressBar.h \
     ui/MatchLogTabWidget.h \
     ui/MatchLogTable.h \
-    ui/delegates/MatchLogItemDelegate.h
+    ui/delegates/MatchLogItemDelegate.h \
+    PlayerProfile.h
 
 SOURCES += \
     Category.cpp \
@@ -249,7 +250,8 @@ SOURCES += \
     ui/TournamentProgressBar.cpp \
     ui/MatchLogTabWidget.cpp \
     ui/MatchLogTable.cpp \
-    ui/delegates/MatchLogItemDelegate.cpp
+    ui/delegates/MatchLogItemDelegate.cpp \
+    PlayerProfile.cpp
 
 RESOURCES += \
     tournament.qrc
