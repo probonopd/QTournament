@@ -273,6 +273,8 @@ void CommonMatchTableWidget::insertMatch(int beforeRowIdx, const Match& ma)
   } else {
     setCellItem(IDX_UMPIRE_COL, "--", matchId);
   }
+
+  resizeRowToContents(beforeRowIdx);
 }
 
 //----------------------------------------------------------------------------
