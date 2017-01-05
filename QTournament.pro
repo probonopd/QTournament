@@ -139,7 +139,8 @@ HEADERS += \
     ui/MatchLogTabWidget.h \
     ui/MatchLogTable.h \
     ui/delegates/MatchLogItemDelegate.h \
-    PlayerProfile.h
+    PlayerProfile.h \
+    ui/DlgPlayerProfile.h
 
 SOURCES += \
     Category.cpp \
@@ -251,7 +252,8 @@ SOURCES += \
     ui/MatchLogTabWidget.cpp \
     ui/MatchLogTable.cpp \
     ui/delegates/MatchLogItemDelegate.cpp \
-    PlayerProfile.cpp
+    PlayerProfile.cpp \
+    ui/DlgPlayerProfile.cpp
 
 RESOURCES += \
     tournament.qrc
@@ -278,7 +280,8 @@ FORMS += \
     ui/DlgImportPlayer.ui \
     ui/DlgBulkImportToExtDb.ui \
     ui/DlgSelectReferee.ui \
-    ui/MatchLogTabWidget.ui
+    ui/MatchLogTabWidget.ui \
+    ui/DlgPlayerProfile.ui
 
 TRANSLATIONS = tournament_de.ts
 
