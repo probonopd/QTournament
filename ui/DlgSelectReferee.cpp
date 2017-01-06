@@ -19,6 +19,7 @@
 #include <QMessageBox>
 #include <QResizeEvent>
 #include <QHeaderView>
+#include <QGuiApplication>
 
 #include "DlgSelectReferee.h"
 #include "ui_DlgSelectReferee.h"
@@ -31,6 +32,7 @@
 #include "PlayerMngr.h"
 #include "HelperFunc.h"
 #include "delegates/DelegateItemLED.h"
+#include "DlgPlayerProfile.h"
 
 DlgSelectReferee::DlgSelectReferee(TournamentDB* _db, const Match& _ma, REFEREE_ACTION _refAction, QWidget *parent) :
   QDialog(parent),
@@ -203,7 +205,18 @@ void DlgSelectReferee::onPlayerDoubleClicked()
 {
   if (!(ui->tabPlayers->hasPlayerSelected())) return;
 
-  // double click means: select the player and exit
+  // if the user pressed shift or ctrl while double clicking,
+  // we show the extended player profile for the selected user
+  if (QGuiApplication::keyboardModifiers() != Qt::NoModifier)
+  {
+    auto selPlayer = ui->tabPlayers->getSelectedPlayer();
+    if (selPlayer == nullptr) return;
+    DlgPlayerProfile dlg{*selPlayer};
+    dlg.exec();
+    return;
+  }
+
+  // double click without modifier means: select the player and exit
   onBtnSelectClicked();
 }
 
@@ -475,7 +488,7 @@ void RefereeTableWidget::rebuildPlayerList(const TaggedPlayerList& pList, int se
 
     // add the offset to the next match for the player
     ma = pm.getNextMatchForPlayer(p);
-    txt = "?";
+    txt = "--";
     if (ma != nullptr)
     {
       int matchNumOffset = ma->getMatchNumber() - selectedMatchNumer;
