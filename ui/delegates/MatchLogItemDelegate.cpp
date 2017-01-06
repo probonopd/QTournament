@@ -98,10 +98,18 @@ void MatchLogItemDelegate::setSelectedRow(int _selRow)
 void MatchLogItemDelegate::paintMatchInfoCell(QPainter* painter, const QStyleOptionViewItem& option, const Match& ma, bool isSelected) const
 {
   // get the left and the right part of the player names
-  auto ppLeft = ma.getPlayerPair1();
-  auto ppRight = ma.getPlayerPair2();
-  QString txtLeft = ppLeft.getDisplayName();
-  QString txtRight = ppRight.getDisplayName();
+  QString txtLeft1;
+  QString txtLeft2;
+  QString txtRight1;
+  QString txtRight2;
+  bool isDoubles;
+  ma.getDisplayNameTextItems(tr("Winner"), tr("Loser"), txtLeft1, txtLeft2,
+                             txtRight1, txtRight2, isDoubles);
+  if (isDoubles)
+  {
+    txtLeft1 += " / " + txtLeft2;
+    txtRight1 += " / " + txtRight2;
+  }
 
   // get the score string
   auto sc = ma.getScore();
@@ -123,6 +131,7 @@ void MatchLogItemDelegate::paintMatchInfoCell(QPainter* painter, const QStyleOpt
   {
     auto w = ma.getWinner();
     auto l = ma.getLoser();
+    auto ppLeft = ma.getPlayerPair1();
 
     if ((w != nullptr) && (l != nullptr))
     {
@@ -148,13 +157,13 @@ void MatchLogItemDelegate::paintMatchInfoCell(QPainter* painter, const QStyleOpt
   int x0 = r.x() + ITEM_MARGIN;
   int y0 = r.y() + vertMargin;
   double baseline = y0 + fntMetrics.ascent();
-  GuiHelpers::drawFormattedText(painter, x0, baseline, txtLeft, isSelected, false, normalFont, leftColor);
+  GuiHelpers::drawFormattedText(painter, x0, baseline, txtLeft1, isSelected, false, normalFont, leftColor);
 
   // draw the colon and the right player names
-  double leftNameWidth = GuiHelpers::getFormattedTextSize(painter, txtLeft, isSelected, false, normalFont).width();
+  double leftNameWidth = GuiHelpers::getFormattedTextSize(painter, txtLeft1, isSelected, false, normalFont).width();
   double colonWidth = GuiHelpers::getFormattedTextSize(painter, ":", isSelected, false, normalFont).width();
   GuiHelpers::drawFormattedText(painter, x0 + leftNameWidth + 2 * ITEM_MARGIN, baseline, ":", isSelected, false, normalFont, scoreColor);
-  GuiHelpers::drawFormattedText(painter, x0 + leftNameWidth + 4 * ITEM_MARGIN + colonWidth, baseline, txtRight, isSelected, false, normalFont, rightColor);
+  GuiHelpers::drawFormattedText(painter, x0 + leftNameWidth + 4 * ITEM_MARGIN + colonWidth, baseline, txtRight1, isSelected, false, normalFont, rightColor);
 
 
   // second line: draw the match score
