@@ -24,6 +24,11 @@
 #include "TournamentDataDefs.h"
 #include "MatchMngr.h"
 #include "TournamentDataDefs.h"
+#include "Match.h"
+#include "Court.h"
+#include "PlayerPair.h"
+#include "Player.h"
+#include "PlayerProfile.h"
 
 GuiHelpers::GuiHelpers()
 {
@@ -463,6 +468,95 @@ void GuiHelpers::execWalkover(QWidget* parent, const QTournament::Match& ma, int
 
 //----------------------------------------------------------------------------
 
+QString GuiHelpers::getStatusSummaryForPlayer(const QTournament::Player& p)
+{
+  QTournament::PlayerProfile pp{p};
+  return getStatusSummaryForPlayer(p, pp);
+}
+
+//----------------------------------------------------------------------------
+
+QString GuiHelpers::getStatusSummaryForPlayer(const QTournament::Player& p, const QTournament::PlayerProfile& pp)
+{
+  using namespace QTournament;
+
+  QTournament::OBJ_STATE plStat = p.getState();
+
+  QString txt;
+  if (plStat == QTournament::OBJ_STATE::STAT_PL_IDLE)
+  {
+    txt = tr(" is idle");
+
+    auto ma = pp.getLastPlayedMatch();
+    if (ma != nullptr)
+    {
+      txt += tr(". The last match ended %1 ago.");
+      txt = txt.arg(qdt2durationString(ma->getFinishTime()));
+    } else {
+      txt += tr("; no played matches yet.");
+    }
+  }
+  unique_ptr<Match> ma;
+  if ((plStat == QTournament::OBJ_STATE::STAT_PL_PLAYING) ||
+      (plStat == QTournament::OBJ_STATE::STAT_PL_REFEREE))
+  {
+    if (plStat == QTournament::OBJ_STATE::STAT_PL_PLAYING)
+    {
+      txt = tr(" is playing on court %1 for %2 (match %3, %4, Round %5)");
+      ma = pp.getCurrentMatch();
+    }
+    if (plStat == QTournament::OBJ_STATE::STAT_PL_REFEREE)
+    {
+      txt = tr(" is umpire on court %1 for %2 (match %3, %4, Round %5)");
+      ma = pp.getCurrentUmpireMatch();
+    }
+
+    if (ma != nullptr)
+    {
+      auto co = ma->getCourt();
+      txt = txt.arg(co != nullptr ? QString::number(co->getNumber()) : "??");
+
+      QDateTime sTime = ma->getStartTime();
+      txt = txt.arg(sTime.isValid() ? qdt2durationString(sTime) : "??");
+
+      txt = txt.arg(ma->getMatchNumber());
+      txt = txt.arg(ma->getCategory().getName());
+      txt = txt.arg(ma->getMatchGroup().getRound());
+    } else {
+      txt = "Waaaaah!!! Database inconsistency!!! Panic!!";
+    }
+  }
+  if (plStat == QTournament::OBJ_STATE::STAT_PL_WAIT_FOR_REGISTRATION)
+  {
+    txt = tr(" has not yet shown up for registration.");
+  }
+
+  return txt;
+}
+
+//----------------------------------------------------------------------------
+
+QString GuiHelpers::qdt2durationString(const QDateTime& qdt)
+{
+  const time_t now = QDateTime::currentDateTimeUtc().toTime_t();
+
+  time_t other = qdt.toTime_t();
+  int duration = abs(now - other);
+
+  int hours = duration / 3600;
+  int minutes = (duration % 3600) / 60;
+  QString sDuration = "%1:%2";
+  sDuration = sDuration.arg(hours).arg(minutes, 2, 10, QLatin1Char('0'));
+
+  return sDuration;
+}
+
+//----------------------------------------------------------------------------
+
+QString GuiHelpers::qdt2string(const QDateTime& qdt)
+{
+  return qdt.toString("HH:mm");
+}
 
 //----------------------------------------------------------------------------
 

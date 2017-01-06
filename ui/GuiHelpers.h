@@ -27,9 +27,14 @@
 #include <QColor>
 #include <QSizeF>
 
-#include "Match.h"
-#include "Court.h"
-#include "PlayerPair.h"
+namespace QTournament
+{
+  class PlayerProfile;
+  class Player;
+  class PlayerPair;
+  class Match;
+  class Court;
+}
 
 class GuiHelpers : public QObject
 {
@@ -58,6 +63,11 @@ public:
                                          double percLineSpace=1.15, bool isBold=false, bool isItalics=false, QFont fnt=QFont(), QColor fntColor = QColor(0,0,0),
                                          double fntSizeFac = 1.0, QColor winnerNameColor = QColor(Qt::green), QColor loserNameColor = QColor(Qt::red));
   static void execWalkover(QWidget* parent, const QTournament::Match& ma, int playerNum);
+
+  static QString getStatusSummaryForPlayer(const QTournament::Player& p);
+  static QString getStatusSummaryForPlayer(const QTournament::Player& p, const QTournament::PlayerProfile& pp);
+  static QString qdt2durationString(const QDateTime& qdt);
+  static QString qdt2string(const QDateTime& qdt);
 };
 
 #endif // GUIHELPERS_H

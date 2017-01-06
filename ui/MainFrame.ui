@@ -29,7 +29,7 @@
          <bool>true</bool>
         </property>
         <property name="currentIndex">
-         <number>5</number>
+         <number>3</number>
         </property>
         <widget class="TeamTabWidget" name="tabTeams">
          <property name="enabled">

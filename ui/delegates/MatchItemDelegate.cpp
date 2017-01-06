@@ -23,6 +23,7 @@
 #include "Match.h"
 #include "DelegateItemLED.h"
 #include "MatchMngr.h"
+#include "../GuiHelpers.h"
 
 using namespace QTournament;
 
@@ -51,6 +52,7 @@ void MatchItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
   }
   MatchMngr mm{db};
   auto ma = mm.getMatchBySeqNum(row);
+  if (ma == nullptr) return;  // shouldn't happen
   
   painter->save();
 
@@ -67,18 +69,15 @@ void MatchItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
     painter->setFont(fnt);
   }
   
-  QRect r = option.rect;
-  
   // paint logic for the second column, the match description
   if (index.column() == 1)
   {
-    // draw a status indicator ("LED light")
-    DelegateItemLED{}(painter, r, ITEM_MARGIN, ITEM_STAT_INDICATOR_SIZE, ma->getState(), Qt::blue);
-
-    // draw the name
-    r.adjust(2 * ITEM_MARGIN + ITEM_STAT_INDICATOR_SIZE, 0, 0, 0);
-    QString txt = ma->getDisplayName(tr("Winner"), tr("Loser"));
-    painter->drawText(r, Qt::AlignVCenter|Qt::AlignLeft, txt);
+    if (index.row() == selectedRow)
+    {
+      paintSelectedMatchCell(painter, option, index, *ma);
+    } else {
+      paintUnselectedMatchCell(painter, option, index, *ma);
+    }
   } else {
     painter->drawText(option.rect, Qt::AlignCenter, index.data(Qt::DisplayRole).toString());
   }
@@ -115,6 +114,170 @@ QSize MatchItemDelegate::sizeHint(const QStyleOptionViewItem& option, const QMod
 void MatchItemDelegate::setSelectedRow(int _selRow)
 {
   selectedRow = _selRow;
+}
+
+//----------------------------------------------------------------------------
+
+void MatchItemDelegate::paintSelectedMatchCell(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index, const Match& ma) const
+{
+  //
+  // assumption: painter->save and ->restore will be handled by the caller!!
+  //
+
+  QRect r = option.rect;
+
+  // draw a status indicator ("LED light") and the match description in one row
+  //
+  // the row starts ITEM_MARGIN from left / right side and with 2 x ITEM_MARGIN margin
+  // at its top and 1 x ITEM_MARGIN at its bottom
+  QRectF nameRect = r.adjusted(0, ITEM_MARGIN, -ITEM_MARGIN, 0);  // right and top
+  nameRect.setHeight(fntMetrics.height() + 2 * ITEM_MARGIN);     // set height to text + top/bottom margin
+  DelegateItemLED{}(painter, nameRect.toRect(), ITEM_MARGIN, ITEM_STAT_INDICATOR_SIZE, ma.getState(), Qt::blue);
+  nameRect.adjust(2 * ITEM_MARGIN + ITEM_STAT_INDICATOR_SIZE, 0, 0, 0);
+  QString txt = ma.getDisplayName(tr("Winner"), tr("Loser"));
+  painter->drawText(nameRect.toRect(), Qt::AlignVCenter|Qt::AlignLeft, txt);
+
+  // for all further text lines, indent the usable rectangle by 4 x ITEM_MARGIN
+  // to the right
+  nameRect.adjust(4 * ITEM_MARGIN, 0, 0, 0);
+
+  // pre-calc the offset between two text lines
+  double rowOffset = (1 + LINE_SKIP_PERC) * fntMetrics.height();
+
+  // move the rect below the match description
+  nameRect.adjust(0, rowOffset, 0, rowOffset);
+
+  // continue with non-bold font although we're in a selected row
+  QFont fnt;
+  fnt.setBold(false);
+  painter->setFont(fnt);
+
+  //
+  // now display the status of each player below the match description
+  //
+  if (ma.hasPlayerPair1())
+  {
+    auto pp = ma.getPlayerPair1();
+    drawPlayerStatus(painter, nameRect, pp.getPlayer1());
+    nameRect.adjust(0, rowOffset, 0, rowOffset);
+
+    if (pp.hasPlayer2())
+    {
+      drawPlayerStatus(painter, nameRect, pp.getPlayer2());
+      nameRect.adjust(0, rowOffset, 0, rowOffset);
+    }
+  }
+  if (ma.hasPlayerPair2())
+  {
+    auto pp = ma.getPlayerPair2();
+    drawPlayerStatus(painter, nameRect, pp.getPlayer1());
+    nameRect.adjust(0, rowOffset, 0, rowOffset);
+
+    if (pp.hasPlayer2())
+    {
+      drawPlayerStatus(painter, nameRect, pp.getPlayer2());
+      nameRect.adjust(0, rowOffset, 0, rowOffset);
+    }
+  }
+
+  // if we have an umpire assigned show that status as well
+  auto ref = ma.getAssignedReferee();
+  if (ref != nullptr)
+  {
+    drawPlayerStatus(painter, nameRect, *ref);
+    nameRect.adjust(0, rowOffset, 0, rowOffset);
+  }
+
+  // maybe we have symbolic names ("Loser of match xyz", etc).
+  // then we indicate the status of the dependend match
+  nameRect.adjust(0, rowOffset, 0, rowOffset);   // an extra gap between players and matches
+  int symName = ma.getSymbolicPlayerPair1Name();
+  if (symName != 0)
+  {
+    drawMatchStatus(painter, nameRect, abs(symName));
+    nameRect.adjust(0, rowOffset, 0, rowOffset);
+  }
+  symName = ma.getSymbolicPlayerPair2Name();
+  if (symName != 0)
+  {
+    drawMatchStatus(painter, nameRect, abs(symName));
+    nameRect.adjust(0, rowOffset, 0, rowOffset);
+  }
+
+}
+
+//----------------------------------------------------------------------------
+
+void MatchItemDelegate::paintUnselectedMatchCell(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index, const Match& ma) const
+{
+  //
+  // assumption: painter->save and ->restore will be handled by the caller!!
+  //
+
+  QRect r = option.rect;
+
+  // draw a status indicator ("LED light")
+  DelegateItemLED{}(painter, r, ITEM_MARGIN, ITEM_STAT_INDICATOR_SIZE, ma.getState(), Qt::blue);
+
+  // draw the name
+  r.adjust(2 * ITEM_MARGIN + ITEM_STAT_INDICATOR_SIZE, 0, 0, 0);
+  QString txt = ma.getDisplayName(tr("Winner"), tr("Loser"));
+  painter->drawText(r, Qt::AlignVCenter|Qt::AlignLeft, txt);
+}
+
+//----------------------------------------------------------------------------
+
+void MatchItemDelegate::drawPlayerStatus(QPainter* painter, const QRectF& r, const Player& p) const
+{
+  DelegateItemLED{}(painter, r.toRect(), ITEM_MARGIN, 0.5 * ITEM_STAT_INDICATOR_SIZE, p.getState(), Qt::white);
+
+  QString txt = GuiHelpers::getStatusSummaryForPlayer(p);
+  txt = p.getDisplayName_FirstNameFirst() + txt;
+  painter->drawText(r.adjusted(2 * ITEM_MARGIN + 0.5 * ITEM_STAT_INDICATOR_SIZE, 0, 0, 0).toRect(), Qt::AlignVCenter|Qt::AlignLeft, txt);
+}
+
+//----------------------------------------------------------------------------
+
+void MatchItemDelegate::drawMatchStatus(QPainter* painter, const QRectF& r, int matchNum) const
+{
+  MatchMngr mm{db};
+
+  auto ma = mm.getMatchByMatchNum(matchNum);
+  if (ma == nullptr) return;
+
+  // paint a status LED
+  OBJ_STATE maStat = ma->getState();
+  DelegateItemLED{}(painter, r.toRect(), ITEM_MARGIN, 0.5 * ITEM_STAT_INDICATOR_SIZE, maStat, Qt::white);
+
+  // add some text, dependend on the match state
+  QString txt = tr("Match %1 ");
+  txt = txt.arg(matchNum);
+  if (maStat == STAT_MA_RUNNING)
+  {
+    txt += tr(" currently running on court %1 since %2");
+    auto co = ma->getCourt();
+    if (co != nullptr)
+    {
+      txt = txt.arg(co->getNumber());
+    } else {
+      txt = txt.arg("??");
+    }
+    txt = txt.arg(GuiHelpers::qdt2durationString(ma->getStartTime()));
+  }
+  if ((maStat == STAT_MA_BUSY) || (maStat == STAT_MA_WAITING))
+  {
+    txt += tr("is not yet ready to be called.");
+  }
+  if (maStat == STAT_MA_READY)
+  {
+    txt += tr("is ready to be called.");
+  }
+  if ((maStat == STAT_MA_FUZZY) || (maStat == STAT_MA_INCOMPLETE))
+  {
+    txt += tr("is incomplete and depends on other match results.");
+  }
+
+  painter->drawText(r.adjusted(2 * ITEM_MARGIN + 0.5 * ITEM_STAT_INDICATOR_SIZE, 0, 0, 0).toRect(), Qt::AlignVCenter|Qt::AlignLeft, txt);
 }
 
 //----------------------------------------------------------------------------

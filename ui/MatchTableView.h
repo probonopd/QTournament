@@ -69,6 +69,7 @@ private slots:
   void onRemoveRefereeTriggered();
   void onSectionHeaderDoubleClicked();
   void onMatchTimePredictionUpdate();
+  void onMatchStatusChanged(int maId, int maSeqNum, OBJ_STATE oldStat, OBJ_STATE newStat);
 
 signals:
   void matchSelectionChanged(int newlySelectedMatchId);

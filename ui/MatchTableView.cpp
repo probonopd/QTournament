@@ -32,6 +32,7 @@
 #include "DlgSelectReferee.h"
 #include "ui/commonCommands/cmdAssignRefereeToMatch.h"
 #include "ui/commonCommands/cmdCallMatch.h"
+#include "CentralSignalEmitter.h"
 
 MatchTableView::MatchTableView(QWidget* parent)
   :QTableView(parent), db(nullptr), curDataModel(nullptr)
@@ -59,6 +60,12 @@ MatchTableView::MatchTableView(QWidget* parent)
   setContextMenuPolicy(Qt::CustomContextMenu);
   connect(this, SIGNAL(customContextMenuRequested(const QPoint&)),
           this, SLOT(onContextMenuRequested(const QPoint&)));
+
+  // catch a UI-corner case when undoing match calls.
+  // this feels a bit like a bad hack because it SHOULD be
+  // handled through the underlying model and the DataChanged()-event
+  connect(CentralSignalEmitter::getInstance(), SIGNAL(matchStatusChanged(int,int,OBJ_STATE,OBJ_STATE)),
+          this, SLOT(onMatchStatusChanged(int,int,OBJ_STATE,OBJ_STATE)));
 
   // handle double clicks on a column header
   connect(horizontalHeader(), SIGNAL(sectionDoubleClicked(int)), this, SLOT(onSectionHeaderDoubleClicked()));
@@ -492,6 +499,41 @@ void MatchTableView::onMatchTimePredictionUpdate()
   {
     curDataModel->recalcPrediction();
   }
+}
+
+//----------------------------------------------------------------------------
+
+void MatchTableView::onMatchStatusChanged(int maId, int maSeqNum, OBJ_STATE oldStat, OBJ_STATE newStat)
+{
+  // a special hack here: if we undo a match call, the match is re-inserted into
+  // the match table. Thus we need to update the selection data because otherwise
+  // the delegate uses the "paintSelectedCell"-method for the wrong row.
+  //
+  // Background: when re-inserting the match, the relation between selected row
+  // and associated match changes...
+  if ((oldStat == STAT_MA_RUNNING) && (newStat == STAT_MA_READY))
+  {
+    auto selMatch = getSelectedMatch();
+    if (selMatch == nullptr) return;
+
+    // will the match be inserted before or after the currently selected match?
+    //
+    // we only need to take action if the match is inserted BEFORE the currently
+    // selected match
+    if (selMatch->getSeqNum() < maSeqNum) return;
+
+    int oldRow = matchItemDelegate->getSelectedRow();
+    matchItemDelegate->setSelectedRow(oldRow + 1);
+  }
+
+  // the same is true when setting a match to "walkover" straight from the match table.
+  // But in this case, a match is REMOVED from the list and thus we need
+  // we need to invert the setSelectedRow-logic here
+  if ((oldStat != STAT_MA_RUNNING) && (newStat == STAT_MA_FINISHED))
+  {
+    updateSelectionAfterDataChange();
+  }
+
 }
 
 //----------------------------------------------------------------------------

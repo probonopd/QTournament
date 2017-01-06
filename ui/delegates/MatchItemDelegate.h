@@ -27,13 +27,19 @@
 
 using namespace QTournament;
 
+namespace QTournament
+{
+  class Match;
+  class Player;
+}
+
 class MatchItemDelegate : public QStyledItemDelegate
 {
   Q_OBJECT
 
 public:
   static constexpr int ITEM_ROW_HEIGHT = 30;
-  static constexpr int ITEM_ROW_HEIGHT_SELECTED = 90;
+  static constexpr int ITEM_ROW_HEIGHT_SELECTED = 120;
   static constexpr int ITEM_STAT_INDICATOR_SIZE = 15;
   static constexpr int ITEM_MARGIN = 5;
 
@@ -42,12 +48,20 @@ public:
   void paint (QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index ) const;
   QSize sizeHint (const QStyleOptionViewItem& option, const QModelIndex& index ) const;
   void setSelectedRow(int _selRow);
+  int getSelectedRow() const { return selectedRow; }
   
 private:
+  static constexpr double LINE_SKIP_PERC = 0.2;
   TournamentDB* db;
   QAbstractProxyModel* proxy;
   QFontMetrics fntMetrics;
   int selectedRow;
+
+  void paintSelectedMatchCell(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index, const Match& ma) const;
+  void paintUnselectedMatchCell(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index, const Match& ma) const;
+
+  void drawPlayerStatus(QPainter* painter, const QRectF& r, const Player& p) const;
+  void drawMatchStatus(QPainter* painter, const QRectF& r, int matchNum) const;
 } ;
 
 #endif	/* MATCHITEMDELEGATE_H */
