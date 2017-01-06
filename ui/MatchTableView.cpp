@@ -568,8 +568,8 @@ void MatchTableView::initContextMenu()
   refereeMode_submenu->addSeparator();
   newAction = refereeMode_submenu->addAction(tr("Pick from all players"));
   newAction->setData(static_cast<int>(REFEREE_MODE::ALL_PLAYERS));
-  newAction = refereeMode_submenu->addAction(tr("Pick from recent losers"));
-  newAction->setData(static_cast<int>(REFEREE_MODE::RECENT_LOSERS));
+  newAction = refereeMode_submenu->addAction(tr("Pick from recent finishers"));
+  newAction->setData(static_cast<int>(REFEREE_MODE::RECENT_FINISHERS));
   newAction = refereeMode_submenu->addAction(tr("Pick from special team"));
   newAction->setData(static_cast<int>(REFEREE_MODE::SPECIAL_TEAM));
   refereeMode_submenu->addSeparator();

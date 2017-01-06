@@ -66,7 +66,7 @@ private:
   void rebuildPlayerList();
   void resizeTabColumns();
 
-  TaggedPlayerList getPlayerList_recentLosers();
+  TaggedPlayerList getPlayerList_recentFinishers();
 
   upPlayer finalPlayerSelection;
   unique_ptr<RefereeSelectionDelegate> refSelDelegate;

@@ -146,7 +146,7 @@ void DlgTournamentSettings::fillRefereeComboBox(bool includeSelectHint)
   ui->cbUmpire->addItem(tr("No umpires"), static_cast<int>(QTournament::REFEREE_MODE::NONE));
   ui->cbUmpire->addItem(tr("Handwritten assignment"), static_cast<int>(QTournament::REFEREE_MODE::HANDWRITTEN));
   ui->cbUmpire->addItem(tr("Pick from all players"), static_cast<int>(QTournament::REFEREE_MODE::ALL_PLAYERS));
-  ui->cbUmpire->addItem(tr("Pick from recent losers"), static_cast<int>(QTournament::REFEREE_MODE::RECENT_LOSERS));
+  ui->cbUmpire->addItem(tr("Pick from recent finishers"), static_cast<int>(QTournament::REFEREE_MODE::RECENT_FINISHERS));
   ui->cbUmpire->addItem(tr("Pick from special team"), static_cast<int>(QTournament::REFEREE_MODE::SPECIAL_TEAM));
 }
 

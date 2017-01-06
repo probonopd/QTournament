@@ -67,7 +67,7 @@ DlgSelectReferee::DlgSelectReferee(TournamentDB* _db, const Match& _ma, REFEREE_
 
   // initialize the drop box for the selection mode
   ui->cbFilterMode->addItem(tr("All players"), static_cast<int>(REFEREE_MODE::ALL_PLAYERS));
-  ui->cbFilterMode->addItem(tr("Recent losers"), static_cast<int>(REFEREE_MODE::RECENT_LOSERS));
+  ui->cbFilterMode->addItem(tr("Recent finishers"), static_cast<int>(REFEREE_MODE::RECENT_FINISHERS));
   ui->cbFilterMode->addItem(tr("Special team member"), static_cast<int>(REFEREE_MODE::SPECIAL_TEAM));
   REFEREE_MODE curRefMode = ma.get_EFFECTIVE_RefereeMode();
   switch (curRefMode)
@@ -76,7 +76,7 @@ DlgSelectReferee::DlgSelectReferee(TournamentDB* _db, const Match& _ma, REFEREE_
     ui->cbFilterMode->setCurrentIndex(0);
     break;
 
-  case REFEREE_MODE::RECENT_LOSERS:
+  case REFEREE_MODE::RECENT_FINISHERS:
     ui->cbFilterMode->setCurrentIndex(1);
     break;
 
@@ -315,9 +315,9 @@ void DlgSelectReferee::rebuildPlayerList()
       pList.push_back(make_pair(p, RefereeSelectionDelegate::NEUTRAL_TAG));
     }
   }
-  if (curFilterMode == REFEREE_MODE::RECENT_LOSERS)
+  if (curFilterMode == REFEREE_MODE::RECENT_FINISHERS)
   {
-    pList = getPlayerList_recentLosers();
+    pList = getPlayerList_recentFinishers();
   }
 
   // if we currently calling the match or swapping the umpire, only players in state IDLE
@@ -344,7 +344,7 @@ void DlgSelectReferee::rebuildPlayerList()
 
 //----------------------------------------------------------------------------
 
-TaggedPlayerList DlgSelectReferee::getPlayerList_recentLosers()
+TaggedPlayerList DlgSelectReferee::getPlayerList_recentFinishers()
 {
   PlayerMngr pm{db};
   PlayerPairList winners;
@@ -515,7 +515,7 @@ void RefereeTableWidget::rebuildPlayerList(const TaggedPlayerList& pList, int se
   }
 
   // set the right sorting mode
-  if (refMode == REFEREE_MODE::RECENT_LOSERS)
+  if (refMode == REFEREE_MODE::RECENT_FINISHERS)
   {
     sortByColumn(LAST_FINISH_TIME_COL_ID, Qt::DescendingOrder);
   } else {

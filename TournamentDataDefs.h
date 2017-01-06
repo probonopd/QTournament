@@ -371,7 +371,7 @@ namespace QTournament
     NONE = 0,           // no umpire for the match
     HANDWRITTEN,    // the umpire's name is inserted manually be the user on the match sheet
     ALL_PLAYERS,    // the umpire is selected upon match start among all players
-    RECENT_LOSERS,  // the umpire is selected upon match start among the recent losers
+    RECENT_FINISHERS,  // the umpire is selected upon match start among the recent match finishers
     SPECIAL_TEAM,    // the umpire is selected upon match start among the members of a special team (--> dedicated umpires)
     USE_DEFAULT = -1,  // use the current tournament default
   };

@@ -625,10 +625,10 @@ insgesamt</translation>
         <location filename="ui/CatTableView.cpp" line="402"/>
         <location filename="ui/CatTableView.cpp" line="406"/>
         <location filename="ui/CatTableView.cpp" line="437"/>
-        <location filename="ui/CatTableView.cpp" line="461"/>
-        <location filename="ui/CatTableView.cpp" line="508"/>
-        <location filename="ui/CatTableView.cpp" line="541"/>
-        <location filename="ui/CatTableView.cpp" line="707"/>
+        <location filename="ui/CatTableView.cpp" line="462"/>
+        <location filename="ui/CatTableView.cpp" line="509"/>
+        <location filename="ui/CatTableView.cpp" line="542"/>
+        <location filename="ui/CatTableView.cpp" line="708"/>
         <source>Run Category</source>
         <translation>Disziplin starten</translation>
     </message>
@@ -680,108 +680,108 @@ Operation cancelled.</source>
 Vorgang abgebrochen.</translation>
     </message>
     <message>
-        <location filename="ui/CatTableView.cpp" line="461"/>
-        <location filename="ui/CatTableView.cpp" line="673"/>
+        <location filename="ui/CatTableView.cpp" line="462"/>
+        <location filename="ui/CatTableView.cpp" line="674"/>
         <source>Can&apos;t read seeding.
 Operation cancelled.</source>
         <translation>Die Setzliste konnte nicht gelesen werden.
 Vorgang abgebrochen.</translation>
     </message>
     <message>
-        <location filename="ui/CatTableView.cpp" line="479"/>
+        <location filename="ui/CatTableView.cpp" line="480"/>
         <source>Something is wrong with the group assignment. This shouldn&apos;t happen.
 Fault:</source>
         <translation>Irgendetwas ist bei den Gruppenzuordnungen schiefgelaufen. Das sollte nicht passieren.
 Fehlercode:</translation>
     </message>
     <message>
-        <location filename="ui/CatTableView.cpp" line="482"/>
+        <location filename="ui/CatTableView.cpp" line="483"/>
         <source>Category state not valid for group assignments (STAT != FROZEN)</source>
         <translation>Der Disziplin kann aktuell keine Gruppenzuordnung zugewiesen werden</translation>
     </message>
     <message>
-        <location filename="ui/CatTableView.cpp" line="486"/>
+        <location filename="ui/CatTableView.cpp" line="487"/>
         <source>This category needs no group assignments</source>
         <translation>Diese Disziplin benötigt keine Gruppenzuordnungen.</translation>
     </message>
     <message>
-        <location filename="ui/CatTableView.cpp" line="490"/>
+        <location filename="ui/CatTableView.cpp" line="491"/>
         <source>The configuration of the groups and the KO rounds is invalid.</source>
         <translation>Ungültige Konfiguration der Gruppen- und KO-Phase.</translation>
     </message>
     <message>
-        <location filename="ui/CatTableView.cpp" line="494"/>
+        <location filename="ui/CatTableView.cpp" line="495"/>
         <source>The number of assigned groups doesn&apos;t match the number of required groups.</source>
         <translation>Die Anzahl der zugeordneten Gruppen entspricht nicht der Anzahl der benötigten Gruppen.</translation>
     </message>
     <message>
-        <location filename="ui/CatTableView.cpp" line="498"/>
+        <location filename="ui/CatTableView.cpp" line="499"/>
         <source>The number of assigned players doesn&apos;t match the number of players in the category.</source>
         <translation>Die Anzahl der zugeordneten Spieler entspricht nicht der Anzahl der Spieler in dieser Disziplin.</translation>
     </message>
     <message>
-        <location filename="ui/CatTableView.cpp" line="502"/>
+        <location filename="ui/CatTableView.cpp" line="503"/>
         <source>There are invalid players in the group assignments.</source>
         <translation>Die Gruppenzuordnung enthält ungültige Spieler.</translation>
     </message>
     <message>
-        <location filename="ui/CatTableView.cpp" line="506"/>
-        <location filename="ui/CatTableView.cpp" line="539"/>
+        <location filename="ui/CatTableView.cpp" line="507"/>
+        <location filename="ui/CatTableView.cpp" line="540"/>
         <source>Don&apos;t now...</source>
         <translation>Keine Ahnung...</translation>
     </message>
     <message>
-        <location filename="ui/CatTableView.cpp" line="520"/>
+        <location filename="ui/CatTableView.cpp" line="521"/>
         <source>Something is wrong with the initial ranking. This shouldn&apos;t happen.
 Fault:</source>
         <translation>Mit der Setzliste stimmt etwas nicht. Das sollte nicht passieren.
 Fehlercode:</translation>
     </message>
     <message>
-        <location filename="ui/CatTableView.cpp" line="523"/>
+        <location filename="ui/CatTableView.cpp" line="524"/>
         <source>Category state not valid for setting the initial ranking (STAT != FROZEN)</source>
         <translation>Dieser Disziplin kann aktuell keine Setzliste zugeordnet werden.</translation>
     </message>
     <message>
-        <location filename="ui/CatTableView.cpp" line="527"/>
+        <location filename="ui/CatTableView.cpp" line="528"/>
         <source>This category needs no initial ranking.</source>
         <translation>Diese Disziplin benötigt keine Setzliste.</translation>
     </message>
     <message>
-        <location filename="ui/CatTableView.cpp" line="531"/>
+        <location filename="ui/CatTableView.cpp" line="532"/>
         <source>The number of player in the initial ranking doesn&apos;t match the number of players in the category.</source>
         <translation>Die Anzahl Spieler in der Setzliste passt nicht zur Anzahl Spieler in der Disziplin.</translation>
     </message>
     <message>
-        <location filename="ui/CatTableView.cpp" line="535"/>
+        <location filename="ui/CatTableView.cpp" line="536"/>
         <source>There are invalid players in the initial ranking.</source>
         <translation>Es befinden sich ungültige Spieler in der Setzliste.</translation>
     </message>
     <message>
-        <location filename="ui/CatTableView.cpp" line="560"/>
+        <location filename="ui/CatTableView.cpp" line="561"/>
         <source>Start category</source>
         <translation>Disziplin starten</translation>
     </message>
     <message>
-        <location filename="ui/CatTableView.cpp" line="560"/>
+        <location filename="ui/CatTableView.cpp" line="561"/>
         <source>Category successfully started!</source>
         <translation>Disziplin erfolgreich gestartet!</translation>
     </message>
     <message>
-        <location filename="ui/CatTableView.cpp" line="572"/>
-        <location filename="ui/CatTableView.cpp" line="770"/>
+        <location filename="ui/CatTableView.cpp" line="573"/>
+        <location filename="ui/CatTableView.cpp" line="771"/>
         <source>Clone</source>
         <translation>Klonen</translation>
     </message>
     <message>
-        <location filename="ui/CatTableView.cpp" line="577"/>
+        <location filename="ui/CatTableView.cpp" line="578"/>
         <source>Cloning the category failed due to
 </source>
         <translation>Die Disziplin konnte nicht geklont werden,
 </translation>
     </message>
     <message>
-        <location filename="ui/CatTableView.cpp" line="578"/>
+        <location filename="ui/CatTableView.cpp" line="579"/>
         <source>issues defining the clone&apos;s name.
 
 </source>
@@ -790,97 +790,155 @@ Fehlercode:</translation>
 </translation>
     </message>
     <message>
-        <location filename="ui/CatTableView.cpp" line="579"/>
+        <location filename="ui/CatTableView.cpp" line="580"/>
         <source>No clone has been created.</source>
         <translation>Es wurde kein Klon erzeugt.</translation>
     </message>
     <message>
-        <location filename="ui/CatTableView.cpp" line="580"/>
-        <location filename="ui/CatTableView.cpp" line="588"/>
+        <location filename="ui/CatTableView.cpp" line="581"/>
+        <location filename="ui/CatTableView.cpp" line="589"/>
         <source>Clone category</source>
         <translation>Disziplin klonen</translation>
     </message>
     <message>
-        <location filename="ui/CatTableView.cpp" line="585"/>
+        <location filename="ui/CatTableView.cpp" line="586"/>
         <source>Cloning the category partially failed.
 </source>
         <translation>Das Klonen der Disziplin hatnur teilweise funktioniert.
 </translation>
     </message>
     <message>
-        <location filename="ui/CatTableView.cpp" line="586"/>
+        <location filename="ui/CatTableView.cpp" line="587"/>
         <source>A new category has been created but not all
 </source>
         <translation>Eine neue Disziplin konnte erfolgreich angelegt werden, aber
 </translation>
     </message>
     <message>
-        <location filename="ui/CatTableView.cpp" line="587"/>
+        <location filename="ui/CatTableView.cpp" line="588"/>
         <source>settings, players and/or pairs could be copied to the clone.</source>
         <translation>nicht alle Einstellungen, Spieler oder Doppelpaarungen konnte kopiert werden.</translation>
     </message>
     <message>
-        <location filename="ui/CatTableView.cpp" line="673"/>
+        <location filename="ui/CatTableView.cpp" line="674"/>
         <source>Intermediate Seeding</source>
         <translation>Setzliste definieren</translation>
     </message>
     <message>
-        <location filename="ui/CatTableView.cpp" line="688"/>
+        <location filename="ui/CatTableView.cpp" line="689"/>
         <source>Continue category</source>
         <translation>Disziplin fortsetzen</translation>
     </message>
     <message>
-        <location filename="ui/CatTableView.cpp" line="688"/>
+        <location filename="ui/CatTableView.cpp" line="689"/>
         <source>Matches successfully generated!</source>
         <translation>Spiele erfolgreich angelegt!</translation>
     </message>
     <message>
-        <location filename="ui/CatTableView.cpp" line="708"/>
+        <location filename="ui/CatTableView.cpp" line="709"/>
         <source>Uncaptured error. Category has no valid configuration and can&apos;t be started.
 Expect data corruption for this category.</source>
         <translation>Unerwarteter Fehler. Die Disziplin hat keine gültige Konfiguration und kann nicht gestartet werden.
 Die internen Daten zu dieser Disziplin sind vermutlich defekt.</translation>
     </message>
     <message>
-        <location filename="ui/CatTableView.cpp" line="742"/>
+        <location filename="ui/CatTableView.cpp" line="743"/>
         <source>Continue...</source>
         <translation>Fortsetzen...</translation>
     </message>
     <message>
-        <location filename="ui/CatTableView.cpp" line="744"/>
-        <location filename="ui/CatTableView.cpp" line="771"/>
+        <location filename="ui/CatTableView.cpp" line="745"/>
+        <location filename="ui/CatTableView.cpp" line="772"/>
         <source>Run...</source>
         <translation>Starten...</translation>
     </message>
     <message>
-        <location filename="ui/CatTableView.cpp" line="769"/>
+        <location filename="ui/CatTableView.cpp" line="770"/>
         <source>Add new</source>
         <translation>Neue Disziplin anlegen</translation>
     </message>
     <message>
-        <location filename="ui/CatTableView.cpp" line="772"/>
+        <location filename="ui/CatTableView.cpp" line="773"/>
         <source>Remove...</source>
         <translation>Disziplin löschen...</translation>
     </message>
     <message>
-        <location filename="ui/CatTableView.cpp" line="773"/>
+        <location filename="ui/CatTableView.cpp" line="774"/>
         <source>Add existing player(s)...</source>
         <translation>Bestehende Spieler hinzufügen...</translation>
     </message>
     <message>
-        <location filename="ui/CatTableView.cpp" line="774"/>
+        <location filename="ui/CatTableView.cpp" line="775"/>
         <source>Remove player(s) from category...</source>
         <translation>Spieler aus dieser Disziplin entfernen...</translation>
     </message>
     <message>
-        <location filename="ui/CatTableView.cpp" line="775"/>
+        <location filename="ui/CatTableView.cpp" line="776"/>
         <source>Create new player in this category...</source>
         <translation>Einen neuen Spieler für diese Disziplin anlegen...</translation>
     </message>
     <message>
-        <location filename="ui/CatTableView.cpp" line="776"/>
+        <location filename="ui/CatTableView.cpp" line="777"/>
         <source>Import player to this category...</source>
         <translation>Spieler in diese Disziplin importieren...</translation>
+    </message>
+</context>
+<context>
+    <name>CommonMatchTableWidget</name>
+    <message>
+        <location filename="ui/CommonMatchTableWidget.cpp" line="34"/>
+        <source>Number</source>
+        <translation>Nummer</translation>
+    </message>
+    <message>
+        <location filename="ui/CommonMatchTableWidget.cpp" line="34"/>
+        <source>Category</source>
+        <translation>Disziplin</translation>
+    </message>
+    <message>
+        <location filename="ui/CommonMatchTableWidget.cpp" line="34"/>
+        <source>Round</source>
+        <translation>Runde</translation>
+    </message>
+    <message>
+        <location filename="ui/CommonMatchTableWidget.cpp" line="34"/>
+        <source>Group</source>
+        <translation>Gruppe</translation>
+    </message>
+    <message>
+        <location filename="ui/CommonMatchTableWidget.cpp" line="34"/>
+        <source>Match Info</source>
+        <translation>Spieldetails</translation>
+    </message>
+    <message>
+        <location filename="ui/CommonMatchTableWidget.cpp" line="35"/>
+        <source>Start</source>
+        <translation>Aufruf</translation>
+    </message>
+    <message>
+        <location filename="ui/CommonMatchTableWidget.cpp" line="35"/>
+        <source>Finish</source>
+        <translation>Ende</translation>
+    </message>
+    <message>
+        <location filename="ui/CommonMatchTableWidget.cpp" line="35"/>
+        <source>Duration</source>
+        <translation>Dauer</translation>
+    </message>
+    <message>
+        <location filename="ui/CommonMatchTableWidget.cpp" line="35"/>
+        <source>Court</source>
+        <translation>Feld</translation>
+    </message>
+    <message>
+        <location filename="ui/CommonMatchTableWidget.cpp" line="35"/>
+        <source>Umpire</source>
+        <translation>Schiedsrichter</translation>
+    </message>
+    <message>
+        <location filename="ui/CommonMatchTableWidget.cpp" line="252"/>
+        <source>walkover</source>
+        <translation>kampflos</translation>
     </message>
 </context>
 <context>
@@ -1306,6 +1364,133 @@ Die internen Daten zu dieser Disziplin sind vermutlich defekt.</translation>
     </message>
 </context>
 <context>
+    <name>DlgPlayerProfile</name>
+    <message>
+        <location filename="ui/DlgPlayerProfile.ui" line="14"/>
+        <source>Dialog</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="ui/DlgPlayerProfile.ui" line="32"/>
+        <location filename="ui/DlgPlayerProfile.ui" line="50"/>
+        <location filename="ui/DlgPlayerProfile.ui" line="78"/>
+        <location filename="ui/DlgPlayerProfile.ui" line="150"/>
+        <location filename="ui/DlgPlayerProfile.ui" line="196"/>
+        <location filename="ui/DlgPlayerProfile.ui" line="203"/>
+        <location filename="ui/DlgPlayerProfile.ui" line="210"/>
+        <location filename="ui/DlgPlayerProfile.ui" line="217"/>
+        <location filename="ui/DlgPlayerProfile.ui" line="224"/>
+        <location filename="ui/DlgPlayerProfile.ui" line="244"/>
+        <location filename="ui/DlgPlayerProfile.ui" line="264"/>
+        <location filename="ui/DlgPlayerProfile.ui" line="271"/>
+        <source>TextLabel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="ui/DlgPlayerProfile.ui" line="104"/>
+        <source>Current Status:</source>
+        <translation>Aktueller Status:</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgPlayerProfile.ui" line="117"/>
+        <source>Partners:</source>
+        <translation>Partner:</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgPlayerProfile.ui" line="143"/>
+        <source>Next Match:</source>
+        <translation>Nächstes Spiel:</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgPlayerProfile.ui" line="163"/>
+        <source>Categories:</source>
+        <translation>Disziplinen:</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgPlayerProfile.ui" line="176"/>
+        <source>Umpire Information:</source>
+        <translation>Schiri-Informationen:</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgPlayerProfile.ui" line="237"/>
+        <source>Match Information:</source>
+        <translation>Spiel-Statistik:</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgPlayerProfile.ui" line="257"/>
+        <source>Next Match as Umpire:</source>
+        <translation>Nächster Schiri-Einsatz:</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgPlayerProfile.ui" line="312"/>
+        <source>Matches as Player:</source>
+        <translation>Spiele als Spieler:</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgPlayerProfile.ui" line="344"/>
+        <source>Matches as Umpire:</source>
+        <translation>Spiele als Schiedsrichter:</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgPlayerProfile.cpp" line="42"/>
+        <source>Information about %1</source>
+        <translation>Übersicht zu %1</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgPlayerProfile.cpp" line="56"/>
+        <source>The player</source>
+        <translation>Der Spieler</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgPlayerProfile.cpp" line="66"/>
+        <location filename="ui/DlgPlayerProfile.cpp" line="83"/>
+        <source>#%1: %2 (%3, Round %4)</source>
+        <translation>#%1: %2 (%3, Runde %4)</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgPlayerProfile.cpp" line="68"/>
+        <location filename="ui/DlgPlayerProfile.cpp" line="85"/>
+        <source>Winner</source>
+        <translation>Gewinner</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgPlayerProfile.cpp" line="68"/>
+        <location filename="ui/DlgPlayerProfile.cpp" line="85"/>
+        <source>Loser</source>
+        <translation>Verlierer</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgPlayerProfile.cpp" line="130"/>
+        <source>%1 matches for this player in this tournament</source>
+        <translation>%1 Spiele in diesem Turnier</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgPlayerProfile.cpp" line="137"/>
+        <source>%1 matches already finished (%2 actually played, %3 walkovers)</source>
+        <translation>%1 Spieler bereits abgeschlossen (%2 tatsächlich gespielt, %3 kampflos)</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgPlayerProfile.cpp" line="148"/>
+        <source>%1 further matches scheduled and 1 match currently running</source>
+        <translation>%1 weitere Spiele geplant und 1 Spiel derzeit laufend</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgPlayerProfile.cpp" line="151"/>
+        <source>%1 further matches scheduled</source>
+        <translation>%1 weitere Spiele geplant</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgPlayerProfile.cpp" line="159"/>
+        <source>%1 other, not yet scheduled matches</source>
+        <translation>%1 andere, noch  nicht geplante Spiele</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgPlayerProfile.cpp" line="166"/>
+        <source>%1 services (%2 finished, %3 running, %4 waiting)</source>
+        <translation>%1 Einsätze (%2 abgeschlossen, %3 laufend, %4 ausstehend)</translation>
+    </message>
+</context>
+<context>
     <name>DlgSeedingEditor</name>
     <message>
         <location filename="ui/DlgSeedingEditor.ui" line="42"/>
@@ -1449,37 +1634,41 @@ Die internen Daten zu dieser Disziplin sind vermutlich defekt.</translation>
         <translation>Abbrechen</translation>
     </message>
     <message>
-        <location filename="ui/DlgSelectReferee.cpp" line="61"/>
+        <location filename="ui/DlgSelectReferee.cpp" line="69"/>
         <source>All players</source>
         <translation>Alle Spieler</translation>
     </message>
     <message>
-        <location filename="ui/DlgSelectReferee.cpp" line="62"/>
         <source>Recent losers</source>
-        <translation>Letzte Verlierer</translation>
+        <translation type="vanished">Letzte Verlierer</translation>
     </message>
     <message>
-        <location filename="ui/DlgSelectReferee.cpp" line="63"/>
+        <location filename="ui/DlgSelectReferee.cpp" line="70"/>
+        <source>Recent finishers</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="ui/DlgSelectReferee.cpp" line="71"/>
         <source>Special team member</source>
         <translation>Spezielles Team</translation>
     </message>
     <message>
-        <location filename="ui/DlgSelectReferee.cpp" line="107"/>
+        <location filename="ui/DlgSelectReferee.cpp" line="115"/>
         <source>Pre-assignment</source>
         <translation>Vorabzuweisung</translation>
     </message>
     <message>
-        <location filename="ui/DlgSelectReferee.cpp" line="112"/>
+        <location filename="ui/DlgSelectReferee.cpp" line="120"/>
         <source>!! Match call !!</source>
         <translation>!! Spielaufruf !!</translation>
     </message>
     <message>
-        <location filename="ui/DlgSelectReferee.cpp" line="117"/>
+        <location filename="ui/DlgSelectReferee.cpp" line="125"/>
         <source>Umpire swap</source>
         <translation>Schiedsrichter wechseln</translation>
     </message>
     <message>
-        <location filename="ui/DlgSelectReferee.cpp" line="238"/>
+        <location filename="ui/DlgSelectReferee.cpp" line="257"/>
         <source>&lt;Please select&gt;</source>
         <translation>&lt;Bitte auswählen&gt;</translation>
     </message>
@@ -1547,8 +1736,9 @@ Die internen Daten zu dieser Disziplin sind vermutlich defekt.</translation>
     </message>
     <message>
         <location filename="ui/DlgTournamentSettings.cpp" line="149"/>
-        <source>Pick from recent losers</source>
-        <translation>Aus letzten Verlierern wählen</translation>
+        <source>Pick from recent finishers</source>
+        <oldsource>Pick from recent losers</oldsource>
+        <translation type="unfinished">Aus letzten Verlierern wählen</translation>
     </message>
     <message>
         <location filename="ui/DlgTournamentSettings.cpp" line="150"/>
@@ -1683,52 +1873,52 @@ Die internen Daten zu dieser Disziplin sind vermutlich defekt.</translation>
 <context>
     <name>GuiHelpers</name>
     <message>
-        <location filename="ui/GuiHelpers.cpp" line="48"/>
+        <location filename="ui/GuiHelpers.cpp" line="54"/>
         <source>L16</source>
         <translation>AF</translation>
     </message>
     <message>
-        <location filename="ui/GuiHelpers.cpp" line="50"/>
+        <location filename="ui/GuiHelpers.cpp" line="56"/>
         <source>QF</source>
         <translation>VF</translation>
     </message>
     <message>
-        <location filename="ui/GuiHelpers.cpp" line="52"/>
+        <location filename="ui/GuiHelpers.cpp" line="58"/>
         <source>SF</source>
         <translation>HF</translation>
     </message>
     <message>
-        <location filename="ui/GuiHelpers.cpp" line="54"/>
+        <location filename="ui/GuiHelpers.cpp" line="60"/>
         <source>FI</source>
         <translation>FI</translation>
     </message>
     <message>
-        <location filename="ui/GuiHelpers.cpp" line="65"/>
+        <location filename="ui/GuiHelpers.cpp" line="71"/>
         <source>Group </source>
         <translation>Gruppe </translation>
     </message>
     <message>
-        <location filename="ui/GuiHelpers.cpp" line="72"/>
+        <location filename="ui/GuiHelpers.cpp" line="78"/>
         <source>Round of Last 16</source>
         <translation>Achtelfinale</translation>
     </message>
     <message>
-        <location filename="ui/GuiHelpers.cpp" line="74"/>
+        <location filename="ui/GuiHelpers.cpp" line="80"/>
         <source>Quarter Finals</source>
         <translation>Viertelfinale</translation>
     </message>
     <message>
-        <location filename="ui/GuiHelpers.cpp" line="76"/>
+        <location filename="ui/GuiHelpers.cpp" line="82"/>
         <source>Semi Finals</source>
         <translation>Halbfinale</translation>
     </message>
     <message>
-        <location filename="ui/GuiHelpers.cpp" line="78"/>
+        <location filename="ui/GuiHelpers.cpp" line="84"/>
         <source>Finals</source>
         <translation>Finale</translation>
     </message>
     <message>
-        <location filename="ui/GuiHelpers.cpp" line="100"/>
+        <location filename="ui/GuiHelpers.cpp" line="106"/>
         <source>Please announce:
 
 
@@ -1739,7 +1929,7 @@ Die internen Daten zu dieser Disziplin sind vermutlich defekt.</translation>
 </translation>
     </message>
     <message>
-        <location filename="ui/GuiHelpers.cpp" line="104"/>
+        <location filename="ui/GuiHelpers.cpp" line="110"/>
         <source>Next match,
 
 </source>
@@ -1748,24 +1938,24 @@ Die internen Daten zu dieser Disziplin sind vermutlich defekt.</translation>
 </translation>
     </message>
     <message>
-        <location filename="ui/GuiHelpers.cpp" line="107"/>
+        <location filename="ui/GuiHelpers.cpp" line="113"/>
         <source>call for </source>
         <translation>Aufruf für </translation>
     </message>
     <message>
-        <location filename="ui/GuiHelpers.cpp" line="110"/>
         <location filename="ui/GuiHelpers.cpp" line="116"/>
+        <location filename="ui/GuiHelpers.cpp" line="122"/>
         <source>match number </source>
         <translation>Spiel Nummer </translation>
     </message>
     <message>
-        <location filename="ui/GuiHelpers.cpp" line="113"/>
-        <location filename="ui/GuiHelpers.cpp" line="115"/>
+        <location filename="ui/GuiHelpers.cpp" line="119"/>
+        <location filename="ui/GuiHelpers.cpp" line="121"/>
         <source>and</source>
         <translation>und</translation>
     </message>
     <message>
-        <location filename="ui/GuiHelpers.cpp" line="114"/>
+        <location filename="ui/GuiHelpers.cpp" line="120"/>
         <source>        versus
 
 </source>
@@ -1774,33 +1964,63 @@ Die internen Daten zu dieser Disziplin sind vermutlich defekt.</translation>
 </translation>
     </message>
     <message>
-        <location filename="ui/GuiHelpers.cpp" line="110"/>
+        <location filename="ui/GuiHelpers.cpp" line="486"/>
+        <source> is idle</source>
+        <translation> ist verfügbar</translation>
+    </message>
+    <message>
+        <location filename="ui/GuiHelpers.cpp" line="491"/>
+        <source>. The last match ended %1 ago.</source>
+        <translation>. Das letzte Spiel endete vor %1.</translation>
+    </message>
+    <message>
+        <location filename="ui/GuiHelpers.cpp" line="494"/>
+        <source>; no played matches yet.</source>
+        <translation>; noch keine Spiele gespielt.</translation>
+    </message>
+    <message>
+        <location filename="ui/GuiHelpers.cpp" line="503"/>
+        <source> is playing on court %1 for %2 (match %3, %4, Round %5)</source>
+        <translation> spielt auf Feld %1 seit %2 (Spiel #%3, %4, Runde %5)</translation>
+    </message>
+    <message>
+        <location filename="ui/GuiHelpers.cpp" line="508"/>
+        <source> is umpire on court %1 for %2 (match %3, %4, Round %5)</source>
+        <translation>ist Schiri auf Feld %1 seit %2 (Spiel #%3, %4, Runde %5)</translation>
+    </message>
+    <message>
+        <location filename="ui/GuiHelpers.cpp" line="529"/>
+        <source> has not yet shown up for registration.</source>
+        <translation> hat sich noch nicht angemeldet.</translation>
+    </message>
+    <message>
         <location filename="ui/GuiHelpers.cpp" line="116"/>
+        <location filename="ui/GuiHelpers.cpp" line="122"/>
         <source> on court number </source>
         <translation> auf Spielfeld </translation>
     </message>
     <message>
-        <location filename="ui/GuiHelpers.cpp" line="127"/>
+        <location filename="ui/GuiHelpers.cpp" line="133"/>
         <source>Umpire is </source>
         <translation>Schiedsrichter ist </translation>
     </message>
     <message>
-        <location filename="ui/GuiHelpers.cpp" line="137"/>
+        <location filename="ui/GuiHelpers.cpp" line="143"/>
         <source>THIS IS THE </source>
         <translation>DIES IST DER </translation>
     </message>
     <message>
-        <location filename="ui/GuiHelpers.cpp" line="139"/>
+        <location filename="ui/GuiHelpers.cpp" line="145"/>
         <source>CALL!</source>
         <translation>AUFRUF!</translation>
     </message>
     <message>
-        <location filename="ui/GuiHelpers.cpp" line="142"/>
+        <location filename="ui/GuiHelpers.cpp" line="148"/>
         <source>Call executed?</source>
         <translation>Aufruf ausgeführt?</translation>
     </message>
     <message>
-        <location filename="ui/GuiHelpers.cpp" line="417"/>
+        <location filename="ui/GuiHelpers.cpp" line="447"/>
         <source>This will be a walkover for
 
 	</source>
@@ -1809,22 +2029,22 @@ Die internen Daten zu dieser Disziplin sind vermutlich defekt.</translation>
 	</translation>
     </message>
     <message>
-        <location filename="ui/GuiHelpers.cpp" line="425"/>
+        <location filename="ui/GuiHelpers.cpp" line="455"/>
         <source>All games will be 21:0.</source>
         <translation>Alle Sätze werden 21:0 gewertet.</translation>
     </message>
     <message>
-        <location filename="ui/GuiHelpers.cpp" line="426"/>
+        <location filename="ui/GuiHelpers.cpp" line="456"/>
         <source>WARNING: this step is irrevocable!</source>
         <translation>ACHTUNG: dieser Schritt kann nicht rückgängig gemacht werden!</translation>
     </message>
     <message>
-        <location filename="ui/GuiHelpers.cpp" line="427"/>
+        <location filename="ui/GuiHelpers.cpp" line="457"/>
         <source>Proceed?</source>
         <translation>Ausführen?</translation>
     </message>
     <message>
-        <location filename="ui/GuiHelpers.cpp" line="428"/>
+        <location filename="ui/GuiHelpers.cpp" line="458"/>
         <source>Confirm walkover</source>
         <translation>Kampfloses Spiel</translation>
     </message>
@@ -1862,98 +2082,91 @@ Die internen Daten zu dieser Disziplin sind vermutlich defekt.</translation>
         <translation>Dokumente</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.ui" line="88"/>
         <source>External player database</source>
-        <translation>Datenbank mit Spielernamen</translation>
+        <translation type="vanished">Datenbank mit Spielernamen</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.ui" line="111"/>
         <source>Testing</source>
-        <translation>Tests</translation>
+        <translation type="vanished">Tests</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.ui" line="125"/>
-        <location filename="ui/MainFrame.cpp" line="1306"/>
+        <location filename="ui/MainFrame.cpp" line="1307"/>
         <source>About QTournament</source>
         <translation>Über QTournament</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.ui" line="136"/>
+        <location filename="ui/MainFrame.ui" line="141"/>
         <source>&amp;New</source>
         <translation>&amp;Neu</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.ui" line="139"/>
+        <location filename="ui/MainFrame.ui" line="144"/>
         <source>Ctrl+N</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.ui" line="144"/>
+        <location filename="ui/MainFrame.ui" line="149"/>
         <source>&amp;Open</source>
         <translation>Ö&amp;ffnen</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.ui" line="147"/>
+        <location filename="ui/MainFrame.ui" line="152"/>
         <source>Ctrl+O</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.ui" line="155"/>
+        <location filename="ui/MainFrame.ui" line="160"/>
         <source>&amp;Settings...</source>
         <translation>Ein&amp;stellungen...</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.ui" line="160"/>
+        <location filename="ui/MainFrame.ui" line="165"/>
         <source>&amp;Quit QTournament</source>
         <translation>QTournament beenden</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.ui" line="228"/>
         <source>Save...</source>
-        <translation>Speichern...</translation>
+        <translation type="vanished">Speichern...</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.ui" line="231"/>
+        <location filename="ui/MainFrame.ui" line="236"/>
         <source>Ctrl+S</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.ui" line="239"/>
+        <location filename="ui/MainFrame.ui" line="244"/>
         <source>Save as...</source>
         <translation>Speichern unter...</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.ui" line="242"/>
+        <location filename="ui/MainFrame.ui" line="247"/>
         <source>Ctrl+Shift+S</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.ui" line="250"/>
         <source>Save a copy...</source>
-        <translation>Kopie speichern unter...</translation>
+        <translation type="vanished">Kopie speichern unter...</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.ui" line="253"/>
+        <location filename="ui/MainFrame.ui" line="258"/>
         <source>Ctrl+Alt+S</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.ui" line="261"/>
         <source>Create baseline</source>
-        <translation>Zwischenstand sichern</translation>
+        <translation type="vanished">Zwischenstand sichern</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.ui" line="264"/>
+        <location filename="ui/MainFrame.ui" line="269"/>
         <source>Ctrl+B</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.ui" line="272"/>
         <source>Close...</source>
-        <translation>Schließen...</translation>
+        <translation type="vanished">Schließen...</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.ui" line="275"/>
+        <location filename="ui/MainFrame.ui" line="280"/>
         <source>Ctrl+W</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1962,69 +2175,128 @@ Die internen Daten zu dieser Disziplin sind vermutlich defekt.</translation>
         <translation type="vanished">&amp;Ende</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.ui" line="165"/>
-        <source>Empty</source>
+        <location filename="ui/MainFrame.ui" line="66"/>
+        <source>Match Log</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="ui/MainFrame.ui" line="86"/>
+        <source>To&amp;urnament</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="ui/MainFrame.ui" line="93"/>
+        <source>&amp;External player database</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="ui/MainFrame.ui" line="116"/>
+        <source>Testi&amp;ng</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="ui/MainFrame.ui" line="130"/>
+        <source>About &amp;QTournament</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="ui/MainFrame.ui" line="170"/>
-        <source>Scenario01</source>
+        <source>&amp;Empty</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="ui/MainFrame.ui" line="175"/>
-        <source>Scenario02</source>
+        <source>&amp;Scenario01</source>
+        <oldsource>Scenario02</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="ui/MainFrame.ui" line="180"/>
-        <source>Scenario03</source>
+        <source>S&amp;cenario02</source>
+        <oldsource>Scenario03</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="ui/MainFrame.ui" line="185"/>
-        <source>Scenario04</source>
+        <source>Sce&amp;nario03</source>
+        <oldsource>Scenario04</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="ui/MainFrame.ui" line="190"/>
-        <source>Scenario05</source>
+        <source>Scena&amp;rio04</source>
+        <oldsource>Scenario05</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="ui/MainFrame.ui" line="195"/>
-        <source>Scenario06</source>
+        <source>Scenar&amp;io05</source>
+        <oldsource>Scenario06</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="ui/MainFrame.ui" line="200"/>
-        <source>Scenario07</source>
+        <source>Scenari&amp;o06</source>
+        <oldsource>Scenario07</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="ui/MainFrame.ui" line="205"/>
-        <source>Scenario08</source>
+        <source>Scenario&amp;07</source>
+        <oldsource>Scenario08</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="ui/MainFrame.ui" line="210"/>
-        <source>New...</source>
-        <translation>Neu...</translation>
-    </message>
-    <message>
-        <location filename="ui/MainFrame.ui" line="215"/>
-        <source>Select...</source>
-        <translation>Auswählen...</translation>
-    </message>
-    <message>
-        <location filename="ui/MainFrame.ui" line="220"/>
-        <source>Info...</source>
+        <source>Scenario0&amp;8</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.ui" line="81"/>
+        <location filename="ui/MainFrame.ui" line="215"/>
+        <source>&amp;New...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="ui/MainFrame.ui" line="220"/>
+        <source>&amp;Select...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="ui/MainFrame.ui" line="225"/>
+        <source>&amp;Info...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="ui/MainFrame.ui" line="233"/>
+        <source>Sa&amp;ve...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="ui/MainFrame.ui" line="255"/>
+        <source>Save a co&amp;py...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="ui/MainFrame.ui" line="266"/>
+        <source>&amp;Create baseline</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="ui/MainFrame.ui" line="277"/>
+        <source>C&amp;lose...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>New...</source>
+        <translation type="vanished">Neu...</translation>
+    </message>
+    <message>
+        <source>Select...</source>
+        <translation type="vanished">Auswählen...</translation>
+    </message>
+    <message>
         <source>Tournament</source>
-        <translation>Turnier</translation>
+        <translation type="vanished">Turnier</translation>
     </message>
     <message>
         <location filename="ui/MainFrame.cpp" line="100"/>
@@ -2040,12 +2312,12 @@ Die internen Daten zu dieser Disziplin sind vermutlich defekt.</translation>
     </message>
     <message>
         <location filename="ui/MainFrame.cpp" line="151"/>
-        <location filename="ui/MainFrame.cpp" line="568"/>
+        <location filename="ui/MainFrame.cpp" line="569"/>
         <source>QTournament Files (*.tdb)</source>
         <translation>Turnierdateien (*.tdb)</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="1226"/>
+        <location filename="ui/MainFrame.cpp" line="1227"/>
         <source>Could not delete </source>
         <translation>Fehler beim Löschen von </translation>
     </message>
@@ -2180,7 +2452,7 @@ Die internen Daten zu dieser Disziplin sind vermutlich defekt.</translation>
     </message>
     <message>
         <location filename="ui/MainFrame.cpp" line="244"/>
-        <location filename="ui/MainFrame.cpp" line="498"/>
+        <location filename="ui/MainFrame.cpp" line="499"/>
         <source>Internal hint: SQLite error code = %1</source>
         <translation>Interner Hinweis: SQLIte Fehlercode = %1</translation>
     </message>
@@ -2284,7 +2556,7 @@ Die internen Daten zu dieser Disziplin sind vermutlich defekt.</translation>
         <translation>Änderungen speichern?</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="491"/>
+        <location filename="ui/MainFrame.cpp" line="492"/>
         <source>Could not write to the destination file:
 
 </source>
@@ -2293,12 +2565,12 @@ Die internen Daten zu dieser Disziplin sind vermutlich defekt.</translation>
 </translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="493"/>
+        <location filename="ui/MainFrame.cpp" line="494"/>
         <source>The tournament has not been saved.</source>
         <translation>Das Turnier wurde nicht gespeichert.</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="497"/>
+        <location filename="ui/MainFrame.cpp" line="498"/>
         <source>A database error occured while saving.
 
 </source>
@@ -2307,145 +2579,144 @@ Die internen Daten zu dieser Disziplin sind vermutlich defekt.</translation>
 </translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="503"/>
+        <location filename="ui/MainFrame.cpp" line="504"/>
         <source>Saving failed</source>
         <translation>Speichern fehlgeschlagen</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="539"/>
+        <location filename="ui/MainFrame.cpp" line="540"/>
         <source>Save tournament as</source>
         <translation>Turnier speichern unter</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="599"/>
+        <location filename="ui/MainFrame.cpp" line="600"/>
         <source>unsaved</source>
         <translation>noch nicht gespeichert</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="1204"/>
-        <location filename="ui/MainFrame.cpp" line="1249"/>
+        <location filename="ui/MainFrame.cpp" line="1205"/>
+        <location filename="ui/MainFrame.cpp" line="1250"/>
         <source>QTournament Player Database (*.pdb)</source>
         <translation>QTournament Spielerdatenbank (*.pdb)</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="1226"/>
-        <location filename="ui/MainFrame.cpp" line="1236"/>
+        <location filename="ui/MainFrame.cpp" line="1227"/>
+        <location filename="ui/MainFrame.cpp" line="1237"/>
         <source>New player database</source>
         <translation>Neue Spielerdatenbank</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="1226"/>
+        <location filename="ui/MainFrame.cpp" line="1227"/>
         <source>, no new database created.</source>
         <translation>, es wurde keine neue Datenbank angelegt.</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="1236"/>
+        <location filename="ui/MainFrame.cpp" line="1237"/>
         <source>Could not create </source>
         <translation>Löschen fehlgeschlagen für </translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="1265"/>
+        <location filename="ui/MainFrame.cpp" line="1266"/>
         <source>Could not open </source>
         <translation>Öffen fehlgeschlagen für </translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="1272"/>
+        <location filename="ui/MainFrame.cpp" line="1273"/>
         <source>Select player database</source>
         <translation>Spielerdatenbank auswählen</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="1281"/>
+        <location filename="ui/MainFrame.cpp" line="1282"/>
         <source>This is QTournament version %1.&lt;br&gt;</source>
         <translation>Dies ist QTournament Version %1.&lt;br&gt;</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="1282"/>
-        <source>© Volker Knollmann, 2014 - 2016&lt;br&gt;&lt;br&gt;</source>
-        <oldsource>© Volker Knollmann, 2014 - 2015&lt;br&gt;&lt;br&gt;</oldsource>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="ui/MainFrame.cpp" line="1283"/>
-        <source>This program is free software: you can redistribute it and/or modify </source>
+        <source>© Volker Knollmann, 2014 - 2017&lt;br&gt;&lt;br&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="ui/MainFrame.cpp" line="1284"/>
-        <source>it under the terms of the GNU General Public License as published by </source>
+        <source>This program is free software: you can redistribute it and/or modify </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="ui/MainFrame.cpp" line="1285"/>
-        <source>the Free Software Foundation, either version 3 of the License, or </source>
+        <source>it under the terms of the GNU General Public License as published by </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="ui/MainFrame.cpp" line="1286"/>
+        <source>the Free Software Foundation, either version 3 of the License, or </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="ui/MainFrame.cpp" line="1287"/>
         <source>any later version.&lt;br&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="1288"/>
+        <location filename="ui/MainFrame.cpp" line="1289"/>
         <source>This program is distributed in the hope that it will be useful, </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="1289"/>
+        <location filename="ui/MainFrame.cpp" line="1290"/>
         <source>but WITHOUT ANY WARRANTY; without even the implied warranty of </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="1290"/>
+        <location filename="ui/MainFrame.cpp" line="1291"/>
         <source>MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="1291"/>
+        <location filename="ui/MainFrame.cpp" line="1292"/>
         <source>GNU General Public License for more details.&lt;br&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="1293"/>
+        <location filename="ui/MainFrame.cpp" line="1294"/>
         <source>You should have received a copy of the GNU General Public License </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="1294"/>
+        <location filename="ui/MainFrame.cpp" line="1295"/>
         <source>along with this program. If not, see &lt;a href=&apos;http://www.gnu.org/licenses/&apos;&gt;http://www.gnu.org/licenses/&lt;/a&gt;.&lt;br&gt;&lt;br&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="1296"/>
+        <location filename="ui/MainFrame.cpp" line="1297"/>
         <source>The source code for this program is hosted on Github:&lt;br&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="1299"/>
+        <location filename="ui/MainFrame.cpp" line="1300"/>
         <source>For more information please visit:&lt;br&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="1332"/>
+        <location filename="ui/MainFrame.cpp" line="1333"/>
         <source>Edit tournament settings</source>
         <translation>Turniereinstellungen bearbeiten</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="1333"/>
+        <location filename="ui/MainFrame.cpp" line="1334"/>
         <source>The tournament settings could not be updated.</source>
         <translation>Die Turniereinstellungen konnten nicht gespeichert werden.</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="1416"/>
+        <location filename="ui/MainFrame.cpp" line="1417"/>
         <source>Last autosave: </source>
         <translation>Letzte automatische Sicherung: </translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="1419"/>
+        <location filename="ui/MainFrame.cpp" line="1420"/>
         <source>not yet possible</source>
         <translation>noch nicht möglich</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="1434"/>
+        <location filename="ui/MainFrame.cpp" line="1435"/>
         <source>failed</source>
         <translation>gescheitert</translation>
     </message>
@@ -2480,14 +2751,70 @@ Die internen Daten zu dieser Disziplin sind vermutlich defekt.</translation>
 <context>
     <name>MatchItemDelegate</name>
     <message>
-        <location filename="ui/delegates/MatchItemDelegate.cpp" line="80"/>
+        <location filename="ui/delegates/MatchItemDelegate.cpp" line="137"/>
+        <location filename="ui/delegates/MatchItemDelegate.cpp" line="224"/>
         <source>Winner</source>
         <translation>Gewinner</translation>
     </message>
     <message>
-        <location filename="ui/delegates/MatchItemDelegate.cpp" line="80"/>
+        <location filename="ui/delegates/MatchItemDelegate.cpp" line="137"/>
+        <location filename="ui/delegates/MatchItemDelegate.cpp" line="224"/>
         <source>Loser</source>
         <translation>Verlierer</translation>
+    </message>
+    <message>
+        <location filename="ui/delegates/MatchItemDelegate.cpp" line="253"/>
+        <source>Match %1 </source>
+        <translation>Spiel %1 </translation>
+    </message>
+    <message>
+        <location filename="ui/delegates/MatchItemDelegate.cpp" line="257"/>
+        <source> currently running on court %1 since %2</source>
+        <translation> läuft momentan auf Feld %1 seit %2</translation>
+    </message>
+    <message>
+        <location filename="ui/delegates/MatchItemDelegate.cpp" line="269"/>
+        <source>is not yet ready to be called.</source>
+        <translation>kann noch nicht aufgerufen werden.</translation>
+    </message>
+    <message>
+        <location filename="ui/delegates/MatchItemDelegate.cpp" line="273"/>
+        <source>is ready to be called.</source>
+        <translation>kann aufgerufen werden.</translation>
+    </message>
+    <message>
+        <location filename="ui/delegates/MatchItemDelegate.cpp" line="277"/>
+        <source>is incomplete and depends on other match results.</source>
+        <translation>ist noch unvollständig und hängt von anderen Spielergebnissen ab.</translation>
+    </message>
+</context>
+<context>
+    <name>MatchLogItemDelegate</name>
+    <message>
+        <location filename="ui/delegates/MatchLogItemDelegate.cpp" line="105"/>
+        <source>Winner</source>
+        <translation>Gewinner</translation>
+    </message>
+    <message>
+        <location filename="ui/delegates/MatchLogItemDelegate.cpp" line="105"/>
+        <source>Loser</source>
+        <translation>Verlierer</translation>
+    </message>
+</context>
+<context>
+    <name>MatchLogTabWidget</name>
+    <message>
+        <location filename="ui/MatchLogTabWidget.ui" line="14"/>
+        <source>Form</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MatchMatrix</name>
+    <message>
+        <location filename="reports/commonReportElements/MatchMatrix.cpp" line="390"/>
+        <source>walkover</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -2537,45 +2864,45 @@ Die internen Daten zu dieser Disziplin sind vermutlich defekt.</translation>
         <translation type="vanished">Das Spiel konnte nicht auf dem ausgewählten Feld aufgerufen werden.</translation>
     </message>
     <message>
-        <location filename="ui/MatchTableView.cpp" line="343"/>
-        <location filename="ui/MatchTableView.cpp" line="523"/>
+        <location filename="ui/MatchTableView.cpp" line="350"/>
+        <location filename="ui/MatchTableView.cpp" line="565"/>
         <source>Set umpire mode</source>
         <translation>Schiedsrichtermodus setzen</translation>
     </message>
     <message>
-        <location filename="ui/MatchTableView.cpp" line="344"/>
+        <location filename="ui/MatchTableView.cpp" line="351"/>
         <source>The mode can&apos;t be set for this match.</source>
         <translation>Der Modus kann für dieses Spiel nicht verwendet werden.</translation>
     </message>
     <message>
-        <location filename="ui/MatchTableView.cpp" line="393"/>
+        <location filename="ui/MatchTableView.cpp" line="400"/>
         <source>This match cannot be started at this point in time.
 </source>
         <translation>Das Spiel kann momentan nicht aufgerufen werden.
 </translation>
     </message>
     <message>
-        <location filename="ui/MatchTableView.cpp" line="394"/>
+        <location filename="ui/MatchTableView.cpp" line="401"/>
         <source>It&apos;s probably waiting for all players to become available or 
 </source>
         <translation>Vermutlich sind noch nicht alle Spieler verfügbar oder 
 </translation>
     </message>
     <message>
-        <location filename="ui/MatchTableView.cpp" line="395"/>
+        <location filename="ui/MatchTableView.cpp" line="402"/>
         <source>for matches in earlier rounds to be finished first.</source>
         <translation>Spiele aus vorherigen Runden müssen zunächst abgeschlossen werden.</translation>
     </message>
     <message>
-        <location filename="ui/MatchTableView.cpp" line="396"/>
-        <location filename="ui/MatchTableView.cpp" line="408"/>
-        <location filename="ui/MatchTableView.cpp" line="420"/>
-        <location filename="ui/MatchTableView.cpp" line="429"/>
+        <location filename="ui/MatchTableView.cpp" line="403"/>
+        <location filename="ui/MatchTableView.cpp" line="415"/>
+        <location filename="ui/MatchTableView.cpp" line="427"/>
+        <location filename="ui/MatchTableView.cpp" line="436"/>
         <source>Assign match to court</source>
         <translation>Spielaufruf</translation>
     </message>
     <message>
-        <location filename="ui/MatchTableView.cpp" line="405"/>
+        <location filename="ui/MatchTableView.cpp" line="412"/>
         <source>There are no free courts for automatic match assignment available right now.
 </source>
         <oldsource>There are no free courts for automatic match assignment available right now,
@@ -2584,7 +2911,7 @@ Die internen Daten zu dieser Disziplin sind vermutlich defekt.</translation>
 </translation>
     </message>
     <message>
-        <location filename="ui/MatchTableView.cpp" line="406"/>
+        <location filename="ui/MatchTableView.cpp" line="413"/>
         <source>However, there is at least one free court for manual match assignment.
 
 </source>
@@ -2593,115 +2920,119 @@ Die internen Daten zu dieser Disziplin sind vermutlich defekt.</translation>
 </translation>
     </message>
     <message>
-        <location filename="ui/MatchTableView.cpp" line="407"/>
+        <location filename="ui/MatchTableView.cpp" line="414"/>
         <source>Use this court for running the match?</source>
         <translation>Soll das Spiel auf diesem Feld aufgerufen werden?</translation>
     </message>
     <message>
-        <location filename="ui/MatchTableView.cpp" line="417"/>
+        <location filename="ui/MatchTableView.cpp" line="424"/>
         <source>An unexpected error occured.
 </source>
         <translation>Es ist ein unerwarteter Fehler aufgetreten.
 </translation>
     </message>
     <message>
-        <location filename="ui/MatchTableView.cpp" line="418"/>
+        <location filename="ui/MatchTableView.cpp" line="425"/>
         <source>Sorry, this shouldn&apos;t happen.
 </source>
         <translation>Das sollte nicht vorkommen.
 </translation>
     </message>
     <message>
-        <location filename="ui/MatchTableView.cpp" line="419"/>
+        <location filename="ui/MatchTableView.cpp" line="426"/>
         <source>The match cannot be started.</source>
         <translation>Das Spiel kann leider nicht aufgerufen werden.</translation>
     </message>
     <message>
-        <location filename="ui/MatchTableView.cpp" line="427"/>
+        <location filename="ui/MatchTableView.cpp" line="434"/>
         <source>The match cannot be started since there is no
 </source>
         <translation>Das Spiel kann nicht aufgerufen werden, weil
 </translation>
     </message>
     <message>
-        <location filename="ui/MatchTableView.cpp" line="428"/>
+        <location filename="ui/MatchTableView.cpp" line="435"/>
         <source>free court available right now.</source>
         <translation>momentan kein freies Feld verfügbar ist.</translation>
     </message>
     <message>
-        <location filename="ui/MatchTableView.cpp" line="474"/>
+        <location filename="ui/MatchTableView.cpp" line="481"/>
         <source>Could not remove umpire assignment from match.
 </source>
         <translation>Konnte die Schiedsrichter-Zuweisung für dieses Spiel nicht aufheben.
 </translation>
     </message>
     <message>
-        <location filename="ui/MatchTableView.cpp" line="475"/>
+        <location filename="ui/MatchTableView.cpp" line="482"/>
         <source>Some unexpected error occured.</source>
         <translation>Es ist ein unerwarteter Fehler aufgetreten.</translation>
     </message>
     <message>
-        <location filename="ui/MatchTableView.cpp" line="476"/>
+        <location filename="ui/MatchTableView.cpp" line="483"/>
         <source>Umpire removal failed</source>
         <translation>Entfernen der Schiedsrichterzuweisung fehlgeschlagen</translation>
     </message>
     <message>
-        <location filename="ui/MatchTableView.cpp" line="502"/>
+        <location filename="ui/MatchTableView.cpp" line="544"/>
         <source>Postpone</source>
         <translation>Zurückstellen</translation>
     </message>
     <message>
-        <location filename="ui/MatchTableView.cpp" line="510"/>
+        <location filename="ui/MatchTableView.cpp" line="552"/>
         <source>Walkover for...</source>
         <translation>Geht kampflos an...</translation>
     </message>
     <message>
-        <location filename="ui/MatchTableView.cpp" line="519"/>
+        <location filename="ui/MatchTableView.cpp" line="561"/>
         <source>Call match on court...</source>
         <translation>Spielaufruf auf Feld...</translation>
     </message>
     <message>
-        <location filename="ui/MatchTableView.cpp" line="524"/>
+        <location filename="ui/MatchTableView.cpp" line="566"/>
         <source>None</source>
         <translation>Kein Schiedsrichter</translation>
     </message>
     <message>
-        <location filename="ui/MatchTableView.cpp" line="527"/>
+        <location filename="ui/MatchTableView.cpp" line="569"/>
         <source>Pick from all players</source>
         <translation>Aus allen Spielern wählen</translation>
     </message>
     <message>
-        <location filename="ui/MatchTableView.cpp" line="529"/>
-        <source>Pick from recent losers</source>
-        <translation>Aus letzten Verlierern wählen</translation>
+        <location filename="ui/MatchTableView.cpp" line="571"/>
+        <source>Pick from recent finishers</source>
+        <translation type="unfinished">Aus letzten Verlierern wählen</translation>
     </message>
     <message>
-        <location filename="ui/MatchTableView.cpp" line="531"/>
+        <source>Pick from recent losers</source>
+        <translation type="vanished">Aus letzten Verlierern wählen</translation>
+    </message>
+    <message>
+        <location filename="ui/MatchTableView.cpp" line="573"/>
         <source>Pick from special team</source>
         <translation>Aus speziellem Team wählen</translation>
     </message>
     <message>
-        <location filename="ui/MatchTableView.cpp" line="534"/>
+        <location filename="ui/MatchTableView.cpp" line="576"/>
         <source>Manual</source>
         <translation>Manuelle Zuweisung</translation>
     </message>
     <message>
-        <location filename="ui/MatchTableView.cpp" line="537"/>
+        <location filename="ui/MatchTableView.cpp" line="579"/>
         <source>Use tournament default</source>
         <translation>Standardeinstellung des Turniers verwenden</translation>
     </message>
     <message>
-        <location filename="ui/MatchTableView.cpp" line="539"/>
+        <location filename="ui/MatchTableView.cpp" line="581"/>
         <source>Assign umpire...</source>
         <translation>Schiedsrichter zuweisen...</translation>
     </message>
     <message>
-        <location filename="ui/MatchTableView.cpp" line="540"/>
+        <location filename="ui/MatchTableView.cpp" line="582"/>
         <source>Remove assigned umpire</source>
         <translation>Schiedsrichterzuweisung aufheben</translation>
     </message>
     <message>
-        <location filename="ui/MatchTableView.cpp" line="623"/>
+        <location filename="ui/MatchTableView.cpp" line="665"/>
         <source>The match cannot be called because:
 
 </source>
@@ -2710,33 +3041,33 @@ Die internen Daten zu dieser Disziplin sind vermutlich defekt.</translation>
 </translation>
     </message>
     <message>
-        <location filename="ui/MatchTableView.cpp" line="637"/>
+        <location filename="ui/MatchTableView.cpp" line="679"/>
         <source>%1 is playing</source>
         <translation>%1 spielt</translation>
     </message>
     <message>
-        <location filename="ui/MatchTableView.cpp" line="645"/>
-        <location filename="ui/MatchTableView.cpp" line="662"/>
+        <location filename="ui/MatchTableView.cpp" line="687"/>
+        <location filename="ui/MatchTableView.cpp" line="704"/>
         <source> on court %1</source>
         <translation> auf Feld %1</translation>
     </message>
     <message>
-        <location filename="ui/MatchTableView.cpp" line="654"/>
+        <location filename="ui/MatchTableView.cpp" line="696"/>
         <source>%1 is umpire</source>
         <translation>%1 ist Schiedsrichter</translation>
     </message>
     <message>
-        <location filename="ui/MatchTableView.cpp" line="668"/>
+        <location filename="ui/MatchTableView.cpp" line="710"/>
         <source> is not available (but why???)</source>
         <translation> ist nicht verfügbar (aber warum???)</translation>
     </message>
     <message>
-        <location filename="ui/MatchTableView.cpp" line="717"/>
+        <location filename="ui/MatchTableView.cpp" line="759"/>
         <source>Umpire </source>
         <translation>Schiedsrichter </translation>
     </message>
     <message>
-        <location filename="ui/MatchTableView.cpp" line="723"/>
+        <location filename="ui/MatchTableView.cpp" line="765"/>
         <source>Match status</source>
         <translation>Spielstatus</translation>
     </message>
@@ -2961,90 +3292,90 @@ Die internen Daten zu dieser Disziplin sind vermutlich defekt.</translation>
         <translation type="vanished">Beim Einfügen des Spielers ist etwas schiefgelaufen. Das sollte nicht passieren.</translation>
     </message>
     <message>
-        <location filename="ui/PlayerTableView.cpp" line="287"/>
-        <location filename="ui/PlayerTableView.cpp" line="307"/>
-        <location filename="ui/PlayerTableView.cpp" line="317"/>
+        <location filename="ui/PlayerTableView.cpp" line="303"/>
+        <location filename="ui/PlayerTableView.cpp" line="323"/>
         <location filename="ui/PlayerTableView.cpp" line="333"/>
-        <location filename="ui/PlayerTableView.cpp" line="383"/>
+        <location filename="ui/PlayerTableView.cpp" line="349"/>
+        <location filename="ui/PlayerTableView.cpp" line="399"/>
         <source>For the records: error code = </source>
         <translation>Fürs Protokoll: Fehlercode = </translation>
     </message>
     <message>
-        <location filename="ui/PlayerTableView.cpp" line="288"/>
-        <location filename="ui/PlayerTableView.cpp" line="308"/>
-        <location filename="ui/PlayerTableView.cpp" line="318"/>
+        <location filename="ui/PlayerTableView.cpp" line="304"/>
+        <location filename="ui/PlayerTableView.cpp" line="324"/>
         <location filename="ui/PlayerTableView.cpp" line="334"/>
-        <location filename="ui/PlayerTableView.cpp" line="384"/>
+        <location filename="ui/PlayerTableView.cpp" line="350"/>
+        <location filename="ui/PlayerTableView.cpp" line="400"/>
         <source>WTF??</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="ui/PlayerTableView.cpp" line="316"/>
+        <location filename="ui/PlayerTableView.cpp" line="332"/>
         <source>Something went wrong when adding the player to a category. This shouldn&apos;t happen.</source>
         <translation>Beim Zuordnen des Spielers zur Disziplin ist etwas schiefgelaufen. Das sollte nicht passieren.</translation>
     </message>
     <message>
-        <location filename="ui/PlayerTableView.cpp" line="286"/>
+        <location filename="ui/PlayerTableView.cpp" line="302"/>
         <source>Something went wrong when renaming the player. This shouldn&apos;t happen.</source>
         <translation>Beim Umbenennen des Spielers ist etwas schiefgelaufen. Das sollte nicht passieren.</translation>
     </message>
     <message>
-        <location filename="ui/PlayerTableView.cpp" line="306"/>
+        <location filename="ui/PlayerTableView.cpp" line="322"/>
         <source>Something went wrong when removing the player from a category. This shouldn&apos;t happen.</source>
         <translation>Beim Entfernen des Spielers aus der Disziplin ist etwas schiefgelaufen. Das sollte nicht passieren.</translation>
     </message>
     <message>
-        <location filename="ui/PlayerTableView.cpp" line="332"/>
+        <location filename="ui/PlayerTableView.cpp" line="348"/>
         <source>Something went wrong when changing the player&apos;s team assignment. This shouldn&apos;t happen.</source>
         <translation>Beim Ändern der Teamzuordnung ist etwas schiefgelaufen. Das sollte nicht passieren.</translation>
     </message>
     <message>
-        <location filename="ui/PlayerTableView.cpp" line="355"/>
+        <location filename="ui/PlayerTableView.cpp" line="371"/>
         <source>The player can&apos;t be removed from all categories.
 </source>
         <translation>Der Spiele konnte nicht aus allen Disziplinen entfernt werden.
 </translation>
     </message>
     <message>
-        <location filename="ui/PlayerTableView.cpp" line="356"/>
+        <location filename="ui/PlayerTableView.cpp" line="372"/>
         <source>Please make sure that the player is not assigned to any
 </source>
         <translation>Bitte sicherstellen, dass der Spieler keinem Doppel- oder
 </translation>
     </message>
     <message>
-        <location filename="ui/PlayerTableView.cpp" line="357"/>
+        <location filename="ui/PlayerTableView.cpp" line="373"/>
         <source>partners in doubles or mixed categories!</source>
         <translation>Mixedpartner zugeordnet ist!</translation>
     </message>
     <message>
-        <location filename="ui/PlayerTableView.cpp" line="358"/>
-        <location filename="ui/PlayerTableView.cpp" line="367"/>
-        <location filename="ui/PlayerTableView.cpp" line="376"/>
+        <location filename="ui/PlayerTableView.cpp" line="374"/>
+        <location filename="ui/PlayerTableView.cpp" line="383"/>
+        <location filename="ui/PlayerTableView.cpp" line="392"/>
         <source>Delete player</source>
         <translation>Spieler löschen</translation>
     </message>
     <message>
-        <location filename="ui/PlayerTableView.cpp" line="365"/>
+        <location filename="ui/PlayerTableView.cpp" line="381"/>
         <source>The player can&apos;t be deleted anymore. The player is
 </source>
         <translation>Der Spieler kann nicht mehr gelöscht werden. Der Spieler ist
 </translation>
     </message>
     <message>
-        <location filename="ui/PlayerTableView.cpp" line="366"/>
+        <location filename="ui/PlayerTableView.cpp" line="382"/>
         <source>most likely already involved/scheduled in matches.</source>
         <translation>bereits für Spiele eingeplant bzw. hat schon gespielt.</translation>
     </message>
     <message>
-        <location filename="ui/PlayerTableView.cpp" line="372"/>
+        <location filename="ui/PlayerTableView.cpp" line="388"/>
         <source>Note: this will remove the player from all categories
 </source>
         <translation>Hinweis: der Spieler wird aus allen Disziplinen und
 </translation>
     </message>
     <message>
-        <location filename="ui/PlayerTableView.cpp" line="373"/>
+        <location filename="ui/PlayerTableView.cpp" line="389"/>
         <source>and from the whole tournament.
 
 </source>
@@ -3053,7 +3384,7 @@ Die internen Daten zu dieser Disziplin sind vermutlich defekt.</translation>
 </translation>
     </message>
     <message>
-        <location filename="ui/PlayerTableView.cpp" line="374"/>
+        <location filename="ui/PlayerTableView.cpp" line="390"/>
         <source>This step is irrevocable!
 
 </source>
@@ -3062,12 +3393,12 @@ Die internen Daten zu dieser Disziplin sind vermutlich defekt.</translation>
 </translation>
     </message>
     <message>
-        <location filename="ui/PlayerTableView.cpp" line="375"/>
+        <location filename="ui/PlayerTableView.cpp" line="391"/>
         <source>Proceed?</source>
         <translation>Ausführen?</translation>
     </message>
     <message>
-        <location filename="ui/PlayerTableView.cpp" line="382"/>
+        <location filename="ui/PlayerTableView.cpp" line="398"/>
         <source>Something went wrong when deleting the player. This shouldn&apos;t happen.
 
 </source>
@@ -3076,12 +3407,12 @@ Die internen Daten zu dieser Disziplin sind vermutlich defekt.</translation>
 </translation>
     </message>
     <message>
-        <location filename="ui/PlayerTableView.cpp" line="401"/>
+        <location filename="ui/PlayerTableView.cpp" line="417"/>
         <source>%1 has currently no scheduled matches.</source>
         <translation>Für %1 sind zur Zeit keine Spiele geplant.</translation>
     </message>
     <message>
-        <location filename="ui/PlayerTableView.cpp" line="404"/>
+        <location filename="ui/PlayerTableView.cpp" line="420"/>
         <source>Next scheduled matches for %1:
 
 </source>
@@ -3090,7 +3421,7 @@ Die internen Daten zu dieser Disziplin sind vermutlich defekt.</translation>
 </translation>
     </message>
     <message>
-        <location filename="ui/PlayerTableView.cpp" line="413"/>
+        <location filename="ui/PlayerTableView.cpp" line="429"/>
         <source>   Match %1, %2, round %3 ; estimated call at %4
 
 </source>
@@ -3099,81 +3430,86 @@ Die internen Daten zu dieser Disziplin sind vermutlich defekt.</translation>
 </translation>
     </message>
     <message>
-        <location filename="ui/PlayerTableView.cpp" line="475"/>
-        <location filename="ui/PlayerTableView.cpp" line="482"/>
+        <location filename="ui/PlayerTableView.cpp" line="491"/>
+        <location filename="ui/PlayerTableView.cpp" line="498"/>
         <source>Export player</source>
         <translation>Spieler exportieren</translation>
     </message>
     <message>
-        <location filename="ui/PlayerTableView.cpp" line="475"/>
+        <location filename="ui/PlayerTableView.cpp" line="491"/>
         <source>No player selected!</source>
         <translation>Kein Spieler ausgewählt!</translation>
     </message>
     <message>
-        <location filename="ui/PlayerTableView.cpp" line="482"/>
+        <location filename="ui/PlayerTableView.cpp" line="498"/>
         <source>Player data successfully exported.</source>
         <translation>Die Spielerdaten wurden erfolgreich exportiert.</translation>
     </message>
     <message>
-        <location filename="ui/PlayerTableView.cpp" line="495"/>
-        <location filename="ui/PlayerTableView.cpp" line="499"/>
+        <location filename="ui/PlayerTableView.cpp" line="511"/>
+        <location filename="ui/PlayerTableView.cpp" line="515"/>
         <source>Sync players</source>
         <translation>Spieler abgleichen</translation>
     </message>
     <message>
-        <location filename="ui/PlayerTableView.cpp" line="495"/>
+        <location filename="ui/PlayerTableView.cpp" line="511"/>
         <source>No database open!</source>
         <translation>Keine Spielerdatenbank geöffnet!</translation>
     </message>
     <message>
-        <location filename="ui/PlayerTableView.cpp" line="499"/>
+        <location filename="ui/PlayerTableView.cpp" line="515"/>
         <source>Player data successfully synced.</source>
         <translation>Alle Spielerdaten erfolgreich abgeglichen.</translation>
     </message>
     <message>
-        <location filename="ui/PlayerTableView.cpp" line="507"/>
+        <location filename="ui/PlayerTableView.cpp" line="535"/>
         <source>Add Player...</source>
         <translation>Spieler hinzufügen...</translation>
     </message>
     <message>
-        <location filename="ui/PlayerTableView.cpp" line="508"/>
+        <location filename="ui/PlayerTableView.cpp" line="536"/>
         <source>Edit Player...</source>
         <translation>Spieler bearbeiten...</translation>
     </message>
     <message>
-        <location filename="ui/PlayerTableView.cpp" line="509"/>
+        <location filename="ui/PlayerTableView.cpp" line="537"/>
         <source>Remove Player...</source>
         <translation>Spieler löschen...</translation>
     </message>
     <message>
-        <location filename="ui/PlayerTableView.cpp" line="510"/>
+        <location filename="ui/PlayerTableView.cpp" line="538"/>
         <source>Show next Matches...</source>
         <translation>Nächste Spiele anzeigen...</translation>
     </message>
     <message>
-        <location filename="ui/PlayerTableView.cpp" line="511"/>
+        <location filename="ui/PlayerTableView.cpp" line="539"/>
         <source>Register</source>
         <translation>Anmelden</translation>
     </message>
     <message>
-        <location filename="ui/PlayerTableView.cpp" line="512"/>
+        <location filename="ui/PlayerTableView.cpp" line="540"/>
         <source>Undo registration</source>
         <translation>Anmeldung zurücksetzen</translation>
     </message>
     <message>
-        <location filename="ui/PlayerTableView.cpp" line="513"/>
+        <location filename="ui/PlayerTableView.cpp" line="541"/>
         <source>Import player...</source>
         <translation>Spieler importieren...</translation>
     </message>
     <message>
-        <location filename="ui/PlayerTableView.cpp" line="514"/>
+        <location filename="ui/PlayerTableView.cpp" line="542"/>
         <source>Export selected player...</source>
         <translation>Ausgewählten Spieler exportieren...</translation>
     </message>
     <message>
-        <location filename="ui/PlayerTableView.cpp" line="515"/>
+        <location filename="ui/PlayerTableView.cpp" line="543"/>
         <source>Sync all players to database</source>
         <translation>Alle Spieler mit der Datenbank abgleichen</translation>
+    </message>
+    <message>
+        <location filename="ui/PlayerTableView.cpp" line="544"/>
+        <source>Show extended player info...</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -3194,7 +3530,12 @@ Die internen Daten zu dieser Disziplin sind vermutlich defekt.</translation>
         <translation>Ergebnisse</translation>
     </message>
     <message>
-        <location filename="reports/AbstractReport.cpp" line="264"/>
+        <location filename="reports/AbstractReport.cpp" line="262"/>
+        <source>(walkover)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="reports/AbstractReport.cpp" line="272"/>
         <source>Group</source>
         <translation>Gruppe</translation>
     </message>
@@ -3207,27 +3548,32 @@ Die internen Daten zu dieser Disziplin sind vermutlich defekt.</translation>
         <translation>Keine Turnierbaumdarstellung für diese Disziplin vorhanden.</translation>
     </message>
     <message>
-        <location filename="reports/BracketSheet.cpp" line="284"/>
+        <location filename="reports/BracketSheet.cpp" line="260"/>
+        <source>walkover</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="reports/BracketSheet.cpp" line="290"/>
         <source>Place</source>
         <translation>Platz</translation>
     </message>
     <message>
-        <location filename="reports/BracketSheet.cpp" line="316"/>
+        <location filename="reports/BracketSheet.cpp" line="322"/>
         <source>Brackets::</source>
         <translation>Turnierbäume::</translation>
     </message>
     <message>
-        <location filename="reports/BracketSheet.cpp" line="628"/>
+        <location filename="reports/BracketSheet.cpp" line="636"/>
         <source>Loser</source>
         <translation>Verlierer</translation>
     </message>
     <message>
-        <location filename="reports/BracketSheet.cpp" line="686"/>
+        <location filename="reports/BracketSheet.cpp" line="694"/>
         <source>Bracket</source>
         <translation>Turnierbaum</translation>
     </message>
     <message>
-        <location filename="reports/BracketSheet.cpp" line="690"/>
+        <location filename="reports/BracketSheet.cpp" line="698"/>
         <source>As of %1, %2</source>
         <translation>Stand; %1, %2</translation>
     </message>
@@ -3954,27 +4300,27 @@ insgesamt</translation>
 <context>
     <name>RefereeTableWidget</name>
     <message>
-        <location filename="ui/DlgSelectReferee.cpp" line="377"/>
+        <location filename="ui/DlgSelectReferee.cpp" line="412"/>
         <source>Player name</source>
         <translation>Spieler</translation>
     </message>
     <message>
-        <location filename="ui/DlgSelectReferee.cpp" line="377"/>
+        <location filename="ui/DlgSelectReferee.cpp" line="412"/>
         <source>Team</source>
         <translation>Team</translation>
     </message>
     <message>
-        <location filename="ui/DlgSelectReferee.cpp" line="377"/>
+        <location filename="ui/DlgSelectReferee.cpp" line="412"/>
         <source>Uses</source>
         <translation>Einsätze</translation>
     </message>
     <message>
-        <location filename="ui/DlgSelectReferee.cpp" line="377"/>
+        <location filename="ui/DlgSelectReferee.cpp" line="412"/>
         <source>Last match finished</source>
         <translation>Letztes Spielende</translation>
     </message>
     <message>
-        <location filename="ui/DlgSelectReferee.cpp" line="377"/>
+        <location filename="ui/DlgSelectReferee.cpp" line="412"/>
         <source>Next match</source>
         <translation>Nächstes Spiel</translation>
     </message>

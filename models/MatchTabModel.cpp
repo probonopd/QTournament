@@ -126,7 +126,7 @@ QVariant MatchTableModel::data(const QModelIndex& index, int role) const
       // if there is already a referee assigned, display
       // the referee name
       if ((mode == REFEREE_MODE::ALL_PLAYERS) ||
-          (mode == REFEREE_MODE::RECENT_LOSERS) ||
+          (mode == REFEREE_MODE::RECENT_FINISHERS) ||
           (mode == REFEREE_MODE::SPECIAL_TEAM))
       {
         upPlayer referee = ma->getAssignedReferee();
@@ -148,7 +148,7 @@ QVariant MatchTableModel::data(const QModelIndex& index, int role) const
       case REFEREE_MODE::ALL_PLAYERS:
         return tr("Pick from all players");
 
-      case REFEREE_MODE::RECENT_LOSERS:
+      case REFEREE_MODE::RECENT_FINISHERS:
         return tr("Pick from losers");
 
       case REFEREE_MODE::SPECIAL_TEAM:
