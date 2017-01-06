@@ -37,6 +37,10 @@ DlgSelectReferee::DlgSelectReferee(TournamentDB* _db, const Match& _ma, REFEREE_
 {
   ui->setupUi(this);
 
+  // set the delegate for the player table
+  refSelDelegate = make_unique<RefereeSelectionDelegate>(db, ui->tabPlayers);
+  ui->tabPlayers->setItemDelegate(refSelDelegate.get());
+
   // initialize the match information section
   PlayerPair pp1 = ma.getPlayerPair1();
   PlayerPair pp2 = ma.getPlayerPair2();
@@ -258,55 +262,63 @@ void DlgSelectReferee::rebuildPlayerList()
   // stop here
   if ((curFilterMode == REFEREE_MODE::SPECIAL_TEAM) && (curTeamId < 1))
   {
-    ui->tabPlayers->rebuildPlayerList(PlayerList(), ma.getMatchNumber());
+    ui->tabPlayers->rebuildPlayerList(TaggedPlayerList(), ma.getMatchNumber());
     return;
   }
 
   // determine the list of players for display
   PlayerMngr pm{db};
   TeamMngr tm{db};
-  PlayerList pList;
+  TaggedPlayerList pList;
   if (curFilterMode == REFEREE_MODE::ALL_PLAYERS)
   {
-    pList = pm.getAllPlayers();
+    PlayerList purePlayerList = pm.getAllPlayers();
 
     // sort players alphabetically
-    std::sort(pList.begin(), pList.end(), [](const Player& p1, const Player& p2) {
+    std::sort(purePlayerList.begin(), purePlayerList.end(), [](const Player& p1, const Player& p2) {
       return p1.getDisplayName() < p2.getDisplayName();
     });
+
+    // convert to a tagged player list with all tags set to NEUTRAL
+    for (const Player& p : purePlayerList)
+    {
+      pList.push_back(make_pair(p, RefereeSelectionDelegate::NEUTRAL_TAG));
+    }
   }
   if (curFilterMode == REFEREE_MODE::SPECIAL_TEAM)
   {
     Team selTeam = tm.getTeamById(curTeamId);
-    pList = tm.getPlayersForTeam(selTeam);
+    PlayerList purePlayerList = tm.getPlayersForTeam(selTeam);
 
-    // sort players alphabetically
-    std::sort(pList.begin(), pList.end(), [](const Player& p1, const Player& p2) {
+    std::sort(purePlayerList.begin(), purePlayerList.end(), [](const Player& p1, const Player& p2) {
       return p1.getDisplayName() < p2.getDisplayName();
     });
+
+    // convert to a tagged player list with all tags set to NEUTRAL
+    for (const Player& p : purePlayerList)
+    {
+      pList.push_back(make_pair(p, RefereeSelectionDelegate::NEUTRAL_TAG));
+    }
   }
   if (curFilterMode == REFEREE_MODE::RECENT_LOSERS)
   {
     pList = getPlayerList_recentLosers();
-
-    // players are already sorted
   }
 
   // if we currently calling the match or swapping the umpire, only players in state IDLE
   // may be selected
-  //
-  // the following approach is not really elegant: we simply check
-  // for all players that are not IDLE and remove them from the set,
-  // no matter if they have been in the set before.
-  //
-  // TODO: make this a bit more elegant...
   if (refAction != REFEREE_ACTION::PRE_ASSIGN)
   {
-    for (const Player& p : pm.getAllPlayers())
+    auto it = pList.begin();
+    while (it != pList.end())
     {
+      const TaggedPlayer& tp = *it;
+      const Player& p = tp.first;
       if (p.getState() != STAT_PL_IDLE)
       {
-        eraseAllValuesFromVector<Player>(pList, p);
+        it = pList.erase(it);
+      } else {
+        ++it;
       }
     }
   }
@@ -317,12 +329,12 @@ void DlgSelectReferee::rebuildPlayerList()
 
 //----------------------------------------------------------------------------
 
-PlayerList DlgSelectReferee::getPlayerList_recentLosers()
+TaggedPlayerList DlgSelectReferee::getPlayerList_recentLosers()
 {
   PlayerMngr pm{db};
   PlayerPairList ppList = pm.getRecentLosers(MAX_NUM_LOSERS);
 
-  PlayerList result;
+  PlayerList purePlayerList;
   for (const PlayerPair& pp : ppList)
   {
     Player p = pp.getPlayer1();
@@ -352,13 +364,21 @@ PlayerList DlgSelectReferee::getPlayerList_recentLosers()
     //
     // Before we add this player to the result list,
     // make sure that the player is not already in it
-    if (std::find(result.begin(), result.end(), p) != result.end())
+    if (std::find(purePlayerList.begin(), purePlayerList.end(), p) != purePlayerList.end())
     {
       continue;
     }
 
     // finally, we can add "p" to the result list
-    result.push_back(p);
+    purePlayerList.push_back(p);
+  }
+
+  // convert everything into a tagged player list
+  // with the tag set to LOSER
+  TaggedPlayerList result;
+  for (const Player& p : purePlayerList)
+  {
+    result.push_back(make_pair(p, RefereeSelectionDelegate::LOSER_TAG));
   }
 
   return result;
@@ -381,7 +401,7 @@ RefereeTableWidget::RefereeTableWidget(QWidget* parent)
 
 //----------------------------------------------------------------------------
 
-void RefereeTableWidget::rebuildPlayerList(const PlayerList& pList, int selectedMatchNumer)
+void RefereeTableWidget::rebuildPlayerList(const TaggedPlayerList& pList, int selectedMatchNumer)
 {
   // erase everything from the table
   clearContents();
@@ -394,29 +414,34 @@ void RefereeTableWidget::rebuildPlayerList(const PlayerList& pList, int selected
     db = nullptr;
     return;
   } else {
-    db = pList.at(0).getDatabaseHandle();
+    db = pList.at(0).first.getDatabaseHandle();
   }
 
   // populate the table rows
   PlayerMngr pm{db};
   setRowCount(pList.size());
   int idxRow = 0;
-  for (const Player& p : pList)
+  for (const TaggedPlayer& tp : pList)
   {
+    const Player& p = tp.first;
+
     // add the player's name
     QTableWidgetItem* newItem = new QTableWidgetItem(p.getDisplayName());
     newItem->setData(Qt::UserRole, p.getId());
+    newItem->setData(Qt::UserRole + 1, tp.second);  // set the tag
     newItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
     setItem(idxRow, NAME_COL_ID, newItem);
 
     // add the player's team
     newItem = new QTableWidgetItem(p.getTeam().getName());
+    newItem->setData(Qt::UserRole, p.getId());
     newItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
     setItem(idxRow, TEAM_COL_ID, newItem);
 
     // add the player's referee count
     int refereeCount = p.getRefereeCount();
     newItem = new QTableWidgetItem(QString::number(refereeCount));
+    newItem->setData(Qt::UserRole, p.getId());
     newItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
     setItem(idxRow, REFEREE_COUNT_COL_ID, newItem);
 
@@ -429,21 +454,14 @@ void RefereeTableWidget::rebuildPlayerList(const PlayerList& pList, int selected
       txt = finishTime.toString("HH:mm");
     }
     newItem = new QTableWidgetItem(txt);
+    newItem->setData(Qt::UserRole, p.getId());
     newItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
     setItem(idxRow, LAST_FINISH_TIME_COL_ID, newItem);
 
     // add the player's status as a color indication in
     // the first column
     newItem = new QTableWidgetItem("");
-    OBJ_STATE plStat = p.getState();
-    QColor bckCol;
-    if (DelegateItemLED::state2color.contains(plStat))
-    {
-      bckCol = DelegateItemLED::state2color[plStat];
-    } else {
-      bckCol = QColor(255, 255, 255); // white
-    }
-    newItem->setBackgroundColor(bckCol);
+    newItem->setData(Qt::UserRole, p.getId());
     newItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
     setItem(idxRow, STAT_COL_ID, newItem);
 
@@ -463,6 +481,7 @@ void RefereeTableWidget::rebuildPlayerList(const PlayerList& pList, int selected
       txt = txt.arg(matchNumOffset);
     }
     newItem = new QTableWidgetItem(txt);
+    newItem->setData(Qt::UserRole, p.getId());
     newItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
     setItem(idxRow, NEXT_MATCH_DIST_COL_ID, newItem);
 

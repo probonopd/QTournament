@@ -141,7 +141,8 @@ HEADERS += \
     ui/MatchLogTable.h \
     ui/delegates/MatchLogItemDelegate.h \
     PlayerProfile.h \
-    ui/DlgPlayerProfile.h
+    ui/DlgPlayerProfile.h \
+    ui/delegates/RefereeSelectionDelegate.h
 
 SOURCES += \
     Category.cpp \
@@ -255,7 +256,8 @@ SOURCES += \
     ui/MatchLogTable.cpp \
     ui/delegates/MatchLogItemDelegate.cpp \
     PlayerProfile.cpp \
-    ui/DlgPlayerProfile.cpp
+    ui/DlgPlayerProfile.cpp \
+    ui/delegates/RefereeSelectionDelegate.cpp
 
 RESOURCES += \
     tournament.qrc

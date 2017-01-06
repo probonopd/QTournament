@@ -19,17 +19,23 @@
 #ifndef DLGSELECTREFEREE_H
 #define DLGSELECTREFEREE_H
 
+#include <tuple>
+
 #include <QDialog>
 #include <QTableWidget>
 
 #include "TournamentDB.h"
 #include "Match.h"
+#include "delegates/RefereeSelectionDelegate.h"
 
 namespace Ui {
   class DlgSelectReferee;
 }
 
 using namespace QTournament;
+
+using TaggedPlayer = pair<Player, int>;
+using TaggedPlayerList = QList<TaggedPlayer>;
 
 class DlgSelectReferee : public QDialog
 {
@@ -60,9 +66,10 @@ private:
   void rebuildPlayerList();
   void resizeTabColumns();
 
-  PlayerList getPlayerList_recentLosers();
+  TaggedPlayerList getPlayerList_recentLosers();
 
   upPlayer finalPlayerSelection;
+  unique_ptr<RefereeSelectionDelegate> refSelDelegate;
 };
 
 //----------------------------------------------------------------------------
@@ -81,7 +88,7 @@ public:
   static constexpr int NUM_TAB_COLUMNS = 6;
   RefereeTableWidget(QWidget* parent=0);
 
-  void rebuildPlayerList(const PlayerList& pList, int selectedMatchNumer);
+  void rebuildPlayerList(const TaggedPlayerList& pList, int selectedMatchNumer);
   upPlayer getSelectedPlayer();
   bool hasPlayerSelected();
 
