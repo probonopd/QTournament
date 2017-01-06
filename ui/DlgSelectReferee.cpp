@@ -262,7 +262,7 @@ void DlgSelectReferee::rebuildPlayerList()
   // stop here
   if ((curFilterMode == REFEREE_MODE::SPECIAL_TEAM) && (curTeamId < 1))
   {
-    ui->tabPlayers->rebuildPlayerList(TaggedPlayerList(), ma.getMatchNumber());
+    ui->tabPlayers->rebuildPlayerList(TaggedPlayerList(), ma.getMatchNumber(), curFilterMode);
     return;
   }
 
@@ -324,7 +324,7 @@ void DlgSelectReferee::rebuildPlayerList()
   }
 
   // add the players to the table
-  ui->tabPlayers->rebuildPlayerList(pList, ma.getMatchNumber());
+  ui->tabPlayers->rebuildPlayerList(pList, ma.getMatchNumber(), curFilterMode);
 }
 
 //----------------------------------------------------------------------------
@@ -401,8 +401,12 @@ RefereeTableWidget::RefereeTableWidget(QWidget* parent)
 
 //----------------------------------------------------------------------------
 
-void RefereeTableWidget::rebuildPlayerList(const TaggedPlayerList& pList, int selectedMatchNumer)
+void RefereeTableWidget::rebuildPlayerList(const TaggedPlayerList& pList, int selectedMatchNumer, REFEREE_MODE _refMode)
 {
+  // store the current referee mode. We need this to properly
+  // initiate the filtering column
+  refMode = _refMode;
+
   // erase everything from the table
   clearContents();
   setRowCount(0);
@@ -416,6 +420,9 @@ void RefereeTableWidget::rebuildPlayerList(const TaggedPlayerList& pList, int se
   } else {
     db = pList.at(0).first.getDatabaseHandle();
   }
+
+  // disable sorting while we're modifying the table
+  setSortingEnabled(false);
 
   // populate the table rows
   PlayerMngr pm{db};
@@ -488,6 +495,15 @@ void RefereeTableWidget::rebuildPlayerList(const TaggedPlayerList& pList, int se
     idxRow++;
   }
 
+  // set the right sorting mode
+  if (refMode == REFEREE_MODE::RECENT_LOSERS)
+  {
+    sortByColumn(LAST_FINISH_TIME_COL_ID, Qt::DescendingOrder);
+  } else {
+    // Default: sort by name
+    sortByColumn(NAME_COL_ID, Qt::AscendingOrder);
+  }
+  setSortingEnabled(true);
 }
 
 //----------------------------------------------------------------------------

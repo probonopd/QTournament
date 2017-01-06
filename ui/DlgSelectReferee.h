@@ -88,7 +88,7 @@ public:
   static constexpr int NUM_TAB_COLUMNS = 6;
   RefereeTableWidget(QWidget* parent=0);
 
-  void rebuildPlayerList(const TaggedPlayerList& pList, int selectedMatchNumer);
+  void rebuildPlayerList(const TaggedPlayerList& pList, int selectedMatchNumer, REFEREE_MODE _refMode);
   upPlayer getSelectedPlayer();
   bool hasPlayerSelected();
 
@@ -99,7 +99,7 @@ protected:
   static constexpr int REL_WIDTH_STATE = 1;
 
   TournamentDB* db;
-
+  REFEREE_MODE refMode;
   virtual void resizeEvent(QResizeEvent *_event) override;
 };
 
