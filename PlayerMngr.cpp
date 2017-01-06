@@ -845,9 +845,9 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  PlayerPairList PlayerMngr::getRecentLosers(int maxCnt) const
+  void PlayerMngr::getRecentFinishers(int maxCnt, PlayerPairList& winners_out, PlayerPairList& losers_out, PlayerPairList& draw_out) const
   {
-    if (maxCnt < 0) return PlayerPairList();
+    if (maxCnt < 0) return;
 
     // search for up to maxCnt recently finished matches
     WhereClause wc;
@@ -857,17 +857,28 @@ namespace QTournament
     wc.setLimit(maxCnt);
     MatchList ml = getObjectsByWhereClause<Match>(matchTab, wc);
 
-    // extract the losers from these matches
-    PlayerPairList result;
+    // extract the winners and losers from these matches
     for (const Match& ma : ml)
     {
       auto loser = ma.getLoser();
-      if (loser == nullptr) continue;   // we will return less than maxCnt result, if we have matches with a draw in the list
+      auto winner = ma.getWinner();
 
-      result.push_back(*loser);
+      if (loser != nullptr) losers_out.push_back(*loser);
+      if (winner != nullptr) winners_out.push_back(*winner);
+
+      // handle draws
+      if ((loser == nullptr) && (winner == nullptr))
+      {
+        if (ma.hasPlayerPair1()) // should always be true
+        {
+          draw_out.push_back(ma.getPlayerPair1());
+        }
+        if (ma.hasPlayerPair2()) // should always be true
+        {
+          draw_out.push_back(ma.getPlayerPair2());
+        }
+      }
     }
-
-    return result;
   }
 
   //----------------------------------------------------------------------------

@@ -332,53 +332,53 @@ void DlgSelectReferee::rebuildPlayerList()
 TaggedPlayerList DlgSelectReferee::getPlayerList_recentLosers()
 {
   PlayerMngr pm{db};
-  PlayerPairList ppList = pm.getRecentLosers(MAX_NUM_LOSERS);
+  PlayerPairList winners;
+  PlayerPairList losers;
+  PlayerPairList draws;
+  pm.getRecentFinishers(MAX_NUM_LOSERS, winners, losers, draws);
 
-  PlayerList purePlayerList;
-  for (const PlayerPair& pp : ppList)
+  // process winners, losers and draws
+  vector<pair<PlayerPairList&, int>> allLists = {
+    {winners, RefereeSelectionDelegate::WINNER_TAG},
+    {losers, RefereeSelectionDelegate::LOSER_TAG},
+    {draws, RefereeSelectionDelegate::NEUTRAL_TAG},
+  };
+  TaggedPlayerList result;
+  for (pair<PlayerPairList&, int> listDef : allLists)
   {
-    Player p = pp.getPlayer1();
-
-    // if this player is already a referee, skip this player
-    if (p.getState() == STAT_PL_REFEREE) continue;
-
-    // if this is a doubles pair: is one of the players
-    // already servicing as a referee? If yes, this pair
-    // has no more duties
-    if (pp.hasPlayer2())
+    PlayerList purePlayerList;
+    for (const PlayerPair& pp : listDef.first)
     {
-      Player p2 = pp.getPlayer2();
-      if (p2.getState() == STAT_PL_REFEREE) continue;
+      Player p = pp.getPlayer1();
 
-      // okay, both players are currently not acting as
-      // an umpire. For fairness reasons, we continue
-      // with the player that has the lowest referee count
-      if (p2.getRefereeCount() < p.getRefereeCount())
+      // if this player is already a referee, skip this player
+      if (p.getState() == STAT_PL_REFEREE) continue;
+
+      // Before we add this player to the result list,
+      // make sure that the player is not already in it
+      if (std::find(purePlayerList.begin(), purePlayerList.end(), p) == purePlayerList.end())
       {
-        p = p2;
+        purePlayerList.push_back(p);
+      }
+
+      // if this is a doubles pair, check the second player as well
+      if (pp.hasPlayer2())
+      {
+        p = pp.getPlayer2();
+        if (p.getState() == STAT_PL_REFEREE) continue;
+        if (std::find(purePlayerList.begin(), purePlayerList.end(), p) == purePlayerList.end())
+        {
+          purePlayerList.push_back(p);
+        }
       }
     }
 
-    // at this point, we have a "qualified" player
-    // stored in "p", even for a doubles pair.
-    //
-    // Before we add this player to the result list,
-    // make sure that the player is not already in it
-    if (std::find(purePlayerList.begin(), purePlayerList.end(), p) != purePlayerList.end())
+    // convert the winner into a tagged player list
+    // with the tag set to the appropriate value
+    for (const Player& p : purePlayerList)
     {
-      continue;
+      result.push_back(make_pair(p, listDef.second));
     }
-
-    // finally, we can add "p" to the result list
-    purePlayerList.push_back(p);
-  }
-
-  // convert everything into a tagged player list
-  // with the tag set to LOSER
-  TaggedPlayerList result;
-  for (const Player& p : purePlayerList)
-  {
-    result.push_back(make_pair(p, RefereeSelectionDelegate::LOSER_TAG));
   }
 
   return result;

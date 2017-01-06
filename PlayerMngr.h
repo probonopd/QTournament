@@ -66,7 +66,7 @@ namespace QTournament
     PlayerList determineActualPlayersForMatch(const Match& ma) const;
     ERR canDeletePlayer(const Player& p) const;
     int getTotalPlayerCount() const;
-    PlayerPairList getRecentLosers(int maxCnt) const;
+    void getRecentFinishers(int maxCnt, PlayerPairList& winners_out, PlayerPairList& losers_out, PlayerPairList& draw_out) const;
     upMatch getLastFinishedMatchForPlayer(const Player& p);
     upMatch getNextMatchForPlayer(const Player& p);
     vector<Match> getAllScheduledMatchesForPlayer(const Player& p, bool findFirstOnly = false);
