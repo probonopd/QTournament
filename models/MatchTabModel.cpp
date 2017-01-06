@@ -149,7 +149,7 @@ QVariant MatchTableModel::data(const QModelIndex& index, int role) const
         return tr("Pick from all players");
 
       case REFEREE_MODE::RECENT_FINISHERS:
-        return tr("Pick from losers");
+        return tr("Pick from finishers");
 
       case REFEREE_MODE::SPECIAL_TEAM:
         return tr("Pick from team");

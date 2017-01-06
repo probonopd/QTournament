@@ -137,9 +137,9 @@ void MatchItemDelegate::paintSelectedMatchCell(QPainter* painter, const QStyleOp
   QString txt = ma.getDisplayName(tr("Winner"), tr("Loser"));
   painter->drawText(nameRect.toRect(), Qt::AlignVCenter|Qt::AlignLeft, txt);
 
-  // for all further text lines, indent the usable rectangle by 4 x ITEM_MARGIN
+  // for all further text lines, indent the usable rectangle by 2 x ITEM_MARGIN
   // to the right
-  nameRect.adjust(4 * ITEM_MARGIN, 0, 0, 0);
+  nameRect.adjust(2 * ITEM_MARGIN, 0, 0, 0);
 
   // pre-calc the offset between two text lines
   double rowOffset = (1 + LINE_SKIP_PERC) * fntMetrics.height();
@@ -155,11 +155,13 @@ void MatchItemDelegate::paintSelectedMatchCell(QPainter* painter, const QStyleOp
   //
   // now display the status of each player below the match description
   //
+  bool hasPlayersDisplayed = false;
   if (ma.hasPlayerPair1())
   {
     auto pp = ma.getPlayerPair1();
     drawPlayerStatus(painter, nameRect, pp.getPlayer1());
     nameRect.adjust(0, rowOffset, 0, rowOffset);
+    hasPlayersDisplayed = true;
 
     if (pp.hasPlayer2())
     {
@@ -172,6 +174,7 @@ void MatchItemDelegate::paintSelectedMatchCell(QPainter* painter, const QStyleOp
     auto pp = ma.getPlayerPair2();
     drawPlayerStatus(painter, nameRect, pp.getPlayer1());
     nameRect.adjust(0, rowOffset, 0, rowOffset);
+    hasPlayersDisplayed = true;
 
     if (pp.hasPlayer2())
     {
@@ -186,11 +189,15 @@ void MatchItemDelegate::paintSelectedMatchCell(QPainter* painter, const QStyleOp
   {
     drawPlayerStatus(painter, nameRect, *ref);
     nameRect.adjust(0, rowOffset, 0, rowOffset);
+    hasPlayersDisplayed = true;
   }
 
   // maybe we have symbolic names ("Loser of match xyz", etc).
   // then we indicate the status of the dependend match
-  nameRect.adjust(0, rowOffset, 0, rowOffset);   // an extra gap between players and matches
+  if (hasPlayersDisplayed)
+  {
+    nameRect.adjust(0, rowOffset, 0, rowOffset);   // an extra gap between players and matches
+  }
   int symName = ma.getSymbolicPlayerPair1Name();
   if (symName != 0)
   {
