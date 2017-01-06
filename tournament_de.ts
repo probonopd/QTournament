@@ -1368,7 +1368,7 @@ Die internen Daten zu dieser Disziplin sind vermutlich defekt.</translation>
     <message>
         <location filename="ui/DlgPlayerProfile.ui" line="14"/>
         <source>Detailed Player Information</source>
-        <translation type="unfinished"></translation>
+        <translation>Detaillierte Spielerdaten</translation>
     </message>
     <message>
         <location filename="ui/DlgPlayerProfile.ui" line="32"/>
@@ -3902,7 +3902,7 @@ insgesamt</translation>
         <location filename="models/MatchTabModel.cpp" line="152"/>
         <source>Pick from finishers</source>
         <oldsource>Pick from losers</oldsource>
-        <translation>Aus letzten Siegern/Verlierern wählen</translation>
+        <translation>Letzte Spieler</translation>
     </message>
     <message>
         <location filename="models/MatchTabModel.cpp" line="155"/>
