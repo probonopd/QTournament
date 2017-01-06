@@ -53,12 +53,13 @@ void RefereeSelectionDelegate::paint(QPainter* painter, const QStyleOptionViewIt
 
   // Fill the cell with the selection color, if necessary
   // or with the color that indicates the player state
+  int col = index.column();
   bool isItemSelected = (option.state & QStyle::State_Selected);
-  if (isItemSelected || (index.column() == 0))
+  if (isItemSelected || (col == 0))
   {
     QColor bgColor = option.palette.color(QPalette::Highlight);
 
-    if (index.column() == 0)
+    if (col == 0)
     {
       if (DelegateItemLED::state2color.contains(plStat))
       {
@@ -82,7 +83,7 @@ void RefereeSelectionDelegate::paint(QPainter* painter, const QStyleOptionViewIt
 
   // override with red / green in the name column if
   // a winner / loser tag is set
-  if (index.column() == 1)
+  if (col == 1)
   {
     int tag = index.data(Qt::UserRole + 1).toInt();
 
@@ -103,8 +104,17 @@ void RefereeSelectionDelegate::paint(QPainter* painter, const QStyleOptionViewIt
   fnt.setBold(isItemSelected);
   painter->setFont(fnt);
 
+  // determine the horizontal alignment and margins
+  int horAlign = Qt::AlignCenter;
+  QRect contentRect = option.rect;
+  if ((col == 1) || (col == 2)) // name or team
+  {
+    horAlign = Qt::AlignLeft;
+    contentRect.adjust(ITEM_MARGIN, 0, 0, 0);
+  }
+
   // actually draw the text
-  painter->drawText(option.rect, Qt::AlignVCenter|Qt::AlignCenter, index.data(Qt::DisplayRole).toString());
+  painter->drawText(contentRect, Qt::AlignVCenter | horAlign, index.data(Qt::DisplayRole).toString());
 }
 
 //----------------------------------------------------------------------------

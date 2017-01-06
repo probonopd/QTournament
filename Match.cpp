@@ -123,8 +123,7 @@ namespace QTournament
 
   void Match::getDisplayNameTextItems(const QString& localWinnerName, const QString& localLoserName,
                                       QString& row1Left_out, QString& row2Left_out,
-                                      QString& row1Right_out, QString& row2Right_out,
-                                      bool& isDoubles) const
+                                      QString& row1Right_out, QString& row2Right_out) const
   {
     //
     // get the text items to be drawn for a match. The overall layout is as follows
@@ -185,8 +184,7 @@ namespace QTournament
     QString row2Left;
     QString row1Right;
     QString row2Right;
-    bool isDoubles;
-    getDisplayNameTextItems(localWinnerName, localLoserName, row1Left, row2Left, row1Right, row2Right, isDoubles);
+    getDisplayNameTextItems(localWinnerName, localLoserName, row1Left, row2Left, row1Right, row2Right);
 
     QString name1 = row2Left.isEmpty() ? row1Left : row1Left + " / " + row2Left;
     QString name2 = row2Right.isEmpty() ? row1Right : row1Right + " / " + row2Right;

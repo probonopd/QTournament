@@ -20,6 +20,7 @@
 #include <QResizeEvent>
 #include <QHeaderView>
 #include <QGuiApplication>
+#include <QScrollBar>
 
 #include "DlgSelectReferee.h"
 #include "ui_DlgSelectReferee.h"
@@ -411,6 +412,10 @@ RefereeTableWidget::RefereeTableWidget(QWidget* parent)
   QStringList horHeaders{"", tr("Player name"), tr("Team"), tr("Uses"), tr("Last match finished"), tr("Next match")};
   setHorizontalHeaderLabels(horHeaders);
   verticalHeader()->hide();
+
+  // disable the horizontal scrollbar
+  setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+
 }
 
 //----------------------------------------------------------------------------
@@ -558,14 +563,52 @@ void RefereeTableWidget::resizeEvent(QResizeEvent* _event)
   QTableView::resizeEvent(_event);
 
   // autosize all column in a fixed ratio
-  double widthIncrement = width() / (REL_WIDTH_NAME + REL_WIDTH_TEAM +  3.0 * REL_WIDTH_OTHER + REL_WIDTH_STATE);
-  setColumnWidth(STAT_COL_ID, widthIncrement * REL_WIDTH_STATE);
-  setColumnWidth(NAME_COL_ID, widthIncrement * REL_WIDTH_NAME);
-  setColumnWidth(TEAM_COL_ID, widthIncrement * REL_WIDTH_TEAM);
-  setColumnWidth(REFEREE_COUNT_COL_ID, widthIncrement * REL_WIDTH_OTHER);
-  setColumnWidth(LAST_FINISH_TIME_COL_ID, widthIncrement * REL_WIDTH_OTHER);
-  setColumnWidth(NEXT_MATCH_DIST_COL_ID, widthIncrement * REL_WIDTH_OTHER);
+  autosizeColumns();
 
   // finish event processing
   _event->accept();
+}
+
+//----------------------------------------------------------------------------
+
+void RefereeTableWidget::autosizeColumns()
+{
+  // distribute the available space according to relative column widths
+  int totalUnits = (REL_WIDTH_STATE + // state
+                    REL_WIDTH_NAME + // name
+                    REL_WIDTH_TEAM + // team
+                    REL_WIDTH_OTHER + // referee count
+                    REL_WIDTH_OTHER + // last finished
+                    REL_WIDTH_OTHER); // next match
+
+  int widthAvail = width();
+  if ((verticalScrollBar() != nullptr) && (verticalScrollBar()->isVisible()))
+  {
+    widthAvail -= verticalScrollBar()->width();
+  }
+  double unitWidth = widthAvail / (1.0 * totalUnits);
+
+  // determine a max width for standard columns
+  int otherColWidth = REL_WIDTH_OTHER * unitWidth;
+  if (otherColWidth > MAX_OTHER_COL_WIDTH) otherColWidth = MAX_OTHER_COL_WIDTH;
+
+  int usedWidth = 0;
+
+  // a little lambda that sets the column width and
+  // aggregates it in a dedicated local variable
+  auto myWidthSetter = [&](int colId, int newColWidth) {
+    setColumnWidth(colId, newColWidth);
+    usedWidth += newColWidth;
+  };
+
+  myWidthSetter(STAT_COL_ID, REL_WIDTH_STATE * unitWidth);
+  myWidthSetter(TEAM_COL_ID, REL_WIDTH_TEAM * unitWidth);
+  myWidthSetter(REFEREE_COUNT_COL_ID, otherColWidth);
+  myWidthSetter(LAST_FINISH_TIME_COL_ID, otherColWidth);
+  myWidthSetter(NEXT_MATCH_DIST_COL_ID, otherColWidth);
+
+  // assign the remaining width to the name column. This accounts for
+  // rounding errors when dividing / multiplying pixel widths and makes
+  // that we always used the full width of the widget
+  myWidthSetter(NAME_COL_ID, widthAvail - usedWidth);
 }

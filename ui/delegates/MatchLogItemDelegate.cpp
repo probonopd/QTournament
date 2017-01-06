@@ -102,12 +102,13 @@ void MatchLogItemDelegate::paintMatchInfoCell(QPainter* painter, const QStyleOpt
   QString txtLeft2;
   QString txtRight1;
   QString txtRight2;
-  bool isDoubles;
-  ma.getDisplayNameTextItems(tr("Winner"), tr("Loser"), txtLeft1, txtLeft2,
-                             txtRight1, txtRight2, isDoubles);
-  if (isDoubles)
+  ma.getDisplayNameTextItems(tr("Winner"), tr("Loser"), txtLeft1, txtLeft2, txtRight1, txtRight2);
+  if (!(txtLeft2.isEmpty()))
   {
     txtLeft1 += " / " + txtLeft2;
+  }
+  if (!(txtRight2.isEmpty()))
+  {
     txtRight1 += " / " + txtRight2;
   }
 

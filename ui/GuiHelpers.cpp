@@ -217,8 +217,7 @@ QSizeF GuiHelpers::drawTwoLinePlayerPairNames(QPainter* painter, int topLeftX, i
   QString row2Left;
   QString row1Right;
   QString row2Right;
-  bool isDoubles;
-  ma.getDisplayNameTextItems(localWinnerName, localLoserName, row1Left, row2Left, row1Right, row2Right, isDoubles);
+  ma.getDisplayNameTextItems(localWinnerName, localLoserName, row1Left, row2Left, row1Right, row2Right);
 
   //
   // now do the actual drawing
@@ -331,8 +330,7 @@ void GuiHelpers::drawTwoLinePlayerPairNames_Centered(QPainter* painter, const QR
   QString row2Left;
   QString row1Right;
   QString row2Right;
-  bool isDoubles;
-  ma.getDisplayNameTextItems(localWinnerName, localLoserName, row1Left, row2Left, row1Right, row2Right, isDoubles);
+  ma.getDisplayNameTextItems(localWinnerName, localLoserName, row1Left, row2Left, row1Right, row2Right);
 
   // determine the colors for the left and the right block
   QColor leftColor{fntColor};

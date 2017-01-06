@@ -98,10 +98,12 @@ protected:
   static constexpr int REL_WIDTH_TEAM = 25;
   static constexpr int REL_WIDTH_OTHER = 10;
   static constexpr int REL_WIDTH_STATE = 1;
+  static constexpr int MAX_OTHER_COL_WIDTH = 90;
 
   TournamentDB* db;
   REFEREE_MODE refMode;
   virtual void resizeEvent(QResizeEvent *_event) override;
+  void autosizeColumns();
 };
 
 #endif // DLGSELECTREFEREE_H
