@@ -66,6 +66,12 @@ void DlgPlayerProfile::fillLabels()
   ui->laTitle->setText(txt);
 
   //
+  // set the team name
+  //
+  txt = p.getTeam().getName();
+  ui->laTeam->setText(txt);
+
+  //
   // set the status summary
   //
   txt.clear();
@@ -87,12 +93,12 @@ void DlgPlayerProfile::fillLabels()
   {
     if (plStat == STAT_PL_PLAYING)
     {
-      txt = tr("Player is playing on court %1 for %2 (match %3, %4, round %5)");
+      txt = tr("Player is playing on court %1 for %2 (match %3, %4, Round %5)");
       ma = pp.getCurrentMatch();
     }
     if (plStat == STAT_PL_REFEREE)
     {
-      txt = tr("Player is umpire on court %1 for %2 (match %3, %4, round %5)");
+      txt = tr("Player is umpire on court %1 for %2 (match %3, %4, Round %5)");
       ma = pp.getCurrentUmpireMatch();
     }
 
@@ -124,7 +130,7 @@ void DlgPlayerProfile::fillLabels()
   txt.clear();
   if (ma != nullptr)
   {
-    txt = tr("#%1: %2 (%3, round %4)");
+    txt = tr("#%1: %2 (%3, Round %4)");
     txt = txt.arg(ma->getMatchNumber());
     txt = txt.arg(ma->getDisplayName(tr("Winner"), tr("Loser")));
     txt = txt.arg(ma->getCategory().getName());
@@ -141,7 +147,7 @@ void DlgPlayerProfile::fillLabels()
   txt.clear();
   if (ma != nullptr)
   {
-    txt = tr("#%1: %2 (%3, round %4)");
+    txt = tr("#%1: %2 (%3, Round %4)");
     txt = txt.arg(ma->getMatchNumber());
     txt = txt.arg(ma->getDisplayName(tr("Winner"), tr("Loser")));
     txt = txt.arg(ma->getCategory().getName());
@@ -242,6 +248,22 @@ void DlgPlayerProfile::fillLabels()
 
 void DlgPlayerProfile::fillTables()
 {
-  ui->playerTab->appendMatchList(pp.getMatchesAsPlayer());
   ui->umpireTab->appendMatchList(pp.getMatchesAsUmpire());
+
+  // for the matches as player append them one by one
+  // and skip the un-scheduled matches first and then
+  // append them in a second loop
+  //
+  // --> the unscheduled matches go the bottom of the table
+  auto maList = pp.getMatchesAsPlayer();
+  for (const Match& ma : maList)
+  {
+    if (ma.getMatchNumber() == MATCH_NUM_NOT_ASSIGNED) continue;
+    ui->playerTab->appendMatch(ma);
+  }
+  for (const Match& ma : maList)
+  {
+    if (ma.getMatchNumber() != MATCH_NUM_NOT_ASSIGNED) continue;
+    ui->playerTab->appendMatch(ma);
+  }
 }
