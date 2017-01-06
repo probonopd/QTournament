@@ -137,11 +137,11 @@ void MatchLogItemDelegate::paintMatchInfoCell(QPainter* painter, const QStyleOpt
     {
       if (*w == ppLeft)
       {
-        leftColor = QColor{Qt::green};
-        rightColor = QColor{Qt::red};
+        leftColor = isSelected ? QColor{Qt::green} : QColor{Qt::darkGreen};
+        rightColor = isSelected ? QColor{255,80,80} : QColor{Qt::red};
       } else {
-        leftColor = QColor{Qt::red};
-        rightColor = QColor{Qt::green};
+        leftColor = isSelected ? QColor{255,80,80} : QColor{Qt::red};
+        rightColor = isSelected ? QColor{Qt::green} : QColor{Qt::darkGreen};
       }
     }
   }
