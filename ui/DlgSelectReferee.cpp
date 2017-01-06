@@ -18,6 +18,7 @@
 
 #include <QMessageBox>
 #include <QResizeEvent>
+#include <QHeaderView>
 
 #include "DlgSelectReferee.h"
 #include "ui_DlgSelectReferee.h"

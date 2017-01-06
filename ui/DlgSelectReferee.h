@@ -87,6 +87,7 @@ public:
   static constexpr int NEXT_MATCH_DIST_COL_ID = 5;
   static constexpr int NUM_TAB_COLUMNS = 6;
   RefereeTableWidget(QWidget* parent=0);
+  virtual ~RefereeTableWidget() {}
 
   void rebuildPlayerList(const TaggedPlayerList& pList, int selectedMatchNumer, REFEREE_MODE _refMode);
   upPlayer getSelectedPlayer();
