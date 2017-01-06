@@ -1367,7 +1367,7 @@ Die internen Daten zu dieser Disziplin sind vermutlich defekt.</translation>
     <name>DlgPlayerProfile</name>
     <message>
         <location filename="ui/DlgPlayerProfile.ui" line="14"/>
-        <source>Dialog</source>
+        <source>Detailed Player Information</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1645,7 +1645,7 @@ Die internen Daten zu dieser Disziplin sind vermutlich defekt.</translation>
     <message>
         <location filename="ui/DlgSelectReferee.cpp" line="70"/>
         <source>Recent finishers</source>
-        <translation type="unfinished"></translation>
+        <translation>Letzte Sieger/Verlierer</translation>
     </message>
     <message>
         <location filename="ui/DlgSelectReferee.cpp" line="71"/>
@@ -1738,7 +1738,7 @@ Die internen Daten zu dieser Disziplin sind vermutlich defekt.</translation>
         <location filename="ui/DlgTournamentSettings.cpp" line="149"/>
         <source>Pick from recent finishers</source>
         <oldsource>Pick from recent losers</oldsource>
-        <translation type="unfinished">Aus letzten Verlierern wählen</translation>
+        <translation>Aus letzten Siegern/Verlierern wählen</translation>
     </message>
     <message>
         <location filename="ui/DlgTournamentSettings.cpp" line="150"/>
@@ -2177,17 +2177,17 @@ Die internen Daten zu dieser Disziplin sind vermutlich defekt.</translation>
     <message>
         <location filename="ui/MainFrame.ui" line="66"/>
         <source>Match Log</source>
-        <translation type="unfinished"></translation>
+        <translation>Logbuch</translation>
     </message>
     <message>
         <location filename="ui/MainFrame.ui" line="86"/>
         <source>To&amp;urnament</source>
-        <translation type="unfinished"></translation>
+        <translation>T&amp;urnier</translation>
     </message>
     <message>
         <location filename="ui/MainFrame.ui" line="93"/>
         <source>&amp;External player database</source>
-        <translation type="unfinished"></translation>
+        <translation>Dat&amp;enbank mit Spielernamen</translation>
     </message>
     <message>
         <location filename="ui/MainFrame.ui" line="116"/>
@@ -2197,7 +2197,7 @@ Die internen Daten zu dieser Disziplin sind vermutlich defekt.</translation>
     <message>
         <location filename="ui/MainFrame.ui" line="130"/>
         <source>About &amp;QTournament</source>
-        <translation type="unfinished"></translation>
+        <translation>Über &amp;QTournament</translation>
     </message>
     <message>
         <location filename="ui/MainFrame.ui" line="170"/>
@@ -2254,37 +2254,37 @@ Die internen Daten zu dieser Disziplin sind vermutlich defekt.</translation>
     <message>
         <location filename="ui/MainFrame.ui" line="215"/>
         <source>&amp;New...</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Neu...</translation>
     </message>
     <message>
         <location filename="ui/MainFrame.ui" line="220"/>
         <source>&amp;Select...</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Auswählen...</translation>
     </message>
     <message>
         <location filename="ui/MainFrame.ui" line="225"/>
         <source>&amp;Info...</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Info...</translation>
     </message>
     <message>
         <location filename="ui/MainFrame.ui" line="233"/>
         <source>Sa&amp;ve...</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Speichern...</translation>
     </message>
     <message>
         <location filename="ui/MainFrame.ui" line="255"/>
         <source>Save a co&amp;py...</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Kopie speichern...</translation>
     </message>
     <message>
         <location filename="ui/MainFrame.ui" line="266"/>
         <source>&amp;Create baseline</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Zwischenstand sichern</translation>
     </message>
     <message>
         <location filename="ui/MainFrame.ui" line="277"/>
         <source>C&amp;lose...</source>
-        <translation type="unfinished"></translation>
+        <translation>S&amp;chließen...</translation>
     </message>
     <message>
         <source>New...</source>
@@ -2752,38 +2752,38 @@ Die internen Daten zu dieser Disziplin sind vermutlich defekt.</translation>
     <name>MatchItemDelegate</name>
     <message>
         <location filename="ui/delegates/MatchItemDelegate.cpp" line="137"/>
-        <location filename="ui/delegates/MatchItemDelegate.cpp" line="224"/>
+        <location filename="ui/delegates/MatchItemDelegate.cpp" line="231"/>
         <source>Winner</source>
         <translation>Gewinner</translation>
     </message>
     <message>
         <location filename="ui/delegates/MatchItemDelegate.cpp" line="137"/>
-        <location filename="ui/delegates/MatchItemDelegate.cpp" line="224"/>
+        <location filename="ui/delegates/MatchItemDelegate.cpp" line="231"/>
         <source>Loser</source>
         <translation>Verlierer</translation>
     </message>
     <message>
-        <location filename="ui/delegates/MatchItemDelegate.cpp" line="253"/>
+        <location filename="ui/delegates/MatchItemDelegate.cpp" line="260"/>
         <source>Match %1 </source>
         <translation>Spiel %1 </translation>
     </message>
     <message>
-        <location filename="ui/delegates/MatchItemDelegate.cpp" line="257"/>
+        <location filename="ui/delegates/MatchItemDelegate.cpp" line="264"/>
         <source> currently running on court %1 since %2</source>
         <translation> läuft momentan auf Feld %1 seit %2</translation>
     </message>
     <message>
-        <location filename="ui/delegates/MatchItemDelegate.cpp" line="269"/>
+        <location filename="ui/delegates/MatchItemDelegate.cpp" line="276"/>
         <source>is not yet ready to be called.</source>
         <translation>kann noch nicht aufgerufen werden.</translation>
     </message>
     <message>
-        <location filename="ui/delegates/MatchItemDelegate.cpp" line="273"/>
+        <location filename="ui/delegates/MatchItemDelegate.cpp" line="280"/>
         <source>is ready to be called.</source>
         <translation>kann aufgerufen werden.</translation>
     </message>
     <message>
-        <location filename="ui/delegates/MatchItemDelegate.cpp" line="277"/>
+        <location filename="ui/delegates/MatchItemDelegate.cpp" line="284"/>
         <source>is incomplete and depends on other match results.</source>
         <translation>ist noch unvollständig und hängt von anderen Spielergebnissen ab.</translation>
     </message>
@@ -2814,7 +2814,7 @@ Die internen Daten zu dieser Disziplin sind vermutlich defekt.</translation>
     <message>
         <location filename="reports/commonReportElements/MatchMatrix.cpp" line="390"/>
         <source>walkover</source>
-        <translation type="unfinished"></translation>
+        <translation>kampflos</translation>
     </message>
 </context>
 <context>
@@ -3000,7 +3000,7 @@ Die internen Daten zu dieser Disziplin sind vermutlich defekt.</translation>
     <message>
         <location filename="ui/MatchTableView.cpp" line="571"/>
         <source>Pick from recent finishers</source>
-        <translation type="unfinished">Aus letzten Verlierern wählen</translation>
+        <translation>Aus letzten Siegern/Verlierern wählen</translation>
     </message>
     <message>
         <source>Pick from recent losers</source>
@@ -3509,7 +3509,7 @@ Die internen Daten zu dieser Disziplin sind vermutlich defekt.</translation>
     <message>
         <location filename="ui/PlayerTableView.cpp" line="544"/>
         <source>Show extended player info...</source>
-        <translation type="unfinished"></translation>
+        <translation>Detaillierte Spieler-Informationen...</translation>
     </message>
 </context>
 <context>
@@ -3532,7 +3532,7 @@ Die internen Daten zu dieser Disziplin sind vermutlich defekt.</translation>
     <message>
         <location filename="reports/AbstractReport.cpp" line="262"/>
         <source>(walkover)</source>
-        <translation type="unfinished"></translation>
+        <translation>(kampflos)</translation>
     </message>
     <message>
         <location filename="reports/AbstractReport.cpp" line="272"/>
@@ -3550,7 +3550,7 @@ Die internen Daten zu dieser Disziplin sind vermutlich defekt.</translation>
     <message>
         <location filename="reports/BracketSheet.cpp" line="260"/>
         <source>walkover</source>
-        <translation type="unfinished"></translation>
+        <translation>kampflos</translation>
     </message>
     <message>
         <location filename="reports/BracketSheet.cpp" line="290"/>
@@ -3900,8 +3900,9 @@ insgesamt</translation>
     </message>
     <message>
         <location filename="models/MatchTabModel.cpp" line="152"/>
-        <source>Pick from losers</source>
-        <translation>Aus letzten Verlierern wählen</translation>
+        <source>Pick from finishers</source>
+        <oldsource>Pick from losers</oldsource>
+        <translation>Aus letzten Siegern/Verlierern wählen</translation>
     </message>
     <message>
         <location filename="models/MatchTabModel.cpp" line="155"/>
