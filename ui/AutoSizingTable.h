@@ -255,6 +255,12 @@ namespace GuiHelpers
       }
     }
 
+    //----------------------------------------------------------------------------
+
+    virtual ~AutoSizingTableView_WithDatabase() {}
+
+    //----------------------------------------------------------------------------
+
     void restoreEmptyDataModel()
     {
       if (useSortedModel)
@@ -265,6 +271,8 @@ namespace GuiHelpers
       }
       customDataModel.reset();
     }
+
+    //----------------------------------------------------------------------------
 
     void setCustomDataModel(CustomDataModelType* cdm)  // TAKES OWNERSHIP!
     {
@@ -281,9 +289,35 @@ namespace GuiHelpers
       }
     }
 
+    //----------------------------------------------------------------------------
+
     bool hasCustomDataModel() const { return customDataModel != nullptr; }
 
-    virtual ~AutoSizingTableView_WithDatabase() {}
+    //----------------------------------------------------------------------------
+
+    int getSelectedSourceRow() const
+    {
+      // make sure we have a non-empty model
+      auto mod = model();
+      if (mod == nullptr) return -1;
+      if (mod->rowCount() == 0) return -1;
+
+      // make sure we have one item selected
+      QModelIndexList indexes = selectionModel()->selection().indexes();
+      if (indexes.count() == 0)
+      {
+        return -1;
+      }
+
+      // return the selected row; apply mapping if necessary
+      QModelIndex idx = indexes.at(0);
+      if (useSortedModel)
+      {
+        idx = sortedModel->mapToSource(idx);
+      }
+
+      return idx.row();
+    }
 
   protected:
     unique_ptr<QStringListModel> emptyModel;

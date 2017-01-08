@@ -63,22 +63,11 @@ CourtTableView::~CourtTableView()
     
 unique_ptr<Court> CourtTableView::getSelectedCourt() const
 {
-  // make sure we have non-empty model
-  auto mod = model();
-  if (mod == nullptr) return nullptr;
-  if (mod->rowCount() == 0) return nullptr;
+  int srcRow = getSelectedSourceRow();
+  if (srcRow < 0) return nullptr;
 
-  // make sure we have one item selected
-  QModelIndexList indexes = selectionModel()->selection().indexes();
-  if (indexes.count() == 0)
-  {
-    return nullptr;
-  }
-
-  // return the selected item
-  int selectedSourceRow = sortedModel->mapToSource(indexes.at(0)).row();
   CourtMngr cm{db};
-  return cm.getCourtBySeqNum(selectedSourceRow);
+  return cm.getCourtBySeqNum(srcRow);
 }
 
 //----------------------------------------------------------------------------
