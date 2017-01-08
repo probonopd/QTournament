@@ -26,7 +26,7 @@
 #include "CentralSignalEmitter.h"
 
 CommonMatchTableWidget::CommonMatchTableWidget(QWidget* parent)
-  :GuiHelpers::AutoSizingTableWidget{GuiHelpers::AutosizeColumnDescrList{
+  :GuiHelpers::AutoSizingTableWidget_WithDatabase{GuiHelpers::AutosizeColumnDescrList{
 {tr("Number"), REL_WIDTH_NUMERIC_COL, -1, MAX_NUMERIC_COL_WIDTH},
 {tr("Category"), REL_WIDTH_NUMERIC_COL, -1, MAX_NUMERIC_COL_WIDTH},
 {tr("Round"), REL_WIDTH_NUMERIC_COL, -1, MAX_NUMERIC_COL_WIDTH},
@@ -37,56 +37,15 @@ CommonMatchTableWidget::CommonMatchTableWidget(QWidget* parent)
 {tr("Duration"), REL_WIDTH_NUMERIC_COL, -1, MAX_NUMERIC_COL_WIDTH},
 {tr("Court"), REL_WIDTH_NUMERIC_COL, -1, MAX_NUMERIC_COL_WIDTH},
 {tr("Umpire"), REL_WIDTH_UMPIRE_COL, -1, -1}
-     }},db{nullptr}
+     }}
 {
-  GuiHelpers::AutosizeColumnDescrList cl = {
-  };
   setRubberBandCol(IDX_MATCH_INFO_COL);
-  setDatabase(nullptr);
 
   // react on selection changes
   connect(selectionModel(),
     SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
     SLOT(onSelectionChanged(const QItemSelection&, const QItemSelection&)));
 
-}
-
-//----------------------------------------------------------------------------
-
-void CommonMatchTableWidget::setDatabase(TournamentDB* _db)
-{
-  if (_db == db) return;
-  db = _db;
-
-  clearContents();
-  setRowCount(0);
-
-  if (db != nullptr)
-  {
-    // update the delegate
-    logItemDelegate = new MatchLogItemDelegate(db, this);
-    setCustomDelegate(logItemDelegate);  // the base class takes ownership of the pointer
-
-    // call custom initialization function
-    // for derived classes
-    hook_onTournamentOpened();
-
-    // resize columns and rows to content once (we do not want permanent automatic resizing)
-    horizontalHeader()->resizeSections(QHeaderView::ResizeToContents);
-    verticalHeader()->resizeSections(QHeaderView::ResizeToContents);
-
-  } else {
-    restoreDefaultDelegate();
-
-    // call custom initialization function
-    // for derived classes
-    hook_onTournamentClosed();
-  }
-
-  setEnabled(db != nullptr);
-
-  // initialize column widths
-  autosizeColumns();
 }
 
 //----------------------------------------------------------------------------
@@ -103,6 +62,18 @@ void CommonMatchTableWidget::onSelectionChanged(const QItemSelection& selectedIt
   {
     resizeRowToContents(item.top());
   }
+}
+
+//----------------------------------------------------------------------------
+
+void CommonMatchTableWidget::hook_onTournamentOpened()
+{
+  // call the parent
+  AutoSizingTableWidget_WithDatabase::hook_onTournamentOpened();
+
+  // update the delegate
+  logItemDelegate = new MatchLogItemDelegate(db, this);
+  setCustomDelegate(logItemDelegate);  // the base class takes ownership of the pointer
 }
 
 //----------------------------------------------------------------------------

@@ -49,6 +49,9 @@ void MatchLogTable::onMatchStatusChanged(int maId, int maSeqNum, OBJ_STATE oldSt
 
 void MatchLogTable::hook_onTournamentOpened()
 {
+  // call parent
+  CommonMatchTableWidget::hook_onTournamentOpened();
+
   fillFromDatabase();
 }
 

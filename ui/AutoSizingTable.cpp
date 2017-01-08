@@ -202,4 +202,48 @@ namespace GuiHelpers
     }
   }
 
+  //----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
+
+  AutoSizingTableWidget_WithDatabase::AutoSizingTableWidget_WithDatabase(const AutosizeColumnDescrList& colDescr, QWidget* parent)
+    :AutoSizingTableWidget{colDescr, parent}, db{nullptr}
+  {
+    setDatabase(nullptr);
+  }
+
+  //----------------------------------------------------------------------------
+
+  void AutoSizingTableWidget_WithDatabase::setDatabase(QTournament::TournamentDB* _db)
+  {
+    if (_db == db) return;
+    db = _db;
+
+    clearContents();
+    setRowCount(0);
+
+    if (db != nullptr)
+    {
+      // call custom initialization function
+      // for derived classes
+      hook_onTournamentOpened();
+
+      // resize columns and rows to content once (we do not want permanent automatic resizing)
+      horizontalHeader()->resizeSections(QHeaderView::ResizeToContents);
+      verticalHeader()->resizeSections(QHeaderView::ResizeToContents);
+
+    } else {
+      restoreDefaultDelegate();
+
+      // call custom initialization function
+      // for derived classes
+      hook_onTournamentClosed();
+    }
+
+    setEnabled(db != nullptr);
+
+    // initialize column widths
+    autosizeColumns();
+  }
+
 }

@@ -25,6 +25,8 @@
 #include <QString>
 #include <QTableWidget>
 
+#include "TournamentDB.h"
+
 using namespace std;
 
 namespace GuiHelpers
@@ -78,6 +80,25 @@ namespace GuiHelpers
     unique_ptr<QAbstractItemDelegate> customDelegate;
 
     virtual void resizeEvent(QResizeEvent *_event) override;
+  };
+
+  //----------------------------------------------------------------------------
+
+  class AutoSizingTableWidget_WithDatabase : public AutoSizingTableWidget
+  {
+    Q_OBJECT
+
+  public:
+    explicit AutoSizingTableWidget_WithDatabase(const AutosizeColumnDescrList& colDescr, QWidget *parent = 0);
+    virtual ~AutoSizingTableWidget_WithDatabase() {}
+
+    void setDatabase(QTournament::TournamentDB* _db);
+
+  protected:
+    QTournament::TournamentDB* db;
+
+    virtual void hook_onTournamentOpened() {}
+    virtual void hook_onTournamentClosed() {}
   };
 }
 #endif // AUTOSIZINGTABLE_H

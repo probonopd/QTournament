@@ -29,7 +29,7 @@
 
 using namespace QTournament;
 
-class CommonMatchTableWidget : public GuiHelpers::AutoSizingTableWidget
+class CommonMatchTableWidget : public GuiHelpers::AutoSizingTableWidget_WithDatabase
 {
   Q_OBJECT
 
@@ -48,8 +48,6 @@ public:
   CommonMatchTableWidget(QWidget* parent);
   virtual ~CommonMatchTableWidget() {}
 
-  void setDatabase(TournamentDB* _db);
-
   void insertMatch(int beforeRowIdx, const Match& ma);
   void appendMatch(const Match& ma);
   void appendMatchList(const QList<Match> maList) {
@@ -65,11 +63,9 @@ protected:
   static constexpr int REL_WIDTH_MATCH_INFO = 10;
   static constexpr int REL_WIDTH_UMPIRE_COL = 2;
 
-  TournamentDB* db;
   MatchLogItemDelegate* logItemDelegate;
 
-  virtual void hook_onTournamentOpened() {}
-  virtual void hook_onTournamentClosed() {}
+  virtual void hook_onTournamentOpened() override;
 };
 
 #endif // MATCHLOGTABLE_H
