@@ -150,6 +150,8 @@ namespace GuiHelpers
 
   void AutoSizingTableWidget_WithDatabase::hook_onDatabaseOpened()
   {
+    AutoSizingTable_WithDatabase<QTableWidget>::hook_onDatabaseOpened();
+
     clearContents();
     setRowCount(0);
   }
@@ -158,6 +160,8 @@ namespace GuiHelpers
 
   void AutoSizingTableWidget_WithDatabase::hook_onDatabaseClosed()
   {
+    AutoSizingTable_WithDatabase<QTableWidget>::hook_onDatabaseClosed();
+
     clearContents();
     setRowCount(0);
   }

@@ -33,7 +33,7 @@
 
 using namespace QTournament;
 
-class CourtTableView : public GuiHelpers::AutoSizingTableView_WithDatabase
+class CourtTableView : public GuiHelpers::AutoSizingTableView_WithDatabase<CourtTableModel>
 {
   Q_OBJECT
   
@@ -66,11 +66,7 @@ private slots:
 
 private:
   static constexpr int MAX_NUM_ADD_CALL = 3;
-  unique_ptr<CourtTableModel> curCourtTabModel;
-  QStringListModel* emptyModel;
-  QSortFilterProxyModel* sortedModel;
   CourtItemDelegate* courtItemDelegate;
-  QAbstractItemDelegate* defaultDelegate;
 
   unique_ptr<QMenu> contextMenu;
   QAction* actAddCourt;

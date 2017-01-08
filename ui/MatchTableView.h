@@ -37,7 +37,7 @@
 
 using namespace QTournament;
 
-class MatchTableView : public GuiHelpers::AutoSizingTableView_WithDatabase
+class MatchTableView : public GuiHelpers::AutoSizingTableView_WithDatabase<MatchTableModel>
 {
   Q_OBJECT
   
@@ -56,7 +56,6 @@ protected:
   static constexpr int REL_REFEREE_COL_WIDTH = 20;
 
   void hook_onDatabaseOpened() override;
-  void hook_onDatabaseClosed() override;
 
 private slots:
   void onSelectionChanged(const QItemSelection&selectedItem, const QItemSelection&deselectedItem);
@@ -75,9 +74,6 @@ signals:
 
 private:
   static constexpr int PREDICTION_UPDATE_INTERVAL__MS = 10 * 1000; // update every 10 secs
-  QStringListModel* emptyModel;
-  unique_ptr<MatchTableModel> curDataModel;
-  QSortFilterProxyModel* sortedModel;
   MatchItemDelegate* matchItemDelegate;
 
   unique_ptr<QMenu> contextMenu;

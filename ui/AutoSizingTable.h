@@ -28,7 +28,9 @@
 #include <QResizeEvent>
 #include <QScrollBar>
 #include <QHeaderView>
-
+#include <QSortFilterProxyModel>
+#include <QStringListModel>
+#include <QAbstractTableModel>
 #include "TournamentDB.h"
 
 using namespace std;
@@ -233,14 +235,76 @@ namespace GuiHelpers
 
   //----------------------------------------------------------------------------
 
+  template<typename CustomDataModelType>
   class AutoSizingTableView_WithDatabase : public AutoSizingTable_WithDatabase<QTableView>
   {
-    Q_OBJECT
-
   public:
-    explicit AutoSizingTableView_WithDatabase(const AutosizeColumnDescrList& colDescr, QWidget *parent = 0)
-      :AutoSizingTable_WithDatabase<QTableView>(colDescr, parent) {}
+    explicit AutoSizingTableView_WithDatabase(const AutosizeColumnDescrList& colDescr, bool _useSortedModel = true, QWidget *parent = 0)
+      :AutoSizingTable_WithDatabase<QTableView>(colDescr, parent),
+        customDataModel{nullptr}, sortedModel{nullptr}, useSortedModel{_useSortedModel}
+    {
+      emptyModel = make_unique<QStringListModel>();
+
+      if (useSortedModel)
+      {
+        sortedModel = make_unique<QSortFilterProxyModel>();
+        sortedModel->setSourceModel(emptyModel.get());
+        setModel(sortedModel.get());
+      } else {
+        setModel(emptyModel.get());
+      }
+    }
+
+    void restoreEmptyDataModel()
+    {
+      if (useSortedModel)
+      {
+        sortedModel->setSourceModel(emptyModel.get());
+      } else {
+        setModel(emptyModel.get());
+      }
+      customDataModel.reset();
+    }
+
+    void setCustomDataModel(CustomDataModelType* cdm)  // TAKES OWNERSHIP!
+    {
+      if (cdm == nullptr)
+      {
+        restoreEmptyDataModel();
+        return;
+      }
+
+      if (useSortedModel)
+      {
+        sortedModel->setSourceModel(cdm);
+        customDataModel.reset(cdm);
+      }
+    }
+
+    bool hasCustomDataModel() const { return customDataModel != nullptr; }
+
     virtual ~AutoSizingTableView_WithDatabase() {}
+
+  protected:
+    unique_ptr<QStringListModel> emptyModel;
+    unique_ptr<CustomDataModelType> customDataModel;
+    unique_ptr<QSortFilterProxyModel> sortedModel;
+    bool useSortedModel;
+
+  protected:
+    void hook_onDatabaseOpened() override
+    {
+      AutoSizingTable_WithDatabase<QTableView>::hook_onDatabaseOpened();
+
+      setCustomDataModel(new CustomDataModelType(db));
+    }
+
+    void hook_onDatabaseClosed() override
+    {
+      AutoSizingTable_WithDatabase<QTableView>::hook_onDatabaseClosed();
+
+      restoreEmptyDataModel();
+    }
   };
 }
 #endif // AUTOSIZINGTABLE_H

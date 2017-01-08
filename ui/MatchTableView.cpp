@@ -35,7 +35,7 @@
 #include "CentralSignalEmitter.h"
 
 MatchTableView::MatchTableView(QWidget* parent)
-  :AutoSizingTableView_WithDatabase{GuiHelpers::AutosizeColumnDescrList{
+  :AutoSizingTableView_WithDatabase<MatchTableModel>{GuiHelpers::AutosizeColumnDescrList{
      {"", REL_NUMERIC_COL_WIDTH, -1, MAX_NUMERIC_COL_WIDTH},
      {"", REL_MATCH_COL_WIDTH, -1, -1},
      {"", REL_CAT_COL_WIDTH, -1, -1},
@@ -45,18 +45,9 @@ MatchTableView::MatchTableView(QWidget* parent)
      {"", REL_NUMERIC_COL_WIDTH, -1, MAX_NUMERIC_COL_WIDTH},
      {"", REL_NUMERIC_COL_WIDTH, -1, MAX_NUMERIC_COL_WIDTH},
      {"", REL_NUMERIC_COL_WIDTH, -1, MAX_NUMERIC_COL_WIDTH}
-    },parent}, curDataModel(nullptr)
+    },true, parent}
 {
   setRubberBandCol(1);
-
-  // an empty model for clearing the table when
-  // no tournament is open
-  emptyModel = new QStringListModel();
-
-  // prepare a proxy model to support sorting by columns
-  sortedModel = new QSortFilterProxyModel();
-  sortedModel->setSourceModel(emptyModel);
-  setModel(sortedModel);
 
   // react on selection changes in the match table view
   connect(selectionModel(),
@@ -94,8 +85,6 @@ MatchTableView::MatchTableView(QWidget* parent)
     
 MatchTableView::~MatchTableView()
 {
-  delete emptyModel;
-  delete sortedModel;
   SignalRelay::cleanUp();
 }
 
@@ -162,8 +151,8 @@ void MatchTableView::updateRefereeColumn()
 {
   if (db == nullptr) return;
 
-  QModelIndex topLeft = curDataModel->getIndex(0, MatchTableModel::REFEREE_MODE_COL_ID);
-  QModelIndex bottomRight = curDataModel->getIndex(curDataModel->rowCount(), MatchTableModel::REFEREE_MODE_COL_ID);
+  QModelIndex topLeft = customDataModel->getIndex(0, MatchTableModel::REFEREE_MODE_COL_ID);
+  QModelIndex bottomRight = customDataModel->getIndex(customDataModel->rowCount(), MatchTableModel::REFEREE_MODE_COL_ID);
   dataChanged(topLeft, bottomRight);
 }
 
@@ -173,9 +162,6 @@ void MatchTableView::hook_onDatabaseOpened()
 {
   AutoSizingTableView_WithDatabase::hook_onDatabaseOpened();
 
-  MatchTableModel* newDataModel = new MatchTableModel(db);
-  sortedModel->setSourceModel(newDataModel);
-  curDataModel = unique_ptr<MatchTableModel>(newDataModel);
   setColumnHidden(MatchTableModel::STATE_COL_ID, true);  // hide the column containing the internal object state
 
   // create a regular expression, that matches either the match state
@@ -194,19 +180,8 @@ void MatchTableView::hook_onDatabaseOpened()
 
   // define a delegate for drawing the match items
   matchItemDelegate =  new MatchItemDelegate(db, this);
-  matchItemDelegate->setProxy(sortedModel);
+  matchItemDelegate->setProxy(sortedModel.get());
   setCustomDelegate(matchItemDelegate);  // takes ownership
-}
-
-//----------------------------------------------------------------------------
-
-void MatchTableView::hook_onDatabaseClosed()
-{
-  AutoSizingTableView_WithDatabase::hook_onDatabaseClosed();
-
-  sortedModel->setSourceModel(emptyModel);
-  setItemDelegate(defaultDelegate);
-  curDataModel = nullptr;
 }
 
 //----------------------------------------------------------------------------
@@ -420,9 +395,9 @@ void MatchTableView::onSectionHeaderDoubleClicked()
 
 void MatchTableView::onMatchTimePredictionUpdate()
 {
-  if (curDataModel != nullptr)
+  if (hasCustomDataModel())
   {
-    curDataModel->recalcPrediction();
+    customDataModel->recalcPrediction();
   }
 }
 

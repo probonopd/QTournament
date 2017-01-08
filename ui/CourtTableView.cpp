@@ -27,23 +27,14 @@
 #include "ui/commonCommands/cmdAssignRefereeToMatch.h"
 
 CourtTableView::CourtTableView(QWidget* parent)
-  :GuiHelpers::AutoSizingTableView_WithDatabase{
+  :GuiHelpers::AutoSizingTableView_WithDatabase<CourtTableModel>{
      GuiHelpers::AutosizeColumnDescrList{
        {"", 1, ABS_COURT_COL_WIDTH, ABS_COURT_COL_WIDTH},
        {"", 1, -1, -1},
        {"", 1, ABS_DURATION_COL_WIDTH, ABS_DURATION_COL_WIDTH}
-     }}, curCourtTabModel(nullptr)
+     }, true, parent}
 {
   setRubberBandCol(1);
-
-  // an empty model for clearing the table when
-  // no tournament is open
-  emptyModel = new QStringListModel();
-
-  // prepare a proxy model to support sorting by columns
-  sortedModel = new QSortFilterProxyModel();
-  sortedModel->setSourceModel(emptyModel);
-  setModel(sortedModel);
 
   // react on selection changes in the court table view
   connect(selectionModel(),
@@ -66,8 +57,6 @@ CourtTableView::CourtTableView(QWidget* parent)
     
 CourtTableView::~CourtTableView()
 {
-  delete emptyModel;
-  delete sortedModel;
 }
 
 //----------------------------------------------------------------------------
@@ -109,14 +98,11 @@ void CourtTableView::hook_onDatabaseOpened()
   AutoSizingTableView_WithDatabase::hook_onDatabaseOpened();
 
   // set a new data model
-  CourtTableModel* newCourtTabModel = new CourtTableModel(db);
-  sortedModel->setSourceModel(newCourtTabModel);
-  sortedModel->sort(CourtTableModel::COURT_NUM_COL_ID, Qt::AscendingOrder);
-  curCourtTabModel = unique_ptr<CourtTableModel>(newCourtTabModel);
+  setCustomDataModel(new CourtTableModel(db));
 
   // set a new delegate
   courtItemDelegate = new CourtItemDelegate(db, this);
-  courtItemDelegate->setProxy(sortedModel);
+  courtItemDelegate->setProxy(sortedModel.get());
   setCustomDelegate(courtItemDelegate);   // Takes ownership
 }
 
@@ -127,13 +113,10 @@ void CourtTableView::hook_onDatabaseClosed()
   AutoSizingTableView_WithDatabase::hook_onDatabaseClosed();
 
   // reset the data model
-  sortedModel->setSourceModel(emptyModel);
+  restoreEmptyDataModel();
 
   // reset the delegate
   restoreDefaultDelegate();
-
-  // reset the model pointer
-  curCourtTabModel = nullptr;
 }
 
 //----------------------------------------------------------------------------
