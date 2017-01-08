@@ -35,8 +35,20 @@
 #include "CentralSignalEmitter.h"
 
 MatchTableView::MatchTableView(QWidget* parent)
-  :QTableView(parent), db(nullptr), curDataModel(nullptr)
+  :AutoSizingTableView_WithDatabase{GuiHelpers::AutosizeColumnDescrList{
+     {"", REL_NUMERIC_COL_WIDTH, -1, MAX_NUMERIC_COL_WIDTH},
+     {"", REL_MATCH_COL_WIDTH, -1, -1},
+     {"", REL_CAT_COL_WIDTH, -1, -1},
+     {"", REL_NUMERIC_COL_WIDTH, -1, MAX_NUMERIC_COL_WIDTH},
+     {"", REL_NUMERIC_COL_WIDTH, -1, MAX_NUMERIC_COL_WIDTH},
+     {"", REL_REFEREE_COL_WIDTH, -1, -1},
+     {"", REL_NUMERIC_COL_WIDTH, -1, MAX_NUMERIC_COL_WIDTH},
+     {"", REL_NUMERIC_COL_WIDTH, -1, MAX_NUMERIC_COL_WIDTH},
+     {"", REL_NUMERIC_COL_WIDTH, -1, MAX_NUMERIC_COL_WIDTH}
+    },parent}, curDataModel(nullptr)
 {
+  setRubberBandCol(1);
+
   // an empty model for clearing the table when
   // no tournament is open
   emptyModel = new QStringListModel();
@@ -45,11 +57,6 @@ MatchTableView::MatchTableView(QWidget* parent)
   sortedModel = new QSortFilterProxyModel();
   sortedModel->setSourceModel(emptyModel);
   setModel(sortedModel);
-
-  defaultDelegate = itemDelegate();
-
-  // initiate the model(s) as empty
-  setDatabase(nullptr);
 
   // react on selection changes in the match table view
   connect(selectionModel(),
@@ -90,8 +97,6 @@ MatchTableView::~MatchTableView()
   delete emptyModel;
   delete sortedModel;
   SignalRelay::cleanUp();
-  if (curDataModel != nullptr) delete curDataModel;
-  if (defaultDelegate != nullptr) delete defaultDelegate;
 }
 
 //----------------------------------------------------------------------------
@@ -153,64 +158,6 @@ void MatchTableView::updateSelectionAfterDataChange()
 
 //----------------------------------------------------------------------------
 
-void MatchTableView::setDatabase(TournamentDB* _db)
-{
-  // set the new data model
-  MatchTableModel* newDataModel = nullptr;
-  if (_db != nullptr)
-  {
-    newDataModel = new MatchTableModel(_db);
-    sortedModel->setSourceModel(newDataModel);
-    setColumnHidden(MatchTableModel::STATE_COL_ID, true);  // hide the column containing the internal object state
-
-    // create a regular expression, that matches either the match state
-    // READY, BUSY, FUZZY or WAITING
-    QString reString = "^" + QString::number(static_cast<int>(STAT_MA_READY)) + "|";
-    reString += QString::number(static_cast<int>(STAT_MA_BUSY)) + "|";
-    reString += QString::number(static_cast<int>(STAT_MA_FUZZY)) + "|";   // TODO: check if there can be a condition where a match is FUZZY but without assigned match number
-    reString += QString::number(static_cast<int>(STAT_MA_WAITING)) + "$";
-
-    // apply the regExp as a filter on the state id column
-    sortedModel->setFilterRegExp(reString);
-    sortedModel->setFilterKeyColumn(MatchTableModel::STATE_COL_ID);
-
-    // sort matches in ascing match number order
-    sortedModel->sort(MatchTableModel::MATCH_NUM_COL_ID, Qt::AscendingOrder);
-
-    // define a delegate for drawing the match items
-    matchItemDelegate = make_unique<MatchItemDelegate>(_db, this);
-    matchItemDelegate->setProxy(sortedModel);
-    setItemDelegate(matchItemDelegate.get());
-
-    // resize columns and rows to content once (we do not want permanent automatic resizing)
-    //horizontalHeader()->resizeSections(QHeaderView::ResizeToContents);
-    //verticalHeader()->resizeSections(QHeaderView::ResizeToContents);
-
-  } else {
-    sortedModel->setSourceModel(emptyModel);
-    setItemDelegate(defaultDelegate);
-  }
-
-  // delete the old data model, if it was a
-  // CategoryTableModel instance
-  if (curDataModel != nullptr)
-  {
-    delete curDataModel;
-  }
-
-  // store the new CategoryTableModel instance, if any
-  curDataModel = newDataModel;
-
-  // update the database pointer and set the widget's enabled state
-  db = _db;
-  setEnabled(db != nullptr);
-
-  // trigger a resizing of the displayed columns
-  autosizeColumns();
-}
-
-//----------------------------------------------------------------------------
-
 void MatchTableView::updateRefereeColumn()
 {
   if (db == nullptr) return;
@@ -222,66 +169,44 @@ void MatchTableView::updateRefereeColumn()
 
 //----------------------------------------------------------------------------
 
-void MatchTableView::resizeEvent(QResizeEvent* event)
+void MatchTableView::hook_onDatabaseOpened()
 {
-  // call parent handler
-  QTableView::resizeEvent(event);
+  AutoSizingTableView_WithDatabase::hook_onDatabaseOpened();
 
-  // resize all columns
-  autosizeColumns();
+  MatchTableModel* newDataModel = new MatchTableModel(db);
+  sortedModel->setSourceModel(newDataModel);
+  curDataModel = unique_ptr<MatchTableModel>(newDataModel);
+  setColumnHidden(MatchTableModel::STATE_COL_ID, true);  // hide the column containing the internal object state
 
-  // finish event processing
-  event->accept();
+  // create a regular expression, that matches either the match state
+  // READY, BUSY, FUZZY or WAITING
+  QString reString = "^" + QString::number(static_cast<int>(STAT_MA_READY)) + "|";
+  reString += QString::number(static_cast<int>(STAT_MA_BUSY)) + "|";
+  reString += QString::number(static_cast<int>(STAT_MA_FUZZY)) + "|";   // TODO: check if there can be a condition where a match is FUZZY but without assigned match number
+  reString += QString::number(static_cast<int>(STAT_MA_WAITING)) + "$";
+
+  // apply the regExp as a filter on the state id column
+  sortedModel->setFilterRegExp(reString);
+  sortedModel->setFilterKeyColumn(MatchTableModel::STATE_COL_ID);
+
+  // sort matches in ascing match number order
+  sortedModel->sort(MatchTableModel::MATCH_NUM_COL_ID, Qt::AscendingOrder);
+
+  // define a delegate for drawing the match items
+  matchItemDelegate =  new MatchItemDelegate(db, this);
+  matchItemDelegate->setProxy(sortedModel);
+  setCustomDelegate(matchItemDelegate);  // takes ownership
 }
 
 //----------------------------------------------------------------------------
 
-void MatchTableView::autosizeColumns()
+void MatchTableView::hook_onDatabaseClosed()
 {
-  // distribute the available space according to relative column widths
-  int totalUnits = (REL_NUMERIC_COL_WIDTH + // Match number
-                    REL_MATCH_COL_WIDTH + // Match details
-                    REL_CAT_COL_WIDTH + // category
-                    REL_NUMERIC_COL_WIDTH + // round
-                    REL_NUMERIC_COL_WIDTH + // group
-                    REL_REFEREE_COL_WIDTH + // referee
-                    REL_NUMERIC_COL_WIDTH + // est. start time
-                    REL_NUMERIC_COL_WIDTH + // est. finish time
-                    REL_NUMERIC_COL_WIDTH); // estimated court
+  AutoSizingTableView_WithDatabase::hook_onDatabaseClosed();
 
-  int widthAvail = width();
-  if ((verticalScrollBar() != nullptr) && (verticalScrollBar()->isVisible()))
-  {
-    widthAvail -= verticalScrollBar()->width();
-  }
-  double unitWidth = widthAvail / (1.0 * totalUnits);
-
-  // determine a max width for numeric columns
-  int numericColWidth = REL_NUMERIC_COL_WIDTH * unitWidth;
-  if (numericColWidth > MAX_NUMERIC_COL_WIDTH) numericColWidth = MAX_NUMERIC_COL_WIDTH;
-
-  int usedWidth = 0;
-
-  // a little lambda that sets the column width and
-  // aggregates it in a dedicated local variable
-  auto myWidthSetter = [&](int colId, int newColWidth) {
-    setColumnWidth(colId, newColWidth);
-    usedWidth += newColWidth;
-  };
-
-  myWidthSetter(MatchTableModel::MATCH_NUM_COL_ID, numericColWidth);
-  myWidthSetter(1, REL_MATCH_COL_WIDTH * unitWidth);  // Match details
-  myWidthSetter(2, REL_CAT_COL_WIDTH * unitWidth);  // category
-  myWidthSetter(3, numericColWidth);  // round
-  myWidthSetter(4, numericColWidth);  // group
-  myWidthSetter(MatchTableModel::EST_START_COL_ID, numericColWidth);   // start time
-  myWidthSetter(MatchTableModel::EST_END_COL_ID, numericColWidth);   // finish time
-  myWidthSetter(MatchTableModel::EST_COURT_COL_ID, numericColWidth);   // court time
-
-  // assign the remaining width to the referee. This accounts for
-  // rounding errors when dividing / multiplying pixel widths and makes
-  // that we always used the full width of the widget
-  myWidthSetter(MatchTableModel::REFEREE_MODE_COL_ID, widthAvail - usedWidth);  // referee
+  sortedModel->setSourceModel(emptyModel);
+  setItemDelegate(defaultDelegate);
+  curDataModel = nullptr;
 }
 
 //----------------------------------------------------------------------------

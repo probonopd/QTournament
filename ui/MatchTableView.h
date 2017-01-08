@@ -33,21 +33,19 @@
 #include "delegates/MatchItemDelegate.h"
 #include "models/MatchTabModel.h"
 #include "Match.h"
+#include "AutoSizingTable.h"
 
 using namespace QTournament;
 
-class MatchTableView : public QTableView
+class MatchTableView : public GuiHelpers::AutoSizingTableView_WithDatabase
 {
   Q_OBJECT
   
 public:
-  //enum class FilterType : std::int8_t { IDLE = 1, STAGED = 2, NONE = 0 };
-
   MatchTableView (QWidget* parent);
   virtual ~MatchTableView ();
   unique_ptr<Match> getSelectedMatch() const;
   void updateSelectionAfterDataChange();
-  void setDatabase(TournamentDB* _db);
   void updateRefereeColumn();
   
 protected:
@@ -56,8 +54,9 @@ protected:
   static constexpr int REL_CAT_COL_WIDTH = 9;
   static constexpr int REL_MATCH_COL_WIDTH = 63;
   static constexpr int REL_REFEREE_COL_WIDTH = 20;
-  virtual void resizeEvent(QResizeEvent *event) override;
-  void autosizeColumns();
+
+  void hook_onDatabaseOpened() override;
+  void hook_onDatabaseClosed() override;
 
 private slots:
   void onSelectionChanged(const QItemSelection&selectedItem, const QItemSelection&deselectedItem);
@@ -76,12 +75,10 @@ signals:
 
 private:
   static constexpr int PREDICTION_UPDATE_INTERVAL__MS = 10 * 1000; // update every 10 secs
-  TournamentDB* db;
   QStringListModel* emptyModel;
-  MatchTableModel* curDataModel;
+  unique_ptr<MatchTableModel> curDataModel;
   QSortFilterProxyModel* sortedModel;
-  unique_ptr<MatchItemDelegate> matchItemDelegate;
-  QAbstractItemDelegate* defaultDelegate;
+  MatchItemDelegate* matchItemDelegate;
 
   unique_ptr<QMenu> contextMenu;
   QAction* actPostponeMatch;

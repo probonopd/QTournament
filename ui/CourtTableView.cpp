@@ -106,6 +106,8 @@ unique_ptr<Match> CourtTableView::getSelectedMatch() const
 
 void CourtTableView::hook_onDatabaseOpened()
 {
+  AutoSizingTableView_WithDatabase::hook_onDatabaseOpened();
+
   // set a new data model
   CourtTableModel* newCourtTabModel = new CourtTableModel(db);
   sortedModel->setSourceModel(newCourtTabModel);
@@ -114,6 +116,7 @@ void CourtTableView::hook_onDatabaseOpened()
 
   // set a new delegate
   courtItemDelegate = new CourtItemDelegate(db, this);
+  courtItemDelegate->setProxy(sortedModel);
   setCustomDelegate(courtItemDelegate);   // Takes ownership
 }
 
@@ -121,6 +124,8 @@ void CourtTableView::hook_onDatabaseOpened()
 
 void CourtTableView::hook_onDatabaseClosed()
 {
+  AutoSizingTableView_WithDatabase::hook_onDatabaseClosed();
+
   // reset the data model
   sortedModel->setSourceModel(emptyModel);
 
