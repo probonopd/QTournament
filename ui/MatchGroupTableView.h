@@ -27,11 +27,11 @@
 
 #include "TournamentDB.h"
 #include "models/MatchGroupTabModel.h"
-//#include "delegates/PlayerItemDelegate.h"
+#include "AutoSizingTable.h"
 
 using namespace QTournament;
 
-class MatchGroupTableView : public QTableView
+class MatchGroupTableView : public GuiHelpers::AutoSizingTableView_WithDatabase<MatchGroupTableModel>
 {
   Q_OBJECT
   
@@ -39,27 +39,21 @@ public:
   enum class FilterType : std::int8_t { IDLE = 1, STAGED = 2, NONE = 0 };
 
   MatchGroupTableView (QWidget* parent);
-  virtual ~MatchGroupTableView ();
+  virtual ~MatchGroupTableView () {}
   void setFilter(FilterType ft);
   void clearFilter();
   unique_ptr<MatchGroup> getSelectedMatchGroup();
-  void setDatabase(TournamentDB* _db);
   
 protected:
   static constexpr int REL_NUMERIC_COL_WIDTH = 2;
   static constexpr int REL_CATEGORY_COL_WIDTH = 3;
-  virtual void resizeEvent(QResizeEvent *event) override;
-  void autosizeColumns();
+
+  void hook_onDatabaseOpened() override;
 
 public slots:
   void onFilterUpdateTriggered();
   
 private:
-  TournamentDB* db;
-  MatchGroupTableModel* curDataModel;
-  QStringListModel* emptyModel;
-  QSortFilterProxyModel* sortedModel;
-  //PlayerItemDelegate* itemDelegate;
   FilterType currentFilter;
 
 };
