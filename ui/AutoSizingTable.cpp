@@ -50,7 +50,7 @@ namespace GuiHelpers
     }
 
     // determine the "physical" width increment per relative unit
-    double widthUnit = (totalWidthUnits * 1.0) / (useableWidth * 1.0);
+    double widthUnit = (useableWidth * 1.0) / (totalWidthUnits * 1.0);
 
     // prepare the result vector
     vector<int> result;
@@ -100,8 +100,8 @@ namespace GuiHelpers
           const AutosizeColumnDescr& cd = colList[idx];
 
           int w = result[idx];
-          if (w < cd.absMinWidth) w = cd.absMinWidth;
-          if (w > cd.absMaxWidth) w = cd.absMaxWidth;
+          if ((cd.absMinWidth > 0) && (w < cd.absMinWidth)) w = cd.absMinWidth;
+          if ((cd.absMaxWidth > 0) && (w > cd.absMaxWidth)) w = cd.absMaxWidth;
           result[idx] = w;
           usedWidth_int += w;
         }
@@ -178,6 +178,16 @@ namespace GuiHelpers
     QTableWidget::resizeEvent(_event);
 
     // resize all columns
+    autosizeColumns();
+
+    // finish event processing
+    _event->accept();
+  }
+
+  //----------------------------------------------------------------------------
+
+  void AutoSizingTableWidget::autosizeColumns()
+  {
     int widthAvail = width();
     if ((verticalScrollBar() != nullptr) && (verticalScrollBar()->isVisible()))
     {
@@ -188,11 +198,8 @@ namespace GuiHelpers
     while (idx < colWidths.size())
     {
       setColumnWidth(idx, colWidths[idx]);
+      ++idx;
     }
-
-    // finish event processing
-    _event->accept();
   }
-
 
 }

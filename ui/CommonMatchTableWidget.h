@@ -25,10 +25,11 @@
 #include "TournamentDB.h"
 #include "Match.h"
 #include "delegates/MatchLogItemDelegate.h"
+#include "AutoSizingTable.h"
 
 using namespace QTournament;
 
-class CommonMatchTableWidget : public QTableWidget
+class CommonMatchTableWidget : public GuiHelpers::AutoSizingTableWidget
 {
   Q_OBJECT
 
@@ -45,7 +46,7 @@ public:
   static constexpr int IDX_UMPIRE_COL = 9;
 
   CommonMatchTableWidget(QWidget* parent);
-  virtual ~CommonMatchTableWidget();
+  virtual ~CommonMatchTableWidget() {}
 
   void setDatabase(TournamentDB* _db);
 
@@ -65,11 +66,7 @@ protected:
   static constexpr int REL_WIDTH_UMPIRE_COL = 2;
 
   TournamentDB* db;
-  QAbstractItemDelegate* defaultDelegate;
-  unique_ptr<MatchLogItemDelegate> logItemDelegate;
-
-  virtual void resizeEvent(QResizeEvent *_event) override;
-  void autosizeColumns();
+  MatchLogItemDelegate* logItemDelegate;
 
   virtual void hook_onTournamentOpened() {}
   virtual void hook_onTournamentClosed() {}

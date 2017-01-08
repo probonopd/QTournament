@@ -61,7 +61,7 @@ namespace GuiHelpers
 
   //----------------------------------------------------------------------------
 
-  class AutoSizingTableWidget : public QTableWidget, ColumnAutoSizer
+  class AutoSizingTableWidget : public QTableWidget, public ColumnAutoSizer
   {
     Q_OBJECT
 
@@ -71,6 +71,7 @@ namespace GuiHelpers
 
     void setCustomDelegate(QAbstractItemDelegate* custDelegate);  // TAKES OWNERSHIP!!
     void restoreDefaultDelegate();
+    void autosizeColumns();
 
   protected:
     QAbstractItemDelegate* defaultDelegate;
