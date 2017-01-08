@@ -27,6 +27,7 @@
 #include "TournamentDB.h"
 #include "Match.h"
 #include "delegates/RefereeSelectionDelegate.h"
+#include "AutoSizingTable.h"
 
 namespace Ui {
   class DlgSelectReferee;
@@ -69,12 +70,11 @@ private:
   TaggedPlayerList getPlayerList_recentFinishers();
 
   upPlayer finalPlayerSelection;
-  unique_ptr<RefereeSelectionDelegate> refSelDelegate;
 };
 
 //----------------------------------------------------------------------------
 
-class RefereeTableWidget : public QTableWidget
+class RefereeTableWidget : public GuiHelpers::AutoSizingTableWidget_WithDatabase
 {
   Q_OBJECT
 
@@ -85,7 +85,6 @@ public:
   static constexpr int REFEREE_COUNT_COL_ID = 3;
   static constexpr int LAST_FINISH_TIME_COL_ID = 4;
   static constexpr int NEXT_MATCH_DIST_COL_ID = 5;
-  static constexpr int NUM_TAB_COLUMNS = 6;
   RefereeTableWidget(QWidget* parent=0);
   virtual ~RefereeTableWidget() {}
 
@@ -100,10 +99,9 @@ protected:
   static constexpr int REL_WIDTH_STATE = 1;
   static constexpr int MAX_OTHER_COL_WIDTH = 90;
 
-  TournamentDB* db;
+  void hook_onTournamentOpened() override;
+
   REFEREE_MODE refMode;
-  virtual void resizeEvent(QResizeEvent *_event) override;
-  void autosizeColumns();
 };
 
 #endif // DLGSELECTREFEREE_H

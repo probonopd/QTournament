@@ -41,10 +41,6 @@ DlgSelectReferee::DlgSelectReferee(TournamentDB* _db, const Match& _ma, REFEREE_
 {
   ui->setupUi(this);
 
-  // set the delegate for the player table
-  refSelDelegate = make_unique<RefereeSelectionDelegate>(db, ui->tabPlayers);
-  ui->tabPlayers->setItemDelegate(refSelDelegate.get());
-
   // initialize the match information section
   PlayerPair pp1 = ma.getPlayerPair1();
   PlayerPair pp2 = ma.getPlayerPair2();
@@ -405,17 +401,17 @@ TaggedPlayerList DlgSelectReferee::getPlayerList_recentFinishers()
 //----------------------------------------------------------------------------
 
 RefereeTableWidget::RefereeTableWidget(QWidget* parent)
-  :QTableWidget(parent), db(nullptr)
+  :GuiHelpers::AutoSizingTableWidget_WithDatabase{
+     GuiHelpers::AutosizeColumnDescrList{
+       {"", REL_WIDTH_STATE, -1, -1},
+       {tr("Player name"), REL_WIDTH_NAME, -1, -1},
+       {tr("Team"), REL_WIDTH_TEAM, -1, -1},
+       {tr("Uses"), REL_WIDTH_OTHER, -1, MAX_OTHER_COL_WIDTH},
+       {tr("Last match finished"), REL_WIDTH_OTHER, -1, MAX_OTHER_COL_WIDTH},
+       {tr("Next match"), REL_WIDTH_OTHER, -1, MAX_OTHER_COL_WIDTH}
+     }, parent}
 {
-  // prepare the table layout (columns, headers)
-  setColumnCount(NUM_TAB_COLUMNS);
-  QStringList horHeaders{"", tr("Player name"), tr("Team"), tr("Uses"), tr("Last match finished"), tr("Next match")};
-  setHorizontalHeaderLabels(horHeaders);
-  verticalHeader()->hide();
-
-  // disable the horizontal scrollbar
-  setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-
+  setRubberBandCol(NAME_COL_ID);
 }
 
 //----------------------------------------------------------------------------
@@ -434,10 +430,10 @@ void RefereeTableWidget::rebuildPlayerList(const TaggedPlayerList& pList, int se
   // in the player list
   if (pList.empty())
   {
-    db = nullptr;
+    setDatabase(nullptr);
     return;
   } else {
-    db = pList.at(0).first.getDatabaseHandle();
+    setDatabase(pList.at(0).first.getDatabaseHandle());
   }
 
   // disable sorting while we're modifying the table
@@ -555,60 +551,10 @@ bool RefereeTableWidget::hasPlayerSelected()
   return ((currentRow() >= 0) && (currentItem() != nullptr));
 }
 
-//----------------------------------------------------------------------------
-
-void RefereeTableWidget::resizeEvent(QResizeEvent* _event)
+void RefereeTableWidget::hook_onTournamentOpened()
 {
-  // call the parent handler
-  QTableView::resizeEvent(_event);
-
-  // autosize all column in a fixed ratio
-  autosizeColumns();
-
-  // finish event processing
-  _event->accept();
+  setCustomDelegate(new RefereeSelectionDelegate(db, this));
 }
 
 //----------------------------------------------------------------------------
 
-void RefereeTableWidget::autosizeColumns()
-{
-  // distribute the available space according to relative column widths
-  int totalUnits = (REL_WIDTH_STATE + // state
-                    REL_WIDTH_NAME + // name
-                    REL_WIDTH_TEAM + // team
-                    REL_WIDTH_OTHER + // referee count
-                    REL_WIDTH_OTHER + // last finished
-                    REL_WIDTH_OTHER); // next match
-
-  int widthAvail = width();
-  if ((verticalScrollBar() != nullptr) && (verticalScrollBar()->isVisible()))
-  {
-    widthAvail -= verticalScrollBar()->width();
-  }
-  double unitWidth = widthAvail / (1.0 * totalUnits);
-
-  // determine a max width for standard columns
-  int otherColWidth = REL_WIDTH_OTHER * unitWidth;
-  if (otherColWidth > MAX_OTHER_COL_WIDTH) otherColWidth = MAX_OTHER_COL_WIDTH;
-
-  int usedWidth = 0;
-
-  // a little lambda that sets the column width and
-  // aggregates it in a dedicated local variable
-  auto myWidthSetter = [&](int colId, int newColWidth) {
-    setColumnWidth(colId, newColWidth);
-    usedWidth += newColWidth;
-  };
-
-  myWidthSetter(STAT_COL_ID, REL_WIDTH_STATE * unitWidth);
-  myWidthSetter(TEAM_COL_ID, REL_WIDTH_TEAM * unitWidth);
-  myWidthSetter(REFEREE_COUNT_COL_ID, otherColWidth);
-  myWidthSetter(LAST_FINISH_TIME_COL_ID, otherColWidth);
-  myWidthSetter(NEXT_MATCH_DIST_COL_ID, otherColWidth);
-
-  // assign the remaining width to the name column. This accounts for
-  // rounding errors when dividing / multiplying pixel widths and makes
-  // that we always used the full width of the widget
-  myWidthSetter(NAME_COL_ID, widthAvail - usedWidth);
-}
