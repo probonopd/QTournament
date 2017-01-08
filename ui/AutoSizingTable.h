@@ -24,6 +24,7 @@
 
 #include <QString>
 #include <QTableWidget>
+#include <QTableView>
 #include <QResizeEvent>
 #include <QScrollBar>
 #include <QHeaderView>
@@ -71,7 +72,7 @@ namespace GuiHelpers
   {
   public:
     explicit AutoSizingTable(const AutosizeColumnDescrList& colDescr, QWidget *parent = 0)
-      :QTableWidget{parent}, ColumnAutoSizer{colDescr}, defaultDelegate{nullptr}, customDelegate{nullptr}
+      :TableTypeName{parent}, ColumnAutoSizer{colDescr}, defaultDelegate{nullptr}, customDelegate{nullptr}
     {
       // hide row numbers
       TableTypeName::verticalHeader()->hide();
@@ -205,7 +206,7 @@ namespace GuiHelpers
       TableTypeName::setEnabled(db != nullptr);
 
       // initialize column widths
-      AutoSizingTable<TableTypeName>autosizeColumns();
+      AutoSizingTable<TableTypeName>::autosizeColumns();
     }
 
   protected:
@@ -228,6 +229,18 @@ namespace GuiHelpers
   protected:
     virtual void hook_onDatabaseOpened() override;
     virtual void hook_onDatabaseClosed() override;
+  };
+
+  //----------------------------------------------------------------------------
+
+  class AutoSizingTableView_WithDatabase : public AutoSizingTable_WithDatabase<QTableView>
+  {
+    Q_OBJECT
+
+  public:
+    explicit AutoSizingTableView_WithDatabase(const AutosizeColumnDescrList& colDescr, QWidget *parent = 0)
+      :AutoSizingTable_WithDatabase<QTableView>(colDescr, parent) {}
+    virtual ~AutoSizingTableView_WithDatabase() {}
   };
 }
 #endif // AUTOSIZINGTABLE_H

@@ -29,27 +29,26 @@
 #include "delegates/CourtItemDelegate.h"
 #include "Match.h"
 #include "models/CourtTabModel.h"
+#include "AutoSizingTable.h"
 
 using namespace QTournament;
 
-class CourtTableView : public QTableView
+class CourtTableView : public GuiHelpers::AutoSizingTableView_WithDatabase
 {
   Q_OBJECT
   
 public:
-  //enum class FilterType : std::int8_t { IDLE = 1, STAGED = 2, NONE = 0 };
-
   CourtTableView (QWidget* parent);
   virtual ~CourtTableView ();
   unique_ptr<Court> getSelectedCourt() const;
   unique_ptr<Match> getSelectedMatch() const;
-  void setDatabase(TournamentDB* _db);
 
 protected:
   static constexpr int ABS_COURT_COL_WIDTH = 40;
   static constexpr int ABS_DURATION_COL_WIDTH = 60;
-  virtual void resizeEvent(QResizeEvent *event) override;
-  void autosizeColumns();
+
+  void hook_onDatabaseOpened() override;
+  void hook_onDatabaseClosed() override;
 
 private slots:
   void onSelectionChanged(const QItemSelection&selectedItem, const QItemSelection&deselectedItem);
@@ -67,11 +66,10 @@ private slots:
 
 private:
   static constexpr int MAX_NUM_ADD_CALL = 3;
-  TournamentDB* db;
   CourtTableModel* curCourtTabModel;
   QStringListModel* emptyModel;
   QSortFilterProxyModel* sortedModel;
-  unique_ptr<CourtItemDelegate> courtItemDelegate;
+  CourtItemDelegate* courtItemDelegate;
   QAbstractItemDelegate* defaultDelegate;
 
   unique_ptr<QMenu> contextMenu;

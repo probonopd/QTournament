@@ -27,20 +27,23 @@
 #include "ui/commonCommands/cmdAssignRefereeToMatch.h"
 
 CourtTableView::CourtTableView(QWidget* parent)
-  :QTableView(parent), db(nullptr), curCourtTabModel(nullptr)
+  :GuiHelpers::AutoSizingTableView_WithDatabase{
+     GuiHelpers::AutosizeColumnDescrList{
+       {"", 1, ABS_COURT_COL_WIDTH, ABS_COURT_COL_WIDTH},
+       {"", 1, -1, -1},
+       {"", 1, ABS_DURATION_COL_WIDTH, ABS_DURATION_COL_WIDTH}
+     }}, curCourtTabModel(nullptr)
 {
+  setRubberBandCol(1);
+
   // an empty model for clearing the table when
   // no tournament is open
   emptyModel = new QStringListModel();
-  defaultDelegate = itemDelegate();
 
   // prepare a proxy model to support sorting by columns
   sortedModel = new QSortFilterProxyModel();
   sortedModel->setSourceModel(emptyModel);
   setModel(sortedModel);
-
-  // initiate the model(s) as empty
-  setDatabase(nullptr);
 
   // react on selection changes in the court table view
   connect(selectionModel(),
@@ -65,10 +68,8 @@ CourtTableView::~CourtTableView()
 {
   delete emptyModel;
   delete sortedModel;
-  //delete itemDelegate;
 
   if (curCourtTabModel != nullptr) delete curCourtTabModel;
-  if (defaultDelegate != nullptr) delete defaultDelegate;
 }
 
 //----------------------------------------------------------------------------
@@ -105,29 +106,37 @@ unique_ptr<Match> CourtTableView::getSelectedMatch() const
 
 //----------------------------------------------------------------------------
 
-void CourtTableView::setDatabase(TournamentDB* _db)
+void CourtTableView::hook_onDatabaseOpened()
 {
-  // set the new data model
-  CourtTableModel* newCourtTabModel = nullptr;
-  if (_db != nullptr)
+  // set a new data model
+  CourtTableModel* newCourtTabModel = new CourtTableModel(db);
+  sortedModel->setSourceModel(newCourtTabModel);
+  sortedModel->sort(CourtTableModel::COURT_NUM_COL_ID, Qt::AscendingOrder);
+
+  // set a new delegate
+  courtItemDelegate = new CourtItemDelegate(db, this);
+  setCustomDelegate(courtItemDelegate);   // Takes ownership
+
+  // delete the old data model, if it was a
+  // CourtTableModel instance
+  if (curCourtTabModel != nullptr)
   {
-    newCourtTabModel = new CourtTableModel(_db);
-    sortedModel->setSourceModel(newCourtTabModel);
-    sortedModel->sort(CourtTableModel::COURT_NUM_COL_ID, Qt::AscendingOrder);
-
-    // update the delegate
-    courtItemDelegate = make_unique<CourtItemDelegate>(_db, this);
-    courtItemDelegate->setProxy(sortedModel);
-    setItemDelegate(courtItemDelegate.get());
-
-    // resize columns and rows to content once (we do not want permanent automatic resizing)
-    horizontalHeader()->resizeSections(QHeaderView::ResizeToContents);
-    verticalHeader()->resizeSections(QHeaderView::ResizeToContents);
-
-  } else {
-    sortedModel->setSourceModel(emptyModel);
-    setItemDelegate(defaultDelegate);
+    delete curCourtTabModel;
   }
+
+  // store the new CourtTableModel
+  curCourtTabModel = newCourtTabModel;
+}
+
+//----------------------------------------------------------------------------
+
+void CourtTableView::hook_onDatabaseClosed()
+{
+  // reset the data model
+  sortedModel->setSourceModel(emptyModel);
+
+  // reset the delegate
+  restoreDefaultDelegate();
 
   // delete the old data model, if it was a
   // CategoryTableModel instance
@@ -136,47 +145,8 @@ void CourtTableView::setDatabase(TournamentDB* _db)
     delete curCourtTabModel;
   }
 
-  // store the new CategoryTableModel instance, if any
-  curCourtTabModel = newCourtTabModel;
-
-  // update the database pointer and set the widget's enabled state
-  db = _db;
-  setEnabled(db != nullptr);
-
-  // initialize column widths
-  autosizeColumns();
-}
-
-//----------------------------------------------------------------------------
-
-void CourtTableView::resizeEvent(QResizeEvent* event)
-{
-  // call parent function
-  QTableView::resizeEvent(event);
-
-  // resize all columns
-  autosizeColumns();
-
-  // finish event processing
-  event->accept();
-}
-
-//----------------------------------------------------------------------------
-
-void CourtTableView::autosizeColumns()
-{
-  // assign a fixed width to the court number and the duration and
-  // leave the rest for the match info
-  int widthAvail = width();
-  if ((verticalScrollBar() != nullptr) && (verticalScrollBar()->isVisible()))
-  {
-    widthAvail -= verticalScrollBar()->width();
-  }
-  int matchColWidth = widthAvail -  ABS_COURT_COL_WIDTH - ABS_DURATION_COL_WIDTH;
-
-  setColumnWidth(CourtTableModel::COURT_NUM_COL_ID, ABS_COURT_COL_WIDTH);
-  setColumnWidth(1, matchColWidth);
-  setColumnWidth(CourtTableModel::DURATION_COL_ID, ABS_DURATION_COL_WIDTH);
+  // reset the pointer
+  curCourtTabModel = nullptr;
 }
 
 //----------------------------------------------------------------------------
