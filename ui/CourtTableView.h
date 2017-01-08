@@ -66,7 +66,7 @@ private slots:
 
 private:
   static constexpr int MAX_NUM_ADD_CALL = 3;
-  CourtTableModel* curCourtTabModel;
+  unique_ptr<CourtTableModel> curCourtTabModel;
   QStringListModel* emptyModel;
   QSortFilterProxyModel* sortedModel;
   CourtItemDelegate* courtItemDelegate;

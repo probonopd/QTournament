@@ -68,8 +68,6 @@ CourtTableView::~CourtTableView()
 {
   delete emptyModel;
   delete sortedModel;
-
-  if (curCourtTabModel != nullptr) delete curCourtTabModel;
 }
 
 //----------------------------------------------------------------------------
@@ -112,20 +110,11 @@ void CourtTableView::hook_onDatabaseOpened()
   CourtTableModel* newCourtTabModel = new CourtTableModel(db);
   sortedModel->setSourceModel(newCourtTabModel);
   sortedModel->sort(CourtTableModel::COURT_NUM_COL_ID, Qt::AscendingOrder);
+  curCourtTabModel = unique_ptr<CourtTableModel>(newCourtTabModel);
 
   // set a new delegate
   courtItemDelegate = new CourtItemDelegate(db, this);
   setCustomDelegate(courtItemDelegate);   // Takes ownership
-
-  // delete the old data model, if it was a
-  // CourtTableModel instance
-  if (curCourtTabModel != nullptr)
-  {
-    delete curCourtTabModel;
-  }
-
-  // store the new CourtTableModel
-  curCourtTabModel = newCourtTabModel;
 }
 
 //----------------------------------------------------------------------------
@@ -138,14 +127,7 @@ void CourtTableView::hook_onDatabaseClosed()
   // reset the delegate
   restoreDefaultDelegate();
 
-  // delete the old data model, if it was a
-  // CategoryTableModel instance
-  if (curCourtTabModel != nullptr)
-  {
-    delete curCourtTabModel;
-  }
-
-  // reset the pointer
+  // reset the model pointer
   curCourtTabModel = nullptr;
 }
 

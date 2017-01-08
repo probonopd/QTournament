@@ -34,7 +34,8 @@ using namespace QTournament;
 CourtItemDelegate::CourtItemDelegate(TournamentDB* _db, QObject* parent)
 : QStyledItemDelegate(parent), db(_db), proxy(nullptr), normalFont(QFont()),
   fntMetrics(QFontMetricsF(normalFont)),
-  fntMetrics_Large(fntMetrics)  // this a dummy value only
+  fntMetrics_Large(fntMetrics),  // this a dummy value only
+  selectedRow{-1}
 {
   largeFont = QFont();
   largeFont.setPointSizeF(largeFont.pointSizeF() * LARGE_TEXT_SIZE_FAC);
