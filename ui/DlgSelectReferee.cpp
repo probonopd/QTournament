@@ -551,6 +551,8 @@ bool RefereeTableWidget::hasPlayerSelected()
   return ((currentRow() >= 0) && (currentItem() != nullptr));
 }
 
+//----------------------------------------------------------------------------
+
 void RefereeTableWidget::hook_onTournamentOpened()
 {
   setCustomDelegate(new RefereeSelectionDelegate(db, this));

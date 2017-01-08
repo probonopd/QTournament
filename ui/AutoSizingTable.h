@@ -24,6 +24,8 @@
 
 #include <QString>
 #include <QTableWidget>
+#include <QResizeEvent>
+#include <QScrollBar>
 
 #include "TournamentDB.h"
 
@@ -63,23 +65,103 @@ namespace GuiHelpers
 
   //----------------------------------------------------------------------------
 
-  class AutoSizingTableWidget : public QTableWidget, public ColumnAutoSizer
+  template<typename TableTypeName>
+  class AutoSizingTable : public TableTypeName, public ColumnAutoSizer
   {
-    Q_OBJECT
-
   public:
-    explicit AutoSizingTableWidget(const AutosizeColumnDescrList& colDescr, QWidget *parent = 0);
-    virtual ~AutoSizingTableWidget();
+    explicit AutoSizingTable(const AutosizeColumnDescrList& colDescr, QWidget *parent = 0)
+      :QTableWidget{parent}, ColumnAutoSizer{colDescr}, defaultDelegate{nullptr}, customDelegate{nullptr}
+    {
+      // hide row numbers
+      TableTypeName::verticalHeader()->hide();
 
-    void setCustomDelegate(QAbstractItemDelegate* custDelegate);  // TAKES OWNERSHIP!!
-    void restoreDefaultDelegate();
-    void autosizeColumns();
+      // disable the horizontal scrollbar
+      TableTypeName::setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+
+      // set selection mode to "row" and "single"
+      TableTypeName::setSelectionMode(QAbstractItemView::SingleSelection);
+      TableTypeName::setSelectionBehavior(QAbstractItemView::SelectRows);
+
+      // store the default delegate for later
+      defaultDelegate = TableTypeName::itemDelegate();
+    }
+
+    //----------------------------------------------------------------------------
+
+    virtual ~AutoSizingTable()
+    {
+      if (defaultDelegate != nullptr) delete defaultDelegate;
+    }
+
+    //----------------------------------------------------------------------------
+
+    void setCustomDelegate(QAbstractItemDelegate* custDelegate)
+    {
+      if (custDelegate == nullptr)
+      {
+        restoreDefaultDelegate();
+        return;
+      }
+
+      customDelegate.reset(custDelegate);
+      TableTypeName::setItemDelegate(customDelegate.get());
+    }
+
+    //----------------------------------------------------------------------------
+
+    void restoreDefaultDelegate()
+    {
+      TableTypeName::setItemDelegate(defaultDelegate);
+      customDelegate.reset();
+    }
+
+    //----------------------------------------------------------------------------
+
+    void autosizeColumns()
+    {
+      int widthAvail = TableTypeName::width();
+      if ((TableTypeName::verticalScrollBar() != nullptr) && (TableTypeName::verticalScrollBar()->isVisible()))
+      {
+        widthAvail -= TableTypeName::verticalScrollBar()->width();
+      }
+      auto colWidths = getColWidths(widthAvail);
+      int idx = 0;
+      while (idx < colWidths.size())
+      {
+        TableTypeName::setColumnWidth(idx, colWidths[idx]);
+        ++idx;
+      }
+    }
 
   protected:
     QAbstractItemDelegate* defaultDelegate;
     unique_ptr<QAbstractItemDelegate> customDelegate;
 
-    virtual void resizeEvent(QResizeEvent *_event) override;
+    virtual void resizeEvent(QResizeEvent* _event) override
+    {
+      // call parent handler
+      TableTypeName::resizeEvent(_event);
+
+      // resize all columns
+      autosizeColumns();
+
+      // finish event processing
+      _event->accept();
+    }
+
+    //----------------------------------------------------------------------------
+
+  };
+
+  //----------------------------------------------------------------------------
+
+  class AutoSizingTableWidget : public AutoSizingTable<QTableWidget>
+  {
+    Q_OBJECT
+
+  public:
+    explicit AutoSizingTableWidget(const AutosizeColumnDescrList& colDescr, QWidget *parent = 0);
+    virtual ~AutoSizingTableWidget() {}
   };
 
   //----------------------------------------------------------------------------

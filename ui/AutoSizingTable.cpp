@@ -20,7 +20,6 @@
 
 #include <QHeaderView>
 #include <QScrollBar>
-#include <QResizeEvent>
 
 #include "AutoSizingTable.h"
 
@@ -118,7 +117,7 @@ namespace GuiHelpers
   //----------------------------------------------------------------------------
 
   AutoSizingTableWidget::AutoSizingTableWidget(const AutosizeColumnDescrList& colDescr, QWidget* parent)
-    :QTableWidget{parent}, ColumnAutoSizer{colDescr}, defaultDelegate{nullptr}, customDelegate{nullptr}
+    :AutoSizingTable<QTableWidget>{colDescr, parent}
   {
     // set the column headers
     QStringList hdr;
@@ -128,78 +127,6 @@ namespace GuiHelpers
     }
     setColumnCount(hdr.length());
     setHorizontalHeaderLabels(hdr);
-    verticalHeader()->hide();
-
-    // disable the horizontal scrollbar
-    setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-
-    // set selection mode to "row" and "single"
-    setSelectionMode(QAbstractItemView::SingleSelection);
-    setSelectionBehavior(QAbstractItemView::SelectRows);
-
-    // store the default delegate for later
-    defaultDelegate = itemDelegate();
-  }
-
-  //----------------------------------------------------------------------------
-
-  AutoSizingTableWidget::~AutoSizingTableWidget()
-  {
-    if (defaultDelegate != nullptr) delete defaultDelegate;
-  }
-
-  //----------------------------------------------------------------------------
-
-  void AutoSizingTableWidget::setCustomDelegate(QAbstractItemDelegate* custDelegate)
-  {
-    if (custDelegate == nullptr)
-    {
-      restoreDefaultDelegate();
-      return;
-    }
-
-    customDelegate.reset(custDelegate);
-    setItemDelegate(customDelegate.get());
-  }
-
-  //----------------------------------------------------------------------------
-
-  void AutoSizingTableWidget::restoreDefaultDelegate()
-  {
-    setItemDelegate(defaultDelegate);
-    customDelegate.reset();
-  }
-
-  //----------------------------------------------------------------------------
-
-  void AutoSizingTableWidget::resizeEvent(QResizeEvent* _event)
-  {
-    // call parent handler
-    QTableWidget::resizeEvent(_event);
-
-    // resize all columns
-    autosizeColumns();
-
-    // finish event processing
-    _event->accept();
-  }
-
-  //----------------------------------------------------------------------------
-
-  void AutoSizingTableWidget::autosizeColumns()
-  {
-    int widthAvail = width();
-    if ((verticalScrollBar() != nullptr) && (verticalScrollBar()->isVisible()))
-    {
-      widthAvail -= verticalScrollBar()->width();
-    }
-    auto colWidths = getColWidths(widthAvail);
-    int idx = 0;
-    while (idx < colWidths.size())
-    {
-      setColumnWidth(idx, colWidths[idx]);
-      ++idx;
-    }
   }
 
   //----------------------------------------------------------------------------
