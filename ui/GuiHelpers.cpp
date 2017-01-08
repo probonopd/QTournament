@@ -18,6 +18,7 @@
 
 #include "GuiHelpers.h"
 
+#include <QObject>
 #include <QMessageBox>
 #include <QFontMetricsF>
 
@@ -30,17 +31,6 @@
 #include "Player.h"
 #include "PlayerProfile.h"
 
-GuiHelpers::GuiHelpers()
-{
-
-}
-
-GuiHelpers::~GuiHelpers()
-{
-
-}
-
-//----------------------------------------------------------------------------
 
 QString GuiHelpers::groupNumToString(int grpNum)
 {
@@ -51,13 +41,13 @@ QString GuiHelpers::groupNumToString(int grpNum)
   case GROUP_NUM__ITERATION:
     return "--";
   case GROUP_NUM__L16:
-    return tr("L16");
+    return QObject::tr("L16");
   case GROUP_NUM__QUARTERFINAL:
-    return tr("QF");
+    return QObject::tr("QF");
   case GROUP_NUM__SEMIFINAL:
-    return tr("SF");
+    return QObject::tr("SF");
   case GROUP_NUM__FINAL:
-    return tr("FI");
+    return QObject::tr("FI");
   }
 
   return "??";
@@ -68,20 +58,20 @@ QString GuiHelpers::groupNumToString(int grpNum)
 
 QString GuiHelpers::groupNumToLongString(int grpNum)
 {
-  if (grpNum > 0) return (tr("Group ") + QString::number(grpNum));
+  if (grpNum > 0) return (QObject::tr("Group ") + QString::number(grpNum));
 
   switch (grpNum)
   {
   case GROUP_NUM__ITERATION:
     return "--";
   case GROUP_NUM__L16:
-    return tr("Round of Last 16");
+    return QObject::tr("Round of Last 16");
   case GROUP_NUM__QUARTERFINAL:
-    return tr("Quarter Finals");
+    return QObject::tr("Quarter Finals");
   case GROUP_NUM__SEMIFINAL:
-    return tr("Semi Finals");
+    return QObject::tr("Semi Finals");
   case GROUP_NUM__FINAL:
-    return tr("Finals");
+    return QObject::tr("Finals");
   }
 
   return "??";
@@ -93,9 +83,6 @@ QString GuiHelpers::groupNumToLongString(int grpNum)
 /**
  * Generates a text proposal that the user should announce when calling a match
  *
- * This can't be integrated in the Match class, because Match is not derived
- * from QObject, so we don't have tr() available there
- *
  * @param ma the match to call
  * @param co the court the match shall be played on
  *
@@ -103,23 +90,23 @@ QString GuiHelpers::groupNumToLongString(int grpNum)
  */
 QString GuiHelpers::prepCall(const QTournament::Match &ma, const QTournament::Court &co, int nCall)
 {
-  QString call = tr("Please announce:\n\n\n");
+  QString call = QObject::tr("Please announce:\n\n\n");
 
   if (nCall == 0)
   {
-    call += tr("Next match,\n\n");
+    call += QObject::tr("Next match,\n\n");
   } else {
     call += QString::number(nCall + 1) + ". ";
-    call += tr("call for ");
+    call += QObject::tr("call for ");
   }
 
-  call += tr("match number ") + QString::number(ma.getMatchNumber()) + tr(" on court number ") + QString::number(co.getNumber());
+  call += QObject::tr("match number ") + QString::number(ma.getMatchNumber()) + QObject::tr(" on court number ") + QString::number(co.getNumber());
   call += "\n\n";
   call += ma.getCategory().getName() + ",\n\n";
-  call += ma.getPlayerPair1().getCallName(tr("and")) + "\n\n";
-  call += tr("        versus\n\n");
-  call += ma.getPlayerPair2().getCallName(tr("and")) + ",\n\n";
-  call += tr("match number ") + QString::number(ma.getMatchNumber()) + tr(" on court number ") + QString::number(co.getNumber());
+  call += ma.getPlayerPair1().getCallName(QObject::tr("and")) + "\n\n";
+  call += QObject::tr("        versus\n\n");
+  call += ma.getPlayerPair2().getCallName(QObject::tr("and")) + ",\n\n";
+  call += QObject::tr("match number ") + QString::number(ma.getMatchNumber()) + QObject::tr(" on court number ") + QString::number(co.getNumber());
   call += ".";
 
   // add the umpire's name, if necessary
@@ -130,7 +117,7 @@ QString GuiHelpers::prepCall(const QTournament::Match &ma, const QTournament::Co
     if (referee != nullptr)
     {
       call += "\n\n\n";
-      call += tr("Umpire is ");
+      call += QObject::tr("Umpire is ");
       call += referee->getDisplayName_FirstNameFirst();
       call += ".";
     }
@@ -140,12 +127,12 @@ QString GuiHelpers::prepCall(const QTournament::Match &ma, const QTournament::Co
   if (nCall > 0)
   {
     call += "\n\n";
-    call += tr("THIS IS THE ");
+    call += QObject::tr("THIS IS THE ");
     call += QString::number(nCall + 1) + ". ";
-    call += tr("CALL!");
+    call += QObject::tr("CALL!");
   }
   call += "\n\n\n";
-  call += tr("Call executed?");
+  call += QObject::tr("Call executed?");
 
   return call;
 }
@@ -444,7 +431,7 @@ void GuiHelpers::execWalkover(QWidget* parent, const QTournament::Match& ma, int
   if (!(ma.isWalkoverPossible())) return;
 
   // get a user confirmation
-  QString msg = tr("This will be a walkover for\n\n\t");
+  QString msg = QObject::tr("This will be a walkover for\n\n\t");
   if (playerNum == 1)
   {
     msg += ma.getPlayerPair1().getDisplayName();
@@ -452,10 +439,10 @@ void GuiHelpers::execWalkover(QWidget* parent, const QTournament::Match& ma, int
     msg += ma.getPlayerPair2().getDisplayName();
   }
   msg += "\n\n";
-  msg += tr("All games will be 21:0.") + "\n\n";
-  msg += tr("WARNING: this step is irrevocable!") + "\n\n";
-  msg += tr("Proceed?");
-  int result = QMessageBox::question(parent, tr("Confirm walkover"), msg);
+  msg += QObject::tr("All games will be 21:0.") + "\n\n";
+  msg += QObject::tr("WARNING: this step is irrevocable!") + "\n\n";
+  msg += QObject::tr("Proceed?");
+  int result = QMessageBox::question(parent, QObject::tr("Confirm walkover"), msg);
   if (result != QMessageBox::Yes)
   {
     return;
@@ -483,15 +470,15 @@ QString GuiHelpers::getStatusSummaryForPlayer(const QTournament::Player& p, cons
   QString txt;
   if (plStat == QTournament::OBJ_STATE::STAT_PL_IDLE)
   {
-    txt = tr(" is idle");
+    txt = QObject::tr(" is idle");
 
     auto ma = pp.getLastPlayedMatch();
     if (ma != nullptr)
     {
-      txt += tr(". The last match ended %1 ago.");
+      txt += QObject::tr(". The last match ended %1 ago.");
       txt = txt.arg(qdt2durationString(ma->getFinishTime()));
     } else {
-      txt += tr("; no played matches yet.");
+      txt += QObject::tr("; no played matches yet.");
     }
   }
   unique_ptr<Match> ma;
@@ -500,12 +487,12 @@ QString GuiHelpers::getStatusSummaryForPlayer(const QTournament::Player& p, cons
   {
     if (plStat == QTournament::OBJ_STATE::STAT_PL_PLAYING)
     {
-      txt = tr(" is playing on court %1 for %2 (match %3, %4, Round %5)");
+      txt = QObject::tr(" is playing on court %1 for %2 (match %3, %4, Round %5)");
       ma = pp.getCurrentMatch();
     }
     if (plStat == QTournament::OBJ_STATE::STAT_PL_REFEREE)
     {
-      txt = tr(" is umpire on court %1 for %2 (match %3, %4, Round %5)");
+      txt = QObject::tr(" is umpire on court %1 for %2 (match %3, %4, Round %5)");
       ma = pp.getCurrentUmpireMatch();
     }
 
@@ -526,7 +513,7 @@ QString GuiHelpers::getStatusSummaryForPlayer(const QTournament::Player& p, cons
   }
   if (plStat == QTournament::OBJ_STATE::STAT_PL_WAIT_FOR_REGISTRATION)
   {
-    txt = tr(" has not yet shown up for registration.");
+    txt = QObject::tr(" has not yet shown up for registration.");
   }
 
   return txt;

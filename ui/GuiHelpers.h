@@ -19,7 +19,6 @@
 #ifndef GUIHELPERS_H
 #define GUIHELPERS_H
 
-#include <QObject>
 #include <QString>
 #include <QtGlobal>
 #include <QPainter>
@@ -36,38 +35,33 @@ namespace QTournament
   class Court;
 }
 
-class GuiHelpers : public QObject
+namespace GuiHelpers
 {
-  Q_OBJECT
+  QString groupNumToString(int grpNum);
+  QString groupNumToLongString(int grpNum);
+  QString prepCall(const QTournament::Match& ma, const QTournament::Court& co, int nCall=0);
 
-public:
-  GuiHelpers();
-  ~GuiHelpers();
-  static QString groupNumToString(int grpNum);
-  static QString groupNumToLongString(int grpNum);
-  static QString prepCall(const QTournament::Match& ma, const QTournament::Court& co, int nCall=0);
-
-  static void drawFormattedText(QPainter* painter, QRect r, const QString& s, int alignmentFlags=Qt::AlignVCenter|Qt::AlignLeft,
+  void drawFormattedText(QPainter* painter, QRect r, const QString& s, int alignmentFlags=Qt::AlignVCenter|Qt::AlignLeft,
                                 bool isBold=false, bool isItalics=false, QFont fnt=QFont(), QColor fntColor = QColor(0,0,0),
                                 double fntSizeFac = 1.0);
-  static void drawFormattedText(QPainter* painter, int x0, int yBaseline, const QString& s, bool isBold=false, bool isItalics=false,
+  void drawFormattedText(QPainter* painter, int x0, int yBaseline, const QString& s, bool isBold=false, bool isItalics=false,
                                 QFont fnt=QFont(), QColor fntColor = QColor(0,0,0), double fntSizeFac = 1.0);
-  static void drawFormattedText(QPainter* painter, QRect r, const QString& s, int alignmentFlags=Qt::AlignVCenter|Qt::AlignLeft,
+  void drawFormattedText(QPainter* painter, QRect r, const QString& s, int alignmentFlags=Qt::AlignVCenter|Qt::AlignLeft,
                                 bool isBold=false, bool isItalics=false, double fntSizeFac = 1.0);
-  static QSizeF getFormattedTextSize(QPainter* painter, const QString& s, bool isBold=false, bool isItalics=false,
+  QSizeF getFormattedTextSize(QPainter* painter, const QString& s, bool isBold=false, bool isItalics=false,
                                     QFont fnt=QFont(), double fntSizeFac = 1.0);
-  static QSizeF drawTwoLinePlayerPairNames(QPainter* painter, int topLeftX, int topLeftY, const QTournament::Match& ma, const QString& localWinnerName, const QString localLoserName,
+  QSizeF drawTwoLinePlayerPairNames(QPainter* painter, int topLeftX, int topLeftY, const QTournament::Match& ma, const QString& localWinnerName, const QString localLoserName,
                                          double percLineSpace=1.15, bool isBold=false, bool isItalics=false, QFont fnt=QFont(), QColor fntColor = QColor(0,0,0),
                                          double fntSizeFac = 1.0);
-  static void drawTwoLinePlayerPairNames_Centered(QPainter* painter, const QRectF rect, const QTournament::Match& ma, const QString& localWinnerName, const QString localLoserName,
+  void drawTwoLinePlayerPairNames_Centered(QPainter* painter, const QRectF rect, const QTournament::Match& ma, const QString& localWinnerName, const QString localLoserName,
                                          double percLineSpace=1.15, bool isBold=false, bool isItalics=false, QFont fnt=QFont(), QColor fntColor = QColor(0,0,0),
                                          double fntSizeFac = 1.0, QColor winnerNameColor = QColor(Qt::green), QColor loserNameColor = QColor(Qt::red));
-  static void execWalkover(QWidget* parent, const QTournament::Match& ma, int playerNum);
+  void execWalkover(QWidget* parent, const QTournament::Match& ma, int playerNum);
 
-  static QString getStatusSummaryForPlayer(const QTournament::Player& p);
-  static QString getStatusSummaryForPlayer(const QTournament::Player& p, const QTournament::PlayerProfile& pp);
-  static QString qdt2durationString(const QDateTime& qdt);
-  static QString qdt2string(const QDateTime& qdt);
-};
+  QString getStatusSummaryForPlayer(const QTournament::Player& p);
+  QString getStatusSummaryForPlayer(const QTournament::Player& p, const QTournament::PlayerProfile& pp);
+  QString qdt2durationString(const QDateTime& qdt);
+  QString qdt2string(const QDateTime& qdt);
+}
 
 #endif // GUIHELPERS_H
