@@ -38,24 +38,18 @@
 #include "MatchTimePredictor.h"
 
 PlayerTableView::PlayerTableView(QWidget* parent)
-:QTableView(parent), db(nullptr), curDataModel(nullptr)
+  :GuiHelpers::AutoSizingTableView_WithDatabase<PlayerTableModel>{
+     GuiHelpers::AutosizeColumnDescrList{
+        {"", REL_NAME_COL_WIDTH, -1, MAX_NAME_COL_WIDTH},
+        {"", REL_SEX_COL_WIDTH, -1, MAX_SEX_COL_WIDTH},
+        {"", REL_TEAM_COL_WIDTH, -1, MAX_TEAM_COL_WIDTH},
+        {"", REL_CAT_COL_WIDTH, -1, MAX_CAT_COL_WIDTH},
+        {"", 0, -1, -1}}, true, parent}
 {
-  // an empty model for clearing the table when
-  // no tournament is open
-  emptyModel = new QStringListModel();
-
-  defaultDelegate = itemDelegate();
-  
-  // prepare a proxy model to support sorting by columns
-  sortedModel = new QSortFilterProxyModel();
-  sortedModel->setSourceModel(emptyModel);
-  setModel(sortedModel);
+  setRubberBandCol(PlayerTableModel::FILL_COL);
 
   // set an initial default sorting column
   sortByColumn(PlayerTableModel::COL_NAME, Qt::AscendingOrder);
-
-  // initiate the model(s) as empty
-  setDatabase(nullptr);
 
   // handle context menu requests
   setContextMenuPolicy(Qt::CustomContextMenu);
@@ -72,136 +66,29 @@ PlayerTableView::PlayerTableView(QWidget* parent)
 
 //----------------------------------------------------------------------------
     
-PlayerTableView::~PlayerTableView()
-{
-  delete emptyModel;
-  delete sortedModel;
-  if (curDataModel != nullptr) delete curDataModel;
-  if (defaultDelegate != nullptr) delete defaultDelegate;
-}
-
-//----------------------------------------------------------------------------
-
 unique_ptr<Player> PlayerTableView::getSelectedPlayer() const
 {
-  // make sure we have non-empty model
-  auto mod = model();
-  if (mod == nullptr) return nullptr;
-  if (mod->rowCount() == 0) return nullptr;
+  int srcRow = getSelectedSourceRow();
+  if (srcRow < 0) return nullptr;
 
-  // make sure we have one item selected
-  QModelIndexList indexes = selectionModel()->selection().indexes();
-  if (indexes.count() == 0)
-  {
-    return nullptr;
-  }
-
-  // return the selected item
   PlayerMngr pm{db};
-  int selectedSourceRow = sortedModel->mapToSource(indexes.at(0)).row();
-  return pm.getPlayerBySeqNum(selectedSourceRow);
+  return pm.getPlayerBySeqNum(srcRow);
 }
 
 //----------------------------------------------------------------------------
 
-void PlayerTableView::resizeEvent(QResizeEvent* event)
+void PlayerTableView::hook_onDatabaseOpened()
 {
-  // call parent function
-  QTableView::resizeEvent(event);
+  AutoSizingTableView_WithDatabase::hook_onDatabaseOpened();
 
-  autosizeColumns();
-
-  // finish event processing
-  event->accept();
-}
-
-//----------------------------------------------------------------------------
-
-void PlayerTableView::autosizeColumns()
-{
-  // distribute the available space over the columns but
-  // set a maximum to prevent too wide name fields
-  int widthAvail = width();
-  if ((verticalScrollBar() != nullptr) && (verticalScrollBar()->isVisible()))
-  {
-    widthAvail -= verticalScrollBar()->width();
-  }
-  double unitWidth = widthAvail / (1.0 * TOTAL_WIDTH_UNITS);
-  bool isWidthExceeded = (widthAvail >= MAX_TOTAL_COL_WIDTH);
-  int nameColWidth = isWidthExceeded ? MAX_NAME_COL_WIDTH : unitWidth * REL_NAME_COL_WIDTH;
-  int sexColWidth = isWidthExceeded ? MAX_SEX_COL_WIDTH : unitWidth * REL_SEX_COL_WIDTH;
-  int teamColWidth = isWidthExceeded ? MAX_TEAM_COL_WIDTH : unitWidth * REL_TEAM_COL_WIDTH;
-  int catColWidth = isWidthExceeded ? MAX_CAT_COL_WIDTH : unitWidth * REL_CAT_COL_WIDTH;
-
-  // set the column widths
-  setColumnWidth(0, nameColWidth);
-  setColumnWidth(1, sexColWidth);
-  setColumnWidth(2, teamColWidth);
-  setColumnWidth(3, catColWidth);
-
-  // set the width of the fill column to what's left
-  int fillWidth = widthAvail - (nameColWidth + sexColWidth + teamColWidth + catColWidth);
-  if (fillWidth > 0)
-  {
-    setColumnHidden(PlayerTableModel::FILL_COL, false);
-    setColumnWidth(PlayerTableModel::FILL_COL, fillWidth);
-  } else {
-    setColumnHidden(PlayerTableModel::FILL_COL, true);
-  }
-}
-
-//----------------------------------------------------------------------------
-
-void PlayerTableView::setDatabase(TournamentDB* _db)
-{
-  // set the new data model
-  PlayerTableModel* newDataModel = nullptr;
-  if (_db != nullptr)
-  {
-    newDataModel = new PlayerTableModel(_db);
-    sortedModel->setSourceModel(newDataModel);
-
-    // define a delegate for drawing the player items
-    playerItemDelegate = make_unique<PlayerItemDelegate>(_db, this);
-    playerItemDelegate->setProxy(sortedModel);
-    setItemDelegate(playerItemDelegate.get());
-
-    // resize columns and rows to content once (we do not want permanent automatic resizing)
-    horizontalHeader()->resizeSections(QHeaderView::ResizeToContents);
-    verticalHeader()->resizeSections(QHeaderView::ResizeToContents);
-
-  } else {
-    sortedModel->setSourceModel(emptyModel);
-    setItemDelegate(defaultDelegate);
-  }
-
-  // delete the old data model, if it was a
-  // CategoryTableModel instance
-  if (curDataModel != nullptr)
-  {
-    delete curDataModel;
-  }
-
-  // store the new CategoryTableModel instance, if any
-  curDataModel = newDataModel;
-
-  // update the database pointer and set the widget's enabled state
-  db = _db;
-  setEnabled(db != nullptr);
-
-  // trigger a resizing of the displayed columns
-  autosizeColumns();
+  // define a delegate for drawing the player items
+  playerItemDelegate = new PlayerItemDelegate(db, this);
+  playerItemDelegate->setProxy(sortedModel.get());
+  setCustomDelegate(playerItemDelegate);  // takes ownership
 }
 
 //----------------------------------------------------------------------------
     
-QModelIndex PlayerTableView::mapToSource(const QModelIndex &proxyIndex)
-{
-  return sortedModel->mapToSource(proxyIndex);
-}
-
-//----------------------------------------------------------------------------
-
 void PlayerTableView::onContextMenuRequested(const QPoint& pos)
 {
   // map from scroll area coordinates to global widget coordinates

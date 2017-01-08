@@ -24,20 +24,22 @@
 #include <QTableView>
 #include <QSortFilterProxyModel>
 #include <QStringListModel>
+#include <QMenu>
 
 #include "TournamentDB.h"
 #include "delegates/PlayerItemDelegate.h"
 #include "models/PlayerTableModel.h"
+#include "AutoSizingTable.h"
 
 using namespace QTournament;
 
-class PlayerTableView : public QTableView
+class PlayerTableView : public GuiHelpers::AutoSizingTableView_WithDatabase<PlayerTableModel>
 {
   Q_OBJECT
   
 public:
   PlayerTableView (QWidget* parent);
-  virtual ~PlayerTableView ();
+  virtual ~PlayerTableView () {}
   unique_ptr<Player> getSelectedPlayer() const;
     
 protected:
@@ -46,17 +48,12 @@ protected:
   static constexpr int REL_TEAM_COL_WIDTH = 10;
   static constexpr int REL_CAT_COL_WIDTH = 7;
   static constexpr int MAX_NAME_COL_WIDTH = 350;
-  static constexpr int MAX_SEX_COL_WIDTH = (MAX_NAME_COL_WIDTH / (REL_NAME_COL_WIDTH * 1.0)) * REL_SEX_COL_WIDTH;
-  static constexpr int MAX_TEAM_COL_WIDTH = (MAX_NAME_COL_WIDTH / (REL_NAME_COL_WIDTH * 1.0)) * REL_TEAM_COL_WIDTH;
-  static constexpr int MAX_CAT_COL_WIDTH = (MAX_NAME_COL_WIDTH / (REL_NAME_COL_WIDTH * 1.0)) * REL_CAT_COL_WIDTH;
-  static constexpr int MAX_TOTAL_COL_WIDTH = MAX_NAME_COL_WIDTH + MAX_SEX_COL_WIDTH + MAX_TEAM_COL_WIDTH + MAX_CAT_COL_WIDTH;
-  static constexpr int TOTAL_WIDTH_UNITS = REL_NAME_COL_WIDTH + REL_SEX_COL_WIDTH + REL_TEAM_COL_WIDTH + REL_CAT_COL_WIDTH;
-  virtual void resizeEvent(QResizeEvent *event) override;
-  void autosizeColumns();
+  static constexpr int MAX_SEX_COL_WIDTH = 30;
+  static constexpr int MAX_TEAM_COL_WIDTH = 300;
+  static constexpr int MAX_CAT_COL_WIDTH = 300;
+  void hook_onDatabaseOpened() override;
 
 public slots:
-  void setDatabase(TournamentDB* _db);
-  QModelIndex mapToSource(const QModelIndex& proxyIndex);
   void onAddPlayerTriggered();
   void onEditPlayerTriggered();
   void onRemovePlayerTriggered();
@@ -73,12 +70,7 @@ private slots:
   void onSectionHeaderDoubleClicked();
   
 private:
-  TournamentDB* db;
-  QStringListModel* emptyModel;
-  PlayerTableModel* curDataModel;
-  QSortFilterProxyModel* sortedModel;
-  unique_ptr<PlayerItemDelegate> playerItemDelegate;
-  QAbstractItemDelegate* defaultDelegate;
+  PlayerItemDelegate* playerItemDelegate;
 
   unique_ptr<QMenu> contextMenu;
   QAction* actAddPlayer;
