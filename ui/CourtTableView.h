@@ -48,7 +48,6 @@ protected:
   static constexpr int ABS_DURATION_COL_WIDTH = 60;
 
   void hook_onDatabaseOpened() override;
-  void hook_onDatabaseClosed() override;
 
 private slots:
   void onSelectionChanged(const QItemSelection&selectedItem, const QItemSelection&deselectedItem);

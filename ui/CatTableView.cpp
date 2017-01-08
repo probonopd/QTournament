@@ -38,24 +38,20 @@
 #include "CatMngr.h"
 
 CategoryTableView::CategoryTableView(QWidget* parent)
-:QTableView(parent), db(nullptr), curCatTableModel(nullptr), catItemDelegate(nullptr)
+  :GuiHelpers::AutoSizingTableView_WithDatabase<CategoryTableModel>{
+     GuiHelpers::AutosizeColumnDescrList{
+       {"", 1, -1, -1},
+       {"", 1, -1, -1},
+       {"", 1, -1, -1},
+       {"", 1, -1, -1},
+       {"", 1, -1, -1},
+       {"", 1, -1, -1},
+       {"", 1, -1, -1},
+       {"", 1, -1, -1}}, true, parent}, catItemDelegate{nullptr}
 {
-  // an empty model for clearing the table when
-  // no tournament is open
-  emptyModel = new QStringListModel();
-  defaultDelegate = itemDelegate();
-
-  // prepare a proxy model to support sorting by columns
-  sortedModel = new QSortFilterProxyModel();
-  sortedModel->setSourceModel(emptyModel);
-  setModel(sortedModel);
-
   // set an initial default sorting column
   sortByColumn(CategoryTableModel::COL_NAME, Qt::AscendingOrder);
 
-  // initiate the model(s) as empty
-  setDatabase(nullptr);
-  
   // handle context menu requests
   setContextMenuPolicy(Qt::CustomContextMenu);
   connect(this, SIGNAL(customContextMenuRequested(const QPoint&)),
@@ -67,133 +63,35 @@ CategoryTableView::CategoryTableView(QWidget* parent)
 
 //----------------------------------------------------------------------------
     
-CategoryTableView::~CategoryTableView()
-{
-  delete emptyModel;
-  delete sortedModel;
-  if (curCatTableModel != nullptr) delete curCatTableModel;
-  if (defaultDelegate != nullptr) delete defaultDelegate;
-}
-
-//----------------------------------------------------------------------------
-    
-bool CategoryTableView::isEmptyModel()
-{
-  if (model())
-  {
-    return (model()->rowCount() == 0);
-  }
-  return true;
-}
-
-//----------------------------------------------------------------------------
-
 bool CategoryTableView::hasCategorySelected()
 {
-  if (isEmptyModel())
-  {
-    //throw std::invalid_argument("No model/tournament loaded");
-    return false;
-  }
-  
-  QModelIndexList indexes = selectionModel()->selection().indexes();
-  if (indexes.count() == 0)
-  {
-    //throw std::invalid_argument("No category selected");
-    return false;
-  }
-
-  return true;
+  return (getSelectedSourceRow() >= 0);
 }
 
-//----------------------------------------------------------------------------
-
-void CategoryTableView::setDatabase(TournamentDB* _db)
+void CategoryTableView::hook_onDatabaseOpened()
 {
-  // According to the Qt documentation, the selection model
-  // has to be explicitly deleted by the user
-  //
-  // Thus we store the model pointer for later deletion
-  // QItemSelectionModel *oldSelectionModel = selectionModel();
+  AutoSizingTableView_WithDatabase::hook_onDatabaseOpened();
 
-  // set the new data model
-  CategoryTableModel* newCatTabModel = nullptr;
-  if (_db != nullptr)
-  {
-    newCatTabModel = new CategoryTableModel(_db);
-    sortedModel->setSourceModel(newCatTabModel);
+  catItemDelegate = new CatItemDelegate(db, this);
+  catItemDelegate->setProxy(sortedModel.get());
+  setCustomDelegate(catItemDelegate);   // takes ownership
 
-    // define a delegate for drawing the category items
-    catItemDelegate = make_unique<CatItemDelegate>(_db, this);
-    catItemDelegate->setProxy(sortedModel);
-    setItemDelegate(catItemDelegate.get());
-  } else {
-    sortedModel->setSourceModel(emptyModel);
-    setItemDelegate(defaultDelegate);
-  }
   emit catModelChanged();
-
-  // delete the old data model, if it was a
-  // CategoryTableModel instance
-  if (curCatTableModel != nullptr)
-  {
-    delete curCatTableModel;
-  }
-
-  // store the new CategoryTableModel instance, if any
-  curCatTableModel = newCatTabModel;
-
-  // delete the old selection model
-  //delete oldSelectionModel;
-
-  // update the database pointer and set the widget's enabled state
-  db = _db;
-  setEnabled(db != nullptr);
 }
 
-//----------------------------------------------------------------------------
-
-void CategoryTableView::resizeEvent(QResizeEvent *event)
-{
-  // call parent function
-  QTableView::resizeEvent(event);
-
-  // distribute the available space evenly over the columns
-  int nCol = model()->columnCount();
-  int colWidth = (nCol > 0) ? width() / nCol : 0;
-  int totalWidth = 0;
-  for (int i=0; i < nCol; ++i)
-  {
-    if (i != (nCol - 1))
-    {
-      setColumnWidth(i, colWidth);
-      totalWidth += colWidth;
-    } else {
-      // compensate for rounding errors by setting
-      // the width of the last column to the not already
-      // "consumed" width
-      setColumnWidth(i, width() - totalWidth);
-    }
-  }
-
-  // finish event processing
-  event->accept();
-}
 
 //----------------------------------------------------------------------------
 
 Category CategoryTableView::getSelectedCategory()
 {
-  if (!(hasCategorySelected()))
+  int srcRow = getSelectedSourceRow();
+  if (srcRow < 0)
   {
     throw std::invalid_argument("No category selected");
   }
   
-  QModelIndexList indexes = selectionModel()->selection().indexes();
-  
   CatMngr cm{db};
-  int selectedSourceRow = sortedModel->mapToSource(indexes.at(0)).row();
-  return cm.getCategoryBySeqNum(selectedSourceRow);
+  return cm.getCategoryBySeqNum(srcRow);
 }
 
 //----------------------------------------------------------------------------
@@ -248,13 +146,6 @@ void CategoryTableView::onCategoryDoubleClicked(const QModelIndex& index)
       continue;
     }
   }
-}
-
-//----------------------------------------------------------------------------
-
-QModelIndex CategoryTableView::mapToSource(const QModelIndex& proxyIndex)
-{
-  return sortedModel->mapToSource(proxyIndex);
 }
 
 //----------------------------------------------------------------------------

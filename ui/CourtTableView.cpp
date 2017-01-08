@@ -86,26 +86,10 @@ void CourtTableView::hook_onDatabaseOpened()
 {
   AutoSizingTableView_WithDatabase::hook_onDatabaseOpened();
 
-  // set a new data model
-  setCustomDataModel(new CourtTableModel(db));
-
   // set a new delegate
   courtItemDelegate = new CourtItemDelegate(db, this);
   courtItemDelegate->setProxy(sortedModel.get());
   setCustomDelegate(courtItemDelegate);   // Takes ownership
-}
-
-//----------------------------------------------------------------------------
-
-void CourtTableView::hook_onDatabaseClosed()
-{
-  AutoSizingTableView_WithDatabase::hook_onDatabaseClosed();
-
-  // reset the data model
-  restoreEmptyDataModel();
-
-  // reset the delegate
-  restoreDefaultDelegate();
 }
 
 //----------------------------------------------------------------------------

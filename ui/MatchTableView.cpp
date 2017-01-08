@@ -36,16 +36,17 @@
 
 MatchTableView::MatchTableView(QWidget* parent)
   :AutoSizingTableView_WithDatabase<MatchTableModel>{GuiHelpers::AutosizeColumnDescrList{
-     {"", REL_NUMERIC_COL_WIDTH, -1, MAX_NUMERIC_COL_WIDTH},
-     {"", REL_MATCH_COL_WIDTH, -1, -1},
-     {"", REL_CAT_COL_WIDTH, -1, -1},
-     {"", REL_NUMERIC_COL_WIDTH, -1, MAX_NUMERIC_COL_WIDTH},
-     {"", REL_NUMERIC_COL_WIDTH, -1, MAX_NUMERIC_COL_WIDTH},
-     {"", REL_REFEREE_COL_WIDTH, -1, -1},
-     {"", REL_NUMERIC_COL_WIDTH, -1, MAX_NUMERIC_COL_WIDTH},
-     {"", REL_NUMERIC_COL_WIDTH, -1, MAX_NUMERIC_COL_WIDTH},
-     {"", REL_NUMERIC_COL_WIDTH, -1, MAX_NUMERIC_COL_WIDTH}
-    },true, parent}
+     {"", REL_NUMERIC_COL_WIDTH, -1, MAX_NUMERIC_COL_WIDTH},   // match number
+     {"", REL_MATCH_COL_WIDTH, -1, -1},                        // match descrption
+     {"", REL_CAT_COL_WIDTH, -1, -1},                          // category name
+     {"", REL_NUMERIC_COL_WIDTH, -1, MAX_NUMERIC_COL_WIDTH},   // round
+     {"", REL_NUMERIC_COL_WIDTH, -1, MAX_NUMERIC_COL_WIDTH},   // match group
+     {"", 0, -1, -1},                                          // match state, invisible
+     {"", REL_REFEREE_COL_WIDTH, -1, -1},                      // umpire
+     {"", REL_NUMERIC_COL_WIDTH, -1, MAX_NUMERIC_COL_WIDTH},   // est. start
+     {"", REL_NUMERIC_COL_WIDTH, -1, MAX_NUMERIC_COL_WIDTH},   // est.finish
+     {"", REL_NUMERIC_COL_WIDTH, -1, MAX_NUMERIC_COL_WIDTH}    // est. court
+   },true, parent}
 {
   setRubberBandCol(1);
 

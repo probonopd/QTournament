@@ -22,32 +22,31 @@
 #include <QTableView>
 #include <QSortFilterProxyModel>
 #include <QStringListModel>
+#include <QMenu>
 
 #include "TournamentDB.h"
 #include "Category.h"
 #include "models/CatTableModel.h"
 #include "delegates/CatItemDelegate.h"
+#include "AutoSizingTable.h"
 
 using namespace QTournament;
 
-class CategoryTableView : public QTableView
+class CategoryTableView : public GuiHelpers::AutoSizingTableView_WithDatabase<CategoryTableModel>
 {
   Q_OBJECT
   
 public:
   CategoryTableView (QWidget* parent);
-  virtual ~CategoryTableView ();
-  bool isEmptyModel();
+  virtual ~CategoryTableView () {}
   Category getSelectedCategory();
   bool hasCategorySelected();
-  void setDatabase(TournamentDB* _db);
 
 protected:
-  virtual void resizeEvent(QResizeEvent *event) override;
+  void hook_onDatabaseOpened() override;
   
 public slots:
   void onCategoryDoubleClicked(const QModelIndex& index);
-  QModelIndex mapToSource(const QModelIndex& proxyIndex);
   void onAddCategory();
   void onRemoveCategory();
   void onRunCategory();
@@ -64,12 +63,7 @@ signals:
   void catModelChanged();
 
 private:
-  TournamentDB* db;
-  QStringListModel* emptyModel;
-  CategoryTableModel* curCatTableModel;
-  QSortFilterProxyModel* sortedModel;
-  unique_ptr<CatItemDelegate> catItemDelegate;
-  QAbstractItemDelegate* defaultDelegate;
+  CatItemDelegate* catItemDelegate;
 
   unique_ptr<QMenu> contextMenu;
   QAction* actAddCategory;
