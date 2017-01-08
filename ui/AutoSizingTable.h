@@ -26,6 +26,7 @@
 #include <QTableWidget>
 #include <QResizeEvent>
 #include <QScrollBar>
+#include <QHeaderView>
 
 #include "TournamentDB.h"
 
@@ -166,7 +167,57 @@ namespace GuiHelpers
 
   //----------------------------------------------------------------------------
 
-  class AutoSizingTableWidget_WithDatabase : public AutoSizingTableWidget
+  template<typename TableTypeName>
+  class AutoSizingTable_WithDatabase : public AutoSizingTable<TableTypeName>
+  {
+  public:
+    explicit AutoSizingTable_WithDatabase(const AutosizeColumnDescrList& colDescr, QWidget *parent = 0)
+      :AutoSizingTable<TableTypeName>(colDescr, parent), db{nullptr}
+    {
+      setDatabase(nullptr);
+    }
+
+    virtual ~AutoSizingTable_WithDatabase() {}
+
+    void setDatabase(QTournament::TournamentDB* _db)
+    {
+      if (_db == db) return;
+      db = _db;
+
+      if (db != nullptr)
+      {
+        // call custom initialization function
+        // for derived classes
+        hook_onDatabaseOpened();
+
+        // resize columns and rows to content once (we do not want permanent automatic resizing)
+        TableTypeName::horizontalHeader()->resizeSections(QHeaderView::ResizeToContents);
+        TableTypeName::verticalHeader()->resizeSections(QHeaderView::ResizeToContents);
+
+      } else {
+        AutoSizingTable<TableTypeName>::restoreDefaultDelegate();
+
+        // call custom initialization function
+        // for derived classes
+        hook_onDatabaseClosed();
+      }
+
+      TableTypeName::setEnabled(db != nullptr);
+
+      // initialize column widths
+      AutoSizingTable<TableTypeName>autosizeColumns();
+    }
+
+  protected:
+    QTournament::TournamentDB* db;
+
+    virtual void hook_onDatabaseOpened() {}
+    virtual void hook_onDatabaseClosed() {}
+  };
+
+  //----------------------------------------------------------------------------
+
+  class AutoSizingTableWidget_WithDatabase : public AutoSizingTable_WithDatabase<QTableWidget>
   {
     Q_OBJECT
 
@@ -174,13 +225,9 @@ namespace GuiHelpers
     explicit AutoSizingTableWidget_WithDatabase(const AutosizeColumnDescrList& colDescr, QWidget *parent = 0);
     virtual ~AutoSizingTableWidget_WithDatabase() {}
 
-    void setDatabase(QTournament::TournamentDB* _db);
-
   protected:
-    QTournament::TournamentDB* db;
-
-    virtual void hook_onTournamentOpened() {}
-    virtual void hook_onTournamentClosed() {}
+    virtual void hook_onDatabaseOpened() override;
+    virtual void hook_onDatabaseClosed() override;
   };
 }
 #endif // AUTOSIZINGTABLE_H

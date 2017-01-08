@@ -99,7 +99,7 @@ protected:
   static constexpr int REL_WIDTH_STATE = 1;
   static constexpr int MAX_OTHER_COL_WIDTH = 90;
 
-  void hook_onTournamentOpened() override;
+  void hook_onDatabaseOpened() override;
 
   REFEREE_MODE refMode;
 };

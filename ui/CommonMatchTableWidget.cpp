@@ -66,10 +66,10 @@ void CommonMatchTableWidget::onSelectionChanged(const QItemSelection& selectedIt
 
 //----------------------------------------------------------------------------
 
-void CommonMatchTableWidget::hook_onTournamentOpened()
+void CommonMatchTableWidget::hook_onDatabaseOpened()
 {
   // call the parent
-  AutoSizingTableWidget_WithDatabase::hook_onTournamentOpened();
+  AutoSizingTableWidget_WithDatabase::hook_onDatabaseOpened();
 
   // update the delegate
   logItemDelegate = new MatchLogItemDelegate(db, this);

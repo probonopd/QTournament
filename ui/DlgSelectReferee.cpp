@@ -553,7 +553,7 @@ bool RefereeTableWidget::hasPlayerSelected()
 
 //----------------------------------------------------------------------------
 
-void RefereeTableWidget::hook_onTournamentOpened()
+void RefereeTableWidget::hook_onDatabaseOpened()
 {
   setCustomDelegate(new RefereeSelectionDelegate(db, this));
 }

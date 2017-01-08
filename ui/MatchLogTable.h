@@ -41,7 +41,7 @@ public slots:
   void onMatchStatusChanged(int maId, int maSeqNum, OBJ_STATE oldStat, OBJ_STATE newStat);
 
 protected:
-  virtual void hook_onTournamentOpened() override;
+  virtual void hook_onDatabaseOpened() override;
 
   void fillFromDatabase();
 };

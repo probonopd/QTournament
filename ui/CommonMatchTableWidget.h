@@ -65,7 +65,7 @@ protected:
 
   MatchLogItemDelegate* logItemDelegate;
 
-  virtual void hook_onTournamentOpened() override;
+  virtual void hook_onDatabaseOpened() override;
 };
 
 #endif // MATCHLOGTABLE_H
