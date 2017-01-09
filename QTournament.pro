@@ -143,7 +143,8 @@ HEADERS += \
     PlayerProfile.h \
     ui/DlgPlayerProfile.h \
     ui/delegates/RefereeSelectionDelegate.h \
-    ui/AutoSizingTable.h
+    ui/AutoSizingTable.h \
+    ui/delegates/BaseItemDelegate.h
 
 SOURCES += \
     Category.cpp \
@@ -259,7 +260,8 @@ SOURCES += \
     PlayerProfile.cpp \
     ui/DlgPlayerProfile.cpp \
     ui/delegates/RefereeSelectionDelegate.cpp \
-    ui/AutoSizingTable.cpp
+    ui/AutoSizingTable.cpp \
+    ui/delegates/BaseItemDelegate.cpp
 
 RESOURCES += \
     tournament.qrc

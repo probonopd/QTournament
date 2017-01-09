@@ -24,21 +24,24 @@
 #include <QAbstractProxyModel>
 
 #include "TournamentDB.h"
+#include "BaseItemDelegate.h"
 
 using namespace QTournament;
 
-class CatItemDelegate : public QStyledItemDelegate
+class CatItemDelegate : public BaseItemDelegate
 {
 public:
-  CatItemDelegate(TournamentDB* _db, QObject* parent = 0);
-  void setProxy(QAbstractProxyModel* _proxy);
-  void paint (QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index ) const;
-  QSize sizeHint (const QStyleOptionViewItem& option, const QModelIndex& index ) const;
-  
-private:
-  TournamentDB* db;
-  QAbstractProxyModel* proxy;
-  QFontMetrics fntMetrics;
+  CatItemDelegate(TournamentDB* _db, QObject* parent = 0)
+    :BaseItemDelegate(_db, CatItemRowHeight, -1, parent) {}
+
+protected:
+  static constexpr int CatItemRowHeight = 30;
+  static constexpr int CatItemStatusIndicatorSize = 15;
+  static constexpr int CatItemMargin = 5;
+
+  virtual void paintSelectedCell(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index, int srcRowId) const override;
+  virtual void paintUnselectedCell(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index, int srcRowId) const override;
+  void commonPaint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index, int srcRowId) const;
 } ;
 
 #endif	/* CATITEMDELEGATE_H */
