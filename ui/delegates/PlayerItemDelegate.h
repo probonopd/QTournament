@@ -24,21 +24,25 @@
 #include <QAbstractProxyModel>
 
 #include "TournamentDB.h"
+#include "Player.h"
+#include "BaseItemDelegate.h"
 
 using namespace QTournament;
 
-class PlayerItemDelegate : public QStyledItemDelegate
+class PlayerItemDelegate : public BaseItemDelegate
 {
 public:
-  PlayerItemDelegate(TournamentDB* _db, QObject* parent = 0);
-  void setProxy(QAbstractProxyModel* _proxy);
-  void paint (QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index ) const;
-  QSize sizeHint (const QStyleOptionViewItem& option, const QModelIndex& index ) const;
+  PlayerItemDelegate(TournamentDB* _db, QObject* parent = 0)
+    :BaseItemDelegate{_db, PlayerItemRowHeight, -1, parent} {}
   
-private:
-  TournamentDB* db;
-  QAbstractProxyModel* proxy;
-  QFontMetrics fntMetrics;
+protected:
+  static constexpr int PlayerItemRowHeight = 30;
+  static constexpr int PlayerItemStatusIndicatorSize = 15;
+  static constexpr int PlayerItemMargin = 5;
+
+  virtual void paintSelectedCell(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index, int srcRowId) const override;
+  virtual void paintUnselectedCell(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index, int srcRowId) const override;
+  void commonPaint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index, const Player& p) const;
 } ;
 
 #endif	/* PLAYERITEMDELEGATE_H */

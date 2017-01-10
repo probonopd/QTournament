@@ -23,20 +23,33 @@
 #include <QFontMetrics>
 
 #include "TournamentDB.h"
+#include "BaseItemDelegate.h"
 
 using namespace QTournament;
 
-class PairItemDelegate : public QStyledItemDelegate
+class PairItemDelegate : public BaseItemDelegate
 {
 public:
-  PairItemDelegate(TournamentDB* _db, QObject* parent = nullptr, bool _showListIndex = false);
-  void paint (QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index ) const;
-  QSize sizeHint (const QStyleOptionViewItem& option, const QModelIndex& index ) const;
-  
+  PairItemDelegate(TournamentDB* _db, QObject* parent = nullptr, bool _showListIndex = false)
+    :BaseItemDelegate{_db, PairItemRowHeight, -1, parent}, showListIndex{_showListIndex},
+     teamFont{smallFont}
+  {
+    teamFont.setItalic(true);
+  }
+
+protected:
+  static constexpr int PairItemRowHeight = 40;
+  static constexpr int PairItemStatusIndicatorSize = 15;
+  static constexpr int PairItemMargin = 5;
+  static constexpr int PairItemIndexNumberSpace = 25;
+
+  virtual void paintSelectedCell(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index, int srcRowId) const override;
+  virtual void paintUnselectedCell(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index, int srcRowId) const override;
+  void commonPaint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index, const QColor& teamFontColor) const;
+
 private:
-  TournamentDB* db;
-  QFontMetrics fntMetrics;
   bool showListIndex;
+  QFont teamFont;
 } ;
 
 #endif	/* PAIRITEMDELEGATE_H */

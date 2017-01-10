@@ -35,6 +35,7 @@ class BaseItemDelegate : public QStyledItemDelegate
 
 public:
   static constexpr double DEFAULT_LARGE_FONT_FAC = 1.1;
+  static constexpr double DEFAULT_SMALL_FONT_FAC = 0.8;
 
   BaseItemDelegate(TournamentDB* _db, int _defaultRowHeight, int _selectedRowHeight = -1, QObject* parent = 0);
   void setProxy(QAbstractProxyModel* _proxy) { proxy = _proxy; }
@@ -51,10 +52,12 @@ protected:
   QAbstractProxyModel* proxy;
   QFont normalFont;
   QFont largeFont;
+  QFont smallFont;
   QFont normalFontBold;
   QFont largeFontBold;
   QFontMetrics fntMetrics;
   QFontMetrics fntMetricsLarge;
+  QFontMetrics fntMetricsSmall;
   int selectedRow;
   int defaultRowHeight;
   int selectedRowHeight;

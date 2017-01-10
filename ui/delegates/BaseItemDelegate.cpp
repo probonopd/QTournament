@@ -20,8 +20,9 @@
 
 BaseItemDelegate::BaseItemDelegate(TournamentDB* _db, int _defaultRowHeight, int _selectedRowHeight, QObject* parent)
   :QStyledItemDelegate{parent}, db{_db}, proxy{nullptr},
-    normalFont{QFont{}}, largeFont{QFont{}}, normalFontBold{QFont{}}, largeFontBold{QFont{}}, fntMetrics{normalFont},
-    fntMetricsLarge{QFont{}}, selectedRow{-1}, defaultRowHeight{_defaultRowHeight}, selectedRowHeight{_selectedRowHeight}
+    normalFont{QFont{}}, largeFont{QFont{}}, smallFont{QFont{}}, normalFontBold{QFont{}}, largeFontBold{QFont{}}, fntMetrics{normalFont},
+    fntMetricsLarge{QFont{}}, fntMetricsSmall{QFont{}}, selectedRow{-1},
+    defaultRowHeight{_defaultRowHeight}, selectedRowHeight{_selectedRowHeight}
 {
   largeFont.setPointSizeF(largeFont.pointSizeF() * DEFAULT_LARGE_FONT_FAC);
   fntMetricsLarge = QFontMetrics{largeFont};
@@ -30,6 +31,9 @@ BaseItemDelegate::BaseItemDelegate(TournamentDB* _db, int _defaultRowHeight, int
   largeFontBold.setBold(true);
 
   normalFontBold.setBold(true);
+
+  smallFont.setPointSizeF(largeFont.pointSizeF() * DEFAULT_SMALL_FONT_FAC);
+  fntMetricsSmall = QFontMetrics{smallFont};
 }
 
 //----------------------------------------------------------------------------

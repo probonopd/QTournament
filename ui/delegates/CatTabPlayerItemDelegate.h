@@ -23,21 +23,26 @@
 #include <QFontMetrics>
 
 #include "TournamentDB.h"
+#include "BaseItemDelegate.h"
 
 using namespace QTournament;
 
-class CatTabPlayerItemDelegate : public QStyledItemDelegate
+class CatTabPlayerItemDelegate : public BaseItemDelegate
 {
 public:
-  static constexpr int ITEM_HEIGHT = 20;
-  static constexpr int ITEM_LEFT_MARGIN = 5;
-  static constexpr int NUMBER_TEXT_GAP = 3;
-  CatTabPlayerItemDelegate(QObject* parent = nullptr, bool _showListIndex = true);
-  void paint (QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index ) const;
-  QSize sizeHint (const QStyleOptionViewItem& option, const QModelIndex& index ) const;
-  
+  static constexpr int ItemHeight = 20;
+  static constexpr int ItemLeftMargin = 5;
+  static constexpr int NumberTextGap = 3;
+  CatTabPlayerItemDelegate(QObject* parent = nullptr, bool _showListIndex = true)
+    :BaseItemDelegate{nullptr, ItemHeight, -1, parent}, showListIndex{_showListIndex},
+      maxNumberColumnWidth{fntMetrics.width("88.")} {}
+
+protected:
+  virtual void paintSelectedCell(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index, int srcRowId) const override;
+  virtual void paintUnselectedCell(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index, int srcRowId) const override;
+  void commonPaint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
+
 private:
-  QFontMetrics fntMetrics;
   bool showListIndex;
   int maxNumberColumnWidth;
 } ;

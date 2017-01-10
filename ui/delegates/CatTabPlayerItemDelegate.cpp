@@ -27,36 +27,28 @@
 
 using namespace QTournament;
 
-CatTabPlayerItemDelegate::CatTabPlayerItemDelegate(QObject* parent, bool _showListIndex)
-: QStyledItemDelegate(parent), fntMetrics(QFontMetrics(QFont())), showListIndex(_showListIndex)
+
+void CatTabPlayerItemDelegate::paintSelectedCell(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index, int srcRowId) const
 {
-  // determine the maximum width of the index number column
-  maxNumberColumnWidth = fntMetrics.width("88.");
+  commonPaint(painter, option, index);
 }
 
 //----------------------------------------------------------------------------
 
-void CatTabPlayerItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
+void CatTabPlayerItemDelegate::paintUnselectedCell(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index, int srcRowId) const
 {
-  painter->save();
-  
-  // Paint the background in the selection color if necessary
-  if (option.state & QStyle::State_Selected)
-  {
-    painter->fillRect(option.rect, option.palette.color(QPalette::Highlight));
+  commonPaint(painter, option, index);
+}
 
-    // draw text in highlighted cells in white bold text
-    painter->setPen(QPen(QColor(Qt::white)));
-    QFont fnt;
-    fnt.setBold(true);
-    painter->setFont(fnt);
-  }
-  
+//----------------------------------------------------------------------------
+
+void CatTabPlayerItemDelegate::commonPaint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
+{
   // get the rectangle that's available for painting the pair item
   QRect r = option.rect;
 
   // add the left margin
-  r.adjust(ITEM_LEFT_MARGIN, 0, 0, 0);
+  r.adjust(ItemLeftMargin, 0, 0, 0);
 
   // paint the row number
   QRect numberRect = r;
@@ -65,19 +57,9 @@ void CatTabPlayerItemDelegate::paint(QPainter* painter, const QStyleOptionViewIt
 
   // paint the text
   QRect textRect = r;
-  textRect.adjust(maxNumberColumnWidth + NUMBER_TEXT_GAP, 0, 0, 0);
+  textRect.adjust(maxNumberColumnWidth + NumberTextGap, 0, 0, 0);
   painter->drawText(textRect, Qt::AlignVCenter|Qt::AlignLeft, index.data().toString());
   painter->restore();
-}
-
-//----------------------------------------------------------------------------
-
-QSize CatTabPlayerItemDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index ) const
-{
-  int width = maxNumberColumnWidth + NUMBER_TEXT_GAP + fntMetrics.width(index.data().toString());
-  width += ITEM_LEFT_MARGIN;
-  
-  return QSize(width, ITEM_HEIGHT);
 }
 
 //----------------------------------------------------------------------------
