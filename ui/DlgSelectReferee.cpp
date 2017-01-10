@@ -293,7 +293,7 @@ void DlgSelectReferee::rebuildPlayerList()
     // convert to a tagged player list with all tags set to NEUTRAL
     for (const Player& p : purePlayerList)
     {
-      pList.push_back(make_pair(p, RefereeSelectionDelegate::NEUTRAL_TAG));
+      pList.push_back(make_pair(p, RefereeSelectionDelegate::NeutralTag));
     }
   }
   if (curFilterMode == REFEREE_MODE::SPECIAL_TEAM)
@@ -308,7 +308,7 @@ void DlgSelectReferee::rebuildPlayerList()
     // convert to a tagged player list with all tags set to NEUTRAL
     for (const Player& p : purePlayerList)
     {
-      pList.push_back(make_pair(p, RefereeSelectionDelegate::NEUTRAL_TAG));
+      pList.push_back(make_pair(p, RefereeSelectionDelegate::NeutralTag));
     }
   }
   if (curFilterMode == REFEREE_MODE::RECENT_FINISHERS)
@@ -350,9 +350,9 @@ TaggedPlayerList DlgSelectReferee::getPlayerList_recentFinishers()
 
   // process winners, losers and draws
   vector<pair<PlayerPairList&, int>> allLists = {
-    {winners, RefereeSelectionDelegate::WINNER_TAG},
-    {losers, RefereeSelectionDelegate::LOSER_TAG},
-    {draws, RefereeSelectionDelegate::NEUTRAL_TAG},
+    {winners, RefereeSelectionDelegate::WinnerTag},
+    {losers, RefereeSelectionDelegate::LoserTag},
+    {draws, RefereeSelectionDelegate::NeutralTag},
   };
   TaggedPlayerList result;
   for (pair<PlayerPairList&, int> listDef : allLists)

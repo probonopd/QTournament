@@ -25,24 +25,26 @@
 #include "DelegateItemLED.h"
 
 // allocate static variables
-constexpr int RefereeSelectionDelegate::WINNER_TAG;
-constexpr int RefereeSelectionDelegate::LOSER_TAG;
-constexpr int RefereeSelectionDelegate::NEUTRAL_TAG;
+constexpr int RefereeSelectionDelegate::WinnerTag;
+constexpr int RefereeSelectionDelegate::LoserTag;
+constexpr int RefereeSelectionDelegate::NeutralTag;
 
-RefereeSelectionDelegate::RefereeSelectionDelegate(TournamentDB* _db, QObject* parent)
-  : QStyledItemDelegate(parent), db(_db), normalFont(QFont()),
-    fntMetrics(QFontMetricsF(normalFont)),
-    fntMetrics_Large(fntMetrics), // this a dummy value only
-    selectedRow{-1}
+
+void RefereeSelectionDelegate::paintSelectedCell(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index, int srcRowId) const
 {
-  largeFont = QFont();
-  largeFont.setPointSizeF(largeFont.pointSizeF() * LARGE_TEXT_SIZE_FAC);
-  fntMetrics_Large = QFontMetricsF(largeFont);
+  commonPaint(painter, option, index, true);
 }
 
 //----------------------------------------------------------------------------
 
-void RefereeSelectionDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
+void RefereeSelectionDelegate::paintUnselectedCell(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index, int srcRowId) const
+{
+  commonPaint(painter, option, index, false);
+}
+
+//----------------------------------------------------------------------------
+
+void RefereeSelectionDelegate::commonPaint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index, bool isSelected) const
 {
   PlayerMngr pm{db};
   int playerId = index.data(Qt::UserRole).toInt();
@@ -51,32 +53,17 @@ void RefereeSelectionDelegate::paint(QPainter* painter, const QStyleOptionViewIt
 
   OBJ_STATE plStat = p->getState();
 
-  // Fill the cell with the selection color, if necessary
-  // or with the color that indicates the player state
+  // Fill the first cell with the color that indicates the player state
   int col = index.column();
-  bool isItemSelected = (option.state & QStyle::State_Selected);
-  if (isItemSelected || (col == 0))
+  if ((col == 0) && (DelegateItemLED::state2color.contains(plStat)))
   {
-    QColor bgColor = option.palette.color(QPalette::Highlight);
-
-    if (col == 0)
-    {
-      if (DelegateItemLED::state2color.contains(plStat))
-      {
-        bgColor = DelegateItemLED::state2color[plStat];
-      }
-    }
-
-    painter->fillRect(option.rect, bgColor);
+    painter->fillRect(option.rect, DelegateItemLED::state2color[plStat]);
   }
 
-  //
   // determine the font color
-  //
-
   // default: set to white if we're selected
   QColor fntColor{0,0,0};
-  if (isItemSelected)
+  if (isSelected)
   {
     fntColor = QColor(Qt::white);
   }
@@ -87,22 +74,20 @@ void RefereeSelectionDelegate::paint(QPainter* painter, const QStyleOptionViewIt
   {
     int tag = index.data(Qt::UserRole + 1).toInt();
 
-    if (tag == WINNER_TAG)
+    if (tag == WinnerTag)
     {
-      fntColor = isItemSelected ? QColor{Qt::green} : QColor{Qt::darkGreen};
+      fntColor = isSelected ? QColor{Qt::green} : QColor{Qt::darkGreen};
     }
 
-    if (tag == LOSER_TAG)
+    if (tag == LoserTag)
     {
-      fntColor = isItemSelected ? QColor{255,80,80} : QColor{Qt::red};
+      fntColor = isSelected ? QColor{255,80,80} : QColor{Qt::red};
     }
   }
   painter->setPen(QPen(fntColor));
 
   // determine the font weight
-  QFont fnt;
-  fnt.setBold(isItemSelected);
-  painter->setFont(fnt);
+  if (isSelected) painter->setFont(normalFontBold);
 
   // determine the horizontal alignment and margins
   int horAlign = Qt::AlignCenter;
@@ -110,39 +95,9 @@ void RefereeSelectionDelegate::paint(QPainter* painter, const QStyleOptionViewIt
   if ((col == 1) || (col == 2)) // name or team
   {
     horAlign = Qt::AlignLeft;
-    contentRect.adjust(ITEM_MARGIN, 0, 0, 0);
+    contentRect.adjust(ItemMargin, 0, 0, 0);
   }
 
   // actually draw the text
   painter->drawText(contentRect, Qt::AlignVCenter | horAlign, index.data(Qt::DisplayRole).toString());
 }
-
-//----------------------------------------------------------------------------
-
-QSize RefereeSelectionDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
-{
-  QString txt = index.data(Qt::DisplayRole).toString();
-  int width = fntMetrics.width(txt) + 2 * ITEM_MARGIN;
-
-  // this doesn't work, because option.state is not yet updated
-  // to QtStyle::State_Selected when sizeHint is called for a freshly
-  // selected item
-  //int height = (option.state & QStyle::State_Selected) ? ITEM_ROW_HEIGHT_SELECTED : ITEM_ROW_HEIGHT;
-
-  //int row = index.row();
-  //int height = (row == selectedRow) ? ITEM_ROW_HEIGHT_SELECTED : ITEM_ROW_HEIGHT;
-
-  return QSize(width, ITEM_ROW_HEIGHT);
-}
-
-//----------------------------------------------------------------------------
-
-/*void RefereeSelectionDelegate::setSelectedRow(int _selRow)
-{
-  selectedRow = _selRow;
-}*/
-
-//----------------------------------------------------------------------------
-
-
-//----------------------------------------------------------------------------
