@@ -23,74 +23,39 @@
 #include "ui/GuiHelpers.h"
 #include "MatchLogItemDelegate.h"
 
-MatchLogItemDelegate::MatchLogItemDelegate(TournamentDB* _db, QObject* parent)
-  : QStyledItemDelegate(parent), db(_db), normalFont(QFont()),
-    fntMetrics(QFontMetricsF(normalFont)),
-    fntMetrics_Large(fntMetrics), // this a dummy value only
-    selectedRow{-1}
+
+void MatchLogItemDelegate::paintSelectedCell(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index, int srcRowId) const
 {
-  largeFont = QFont();
-  largeFont.setPointSizeF(largeFont.pointSizeF() * LARGE_TEXT_SIZE_FAC);
-  fntMetrics_Large = QFontMetricsF(largeFont);
-}
-
-//----------------------------------------------------------------------------
-
-void MatchLogItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
-{
-  MatchMngr mm{db};
-  int matchId = index.data(Qt::UserRole).toInt();
-  auto ma = mm.getMatch(matchId);
-  if (ma == nullptr) return;
-
-  // Fill the cell with the selection color, if necessary
-  bool isItemSelected = false;
-  if(option.state & QStyle::State_Selected)
-  {
-    QColor bgColor = option.palette.color(QPalette::Highlight);
-    painter->fillRect(option.rect, bgColor);
-    isItemSelected = true;
-  }
-
-  // paint logic for the second column, the match description
   if (index.column() == 4)
   {
-    paintMatchInfoCell(painter, option, *ma, isItemSelected);
+    MatchMngr mm{db};
+    int matchId = index.data(Qt::UserRole).toInt();
+    auto ma = mm.getMatch(matchId);
+    if (ma == nullptr) return;
+
+    paintMatchInfoCell(painter, option, *ma, true);
   } else {
-    // for any other column just draw the plain text content
-    if (isItemSelected)
-    {
-      GuiHelpers::drawFormattedText(painter, option.rect, index.data(Qt::DisplayRole).toString(),
-                                    Qt::AlignVCenter|Qt::AlignCenter, true, false, normalFont, QColor(Qt::white), 1.0);
-    } else {
-      painter->drawText(option.rect, Qt::AlignVCenter|Qt::AlignCenter, index.data(Qt::DisplayRole).toString());
-    }
+    GuiHelpers::drawFormattedText(painter, option.rect, index.data(Qt::DisplayRole).toString(),
+                                  Qt::AlignVCenter|Qt::AlignCenter, true, false, normalFont, QColor(Qt::white), 1.0);
   }
 }
 
 //----------------------------------------------------------------------------
 
-QSize MatchLogItemDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
+void MatchLogItemDelegate::paintUnselectedCell(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index, int srcRowId) const
 {
-  QString txt = index.data(Qt::DisplayRole).toString();
-  int width = fntMetrics.width(txt) + 2 * ITEM_MARGIN;   // this is actually a wrong value for doubles matches, but it's worst case estimate
+  if (index.column() == 4)
+  {
+    MatchMngr mm{db};
+    int matchId = index.data(Qt::UserRole).toInt();
+    auto ma = mm.getMatch(matchId);
+    if (ma == nullptr) return;
 
-  // this doesn't work, because option.state is not yet updated
-  // to QtStyle::State_Selected when sizeHint is called for a freshly
-  // selected item
-  //int height = (option.state & QStyle::State_Selected) ? ITEM_ROW_HEIGHT_SELECTED : ITEM_ROW_HEIGHT;
+    paintMatchInfoCell(painter, option, *ma, false);
+  } else {
+    painter->drawText(option.rect, Qt::AlignVCenter|Qt::AlignCenter, index.data(Qt::DisplayRole).toString());
+  }
 
-  //int row = index.row();
-  //int height = (row == selectedRow) ? ITEM_ROW_HEIGHT_SELECTED : ITEM_ROW_HEIGHT;
-
-  return QSize(width, ITEM_ROW_HEIGHT);
-}
-
-//----------------------------------------------------------------------------
-
-void MatchLogItemDelegate::setSelectedRow(int _selRow)
-{
-  selectedRow = _selRow;
 }
 
 //----------------------------------------------------------------------------
@@ -148,14 +113,14 @@ void MatchLogItemDelegate::paintMatchInfoCell(QPainter* painter, const QStyleOpt
   }
 
   // now estimate the height of the two text rows
-  double textHeight = (2 + ITEM_TEXT_ROW_SKIP_PERC) * fntMetrics.height();
+  double textHeight = (2 + ItemTextRowSkip_Perc) * fntMetrics.height();
 
   // calc the vertical margin
   QRect r = option.rect;
   double vertMargin = (r.height() - textHeight) / 2.0;
 
   // draw the left player names
-  int x0 = r.x() + ITEM_MARGIN;
+  int x0 = r.x() + ItemMargin;
   int y0 = r.y() + vertMargin;
   double baseline = y0 + fntMetrics.ascent();
   GuiHelpers::drawFormattedText(painter, x0, baseline, txtLeft1, isSelected, false, normalFont, leftColor);
@@ -163,12 +128,12 @@ void MatchLogItemDelegate::paintMatchInfoCell(QPainter* painter, const QStyleOpt
   // draw the colon and the right player names
   double leftNameWidth = GuiHelpers::getFormattedTextSize(painter, txtLeft1, isSelected, false, normalFont).width();
   double colonWidth = GuiHelpers::getFormattedTextSize(painter, ":", isSelected, false, normalFont).width();
-  GuiHelpers::drawFormattedText(painter, x0 + leftNameWidth + 2 * ITEM_MARGIN, baseline, ":", isSelected, false, normalFont, scoreColor);
-  GuiHelpers::drawFormattedText(painter, x0 + leftNameWidth + 4 * ITEM_MARGIN + colonWidth, baseline, txtRight1, isSelected, false, normalFont, rightColor);
+  GuiHelpers::drawFormattedText(painter, x0 + leftNameWidth + 2 * ItemMargin, baseline, ":", isSelected, false, normalFont, scoreColor);
+  GuiHelpers::drawFormattedText(painter, x0 + leftNameWidth + 4 * ItemMargin + colonWidth, baseline, txtRight1, isSelected, false, normalFont, rightColor);
 
 
   // second line: draw the match score
-  baseline += (1 + ITEM_TEXT_ROW_SKIP_PERC) * fntMetrics.height();
+  baseline += (1 + ItemTextRowSkip_Perc) * fntMetrics.height();
   GuiHelpers::drawFormattedText(painter, x0, baseline, txtScore, isSelected, false, normalFont, scoreColor);
 }
 

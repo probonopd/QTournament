@@ -24,34 +24,25 @@
 
 #include "Match.h"
 #include "TournamentDB.h"
+#include "BaseItemDelegate.h"
 
 using namespace QTournament;
 
-class MatchLogItemDelegate : public QStyledItemDelegate
+class MatchLogItemDelegate : public BaseItemDelegate
 {
   Q_OBJECT
 
 public:
-  static constexpr int ITEM_ROW_HEIGHT = 40;
-  //static constexpr int ITEM_ROW_HEIGHT_SELECTED = 140;
-  static constexpr int ITEM_MARGIN = 5;
+  static constexpr int ItemRowHeight = 40;
+  static constexpr int ItemMargin = 5;
+  static constexpr double ItemTextRowSkip_Perc = 0.2;
 
-  static constexpr double LARGE_TEXT_SIZE_FAC = 1.2;
-  static constexpr double ITEM_TEXT_ROW_SKIP_PERC = 0.2;
-
-  MatchLogItemDelegate(TournamentDB* _db, QObject* parent = 0);
-
-  void paint (QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index ) const;
-  QSize sizeHint (const QStyleOptionViewItem& option, const QModelIndex& index ) const;
-  void setSelectedRow(int _selRow);
+  MatchLogItemDelegate(TournamentDB* _db, QObject* parent = 0)
+    :BaseItemDelegate{_db, ItemRowHeight, -1, parent} {}
 
 protected:
-  TournamentDB* db;
-  QFont normalFont;
-  QFont largeFont;
-  QFontMetricsF fntMetrics;
-  QFontMetricsF fntMetrics_Large;
-  int selectedRow;
+  virtual void paintSelectedCell(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index, int srcRowId) const override;
+  virtual void paintUnselectedCell(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index, int srcRowId) const override;
 
   void paintMatchInfoCell(QPainter* painter, const QStyleOptionViewItem& option, const Match& ma, bool isSelected) const;
 
