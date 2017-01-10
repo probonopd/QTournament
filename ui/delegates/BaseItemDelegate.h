@@ -34,7 +34,7 @@ class BaseItemDelegate : public QStyledItemDelegate
   Q_OBJECT
 
 public:
-  static constexpr double DEFAULT_LARGE_FONT_FAC = 1.1;
+  static constexpr double DEFAULT_LARGE_FONT_FAC = 1.2;
   static constexpr double DEFAULT_SMALL_FONT_FAC = 0.8;
 
   BaseItemDelegate(TournamentDB* _db, int _defaultRowHeight, int _selectedRowHeight = -1, QObject* parent = 0);
