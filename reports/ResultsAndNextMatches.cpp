@@ -181,13 +181,26 @@ void ResultsAndNextMatches::printNextMatchPart(upSimpleReport& rep) const
     return;
   }
 
+  // erase all walkovers from the list
+  auto it = allMatches.begin();
+  while (it != allMatches.end())
+  {
+    const Match& ma = *it;
+    if (ma.isWonByWalkover())
+    {
+      it = allMatches.erase(it);
+    } else {
+      ++it;
+    }
+  }
+
   // sort matches by group and number
   std::sort(allMatches.begin(), allMatches.end(), getSortFunction_MatchByGroupAndNumber());
 
   // determine a list of all players having a bye
   PlayerPairList byeList;
   PlayerPairList playingList;
-  for (Match ma : allMatches)
+  for (const Match& ma : allMatches)
   {
     playingList.push_back(ma.getPlayerPair1());
     playingList.push_back(ma.getPlayerPair2());
