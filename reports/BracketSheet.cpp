@@ -270,37 +270,58 @@ upSimpleReport BracketSheet::regenerateReport()
           QString s = "#" + QString::number(matchNum);
           drawBracketTextItem(x0, y0, spanY, orientation, s, BRACKET_TEXT_ELEMENT::MATCH_NUM);
         }
+      }
 
-        // print final rank for winner, if any
-        int winRank = ma->getWinnerRank();
-        if ((terminator != BRACKET_TERMINATOR::NONE) && (winRank > 0))
+      // print final rank for winner, if any
+      int winRank = -1;
+      upPlayerPair winnerName = nullptr;
+      if (ma != nullptr)
+      {
+        // case 1: get the winner rank from the direcly linked match
+        winRank = ma->getWinnerRank();
+        winnerName = ma->getWinner();
+      } else {
+        // case 2: if there was no match in the last round,
+        // derived the winner rank from the NextMatchId but ONLY
+        // if we have a directly linked player pair.
+        // This case covers that a player was "warped" to the final
+        // rank because there is an insufficient number of players
+        // to actually play all matches
+        auto pp1 = el.getLinkedPlayerPair(1);
+        auto pp2 = el.getLinkedPlayerPair(2);
+        if ((pp1 != nullptr) || (pp2 != nullptr))
         {
-          // add an offset to x0 in case we have inwards offsets
-          int tmpX0 = x0;
-          if (terminator == BRACKET_TERMINATOR::INWARDS)
-          {
-            if (orientation == BRACKET_ORIENTATION::LEFT)
-            {
-              ++x0;
-            } else {
-              --x0;
-            }
-          }
-
-          QString txt = QString::number(winRank) + ". " + tr("Place");
-          drawBracketTextItem(x0, y0 + termOffset, spanY, orientation, txt, BRACKET_TEXT_ELEMENT::WINNER_RANK);
-
-          // if the match is finished, print the winner's name as well
-          if (stat == STAT_MA_FINISHED)
-          {
-            PlayerPair pp = *(ma->getWinner());
-            QString txt = getTruncatedPlayerName(pp, xFac - 2 * GAP_LINE_TXT__MM, rawReport->getTextStyle(BRACKET_STYLE));
-            drawBracketTextItem(x0, y0 + termOffset, spanY, orientation, txt, BRACKET_TEXT_ELEMENT::TERMINATOR_NAME);
-          }
-
-          // restore the original x0
-          x0 = tmpX0;
+          int nextWinnerMatch = el.getNextBracketElementForWinner();
+          if (nextWinnerMatch < 0) winRank = -nextWinnerMatch;
+          winnerName = (pp1 != nullptr) ? std::move(pp1) : std::move(pp2);
         }
+      }
+      if ((terminator != BRACKET_TERMINATOR::NONE) && (winRank > 0))
+      {
+        // add an offset to x0 in case we have inwards offsets
+        int tmpX0 = x0;
+        if (terminator == BRACKET_TERMINATOR::INWARDS)
+        {
+          if (orientation == BRACKET_ORIENTATION::LEFT)
+          {
+            ++x0;
+          } else {
+            --x0;
+          }
+        }
+
+        QString txt = QString::number(winRank) + ". " + tr("Place");
+        drawBracketTextItem(x0, y0 + termOffset, spanY, orientation, txt, BRACKET_TEXT_ELEMENT::WINNER_RANK);
+
+        // if the match is finished, print the winner's name as well
+        if (winnerName != nullptr)
+        {
+          QString txt = getTruncatedPlayerName(*winnerName, xFac - 2 * GAP_LINE_TXT__MM, rawReport->getTextStyle(BRACKET_STYLE));
+          drawBracketTextItem(x0, y0 + termOffset, spanY, orientation, txt, BRACKET_TEXT_ELEMENT::TERMINATOR_NAME);
+        }
+
+        // restore the original x0
+        x0 = tmpX0;
       }
     }
   }
