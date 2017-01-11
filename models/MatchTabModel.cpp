@@ -108,6 +108,23 @@ QVariant MatchTableModel::data(const QModelIndex& index, int role) const
     // fifth column: players group, if applicable
     if (index.column() == 4)
     {
+      // if this is a match that has a winner rank assigned,
+      // we abuse this column to print the target rank
+      int winnerRank = ma->getWinnerRank();
+      if (winnerRank > 0)
+      {
+        QString txt = tr("Pl. %1");
+        txt = txt.arg(winnerRank);
+        return txt;
+      }
+
+      // if we have a ranking bracket, labels like "QF", "SF"
+      // or "FI" do not really make sense. So we display
+      // nothing instead
+      Category c = mg.getCategory();
+      if (c.getMatchSystem() == RANKING) return "--";
+
+      // in all other cases, try to print a group number
       return GuiHelpers::groupNumToString(mg.getGroupNumber());
     }
 

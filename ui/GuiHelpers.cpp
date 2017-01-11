@@ -90,23 +90,55 @@ QString GuiHelpers::groupNumToLongString(int grpNum)
  */
 QString GuiHelpers::prepCall(const QTournament::Match &ma, const QTournament::Court &co, int nCall)
 {
-  QString call = QObject::tr("Please announce:\n\n\n");
+  int maNum = ma.getMatchNumber();
+  int coNum = co.getNumber();
+
+  QString call = "<i><font color=\"blue\">" + QObject::tr("Please announce:") + "</font></i><br><br><br>";
+
+  call += "<big>";
 
   if (nCall == 0)
   {
-    call += QObject::tr("Next match,\n\n");
+    call += QObject::tr("Next match,<br><br>");
   } else {
-    call += QString::number(nCall + 1) + ". ";
-    call += QObject::tr("call for ");
+    call += "<b><font color=\"darkRed\">%1. ";
+    call = call.arg(QString::number(nCall + 1));
+    call += QObject::tr("call");
+    call += "</font></b>";
+    call += QObject::tr(" for ");
   }
 
-  call += QObject::tr("match number ") + QString::number(ma.getMatchNumber()) + QObject::tr(" on court number ") + QString::number(co.getNumber());
-  call += "\n\n";
-  call += ma.getCategory().getName() + ",\n\n";
-  call += ma.getPlayerPair1().getCallName(QObject::tr("and")) + "\n\n";
-  call += QObject::tr("        versus\n\n");
-  call += ma.getPlayerPair2().getCallName(QObject::tr("and")) + ",\n\n";
-  call += QObject::tr("match number ") + QString::number(ma.getMatchNumber()) + QObject::tr(" on court number ") + QString::number(co.getNumber());
+  call += QObject::tr("match number ") + "<b><font color=\"darkRed\">%1</font></b>";
+  call += QObject::tr(" on court number ") + "<b><font color=\"darkRed\">%2</font></b><br><br>";
+  call = call.arg(maNum);
+  call = call.arg(coNum);
+
+  call += "<center><b>";
+
+  call += ma.getCategory().getName() + ",<br><br>";
+
+  int winnerRank = ma.getWinnerRank();
+  if (winnerRank > 0)
+  {
+    call += "<font color=\"darkRed\">";
+    if (winnerRank == 1)
+    {
+      call += QObject::tr("FINAL");
+    } else {
+      call += QObject::tr("MATCH FOR PLACE %1");
+      call = call.arg(winnerRank);
+    }
+    call += "</font>";
+    call +=  ",<br><br>";
+  }
+
+  call += ma.getPlayerPair1().getCallName(QObject::tr("and")) + "<br><br>";
+  call += QObject::tr("versus<br><br>");
+  call += ma.getPlayerPair2().getCallName(QObject::tr("and")) + ",<br><br></b></center>";
+  call += QObject::tr("match number ") + "<b><font color=\"darkRed\">%1</font></b>";
+  call += QObject::tr(" on court number ") + "<b><font color=\"darkRed\">%2</font></b>";
+  call = call.arg(maNum);
+  call = call.arg(coNum);
   call += ".";
 
   // add the umpire's name, if necessary
@@ -116,23 +148,24 @@ QString GuiHelpers::prepCall(const QTournament::Match &ma, const QTournament::Co
     QTournament::upPlayer referee = ma.getAssignedReferee();
     if (referee != nullptr)
     {
-      call += "\n\n\n";
-      call += QObject::tr("Umpire is ");
-      call += referee->getDisplayName_FirstNameFirst();
-      call += ".";
+      call += "<br><br><br><b>";
+      call += QObject::tr("Umpire is %1.");
+      call = call.arg(referee->getDisplayName_FirstNameFirst());
+      call += "</b><br>";
     }
   }
 
   // add additional calls, if applicable
   if (nCall > 0)
   {
-    call += "\n\n";
-    call += QObject::tr("THIS IS THE ");
-    call += QString::number(nCall + 1) + ". ";
-    call += QObject::tr("CALL!");
+    call += "<br><br>";
+    call += "<b><font color=\"darkRed\">";
+    call += QObject::tr("THIS IS THE %1. CALL!");
+    call += "</font></b>";
+    call = call.arg(nCall + 1);
   }
-  call += "\n\n\n";
-  call += QObject::tr("Call executed?");
+  call += "</big><br><br><br>";
+  call += "<i><font color=\"blue\">" + QObject::tr("Call executed?") + "</font></i><br><br><br>";
 
   return call;
 }
