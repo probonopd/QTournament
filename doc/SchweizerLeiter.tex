@@ -1,0 +1,191 @@
+\documentclass[DIV=15, 10pt]{scrartcl}
+
+\usepackage{palatino}
+\usepackage[ngerman]{babel}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+
+\setlength{\parindent}{0cm}
+\setlength{\parskip}{3mm}
+
+\begin{document}
+
+\title{Schweizer Leiter und Kombinatorik}
+\author{Dr. Volker Knollmann}
+
+\maketitle
+
+\begin{abstract}
+Das Spielsystem "`Schweizer Leiter"' ist...  "dflsjdfk"
+\end{abstract}
+
+\section{Einleitung}
+
+Dieser Artikel geht zunächst auf ein paar mathematisch-kombinatorische Grundlagen ein,
+die für die nachfolgenden Betrachtungen des SL-Spielsystems erforderlich sind. Dazu
+schauen wir zunächst ganz allgemein auf mögliche Kombinationen von Spielern und Spielrunden,
+um daraus dann den Sonderfall "`Jeder-gegen-Jeden"' abzuleiten, der wiederum als Vorlage für
+die nachfolgende Spezialisierung "`Schweizer Leiter"' ist.
+
+Basierend auf diesem mathematischen Modell erläutert das Kapitel FIX, welche Herausforderungen
+eine reale SL-Implementierung für eine Turnierverwaltung beherrschen muss. Besonderer Augenmerk
+wird dabei auf stark variierenden Gruppengrößen von einigen wenigen bis einigen Dutzend
+Teilnehmern liegen.
+
+FIX: weitere Einführung
+
+\subsection{Das Spielsystem "`Schweizer Leiter"'}
+
+Im Kern handelt es sich bei SL um ein iteratives Spielsystem, in dem eine feste Anzahl Spieler eine in gewissen Grenzen frei wählbare Anzahl Runden spielt. Die Spielpaarungen für eine Runde ergeben sich aus einer Rangliste, die nach jeder Runde auf Basis eines Punktesystems und der Spielergebnisse aktualisiert wird.
+
+Ein exemplarischer Turnierablauf ist in etwa wie folgt:
+
+\begin{enumerate}
+
+\item Vor Spielbeginn wird durch die Turnierleitung eine initiale Setzliste definiert, die allen Spielern eine initiale Platzierung zuordnet. Die initiale Platzierung kann beispielsweise zufällig gewählt oder, bei bekannten Spielern, auf Basis von Erfahrung, Ranglisten oder anderen Quellen abgeleitet werden.
+
+\item Die Spielpaarungen ergeben sich als "`1. gegen 2."', "`3. gegen 4."', usw.
+
+\item Die Spieler erhalten Punkte, beispielsweise zwei Punkte für einen Sieg und einen Punkt für ein Unentschieden (sofern ein Unentschieden zulässig ist).
+
+\item Auf Basis der Punkte wird eine neue Rangliste erstellt. Spieler mit mehr Punkten (also mit mehr Siegen) erreichen höhere Plätze. Sollte das Teilnehmerfeld ungerade sein, kann alternativ auch der Quotient "`Punkte pro gespielte Runde"' herangezogen werden, um aussetzende Spieler nicht zu benachteiligen. Bei Punktgleichheit können sekundäre Kriterien für beispielsweise Satzdifferenz oder Punktedifferenz für die Bestimmung der Platzierung herangezogen werden.
+
+\item Auf Basis der neuen Rangliste wird eine neue Runde gespielt; der Vorgang wiederholt sich ab (2) entsprechend.
+
+\end{enumerate}
+
+Die Anzahl der zu spielenden Runden kann die Turnierleitung weitestgehend frei festlegen. Das Turnierergebnis sind die Platzierungen nach der letzten Runde. Im Allgemeinen führen mehr Runden zu einem realistischerem Ergebnis. Typische Werte sind vier bis sechs Runden für übliche Teilnehmerfelder bis ca. 25 Teilnehmern.
+
+Die Vorteile von SL:
+
+\begin{itemize}
+
+\item Alle Spieler bleiben im Turnier, kein Spieler scheidet aus.
+
+\item Mit der Zeit spielen etwa gleich starke Gegner gegeneinander, was zu interessanteren Spielen führt.
+
+\item Die Anzahl der zu spielenden Runden kann dynamisch dem Turnierverlauf angepasst werden.
+
+\end{itemize}
+
+Eine übliche Nebenbedingung bei der Definition der Spiele für die jeweils nächste Runde ist, dass \emph{Spielpaarungen sich nach Möglichkeit nicht wiederholen} sollen. Wenn im Laufe des Turniers beispielsweise die Begegnung "`3. gegen 4."' bereits in einer vorangegangenen Runde gespielt wurde, werden stattdessen die Begegnungen "`3. gegen 5."' und "`4. gegen 6."' angesetzt.
+
+Natürlich kann es aber vorkommen, dass auch diese Alternativbegegnungen bereits gespielt wurden. Ein Schwerpunkt dieses Artikels wird sein, Strategien aufzuzeigen, wie mit einer derartigen Situation aus Sicht einer Turnierverwaltung (Software) umgegangen werden kann.
+
+\subsection{Definitionen}
+
+In den folgenden Abschnitten kommen die folgenden grundlegenden Symbole, Begriffe und Definitionen zur Anwendung:
+
+\begin{description}
+
+\item[Anzahl Spieler:] $n$
+
+\item[Rundennummer:] $R_0$, $R_1$, $R_2$, ...
+
+\item[Symbolische Spielernamen:] A, B, C, ...
+
+\item[Rundenkonfiguration:] Die Liste der für eine Runde vorgesehenen Spielpaarungen
+
+\item[Spielpaarungen:] A-B, B-E etc. bedeuten soviel wie "`A spielt gegen B"', "`B spielt gegen E"', usw.
+
+\end{description}
+
+Weitere Symbole werden im Laufe des Textes nach Bedarf eingeführt.
+
+\section{Kombinatorische Grundlagen} 
+
+Das Ziel dieses Abschnitts ist eine Herleitung der Anzahl der möglichen Rundenkonfigurationen im Turnier. Die Anzahl der Rundenkonfigurationen ist entscheidend dafür, ob das Nebenkriterium, Spielwiederholungen zu vermeiden, eingehalten werden kann.
+
+Der Einfachheit halber gelte für alle nachfolgenden Betrachtungen:
+
+\[
+n \; \text{sei gerade}
+\]
+
+Diese Annahme ist ohne Beschränkung der Allgemeinheit zulässig, weil im Falle ungerader Spieleranzahlen mit einem zusätzlichen "`virtuellen"' Spieler gerechnet werden kann. Spiele gegen diesen virtuellen Spieler bedeuten dann ein Aussetzen des zugehörigen "`normalen"' Spielers.
+
+\subsection{Allgemeine Betrachtungen}
+
+Eine grundlegende Größe ist die Anzahl der Spielpaarungen, die für ein Feld von $n$ Spielern zur Verfügung steht. Diese Fragestellung entspricht der Suche nach den möglichen "`2-aus-$n$"'-Kombinationen -- ähnlich dem bekannten "`6-aus-49"' beim Lotto.
+
+Bekanntermaßen berechnet sich die Anzahl solcher Kombinationen als Binomialkoeffizient, in diesem Falle als "'$n$-über-2"':
+
+\begin{align}
+P &= \quad {{n}\choose{2}} \quad = \quad \frac{n!}{2! \; \cdot \; (n - 2)!} \quad
+= \quad \frac{n!}{2 \; (n - 2)!} \nonumber \\[3mm]
+&=\quad \frac{n \cdot (n - 1) \cdot (n - 2)!}{2 \; (n - 2)!} \quad = \quad
+\frac{n(n-1)}{2}
+\end{align}
+
+Diese $P$ möglichen Paarungen stellen gewissermaßen die "`Bausteine"' dar, aus denen die Rundenkonfigurationen aufgebaut werden können. Unter der Annahme einer geradzahligen Spieleranzahl $n$ besteht eine solche Rundenkonfiguration aus
+
+\begin{equation}
+N = \frac{n}{2}
+\end{equation}
+
+Spielen. Oder anders ausgedrückt: jede Rundenkonfiguration besteht aus einem $N$-Tupel  aus Spielpaarungen, von denen $P$ zur Auswahl stehen.
+
+Soll die Anzahl der möglichen gültigen Rundenkonfigurationen bestimmt werden, ist zu berücksichtigen, dass jeder Spieler in jeder Runde nur einem Spiel zugeordnet werden darf. Spielt also beispielsweise bereits B-C, sind die Paarungen A-B, A-C oder C-A als weitere Spiele dieser Runde nicht zulässig.
+
+Rein mathematisch bedeutet dies, dass für die die Wahl des ersten Spiels einer Runde $n$ Spieler zur Auswahl stehen. Für das zweite Spiel dann nur noch $n-2$ usw. Die Anzahl aller unter dieser Randbedingung definierbaren $N$-Tupel ergibt sich wiederum aus der Anwendung des Binomialkoeffizienten:
+
+\begin{align}
+K' &= {{n}\choose{2}} \; \cdot \; {{n-2}\choose{2}} \; \cdot \;{{n-4}\choose{2}} \; \cdot \; \ldots
+\; \cdot \; {{4}\choose{2}} \; \cdot \; {{2}\choose{2}}\nonumber \\[3mm]
+&= \prod_{k = 0}^{N - 1}{{n - 2k}\choose{2}}
+\end{align}
+
+Durch Auflösen der Binomialkoeffizienten in Brüche und Fakultäten kann die Gleichung durch Kürzen erfreulich gut vereinfacht werden:
+
+\begin{align}\label{eqNumTuplesWithPermutation}
+K' &= \frac{n!}{2 \; (n-2)!} \; \cdot \; \frac{(n - 2)!}{2 \; (n-4)!} \; \cdot \; \frac{(n - 4)!}
+{2 \; (n-6)!} \; \cdot \; \ldots \; \cdot \; \frac{4!}{2 \; \cdot \; 2} \; \cdot \; 1 \nonumber \\[3mm]
+&= \frac{n!}{2} \; \cdot \; \frac{1}{2} \; \cdot \; \frac{1}{2} \; \cdot \; \ldots \; \cdot \; \frac{1}{4} 
+\quad = \quad \frac{n!}{2^N} \quad = \quad \frac{n!}{2^{n/2}}
+\end{align}
+
+Diese Berechnung bestimmt die Gesamtanzahl aller möglichen $N$-Tupel, die sich aus einer $n$-elementigen Menge bilden lassen. Sie lässt unberücksichtigt, dass eine Rundenkonfiguration der Form "`A-B, C-D"' aus Turniersicht identisch ist mit "`C-D, A-B"'. Oder anders formuliert: sie zählt alle Permutationen der Elemente eines $N$-Tupels einzeln.
+
+Um diesen Effekt herauszurechnen, muss $K'$ noch durch Anzahl der Permutationen jeder Rundenkonfiguration dividiert werden. Da die Anzahl der Permutationen eines $N$-Tupels $N!$ entspricht, ergibt sich somit die Zahl der gültigen Rundenkonfigurationen zu:
+
+\begin{equation}
+K \quad = \quad \frac{n!}{2^{n/2} \cdot N!} \quad = \quad \frac{n!}{2^{n/2} \cdot
+\left(\frac{n}{2}\right)!}
+\end{equation}
+
+Ein Planungsalgorithmus für Turniere kann grundsätzlich -- also unabhängig vom Turniermodus -- aus diesen $K$ Rundenkonfigurationen für $n$ Teilnehmer wählen. Ein ganzes Turnier aus $r$ Runden besteht also aus einer Abfolge $R_0$, $R_1$, ... $R_{r-1}$ von möglichen $N$-Tupeln, die nach den oben skizzierten Regeln gebildet wurden.
+
+Soll für das Turnier die oben erwähnte Nebenbedindung gelten, dass sich keine Spielpaarungen im Turnierverlauf wiederholen dürfen, kann die Auswahl der Tupel nicht mehr frei erfolgen, sondern muss diese Nebenbedingung berücksichtigen.
+
+\subsection{Vermeidung von Mehrfachbegegnungen}
+
+Sollen Mehrfachbegegnungen -- also die Wiederholung einer bereits gespielten Paarung -- strikt vermieden werden, schränkt dies die Wahlfreiheit der Rundenkonfigurationen und die Anzahl der spielbaren Runden ein.
+
+Besteht jede Runde aus $N$ Spielen und stehen insgesamt $P$ Spielpaarungen zur Verfügung und soll jede Paarung nur einmal gespielt werden, so ergibt sich die optimale Rundenanzahl zu
+
+\begin{align}
+r_0 \quad &= \quad \frac{P}{N} \quad = \quad \frac{n(n-1)}{2} \cdot \frac{2}{n} \nonumber \\[3mm]
+&= \quad n - 1
+\end{align}
+
+wobei diese Berechnung unterstellt, dass eine solche Abfolge von Rundenkonfigurationen existiert. FIX: auf die Tatsache eingehen, dass das als Jeder-gegen-jeden bekannt ist?
+
+
+\end{document}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
