@@ -23,23 +23,22 @@
 \maketitle
 
 \begin{abstract}
-Das Spielsystem "`Schweizer Leiter"' ist...  "dflsjdfk"
+"`Schweizer Leiter"' (SL) ist ein beliebtes Spielsystem zur Abwicklung von Turnieren mit einer variablen Anzahl von Runden und einer gleichbleibenden Anzahl von Gegnern. Das Spielprinzip beruht auf einer iterativen Verbesserung der Qualität der sich nach jeder Runde ergebenden Platzierung. Dadurch wird mit zunehmender Rundenzahl ein möglichst realistisches Abbild der Spielstärken erzielt.
+
+Die nachfolgenden Ausführungen zeigen, welche kombinatorischen Besonderheiten bei der Bildung von Spielpaarungen für SL-Turniere zu berücksichtigen sind, um für alle Teilnehmerzahlen einen optimalen Turnierablauf zu erreichen.
 \end{abstract}
 
 \section{Einleitung}
 
-Dieser Artikel geht zunächst auf ein paar mathematisch-kombinatorische Grundlagen ein,
-die für die nachfolgenden Betrachtungen des SL-Spielsystems erforderlich sind. Dazu
-schauen wir zunächst ganz allgemein auf mögliche Kombinationen von Spielern und Spielrunden,
-um daraus dann den Sonderfall "`Jeder-gegen-Jeden"' abzuleiten, der wiederum als Vorlage für
-die nachfolgende Spezialisierung "`Schweizer Leiter"' ist.
+Dieser Artikel geht zunächst auf einige mathematisch-kombinatorische Grundlagen ein,
+die für die nachfolgenden Betrachtungen des SL-Spielsystems erforderlich sind (Kapitel~\ref{laKombinatorik}). Dazu
+schauen wir zunächst ganz allgemein auf mögliche Kombinationen von Spielern und Spielrunden. Die Betrachtungen treffen auch auf "`Jeder-gegen-Jeden"'-Spiele zu, von denen SL-letztlich eine Spezialisierung darstellt.
 
-Basierend auf diesem mathematischen Modell erläutert das Kapitel FIX, welche Herausforderungen
+Basierend auf diesem mathematischen Modell erläutert das Kapitel~\ref{laSchweizerLeiterMain}, welche Herausforderungen
 eine reale SL-Implementierung für eine Turnierverwaltung beherrschen muss. Besonderer Augenmerk
-wird dabei auf stark variierenden Gruppengrößen von einigen wenigen bis einigen Dutzend
-Teilnehmern liegen.
+wird dabei auf stark variierenden Teilnehmerzahlen liegen. Die Analyse des vorgeschlagenen SL-Algorithmus stellt den Schwerpunkt von Kapitel~\ref{laSchweizerLeiterMain} dar. Die Analyse wird ergänzt um einen Vorschlag für eine Variante von SL, die auf heuristischen Methoden zur Bildung von Spielpaarungen zurückkgreift.
 
-FIX: weitere Einführung
+Kapitel~\ref{laZusammenfassung} enthält eine kurze Zusammenfassung.
 
 \subsection{Das Spielsystem "`Schweizer Leiter"'}
 
@@ -49,19 +48,19 @@ Ein exemplarischer Turnierablauf ist in etwa wie folgt:
 
 \begin{enumerate}
 
-\item Vor Spielbeginn wird durch die Turnierleitung eine initiale Setzliste definiert, die allen Spielern eine initiale Platzierung zuordnet. Die initiale Platzierung kann beispielsweise zufällig gewählt oder, bei bekannten Spielern, auf Basis von Erfahrung, Ranglisten oder anderen Quellen abgeleitet werden.
+\item Vor Spielbeginn wird durch die Turnierleitung eine Setzliste definiert, die allen Spielern eine initiale Platzierung zuordnet. Die initiale Platzierung kann beispielsweise zufällig gewählt oder bei bekannten Spielern auf Basis von Erfahrung, anderen Ranglisten oder weiteren Quellen abgeleitet werden.
 
-\item Die Spielpaarungen ergeben sich als "`1. gegen 2."', "`3. gegen 4."', usw.
+\item Die Spielpaarungen für eine Runde ergeben sich grundsätzlich als "`1. gegen 2."', "`3. gegen 4."', usw.
 
 \item Die Spieler erhalten Punkte, beispielsweise zwei Punkte für einen Sieg und einen Punkt für ein Unentschieden (sofern ein Unentschieden zulässig ist).
 
-\item Auf Basis der Punkte wird eine neue Rangliste erstellt. Spieler mit mehr Punkten (also mit mehr Siegen) erreichen höhere Plätze. Sollte das Teilnehmerfeld ungerade sein, kann alternativ auch der Quotient "`Punkte pro gespielte Runde"' herangezogen werden, um aussetzende Spieler nicht zu benachteiligen. Bei Punktgleichheit können sekundäre Kriterien für beispielsweise Satzdifferenz oder Punktedifferenz für die Bestimmung der Platzierung herangezogen werden.
+\item Auf Basis der Punkte wird nach jeder Runde eine neue Rangliste gebildet. Spieler mit mehr Punkten (also mit mehr Siegen) erreichen höhere Plätze. Sollte das Teilnehmerfeld ungerade sein, kann alternativ auch der Quotient "`Punkte pro gespielte Runde"' herangezogen werden, um aussetzende Spieler nicht zu benachteiligen. Bei Punktgleichheit können sekundäre Kriterien für beispielsweise Satzdifferenz oder Punktedifferenz für die Bestimmung der Platzierung herangezogen werden.
 
 \item Auf Basis der neuen Rangliste wird eine neue Runde gespielt; der Vorgang wiederholt sich ab (2) entsprechend.
 
 \end{enumerate}
 
-Die Anzahl der zu spielenden Runden kann die Turnierleitung weitestgehend frei festlegen. Das Turnierergebnis sind die Platzierungen nach der letzten Runde. Im Allgemeinen führen mehr Runden zu einem realistischerem Ergebnis. Typische Werte sind vier bis sechs Runden für übliche Teilnehmerfelder bis ca. 25 Teilnehmern.
+Die Anzahl der zu spielenden Runden kann die Turnierleitung weitestgehend frei festlegen. Das Turnierergebnis sind die Platzierungen nach der letzten gespielten Runde. Im Allgemeinen führen mehr Runden zu einem realistischerem Ergebnis. Typische Werte sind vier bis sechs Runden für übliche Teilnehmerfelder bis ca. 25~Teilnehmern.
 
 Die Vorteile von SL:
 
@@ -77,7 +76,9 @@ Die Vorteile von SL:
 
 Eine übliche Nebenbedingung bei der Definition der Spiele für die jeweils nächste Runde ist, dass \emph{Spielpaarungen sich nach Möglichkeit nicht wiederholen} sollen. Wenn im Laufe des Turniers beispielsweise die Begegnung "`3. gegen 4."' bereits in einer vorangegangenen Runde gespielt wurde, werden stattdessen die Begegnungen "`3. gegen 5."' und "`4. gegen 6."' angesetzt.
 
-Natürlich kann es aber vorkommen, dass auch diese Alternativbegegnungen bereits gespielt wurden. Ein Schwerpunkt dieses Artikels wird sein, Strategien aufzuzeigen, wie mit einer derartigen Situation aus Sicht einer Turnierverwaltung (Software) umgegangen werden kann.
+Natürlich kann es aber vorkommen, dass auch diese Alternativbegegnungen bereits gespielt wurden. Ein Schwerpunkt der nachfolgenden Ausführungen wird sein, Strategien aufzuzeigen, wie mit einer derartigen Situation aus Sicht einer Turnierverwaltung (Software) umgegangen werden kann.
+
+Die Ausführungen in diesem Artikel erfolgen mit Hinblick auf die Abwicklung von Badminton-Turnieren. Allerdings lassen sich die hier gezeigten Betrachtungen auch auf andere Sportarten anwenden, bei denen Runden mit mehreren Begegnungen von je zwei Spielern aus einem festen Teilnehmerfeld gespielt werden.
 
 \subsection{Definitionen}
 
@@ -87,21 +88,21 @@ In den folgenden Abschnitten kommen die folgenden grundlegenden Symbole, Begriff
 
 \item[Anzahl Spieler:] $n$
 
-\item[Rundennummer:] $R_0$, $R_1$, $R_2$, ...
-
 \item[Symbolische Spielernamen:] A, B, C, ...
 
 \item[Rundenkonfiguration:] Die Liste der für eine Runde vorgesehenen Spielpaarungen
 
-\item[Spielpaarungen:] A-B, B-E etc. bedeuten soviel wie "`A spielt gegen B"', "`B spielt gegen E"', usw.
+\item[Spielpaarungen:] A:B, B:E etc. bedeutet soviel wie "`A spielt gegen B"', "`B spielt gegen E"', usw.
 
 \end{description}
 
 Weitere Symbole werden im Laufe des Textes nach Bedarf eingeführt.
 
+\clearpage
 \section{Kombinatorische Grundlagen} 
+\label{laKombinatorik}
 
-Das Ziel dieses Abschnitts ist eine Herleitung der Anzahl der möglichen Rundenkonfigurationen im Turnier. Die Anzahl der Rundenkonfigurationen ist entscheidend dafür, ob das Nebenkriterium, Spielwiederholungen zu vermeiden, eingehalten werden kann.
+Das Ziel dieses Abschnitts ist eine Herleitung der Anzahl der möglichen Rundenkonfigurationen im Turnier. Die Anzahl und Beschaffenheit der Rundenkonfigurationen ist entscheidend dafür, ob das Nebenkriterium, Spielwiederholungen zu vermeiden, unter allen Umständen eingehalten werden kann.
 
 Der Einfachheit halber gelte für alle nachfolgenden Betrachtungen:
 
@@ -109,7 +110,7 @@ Der Einfachheit halber gelte für alle nachfolgenden Betrachtungen:
 n \; \text{sei gerade}
 \]
 
-Diese Annahme ist ohne Beschränkung der Allgemeinheit zulässig, weil im Falle ungerader Spieleranzahlen mit einem zusätzlichen "`virtuellen"' Spieler gerechnet werden kann. Spiele gegen diesen virtuellen Spieler bedeuten dann ein Aussetzen des zugehörigen "`normalen"' Spielers.
+Diese Annahme ist ohne Beschränkung der Allgemeinheit der weiteren Betrachtungen zulässig, weil im Falle ungerader Spieleranzahlen mit einem zusätzlichen "`virtuellen"' Spieler gerechnet werden kann. Spiele gegen diesen virtuellen Spieler bedeuten dann ein Freilos für den zugehörigen "`normalen"' Spieler.
 
 \subsection{Allgemeine Betrachtungen}
 
@@ -137,9 +138,9 @@ Die Menge dieser Spielpaarungen sei \PSet. Die Elemente von \PSet stellen gewiss
 N = \frac{n}{2}
 \end{equation}
 
-Spielen. Oder anders ausgedrückt: jede Rundenkonfiguration besteht aus einem $N$-Tupel  aus Spielpaarungen, von denen $P$ zur Auswahl stehen.
+Spielen. Das bedeutet, dass jede Rundenkonfiguration aus einem $N$-Tupel  aus Spielpaarungen besteht, von denen $P$ zur Auswahl stehen.
 
-Soll die Anzahl der möglichen gültigen Rundenkonfigurationen bestimmt werden, ist zu berücksichtigen, dass jeder Spieler in jeder Runde nur einem Spiel zugeordnet werden darf. Spielt also beispielsweise bereits B-C, sind die Paarungen A-B, A-C oder C-A als weitere Spiele dieser Runde nicht zulässig.
+Soll die Anzahl der möglichen gültigen Rundenkonfigurationen bestimmt werden, ist zu berücksichtigen, dass jeder Spieler in jeder Runde nur einem Spiel zugeordnet werden darf. Spielt also beispielsweise bereits B:C, sind die Paarungen A:B, A:C oder C:A als weitere Begegnungen in dieser Runde nicht zulässig.
 
 Rein mathematisch bedeutet dies, dass für die die Wahl des ersten Spiels einer Runde $n$ Spieler zur Auswahl stehen. Für das zweite Spiel dann nur noch $n-2$ usw. Die Anzahl aller unter dieser Randbedingung definierbaren $N$-Tupel ergibt sich wiederum aus der Anwendung des Binomialkoeffizienten:
 
@@ -149,12 +150,12 @@ K' &= {{n}\choose{2}} \; \cdot \; {{n-2}\choose{2}} \; \cdot \;{{n-4}\choose{2}}
 &= \prod_{k = 0}^{N - 1}{{n - 2k}\choose{2}}
 \end{align}
 
-Diese Berechnung bestimmt die Gesamtanzahl aller möglichen $N$-Tupel von 2er-Paarungen, die sich aus einer $n$-elementigen Menge bilden lassen. Sie lässt unberücksichtigt, dass eine Rundenkonfiguration der Form "`A-B, C-D"' aus Turniersicht identisch ist mit "`C-D, A-B"'. Oder anders formuliert: sie zählt alle Permutationen der Elemente eines $N$-Tupels einzeln.
+Diese Berechnung bestimmt die Gesamtanzahl aller möglichen $N$-Tupel von 2er-Paarungen, die sich aus einer $n$-elementigen Menge bilden lassen. Sie lässt unberücksichtigt, dass eine Rundenkonfiguration der Form "`A:B, C:D"' aus Turniersicht identisch ist mit "`C:D, A:B"'. Oder anders formuliert: sie zählt alle Permutationen der Elemente eines $N$-Tupels einzeln.
 
 Um diesen Effekt herauszurechnen, muss $K'$ noch durch Anzahl der Permutationen jeder Rundenkonfiguration dividiert werden. Da die Anzahl der Permutationen eines $N$-Tupels $N!$ entspricht, ergibt sich somit die Zahl der gültigen Rundenkonfigurationen zu:
 
 \begin{align}\label{eqnComplicated}
-K \; &= \frac{1}{N!} \cdot \prod_{k=0}^{N-1}{{n-2k}\choose{2}} \nonumber\\[3mm]
+K \; = \frac{K'}{N!} \; &= \frac{1}{N!} \cdot \prod_{k=0}^{N-1}{{n-2k}\choose{2}} \nonumber\\[3mm]
 &= \frac{1}{N!} \cdot \prod\frac{(n-2k)!}{2(n - 2k -2)!} \nonumber\\[3mm]
 &= \frac{1}{N!} \cdot \prod\frac{(n-2k-2)! \cdot (n-2k-1)(n-2k)}{2(n-2k-2)!} \nonumber\\[3mm]
 &= \frac{1}{N!} \cdot \prod\frac{(n-2k-1)(n-2k)}{2} \nonumber\\[3mm]
@@ -188,7 +189,7 @@ Für die weitere Beschreibung sei die Menge aller gültigen Rundenkonfiguratione
 
 Ein Planungsalgorithmus für Turniere kann grundsätzlich -- sofern keine Teilnehmer aus dem Turnier ausscheiden und $n$ somit im Turnierverlauf konstant bleibt -- aus diesen $K$ Rundenkonfigurationen wählen. Ein ganzes Turnier aus $r$ Runden besteht also aus einer Abfolge $R_0$, $R_1$, ... $R_{r-1}$ von \KSet -Elementen.
 
-Soll für das Turnier die oben erwähnte Nebenbedindung gelten, dass sich keine Spielpaarungen im Turnierverlauf wiederholen dürfen, kann die Auswahl der Tupel nicht mehr frei erfolgen, sondern muss diese Nebenbedingung berücksichtigen.
+Soll für das Turnier die oben erwähnte Nebenbedingung gelten, dass sich keine Spielpaarungen im Turnierverlauf wiederholen dürfen, kann die Auswahl der Tupel nicht mehr frei erfolgen, sondern muss diese Nebenbedingung berücksichtigen.
 
 \subsection{Algorithmische Bildung von \KSet}
 
@@ -222,19 +223,18 @@ S_0:S_{n-1}, \; \mathcal{K}(S_1, S_2, \ldots, S_{n-2})\\
 \end{array}
 \end{equation}
 
-Eine Betrachtung der Mächtigkeit der auf diese Weise gebildeten \KSet\ zeigt, dass die nach o.~g. Algorithmus gebildeten Mengen vollständig sind.
-
-Nach obiger Methode ergibt sich die Mächtigkeit von \KSet\ für $n$ Spieler als Anzahl der Kombinationen von $S_0$:$S_1$, $S_0$:$S_2$, ..., $S_0$:$S_{n-1}$ jeweils kombiniert mit der Mächtigkeit einer Menge von $n-2$ Spielern. Die Anzahl der Kombinationen von $S_0$:$S_1$, $S_0$:$S_2$, ..., $S_0$:$S_{n-1}$ beträgt genau $n-1$. Mithin gilt:
+Eine Betrachtung der Mächtigkeit der auf diese Weise gebildeten \KSet\ zeigt, dass die nach o.~g. Algorithmus gebildeten Mengen vollständig sind. Nach obiger Methode ergibt sich die Mächtigkeit von \KSet\ für $n$ Spieler als Anzahl der Kombinationen von $S_0$:$S_1$, $S_0$:$S_2$, ..., $S_0$:$S_{n-1}$ jeweils kombiniert mit der Mächtigkeit einer Menge von $n-2$ Spielern. Die Anzahl der Kombinationen von $S_0$:$S_1$, $S_0$:$S_2$, ..., $S_0$:$S_{n-1}$ beträgt genau $n-1$. Mithin gilt:
 
 \begin{align}\label{eqnSizeOfK_Alt}
 \lvert \mathcal{K}_n \rvert \; &= \; (n-1) \; \cdot \; \lvert \mathcal{K}_{n-2} \rvert \nonumber \\[3mm]
+&= \; (n-1) \; \cdot (n - 3) \; \cdot \; \lvert \mathcal{K}_{n-4} \rvert \nonumber \\[3mm]
 &= \; (n-1) \; \cdot \; (n - 3) \; \cdot \; \ldots \; \cdot \; 3 \; \cdot \; 1 \nonumber \\[3mm]
 &= \; \prod_{k = 0}^{N -1}(n - 2k - 1) \qquad \text{mit }N = \frac{n}{2}
 \end{align}
 
 Dies ist identisch zu Gleichung~\eqref{eqnSizeOfK}.
 
-Die Mächtigkeit der algorithmisch gebildeten Menge \KSet\ entspricht also der Anzahl der in Gleichung~\eqref{eqnSizeOfK} kombinatorisch abgeleiteten Anzahl der zulässigen Rundenkonfigurationen. Da sich die Rekursionsparameter immer in mindestens einem Element unterscheiden, können im Algorithmus auch keine unzuläassigen Permutationen an sich identischer Rundenkombinationen gebildet werden. Zusammen mit dem Nachweis der korrekten Mächtigkeit des gebildeten \KSet\ ist somit gezeigt, dass der Algorithmus \KSet\ vollständig bestimmt.
+Die Mächtigkeit der algorithmisch gebildeten Menge \KSet\ entspricht also der Anzahl der in Gleichung~\eqref{eqnSizeOfK} kombinatorisch abgeleiteten Anzahl der zulässigen Rundenkonfigurationen. Da sich die Rekursionsparameter immer in mindestens einem Element unterscheiden, können im Algorithmus auch keine unzulässigen Permutationen an sich identischer Rundenkombinationen gebildet werden. Zusammen mit dem Nachweis der korrekten Mächtigkeit des gebildeten \KSet\ ist somit gezeigt, dass der Algorithmus \KSet\ vollständig bestimmt.
 
 \subsection{Häufigkeit von Spielpaarungen}
 \label{laHaeufigkeit}
@@ -255,8 +255,9 @@ Analog gilt:
 \end{itemize}
 
 \subsection{Vermeidung von Mehrfachbegegnungen}
+\label{laMehrfach}
 
-Sollen Mehrfachbegegnungen -- also die Wiederholung einer bereits gespielten Paarung -- strikt vermieden werden, schränkt dies die Wahlfreiheit der Rundenkonfigurationen und die Anzahl der spielbaren Runden ein.
+Sollen Mehrfachbegegnungen -- also die Wiederholung bereits gespielter Paarungen -- strikt vermieden werden, schränkt dies die Wahlfreiheit der Rundenkonfigurationen und die Anzahl der spielbaren Runden ein.
 
 Besteht jede Runde aus $N$ Spielen und stehen insgesamt $P$ Spielpaarungen zur Verfügung und soll jede Paarung nur einmal gespielt werden, so ergibt sich die erforderliche Rundenanzahl zu
 
@@ -273,22 +274,22 @@ Umgekehrt führt \emph{nicht} jede frei gewählte Sequenz von Rundenkonfiguratio
 
 \begin{figure}[hbtp]
 \centering
-\includegraphics[width=0.8\textwidth]{Verklemmung6_6er.png}
+\includegraphics[width=0.9\textwidth]{Verklemmung6_6er.png}
 \caption{Verklemmung in einem 6er-Feld}
 \label{figDeadlock}
 \end{figure}
 
-In dem gezeigten Beispiel wurde in der ersten Runde die Konfiguration~1 gespielt. Die zugehörigen Begegnungen sind A:B, C:D und E:F (gelb hervorgehoben). Durch das Spielen dieser Begegnungen stehen nach Runde~1 alle Rundenkonfigurationen, die eine dieser Spielpaarungen enthalten, nicht mehr für den weiteren Turnierablauf zur Verfügung. Ansonsten würde die Regel zur Vermeidung von Mehrfachbegegnungen verletzt.
+In dem gezeigten Beispiel wurde in der ersten Runde die Konfiguration~1 gespielt. Die zugehörigen Begegnungen sind A:B, C:D und E:F (gelb hervorgehoben). Durch das Spielen dieser Begegnungen stehen nach Runde~1 alle Rundenkonfigurationen, die eine dieser Spielpaarungen enthalten, nicht mehr für den weiteren Turnierablauf zur Verfügung, weil ansonsten die Regel zur Vermeidung von Mehrfachbegegnungen verletzt würde.
 
 Für die zweite Runde wurde (willkürlich) Konfiguration~5 gewählt (grün). Diese Wahl war legitim, weil Konfiguration~5 keine der bereits gespielten Paarungen enthält. Entsprechend wurde für Runde~3 auf Konfiguration~14 zurückgegriffen (pink).
 
-Wie Abbildung~\ref{figDeadlock} zeigt, steht nach Abschluss der dritten Runde keine Rundenkonfiguration mehr zur Verfügung, die nicht wenigstens eine bereits gespielte Paarung enthält. Ein Weiterspielen unter Vermeidung von Mehrfachbegegnungen ist also nicht möglich, obwohl noch nicht alle Spielpaarungen ausgespielt wurden. Die ungeschickte Wahl der Abfolge der Rundenkonfigurationen hat zu einer "`Verklemmung"' geführt.
+Wie Abbildung~\ref{figDeadlock} zeigt, steht nach Abschluss der dritten Runde keine Rundenkonfiguration mehr zur Verfügung, die nicht wenigstens eine bereits gespielte Paarung enthält. Ein Weiterspielen unter Vermeidung von Mehrfachbegegnungen ist also nicht möglich, obwohl noch nicht alle Spielpaarungen ausgespielt wurden. Die ungeschickte Wahl der Abfolge der Rundenkonfigurationen hat also zu einer "`Verklemmung"' geführt.\footnote{Soll von vornherein "`Jeder-gegen-Jeden"' gespielt werden, können die Runden gezielt nach einem anderen, garantiert verklemmungsfreien Algorithmus gebildet werden, der hier aber nicht näher behandelt werden soll, weil er anstelle eines vollständigen \KSet\ nur eine einzelne Teilmenge von $n-1$ Rundenkonfigurationen bildet.}
 
-Mittels Durchrechnen aller möglichen Spielabfolgen kann gezeigt werden, dass es für den oben gezeigten Fall $n=6$ insgesamt 120 Sequenzen gibt, die nach der dritten Runde zu einer Verklemmung führen. Dem stehen 720 Sequenzen gegenüber, mit denen sich alle fünf erforderlichen Runden konfliktfrei durchspielen lassen.
+Mittels Durchrechnen aller möglichen Spielabfolgen kann gezeigt werden, dass es für den oben gezeigten Fall $n=6$ insgesamt 120 verschiedene Sequenzen von Rundenkonfigurationen gibt, die nach der dritten Runde zu einer Verklemmung führen. Dem stehen 720 Sequenzen gegenüber, mit denen sich alle fünf erforderlichen Runden konfliktfrei durchspielen lassen.
 
 Ebenso kann für $n=8$ gezeigt werden, dass es nach der fünften Runde zu zahlreichen Verklemmungen kommt. Genauer gibt es zu jeder Erstrundenkonfiguration 27648 Sequenzen, die zu einer Verklemmung nach Runde fünf führen. Bei $K(8) = 105$ möglichen Erstrundenkonfigurationen ergeben sich mithin 2.903.040 ungültige Rundensequenzen. Die Zahl der gültigen Sequenzen bis Turnierende beträgt 31.449.705.
 
-Wird mit den gültigen Sequenzen weitergespielt, kommt es weder bei $n=6$ noch bei $n=8$ zu weiteren Verklemmungen. Ebenso sind für $n=4$ grundsätzlich alle Sequenzen verklemmungsfrei. Tabelle~\ref{tabDeadlock} fasst die Ergebnisse zusammen und setzt auch die gültigen Sequenzen bis zur Verklemmungsrunde mit den ungültigen Sequenzen ins Verhältnis.
+Wird mit den gültigen Sequenzen weitergespielt, kommt es im weiteren Turnierverlauf weder bei $n=6$ noch bei $n=8$ zu weiteren Verklemmungen. Ebenso sind für $n=4$ grundsätzlich alle Sequenzen verklemmungsfrei. Tabelle~\ref{tabDeadlock} fasst die Ergebnisse zusammen und setzt auch die gültigen Sequenzen bis zur Verklemmungsrunde mit den ungültigen Sequenzen ins Verhältnis.
 
 \begin{table}[htbp]
 \begin{center}
@@ -311,9 +312,11 @@ $\quad n \quad$ & Runden & Verklemmung & Gültige Seq. & Ungültige Seq. & Verh�
 \end{center}
 \end{table}
 
-Ergänzend enthält Tabelle~\ref{tabDeadlock} noch stichprobenartig bestimmte Verklemmungen für einige $n > 8$. Zur Verringerung der numerischen Komplexität wurde bis zum Bereich der vermuteten Runde, bei der eine Verklemmung auftritt (Runde $n-3$), unter Verzicht auf Testen aller Kombinationen gerechnet und einfach nur eine exemplarische Sequenz bestimmt. Ab da wurden dann alle weiteren Runden mit unter Anwendung aller verbleibenden Kombinationen durchprobiert. Zur Absicherung der Ergebnisse wurde die Einzelsequenz nicht nur bis zur vermuteten "`Verklemmungsrunde"' gerechnet, sondern bereits eine Runde vorher abgebrochen und entsprechend mit dem Durchprobieren der Kombinationen fortgeführt.
+Ergänzend enthält Tabelle~\ref{tabDeadlock} noch stichprobenartig bestimmte Verklemmungen für einige $n > 8$. Zur Verringerung der numerischen Komplexität wurde bis zum Bereich der vermuteten Runde, bei der eine Verklemmung auftritt (Runde $n-3$), unter Verzicht auf Testen aller Kombinationen gerechnet und einfach nur eine einzelne exemplarische Sequenz bis Runde $n-3$ bestimmt. Ab da wurden dann alle weiteren Runden unter Anwendung aller verbleibenden Kombinationen durchprobiert.
 
-In jedem Falle zeigte sich eine Verklemmung nur bei Runde $n-3$. Verklemmung in früheren oder späteren Runden konnten weder im Stichprobenverfahren ($n > 8$) noch bei Durchprobieren aller Kombinationen ($n \leq 8$) festgestellt werden.
+Ergänzend wurde anschließend zur Absicherung der Ergebnisse die Einzelsequenz nicht nur bis zur vermuteten "`Verklemmungsrunde"' gerechnet, sondern bereits eine Runde vorher abgebrochen und entsprechend früher mit dem Durchprobieren der Kombinationen fortgeführt.
+
+In jedem Falle zeigte sich eine Verklemmung nur bei Runde $n-3$. Verklemmungen in früheren oder späteren Runden konnten weder im Stichprobenverfahren ($n > 8$) noch bei Durchprobieren aller Kombinationen ($n \leq 8$) festgestellt werden.
 
 Obwohl die gezeigten Stichproben kein Beweis im mathematischen Sinne sind, liegt doch die Vermutung nahe, dass es bei jeder Spieleranzahl zu Verklemmungen kommen kann, auch wenn
 
@@ -325,11 +328,11 @@ Obwohl die gezeigten Stichproben kein Beweis im mathematischen Sinne sind, liegt
 
 \end{itemize}
 
-\minisec{Freie Rundenkonfigurationen nach Runden}
+\minisec{Verfügbare Rundenkonfigurationen abhängig von der Rundenzahl}
 
 Eng verwandt mit dem Phänomen der Verklemmung ist die Frage nach der Anzahl noch verfügbarer Rundenkonfigurationen bei zunehmender Anzahl gespielter Runden. Eine Rundenkonfiguration gilt dabei als "`verfügbar"', wenn noch keine der enthaltenen Spielpaarungen gespielt wurde.
 
-Eine genaue Berechnung ist leider nur für die freien Konfigurationen nach der ersten Runde möglich. Die Berechnung führt über die Kalkulation der Rundenkonfigurationen, die mindestens eine gespielte Paarung enthalten:
+Eine genaue Berechnung ist leider nur für die freien Konfigurationen nach der ersten Runde allgemein möglich. Die Berechnung führt über die Kalkulation jener Rundenkonfigurationen, die mindestens eine gespielte Paarung enthalten:
 
 \begin{itemize}
 
@@ -340,7 +343,7 @@ Eine genaue Berechnung ist leider nur für die freien Konfigurationen nach der e
 \item Es gibt $k_{N-2} = {N\choose{N-2}} = \frac{1}{2} \cdot N(N-1)$ Kombinationen von $N-2$ Spielpaarungen aus den $N$ gespielten Paarungen. Jede diese Kombinationen kommt $K(4) = 3$ mal vor (siehe auch Abschnitt~\ref{laHaeufigkeit}). Von diesen $3k_{N-2}$ Kombinationen stecken allerdings ${N\choose{N-2}}$ Kombinationen bereits in der gespielten Rundenkonfiguration aus $N$ Paarungen. Es verbleiben also $2k_{N-2} = N(N-1)$ Paarkombinationen, die sich auf andere Rundenkonfigurationen verteilen.
 
 \item Es gibt $k_{N-3} = {N\choose{N-3}} = \frac{1}{6} \cdot N(N-1)(N-2) =
-\frac{1}{3} (N-2) k_{N-2}$ Kombinationen von $N-3$ Spielpaarungen aus den $N$ gespielten Paarungen. Jede diese Kombinationen kommt $K(6) = 15$ mal vor. Von diesen $15k_{N-3}$ Kombinationen sind allerdings abzuziehen:
+\frac{1}{3} (N-2) k_{N-2}$ Kombinationen von $N-3$ Spielpaarungen aus den $N$ gespielten Paarungen. Jede dieser Kombinationen kommt $K(6) = 15$ mal vor. Von diesen $15k_{N-3}$ Kombinationen sind allerdings abzuziehen:
 
 \begin{itemize}
 
@@ -359,9 +362,7 @@ Beispiel für $n=12$ mit $N=6$:
 
 \begin{itemize}
 
-\item Es gibt $K(12) = 10395$ mögliche Rundenkonfigurationen und $P(12) = 132$ Spielpaarungen. Jede Rundenkonfigurationen besteht aus $N$ -- also sechs -- dieser 132 Paarungen.
-
-\item Nach der ersten Runde sind sechs von 132 Paarungen gespielt.
+\item Es gibt $K(12) = 10395$ mögliche Rundenkonfigurationen und $P(12) = 132$ Spielpaarungen. Jede Rundenkonfigurationen besteht aus $N$ -- also sechs -- dieser 132 Paarungen. Nach der ersten Runde sind sechs von 132 Paarungen gespielt.
 
 \item Es gibt genau eine Rundenkonfiguration, in der alle sechs Paarungen den sechs gespielten Paarungen entspricht: $k_6 = 1$.
 
@@ -377,7 +378,7 @@ Beispiel für $n=12$ mit $N=6$:
 
 \end{itemize}
 
-Die Anzahl der freien Rundenkonfigurationen nach Runde $2, \; 3, \ldots \;$ ist nicht mehr konstant und hängt von der gewählten Sequenz der Rundenkonfigurationen ab. Das drückt sich nicht zuletzt dadurch aus, dass einige Sequenzen zu einer Verklemmung führen (s.~o.) -- also zu $0$ freien Rundenkonfigurationen --, während andere Sequenzen verklemmungsfrei bis zur $n-1$. Runde führen.
+Die Anzahl der freien Rundenkonfigurationen nach Runde $2, \; 3, \ldots \;$ ist nicht mehr konstant und hängt von der gewählten Sequenz der Rundenkonfigurationen ab. Das drückt sich nicht zuletzt dadurch aus, dass einige Sequenzen zu einer Verklemmung führen -- also zu $0$ freien Rundenkonfigurationen nach $n-3$ Runden~--, während andere Sequenzen verklemmungsfrei bis zur $n-1$. Runde führen.
 
 Eine Berechnung aller Kombinationen für einige $n$ ist in Tabelle~\ref{tabFreeCount} aufgeführt. In erster Näherung zeigt sich eine Halbierung der verfügbaren Rundenkonfigurationen nach jeder Spielrunde, sofern mit verklemmungsfreien Sequenzen gearbeitet wird (Tabelle~\ref{tabFreeCountRel}). Zusammen mit der oben erläuterten Methode zur Berechnung der freien Konfigurationen nach der ersten Runde kann somit die ungefähre Anzahl freier Konfigurationen zu Beginn jeder Spielrunde abgeschätzt werden.
 
@@ -420,6 +421,7 @@ $\quad n \quad$ & $K(n)$ & frei nach & frei nach & frei nach & frei nach & frei 
 \end{table}
 
 \section{Anwendung auf "`Schweizer Leiter"'}
+\label{laSchweizerLeiterMain}
 
 \subsection{Allgemeines}
 
@@ -429,7 +431,7 @@ Da die Spielergebnisse nicht vorhersagbar sind, liegt bei der Bestimmung der Spi
 
 \begin{enumerate}
 
-\item Eine oder mehrere der gebildeten Spielpaarungen wurde(n) bereits in einer vorangegangenen Runde gespielt, so dass eine alternative Rundenkonfiguration gebildet werden muss.
+\item Eine oder mehrere der gebildeten Spielpaarungen wurde(n) bereits in einer vorangegangenen Runde gespielt, so dass eine alternative Rundenkonfiguration gebildet bzw. gewählt werden muss.
 
 \item Manche Spielsequenzen führen zu Verklemmungen, die ein Weiterführen ohne Mehrfachbegegnungen unmöglich machen.
 
@@ -437,13 +439,14 @@ Da die Spielergebnisse nicht vorhersagbar sind, liegt bei der Bestimmung der Spi
 
 Das erste Problem führt dazu, dass mitunter die erforderliche Kombination von Paarungen nicht verfügbar ist und auf eine andere Paarung ausgewichen werden muss. Das zweite Problem verursacht, dass \emph{gar keine} weitere Runde gespielt werden kann.
 
-Im Idealfall konvergiert SL mit $n$ Teilnehmern nach $n-1$ Runden gegen ein "`Jeder-gegen-Jeden"'. Daher ist ein SL-Turnier auf jeden Fall nach $n-1$ Runden beendet, sofern Mehrfachbegegnungen ausgeschlossen wurden.
+Im Idealfall konvergiert SL mit $n$ Teilnehmern nach $n-1$ Runden gegen ein "`Jeder-gegen-Jeden"'. Daher ist ein SL-Turnier auf jeden Fall nach $n-1$ Runden beendet, sofern Mehrfachbegegnungen strikt ausgeschlossen werden.
 
-\minisec{Bildung wiederholungsfreier Rundenkonfigurationen}
+\subsection{Bildung wiederholungsfreier Rundenkonfigurationen}
+\label{laAlgoSL}
 
 Führt das nach dem Prinzip "`1. gegen 2."', "`3. gegen 4."', ... gebildete Tupel von Spielpaarungen zu einer Kollision mit vorangegangenen Spielpaarungen, muss die Bildung der Spielpaarungen modifiziert werden.
 
-Hat beispielweise das Spiel "`7. gegen 8."' bereits stattgefunden, kann alternativ auf  "`7. gegen 9."' in Kombination mit "`8. gegen 10."' ausgewichen werden. Kann auf diese Weise kein geeigneter Gegner gefunden werden, muss ggf. eine vorangegangene Paarung verändert werden.
+Hat beispielsweise das Spiel "`7. gegen 8."' bereits stattgefunden, kann alternativ auf  "`7. gegen 9."' in Kombination mit "`8. gegen 10."' ausgewichen werden. Kann auf diese Weise kein geeigneter Gegner gefunden werden, muss ggf. eine vorangegangene Paarung verändert werden.
 
 Eine algorithmische Umsetzung kann in etwa so erfolgen ($S_x$ bezeichnet den aktuell an Platz $x$ stehenden Spieler):
 
@@ -453,19 +456,148 @@ Eine algorithmische Umsetzung kann in etwa so erfolgen ($S_x$ bezeichnet den akt
 
 \item Starte mit $k = i + 1$. Inkrementiere $k$ bis zu einer Spielpaarung $S_i$:$S_k$, die noch nicht in einer vorangegangenen Runde gespielt wurde. Merke $S_k$ als nächsten Gegner für $S_i$ vor. Merke $S_i$ und $S_k$ als für die nächste Runde verplant vor.
 
-\item Kann kein geeignetes $k$ gefunden werden, lösche die zuletzt getroffen Spielerpaarung und setze mit dem zugehörigen $i$ und einem zugehörigen $k+1$ bei im Schritt (2) fort.
+\item Kann kein geeignetes $k$ gefunden werden, lösche die zuletzt getroffen Spielerpaarung und setze mit dem zur gelöschten Paarung gehörigen $i$ und einem zugehörigen $k+1$ mit Schritt (2) fort.
 
 \item Inkrementiere $i$ bis $S_i$ einen noch nicht verplanten Spieler bezeichnet oder $i = n$ ist.
 
-\item Ist $i < n$ fahre mit Schritt (3) fort. Ist $i = n$ und sind noch nicht alle Spieler verplant, verfahre wie in Schritt (3).
+\item Ist $i < n$ fahre mit Schritt (2) fort. Ist $i = n$ und sind noch nicht alle Spieler verplant, verfahre wie in Schritt (3).
 
 \end{enumerate}
 
-Diese Algorithmus bildet eine gültige Rundenkonfiguration aus noch nicht gespielten Paarungen, sofern keine Verklemmung vorliegt (die Erkennung der Verklemmung ist in dem oben skizzierten Algorithmus nicht enthalten).
+Dieser Algorithmus bildet eine gültige Rundenkonfiguration aus noch nicht gespielten Paarungen, sofern keine Verklemmung vorliegt (die Erkennung der Verklemmung ist in dem oben skizzierten Algorithmus nicht enthalten).
 
-\minisec{Umgang mit Verklemmungen}
+Die Komplexität dieses Algorithmus ist nicht höher als $O(n^2)$, da im schlimmsten Fall $n$ Spieler mit $n-1$ anderen Spielern kombiniert bzw. verglichen werden müssen.
 
+\subsection{Umgang mit Verklemmungen}
+\label{laUmgangDeadlock}
 
+Grundsätzlich kann ein Algorithmus nach Auswahl der Spielpaarungen für die Folgerunde prüfen, ob diese Rundenkonfiguration zu einer Verklemmung führt. Sollte die gewählte Rundenkonfiguration in eine "`Sackgasse"' führen, kann die Konfiguration wie im obigen Algorithmus skizziert geändert werden.
+
+Eine gültige alternative Konfiguration \emph{muss} existieren, weil wie in Abschnitt~\ref{laMehrfach} gezeigt nur ein Teil der verbliebenen Rundenkonfiguration zu einer Verklemmung führt. Wichtig ist, dass diese Überprüfung \emph{vor} Festlegung der Runde erfolgt, die potentiell in eine Verklemmung führen kann.
+
+Um Festzustellen, ob eine gewählte Rundenkonfiguration in einer Verklemmung führt, sind zwei Vorgehensweisen denkbar:
+
+\begin{enumerate}
+
+\item Initiale Bildung des vollständigen \KSet\ bei Turnierbeginn und fortlaufendes Markieren aller gespielten bzw. geplanten Paarungen in allen Elementen von \KSet mit anschließender Suche nach freien Rundenkonfigurationen; oder
+
+\item Prüfung aller möglichen Kombinationen der $2N$ verbleibenden Spielpaarungen für die letzten beiden Spielrunden, nachdem die Paarungen für die drittletzte Runde gemäß Abschnitt~\ref{laAlgoSL} gebildet wurden.
+
+\end{enumerate}
+
+Beide Verfahren leiden an schlechter Skalierbarkeit mit wachsendem $n$. Die Anzahl der Elemente in \KSet\ berechnet sich gemäß Gleichung~\eqref{eqnSizeOfK} als Produkt aus $N$ Faktoren der Form $n(n-1)(n-3)\cdots$. In erster Näherung ist also $K(n) \propto n^{n/2}$ und daher wächst die Laufzeit für die Bildung oder das lineare Durchsuchen\footnote{Möglicherweise lässt sich der regelmäßige bzw. rekursive Charakter von \KSet\ ausnutzen, um anstelle einer linearen Liste die Elemente in einer Baumstruktur anzuordnen, was ein effektiveres Traversieren der Elemente von \KSet\ zur Folge hätte. Das soll hier aber nicht weiter untersucht werden.} von \KSet\ mit $O(n^{n/2})$.
+
+Ähnliches gilt für den zweiten Ansatz, der Prüfung aller Kombinationen der letzten $2N$ Spielpaarungen. Entscheidend für die Anzahl der zu prüfenden Kombinationen ist, zu wie vielen $N$-elementigen Tupeln sich diese $2N$ Elemente anordnen lassen. Das entspricht den Spielpaarungen für die zweitletzte Runde. Die letzte Runde ergibt sich dann implizit aus den $N$ verbleibenden Elementen. Die Anzahl der zu prüfenden Kombinationen ist also:
+
+\begin{equation}
+K_{\text{Rest}}(n) = {{2N}\choose{N}} = \frac{(2N)!}{N! \cdot N!} = \frac{2N(2N-1)(2N-2)\cdots(N+1)}{N!}
+\qquad \text{mit }N = \frac{n}{2}
+\end{equation}
+
+Auch dieses Verfahren wächst also in deutlich nicht-polynomialer Zeit und skaliert daher schlecht mit $n$. Dennoch wächst $K_{\text{Rest}}(n)$ langsamer als $K(n)$, wie Tabelle~\ref{tabRestkombinationen} zeigt:
+
+\begin{table}[htbp]
+\begin{center}
+\begin{tabular}{cccc}
+\toprule
+$\quad n \quad$ & $K(n)$ & $K_{\text{Rest}}(n)$ & $K_{\text{Rest}}$ : $K$\\[1mm]
+\midrule
+$10$ & $945$ & $252$ & $0,27$ \\[1mm]
+$16$ & $2.027.025$ & $12.870$ & $6,35 \cdot 10^{-3}$\\[1mm]
+$20$ & $6,55 \cdot 10^8$ & $184.756$ & $2,82 \cdot 10^{-4}$\\[1mm]
+$26$ & $7,91 \cdot 10^{12}$ & $1,04 \cdot 10^7$ & $1,32 \cdot 10^{-6}$\\[1mm]
+$30$ & $6,19 \cdot 10^{15}$ & $1,55 \cdot 10^8$ & $2,51 \cdot 10^{-8}$\\[1mm]
+\bottomrule
+\end{tabular}
+\caption{Verhältnis von $K(n)$ zu den Kombinationen der $2N$ letzten Spielpaarungen}
+\label{tabRestkombinationen}
+\end{center}
+\end{table}
+
+Dennoch wird auch die Überprüfung von $K_\text{Rest}$ Rest-Kombinationen ab etwa 24 oder 26 Teilnehmern unpraktisch, weil zu viele Kombinationen zu prüfen zu sind. Dabei ist auch zu berücksichtigen, dass diese Prüfung unter Umständen auch mehrfach erforderlich ist, falls aufgrund einer festgestellten Verklemmung eine alternative Kombination von Spielpaarungen zu bilden und anschließend zu testen ist. Entlastend wirkt im Gegenzug, dass die Überprüfung abgebrochen werden kann, sobald wenigstens eine gültige Konfiguration für eine Folgerunde gefunden wurde -- also keine Verklemmung vorliegt, was der wahrscheinlichere Fall ist.
+
+\minisec{Pragmatische Handhabung von Verklemmungen}
+
+Glücklicherweise kann die Explosion der zu überprüfenden Kombinationen bei wachsender Teilnehmerzahl unter Berücksichtigung der Randbedingungen, unter denen SL üblicherweise zum Einsatz kommt, pragmatisch umgangen werden. Diese Randbedingungen sind:
+
+\begin{itemize}
+
+\item Die Teilnehmerzahl ist eher groß (z. B. zehn oder mehr), weil sich sonst andere Spielsysteme wie "`Jeder-gegen-Jeden"' oder bestimmte Turnierbäume besser eignen.
+
+\item Die Anzahl der zu spielenden Runden ist selten größer als sechs oder acht. Acht Runden entsprächen bereits einem zweitägigem Turnier mit vier Durchgängen pro Tag, was eher die Ausnahme ist.
+
+\end{itemize}
+
+Die Kombination beider Bedingungen kann genutzt werden, um einen SL-Algorithmus effektiv umzusetzen. Dabei ist entscheidend, dass eine Verklemmung, wie in Abschnitt~\ref{laMehrfach} dargelegt, nur nach der drittletzten Runde auftreten kann und daher überhaupt nur bei Bildung der drittletzten Runde berücksichtigt werden muss.
+
+Ein optimierter (aber auch limitierter!) SL-Algorithmus kann daher wie folgt arbeiten:
+
+\begin{itemize}
+
+\item Für $n \leq 20$ erfolgt bei Bildung der Runde $n-3$ eine Prüfung auf Verklemmungsfreiheit durch Testen der $K_\text{Rest}$ Kombinationen der sich nach Festlegung von Runde $n-3$ ergebenden $2N$-Spielpaarungen für die letzten beiden Runden.
+
+\item Für $n > 20$ wird das Turnier im Fall einer Verklemmung nach Runde $n-3$ abgebrochen. Der früheste Abbruch ist daher nach 17~Runden zu erwarten, was in der Praxis eine vernachlässigbare Einschränkung ist.
+
+\end{itemize}
+
+Bis zu $n=20$ kann daher ein verklemmungsfreier Spielablauf garantiert werden, der sicher gegen einen vollständiger "`Jeder-gegen-Jeden"'-Durchlauf konvergiert. Die Wahl von $n=20$ als Grenze erfolgte mit Hinblick auf die nach Tabelle~\ref{tabRestkombinationen} für diesen Fall zu prüfenden ca. 200.000 Restkombinationen, die auf aktuellen Rechnern sowohl mit Hinblick auf Speicher- wie auch Rechenzeitbegrenzungen ohne besondere Optimierung gut handhabbar ist.
+
+Realistisch wird dieser Fall sowieso eher bei kleinen Teilnehmerfeldern (ca. acht) auftreten, weil dort das Eintreten des Kriteriums "`Runde $n-3$ erreicht"' deutlich wahrscheinlicher ist. Der in diesem Fall mit der Prüfung der Restkombinationen einhergehende Aufwand ist vernachlässigbar.
+
+Durch Anwendung dieses Vorgehens mit einem $n$-abhängigen Verhalten ist für alle $n$ und für alle praktisch auftretenden Turnierabläufe ein korrekter, verklemmungsfreier Ablauf garantiert.
+
+\subsection{Heuristiken für nicht-wiederholungsfreie Spielabläufe}
+
+Das in den beiden vorangegangenen Abschnitten~\ref{laAlgoSL} und~\ref{laUmgangDeadlock} beschriebene Vorgehen basiert auf der Prämisse der strikten Vermeidung von Mehrfachbegegnungen gleicher Gegner. Dies kann allerdings dazu führen, dass der Abstand zwischen den Platzierungen zweier Gegner gerade gegen Turnierende relativ groß ist. Wenn beispielsweise der momentan Erstplatzierte bereits gegen den Zweit- und Drittplatzierten gespielt hat, würde er als nächstes gegen Viertplatzierten spielen.
+
+Dies kann wünschenswert sein, damit möglichst viele Kombinationen direkter Vergleiche zwischen den Teilnehmern ausgespielt werden. Umgekehrt kann aber auch die Wiederholung des Spiels "`1. gegen 2."' wünschenswert sein, um in einer erneuten direkten Begegnung die Platzierung zu bestätigen -- oder zu korrigieren. Für gewöhnlich wird aber der wiederholungsfreien Variante der Vorzug gegeben, um für möglichst viel (Gegner-)Abwechslung im Turnierablauf zu sorgen.
+
+Durch Anwendung geeigneter Heuristiken bei der Bewertung von Rundenkonfigurationen können allerdings beide Ansätze kombiniert werden. Wie der Begriff "`Heuristik"' bereits andeutet, wird dabei die vergleichende Bewertung verschiedener Rundenkonfigurationen eine entscheidende Rolle spielen.
+
+Die Grundidee für dieses Vorgehen ist, für möglichst viele Rundenkonfigurationen eine Bewertungszahl zu bestimmen, die die Qualität der jeweiligen Konfiguration im aktuellen Turnierkontext repräsentiert. Die Wahl der nächsten Rundenkonfiguration fällt dann auf die Paarung mit der besten Bewertung.
+
+Eine einfaches Bewertungsschema könnte in etwa wie folgt funktionieren:
+
+\begin{itemize}
+
+\item Die Bewertung der einer Rundenkonfiguration ergibt sich aus der Summierung von Bewertungspunkten aller in ihr enthaltenen Paarungen.
+
+\item Wurde eine Paarung noch nicht gespielt, wird sie mit einer Punktzahl bewertet, die sich z.~B. aus Platzierungsdifferenz der Gegner ergibt.
+
+\item Wurde eine Paarung bereits gespielt, wird sie pauschal mit einer hohen Pauschal-Punktzahl bewertet (z. B. zehn Punkte).
+
+\item Die Rundenkonfiguration mit der kleinsten Bewertungszahl wird für die Folgerunde gewählt.
+
+\item Nach jeder Runde wird die Bewertung auf Basis der dann gültigen Platzierung und der dann gespielten Paarungen wiederholt.
+
+\end{itemize}
+
+Selbstverständlich sind auch komplexere Bewertungsverfahren möglich. Beispielsweise kann die Wiederholung länger zurückliegender Spiele geringer "bestraft" werden (durch weniger Punkte) als kürzlich gespielte Paarungen. Ebenso könnte durch eine nicht-lineare Bewertung der Platzierungsdifferenz zweier Gegner die Auswahl dicht beieinander platzierter Gegner bevorzugt werden.
+
+Für hinreichend kleine $n$ und hinreichend einfache Punkte-Kriterien kann dieses Bewertungsverfahren für ganz \KSet\ in akzeptablen Laufzeiten erfolgen. Eine realistische Komplexitätsgrenze könnte hier bei etwa 14 Teilnehmern liegen. Bis ca. $n=18$ wäre auch die einmalige Bildung des vollständigen \KSet\ bei Turnierbeginn denkbar (etwa 35~Mio. Elemente bei $n=18$) und eine zeitbegrenzte, iterative Bewertung zufällig ausgewählter Elemente aus \KSet\ bei jeder Rundenbildung. Das entspräche beispielsweise der Auswahl der besten Konfiguration, die innerhalb einer Sekunde durch Durchprobieren zufälliger Rundenkonfigurationen gefunden werden konnte.
+
+Bei noch größeren $n$ sollte die Bildung \KSet\ vermieden werden und der ebenfalls zeitbegrenzten, iterative Bildung zufälliger Kombinationen von Spielpaarungen mit deren anschließender Bewertung der Vorzug gegeben werden. Allerdings ist hierbei davon auszugehen, dass das Ergebnis möglicherweise deutlich von den "`gewohnten"' bzw. von den Turnierteilnehmern erwarteten SL-Spielpaarungen abweicht, einfach weil die Trefferwahrscheinlichkeit für eine wie nach Abschnitt~\ref{laAlgoSL} gebildete Rundenkonfiguration gering ist.
+
+Da Heuristiken auch die Wiederholung von Spielpaarungen zulassen, spielen das Erkennen bzw. die Vermeidung von Verklemmungen grundsätzlich keine Rolle.
+
+\section{Zusammenfassung}
+\label{laZusammenfassung}
+
+Es konnte gezeigt werden, dass die Durchführung von Turnieren mit konstanten Teilnehmerzahlen (also ohne \emph{Knock-Outs}) bei Vermeidung von Mehrfachbegegnungen grundsätzlichen Einschränkungen unterlegen sind:
+
+\begin{itemize}
+
+\item Die Anzahl der möglichen Rundenkonfigurationen wächst stark mit der Teilnehmerzahl, was die Auswahl der Spielpaarungen für die Folgerunde ggf. erschwert.
+
+\item Bei mehr als vier Teilnehmern gibt es mögliche Spielsequenzen, die kein vollständiges Ausspielen aller Begegnungen ohne Mehrfachbegegnungen zulassen ("`Verklemmung"').
+
+\end{itemize}
+
+Die empirische Analyse von Rundenkonfigurationen kleiner Teilnehmerzahlen bis $n=14$ ergab, dass die Verklemmung stets nach der drittletzten Runde aufzutreten scheint (auch wenn kein allgemeiner Beweis für diese Regel für alle $n$ erbracht werden konnte).
+
+Basierend auf diesen Untersuchungen wurde ein Algorithmus für die Abwicklung von Turnieren nach dem Spielprinzip "`Schweizer Leiter"' vorgestellt, der bis etwa zwanzig Teilnehmer eine vollständige, verklemmungsfreie Rundenbildung ermöglicht und für mehr als zwanzig Teilnehmer für bis zu $n-3$ Runden sicher funktioniert, was für reale Anwendungsfälle mehr als ausreichend ist.
+
+Ergänzend wurden noch die Grundzüge eines abgewandelten SL-Algorithmus skizziert, der eine Abwägung zwischen erlaubten Spielwiederholungen und dem Platzierungsabstand zweier Spielgegner ermöglicht.
 
 \end{document}
 
