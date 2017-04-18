@@ -143,7 +143,7 @@ void PlayerTabWidget::onCreatePlayerClicked()
 
 void PlayerTabWidget::onPlayerDoubleClicked(const QModelIndex& index)
 {
-  ui.playerView->onEditPlayerTriggered();
+  ui.playerView->onPlayerDoubleCLicked();
 }
 
 //----------------------------------------------------------------------------

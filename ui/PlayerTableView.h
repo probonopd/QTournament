@@ -56,6 +56,8 @@ protected:
 public slots:
   void onAddPlayerTriggered();
   void onEditPlayerTriggered();
+  void onPlayerDoubleCLicked();
+  void onShowPlayerInfoTriggered();
   void onRemovePlayerTriggered();
   void onShowNextMatchesForPlayerTriggered();
   void onRegisterPlayerTriggered();

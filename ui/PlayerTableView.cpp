@@ -151,20 +151,6 @@ void PlayerTableView::onEditPlayerTriggered()
   auto selectedPlayer = getSelectedPlayer();
   if (selectedPlayer == nullptr) return;
 
-  // query the current keyboard modifiers (Shift, Ctrl, ...)
-  auto keyMod = QGuiApplication::keyboardModifiers();
-
-  // Upon a plain double click (no shift, ...) display the
-  // player profile dialog and exit
-  if (keyMod == Qt::NoModifier)
-  {
-    DlgPlayerProfile dlg{*selectedPlayer, this};
-    dlg.exec();
-    return;
-  }
-
-  // in all other cases, proceed with editing the player settings
-
   DlgEditPlayer dlg(db, this, selectedPlayer.get());
 
   dlg.setModal(true);
@@ -236,6 +222,48 @@ void PlayerTableView::onEditPlayerTriggered()
       msg += tr("For the records: error code = ") + QString::number(static_cast<int> (e));
       QMessageBox::warning(this, tr("WTF??"), msg);
     }
+  }
+}
+
+//----------------------------------------------------------------------------
+
+void PlayerTableView::onPlayerDoubleCLicked()
+{
+  auto selectedPlayer = getSelectedPlayer();
+  if (selectedPlayer == nullptr) return;
+
+  // query the current keyboard modifiers (Shift, Ctrl, ...)
+  auto keyMod = QGuiApplication::keyboardModifiers();
+
+  // Upon a plain double click (no shift, ...) display the
+  // player profile dialog and exit
+  if (keyMod == Qt::NoModifier)
+  {
+    onShowPlayerInfoTriggered();
+    return;
+  }
+
+  // in all other cases, proceed with editing the player settings
+  onEditPlayerTriggered();
+}
+
+//----------------------------------------------------------------------------
+
+void PlayerTableView::onShowPlayerInfoTriggered()
+{
+  auto selectedPlayer = getSelectedPlayer();
+  if (selectedPlayer == nullptr) return;
+
+  // query the current keyboard modifiers (Shift, Ctrl, ...)
+  auto keyMod = QGuiApplication::keyboardModifiers();
+
+  // Upon a plain double click (no shift, ...) display the
+  // player profile dialog and exit
+  if (keyMod == Qt::NoModifier)
+  {
+    DlgPlayerProfile dlg{*selectedPlayer, this};
+    dlg.exec();
+    return;
   }
 }
 

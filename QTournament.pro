@@ -295,8 +295,8 @@ TRANSLATIONS = tournament_de.ts
 
 win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../SimpleReportGeneratorLib/release -lSimpleReportGenerator0
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../SimpleReportGeneratorLib/debug -lSimpleReportGenerator0
-else:unix:CONFIG(release, debug|release): LIBS += -L$$PWD/../SimpleReportGeneratorLib/release -lSimpleReportGenerator
-else:unix:CONFIG(debug, debug|release): LIBS += -L$$PWD/../SimpleReportGeneratorLib/debug -lSimpleReportGenerator
+else:unix:CONFIG(release, debug|release): LIBS += -L$$PWD/../SimpleReportGeneratorLib/release -lSimpleReportGenerator -L/usr/local/lib
+else:unix:CONFIG(debug, debug|release): LIBS += -L$$PWD/../SimpleReportGeneratorLib/debug -lSimpleReportGenerator -L/usr/local/lib
 
 INCLUDEPATH += $$PWD/../SimpleReportGeneratorLib
 DEPENDPATH += $$PWD/../SimpleReportGeneratorLib
