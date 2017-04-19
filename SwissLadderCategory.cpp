@@ -28,6 +28,7 @@
 #include "BracketGenerator.h"
 #include "CatMngr.h"
 #include "PlayerMngr.h"
+#include "CentralSignalEmitter.h"
 
 using namespace SqliteOverlay;
 
@@ -178,6 +179,7 @@ namespace QTournament
     QStringList newMatches;
     int pair1Rank = 0;
     int pair2Rank = 1;
+    bool isDeadlock = false;
     while ((pairCount - usedPairs.size()) > 1)   // one pair may be unsed in categories with an odd number of participants
     {
       // determine the smallest two indexes of unused players
@@ -218,6 +220,21 @@ namespace QTournament
         break;
       }
 
+      // if we weren't able to find a partner for the player pair
+      // ranked at position one, we've exhausted all possible
+      // match combinations without success.
+      //
+      // In this case, our match combinations in previous
+      // rounds were so unlucky that we can't establish another
+      // round without repeating an already played match.
+      //
+      // This ONLY happens after round "nPairs - 3" (1-based counting)
+      if ((pair1Rank == 0) && (pair2Rank < 0))
+      {
+        isDeadlock = true;
+        break;
+      }
+
       while ((pair1Rank > 0) && (pair2Rank < 0))
       {
         // oh well, we are in trouble... we couldn't find
@@ -252,6 +269,14 @@ namespace QTournament
       }
     }
 
+    // if we encountered a deadlock, remove all prepared future
+    // matches and match groups and then we're done
+    if (isDeadlock)
+    {
+      handleDeadlock();   // no result checking here for now
+      return true;
+    }
+
     // if we ever reach this point, newMatches contains a list of
     // strings that define the matches for the next round
     //
@@ -278,6 +303,74 @@ namespace QTournament
     }
 
     return true;
+  }
+
+  //----------------------------------------------------------------------------
+
+  ERR SwissLadderCategory::handleDeadlock() const
+  {
+    // genMatchesForNextRound() has found that there NO POSSIBLE combination
+    // of matches for the next round without repeating an already played
+    // match. ==> Deadlock.
+    //
+    // As a consequence, we have to terminate the category here.
+    //
+    // We delete all matches and match groups for the remaining
+    // rounds which implicitly shifts the category to COMPLETED after
+    // we're done here
+
+    int catId = getId();
+
+    // step 1: un-stage all staged match groups of this category
+    MatchMngr mm{db};
+    auto stagedMatchGroups = mm.getStagedMatchGroupsOrderedBySequence();
+    for (const MatchGroup& mg : stagedMatchGroups)
+    {
+      if (mg.getCategory().getId() != catId) continue;
+
+      ERR err = mm.unstageMatchGroup(mg);
+      if (err != OK) return err;   // shouldn't happen
+    }
+
+    // step 2: tell everyone that something baaaad is about to happen
+    CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
+    cse->beginResetAllModels();
+
+    //
+    // now the actual deletion starts
+    //
+
+    // deletion 1: bracket vis data, because it has only outgoing refs
+    //
+    // not necessary here because Swiss Ladder does not have any bracket vis data
+
+    // deletion 2: ranking data, because it has only outgoing refs
+    //
+    // not necessary here because we only delete matches for future rounds
+    // that do not yet have any ranking data assigned
+
+    // deletion 3a: matches of future match groups (rounds > last finished round; equivalent to: groups that are not yet FINISHED)
+    // deletion 3b: match groups for these future matches
+    for (const MatchGroup& mg : mm.getMatchGroupsForCat(*this))
+    {
+      if (mg.getState() != STAT_MG_FINISHED)
+      {
+        mm.deleteMatchGroupAndMatch(mg);
+      }
+    }
+
+    //
+    // deletion completed
+    //
+
+    // refresh all models and the reports tab
+    cse->endResetAllModels();
+
+    // update the category status to FINISHED
+    CatMngr cm{db};
+    cm.updateCatStatusFromMatchStatus(*this);
+
+    return OK;
   }
 
 //----------------------------------------------------------------------------
@@ -375,6 +468,21 @@ namespace QTournament
     {
       return -1;   // category not yet fully configured; can't calc rounds
     }
+
+    // primary choice: determine the number of rounds
+    // from the number of created match groups. This approach
+    // also covers the case that we have to reduce the number
+    // of possible rounds and thus the number of match groups
+    // in case we've encountered a deadlock after the third
+    // to last round
+    MatchMngr mm{db};
+    auto mgList = mm.getMatchGroupsForCat(*this);
+    if (mgList.size() > 0) return mgList.size();
+
+    // there might be cases in early phases of a category,
+    // when this function is called but match groups have not
+    // yet been created. In this case, we determine the number
+    // of rounds from the number of player pairs in this category
 
     PlayerPairList allPairs = getPlayerPairs();
     int nPairs = allPairs.size();

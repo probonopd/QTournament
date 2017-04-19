@@ -47,6 +47,7 @@ namespace QTournament
     SwissLadderCategory (TournamentDB* db, int rowId);
     SwissLadderCategory (TournamentDB* db, SqliteOverlay::TabRow row);
     bool genMatchesForNextRound() const;
+    ERR handleDeadlock() const;
 
   } ;
 }

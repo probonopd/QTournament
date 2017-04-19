@@ -268,6 +268,39 @@ namespace QTournament {
 
   //----------------------------------------------------------------------------
 
+  void MatchMngr::deleteMatchGroupAndMatch(const MatchGroup& mg) const
+  {
+    //
+    // USE WITH EXTREME CARE!!
+    //
+    // This is a bad-hack convenience function. It does not perform any
+    // further checking and DOES NOT EMIT ANY SIGNALS!!
+    //
+    // It assumes that you notify all models of the change yourself.
+    //
+    // The purpose of this function is to clean-up code for the
+    // deletion of running categories or the "shortening" of Swiss Ladder
+    // categores after a deadlock.
+    //
+    // MAKE SURE THAT INCOMING LINKS TO MATCH GROUP FROM THE RANKING TAB
+    // HAVE BEEN DELETED BEFORE!!
+    //
+    auto matchesInGroup = mg.getMatches();
+    for (const Match& ma : matchesInGroup)
+    {
+      int deletedSeqNum = ma.getSeqNum();
+      tab->deleteRowsByColumnValue("id", ma.getId());
+      fixSeqNumberAfterDelete(tab, deletedSeqNum);
+    }
+
+    // delete the group itself.
+    int deletedSeqNum = mg.getSeqNum();
+    groupTab->deleteRowsByColumnValue("id", mg.getId());
+    fixSeqNumberAfterDelete(groupTab, deletedSeqNum);
+  }
+
+  //----------------------------------------------------------------------------
+
   ERR MatchMngr::setPlayerPairsForMatch(const Match &ma, const PlayerPair &pp1, const PlayerPair &pp2)
   {
     //
@@ -1625,7 +1658,7 @@ namespace QTournament {
 
     // update the category's state to "FINALIZED", if necessary
     CatMngr catm{db};
-    catm.updateCatStatusFromMatchStatus(ma.getCategory());
+    catm.updateCatStatusFromMatchStatus(cat);
 
     // get the round status AFTER the match and check whether
     // we'e just finished a round

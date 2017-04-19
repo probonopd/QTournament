@@ -1123,11 +1123,10 @@ namespace QTournament
 
     CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
 
-    // determine whether we have at least one RUNING and/or one
-    // unfinished match in the category
+    // determine whether we have at least one RUNING
+    // match in the category
     MatchMngr mm{db};
     bool hasMatchRunning = false;
-    bool hasUnfinishedMatch = false;
     for (auto mg : mm.getMatchGroupsForCat(c))
     {
       hasMatchRunning = mg.hasMatchesInState(STAT_MA_RUNNING);
@@ -1136,7 +1135,7 @@ namespace QTournament
       if (hasMatchRunning) break;
     }
 
-    // if we're IDLE and least one match is being played,
+    // if we're IDLE and at least one match is being played,
     // change state to PLAYING
     if ((curStat == STAT_CAT_IDLE) && hasMatchRunning)
     {
@@ -1153,16 +1152,14 @@ namespace QTournament
 
     // if we've finished the last round
     // change state to FINALIZED
-    if ((curStat == STAT_CAT_PLAYING) && catIsFinished)
+    if ((curStat != STAT_CAT_FINALIZED) && catIsFinished)
     {
-      {
-        c.setState(STAT_CAT_FINALIZED);
-        cse->categoryStatusChanged(c, STAT_CAT_PLAYING, STAT_CAT_FINALIZED);
-        return;
-      }
+      c.setState(STAT_CAT_FINALIZED);
+      cse->categoryStatusChanged(c, STAT_CAT_PLAYING, STAT_CAT_FINALIZED);
+      return;
     }
 
-    // if we're PLAYING and where not finished
+    // if we're PLAYING and were not finished
     // change state back to IDLE
     if ((curStat == STAT_CAT_PLAYING) && !catIsFinished && !hasMatchRunning)
     {

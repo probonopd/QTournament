@@ -53,6 +53,9 @@ namespace QTournament
     unique_ptr<MatchGroup> createMatchGroup(const Category& cat, const int round, const int grpNum, ERR* err);
     unique_ptr<Match> createMatch(const MatchGroup& grp, ERR* err);
 
+    // deletion
+    void deleteMatchGroupAndMatch(const MatchGroup& mg) const;
+
     // retrievers / enumerators for MATCHES
     MatchList getCurrentlyRunningMatches() const;
     MatchList getFinishedMatches() const;
