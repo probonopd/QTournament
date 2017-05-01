@@ -82,6 +82,15 @@ namespace QTournament
     int pairCount = rankedPairs.size();
     assert(pairCount == getPlayerPairs().size());
 
+    // do we need a deadlock prevention check?
+    //
+    // This check is necessary when generating the matches
+    // for the round "nPairs - 3" in order to prevent
+    // deadlock AFTER playing that round
+    int maxRounds = ((pairCount % 2) == 0) ? pairCount - 1 : pairCount;
+    int nextRound = lastRound + 1;
+    bool needsDeadlockPrevention = (nextRound == (maxRounds - 3));
+
     // store a list of ALL matches that have been played
     // in the past in this category. Keep the list in
     // memory for fast and easy access later on. We'll use
@@ -210,6 +219,20 @@ namespace QTournament
 
         // no, the match has not been played
         newMatches.append(newMatchString);
+
+        // if we've found the last match for the next round, we
+        // need to make sure that the selected combination of matches
+        // does not lead to a deadlock AFTER playing the next round
+        //
+        // we only need to perform this check before the third to last round
+        if (needsDeadlockPrevention && (newMatches.size() == (pairCount % 2)))
+        {
+          if (!(deadlockPreventionCheck(pastMatches, newMatches)))
+          {
+            newMatches.pop_back();
+            continue;
+          }
+        }
 
         // mark the involved players as "used"
         usedPairs.append(rankedPairs_Int.at(pair1Rank));
@@ -371,6 +394,79 @@ namespace QTournament
     cm.updateCatStatusFromMatchStatus(*this);
 
     return OK;
+  }
+
+  //----------------------------------------------------------------------------
+
+  bool SwissLadderCategory::deadlockPreventionCheck(const QStringList& pastMatches, const QStringList& nextMatches) const
+  {
+    // check whether the selection of next matches causes
+    // a deadlock after playing those played matches in the next
+    // round
+
+
+    // Algorithm:
+    //
+    // Step 1: determine all matches for this category (means: all player pair combinations)
+    // Step 2: subtract what has been played in the previous rounds (pastMatches)
+    // Step 3: subtract what is to be played in the next round (nextMatches)
+    // Step 4: check if the remaining matches allow for at least one more round
+
+    //
+    // Step 1: determine all matches
+    //
+    PlayerPairList ppList = getPlayerPairs();
+    QStringList allMatches;
+    for (int idxFirst = 0; idxFirst < (ppList.size() - 1); ++idxFirst)
+    {
+      int idFirst = ppList.at(idxFirst).getPairId();
+
+      for (int idxSecond = idxFirst + 1; idxSecond < ppList.size(); ++idxSecond)
+      {
+        int idSecond = ppList.at(idxSecond).getPairId();
+
+        QString m = "%1,%2";
+        m = m.arg(idFirst);
+        m = m.arg(idSecond);
+        allMatches.push_back(m);
+      }
+    }
+
+    QStringList remainingMatches = allMatches;
+
+    //
+    // Step 2: subtract already played matches
+    //
+    // Note: in pastMatches, every match occurs twice: as "a,b" and "b,a"
+    for (const QString& m : pastMatches)
+    {
+      if (remainingMatches.contains(m)) remainingMatches.removeAll(m);
+    }
+
+    //
+    // Step 3: subtract next matches
+    //
+    // Note: to ensure to catch all applicable matches, we convert all entries
+    // in nextMatches from "a,b" to "b,a" and subtract the latter form as well
+    for (const QString& m : nextMatches)
+    {
+      QString pp1Id = m.split(",").at(0);
+      QString pp2Id = m.split(",").at(1);
+      QString swapped = pp2Id + "," + pp1Id;
+
+      if (remainingMatches.contains(m)) remainingMatches.removeAll(m);
+      if (remainingMatches.contains(swapped)) remainingMatches.removeAll(swapped);
+    }
+
+    //
+    // Step 4: check if we can create at least one more round from the
+    // remaining matches
+    //
+
+    // FIX: to be implemented!!
+
+    // dummy return value
+    return true;
   }
 
 //----------------------------------------------------------------------------
