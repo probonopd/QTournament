@@ -144,7 +144,8 @@ HEADERS += \
     ui/DlgPlayerProfile.h \
     ui/delegates/RefereeSelectionDelegate.h \
     ui/AutoSizingTable.h \
-    ui/delegates/BaseItemDelegate.h
+    ui/delegates/BaseItemDelegate.h \
+    SwissLadderGenerator.h
 
 SOURCES += \
     Category.cpp \
@@ -261,7 +262,8 @@ SOURCES += \
     ui/DlgPlayerProfile.cpp \
     ui/delegates/RefereeSelectionDelegate.cpp \
     ui/AutoSizingTable.cpp \
-    ui/delegates/BaseItemDelegate.cpp
+    ui/delegates/BaseItemDelegate.cpp \
+    SwissLadderGenerator.cpp
 
 RESOURCES += \
     tournament.qrc
