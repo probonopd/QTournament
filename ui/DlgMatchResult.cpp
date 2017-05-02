@@ -57,6 +57,14 @@ DlgMatchResult::DlgMatchResult(QWidget *parent, const Match& _ma) :
   // create a keyboard shortcut for setting a random result
   shortcutRandomResult = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_R), this, SLOT(onRandomResultTriggered()));
 
+  // if the dialog is used for modifying an existing
+  // match result, fill the dialog with the old
+  // match results
+  //
+  // the the match has no result yes, the call doesn't
+  // do any harm
+  fillControlsFromExistingMatchResult();
+
   // initialize buttons, label visibility etc.
   updateControls();
 }
@@ -224,6 +232,24 @@ bool DlgMatchResult::hasValidResult() const
   if (isGame3Necessary() && !g3Valid) validResult = false;
 
   return validResult;
+}
+
+//----------------------------------------------------------------------------
+
+void DlgMatchResult::fillControlsFromExistingMatchResult()
+{
+  if (ma.getState() != STAT_MA_FINISHED) return;
+  auto result = ma.getScore();
+  if (result == nullptr) return;
+
+  ui->game1Widget->setScore(*(result->getGame(0)));
+  ui->game2Widget->setScore(*(result->getGame(1)));
+  if (result->getNumGames() > 2)
+  {
+    ui->game3Widget->setScore(*(result->getGame(2)));
+  }
+
+  updateControls();
 }
 
 //----------------------------------------------------------------------------

@@ -43,6 +43,9 @@ namespace QTournament
     virtual ERR onRoundCompleted(int round) override;
     virtual PlayerPairList getRemainingPlayersAfterRound(int round, ERR *err) const override;
     
+    ModMatchResult canModifyMatchResult(const Match& ma) const override;
+    ModMatchResult modifyMatchResult(const Match& ma, const MatchScore& newScore) const override;
+
   private:
     SwissLadderCategory (TournamentDB* db, int rowId);
     SwissLadderCategory (TournamentDB* db, SqliteOverlay::TabRow row);

@@ -104,6 +104,7 @@ namespace QTournament
     ERR assignMatchToCourt(const Match& ma, const Court& court) const;
     unique_ptr<Court> autoAssignMatchToNextAvailCourt(const Match& ma, ERR* err, bool includeManualCourts=false) const;
     ERR setMatchScoreAndFinalizeMatch(const Match& ma, const MatchScore& score, bool isWalkover=false) const;
+    ERR updateMatchScore(const Match& ma, const MatchScore& newScore, bool winnerLoserChangePermitted) const;
     ERR setNextMatchForWinner(const Match& fromMatch, const Match& toMatch, int playerNum) const;
     ERR setNextMatchForLoser(const Match& fromMatch, const Match& toMatch, int playerNum) const;
     ERR walkover(const Match& ma, int playerNum) const;

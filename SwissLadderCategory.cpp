@@ -409,6 +409,47 @@ namespace QTournament
     return getPlayerPairs();
   }
 
+  //----------------------------------------------------------------------------
+
+  ModMatchResult SwissLadderCategory::canModifyMatchResult(const Match& ma) const
+  {
+    // the match has to be in FINISHED state
+    if (ma.getState() != STAT_MA_FINISHED) return ModMatchResult::NotPossible;
+
+    // if this match does not belong to us, we're not responsible
+    if (ma.getCategory().getMatchSystem() != SWISS_LADDER) return ModMatchResult::NotPossible;
+
+    // in Swiss Ladder, we can modify the results of
+    // matches in the currently running round BEFORE the round is finished
+    CatRoundStatus crs = getRoundStatus();
+    if (crs.getCurrentlyRunningRoundNumber() != ma.getMatchGroup().getRound())
+    {
+      return ModMatchResult::NotPossible;
+    }
+
+    // we can change everything
+    return ModMatchResult::WinnerLoser;
+  }
+
+  //----------------------------------------------------------------------------
+
+  ModMatchResult SwissLadderCategory::modifyMatchResult(const Match& ma, const MatchScore& newScore) const
+  {
+    ModMatchResult mmr = canModifyMatchResult(ma);
+
+    if ((mmr != ModMatchResult::ScoreOnly) && (mmr != ModMatchResult::WinnerLoser))
+    {
+      return mmr;
+    }
+
+    // IF we can modify the score, we can also change winner/loser
+    // information. Thus, we can set any score that's presented to us
+    MatchMngr mm{db};
+    ERR e = mm.updateMatchScore(ma, newScore, true);
+
+    return (e == OK) ? ModMatchResult::ModDone : ModMatchResult::NotPossible;
+  }
+
 //----------------------------------------------------------------------------
 
 

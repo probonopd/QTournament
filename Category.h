@@ -39,6 +39,17 @@ namespace QTournament
 {
   class CatRoundStatus;
   class RankingEntry;
+  class Match;
+  class MatchScore;
+
+  enum class ModMatchResult
+  {
+    NotImplemented,
+    NotPossible,
+    ScoreOnly,
+    WinnerLoser,
+    ModDone
+  };
 
   class Category : public TournamentDatabaseObject
   {
@@ -113,6 +124,13 @@ namespace QTournament
     virtual PlayerPairList getRemainingPlayersAfterRound(int round, ERR *err) const { throw std::runtime_error("Unimplemented Method: getRemainingPlayersAfterRound"); };
     virtual PlayerPairList getPlayerPairsForIntermediateSeeding() const { throw std::runtime_error("Unimplemented Method: getPlayerPairsForIntermediateSeeding"); };
     virtual ERR resolveIntermediateSeeding(const PlayerPairList& seed, ProgressQueue* progressNotificationQueue=nullptr) const { throw std::runtime_error("Unimplemented Method: resolveIntermediateSeeding"); };
+
+    //
+    // The following methods CAN be overwritten to extend the
+    // categories functionality
+    //
+    virtual ModMatchResult canModifyMatchResult(const Match& ma) const { return ModMatchResult::NotImplemented; }
+    virtual ModMatchResult modifyMatchResult(const Match& ma, const MatchScore& newScore) const { return ModMatchResult::NotImplemented; }
 
   private:
     Category (TournamentDB* db, int rowId);

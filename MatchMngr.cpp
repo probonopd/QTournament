@@ -1690,6 +1690,54 @@ namespace QTournament {
 
   //----------------------------------------------------------------------------
 
+  ERR MatchMngr::updateMatchScore(const Match& ma, const MatchScore& newScore, bool winnerLoserChangePermitted) const
+  {
+    //
+    // IMPORTANT:
+    // This method __blindly__ sets the match score to whatever is provided by
+    // the caller.
+    // It is the caller's responsibility to ensure that a modification of the
+    // match score is possible at all
+    //
+
+    // only modify finished matches
+    if (ma.getState() != STAT_MA_FINISHED) return WRONG_STATE;
+
+    // make sure the score itself is valid
+    Category cat = ma.getCategory();
+    bool isDrawAllowed = cat.isDrawAllowedInRound(ma.getMatchGroup().getRound());
+    int numWinGames = 2; // TODO: this needs to become a category parameter!
+    if (!(newScore.isValidScore(numWinGames, isDrawAllowed)))
+    {
+      return INVALID_MATCH_RESULT_FOR_CATEGORY_SETTINGS;
+    }
+
+    // if no change of the winner/loser is permitted, compare
+    // the new score with the old one
+    if (!winnerLoserChangePermitted)
+    {
+      unique_ptr<MatchScore> oldScore = ma.getScore();
+
+      if (oldScore->getWinner() != newScore.getWinner())
+      {
+        // well, the error code doesn't match exactly... but we just take what's there
+        return INCONSISTENT_MATCH_RESULT_STRING;
+      }
+    }
+
+    // everything is fine, so write the result to the database
+    int maId = ma.getId();
+    int maSeqNum = ma.getSeqNum();
+    TabRow matchRow = tab->operator [](maId);
+    matchRow.update(MA_RESULT, newScore.toString().toUtf8().constData());
+    CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
+    cse->matchResultUpdated(maId, maSeqNum);
+
+    return OK;
+  }
+
+  //----------------------------------------------------------------------------
+
   ERR MatchMngr::walkover(const Match& ma, int playerNum) const
   {
     // for a walkover, the match must be in READY, WAITING, RUNNING or BUSY

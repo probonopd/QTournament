@@ -21,6 +21,8 @@
 
 #include <QTableWidget>
 #include <QAbstractItemDelegate>
+#include <QMenu>
+#include <QAction>
 
 #include "TournamentDB.h"
 #include "Match.h"
@@ -36,14 +38,24 @@ class MatchLogTable : public CommonMatchTableWidget
 public:
   MatchLogTable(QWidget* parent);
   virtual ~MatchLogTable() {}
+  unique_ptr<Match> getSelectedMatch() const;
 
 public slots:
   void onMatchStatusChanged(int maId, int maSeqNum, OBJ_STATE oldStat, OBJ_STATE newStat);
+
+protected slots:
+  void onModMatchResultTriggered();
+  void onContextMenuRequested(const QPoint& pos);
 
 protected:
   virtual void hook_onDatabaseOpened() override;
 
   void fillFromDatabase();
+
+  unique_ptr<QMenu> contextMenu;
+  QAction* actModMatchResult;
+
+  void initContextMenu();
 };
 
 #endif // MATCHLOGTABLE_H

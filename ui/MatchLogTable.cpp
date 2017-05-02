@@ -20,16 +20,38 @@
 #include <QResizeEvent>
 #include <QScrollBar>
 #include <QTableWidgetItem>
+#include <QMessageBox>
 
 #include "MatchLogTable.h"
 #include "MatchMngr.h"
 #include "CentralSignalEmitter.h"
+#include "DlgMatchResult.h"
 
 MatchLogTable::MatchLogTable(QWidget* parent)
   :CommonMatchTableWidget{parent}
 {
   connect(CentralSignalEmitter::getInstance(), SIGNAL(matchStatusChanged(int,int,OBJ_STATE,OBJ_STATE)),
           this, SLOT(onMatchStatusChanged(int,int,OBJ_STATE,OBJ_STATE)), Qt::DirectConnection);
+
+  // handle context menu requests
+  setContextMenuPolicy(Qt::CustomContextMenu);
+  connect(this, SIGNAL(customContextMenuRequested(const QPoint&)),
+          this, SLOT(onContextMenuRequested(const QPoint&)));
+
+  // prep the context menu
+  initContextMenu();
+}
+
+//----------------------------------------------------------------------------
+
+unique_ptr<Match> MatchLogTable::getSelectedMatch() const
+{
+  if ((currentRow() < 0) || (currentItem() == nullptr)) return nullptr;
+
+  int maId = currentItem()->data(Qt::UserRole).toInt();
+
+  MatchMngr mm{db};
+  return mm.getMatch(maId);
 }
 
 //----------------------------------------------------------------------------
@@ -43,6 +65,117 @@ void MatchLogTable::onMatchStatusChanged(int maId, int maSeqNum, OBJ_STATE oldSt
   auto ma = mm.getMatch(maId);
   if (ma != nullptr) insertMatch(0, *ma);
   resizeRowToContents(0);
+}
+
+//----------------------------------------------------------------------------
+
+void MatchLogTable::onModMatchResultTriggered()
+{
+  upMatch ma = getSelectedMatch();
+  if (ma == nullptr) return;
+
+  // test if we can modify the match result at all
+  Category cat = ma->getCategory();
+  auto pCat = cat.convertToSpecializedObject();
+  if (pCat == nullptr) return;
+  ModMatchResult mmr = pCat->canModifyMatchResult(*ma);
+
+  // display an error message an abort
+  QString msg;
+  if (mmr == ModMatchResult::NotImplemented)
+  {
+    msg = tr("Modifying match results has not yet been implemented ");
+    msg += tr("for the match system that this match belongs to.\n\n");
+    msg += tr("Please wait for a later software release... ;)");
+  }
+  if (mmr == ModMatchResult::NotPossible)
+  {
+    msg = tr("The result of this match can't be modified anymore.\n\n");
+    msg += tr("The tournament has progressed too much.");
+  }
+
+  if (!(msg.isEmpty()))
+  {
+    QMessageBox::critical(this, "Modify match result", msg);
+    return;
+  }
+
+  // a warning if only limited changes are permitted
+  if (mmr == ModMatchResult::ScoreOnly)
+  {
+    msg = tr("<b>Please note:</b><br>");
+    msg += tr("You may modify the match result only to the extend ");
+    msg += tr("that the winner/loser doesn't change!");
+    QMessageBox::warning(this, "Modify match result", msg);
+  }
+
+  // display the dialog for entering match results
+  DlgMatchResult dlg{this, *ma};
+  int rc = dlg.exec();
+  if (rc != QDialog::Accepted)
+  {
+    return;
+  }
+  auto matchResult = dlg.getMatchScore();
+
+  // the following check should never trigger,
+  // because if there was no valid result, the user
+  // should not be able to hit the "Okay" button
+  if (matchResult == nullptr)
+  {
+    msg = tr("An error has occurred. The match result has not been changed.");
+    QMessageBox::critical(this, "Modify match result", msg);
+    return;
+  }
+
+  // try to apply the new score.
+  // if the user violated the "score only" constraint it
+  // will be detected by the category directly. thus, we do not need
+  // to perform any further checks here
+  mmr = pCat->modifyMatchResult(*ma, *matchResult);
+
+  if (mmr == ModMatchResult::ScoreOnly)
+  {
+    msg = tr("Winner/Loser of the new match result is not ");
+    msg += tr("identical with the winner/loser of the existing result.\n\n");
+    msg += tr("Can't change the winner/loser anymore for this match.\n\n");
+    msg += tr("Match result not updated.");
+    QMessageBox::critical(this, "Modify match result", msg);
+    return;
+  }
+
+  if (mmr != ModMatchResult::ModDone)
+  {
+    msg = tr("An unexpected error occured.\n\n");
+    msg += tr("Match result not updated.");
+    QMessageBox::critical(this, "Modify match result", msg);
+    return;
+  }
+
+}
+
+//----------------------------------------------------------------------------
+
+void MatchLogTable::onContextMenuRequested(const QPoint& pos)
+{
+  // map from scroll area coordinates to global widget coordinates
+  QPoint globalPos = viewport()->mapToGlobal(pos);
+
+  // resolve the click coordinates to the table row
+  int clickedRow = rowAt(pos.y());
+
+  // exit if no table row is under the cursor
+  if (clickedRow < 0) return;
+
+  // find out which match is selected
+  auto ma = getSelectedMatch();
+  if (ma == nullptr) return;  // shouldn't happen
+
+  // show the context menu
+  QAction* selectedItem = contextMenu->exec(globalPos);
+
+  if (selectedItem == nullptr) return; // user canceled
+
 }
 
 //----------------------------------------------------------------------------
@@ -74,6 +207,21 @@ void MatchLogTable::fillFromDatabase()
   {
     insertMatch(0, ma);
   }
+}
+
+//----------------------------------------------------------------------------
+
+void MatchLogTable::initContextMenu()
+{
+  // prepare all actions
+  actModMatchResult = new QAction(tr("Modify match result..."), this);
+
+  // create the context menu and connect it to the actions
+  contextMenu = make_unique<QMenu>();
+  contextMenu->addAction(actModMatchResult);
+
+  // connect actions and slots
+  connect(actModMatchResult, SIGNAL(triggered(bool)), this, SLOT(onModMatchResultTriggered()));
 }
 
 //----------------------------------------------------------------------------

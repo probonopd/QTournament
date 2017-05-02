@@ -54,6 +54,7 @@ private:
   bool isGame3Necessary() const;
   bool hasValidResult() const;
   QShortcut* shortcutRandomResult;
+  void fillControlsFromExistingMatchResult();
 };
 
 #endif // DLGMATCHRESULT_H
