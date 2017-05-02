@@ -405,12 +405,12 @@ namespace QTournament
     // Step 4: check if we can create at least one more round from the
     // remaining matches
     //
-    return !(canBuildAnotherRound(remain));
+    return !(canBuildAnotherRound(remain, nextMatches));
   }
 
   //----------------------------------------------------------------------------
 
-  bool SwissLadderGenerator::canBuildAnotherRound(const vector<tuple<int, int> >& matchSet) const
+  bool SwissLadderGenerator::canBuildAnotherRound(const vector<tuple<int, int> >& remain, const vector<tuple<int, int> >& nextMatches) const
   {
     // a list of indices to matchSet that make up a
     // match combination for the next round
@@ -418,7 +418,7 @@ namespace QTournament
 
     // a list of flags that tags each entry in matchSet as used or not
     vector<bool> isMatchUsed;
-    for (size_t i=0; i < matchSet.size(); ++i) isMatchUsed.push_back(false);
+    for (size_t i=0; i < remain.size(); ++i) isMatchUsed.push_back(false);
 
     // calculate the number of matches for a round
     size_t requiredMatchCount = ((ranking.size() % 2) == 0) ? ranking.size() / 2 : (ranking.size() - 1) / 2;
@@ -428,7 +428,7 @@ namespace QTournament
     {
       // find the next match that has not already been used
       // and that contains only "unused" player pairs
-      while (idxNextMatch < matchSet.size())
+      while (idxNextMatch < remain.size())
       {
         if (isMatchUsed[idxNextMatch])
         {
@@ -441,32 +441,62 @@ namespace QTournament
 
       // if we found a match, store it andint flag
       // all other matches with these player pairs as "used"
-      if (idxNextMatch < matchSet.size())
+      if (idxNextMatch < remain.size())
       {
         usedMatchSequence.push_back(idxNextMatch);
-        tuple<int, int> m = matchSet[idxNextMatch];
+        tuple<int, int> m = remain[idxNextMatch];
 
         // flag all matches with these two pairs
         // as "used".
-        flagMatchesWithPlayerPairOccurence(matchSet, isMatchUsed, m, true);
+        flagMatchesWithPlayerPairOccurence(remain, isMatchUsed, m, true);
 
         // start all over again
         idxNextMatch = 0;
-        continue;
+      }
+
+      // if we have an odd number of players and we just
+      // found a complete match combination, we need to
+      // make sure that the implicitly selected "bye" player
+      // is valid. Each player should only have ONE bye
+      if ((usedMatchSequence.size() == requiredMatchCount) && ((ranking.size() % 2) != 0))
+      {
+        vector<tuple<int, int>> matchSubset;
+        for (int idx : usedMatchSequence)
+        {
+          matchSubset.push_back(remain[idx]);
+        }
+
+        int byePairId = findByePlayerInMatchSet(matchSubset);
+        if (byePairId >= 0)
+        {
+          vector<int> potentialBye = getPotentialByePairs(nextMatches);
+          auto it = find(potentialBye.begin(), potentialBye.end(), byePairId);
+
+          // if the selected bye pair is not in the list
+          // of permitted bye players, we fake a "match not found"
+          // which causes the deletion of the last match in the
+          // following code block.
+          //
+          // This deletion, in turn, will cause another search iteration
+          if (it == potentialBye.end())
+          {
+            idxNextMatch = remain.size();
+          }
+        }
       }
 
       // if we couldn't find a match, then the previous match
       // selection was wrong. We undo the previous match selection
       // and continue with the next index
-      if (idxNextMatch == matchSet.size())
+      if (idxNextMatch == remain.size())
       {
         idxNextMatch = usedMatchSequence.back();
         usedMatchSequence.pop_back();
-        tuple<int, int> m = matchSet[idxNextMatch];
+        tuple<int, int> m = remain[idxNextMatch];
 
         // flag all matches with these two pairs
         // as "unused".
-        flagMatchesWithPlayerPairOccurence(matchSet, isMatchUsed, m, false);
+        flagMatchesWithPlayerPairOccurence(remain, isMatchUsed, m, false);
 
         // continue with the next match
         ++idxNextMatch;
@@ -474,7 +504,7 @@ namespace QTournament
         // stop criterion: if the list of used matches is empty
         // and we are requiredMatchCount matches away from the
         // end of the match list, there is no solution
-        if (usedMatchSequence.empty() && (idxNextMatch == (matchSet.size() - requiredMatchCount + 1)))
+        if (usedMatchSequence.empty() && (idxNextMatch == (remain.size() - requiredMatchCount + 1)))
         {
           return false;
         }
@@ -507,6 +537,59 @@ namespace QTournament
         flagList[i] = newState;
       }
     }
+  }
+
+  //----------------------------------------------------------------------------
+
+  vector<int> SwissLadderGenerator::getPotentialByePairs(const vector<tuple<int, int> >& optionalAdditionalMatches) const
+  {
+    unordered_map<int, int> matchCountCopy = matchCount;
+
+    for (const tuple<int, int>& m : optionalAdditionalMatches)
+    {
+      int pp1Id = get<0>(m);
+      int pp2Id = get<1>(m);
+
+      int& ref1 = matchCountCopy[pp1Id];
+      ++ref1;
+
+      int& ref2 = matchCountCopy[pp2Id];
+      ++ref2;
+    }
+
+    int nRounds = optionalAdditionalMatches.empty() ? roundsPlayed : (roundsPlayed + 1);
+
+    vector<int> result;
+    for (int ppId : ranking)
+    {
+      if (matchCountCopy.at(ppId) == nRounds) result.push_back(ppId);
+    }
+
+    return result;
+  }
+
+  //----------------------------------------------------------------------------
+
+  int SwissLadderGenerator::findByePlayerInMatchSet(const vector<tuple<int, int> >& matchSet) const
+  {
+    vector<int> allPlayers = ranking;
+
+    for (const tuple<int, int>& m : matchSet)
+    {
+      int ppId = get<0>(m);
+      auto it = find(allPlayers.begin(), allPlayers.end(), ppId);
+
+      // the following "if" should always be true, but let's be conservative...
+      if (it != allPlayers.end()) allPlayers.erase(it);
+
+      ppId = get<1>(m);
+      it = find(allPlayers.begin(), allPlayers.end(), ppId);
+      if (it != allPlayers.end()) allPlayers.erase(it);
+    }
+
+    if (allPlayers.empty()) return -1;
+
+    return allPlayers[0];
   }
 
 

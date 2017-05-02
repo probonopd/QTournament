@@ -46,8 +46,10 @@ namespace QTournament
     int getNextUnusedRank(const vector<bool>& isRankUsed, int minRank) const;
     int findOpponentRank(int pair1Rank, int minPair2Rank, const vector<bool>& isRankUsed, const vector<int> effPairList) const;
     bool matchSelectionCausesDeadlock(const vector<tuple<int, int>>& nextMatches);
-    bool canBuildAnotherRound(const vector<tuple<int, int>>& matchSet) const;
+    bool canBuildAnotherRound(const vector<tuple<int, int>>& remain, const vector<tuple<int, int>>& nextMatches) const;
     void flagMatchesWithPlayerPairOccurence(const vector<tuple<int, int> >& matchSet, vector<bool>& flagList, const tuple<int, int>& refMatch, bool newState) const;
+    vector<int> getPotentialByePairs(const vector<tuple<int, int> >& optionalAdditionalMatches) const;
+    int findByePlayerInMatchSet(const vector<tuple<int, int>>& matchSet = vector<tuple<int, int>>()) const;
 
   private:
     vector<int> ranking;
