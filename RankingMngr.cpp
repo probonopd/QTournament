@@ -362,15 +362,13 @@ namespace QTournament
     tuple<int, int> scoreSumOld = oldScore.getScoreSum();
     tuple<int, int> scoreSumNew = newScore.getScoreSum();
     int oldWonPoints_P1 = get<0>(scoreSumOld);
-    int oldLostPoints_P1 = oldScore.getPointsSum() - oldWonPoints_P1;
-    int oldWonPoints_P2 = get<1>(scoreSumOld);
-    int oldLostPoints_P2 = oldScore.getPointsSum() - oldWonPoints_P2;
     int newWonPoints_P1 = get<0>(scoreSumNew);
+    int deltaWonPoints_P1 = newWonPoints_P1 - oldWonPoints_P1;
+    int oldLostPoints_P1 = oldScore.getPointsSum() - oldWonPoints_P1;
     int newLostPoints_P1 = newScore.getPointsSum() - newWonPoints_P1;
-    int newWonPoints_P2 = get<1>(scoreSumNew);
-    int newLostPoints_P2 = newScore.getPointsSum() - newWonPoints_P2;
-    tuple<int, int> deltaPoints_P1{-oldWonPoints_P1 + newWonPoints_P1, -oldLostPoints_P1 + newLostPoints_P1};
-    tuple<int, int> deltaPoints_P2{-oldWonPoints_P2 + newWonPoints_P2, -oldLostPoints_P2 + newLostPoints_P2};
+    int deltaLostPoints_P1 = newLostPoints_P1 - oldLostPoints_P1;
+    tuple<int, int> deltaPoints_P1{deltaWonPoints_P1, deltaLostPoints_P1};
+    tuple<int, int> deltaPoints_P2{deltaLostPoints_P1, deltaWonPoints_P1};
 
     // determine who actually is P1 and P2
     int pp1Id = ma.getPlayerPair1().getPairId();
@@ -392,7 +390,7 @@ namespace QTournament
     w.addIntCol(RA_PAIR_REF, pp1Id);
     w.addIntCol(RA_ROUND, firstRoundToModify);
     auto re = getSingleObjectByWhereClause<RankingEntry>(w);
-    if (re == nullptr) return DATABASE_ERROR;  // shouldn't happen
+    if (re == nullptr) return OK;  // no ranking entries yet
     int grpNum = re->getGroupNumber();
 
     //

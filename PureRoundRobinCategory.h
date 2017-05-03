@@ -46,6 +46,9 @@ namespace QTournament
     int getIterationCount() const;
     static unique_ptr<PureRoundRobinCategory> getFromGenericCat(const Category& cat);
 
+    ModMatchResult canModifyMatchResult(const Match& ma) const override;
+    ModMatchResult modifyMatchResult(const Match& ma, const MatchScore& newScore) const override;
+
   private:
     PureRoundRobinCategory (TournamentDB* db, int rowId);
     PureRoundRobinCategory (TournamentDB* db, SqliteOverlay::TabRow row);

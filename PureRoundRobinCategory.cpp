@@ -76,6 +76,48 @@ namespace QTournament
     return (msys == ROUND_ROBIN) ? unique_ptr<PureRoundRobinCategory>(new PureRoundRobinCategory(cat.db, cat.row)) : nullptr;
   }
 
+  //----------------------------------------------------------------------------
+
+  ModMatchResult PureRoundRobinCategory::canModifyMatchResult(const Match& ma) const
+  {
+    // the match has to be in FINISHED state
+    if (ma.getState() != STAT_MA_FINISHED) return ModMatchResult::NotPossible;
+
+    // if this match does not belong to us, we're not responsible
+    if (ma.getCategory().getMatchSystem() != ROUND_ROBIN) return ModMatchResult::NotPossible;
+
+    // in round robins, we can modify the results of all matches
+    // at any time
+    return ModMatchResult::WinnerLoser;
+  }
+
+  //----------------------------------------------------------------------------
+
+  ModMatchResult PureRoundRobinCategory::modifyMatchResult(const Match& ma, const MatchScore& newScore) const
+  {
+    ModMatchResult mmr = canModifyMatchResult(ma);
+    if (mmr != ModMatchResult::WinnerLoser) return mmr;
+
+    //
+    // if we can modify the score, we can also change winner/loser
+    // information. Thus, we can set any score that's presented to us
+    // without further checks
+    //
+
+    // store the old match result
+    MatchScore oldScore = *(ma.getScore());  // is guaranteed to be != nullptr
+
+    // update the match
+    MatchMngr mm{db};
+    ERR e = mm.updateMatchScore(ma, newScore, true);
+    if (e != OK) return ModMatchResult::NotPossible;
+
+    // update all affected ranking entries
+    RankingMngr rm{db};
+    e = rm.updateRankingsAfterMatchResultChange(ma, oldScore);
+    return (e == OK) ? ModMatchResult::ModDone : ModMatchResult::NotPossible;
+  }
+
 //----------------------------------------------------------------------------
 
   ERR PureRoundRobinCategory::canFreezeConfig()
