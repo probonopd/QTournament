@@ -19,6 +19,7 @@
 #include <stdexcept>
 #include <algorithm>
 
+#include <SqliteOverlay/Transaction.h>
 #include <QDebug>
 
 #include "RankingMngr.h"
@@ -296,6 +297,198 @@ namespace QTournament
     if (re == nullptr) return -1;
 
     return re->getRound();
+  }
+
+  //----------------------------------------------------------------------------
+
+  ERR RankingMngr::updateRankingsAfterMatchResultChange(const Match& ma, const MatchScore& oldScore) const
+  {
+    if (ma.getState() != STAT_MA_FINISHED) return WRONG_STATE;
+
+    Category cat = ma.getCategory();
+    int catId = cat.getId();
+    int firstRoundToModify = ma.getMatchGroup().getRound();
+
+    // determine the score differences (delta) for each affected player pair
+    MatchScore newScore = *(ma.getScore());  // is guaranteed to be != nullptr
+    tuple<int, int, int> deltaMatches_P1{0,0,0};  // to be added to PlayerPair1
+    tuple<int, int, int> deltaMatches_P2{0,0,0};  // to be added to PlayerPair2
+
+    int oldWinner = oldScore.getWinner();
+    int newWinner = newScore.getWinner();
+    if ((oldWinner == 0) && (newWinner == 1))
+    {
+      deltaMatches_P1 = tuple<int, int, int>{1, 0, -1};
+      deltaMatches_P2 = tuple<int, int, int>{0, 1, -1};
+    }
+    if ((oldWinner == 0) && (newWinner == 2))
+    {
+      deltaMatches_P1 = tuple<int, int, int>{0, 1, -1};
+      deltaMatches_P2 = tuple<int, int, int>{1, 0, -1};
+    }
+    if ((oldWinner == 1) && (newWinner == 0))
+    {
+      deltaMatches_P1 = tuple<int, int, int>{-1, 0, 1};
+      deltaMatches_P2 = tuple<int, int, int>{0, -1, 1};
+    }
+    if ((oldWinner == 2) && (newWinner == 0))
+    {
+      deltaMatches_P1 = tuple<int, int, int>{0, -1, 1};
+      deltaMatches_P2 = tuple<int, int, int>{-1, 0, 1};
+    }
+    if ((oldWinner == 1) && (newWinner == 2))
+    {
+      deltaMatches_P1 = tuple<int, int, int>{-1, 1, 0};
+      deltaMatches_P2 = tuple<int, int, int>{1, -1, 0};
+    }
+    if ((oldWinner == 2) && (newWinner == 1))
+    {
+      deltaMatches_P1 = tuple<int, int, int>{1, -1, 0};
+      deltaMatches_P2 = tuple<int, int, int>{-1, 1, 0};
+    }
+
+    tuple<int, int> gameSumOld = oldScore.getGameSum();
+    tuple<int, int> gameSumNew = newScore.getGameSum();
+    int gamesTotalOld = get<0>(gameSumOld) + get<1>(gameSumOld);
+    int gamesTotalNew = get<0>(gameSumNew) + get<1>(gameSumNew);
+
+    int deltaWonGamesP1 = -get<0>(gameSumOld) + get<0>(gameSumNew);
+    int deltaLostGamesP1 = -(gamesTotalOld - get<0>(gameSumOld)) + (gamesTotalNew - get<0>(gameSumNew));
+    int deltaWonGamesP2 = -get<1>(gameSumOld) + get<1>(gameSumNew);
+    int deltaLostGamesP2 = -(gamesTotalOld - get<1>(gameSumOld)) + (gamesTotalNew - get<1>(gameSumNew));
+    tuple<int, int> deltaGames_P1{deltaWonGamesP1, deltaLostGamesP1};  // to be added to PlayerPair1
+    tuple<int, int> deltaGames_P2{deltaWonGamesP2, deltaLostGamesP2};  // to be added to PlayerPair2
+
+    tuple<int, int> scoreSumOld = oldScore.getScoreSum();
+    tuple<int, int> scoreSumNew = newScore.getScoreSum();
+    int oldWonPoints_P1 = get<0>(scoreSumOld);
+    int oldLostPoints_P1 = oldScore.getPointsSum() - oldWonPoints_P1;
+    int oldWonPoints_P2 = get<1>(scoreSumOld);
+    int oldLostPoints_P2 = oldScore.getPointsSum() - oldWonPoints_P2;
+    int newWonPoints_P1 = get<0>(scoreSumNew);
+    int newLostPoints_P1 = newScore.getPointsSum() - newWonPoints_P1;
+    int newWonPoints_P2 = get<1>(scoreSumNew);
+    int newLostPoints_P2 = newScore.getPointsSum() - newWonPoints_P2;
+    tuple<int, int> deltaPoints_P1{-oldWonPoints_P1 + newWonPoints_P1, -oldLostPoints_P1 + newLostPoints_P1};
+    tuple<int, int> deltaPoints_P2{-oldWonPoints_P2 + newWonPoints_P2, -oldLostPoints_P2 + newLostPoints_P2};
+
+    // determine who actually is P1 and P2
+    int pp1Id = ma.getPlayerPair1().getPairId();
+    int pp2Id = ma.getPlayerPair2().getPairId();
+
+    // find the first entry to modify
+
+    // derive the group number of the affected ranking entries
+    //
+    // we may only modify subsequent entries with the same
+    // group number as the initial number. Thus, we prevent
+    // a modification of e.g. the ranking entries in a KO-phase
+    // after we started modifications in the round robin phase.
+    //
+    // we get the group number from the first entry of the
+    // first player pair to be modified
+    WhereClause w;
+    w.addIntCol(RA_CAT_REF, catId);
+    w.addIntCol(RA_PAIR_REF, pp1Id);
+    w.addIntCol(RA_ROUND, firstRoundToModify);
+    auto re = getSingleObjectByWhereClause<RankingEntry>(w);
+    if (re == nullptr) return DATABASE_ERROR;  // shouldn't happen
+    int grpNum = re->getGroupNumber();
+
+    //
+    // a helper function that does the actual modification
+    //
+    auto doMod = [&](int pairId, const tuple<int, int, int>& matchDelta,
+                     const tuple<int, int>& gamesDelta, const tuple<int, int>& pointsDelta)
+    {
+      // let's build a where clause that captures all entries
+      // to modified
+      w.clear();
+      w.addIntCol(RA_CAT_REF, catId);
+      w.addIntCol(RA_PAIR_REF, pairId);
+      w.addIntCol(RA_ROUND, ">=", firstRoundToModify);
+      w.addIntCol(RA_GRP_NUM, grpNum);
+      DbTab::CachingRowIterator it = tab->getRowsByWhereClause(w);
+      while (!(it.isEnd()))
+      {
+        TabRow r = *it;
+
+        vector<tuple <string, int>> colDelta = {
+          {RA_MATCHES_WON, get<0>(matchDelta)},
+          {RA_MATCHES_LOST, get<1>(matchDelta)},
+          {RA_MATCHES_DRAW, get<2>(matchDelta)},
+          {RA_GAMES_WON, get<0>(gamesDelta)},
+          {RA_GAMES_LOST, get<1>(gamesDelta)},
+          {RA_POINTS_WON, get<0>(pointsDelta)},
+          {RA_POINTS_LOST, get<1>(pointsDelta)},
+        };
+
+        for (const tuple<string, int>& cd : colDelta)
+        {
+          int dbErr;
+          int oldVal = r.getInt(get<0>(cd));
+          r.update(get<0>(cd), oldVal + get<1>(cd), &dbErr);
+          if (dbErr != SQLITE_DONE) return false;
+        }
+
+        ++it;
+      }
+
+      return true;
+    };
+    //------------------------- end of helper func -------------------
+
+    // start a new transaction to make sure that
+    // the database remains consistent in case something goes wrong
+    auto trans = db->startTransaction();
+    if (trans == nullptr) return DATABASE_ERROR;
+
+    // modify the ranking entries
+    bool isOkay = doMod(pp1Id, deltaMatches_P1, deltaGames_P1, deltaPoints_P1);
+    if (!isOkay)
+    {
+      trans->rollback();
+      return DATABASE_ERROR;
+    }
+    isOkay = doMod(pp2Id, deltaMatches_P2, deltaGames_P2, deltaPoints_P2);
+    if (!isOkay)
+    {
+      trans->rollback();
+      return DATABASE_ERROR;
+    }
+
+    // now we have to re-sort the entries, round by round
+    auto specializedCat = cat.convertToSpecializedObject();
+    auto lessThanFunc = specializedCat->getLessThanFunction();
+    int round = firstRoundToModify;
+    while (true)
+    {
+      w.clear();
+      w.addIntCol(RA_CAT_REF, catId);
+      w.addIntCol(RA_ROUND, round);
+      w.addIntCol(RA_GRP_NUM, grpNum);
+
+      // get the ranking entries
+      RankingEntryList rankList = getObjectsByWhereClause<RankingEntry>(w);
+      if (rankList.empty()) break;   // no more rounds to modify
+
+      // call the standard sorting algorithm
+      std::sort(rankList.begin(), rankList.end(), lessThanFunc);
+
+      // write the sort results back to the database
+      int rank = 1;
+      for (RankingEntry re : rankList)
+      {
+        re.row.update(RA_RANK, rank);
+        ++rank;
+      }
+
+      ++round;
+    }
+
+    // Done. Finish the transaction
+    isOkay = trans->commit();
+    return isOkay ? OK : DATABASE_ERROR;
   }
 
 //----------------------------------------------------------------------------

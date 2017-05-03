@@ -59,6 +59,8 @@ namespace QTournament
 
     int getHighestRoundWithRankingEntryForPlayerPair(const Category &cat, const PlayerPair &pp) const;
 
+    ERR updateRankingsAfterMatchResultChange(const Match& ma, const MatchScore& oldScore) const;
+
   private:
 
   signals:
