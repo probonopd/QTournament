@@ -48,6 +48,7 @@ namespace QTournament
 
   protected:
     unique_ptr<Match> getFollowUpMatch(const Match& ma, bool searchLoserNotWinner) const;
+    ERR rewriteFinalRankForMultipleRounds(int minRound = 1, int maxRound = -1) const;
 
   private:
     EliminationCategory (TournamentDB* db, int rowId, int eliminationMode);

@@ -51,6 +51,7 @@ namespace QTournament
     RankingEntryList createUnsortedRankingEntriesForLastRound(const Category &cat, ERR *err=nullptr, PlayerPairList _ppList=PlayerPairList(), bool reset=false);
     RankingEntryListList sortRankingEntriesForLastRound(const Category &cat, ERR *err=nullptr) const;
     ERR forceRank(const RankingEntry& re, int rank) const;
+    ERR clearRank(const RankingEntry& re) const;
     void fillRankGaps(const Category& cat, int round, int maxRank);
 
     unique_ptr<RankingEntry> getRankingEntry(const PlayerPair &pp, int round) const;
@@ -59,7 +60,7 @@ namespace QTournament
 
     int getHighestRoundWithRankingEntryForPlayerPair(const Category &cat, const PlayerPair &pp) const;
 
-    ERR updateRankingsAfterMatchResultChange(const Match& ma, const MatchScore& oldScore) const;
+    ERR updateRankingsAfterMatchResultChange(const Match& ma, const MatchScore& oldScore, bool skipSorting=false) const;
 
   private:
 

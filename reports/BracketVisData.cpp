@@ -257,6 +257,46 @@ void BracketVisData::fillMissingPlayerNames() const
 
 //----------------------------------------------------------------------------
 
+void BracketVisData::clearExplicitPlayerPairReferences(const PlayerPair& pp) const
+{
+  // This is the opposite of fillMissingPlayerNames():
+  //
+  // All explicit references to a specific player pair are erased from the
+  // bracket visualization data. This affects only elements without match
+  // references ("gap elements").
+  //
+  // We need this function after changing a match score and the new score
+  // results in a change of winner / loser. In this case, the existing
+  // explicit references to the affected player pairs are not correct anymore.
+  //
+  // So we erase the references here and they will be re-filled automatically
+  // by the next call to fillMissingPlayerNames() based on the updated match result
+
+  int catId = cat.getId();
+
+  WhereClause w;
+  w.addIntCol(BV_CAT_REF, catId);
+  w.addIntCol(BV_PAIR1_REF, pp.getPairId());
+  DbTab::CachingRowIterator it = tab->getRowsByWhereClause(w);
+  while (!(it.isEnd()))
+  {
+    (*it).updateToNull(BV_PAIR1_REF);
+    ++it;
+  }
+
+  w.clear();
+  w.addIntCol(BV_CAT_REF, catId);
+  w.addIntCol(BV_PAIR2_REF, pp.getPairId());
+  it = tab->getRowsByWhereClause(w);
+  while (!(it.isEnd()))
+  {
+    (*it).updateToNull(BV_PAIR2_REF);
+    ++it;
+  }
+}
+
+//----------------------------------------------------------------------------
+
 BracketVisData::BracketVisData(TournamentDB* _db, const Category& _cat)
 : TournamentDatabaseObjectManager(_db, TAB_BRACKET_VIS), cat(_cat)
 {

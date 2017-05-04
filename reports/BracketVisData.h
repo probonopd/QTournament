@@ -193,6 +193,7 @@ namespace QTournament
     void addElement(int idx, const RawBracketVisElement& el);
 
     void fillMissingPlayerNames() const;
+    void clearExplicitPlayerPairReferences(const PlayerPair& pp) const;
 
   private:
     BracketVisData(TournamentDB* _db, const Category& _cat);

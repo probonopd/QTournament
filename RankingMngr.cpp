@@ -301,7 +301,7 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  ERR RankingMngr::updateRankingsAfterMatchResultChange(const Match& ma, const MatchScore& oldScore) const
+  ERR RankingMngr::updateRankingsAfterMatchResultChange(const Match& ma, const MatchScore& oldScore, bool skipSorting) const
   {
     if (ma.getState() != STAT_MA_FINISHED) return WRONG_STATE;
 
@@ -405,7 +405,12 @@ namespace QTournament
       w.addIntCol(RA_CAT_REF, catId);
       w.addIntCol(RA_PAIR_REF, pairId);
       w.addIntCol(RA_ROUND, ">=", firstRoundToModify);
-      w.addIntCol(RA_GRP_NUM, grpNum);
+      if (grpNum > 0)
+      {
+        w.addIntCol(RA_GRP_NUM, grpNum);   // a dedicated group number (1, 2, 3...)
+      } else {
+        w.addIntCol(RA_GRP_NUM, "<", 0);   // a functional number (iteration, quarter finals, ...)
+      }
       DbTab::CachingRowIterator it = tab->getRowsByWhereClause(w);
       while (!(it.isEnd()))
       {
@@ -456,32 +461,40 @@ namespace QTournament
     }
 
     // now we have to re-sort the entries, round by round
-    auto specializedCat = cat.convertToSpecializedObject();
-    auto lessThanFunc = specializedCat->getLessThanFunction();
-    int round = firstRoundToModify;
-    while (true)
+    // UNLESS the caller decided to skip the sorting.
+    //
+    // skipping the sorting (and thus assigning ranks) is only
+    // usefull in bracket matches where ranks are not derived
+    // from points but from bracket logic
+    if (!skipSorting)
     {
-      w.clear();
-      w.addIntCol(RA_CAT_REF, catId);
-      w.addIntCol(RA_ROUND, round);
-      w.addIntCol(RA_GRP_NUM, grpNum);
-
-      // get the ranking entries
-      RankingEntryList rankList = getObjectsByWhereClause<RankingEntry>(w);
-      if (rankList.empty()) break;   // no more rounds to modify
-
-      // call the standard sorting algorithm
-      std::sort(rankList.begin(), rankList.end(), lessThanFunc);
-
-      // write the sort results back to the database
-      int rank = 1;
-      for (RankingEntry re : rankList)
+      auto specializedCat = cat.convertToSpecializedObject();
+      auto lessThanFunc = specializedCat->getLessThanFunction();
+      int round = firstRoundToModify;
+      while (true)
       {
-        re.row.update(RA_RANK, rank);
-        ++rank;
-      }
+        w.clear();
+        w.addIntCol(RA_CAT_REF, catId);
+        w.addIntCol(RA_ROUND, round);
+        w.addIntCol(RA_GRP_NUM, grpNum);
 
-      ++round;
+        // get the ranking entries
+        RankingEntryList rankList = getObjectsByWhereClause<RankingEntry>(w);
+        if (rankList.empty()) break;   // no more rounds to modify
+
+        // call the standard sorting algorithm
+        std::sort(rankList.begin(), rankList.end(), lessThanFunc);
+
+        // write the sort results back to the database
+        int rank = 1;
+        for (RankingEntry re : rankList)
+        {
+          re.row.update(RA_RANK, rank);
+          ++rank;
+        }
+
+        ++round;
+      }
     }
 
     // Done. Finish the transaction
@@ -576,8 +589,16 @@ namespace QTournament
   {
     if (rank < 1) return INVALID_RANK;
 
-    QVariantList qvl;
     re.row.update(RA_RANK, rank);
+
+    return OK;
+  }
+
+  //----------------------------------------------------------------------------
+
+  ERR RankingMngr::clearRank(const RankingEntry& re) const
+  {
+    re.row.updateToNull(RA_RANK);
 
     return OK;
   }

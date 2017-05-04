@@ -31,6 +31,7 @@
 #include "MatchMngr.h"
 #include "CatMngr.h"
 #include "RankingMngr.h"
+#include "reports/BracketVisData.h"
 
 using namespace SqliteOverlay;
 
@@ -155,8 +156,8 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  // this return a function that should return true if "a" goes before "b" when sorting. Read:
-  // return a function that return true true if the score of "a" is better than "b"
+  // this returns a function that should return true if "a" goes before "b" when sorting. Read:
+  // return a function that returns true true if the score of "a" is better than "b"
   std::function<bool (RankingEntry& a, RankingEntry& b)> EliminationCategory::getLessThanFunction()
   {
     return [](RankingEntry& a, RankingEntry& b) {
@@ -206,37 +207,9 @@ namespace QTournament
 
     // set the rank for all players that ended up at a final rank
     // in this or any prior round
-    MatchMngr mm{db};
-    for (int r=1; r <= round; ++r)
-    {
-      for (MatchGroup mg : mm.getMatchGroupsForCat(*this, r))
-      {
-        for (Match ma : mg.getMatches())
-        {
-          int winnerRank = ma.getWinnerRank();
-          if (winnerRank > 0)
-          {
-            auto w = ma.getWinner();
-            assert(w != nullptr);
-            auto re = rm.getRankingEntry(*w, round);
-            assert(re != nullptr);
-            rm.forceRank(*re, winnerRank);
-          }
+    err = rewriteFinalRankForMultipleRounds(round, round);
 
-          int loserRank = ma.getLoserRank();
-          if (loserRank > 0)
-          {
-            auto l = ma.getLoser();
-            assert(l != nullptr);
-            auto re = rm.getRankingEntry(*l, round);
-            assert(re != nullptr);
-            rm.forceRank(*re, loserRank);
-          }
-        }
-      }
-    }
-
-    return OK;
+    return err;
   }
 
 //----------------------------------------------------------------------------
@@ -453,6 +426,15 @@ namespace QTournament
         ERR e = mm.swapPlayer(*loserMatch, oldLoser, oldWinner);
         if (e != OK) return ModMatchResult::NotPossible;
       }
+
+      // delete explicit references to the affected pair in the
+      // bracket visualization
+      auto bvd = BracketVisData::getExisting(ma.getCategory());
+      if (bvd != nullptr)
+      {
+        bvd->clearExplicitPlayerPairReferences(oldWinner);
+        bvd->clearExplicitPlayerPairReferences(oldLoser);
+      }
     }
 
     // update the match score
@@ -463,13 +445,25 @@ namespace QTournament
       return ModMatchResult::NotPossible;
     }
 
-    // commit the changes up to this point
-    //bool isOkay = trans->commit();
-    //if (!isOkay) return ModMatchResult::NotPossible;
+    // update the ranking entries but skip the assignment of ranks
+    RankingMngr rm{db};
+    e = rm.updateRankingsAfterMatchResultChange(ma, oldScore, true);
+    if (e != OK) return ModMatchResult::NotPossible;
 
+    // the previous call did not properly update the assigned
+    // ranks, because ranking in bracket matches works different
+    // than in other match system.
+    // thus, we call a special function that directly modifies
+    // the ranks directly.
     //
-    // FIX: update the ranking entries
-    //
+    // we only need to do this if we modified a match of a completed
+    // round. otherwise there aren't any RankingEntries to modify at all
+    CatRoundStatus crs = getRoundStatus();
+    if (ma.getMatchGroup().getRound() <= crs.getFinishedRoundsCount())
+    {
+      e = rewriteFinalRankForMultipleRounds(ma.getMatchGroup().getRound());
+      if (e != OK) return ModMatchResult::NotPossible;
+    }
 
     return ModMatchResult::ModDone;
   }
@@ -524,6 +518,86 @@ namespace QTournament
     if (resultRow == nullptr) return nullptr;
     MatchMngr mm{db};
     return mm.getMatch(resultRow->getId());
+  }
+
+  //----------------------------------------------------------------------------
+
+  ERR EliminationCategory::rewriteFinalRankForMultipleRounds(int minRound, int maxRound) const
+  {
+    // some boundary checks
+    if (minRound < 1) return INVALID_ROUND;
+    CatRoundStatus crs = getRoundStatus();
+    int lastCompletedRound = crs.getFinishedRoundsCount();
+    if (lastCompletedRound < 1) return INVALID_ROUND;
+    if (minRound > lastCompletedRound) return INVALID_ROUND;
+    if (maxRound < 1) maxRound = lastCompletedRound;
+    if (maxRound < minRound) return INVALID_ROUND;
+    if (maxRound > lastCompletedRound) return INVALID_ROUND;
+
+    // start a pretty inefficient algorithm that goes through
+    // all round from "min" to "max" and loop over all
+    // round from "1" to "current" in every itegration...
+    MatchMngr mm{db};
+    RankingMngr rm{db};
+    for (int curRound = minRound; curRound <= maxRound; ++curRound)
+    {
+      vector<int> pairsWithRank;
+
+      for (int r=1; r <= curRound; ++r)
+      {
+        for (MatchGroup mg : mm.getMatchGroupsForCat(*this, r))
+        {
+          for (Match ma : mg.getMatches())
+          {
+            int winnerRank = ma.getWinnerRank();
+            if (winnerRank > 0)
+            {
+              // we never go beyong the last completed round,
+              // so we should always have a winner and an
+              // associated (unsorted) ranking entry
+              auto w = ma.getWinner();
+              assert(w != nullptr);
+              auto re = rm.getRankingEntry(*w, curRound);
+              assert(re != nullptr);
+              rm.forceRank(*re, winnerRank);
+              pairsWithRank.push_back(w->getPairId());
+            }
+
+            int loserRank = ma.getLoserRank();
+            if (loserRank > 0)
+            {
+              // we never go beyong the last completed round,
+              // so we should always have a loser and an
+              // associated (unsorted) ranking entry
+              auto l = ma.getLoser();
+              assert(l != nullptr);
+              auto re = rm.getRankingEntry(*l, curRound);
+              assert(re != nullptr);
+              rm.forceRank(*re, loserRank);
+              pairsWithRank.push_back(l->getPairId());
+            }
+          }
+        }
+      }
+
+      // clear the rank of all "unranked" pairs, just be sure
+      // (otherwise, stale ranks might survive a
+      // change of a match result)
+      for (const PlayerPair& pp : getPlayerPairs())
+      {
+        // skip all PlayerPairs with an already assigned rank
+        if (Sloppy::isInVector<int>(pairsWithRank, pp.getPairId())) continue;
+
+        // set the rank to "Not assigned"
+        auto re = rm.getRankingEntry(pp, curRound);
+        if (re != nullptr)
+        {
+          rm.clearRank(*re);
+        }
+      }
+    }
+
+    return OK;
   }
 
 //----------------------------------------------------------------------------
