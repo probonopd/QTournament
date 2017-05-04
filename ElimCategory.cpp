@@ -18,6 +18,8 @@
 
 #include <QDebug>
 
+#include <SqliteOverlay/Transaction.h>
+
 #include "ElimCategory.h"
 #include "KO_Config.h"
 #include "CatRoundStatus.h"
@@ -371,6 +373,157 @@ namespace QTournament
     // list survives this round
     if (err != nullptr) *err = OK;
     return result;
+  }
+
+  //----------------------------------------------------------------------------
+
+  ModMatchResult EliminationCategory::canModifyMatchResult(const Match& ma) const
+  {
+    // the match has to be in FINISHED state
+    if (ma.getState() != STAT_MA_FINISHED) return ModMatchResult::NotPossible;
+
+    // if this match does not belong to us, we're not responsible
+    if (ma.getCategory().getId() != getId()) return ModMatchResult::NotPossible;
+
+    // if the winner's and the loser's match have both not yet been started,
+    // we can still change the winner/loser. Otherwise we can only apply
+    // cosmetic changes to the score
+    upMatch winnerMatch = getFollowUpMatch(ma, false);
+    upMatch loserMatch = getFollowUpMatch(ma, true);
+    bool canModWinnerLoser = true;
+    if (winnerMatch != nullptr)
+    {
+      OBJ_STATE stat = winnerMatch->getState();
+      if ((stat == STAT_MA_RUNNING) || (stat == STAT_MA_FINISHED))
+      {
+        canModWinnerLoser = false;
+      }
+    }
+    if (loserMatch != nullptr)
+    {
+      OBJ_STATE stat = loserMatch->getState();
+      if ((stat == STAT_MA_RUNNING) || (stat == STAT_MA_FINISHED))
+      {
+        canModWinnerLoser = false;
+      }
+    }
+
+    return canModWinnerLoser ? ModMatchResult::WinnerLoser : ModMatchResult::ScoreOnly;
+  }
+
+  //----------------------------------------------------------------------------
+
+  ModMatchResult EliminationCategory::modifyMatchResult(const Match& ma, const MatchScore& newScore) const
+  {
+    ModMatchResult mmr = canModifyMatchResult(ma);
+    if ((mmr != ModMatchResult::ScoreOnly) && (mmr != ModMatchResult::WinnerLoser)) return mmr;
+
+    // does the new score modify the winner/loser?
+    MatchScore oldScore = *(ma.getScore());
+    bool isWinnerMod = (oldScore.getWinner() != newScore.getWinner());
+
+    // if the new score modifies the winner / loser
+    // and this was not permitted, we return with "ScoreOnly" to indicate an error
+    if ((mmr == ModMatchResult::ScoreOnly) && isWinnerMod)
+    {
+      return ModMatchResult::ScoreOnly;
+    }
+
+    // start a new database transaction to ensure
+    // consistent modifications
+    //auto trans = db->startTransaction();
+
+    // swap winner / loser in the follow-up matches
+    MatchMngr mm{db};
+    if (isWinnerMod)
+    {
+      PlayerPair oldWinner = *(ma.getWinner());
+      PlayerPair oldLoser = *(ma.getLoser());
+
+      upMatch winnerMatch = getFollowUpMatch(ma, false);
+      upMatch loserMatch = getFollowUpMatch(ma, true);
+
+      if (winnerMatch != nullptr)
+      {
+        ERR e = mm.swapPlayer(*winnerMatch, oldWinner, oldLoser);
+        if (e != OK) return ModMatchResult::NotPossible;
+      }
+      if (loserMatch != nullptr)
+      {
+        ERR e = mm.swapPlayer(*loserMatch, oldLoser, oldWinner);
+        if (e != OK) return ModMatchResult::NotPossible;
+      }
+    }
+
+    // update the match score
+    ERR e = mm.updateMatchScore(ma, newScore, (mmr == ModMatchResult::WinnerLoser));
+    if (e != OK)
+    {
+      //trans->rollback();
+      return ModMatchResult::NotPossible;
+    }
+
+    // commit the changes up to this point
+    //bool isOkay = trans->commit();
+    //if (!isOkay) return ModMatchResult::NotPossible;
+
+    //
+    // FIX: update the ranking entries
+    //
+
+    return ModMatchResult::ModDone;
+  }
+
+  //----------------------------------------------------------------------------
+
+  unique_ptr<Match> EliminationCategory::getFollowUpMatch(const Match& ma, bool searchLoserNotWinner) const
+  {
+    if (ma.getCategory().getId() != getId()) return nullptr;
+
+    //
+    // There are two solutions:
+    // (1) the match has already been finished. In this case we must
+    //     for a match in a subsequent round that includes the winner/loser
+    //
+    // (2) the has not been finished and so we have to search via
+    //     symbolic match references.
+    //
+
+    //
+    // Case 1: the match has been finished
+    //
+    OBJ_STATE stat = ma.getState();
+    if (stat == STAT_MA_FINISHED)
+    {
+      PlayerPair pp = searchLoserNotWinner ? *(ma.getLoser()) : *(ma.getWinner());
+      int round = ma.getMatchGroup().getRound() + 1;
+      int maxRound = calcTotalRoundsCount();
+
+      // find all groups for rounds later than "round"
+      MatchMngr mm{db};
+      while (round <= maxRound)
+      {
+        upMatch result = mm.getMatchForPlayerPairAndRound(pp, round);
+        if (result != nullptr) return result;
+        ++round;
+      }
+      return nullptr;  // no match found
+    }
+
+    //
+    // Case 2: the match has not yet been finished
+    //
+    int maId = searchLoserNotWinner ? -ma.getId() : ma.getId();
+    DbTab* mTab = db->getTab(TAB_MATCH);
+    auto resultRow = mTab->getSingleRowByColumnValue2(MA_PAIR1_SYMBOLIC_VAL, maId);
+    if (resultRow == nullptr)
+    {
+      resultRow = mTab->getSingleRowByColumnValue2(MA_PAIR2_SYMBOLIC_VAL, maId);
+    }
+
+    if (resultRow == nullptr) return nullptr;
+    MatchMngr mm{db};
+    return mm.getMatch(resultRow->getId());
   }
 
 //----------------------------------------------------------------------------

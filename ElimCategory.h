@@ -43,6 +43,12 @@ namespace QTournament
     virtual ERR onRoundCompleted(int round) override;
     virtual PlayerPairList getRemainingPlayersAfterRound(int round, ERR *err) const override;
     
+    ModMatchResult canModifyMatchResult(const Match& ma) const override;
+    ModMatchResult modifyMatchResult(const Match& ma, const MatchScore& newScore) const override;
+
+  protected:
+    unique_ptr<Match> getFollowUpMatch(const Match& ma, bool searchLoserNotWinner) const;
+
   private:
     EliminationCategory (TournamentDB* db, int rowId, int eliminationMode);
     EliminationCategory (TournamentDB* db, SqliteOverlay::TabRow row, int eliminationMode);

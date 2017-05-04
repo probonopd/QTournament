@@ -21,6 +21,7 @@
 #include <QDateTime>
 
 #include <Sloppy/DateTime/DateAndTime.h>
+#include <SqliteOverlay/Transaction.h>
 
 #include "MatchMngr.h"
 #include "CatRoundStatus.h"
@@ -687,6 +688,105 @@ namespace QTournament {
     CentralSignalEmitter::getInstance()->matchStatusChanged(ma.getId(), ma.getSeqNum(), stat, stat);
 
     return OK;
+  }
+
+  //----------------------------------------------------------------------------
+
+  ERR MatchMngr::swapPlayer(const Match& ma, const PlayerPair& ppOld, const PlayerPair& ppNew) const
+  {
+    // the matches may not be "running" or "finished"
+    OBJ_STATE stat = ma.getState();
+    if ((stat == STAT_MA_RUNNING) || (stat == STAT_MA_FINISHED)) return WRONG_STATE;
+
+    // the new player pair must belong to the
+    // same category as the old one
+    auto upCat1 = ppOld.getCategory(db);
+    if (upCat1 == nullptr) return INVALID_PLAYER_PAIR;
+    auto upCat2 = ppNew.getCategory(db);
+    if (upCat2 == nullptr) return INVALID_PLAYER_PAIR;
+    if (upCat1->getId() != upCat2->getId()) return INVALID_PLAYER_PAIR;
+
+    // find the position of the old player pair in the match
+    int ppPos = 0;
+    if (ma.hasPlayerPair1())
+    {
+      PlayerPair pp = ma.getPlayerPair1();
+      if (pp.getPairId() == ppOld.getPairId()) ppPos = 1;
+    }
+    if (ma.hasPlayerPair2())
+    {
+      PlayerPair pp = ma.getPlayerPair2();
+      if (pp.getPairId() == ppOld.getPairId()) ppPos = 2;
+    }
+    if (ppPos == 0)
+    {
+      return INVALID_PLAYER_PAIR;   // ppOld is not part of the match
+    }
+
+    // if both pairs are identical, we're done
+    if (ppOld.getPairId() == ppNew.getPairId()) return OK;
+
+    // actually swap the players
+    TabRow maRow = tab->operator [](ma.getId());
+    if (ppPos == 1) maRow.update(MA_PAIR1_REF, ppNew.getPairId());
+    if (ppPos == 2) maRow.update(MA_PAIR2_REF, ppNew.getPairId());
+
+    // make sure that the newly assigned player
+    // is not already foreseen as a referee
+    upPlayer ref = ma.getAssignedReferee();
+    if (ref != nullptr)
+    {
+      Player p = ppNew.getPlayer1();
+      if (p.getId() == ref->getId()) removeReferee(ma);
+      if (ppNew.hasPlayer2())
+      {
+        Player p = ppNew.getPlayer2();
+        if (p.getId() == ref->getId()) removeReferee(ma);
+      }
+    }
+
+    // update the match status because ready / busy might
+    // have changed due to the player swap
+    updateMatchStatus(ma);
+
+    return OK;
+  }
+
+  //----------------------------------------------------------------------------
+
+  ERR MatchMngr::swapPlayers(const Match& ma1, const PlayerPair& ma1PlayerPair, const Match& ma2, const PlayerPair& ma2PlayerPair) const
+  {
+    // the matches may not be "running" or "finished"
+    for (const Match& m : {ma1, ma2})
+    {
+      OBJ_STATE stat = m.getState();
+      if ((stat == STAT_MA_RUNNING) || (stat == STAT_MA_FINISHED)) return WRONG_STATE;
+    }
+
+    // the matches must belong to the same category
+    if (ma1.getCategory() != ma2.getCategory())
+    {
+      return INVALID_ID;  // not the best matching error code, but anyway...
+    }
+
+    auto trans = db->startTransaction();
+    if (trans == nullptr) return DATABASE_ERROR;
+
+    // swap the players
+    ERR e = swapPlayer(ma1, ma1PlayerPair, ma2PlayerPair);
+    if (e != OK)
+    {
+      trans->rollback();
+      return e;
+    }
+    e = swapPlayer(ma2, ma2PlayerPair, ma1PlayerPair);
+    if (e != OK)
+    {
+      trans->rollback();
+      return e;
+    }
+
+    return trans->commit() ? OK : DATABASE_ERROR;
   }
 
   //----------------------------------------------------------------------------

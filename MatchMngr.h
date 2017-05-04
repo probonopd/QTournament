@@ -109,7 +109,6 @@ namespace QTournament
     ERR setNextMatchForLoser(const Match& fromMatch, const Match& toMatch, int playerNum) const;
     ERR walkover(const Match& ma, int playerNum) const;
     ERR undoMatchCall(const Match& ma) const;
-
     // configuration of MATCH GROUPS
     ERR closeMatchGroup(const MatchGroup& grp);
 
@@ -118,13 +117,19 @@ namespace QTournament
     ERR assignReferee(const Match& ma, const Player& p, REFEREE_ACTION refAction) const;
     ERR removeReferee(const Match& ma) const;
 
+    // swap player between matches if match results are
+    // changed after a match has finished
+    ERR swapPlayer(const Match& ma, const PlayerPair& ppOld, const PlayerPair& ppNew) const;
+    ERR swapPlayers(const Match& ma1, const PlayerPair& ma1PlayerPair,
+                    const Match& ma2, const PlayerPair& ma2PlayerPair) const;
+
 
   private:
     DbTab* groupTab;
     void updateAllMatchGroupStates(const Category& cat) const;
-    void updateMatchStatus(const Match& ma) const;
     bool hasUnfinishedMandatoryPredecessor(const Match& ma) const;
     void resolveSymbolicNamesAfterFinishedMatch(const Match& ma) const;
+    void updateMatchStatus(const Match& ma) const;
     static constexpr int SYMBOLIC_ID_FOR_UNUSED_PLAYER_PAIR_IN_MATCH = 999999;
     
   signals:
