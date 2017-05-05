@@ -85,7 +85,7 @@ rm *zip
 mv QTournament-$QTOURNAMENT_VERSION QTournament
 cd QTournament
 qmake CONFIG+="release" QTournament.pro
-make
+make -j5
 cd ..
 cd ..
 
