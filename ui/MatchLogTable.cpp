@@ -38,6 +38,11 @@ MatchLogTable::MatchLogTable(QWidget* parent)
   connect(this, SIGNAL(customContextMenuRequested(const QPoint&)),
           this, SLOT(onContextMenuRequested(const QPoint&)));
 
+  // if a (running) category is deleted, we need to rebuild the widget's
+  // contents, otherwise the deleted matches cause blank rows
+  connect(CentralSignalEmitter::getInstance(), SIGNAL(categoryRemovedFromTournament(int,int)),
+          this, SLOT(onCategoryRemoved()));
+
   // prep the context menu
   initContextMenu();
 }
@@ -65,6 +70,15 @@ void MatchLogTable::onMatchStatusChanged(int maId, int maSeqNum, OBJ_STATE oldSt
   auto ma = mm.getMatch(maId);
   if (ma != nullptr) insertMatch(0, *ma);
   resizeRowToContents(0);
+}
+
+//----------------------------------------------------------------------------
+
+void MatchLogTable::onCategoryRemoved()
+{
+  clearContents();
+  setRowCount(0);
+  fillFromDatabase();
 }
 
 //----------------------------------------------------------------------------

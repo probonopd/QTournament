@@ -42,6 +42,7 @@ public:
 
 public slots:
   void onMatchStatusChanged(int maId, int maSeqNum, OBJ_STATE oldStat, OBJ_STATE newStat);
+  void onCategoryRemoved();
 
 protected slots:
   void onModMatchResultTriggered();
