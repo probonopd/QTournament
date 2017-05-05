@@ -201,8 +201,13 @@ void CategoryTableView::onRemoveCategory()
 
     // okay, force-delete the category
     QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
-    cm.deleteRunningCategory(cat);
+    err = cm.deleteRunningCategory(cat);
     QApplication::restoreOverrideCursor();
+    if (err != OK)
+    {
+      msg = tr("A database error occurred. The category has not been deleted.");
+      QMessageBox::critical(this, tr("Delete category"), msg);
+    }
     return;
   }
 

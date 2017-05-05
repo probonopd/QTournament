@@ -510,7 +510,7 @@ namespace QTournament
     // only one initial check: can we do it "the soft way"?
     if (canDeleteCategory(cat) == OK)
     {
-      deleteCategory(cat);
+      return deleteCategory(cat);
     }
 
     // no, we can't.
@@ -549,16 +549,22 @@ namespace QTournament
     //
     // now the actual deletion starts
     //
+    bool isDbErr;
+    auto tg = db->acquireTransactionGuard(false, &isDbErr);
+    if (isDbErr) return DATABASE_ERROR;
 
     int catId = cat.getId();
 
     // deletion 1: bracket vis data, because it has only outgoing refs
+    int dbErr;
     auto t = db->getTab(TAB_BRACKET_VIS);
-    t->deleteRowsByColumnValue(BV_CAT_REF, catId);
+    t->deleteRowsByColumnValue(BV_CAT_REF, catId, &dbErr);
+    if (dbErr != SQLITE_DONE) return DATABASE_ERROR;  // implicit rollback through tg's dtor
 
     // deletion 2: ranking data, because it has only outgoing refs
     t = db->getTab(TAB_RANKING);
-    t->deleteRowsByColumnValue(RA_CAT_REF, catId);
+    t->deleteRowsByColumnValue(RA_CAT_REF, catId, &dbErr);
+    if (dbErr != SQLITE_DONE) return DATABASE_ERROR;  // implicit rollback through tg's dtor
 
     // deletion 3a: matches, they are refered to by bracket vis data only
     // deletion 3b: match groups, they are refered to only by ranking data and matches
@@ -572,34 +578,42 @@ namespace QTournament
         for (const Match& ma : matchesInGroup)
         {
           int deletedSeqNum = ma.getSeqNum();
-          t->deleteRowsByColumnValue("id", ma.getId());
+          t->deleteRowsByColumnValue("id", ma.getId(), &dbErr);
+          if (dbErr != SQLITE_DONE) return DATABASE_ERROR;  // implicit rollback through tg's dtor
           fixSeqNumberAfterDelete(t, deletedSeqNum);
         }
 
         // the match group has incoming links from matches
         // and ranking and both have been deleted by now
         int deletedSeqNum = mg.getSeqNum();
-        mgTab->deleteRowsByColumnValue("id", mg.getId());
+        mgTab->deleteRowsByColumnValue("id", mg.getId(), &dbErr);
+        if (dbErr != SQLITE_DONE) return DATABASE_ERROR;  // implicit rollback through tg's dtor
         fixSeqNumberAfterDelete(mgTab, deletedSeqNum);
       }
     }
 
     // deletion 4: player pairs
     t = db->getTab(TAB_PAIRS);
-    t->deleteRowsByColumnValue(PAIRS_CAT_REF, catId);
+    t->deleteRowsByColumnValue(PAIRS_CAT_REF, catId, &dbErr);
+    if (dbErr != SQLITE_DONE) return DATABASE_ERROR;  // implicit rollback through tg's dtor
 
     // deletion 5: player to category allocation
     t = db->getTab(TAB_P2C);
-    t->deleteRowsByColumnValue(P2C_CAT_REF, catId);
+    t->deleteRowsByColumnValue(P2C_CAT_REF, catId, &dbErr);
+    if (dbErr != SQLITE_DONE) return DATABASE_ERROR;  // implicit rollback through tg's dtor
 
     // final deletion: the category itself
     int deletedSeqNum = cat.getSeqNum();
-    tab->deleteRowsByColumnValue("id", catId);
+    tab->deleteRowsByColumnValue("id", catId, &dbErr);
+    if (dbErr != SQLITE_DONE) return DATABASE_ERROR;  // implicit rollback through tg's dtor
     fixSeqNumberAfterDelete(tab, deletedSeqNum);
 
     //
     // deletion completed
     //
+    bool isOkay = tg ? tg->commit() : true;
+    if (!isOkay) return DATABASE_ERROR;
+    tg.reset();  // explicit deletion, otherwise tg's dtor might interfere with other transactions
 
     // refresh all models and the reports tab
     cse->endResetAllModels();
@@ -962,7 +976,7 @@ namespace QTournament
     int catId = c.getId();
     DbTab* pairsTab = db->getTab(TAB_PAIRS);
     bool isDbErr;
-    auto tr = db->acquireTransactionGuard(false, &isDbErr);
+    auto tg = db->acquireTransactionGuard(false, &isDbErr);
     if (isDbErr) return DATABASE_ERROR;
     for (int i=0; i < ppList.size(); ++i)
     {
@@ -981,8 +995,7 @@ namespace QTournament
         int newId = pairsTab->insertRow(cvc, &dbErr);
         if ((newId < 1) || (dbErr != SQLITE_DONE))
         {
-          if (tr) tr->rollback();
-          return DATABASE_ERROR;
+          return DATABASE_ERROR;   // implicit rollback
         }
       }
     }
@@ -990,7 +1003,11 @@ namespace QTournament
     // update the category state
     OBJ_STATE oldState = c.getState();  // this MUST be STAT_CAT_CONFIG, ensured by canFreezeConfig
     c.setState(STAT_CAT_FROZEN);
-    if ((tr != nullptr) && !(tr->commit())) return DATABASE_ERROR;
+
+    bool isOkay = tg ? tg->commit() : true;
+    if (!isOkay) return DATABASE_ERROR;
+    tg.reset();   // explicitly destroy the guard
+
     CentralSignalEmitter::getInstance()->categoryStatusChanged(c, oldState, STAT_CAT_FROZEN);
     
     return OK;
