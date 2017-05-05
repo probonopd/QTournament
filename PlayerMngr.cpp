@@ -337,7 +337,9 @@ namespace QTournament
     for (Player p : pl)
     {
       TabRow r = tab->operator [](p.getId());
-      r.update(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_PL_IDLE));
+      int dbErr;
+      r.update(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_PL_IDLE), &dbErr);
+      if (dbErr != SQLITE_DONE) return DATABASE_ERROR;
       CentralSignalEmitter::getInstance()->playerStatusChanged(p.getId(), p.getSeqNum(), STAT_PL_PLAYING, STAT_PL_IDLE);
     }
 

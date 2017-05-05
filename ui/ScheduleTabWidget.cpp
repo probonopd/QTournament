@@ -283,7 +283,13 @@ void ScheduleTabWidget::askAndStoreMatchResult(const Match &ma)
 
   // actually store the data and update the internal object states
   MatchMngr mm{db};
-  mm.setMatchScoreAndFinalizeMatch(ma, *matchResult);
+  ERR err = mm.setMatchScoreAndFinalizeMatch(ma, *matchResult);
+  if (err != OK)
+  {
+    QString msg = tr("A dabase error occurred. The match result has not been stored.");
+    QMessageBox::critical(this, tr("Store match result"), msg);
+    return;
+  }
 
   // ask the user if the next available match should be started on the
   // now free court

@@ -1700,19 +1700,28 @@ namespace QTournament {
 
     // everything is fine, so write the result to the database
     // and update the match status
+
+    // wrap all changes in one giant commit
+    bool isDbErr;
+    auto tg = db->acquireTransactionGuard(false, &isDbErr);
+    if (isDbErr) return DATABASE_ERROR;
+
     int maId = ma.getId();
     int maSeqNum = ma.getSeqNum();
     ColumnValueClause cvc;
     cvc.addStringCol(MA_RESULT, score.toString().toUtf8().constData());
     cvc.addIntCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_FINISHED));
     TabRow matchRow = tab->operator [](maId);
-    matchRow.update(cvc);
+    int dbErr;
+    matchRow.update(cvc, &dbErr);
+    if (dbErr != SQLITE_DONE) return DATABASE_ERROR;  // implicit rollback through tg's dtor
 
     // store the finish time in the database, but only if this is not
     // a walkover and only if the match was started regularly
     if ((oldState == STAT_MA_RUNNING) && !isWalkover)   // match was called normally, so we have a start time
     {
-      matchRow.update(MA_FINISH_TIME, UTCTimestamp());
+      matchRow.update(MA_FINISH_TIME, UTCTimestamp(), &dbErr);
+      if (dbErr != SQLITE_DONE) return DATABASE_ERROR;  // implicit rollback through tg's dtor
     }
 
     CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
@@ -1726,7 +1735,8 @@ namespace QTournament {
     if (oldState == STAT_MA_RUNNING)
     {
       // release the players
-      pm.releasePlayerPairsAfterMatch(ma);
+      ERR err = pm.releasePlayerPairsAfterMatch(ma);
+      if (err != OK) return err;
 
       // release the umpire, if any
       upPlayer referee = ma.getAssignedReferee();
@@ -1737,11 +1747,10 @@ namespace QTournament {
       }
 
       // release the court
-      ERR e;
-      auto pCourt = ma.getCourt(&e);
-      assert(e == OK);
+      auto pCourt = ma.getCourt(&err);
+      if (err != OK) return err;
       bool isOkay = cm.releaseCourt(*pCourt);
-      assert(isOkay);
+      if (!isOkay) return DATABASE_ERROR;
     }
 
     // update the match group
@@ -1790,8 +1799,10 @@ namespace QTournament {
       }
     }
 
+    // commit all changes
+    bool isOkay = tg ? tg->commit() : true;
 
-    return OK;
+    return isOkay ? OK : DATABASE_ERROR;
   }
 
   //----------------------------------------------------------------------------
