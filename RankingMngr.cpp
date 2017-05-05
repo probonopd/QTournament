@@ -443,21 +443,20 @@ namespace QTournament
 
     // start a new transaction to make sure that
     // the database remains consistent in case something goes wrong
-    auto trans = db->startTransaction();
-    if (trans == nullptr) return DATABASE_ERROR;
+    bool isDbErr;
+    auto tg = db->acquireTransactionGuard(false, &isDbErr);
+    if (isDbErr) return DATABASE_ERROR;
 
     // modify the ranking entries
     bool isOkay = doMod(pp1Id, deltaMatches_P1, deltaGames_P1, deltaPoints_P1);
     if (!isOkay)
     {
-      trans->rollback();
-      return DATABASE_ERROR;
+      return DATABASE_ERROR; // triggers implicit rollback through tg's dtor
     }
     isOkay = doMod(pp2Id, deltaMatches_P2, deltaGames_P2, deltaPoints_P2);
     if (!isOkay)
     {
-      trans->rollback();
-      return DATABASE_ERROR;
+      return DATABASE_ERROR;  // triggers implicit rollback through tg's dtor
     }
 
     // now we have to re-sort the entries, round by round
@@ -498,7 +497,7 @@ namespace QTournament
     }
 
     // Done. Finish the transaction
-    isOkay = trans->commit();
+    isOkay = tg ? tg->commit() : true;
     return isOkay ? OK : DATABASE_ERROR;
   }
 

@@ -726,6 +726,11 @@ namespace QTournament {
     // if both pairs are identical, we're done
     if (ppOld.getPairId() == ppNew.getPairId()) return OK;
 
+    // start a transaction
+    bool isdbErr;
+    auto tg = db->acquireTransactionGuard(false, &isdbErr);
+    if (isdbErr) return DATABASE_ERROR;
+
     // actually swap the players
     TabRow maRow = tab->operator [](ma.getId());
     if (ppPos == 1) maRow.update(MA_PAIR1_REF, ppNew.getPairId());
@@ -749,7 +754,8 @@ namespace QTournament {
     // have changed due to the player swap
     updateMatchStatus(ma);
 
-    return OK;
+    bool isOkay = tg ? tg->commit() : true;
+    return isOkay ? OK : DATABASE_ERROR;
   }
 
   //----------------------------------------------------------------------------
@@ -769,24 +775,24 @@ namespace QTournament {
       return INVALID_ID;  // not the best matching error code, but anyway...
     }
 
-    auto trans = db->startTransaction();
-    if (trans == nullptr) return DATABASE_ERROR;
+    bool isDbErr;
+    auto tg = db->acquireTransactionGuard(false, &isDbErr);
+    if (isDbErr) return DATABASE_ERROR;
 
     // swap the players
     ERR e = swapPlayer(ma1, ma1PlayerPair, ma2PlayerPair);
     if (e != OK)
     {
-      trans->rollback();
-      return e;
+      return e;  // triggers implicit rollback through tg's dtor
     }
     e = swapPlayer(ma2, ma2PlayerPair, ma1PlayerPair);
     if (e != OK)
     {
-      trans->rollback();
-      return e;
+      return e;  // triggers implicit rollback through tg's dtor
     }
 
-    return trans->commit() ? OK : DATABASE_ERROR;
+    bool isOk = tg ? tg->commit() : true;
+    return isOk ? OK : DATABASE_ERROR;
   }
 
   //----------------------------------------------------------------------------

@@ -404,7 +404,9 @@ namespace QTournament
 
     // start a new database transaction to ensure
     // consistent modifications
-    //auto trans = db->startTransaction();
+    bool isDbErr;
+    auto tg = db->acquireTransactionGuard(false, &isDbErr);
+    if (isDbErr) return ModMatchResult::NotPossible;
 
     // swap winner / loser in the follow-up matches
     MatchMngr mm{db};
@@ -419,12 +421,12 @@ namespace QTournament
       if (winnerMatch != nullptr)
       {
         ERR e = mm.swapPlayer(*winnerMatch, oldWinner, oldLoser);
-        if (e != OK) return ModMatchResult::NotPossible;
+        if (e != OK) return ModMatchResult::NotPossible;   // triggers implicit rollback through tg's dtor
       }
       if (loserMatch != nullptr)
       {
         ERR e = mm.swapPlayer(*loserMatch, oldLoser, oldWinner);
-        if (e != OK) return ModMatchResult::NotPossible;
+        if (e != OK) return ModMatchResult::NotPossible;  // triggers implicit rollback through tg's dtor
       }
 
       // delete explicit references to the affected pair in the
@@ -441,14 +443,13 @@ namespace QTournament
     ERR e = mm.updateMatchScore(ma, newScore, (mmr == ModMatchResult::WinnerLoser));
     if (e != OK)
     {
-      //trans->rollback();
-      return ModMatchResult::NotPossible;
+      return ModMatchResult::NotPossible;  // triggers implicit rollback through tg's dtor
     }
 
     // update the ranking entries but skip the assignment of ranks
     RankingMngr rm{db};
     e = rm.updateRankingsAfterMatchResultChange(ma, oldScore, true);
-    if (e != OK) return ModMatchResult::NotPossible;
+    if (e != OK) return ModMatchResult::NotPossible;  // triggers implicit rollback through tg's dtor
 
     // the previous call did not properly update the assigned
     // ranks, because ranking in bracket matches works different
@@ -462,10 +463,11 @@ namespace QTournament
     if (ma.getMatchGroup().getRound() <= crs.getFinishedRoundsCount())
     {
       e = rewriteFinalRankForMultipleRounds(ma.getMatchGroup().getRound());
-      if (e != OK) return ModMatchResult::NotPossible;
+      if (e != OK) return ModMatchResult::NotPossible;  // triggers implicit rollback through tg's dtor
     }
 
-    return ModMatchResult::ModDone;
+    bool isOkay = tg ? tg->commit() : true;
+    return isOkay ? ModMatchResult::ModDone : ModMatchResult::NotPossible;
   }
 
   //----------------------------------------------------------------------------

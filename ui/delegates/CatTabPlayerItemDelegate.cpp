@@ -59,7 +59,7 @@ void CatTabPlayerItemDelegate::commonPaint(QPainter* painter, const QStyleOption
   QRect textRect = r;
   textRect.adjust(maxNumberColumnWidth + NumberTextGap, 0, 0, 0);
   painter->drawText(textRect, Qt::AlignVCenter|Qt::AlignLeft, index.data().toString());
-  painter->restore();
+  //painter->restore();
 }
 
 //----------------------------------------------------------------------------

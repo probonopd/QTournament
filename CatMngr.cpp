@@ -921,7 +921,7 @@ namespace QTournament
       }
     }
     
-    // Okax, we're good to go
+    // Okay, we're good to go
     //
     // The only task when freezing the config is to convert single players
     // to "pairs without a partner" and to set the new state
@@ -961,8 +961,9 @@ namespace QTournament
     PlayerPairList ppList = c.getPlayerPairs();
     int catId = c.getId();
     DbTab* pairsTab = db->getTab(TAB_PAIRS);
-    auto tr = db->startTransaction();
-    if (tr == nullptr) return DATABASE_ERROR;
+    bool isDbErr;
+    auto tr = db->acquireTransactionGuard(false, &isDbErr);
+    if (isDbErr) return DATABASE_ERROR;
     for (int i=0; i < ppList.size(); ++i)
     {
       PlayerPair pp = ppList.at(i);
@@ -980,16 +981,16 @@ namespace QTournament
         int newId = pairsTab->insertRow(cvc, &dbErr);
         if ((newId < 1) || (dbErr != SQLITE_DONE))
         {
-          tr->rollback();
+          if (tr) tr->rollback();
           return DATABASE_ERROR;
         }
       }
     }
-    if (!(tr->commit())) return DATABASE_ERROR;
 
     // update the category state
     OBJ_STATE oldState = c.getState();  // this MUST be STAT_CAT_CONFIG, ensured by canFreezeConfig
     c.setState(STAT_CAT_FROZEN);
+    if ((tr != nullptr) && !(tr->commit())) return DATABASE_ERROR;
     CentralSignalEmitter::getInstance()->categoryStatusChanged(c, oldState, STAT_CAT_FROZEN);
     
     return OK;

@@ -22,12 +22,20 @@
 #include <tuple>
 
 #include <SqliteOverlay/SqliteDatabase.h>
+#include <SqliteOverlay/Transaction.h>
 
 #include "TournamentDataDefs.h"
 #include "TournamentErrorCodes.h"
 
 namespace QTournament
 {
+
+  enum class TransactionState
+  {
+    Started,
+    AlreadyRunning,
+    Failed,
+  };
 
   class TournamentDB : public SqliteOverlay::SqliteDatabase
   {
@@ -48,9 +56,34 @@ namespace QTournament
     bool needsConversion();
     bool convertToLatestDatabaseVersion();
 
+    // Transaction handling; should primarily be used
+    // by the TransactioGuard
+    bool isTransactionRunning() const;
+    TransactionState beginNewTransaction(int* dbErr = nullptr);
+    bool commitRunningTransaction(int* dbErr = nullptr);
+    bool rollbackRunningTransaction(int* dbErr = nullptr);
+
+    class TransactionGuard
+    {
+    public:
+      TransactionGuard(TournamentDB* _db, bool _commitOnDestruction = false);
+      ~TransactionGuard();
+      bool commit(int* dbErr = nullptr);
+      bool rollback(int* dbErr = nullptr);
+
+    private:
+      TournamentDB* db;
+      bool commitOnDestruction;
+    };
+
+    unique_ptr<TransactionGuard> acquireTransactionGuard(bool commitOnDestruction, bool* isDbErr = nullptr, bool* transRunning = nullptr);
+
   private:
     TournamentDB(string fName, bool createNew);
+
+    unique_ptr<SqliteOverlay::Transaction> curTrans;
   };
+
 }
 
 #endif	/* TOURNAMENTDB_H */

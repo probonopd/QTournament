@@ -32,7 +32,7 @@ namespace QTournament
 {
 
   TournamentDB::TournamentDB(string fName, bool createNew)
-    : SqliteOverlay::SqliteDatabase(fName, createNew)
+    : SqliteOverlay::SqliteDatabase(fName, createNew), curTrans{nullptr}
   {
   }
 
@@ -469,6 +469,154 @@ namespace QTournament
     cfg->set(CFG_KEY_DB_VERSION, QString2StdString(dbVersion));
 
     return true;
+  }
+
+  //----------------------------------------------------------------------------
+
+  bool TournamentDB::isTransactionRunning() const
+  {
+    return (curTrans != nullptr);
+  }
+
+  //----------------------------------------------------------------------------
+
+  TransactionState TournamentDB::beginNewTransaction(int* dbErr)
+  {
+    if (curTrans != nullptr) return TransactionState::AlreadyRunning;
+
+    curTrans = startTransaction(SqliteOverlay::TRANSACTION_TYPE::IMMEDIATE, SqliteOverlay::TRANSACTION_DESTRUCTOR_ACTION::ROLLBACK, dbErr);
+
+    return (curTrans != nullptr) ? TransactionState::Started : TransactionState::Failed;
+  }
+
+  //----------------------------------------------------------------------------
+
+  bool TournamentDB::commitRunningTransaction(int* dbErr)
+  {
+    if (curTrans == nullptr) return false;
+
+    bool isOkay = curTrans->commit(dbErr);
+
+    if (isOkay) curTrans.reset();
+
+    return isOkay;
+  }
+
+  //----------------------------------------------------------------------------
+
+  bool TournamentDB::rollbackRunningTransaction(int* dbErr)
+  {
+    if (curTrans == nullptr) return false;
+
+    bool isOkay = curTrans->rollback(dbErr);
+
+    if (isOkay) curTrans.reset();
+
+    return isOkay;
+  }
+
+  //----------------------------------------------------------------------------
+
+  unique_ptr<TournamentDB::TransactionGuard> TournamentDB::acquireTransactionGuard(bool commitOnDestruction, bool* isDbErr, bool* transRunning)
+  {
+    if (curTrans != nullptr)
+    {
+      Sloppy::assignIfNotNull<bool>(transRunning, true);
+      Sloppy::assignIfNotNull<bool>(isDbErr, false);
+      cerr << "TournamentDB: TransactionGuard requested, but a transaction is already running" << endl;
+      return nullptr;
+    }
+
+    Sloppy::assignIfNotNull<bool>(transRunning, false);
+    try
+    {
+      auto result = make_unique<TransactionGuard>(this, commitOnDestruction);
+      Sloppy::assignIfNotNull<bool>(isDbErr, false);
+      return result;
+    }
+    catch (...)
+    {
+    }
+    Sloppy::assignIfNotNull<bool>(isDbErr, true);
+    return nullptr;
+  }
+
+  //----------------------------------------------------------------------------
+
+  TournamentDB::TransactionGuard::TransactionGuard(TournamentDB* _db, bool _commitOnDestruction)
+    :db{_db}, commitOnDestruction{_commitOnDestruction}
+  {
+    if (db->isTransactionRunning())
+    {
+      throw std::runtime_error("TransactionGuard: can't guard an already running transaction!");
+    }
+
+    int dbErr;
+    TransactionState ta = db->beginNewTransaction(&dbErr);
+    if (ta != TransactionState::Started)
+    {
+      string msg{"TransactionGuard: DB failure when starting a new transaction. SQLite code: "};
+      msg += to_string(dbErr);
+      throw std::runtime_error(msg);
+    }
+    cerr << "TransactionGuard: created. Transaction running." << endl;
+  }
+
+  //----------------------------------------------------------------------------
+
+  TournamentDB::TransactionGuard::~TransactionGuard()
+  {
+    int dbErr;
+
+    if (db->isTransactionRunning())
+    {
+      bool isOkay = commitOnDestruction ? db->commitRunningTransaction(&dbErr) : db->rollbackRunningTransaction(&dbErr);
+
+      if (!isOkay)
+      {
+        string msg{"TransactionGuard: DB failure in destructor. Action = "};
+        msg += commitOnDestruction ? "Commit" : "Rollback";
+        msg += "; SQLite code: ";
+        msg += to_string(dbErr);
+        throw std::runtime_error(msg);
+      }
+
+      cerr << "TransactionGuard: dtor. Commit = " << commitOnDestruction << endl;
+    } else {
+      cerr << "TransactionGuard: dtor without running transaction." << endl;
+    }
+  }
+
+  //----------------------------------------------------------------------------
+
+  bool TournamentDB::TransactionGuard::commit(int* dbErr)
+  {
+    int e;
+    bool isOkay = db->commitRunningTransaction(&e);
+    string msg = "TransactionGuard: commit requested, result = ";
+    msg += to_string(isOkay);
+    msg += "; SQLite code = ";
+    msg += to_string(e);
+    cerr << msg << endl;
+    Sloppy::assignIfNotNull<int>(dbErr, e);
+
+    return isOkay;
+  }
+
+  //----------------------------------------------------------------------------
+
+  bool TournamentDB::TransactionGuard::rollback(int* dbErr)
+  {
+    int e;
+    bool isOkay = db->rollbackRunningTransaction(&e);
+    string msg = "TransactionGuard: rollback requested, result = ";
+    msg += to_string(isOkay);
+    msg += "; SQLite code = ";
+    msg += to_string(e);
+    cerr << msg << endl;
+    Sloppy::assignIfNotNull<int>(dbErr, e);
+
+    return isOkay;
   }
 
 }
