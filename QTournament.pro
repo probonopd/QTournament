@@ -145,7 +145,8 @@ HEADERS += \
     ui/delegates/RefereeSelectionDelegate.h \
     ui/AutoSizingTable.h \
     ui/delegates/BaseItemDelegate.h \
-    SwissLadderGenerator.h
+    SwissLadderGenerator.h \
+    CSVImporter.h
 
 SOURCES += \
     Category.cpp \
@@ -263,7 +264,8 @@ SOURCES += \
     ui/delegates/RefereeSelectionDelegate.cpp \
     ui/AutoSizingTable.cpp \
     ui/delegates/BaseItemDelegate.cpp \
-    SwissLadderGenerator.cpp
+    SwissLadderGenerator.cpp \
+    CSVImporter.cpp
 
 RESOURCES += \
     tournament.qrc

@@ -19,42 +19,36 @@
 #include <boost/filesystem.hpp>
 #include <boost/log/trivial.hpp>
 
+#include "../TournamentDB.h"
+#include "../TournamentDataDefs.h"
+#include "../CatMngr.h"
+#include "../TeamMngr.h"
+#include "../PlayerMngr.h"
+
 #include "BasicTestClass.h"
 
 namespace boostfs = boost::filesystem;
 
+using namespace QTournament;
+
 void BasicTestFixture::SetUp()
 {
-  log = unique_ptr<Sloppy::Logger::Logger>(new Sloppy::Logger::Logger("UnitTest"));
-
   // create a dir for temporary files created during testing
   tstDirPath = boostfs::temp_directory_path();
   if (!(boostfs::exists(tstDirPath)))
   {
     throw std::runtime_error("Could not create temporary directory for test files!");
   }
-
-  log->log("Using directory " + tstDirPath.native() + " for temporary files");
 }
 
-void BasicTestFixture::TearDown()
-{
-//  QString path = tstDir.path();
-
-//  if (!(tstDir.remove()))
-//  {
-//    QString msg = "Could not remove temporary directory " + path;
-//    QByteArray ba = msg.toLocal8Bit();
-//    throw std::runtime_error(ba.data());
-//  }
-
-//  log.info("Deleted temporary directory " + tstDir.path() + " and all its contents");
-}
+//----------------------------------------------------------------------------
 
 string BasicTestFixture::getTestDir() const
 {
   return tstDirPath.native();
 }
+
+//----------------------------------------------------------------------------
 
 string BasicTestFixture::genTestFilePath(string fName) const
 {
@@ -63,13 +57,98 @@ string BasicTestFixture::genTestFilePath(string fName) const
   return p.native();
 }
 
-void BasicTestFixture::printStartMsg(string _tcName)
+//----------------------------------------------------------------------------
+
+void BasicTestFixture::getScenario01(unique_ptr<TournamentDB>& result) const
 {
-  tcName = _tcName;
-  log->trace("\n\n----------- Starting test case '" + tcName + "' -----------");
+  // prepare a brand-new scenario
+  TournamentSettings cfg;
+  cfg.organizingClub = "SV Whatever";
+  cfg.tournamentName = "World Championship";
+  cfg.useTeams = true;
+  cfg.refereeMode = REFEREE_MODE::NONE;
+  result = std::move(TournamentDB::createNew(":memory:", cfg));
+  ASSERT_TRUE(result != nullptr);
 }
 
-void BasicTestFixture::printEndMsg()
+//----------------------------------------------------------------------------
+
+void BasicTestFixture::getScenario02(unique_ptr<TournamentDB>& result) const
 {
-  log->trace("----------- End test case '" + tcName + "' -----------\n\n");
+  // start with an empty scenario
+  getScenario01(result);
+
+  // add a few dummy categories
+  CatMngr cm{result.get()};
+  ERR e = cm.createNewCategory("MS");
+  ASSERT_EQ(OK, e);
+  e = cm.createNewCategory("LD");
+  ASSERT_EQ(OK, e);
+  e = cm.createNewCategory("MX");
+  ASSERT_EQ(OK, e);
+  e = cm.createNewCategory("RR");  // a small round-robin with men's singles
+  ASSERT_EQ(OK, e);
+  auto ms = cm.getCategory("MS");
+  auto ld = cm.getCategory("LD");
+  auto mx = cm.getCategory("MX");
+  auto rr = cm.getCategory("RR");
+
+  // configure categories
+  cm.setSex(ld, F);
+  cm.setMatchType(ld, DOUBLES);
+  cm.setMatchType(mx, MIXED);
+  cm.setMatchSystem(rr, ROUND_ROBIN);
+
+  // an empty team
+  TeamMngr tm{result.get()};
+  e = tm.createNewTeam("T1");
+
+  // add 20 male and 20 female players to the tournament
+  // and assign them to the applicable categories
+  PlayerMngr pm{result.get()};
+  for (int i=0; i < 20; ++i)
+  {
+    QString l1 = "m%1";
+    l1 = l1.arg(i);
+
+    QString l2 = "f%1";
+    l2 = l2.arg(i);
+
+    e = pm.createNewPlayer("a", l1, M, "T1");
+    ASSERT_EQ(OK, e);
+    e = pm.createNewPlayer("a", l2, F, "T1");
+    ASSERT_EQ(OK, e);
+
+    Player p = pm.getPlayer("a", l1);
+    e = cm.addPlayerToCategory(p, ms);
+    ASSERT_EQ(OK, e);
+    e = cm.addPlayerToCategory(p, mx);
+    ASSERT_EQ(OK, e);
+    if (i < 4)
+    {
+      e = cm.addPlayerToCategory(p, rr);
+      ASSERT_EQ(OK, e);
+    }
+
+    p = pm.getPlayer("a", l2);
+    e = cm.addPlayerToCategory(p, ld);
+    ASSERT_EQ(OK, e);
+    e = cm.addPlayerToCategory(p, mx);
+    ASSERT_EQ(OK, e);
+  }
+}
+
+//----------------------------------------------------------------------------
+
+void BasicTestFixture::getScenario03(unique_ptr<TournamentDB>& result) const
+{
+  getScenario02(result);
+
+  // start the small round-robin category
+  CatMngr cm{result.get()};
+  auto rr = cm.getCategory("RR");
+  ERR e = cm.freezeConfig(rr);
+  ASSERT_EQ(OK, e);
+  e = cm.startCategory(rr, {}, {});
+  ASSERT_EQ(OK, e);
 }

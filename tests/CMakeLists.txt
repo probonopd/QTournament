@@ -26,16 +26,63 @@ find_library(Sloppy_LIB NAME Sloppy PATHS /usr/local/lib /usr/lib /usr/local/lib
 set(LIBS ${LIBS} ${Sloppy_LIB})
 message("Using Sloppy lib at " ${Sloppy_LIB})
 
+#
+# My SqliteOverlay
+#
+find_library(SqliteOverlay_LIB NAME SqliteOverlay PATHS /usr/local/lib /usr/lib /usr/local/lib64 /usr/lib64)
+set(LIBS ${LIBS} ${SqliteOverlay_LIB})
+message("Using SqliteOverlay lib at " ${SqliteOverlay_LIB})
+
 find_package(GTest REQUIRED)
 include_directories(${GTEST_INCLUDE_DIRS})
 
 set(LIB_SOURCES
+    ../Category.cpp
+    ../CatMngr.cpp
+    ../GroupDef.cpp
+    ../KO_Config.cpp
+    ../MatchGroup.cpp
+    ../MatchMngr.cpp
+    ../Player.cpp
+    ../PlayerMngr.cpp
+    ../PlayerPair.cpp
+    ../RoundRobinCategory.cpp
+    ../Team.cpp
+    ../TeamMngr.cpp
+    ../TournamentDB.cpp
+    ../Match.cpp
+    ../RoundRobinGenerator.cpp
+    ../ThreadSafeQueue.cpp
+    ../Court.cpp
+    ../CourtMngr.cpp
+    ../Score.cpp
+    ../CatRoundStatus.cpp
+    ../RankingMngr.cpp
+    ../RankingEntry.cpp
+    ../BracketGenerator.cpp
+    ../ElimCategory.cpp
+    ../PureRoundRobinCategory.cpp
+    ../SwissLadderCategory.cpp
+    ../ExternalPlayerDB.cpp
+    ../HelperFunc.cpp
+    ../TournamentDatabaseObjectManager.cpp
+    ../TournamentDatabaseObject.cpp
+    ../CentralSignalEmitter.cpp
+    ../MatchTimePredictor.cpp
+    ../PlayerProfile.cpp
+
+    ../reports/BracketVisData.cpp
+
     ../SwissLadderGenerator.cpp
+    ../CSVImporter.cpp
 )
+
+include_directories("..")
 
 set(UNIT_TESTS
     tstSwissLadderGenerator.cpp
-    #BasicTestClass.cpp
+    tstCsvImporter.cpp
+    BasicTestClass.cpp
     unitTestMain.cpp
 )
 

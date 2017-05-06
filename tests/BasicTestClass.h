@@ -1,6 +1,6 @@
 /*
- *    This is libSloppy, a library of sloppily implemented helper functions.
- *    Copyright (C) 2016 - 2017  Volker Knollmann
+ *    This is QTournament, a badminton tournament management program.
+ *    Copyright (C) 2014 - 2017  Volker Knollmann
  *
  *    This program is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -24,8 +24,6 @@
 #include <gtest/gtest.h>
 #include <boost/filesystem.hpp>
 
-#include "../Sloppy/Logger/Logger.h"
-
 using namespace std;
 namespace boostfs = boost::filesystem;
 
@@ -34,23 +32,26 @@ class EmptyFixture
 
 };
 
+namespace QTournament {
+  class TournamentDB;
+}
+
 class BasicTestFixture : public ::testing::Test
 {
 protected:
-  static constexpr char DB_TEST_FILE_NAME[] = "SqliteTestDB.db";
+  //static constexpr char DB_TEST_FILE_NAME[] = "TournamentTest.tdb";
 
   virtual void SetUp ();
-  virtual void TearDown ();
+  virtual void TearDown () {}
 
   string getTestDir () const;
   string genTestFilePath(string fName) const;
   boostfs::path tstDirPath;
-  unique_ptr<Sloppy::Logger::Logger> log;
-  void printStartMsg(string _tcName);
-  void printEndMsg();
 
-private:
-  string tcName;
+  void getScenario01(unique_ptr<QTournament::TournamentDB>& result) const;
+  void getScenario02(unique_ptr<QTournament::TournamentDB>& result) const;
+  void getScenario03(unique_ptr<QTournament::TournamentDB>& result) const;
+
 };
 
 #endif /* BASICTESTCLASS_H */
