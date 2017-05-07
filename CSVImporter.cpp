@@ -24,7 +24,7 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  vector<vector<string>> splitCSV(const string& rawText, const string& delim)
+  vector<vector<string>> splitCSV(const string& rawText, const string& delim, const string& optionalCatName)
   {
     vector<vector<string>> result;
 
@@ -46,28 +46,42 @@ namespace QTournament
       }
       if (fields.empty()) continue;  // that also captures lines like ",,,,,"
 
+      Sloppy::StringList catNames;
+      if (!(optionalCatName.empty()))
+      {
+        catNames.push_back(optionalCatName);
+      }
       // in case we have more than one category (more than
       // four fields), we merge all categories into a comma
       // separated list in the fourth field
       if (fields.size() > 4)
       {
-        string c;
         for (size_t idx = 4 ; idx < fields.size(); ++idx)
         {
-          if (fields[idx].empty()) continue;  // skip empty fields
-          c += fields[idx] + ", ";
-        }
-        if (!(c.empty())) c = c.substr(0, c.size() - 2);
+          // skip empty fields
+          if (fields[idx].empty()) continue;
 
-        while (fields.size() > 5) fields.pop_back();  // erase all additional fields
+          // do not add a category twice
+          string cName = fields[idx];
+          if (Sloppy::isInVector<string>(catNames, cName)) continue;
 
-        if (!(c.empty()))
-        {
-          fields[CSVFieldsIndex::Categories] = c;  // store the comma sep. list...
-        } else {
-          fields.pop_back();   // ... or remove the fields completely if it is empty
+          catNames.push_back(cName);
         }
+
+        while (fields.size() > 4) fields.pop_back();  // erase all category fields
       }
+
+      // replace the category column with the content of catNames, if any
+      if (!(catNames.empty()))
+      {
+        while (fields.size() < 4) fields.push_back("");
+        fields.push_back(Sloppy::commaSepStringFromStringList(catNames, ", "));  // store the comma sep. list...
+      }
+
+      // make sure we have always five columns;
+      // otherwise we can't save user provided data
+      // from the UI later on
+      while (fields.size() < 5) fields.push_back("");
 
       result.push_back(fields);
     }
@@ -103,23 +117,28 @@ namespace QTournament
         CSVError err{row, CSVFieldsIndex::FirstName, CSVErrCode::NoFirstName, "", true};
         result.push_back(err);
       }
+      if ((fields.size() < 1) || (fields[CSVFieldsIndex::LastName].empty()))
+      {
+        CSVError err{row, CSVFieldsIndex::LastName, CSVErrCode::NoLastName, "", true};
+        result.push_back(err);
+      }
 
-      // make sure the name is unique
+      // check if the name is unique
       if (fields.size() >= 2)
       {
         QString f = QString::fromUtf8(fields[CSVFieldsIndex::FirstName].c_str());
         QString l = QString::fromUtf8(fields[CSVFieldsIndex::LastName].c_str());
         if (pm.hasPlayer(f, l))
         {
-          CSVError err{row, CSVFieldsIndex::FirstName, CSVErrCode::NameNotUnique, "", true};
+          CSVError err{row, CSVFieldsIndex::FirstName, CSVErrCode::NameNotUnique, "", false};
           result.push_back(err);
-          err = CSVError{row, CSVFieldsIndex::LastName, CSVErrCode::NameNotUnique, "", true};
+          err = CSVError{row, CSVFieldsIndex::LastName, CSVErrCode::NameNotUnique, "", false};
           result.push_back(err);
         }
       }
 
       // check for a valid sex indicator
-      if (fields.size() >= 3)
+      if ((fields.size() >= 3) && (!(fields[3].empty())))
       {
         SEX s = strToSex(fields[CSVFieldsIndex::Sex]);
         if (s == DONT_CARE)

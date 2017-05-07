@@ -69,7 +69,8 @@ public slots:
   void onSyncAllToExtDatabase();
   void onExternalDatabaseChanged();
   void onPlayerSelectionChanged(const QItemSelection &, const QItemSelection &);
-  void onImportCSV();
+  void onImportCSV__extDb();
+  void onImportCsv();
 };
 
 #endif	/* _PLAYERTABWIDGET_H */

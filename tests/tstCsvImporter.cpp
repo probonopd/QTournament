@@ -53,6 +53,13 @@ TEST(CSVImport, Splitter)
   f = result[0];
   ASSERT_EQ(1, f.size());
   ASSERT_EQ("l", f[0]);
+
+  // no redundant categories
+  result = splitCSV("l,f,m,t,c,c,c,x,x");
+  ASSERT_EQ(1, result.size());
+  f = result[0];
+  ASSERT_EQ(5, f.size());
+  ASSERT_EQ("c, x", f[4]);
 }
 
 //----------------------------------------------------------------------------

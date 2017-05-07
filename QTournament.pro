@@ -146,7 +146,11 @@ HEADERS += \
     ui/AutoSizingTable.h \
     ui/delegates/BaseItemDelegate.h \
     SwissLadderGenerator.h \
-    CSVImporter.h
+    CSVImporter.h \
+    ui/DlgImportCSV_Step1.h \
+    ui/DlgImportCSV_Step2.h \
+    ui/DlgPickTeam.h \
+    ui/DlgPickCategory.h
 
 SOURCES += \
     Category.cpp \
@@ -265,7 +269,11 @@ SOURCES += \
     ui/AutoSizingTable.cpp \
     ui/delegates/BaseItemDelegate.cpp \
     SwissLadderGenerator.cpp \
-    CSVImporter.cpp
+    CSVImporter.cpp \
+    ui/DlgImportCSV_Step1.cpp \
+    ui/DlgImportCSV_Step2.cpp \
+    ui/DlgPickTeam.cpp \
+    ui/DlgPickCategory.cpp
 
 RESOURCES += \
     tournament.qrc
@@ -293,7 +301,11 @@ FORMS += \
     ui/DlgBulkImportToExtDb.ui \
     ui/DlgSelectReferee.ui \
     ui/MatchLogTabWidget.ui \
-    ui/DlgPlayerProfile.ui
+    ui/DlgPlayerProfile.ui \
+    ui/DlgImportCSV_Step1.ui \
+    ui/DlgImportCSV_Step2.ui \
+    ui/DlgPickTeam.ui \
+    ui/DlgPickCategory.ui
 
 TRANSLATIONS = tournament_de.ts
 

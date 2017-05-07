@@ -15,6 +15,7 @@ namespace QTournament
     NoTeamName,
     NoSex,
     NoFirstName,
+    NoLastName,
     NameNotUnique,
     InvalidSexIndicator,
     CategoryNotExisting,
@@ -40,7 +41,7 @@ namespace QTournament
     static constexpr int Categories = 4;
   };
 
-  vector<vector<string>> splitCSV(const string& rawText, const string& delim = ",");
+  vector<vector<string>> splitCSV(const string& rawText, const string& delim = ",", const string& optionalCatName="");
 
   vector<CSVError> analyseCSV(TournamentDB* db, const vector<vector<string>>& data);
 

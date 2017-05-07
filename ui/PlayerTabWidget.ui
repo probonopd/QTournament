@@ -30,6 +30,19 @@
         </widget>
        </item>
        <item>
+        <widget class="QPushButton" name="btnImportCsv">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text">
+          <string>CSV Import</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QToolButton" name="btnExtDatabase">
          <property name="enabled">
           <bool>false</bool>
@@ -115,10 +128,27 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>btnImportCsv</sender>
+   <signal>clicked()</signal>
+   <receiver>PlayerTabWidget</receiver>
+   <slot>onImportCsv()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>420</x>
+     <y>22</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>351</x>
+     <y>247</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>onPlayerDoubleClicked(QModelIndex)</slot>
   <slot>onCreatePlayerClicked()</slot>
   <slot>onPlayerClicked(QModelIndex)</slot>
+  <slot>onImportCsv()</slot>
  </slots>
 </ui>

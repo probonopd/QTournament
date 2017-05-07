@@ -29,6 +29,8 @@
 #include "PlayerMngr.h"
 #include "TeamMngr.h"
 #include "CatMngr.h"
+#include "ui/DlgImportCSV_Step1.h"
+#include "ui/DlgImportCSV_Step2.h"
 
 PlayerTabWidget::PlayerTabWidget()
 :QWidget(), db(nullptr)
@@ -125,7 +127,7 @@ void PlayerTabWidget::initExternalDatabaseMenu()
   connect(actImportFromExtDatabase, SIGNAL(triggered(bool)), this, SLOT(onImportFromExtDatabase()));
   connect(actExportToExtDatabase, SIGNAL(triggered(bool)), this, SLOT(onExportToExtDatabase()));
   connect(actSyncAllToExtDatabase, SIGNAL(triggered(bool)), this, SLOT(onSyncAllToExtDatabase()));
-  connect(actImportCSV, SIGNAL(triggered(bool)), this, SLOT(onImportCSV()));
+  connect(actImportCSV, SIGNAL(triggered(bool)), this, SLOT(onImportCSV__extDb()));
 
   // assign the menu to the tool button
   ui.btnExtDatabase->setMenu(extDatabaseMenu.get());
@@ -253,7 +255,7 @@ void PlayerTabWidget::onPlayerSelectionChanged(const QItemSelection&, const QIte
 
 //----------------------------------------------------------------------------
 
-void PlayerTabWidget::onImportCSV()
+void PlayerTabWidget::onImportCSV__extDb()
 {
   PlayerMngr pm{db};
   if (!(pm.hasExternalPlayerDatabaseAvailable()))
@@ -433,6 +435,19 @@ void PlayerTabWidget::onImportCSV()
     msg = msg.arg(newPlayerIds.length()).arg(skippedPlayerIds.length()).arg(errorCnt);
     QMessageBox::information(this, "Import CSV data", msg);
   }
+}
+
+//----------------------------------------------------------------------------
+
+void PlayerTabWidget::onImportCsv()
+{
+  DlgImportCSV_Step1 dlg1{this, db};
+
+  int rc = dlg1.exec();
+  if (rc != QDialog::Accepted) return;
+
+  DlgImportCSV_Step2 dlg2{this, db, dlg1.getSplitData()};
+  dlg2.exec();
 }
 
 //----------------------------------------------------------------------------
