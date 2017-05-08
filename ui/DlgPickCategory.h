@@ -25,6 +25,7 @@ public:
 
   QString getSelection_CommaSep() const;
   vector<int> getSelection_Id() const;
+  vector<QString> getSelection_strVec() const;
   vector<QTournament::Category> getSelection() const;
 
   ~DlgPickCategory();

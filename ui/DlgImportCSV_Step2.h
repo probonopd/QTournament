@@ -25,27 +25,29 @@ class CSVDataTableWidget : public GuiHelpers::AutoSizingTableWidget
 
 public:
   CSVDataTableWidget(QWidget* parent = nullptr);
-  void setData(QTournament::TournamentDB* _db, const vector<vector<string>>& _splitData);
+  void setData(QTournament::TournamentDB* _db, const vector<QTournament::CSVImportRecord>& initialData);
   QString getErrMsg(int row, int col);
+  vector<QTournament::CSVImportRecord> getRecords() const {return records; }
+  size_t getNumRecords() const { return records.size(); }
 
 signals:
   void warnCountChanged(int errCount, int warnCount, int totalRowCount) const;
 
 protected slots:
   void onCellDoubleClicked(int row, int col);
+  void onBtnDelRowClicked();
+  void onBtnAddRowClicked();
 
 protected:
   void rebuildContents();
   void updateWarnings();
-  void syncedCellUpdate(int row, int col, const string& txt);
-  void syncedCellUpdate(int row, int col, const QString& txt);
-  void insertDataOfExistingPlayers();
-  void enforceConsistentSex(int specificRow = -1);
-
+  void createOrUpdateCellItem(int row, int col, const QString& txt);
+  void createOrUpdateCellItem(int row, int col);
+  void createOrUpdateCellItem(int row);
 
 private:
   QTournament::TournamentDB* db;
-  vector<vector<string>> splitData;
+  vector<QTournament::CSVImportRecord> records;
   vector<QTournament::CSVError> errList;
   vector<QTournament::Category> availCategories;
   vector<string> availCatNames;
@@ -62,8 +64,9 @@ class DlgImportCSV_Step2 : public QDialog
   Q_OBJECT
 
 public:
-  explicit DlgImportCSV_Step2(QWidget *parent, QTournament::TournamentDB* _db, const vector<vector<string>>& initialData);
+  explicit DlgImportCSV_Step2(QWidget *parent, QTournament::TournamentDB* _db, const vector<QTournament::CSVImportRecord>& initialData);
   ~DlgImportCSV_Step2();
+  vector<QTournament::CSVImportRecord> getRecords() const;
 
 public slots:
   void onWarnCountChanged(int errCount, int warnCount, int totalRowCount);

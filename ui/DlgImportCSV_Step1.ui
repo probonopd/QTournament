@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>CSV Importer, Step 1</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -29,13 +29,7 @@
      <item>
       <widget class="QPlainTextEdit" name="txtBox">
        <property name="plainText">
-        <string>flkgkljdgd
-dfglkdfglkdfj
-last, first, m, t1
-df, sdf, xx, t2
-
-
-</string>
+        <string/>
        </property>
       </widget>
      </item>
@@ -96,7 +90,7 @@ df, sdf, xx, t2
           <item>
            <widget class="QRadioButton" name="rbSemi">
             <property name="text">
-             <string>Semi&amp;colon (;)</string>
+             <string>Semico&amp;lon (;)</string>
             </property>
             <attribute name="buttonGroup">
              <string notr="true">buttonGroup</string>

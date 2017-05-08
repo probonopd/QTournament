@@ -91,7 +91,20 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  vector<CSVError> analyseCSV(TournamentDB* db, const vector<vector<string>>& data)
+  vector<CSVImportRecord> convertCSVfromPlainText(TournamentDB* db, const vector<vector<string> >& splitData)
+  {
+    vector<CSVImportRecord> result;
+    for (const vector<string>& s : splitData)
+    {
+      result.push_back(CSVImportRecord{db, s});
+    }
+
+    return result;
+  }
+
+  //----------------------------------------------------------------------------
+
+  vector<CSVError> analyseCSV(TournamentDB* db, const vector<CSVImportRecord>& data)
   {
     vector<CSVError> result;
 
@@ -99,65 +112,66 @@ namespace QTournament
     CatMngr cm{db};
 
     int row = 0;
-    for (const vector<string>& fields : data)
+    for (const CSVImportRecord& rec : data)
     {
       // check for the required number of fields
-      if ((fields.size() < 4) || (fields[CSVFieldsIndex::Team].empty()))
+      if (!(rec.hasTeamName()))
       {
         CSVError err{row, CSVFieldsIndex::Team, CSVErrCode::NoTeamName, "", true};
         result.push_back(err);
       }
-      if ((fields.size() < 3) || (fields[CSVFieldsIndex::Sex].empty()))
+      if (!(rec.hasValidSex()))
       {
         CSVError err{row, CSVFieldsIndex::Sex, CSVErrCode::NoSex, "", true};
         result.push_back(err);
       }
-      if ((fields.size() < 2) || (fields[CSVFieldsIndex::FirstName].empty()))
+      if (!(rec.hasFirstName()))
       {
         CSVError err{row, CSVFieldsIndex::FirstName, CSVErrCode::NoFirstName, "", true};
         result.push_back(err);
       }
-      if ((fields.size() < 1) || (fields[CSVFieldsIndex::LastName].empty()))
+      if (!(rec.hasLastName()))
       {
         CSVError err{row, CSVFieldsIndex::LastName, CSVErrCode::NoLastName, "", true};
         result.push_back(err);
       }
 
-      // check if the name is unique
-      if (fields.size() >= 2)
+      // check if the name is globally unique
+      // (--> not yet in the database)
+      if (rec.hasExistingName())
       {
-        QString f = QString::fromUtf8(fields[CSVFieldsIndex::FirstName].c_str());
-        QString l = QString::fromUtf8(fields[CSVFieldsIndex::LastName].c_str());
-        if (pm.hasPlayer(f, l))
-        {
-          CSVError err{row, CSVFieldsIndex::FirstName, CSVErrCode::NameNotUnique, "", false};
-          result.push_back(err);
-          err = CSVError{row, CSVFieldsIndex::LastName, CSVErrCode::NameNotUnique, "", false};
-          result.push_back(err);
-        }
+        CSVError err{row, CSVFieldsIndex::FirstName, CSVErrCode::NameNotUnique, "", false};
+        result.push_back(err);
+        err = CSVError{row, CSVFieldsIndex::LastName, CSVErrCode::NameNotUnique, "", false};
+        result.push_back(err);
       }
 
-      // check for a valid sex indicator
-      if ((fields.size() >= 3) && (!(fields[3].empty())))
+      // check if the name is locally unique
+      // (--> not yet in this list of records)
+      if (rec.hasLastName() && rec.hasFirstName())
       {
-        SEX s = strToSex(fields[CSVFieldsIndex::Sex]);
-        if (s == DONT_CARE)
+        for (int earlierRow = 0; earlierRow < row; ++earlierRow)
         {
-          CSVError err{row, CSVFieldsIndex::Sex, CSVErrCode::InvalidSexIndicator, "", true};
-          result.push_back(err);
+          const CSVImportRecord& other = data[earlierRow];
+          if ((rec.getLastName() == other.getLastName()) && (rec.getFirstName() == other.getFirstName()))
+          {
+            // generate an error and add 1 to the row number
+            // so that it matches the row numbers in the tab widget
+            CSVError err{row, CSVFieldsIndex::FirstName, CSVErrCode::NameRedundant, QString::number(earlierRow + 1), true};
+            result.push_back(err);
+            err = CSVError{row, CSVFieldsIndex::LastName, CSVErrCode::NameRedundant, QString::number(earlierRow + 1), true};
+            result.push_back(err);
+          }
         }
       }
 
       // check for valid categories
-      if (fields.size() > 4)
+      if (!(rec.getCatNames().empty()))
       {
-        string _allCats = fields[CSVFieldsIndex::Categories];
-        Sloppy::StringList allCats;
-        Sloppy::stringSplitter(allCats, _allCats, ",", true);
-        for (const string& cName : allCats)
+        for (const QString& cName : rec.getCatNames())
         {
           // does the category exist?
-          if (!(cm.hasCategory(QString::fromUtf8(cName.c_str()))))
+          if (!(cm.hasCategory(cName)))
           {
             CSVError err{row, CSVFieldsIndex::Categories, CSVErrCode::CategoryNotExisting, cName, false};
             result.push_back(err);
@@ -166,17 +180,17 @@ namespace QTournament
           }
 
           // can players be added to the category?
-          Category cat = cm.getCategory(QString::fromUtf8(cName.c_str()));
-          SEX s = strToSex(fields[CSVFieldsIndex::Sex]);
-          CAT_ADD_STATE as = cat.getAddState(s);
-          if (as == CAT_CLOSED)
+          Category cat = cm.getCategory(cName);
+          if (cat.canAddPlayers())
           {
+            CAT_ADD_STATE as = cat.getAddState(rec.getSex());
+            if (as != CAN_JOIN)
+            {
+              CSVError err{row, CSVFieldsIndex::Categories, CSVErrCode::CategoryNotSuitable, cName, false};
+              result.push_back(err);
+            }
+          } else {
             CSVError err{row, CSVFieldsIndex::Categories, CSVErrCode::CategoryLocked, cName, false};
-            result.push_back(err);
-          }
-          if ((as != CAT_CLOSED) && (as != CAN_JOIN))
-          {
-            CSVError err{row, CSVFieldsIndex::Categories, CSVErrCode::CategoryNotSuitable, cName, false};
             result.push_back(err);
           }
         }
@@ -190,6 +204,199 @@ namespace QTournament
   }
 
   //----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
 
+  CSVImportRecord::CSVImportRecord(TournamentDB* _db, vector<string> rawTexts)
+    :db{_db}
+  {
+    // copy the lastname
+    if (rawTexts.size() > 0)
+    {
+      lName = QString::fromUtf8(rawTexts[0].c_str());
+    }
 
+    // copy the given name
+    if (rawTexts.size() > 1)
+    {
+      fName = QString::fromUtf8(rawTexts[1].c_str());
+    }
+
+    // copy the sex
+    if (rawTexts.size() > 2)
+    {
+      sex = strToSex(rawTexts[2]);
+    } else {
+      sex = DONT_CARE;
+    }
+
+    // copy the team name
+    if (rawTexts.size() > 3)
+    {
+      teamName = QString::fromUtf8(rawTexts[3].c_str());
+    }
+
+    // copy the cat names
+    if (rawTexts.size() > 4)
+    {
+      vector<string> names;
+      Sloppy::stringSplitter(names, rawTexts[4], ",", true);
+      for (const string& s : names)
+      {
+        catNames.push_back(QString::fromUtf8(s.c_str()));
+      }
+    }
+
+    // if our name matches the name of an existing player,
+    // we enforce the correct sex, no matter what the user originally
+    // provided as input data
+    enforceConsistentSex();
+
+    // if some elements are missing and we're representing
+    // an existing player, fill in the correct values from the
+    // database
+    insertMissingDataForExistingPlayers();
+  }
+
+  //----------------------------------------------------------------------------
+
+  void CSVImportRecord::enforceConsistentSex()
+  {
+    upPlayer p = getExistingPlayer();
+    if (p != nullptr)
+    {
+      sex = p->getSex();
+    }
+  }
+
+  //----------------------------------------------------------------------------
+
+  void CSVImportRecord::insertMissingDataForExistingPlayers()
+  {
+    if (!(hasExistingName())) return;
+
+    Player p = *(getExistingPlayer());
+
+    if (teamName.isEmpty())
+    {
+      teamName = p.getTeam().getName();
+    }
+
+    // merge already assigned and potentially new categories
+    CatMngr cm{db};
+    vector<QString> alreadyAssignedCats;
+    for (const Category& cat : cm.getAllCategories())
+    {
+      // skip categories that are already locked
+      if (!(cat.canAddPlayers())) continue;
+
+      if (cat.hasPlayer(p))
+      {
+        alreadyAssignedCats.push_back(cat.getName());
+      }
+    }
+    if (catNames.empty())
+    {
+      catNames = alreadyAssignedCats;
+    } else {
+      for (const QString& cn : alreadyAssignedCats)
+      {
+        if (Sloppy::isInVector<QString>(catNames, cn)) continue;
+        catNames.push_back(cn);
+      }
+    }
+  }
+
+  //----------------------------------------------------------------------------
+
+  bool CSVImportRecord::hasExistingName() const
+  {
+    if (!(hasFirstName()) || !(hasLastName())) return false;
+
+    PlayerMngr pm{db};
+    return pm.hasPlayer(fName, lName);
+  }
+
+  //----------------------------------------------------------------------------
+
+  QString CSVImportRecord::getCatNames_str() const
+  {
+    QString result;
+    for (const QString& cn : catNames)
+    {
+      result += cn + ", ";
+    }
+    if (!(result.isEmpty())) result.chop(2);
+
+    return result;
+  }
+
+  //----------------------------------------------------------------------------
+
+  unique_ptr<Player> CSVImportRecord::getExistingPlayer() const
+  {
+    PlayerMngr pm{db};
+    if (pm.hasPlayer(fName, lName))
+    {
+      Player p = pm.getPlayer(fName, lName);
+      return pm.getPlayer_up(p.getId());
+    }
+
+    return nullptr;
+  }
+
+  //----------------------------------------------------------------------------
+
+  bool CSVImportRecord::updateFirstName(const QString& newName)
+  {
+    if (newName.isEmpty()) return false;
+    fName = newName;
+    enforceConsistentSex();
+
+    return true;
+  }
+
+  //----------------------------------------------------------------------------
+
+  bool CSVImportRecord::updateLastName(const QString& newName)
+  {
+    if (newName.isEmpty()) return false;
+    lName = newName;
+    enforceConsistentSex();
+
+    return true;
+  }
+
+  //----------------------------------------------------------------------------
+
+  bool CSVImportRecord::updateTeamName(const QString& newName)
+  {
+    if (newName.isEmpty()) return false;
+
+    teamName = newName;
+
+    return true;
+  }
+
+  //----------------------------------------------------------------------------
+
+  bool CSVImportRecord::updateSex(SEX newSex)
+  {
+    if (newSex == DONT_CARE) return false;
+    if (hasExistingName()) return false;
+
+    sex = newSex;
+
+    return true;
+  }
+
+  //----------------------------------------------------------------------------
+
+  bool CSVImportRecord::updateCategories(const vector<QString>& catOverwrite)
+  {
+    if (catOverwrite.empty()) return false;
+
+    catNames = catOverwrite;
+    return true;
+  }
 }

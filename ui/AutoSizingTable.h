@@ -128,6 +128,10 @@ namespace GuiHelpers
       {
         widthAvail -= TableTypeName::verticalScrollBar()->width();
       }
+      if (!(TableTypeName::verticalHeader()->isHidden()))
+      {
+        widthAvail-= TableTypeName::verticalHeader()->width();
+      }
       auto colWidths = getColWidths(widthAvail);
       int idx = 0;
       while (idx < colWidths.size())

@@ -122,6 +122,26 @@ vector<int> DlgPickCategory::getSelection_Id() const
 
 //----------------------------------------------------------------------------
 
+vector<QString> DlgPickCategory::getSelection_strVec() const
+{
+  CatMngr cm{db};
+  vector<QString> result;
+
+  for (int row = 0; row < ui->catList->count(); ++row)
+  {
+    QListWidgetItem* it = ui->catList->item(row);
+    if (it->checkState() != Qt::Checked) continue;
+
+    int catId = it->data(Qt::UserRole).toInt();
+    Category cat = cm.getCategoryById(catId);
+    result.push_back(cat.getName());
+  }
+
+  return result;
+}
+
+//----------------------------------------------------------------------------
+
 vector<Category> DlgPickCategory::getSelection() const
 {
   CatMngr cm{db};

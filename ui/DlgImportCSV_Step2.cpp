@@ -3,6 +3,8 @@
 #include <QLabel>
 #include <QColor>
 #include <QInputDialog>
+#include <QHeaderView>
+#include <QPushButton>
 
 #include "DlgImportCSV_Step2.h"
 #include "ui_DlgImportCSV_Step2.h"
@@ -12,10 +14,11 @@
 #include "PlayerMngr.h"
 #include "CatMngr.h"
 #include "ui/DlgPickCategory.h"
+#include "CSVImporter.h"
 
 using namespace QTournament;
 
-DlgImportCSV_Step2::DlgImportCSV_Step2(QWidget *parent, TournamentDB* _db, const vector<vector<string>>& initialData) :
+DlgImportCSV_Step2::DlgImportCSV_Step2(QWidget *parent, TournamentDB* _db, const vector<CSVImportRecord>& initialData) :
   QDialog(parent),
   ui(new Ui::DlgImportCSV_Step2), db{_db}
 {
@@ -23,6 +26,10 @@ DlgImportCSV_Step2::DlgImportCSV_Step2(QWidget *parent, TournamentDB* _db, const
 
   connect(ui->tab, SIGNAL(warnCountChanged(int,int,int)), this, SLOT(onWarnCountChanged(int,int,int)), Qt::DirectConnection);
   ui->tab->setData(db, initialData);
+
+  // connect actions for the add / delete buttons
+  connect(ui->btnDelete, SIGNAL(clicked(bool)), ui->tab, SLOT(onBtnDelRowClicked()));
+  connect(ui->btnInsert, SIGNAL(clicked(bool)), ui->tab, SLOT(onBtnAddRowClicked()));
 }
 
 //----------------------------------------------------------------------------
@@ -34,15 +41,32 @@ DlgImportCSV_Step2::~DlgImportCSV_Step2()
 
 //----------------------------------------------------------------------------
 
+vector<CSVImportRecord> DlgImportCSV_Step2::getRecords() const
+{
+  return ui->tab->getRecords();
+}
+
+//----------------------------------------------------------------------------
+
 void DlgImportCSV_Step2::onWarnCountChanged(int errCount, int warnCount, int totalRowCount)
 {
   QString msg = tr("<b>%3 rows; <font color=\"darkRed\">%1 errors</font>, ");
   msg += tr("<font color=\"#808000\">%2 warnings</font></b>");
   msg = msg.arg(errCount).arg(warnCount).arg(totalRowCount);
 
+  // update the counters
   ui->laCount->setText(msg);
 
-  ui->btnImport->setEnabled(errCount == 0);
+  // enable / disbale the import button
+  ui->btnImport->setEnabled((errCount == 0) && (ui->tab->getNumRecords() > 0));
+
+  // also update the error message for the current cell
+  int row = ui->tab->currentRow();
+  int col = ui->tab->currentColumn();
+  if ((row >= 0) && (col >= 0)) ui->laMsg->setText(ui->tab->getErrMsg(row, col));
+
+  // also enable / disable the insertion / deletion buttons
+  ui->btnDelete->setEnabled(ui->tab->getNumRecords() > 0);
 }
 
 //----------------------------------------------------------------------------
@@ -65,16 +89,25 @@ CSVDataTableWidget::CSVDataTableWidget(QWidget* parent)
 {tr("Categories"), 4},
                                      }, parent}, db{nullptr}
 {
+  setRubberBandCol(4);
+
+  // switch the selection behaviour from "row" (set by the
+  // AutoSizingTable) back to "item"
   setSelectionBehavior(QAbstractItemView::SelectItems);
+
+  // re-enable row numbers (have been disabled by the AutoSizingTable)
+  verticalHeader()->show();
+
+  // handler for double-clicks
   connect(this, SIGNAL(cellDoubleClicked(int,int)), this, SLOT(onCellDoubleClicked(int,int)));
 }
 
 //----------------------------------------------------------------------------
 
-void CSVDataTableWidget::setData(QTournament::TournamentDB* _db, const vector<vector<string> >& _splitData)
+void CSVDataTableWidget::setData(QTournament::TournamentDB* _db, const vector<CSVImportRecord>& initialData)
 {
   db = _db;
-  splitData = _splitData;
+  records = initialData;
 
   // prepare a list of categories than still
   // accept new players
@@ -94,8 +127,6 @@ void CSVDataTableWidget::setData(QTournament::TournamentDB* _db, const vector<ve
     availCatNames.push_back(string{cat.getName().toUtf8().constData()});
   }
 
-  insertDataOfExistingPlayers();
-
   rebuildContents();
   updateWarnings();
 }
@@ -107,29 +138,12 @@ void CSVDataTableWidget::rebuildContents()
   clearContents();
   setRowCount(0);
 
-  int row = 0;
-  for (const vector<string>& fields : splitData)
+  for (int row = 0; row < records.size(); ++row)
   {
     insertRow(row);
 
     // add text contents
-    int col = 0;
-    for (const string& s : fields)
-    {
-      syncedCellUpdate(row, col, s);
-      ++col;
-    }
-
-    // append empty items for missing
-    // columns. We need them to apply proper
-    // background colors
-    while (col < 5)
-    {
-      syncedCellUpdate(row, col, QString{});
-      ++col;
-    }
-
-    ++row;
+    createOrUpdateCellItem(row);
   }
 }
 
@@ -137,7 +151,7 @@ void CSVDataTableWidget::rebuildContents()
 
 void CSVDataTableWidget::updateWarnings()
 {
-  errList = analyseCSV(db, splitData);
+  errList = analyseCSV(db, records);
   int cntFatal = 0;
 
   // reset all warnings and errors
@@ -148,7 +162,9 @@ void CSVDataTableWidget::updateWarnings()
       QTableWidgetItem* i = item(row, col);
       if (i == nullptr) continue;
       i->setData(Qt::UserRole, 0);
+      i->setData(Qt::UserRole + 1, false);
       i->setBackgroundColor(Qt::white);
+      i->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
     }
   }
 
@@ -176,23 +192,57 @@ void CSVDataTableWidget::updateWarnings()
       QTableWidgetItem* i = item(err.row, 2);
       if (i == nullptr) continue;
       i->setData(Qt::UserRole + 1, true);
+      i->setFlags(0);
     }
   }
 
-  emit warnCountChanged(cntFatal, errList.size() - cntFatal, splitData.size());
+  emit warnCountChanged(cntFatal, errList.size() - cntFatal, records.size());
 }
 
 //----------------------------------------------------------------------------
 
-void CSVDataTableWidget::syncedCellUpdate(int row, int col, const string& txt)
+void CSVDataTableWidget::createOrUpdateCellItem(int row, int col)
 {
-  QString _txt = QString::fromUtf8(txt.c_str());
-  syncedCellUpdate(row, col, _txt);
+  const CSVImportRecord& rec = records[row];
+
+  QString txt;
+  if (col == CSVFieldsIndex::LastName)
+  {
+    txt = rec.getLastName();
+  }
+  if (col == CSVFieldsIndex::FirstName)
+  {
+    txt = rec.getFirstName();
+  }
+  if (col == CSVFieldsIndex::Sex)
+  {
+    if (rec.getSex() != DONT_CARE)
+    {
+      txt = (rec.getSex() == M) ? "m" : tr("f");
+    }
+  }
+  if (col == CSVFieldsIndex::Team)
+  {
+    txt = rec.getTeamName();
+  }
+  if (col == CSVFieldsIndex::Categories)
+  {
+    txt = rec.getCatNames_str();
+  }
+
+  createOrUpdateCellItem(row, col, txt);
 }
 
 //----------------------------------------------------------------------------
 
-void CSVDataTableWidget::syncedCellUpdate(int row, int col, const QString& txt)
+void CSVDataTableWidget::createOrUpdateCellItem(int row)
+{
+  for (int col = 0; col < 5; ++col) createOrUpdateCellItem(row, col);
+}
+
+//----------------------------------------------------------------------------
+
+void CSVDataTableWidget::createOrUpdateCellItem(int row, int col, const QString& txt)
 {
   QTableWidgetItem* it = item(row, col);
   if (it == nullptr)
@@ -204,95 +254,6 @@ void CSVDataTableWidget::syncedCellUpdate(int row, int col, const QString& txt)
     setItem(row, col, it);
   } else {
     it->setText(txt);
-  }
-
-  splitData[row][col] = string{txt.toUtf8().constData()};
-}
-
-//----------------------------------------------------------------------------
-
-void CSVDataTableWidget::insertDataOfExistingPlayers()
-{
-  PlayerMngr pm{db};
-
-  enforceConsistentSex();
-
-  for (vector<string>& fields : splitData)
-  {
-    QString last = QString::fromUtf8(fields[0].c_str());
-    QString first = QString::fromUtf8(fields[1].c_str());
-
-    if (!(last.isEmpty()) && !(first.isEmpty()))
-    {
-      if (!(pm.hasPlayer(first, last))) continue;
-
-      Player p = pm.getPlayer(first, last);
-
-      if (fields[3].empty())
-      {
-        Team t = p.getTeam();
-        fields[3] = string{t.getName().toUtf8().constData()};
-      }
-
-      vector<string> catNames;
-      vector<string> alreadyAssignedCats;
-      for (const Category& cat : availCategories)
-      {
-        if (cat.hasPlayer(p))
-        {
-          string cn = string{cat.getName().toUtf8().constData()};
-          alreadyAssignedCats.push_back(cn);
-        }
-      }
-      if (!(fields[4].empty()))
-      {
-        Sloppy::stringSplitter(catNames, fields[4], ",", true);
-
-        for (const string& cn : alreadyAssignedCats)
-        {
-          if (Sloppy::isInVector<string>(catNames, cn)) continue;
-          catNames.push_back(cn);
-        }
-      } else {
-        catNames = alreadyAssignedCats;
-      }
-      fields[4] = Sloppy::commaSepStringFromStringList(catNames, ", ");
-    }
-  }
-}
-
-//----------------------------------------------------------------------------
-
-void CSVDataTableWidget::enforceConsistentSex(int specificRow)
-{
-  PlayerMngr pm{db};
-
-  int minRow = 0;
-  int maxRow = splitData.size() - 1;
-  if (specificRow >= 0)
-  {
-    minRow = specificRow;
-    maxRow = specificRow;
-  }
-
-  for (int row = minRow; row <= maxRow; ++row)
-  {
-    vector<string>& fields = splitData[row];
-
-    QString last = QString::fromUtf8(fields[0].c_str());
-    QString first = QString::fromUtf8(fields[1].c_str());
-
-    if (!(last.isEmpty()) && !(first.isEmpty()))
-    {
-      if (!(pm.hasPlayer(first, last))) continue;
-
-      Player p = pm.getPlayer(first, last);
-
-      // overwrite whatever sex has been provided by
-      // the user
-      QString s = (p.getSex() == M) ? "m" : tr("f");
-      syncedCellUpdate(row, 2, s);
-    }
   }
 }
 
@@ -308,32 +269,33 @@ QString CSVDataTableWidget::getErrMsg(int row, int col)
     if ((err.row != row) || (err.column != col)) continue;
 
     QString m;
-    QString para = QString::fromUtf8(err.para.c_str());
     switch (err.err)
     {
     case CSVErrCode::CategoryLocked:
       m = tr("You cannot add anymore players to category %1.");
-      m = m.arg(para);
+      m = m.arg(err.para);
       break;
 
     case CSVErrCode::CategoryNotExisting:
       m = tr("The category %1 does not exist and will be ignored during the import.");
-      m = m.arg(para);
+      m = m.arg(err.para);
       break;
 
     case CSVErrCode::CategoryNotSuitable:
       m = tr("The category %1 is not suitable for this player.");
-      m = m.arg(para);
-      break;
-
-    case CSVErrCode::InvalidSexIndicator:
-      m = tr("Please use only 'm' or 'f' here.");
+      m = m.arg(err.para);
       break;
 
     case CSVErrCode::NameNotUnique:
-      m = tr("A player of this name already exists. If necessary, the team assignment ");
+      m = tr("A player of this name already exists in the tournament. If necessary, the team assignment ");
       m += tr("will be updated and the category selection will be merged ");
       m += tr("with the already selected categories.");
+      break;
+
+    case CSVErrCode::NameRedundant:
+      m = tr("This player already occurs in row %1. ");
+      m += tr("Please remove or rename the player in this row.");
+      m = m.arg(err.para);
       break;
 
     case CSVErrCode::NoFirstName:
@@ -353,7 +315,7 @@ QString CSVDataTableWidget::getErrMsg(int row, int col)
       break;
     }
 
-    if (!(m.isEmpty())) msg += m + "\n";
+    if (!(m.isEmpty())) msg += m + "\n\n";
   }
 
   if (msg.isEmpty()) msg = "--";
@@ -365,7 +327,7 @@ QString CSVDataTableWidget::getErrMsg(int row, int col)
 
 void CSVDataTableWidget::onCellDoubleClicked(int row, int col)
 {
-  string newVal;
+  QString newVal;
   bool hasUpdate = false;
 
   QTableWidgetItem* curItem = currentItem();
@@ -379,8 +341,10 @@ void CSVDataTableWidget::onCellDoubleClicked(int row, int col)
     return;
   }
 
+  CSVImportRecord& rec = records[row];
+
   // enter a new first name or last name
-  if (col < 2)
+  if (col <= CSVFieldsIndex::FirstName)
   {
     // get the current value
     QString curName;
@@ -389,44 +353,33 @@ void CSVDataTableWidget::onCellDoubleClicked(int row, int col)
       curName = curItem->text();
     }
 
-    QString newName = QInputDialog::getText(this, tr("Edit name"), tr("Enter name:"),
+    newVal = QInputDialog::getText(this, tr("Edit name"), tr("Enter name:"),
                                             QLineEdit::Normal, curName, &hasUpdate);
-    if (newName.isEmpty())
+    if (!hasUpdate) return;  // canceled by user
+
+    if (newVal.isEmpty())
     {
       QMessageBox::critical(this, tr("Edit cell"), tr("The new name may not be empty!"));
       return;
     }
 
-    newVal = string{newName.toUtf8().constData()};
-
-    // make sure that the modification does not result in
-    // an existing player name
-    QString first;
-    QString last;
-    if (col == 0)
-    {
-      last = newName;
-      first = QString::fromUtf8(splitData[row][1].c_str());
-    } else {
-      first = newName;
-      last = QString::fromUtf8(splitData[row][0].c_str());
-    }
+    if (col == CSVFieldsIndex::LastName) hasUpdate = rec.updateLastName(newVal);
+    else hasUpdate = rec.updateFirstName(newVal);
   }
 
   // change the player's sex
-  if (col == 2)
+  if (col == CSVFieldsIndex::Sex)
   {
     DlgPickPlayerSex dlg{this, ""};
     int rc = dlg.exec();
     if (rc != QDialog::Accepted) return;
 
-    QString newSex = (dlg.getSelectedSex() == M) ? "m" : tr("f");
-    newVal = newSex.toUtf8().constData();
-    hasUpdate = true;
+    newVal = (dlg.getSelectedSex() == M) ? "m" : tr("f");
+    hasUpdate = rec.updateSex(dlg.getSelectedSex());
   }
 
   // change the player's team
-  if (col == 3)
+  if (col == CSVFieldsIndex::Team)
   {
     DlgPickTeam dlg{this, db};
     int rc = dlg.exec();
@@ -437,35 +390,82 @@ void CSVDataTableWidget::onCellDoubleClicked(int row, int col)
 
     TeamMngr tm{db};
     Team t = tm.getTeamById(teamId);
-    newVal = string{t.getName().toUtf8().constData()};
-    hasUpdate = true;
+    newVal = t.getName();
+    hasUpdate = rec.updateTeamName(newVal);
   }
 
   // change the category selection
-  if (col == 4)
+  if (col == CSVFieldsIndex::Categories)
   {
-    DlgPickCategory dlg{this, db};
-    QString catList = QString::fromUtf8(splitData[row][4].c_str());
+    DlgPickCategory dlg{this, db, rec.getSex()};
+    QString catList = rec.getCatNames_str();
     dlg.applyPreselection(catList);
 
     int rc = dlg.exec();
     if (rc != QDialog::Accepted) return;
 
-    newVal = string{dlg.getSelection_CommaSep().toUtf8().constData()};
-    hasUpdate = true;
+    newVal = dlg.getSelection_CommaSep();
+    hasUpdate = rec.updateCategories(dlg.getSelection_strVec());
   }
 
   // write the changes
   if (hasUpdate)
   {
-    splitData[row][col] = newVal;
-    syncedCellUpdate(row, col, newVal);
+    createOrUpdateCellItem(row, col, newVal);
 
     // if we modified a name so that it
     // matches an existing name, we have to
     // make sure that everything is in sync
-    if (col < 3) enforceConsistentSex(row);
+    if (col <= CSVFieldsIndex::Sex) createOrUpdateCellItem(row, CSVFieldsIndex::Sex);
 
     updateWarnings();
   }
 }
+
+//----------------------------------------------------------------------------
+
+void CSVDataTableWidget::onBtnDelRowClicked()
+{
+  int row = currentRow();
+  if ((row < 0) || (row >= records.size())) return;
+
+  removeRow(row);
+  auto it = records.begin() + row;
+  records.erase(it);
+
+  updateWarnings();
+}
+
+//----------------------------------------------------------------------------
+
+void CSVDataTableWidget::onBtnAddRowClicked()
+{
+  string l{tr("New").toUtf8().constData()};
+  string f{tr("Player").toUtf8().constData()};
+  CSVImportRecord newRec{db, {l, f, "", "", ""}};
+
+  if (records.size() == 0)
+  {
+    insertRow(0);
+    records.push_back(newRec);
+    createOrUpdateCellItem(0);
+  } else {
+    int row = currentRow();
+    if ((row < 0) || (row >= records.size())) return;
+
+    // insert the new row after the current row
+    ++row;
+    insertRow(row);
+    if (row == records.size())
+    {
+      records.push_back(newRec);
+    } else {
+      auto it = records.begin() + row;
+      records.insert(it, newRec);
+    }
+    createOrUpdateCellItem(row);
+  }
+
+  updateWarnings();
+}
+

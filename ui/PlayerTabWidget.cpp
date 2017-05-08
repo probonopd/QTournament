@@ -446,8 +446,83 @@ void PlayerTabWidget::onImportCsv()
   int rc = dlg1.exec();
   if (rc != QDialog::Accepted) return;
 
-  DlgImportCSV_Step2 dlg2{this, db, dlg1.getSplitData()};
-  dlg2.exec();
+  auto sourceImportRecords = convertCSVfromPlainText(db, dlg1.getSplitData());
+
+  DlgImportCSV_Step2 dlg2{this, db, sourceImportRecords};
+  rc = dlg2.exec();
+  if (rc != QDialog::Accepted) return;
+
+  // get the "consolidated" records
+  vector<CSVImportRecord> records = dlg2.getRecords();
+  if (records.empty()) return;  // nothing to do
+
+  // make sure the data set is error free.
+  // this SHOULD have been checked by the DlgImportCSV_Step2 before,
+  // but better safe than sorry
+  vector<CSVError> errList = analyseCSV(db, records);
+  for (const CSVError& err : errList)
+  {
+    if (err.isFatal)
+    {
+      QString msg = tr("The CSV records contain errors and thus can't be imported!");
+      QMessageBox::critical(this, tr("Import CSV"), msg);
+      return;
+    }
+  }
+
+  // the actual import
+  TeamMngr tm{db};
+  PlayerMngr pm{db};
+  CatMngr cm{db};
+  ERR err = OK;
+  QString msg;
+  for (const CSVImportRecord& rec : records)
+  {
+    if (!(tm.hasTeam(rec.getTeamName())))
+    {
+      err = tm.createNewTeam(rec.getTeamName());
+      if (err != OK)
+      {
+        msg = tr("Error when creating the team '%1'.");
+        msg = msg.arg(rec.getTeamName());
+        break;
+      }
+    }
+
+    if (!(rec.hasExistingName()))
+    {
+      err = pm.createNewPlayer(rec.getFirstName(), rec.getLastName(), rec.getSex(), rec.getTeamName());
+      if (err != OK)
+      {
+        msg = tr("Error when creating the player '%1 %2'.");
+        msg = msg.arg(rec.getFirstName()).arg(rec.getLastName());
+        break;
+      }
+    }
+
+    Player p = *(rec.getExistingPlayer());   // should return the newly created or existing player
+
+    for (const QString& cName : rec.getCatNames())
+    {
+      // skip non-existing categories
+      if (!(cm.hasCategory(cName))) continue;
+
+      Category cat = cm.getCategory(cName);
+
+      // try to add the player to the category.
+      // ignore potential errors; successfull category assignment is optional...
+      cm.addPlayerToCategory(p, cat);
+    }
+
+    // done.
+  }
+  if ((err != OK) && !(msg.isEmpty()))
+  {
+    msg += tr("Import aborted.\n\nThe import might have ");
+    msg += tr("partially succeeded up to this point.");
+    QMessageBox::critical(this, tr("Import CSV"), msg);
+    return;
+  }
 }
 
 //----------------------------------------------------------------------------
