@@ -206,6 +206,39 @@ void ScheduleTabWidget::onRoundCompleted(int catId, int round)
   CatMngr cm{db};
   Category cat = cm.getCategoryById(catId);
 
+  //
+  // --------- Begin BAD HACK ------------
+  //
+
+  // if we're in Swiss Ladder and the number of rounds for
+  // the category suddenly shrinked, we've encountered a
+  // deadlock and we need to inform the user
+
+  if (cat.getMatchSystem() == SWISS_LADDER)
+  {
+    int nPairs = cat.getPlayerPairs().size();
+
+    int nRoundsTheory = ((nPairs % 2) == 0) ? nPairs - 1 : nPairs;
+    int nRoundsActual = cat.convertToSpecializedObject()->calcTotalRoundsCount();
+    if ((nPairs > 4) && (nRoundsActual < nRoundsTheory) && (cat.getState() == STAT_CAT_FINALIZED))
+    {
+      QString msg = tr("<br><center><b><font color=\"red\">SWISS LADDER DEADLOCK</font></b></center><br><br>");
+      msg += tr("Unfortuantely, the sequence of matches in past rounds in the category %3 has lead ");
+      msg += tr("to a deadlock. We can't play any more rounds in this category without repeating already ");
+      msg += tr("played matches.<br><br>");
+      msg += tr("Thus, the category has been reduced from %1 to %2 rounds and ");
+      msg += tr("is now finished.<br><br>");
+      msg += tr("Normally, such a deadlock should not happen... sincere apologies for this!<br><br>");
+      msg = msg.arg(nRoundsTheory).arg(nRoundsActual).arg(cat.getName());
+
+      QMessageBox::warning(this, tr("Swiss Ladder Deadlock"), msg);
+    }
+  }
+
+  //
+  // --------- End BAD HACK ------------
+  //
+
   QString txt = tr("Round %1 of category %2 finished!").arg(round).arg(cat.getName());
 
   QMessageBox::information(this, tr("Round finished"), txt);
