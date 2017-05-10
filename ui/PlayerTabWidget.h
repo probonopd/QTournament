@@ -53,7 +53,6 @@ private:
   QAction* actImportFromExtDatabase;
   QAction* actExportToExtDatabase;
   QAction* actSyncAllToExtDatabase;
-  QAction* actImportCSV;
 
   void initRegistrationMenu();
   void initExternalDatabaseMenu();
@@ -69,7 +68,6 @@ public slots:
   void onSyncAllToExtDatabase();
   void onExternalDatabaseChanged();
   void onPlayerSelectionChanged(const QItemSelection &, const QItemSelection &);
-  void onImportCSV__extDb();
   void onImportCsv();
 };
 
