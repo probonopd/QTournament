@@ -90,7 +90,7 @@
           <item>
            <widget class="QRadioButton" name="rbSemi">
             <property name="text">
-             <string>Semico&amp;lon (;)</string>
+             <string>Semi&amp;colon (;)</string>
             </property>
             <attribute name="buttonGroup">
              <string notr="true">buttonGroup</string>
@@ -234,9 +234,26 @@ all players to:</string>
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>btnLoad</sender>
+   <signal>clicked()</signal>
+   <receiver>DlgImportCSV_Step1</receiver>
+   <slot>onBtnLoadFileClicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>573</x>
+     <y>195</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>326</x>
+     <y>279</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>onContentChanged()</slot>
+  <slot>onBtnLoadFileClicked()</slot>
  </slots>
  <buttongroups>
   <buttongroup name="buttonGroup"/>

@@ -5,6 +5,8 @@
 #include <QPushButton>
 #include <QPlainTextEdit>
 #include <QRadioButton>
+#include <QFileDialog>
+#include <QMessageBox>
 
 #include "DlgImportCSV_Step1.h"
 #include "ui_DlgImportCSV_Step1.h"
@@ -55,6 +57,7 @@ vector<vector<string>> DlgImportCSV_Step1::getSplitData() const
 {
   vector<vector<string>> result;
   QString plain = ui->txtBox->document()->toPlainText();
+  plain.replace('"', "");
   string raw{plain.toUtf8().constData()};
 
   // is an additional category selected
@@ -85,6 +88,42 @@ vector<vector<string>> DlgImportCSV_Step1::getSplitData() const
 void DlgImportCSV_Step1::onContentChanged()
 {
   ui->btnNext->setEnabled(!(ui->txtBox->document()->isEmpty()));
+}
+
+//----------------------------------------------------------------------------
+
+void DlgImportCSV_Step1::onBtnLoadFileClicked()
+{
+  // ask for the file name
+  QFileDialog fDlg{this};
+  fDlg.setAcceptMode(QFileDialog::AcceptOpen);
+  fDlg.setFileMode(QFileDialog::ExistingFile);
+  fDlg.setNameFilter(tr("CSV Files (*.csv)"));
+  int result = fDlg.exec();
+
+  if (result != QDialog::Accepted)
+  {
+    return;
+  }
+
+  // get the filename
+  QString filename = fDlg.selectedFiles().at(0);
+
+  // open the file, read it completely in one step
+  // and overwrite the current text box contents
+  QFile inFile{filename};
+  if (!(inFile.open(QIODevice::ReadOnly | QIODevice::Text)))
+  {
+    QString msg = tr("Could not open %1 for reading!");
+    msg = msg.arg(filename);
+    QMessageBox::critical(this, tr("Import CSV"), msg);
+    return;
+  }
+  ui->txtBox->document()->setPlainText(inFile.readAll());
+  inFile.close();
+
+  // update the import button
+  onContentChanged();
 }
 
 //----------------------------------------------------------------------------

@@ -29,6 +29,7 @@ public:
 
 protected slots:
   void onContentChanged();
+  void onBtnLoadFileClicked();
 
 private:
   Ui::DlgImportCSV_Step1 *ui;
