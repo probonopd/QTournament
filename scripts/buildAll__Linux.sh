@@ -118,11 +118,11 @@ if [ -f Qt/QTournament/.git/config ]; then
   echo "  2 = update git repo in build dir and re-build"
 fi
 if [ -f $TOURNAMENT_BIN ]; then
-  echo "  4 = use existing QTournament binary"
+  echo "  3 = use existing QTournament binary"
 fi
 read -s -n 1 TORNAMENT_SEL
 
-if [ $TORNAMENT_SEL != "0" ] && [ $TORNAMENT_SEL != "1" ] && [ $TORNAMENT_SEL != "2" ] && [ $TORNAMENT_SEL != "4" ]; then
+if [ $TORNAMENT_SEL != "0" ] && [ $TORNAMENT_SEL != "1" ] && [ $TORNAMENT_SEL != "2" ] && [ $TORNAMENT_SEL != "3" ]; then
   echo "error"
   exit
 fi
@@ -152,9 +152,12 @@ if [ $TORNAMENT_SEL -eq 2 ]; then
 
   git pull --all
   QTOURNAMENT_VERSION=git
+
+  # delete old binary to force new linking
+  rm QTournament
 fi
 
-if [ $TORNAMENT_SEL != "4" ]; then
+if [ $TORNAMENT_SEL != "3" ]; then
   qmake CONFIG+=release QTournament.pro
   make -j5
   cd ..
