@@ -2,6 +2,136 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="de_DE">
 <context>
+    <name>CSVDataTableWidget</name>
+    <message>
+        <location filename="ui/DlgImportCSV_Step2.cpp" line="85"/>
+        <source>Last name</source>
+        <translation>Nachname</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgImportCSV_Step2.cpp" line="86"/>
+        <source>Given name</source>
+        <translation>Vorname</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgImportCSV_Step2.cpp" line="87"/>
+        <source>Sex</source>
+        <translation>m/w</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgImportCSV_Step2.cpp" line="88"/>
+        <source>Team</source>
+        <translation>Team</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgImportCSV_Step2.cpp" line="89"/>
+        <source>Categories</source>
+        <translation>Disziplinen</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgImportCSV_Step2.cpp" line="221"/>
+        <location filename="ui/DlgImportCSV_Step2.cpp" line="377"/>
+        <source>f</source>
+        <translation>w</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgImportCSV_Step2.cpp" line="275"/>
+        <source>You cannot add anymore players to category %1.</source>
+        <translation>Der Disziplin %1 können keine Spieler mehr hinzugefügt werden.</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgImportCSV_Step2.cpp" line="280"/>
+        <source>The category %1 does not exist and will be ignored during the import.</source>
+        <translation>Die Disziplin %1 existiert nicht und wird daher beim Import ignoriert.</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgImportCSV_Step2.cpp" line="285"/>
+        <source>The category %1 is not suitable for this player.</source>
+        <translation>Die Disziplin %1 ist für den Spieler nicht verfügbar.</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgImportCSV_Step2.cpp" line="290"/>
+        <source>A player of this name already exists in the tournament. If necessary, the team assignment </source>
+        <translation>Ein Spieler dieses Names existiert bereits. Falls erforderlich wird die Team-Zuordnung </translation>
+    </message>
+    <message>
+        <location filename="ui/DlgImportCSV_Step2.cpp" line="291"/>
+        <source>will be updated and the category selection will be merged </source>
+        <translation>automatisch angepasst und die Auswahl der Spieldisziplinen </translation>
+    </message>
+    <message>
+        <location filename="ui/DlgImportCSV_Step2.cpp" line="292"/>
+        <source>with the already selected categories.</source>
+        <translation>an die bereits ausgewählen Disziplinen angepasst.</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgImportCSV_Step2.cpp" line="296"/>
+        <source>This player already occurs in row %1. </source>
+        <translation>Den Spieler gibt es bereits in Zeile %1. </translation>
+    </message>
+    <message>
+        <location filename="ui/DlgImportCSV_Step2.cpp" line="297"/>
+        <source>Please remove or rename the player in this row.</source>
+        <translation>Bitte in dieser Zeile den Spieler umbenennen oder die Zeile ganz entfernen.</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgImportCSV_Step2.cpp" line="302"/>
+        <source>You must enter a given name for the player.</source>
+        <translation>Für den Spieler ist ein Vorname erforderlich.</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgImportCSV_Step2.cpp" line="306"/>
+        <source>You must enter a family name for the player.</source>
+        <translation>Für den Spieler ist ein Nachname erforderlich.</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgImportCSV_Step2.cpp" line="310"/>
+        <source>You must provide the player&apos;s sex.</source>
+        <translation>Für den Spieler ist die Angabe des Geschlechts erforderlich.</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgImportCSV_Step2.cpp" line="314"/>
+        <source>You must provide a team name for the player</source>
+        <translation>Für den Spieler ist die Angabe eines Teamnamens erforderlich.</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgImportCSV_Step2.cpp" line="339"/>
+        <location filename="ui/DlgImportCSV_Step2.cpp" line="362"/>
+        <source>Edit cell</source>
+        <translation>Inhalt bearbeiten</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgImportCSV_Step2.cpp" line="340"/>
+        <source>The name and sex of existing players cannot be changed here.</source>
+        <translation>Der Name und das Geschlecht bereits existierender Spieler kann hier nicht verändert werden.</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgImportCSV_Step2.cpp" line="356"/>
+        <source>Edit name</source>
+        <translation>Namen ändern</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgImportCSV_Step2.cpp" line="356"/>
+        <source>Enter name:</source>
+        <translation>Namen eingeben:</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgImportCSV_Step2.cpp" line="362"/>
+        <source>The new name may not be empty!</source>
+        <translation>Der neue Name darf nicht leer sein!</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgImportCSV_Step2.cpp" line="443"/>
+        <source>New</source>
+        <translation>Neuer</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgImportCSV_Step2.cpp" line="444"/>
+        <source>Player</source>
+        <translation>Spieler</translation>
+    </message>
+</context>
+<context>
     <name>CatTabWidget</name>
     <message>
         <location filename="ui/CatTabWidget.ui" line="14"/>
@@ -1251,6 +1381,139 @@ Die internen Daten zu dieser Disziplin sind vermutlich defekt.</translation>
     </message>
 </context>
 <context>
+    <name>DlgImportCSV_Step1</name>
+    <message>
+        <location filename="ui/DlgImportCSV_Step1.ui" line="14"/>
+        <source>CSV Importer, Step 1</source>
+        <translation>CSV Importer, Schritt 1</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgImportCSV_Step1.ui" line="20"/>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enter or paste comma-separated player names below, one per line. The format is:&lt;/p&gt;&lt;p&gt;&lt;code&gt;Last name, given name, m/f, team name, &lt;i&gt;category 1, category 2, ...&lt;/i&gt;&lt;/code&gt;&lt;/p&gt;&lt;p&gt;Non-existing teams will be newly created. &amp;quot;m&amp;quot; or &amp;quot;f&amp;quot; denotes &amp;quot;male&amp;quot; or &amp;quot;female&amp;quot;. Category names are optional; if provided, the player will be added to the categories if possible.&lt;/p&gt;&lt;p&gt;All input is case-sensitive (e.g., &amp;quot;Team 1&amp;quot; is different from &amp;quot;team 1&amp;quot; and is different from &amp;quot;Team1&amp;quot;).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Bitte komma-getrennte Spielerdaten im Textfeld unten eingeben, ein Spieler pro Zeile. Das Format ist:&lt;/p&gt;&lt;p&gt;Nachname, Vorname, m/w, Teamname, &lt;i&gt;Disziplin 1, Disziplin 2, ...&lt;/i&gt;&lt;/code&gt;&lt;/p&gt;&lt;p&gt;Noch nicht existierende Teams werden automatisch neu angelegt. &amp;quot;m&amp;quot; or &amp;quot;w&amp;quot; stehen für &amp;quot;männlich&amp;quot; oder &amp;quot;weiblich&amp;quot;. Die Angabe von Disziplinen ist optional; wenn vorhanden wird der Spieler nach Möglichkeit den angegebenen Disziplinen hinzugefügt.&lt;/p&gt;&lt;p&gt;Groß-/Kleinschreibung ist bei allen Angaben relevant (z. B. ist &amp;quot;Team 1&amp;quot; etwas anderes als &amp;quot;team 1&amp;quot; oder &amp;quot;Team1&amp;quot;).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgImportCSV_Step1.ui" line="54"/>
+        <source>Load from file...</source>
+        <translation>Aus Datei laden...</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgImportCSV_Step1.ui" line="74"/>
+        <source>Field delimiter</source>
+        <translation>Trennzeichen</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgImportCSV_Step1.ui" line="80"/>
+        <source>Co&amp;mma (,)</source>
+        <translation>Komma</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgImportCSV_Step1.ui" line="93"/>
+        <source>Semi&amp;colon (;)</source>
+        <translation>Semikolon (;)</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgImportCSV_Step1.ui" line="103"/>
+        <source>Tab</source>
+        <translation>Tab</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgImportCSV_Step1.ui" line="129"/>
+        <source>Additionally, add&lt;br&gt;
+all players to:</source>
+        <translation>Außerdem alle Spieler&lt;br&gt;
+hinzufügen zu:</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgImportCSV_Step1.ui" line="172"/>
+        <source>Cancel</source>
+        <translation>Abbrechen</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgImportCSV_Step1.ui" line="179"/>
+        <source>Next &gt;</source>
+        <translation>Weiter &gt;</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgImportCSV_Step1.cpp" line="28"/>
+        <source>&lt;Please select&gt;</source>
+        <translation>&lt;Bitte auswählen&gt;</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgImportCSV_Step1.cpp" line="101"/>
+        <source>CSV Files (*.csv)</source>
+        <translation>CSV Dateien (*.csv)</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgImportCSV_Step1.cpp" line="117"/>
+        <source>Could not open %1 for reading!</source>
+        <translation>Konnte die Datei %1 nicht lesen!</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgImportCSV_Step1.cpp" line="119"/>
+        <source>Import CSV</source>
+        <translation>CSV Import</translation>
+    </message>
+</context>
+<context>
+    <name>DlgImportCSV_Step2</name>
+    <message>
+        <location filename="ui/DlgImportCSV_Step2.ui" line="14"/>
+        <source>CSV Importer, Step2</source>
+        <translation>CSV Importer, Schritt 2</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgImportCSV_Step2.ui" line="22"/>
+        <source>Double click on a cell to edit the item:</source>
+        <translation>Auf eine Tabellenzelle doppelklicken um den Inhalt zu bearbeiten:</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgImportCSV_Step2.ui" line="40"/>
+        <source>Hint:</source>
+        <translation>Hinweis:</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgImportCSV_Step2.ui" line="47"/>
+        <source>--</source>
+        <translation>--</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgImportCSV_Step2.ui" line="74"/>
+        <source>Warnings</source>
+        <translation>Warnungen</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgImportCSV_Step2.ui" line="126"/>
+        <source>Delete row</source>
+        <translation>Zeile löschen</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgImportCSV_Step2.ui" line="176"/>
+        <source>Insert row</source>
+        <translation>Zeile einfügen</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgImportCSV_Step2.ui" line="196"/>
+        <source>Cancel</source>
+        <translation>Abbruch</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgImportCSV_Step2.ui" line="203"/>
+        <source>Import</source>
+        <translation>Importieren</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgImportCSV_Step2.cpp" line="53"/>
+        <source>&lt;b&gt;%3 rows; &lt;font color=&quot;darkRed&quot;&gt;%1 errors&lt;/font&gt;, </source>
+        <translation>&lt;b&gt;%3 Zeilen; &lt;font color=&quot;darkRed&quot;&gt;%1 Fehler&lt;/font&gt;, </translation>
+    </message>
+    <message>
+        <location filename="ui/DlgImportCSV_Step2.cpp" line="54"/>
+        <source>&lt;font color=&quot;#808000&quot;&gt;%2 warnings&lt;/font&gt;&lt;/b&gt;</source>
+        <translation>&lt;font color=&quot;#808000&quot;&gt;%2 Warnungen&lt;/font&gt;&lt;/b&gt;</translation>
+    </message>
+</context>
+<context>
     <name>DlgImportPlayer</name>
     <message>
         <location filename="ui/DlgImportPlayer.ui" line="14"/>
@@ -1337,6 +1600,29 @@ Die internen Daten zu dieser Disziplin sind vermutlich defekt.</translation>
     </message>
 </context>
 <context>
+    <name>DlgPickCategory</name>
+    <message>
+        <location filename="ui/DlgPickCategory.ui" line="14"/>
+        <source>Dialog</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="ui/DlgPickCategory.ui" line="22"/>
+        <source>Select the categories for the player:</source>
+        <translation>Die Disziplinen für den Spieler auswählen:</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgPickCategory.ui" line="47"/>
+        <source>Cancel</source>
+        <translation>Abbrechen</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgPickCategory.ui" line="54"/>
+        <source>Okay</source>
+        <translation>Okay</translation>
+    </message>
+</context>
+<context>
     <name>DlgPickPlayerSex</name>
     <message>
         <location filename="ui/DlgPickPlayerSex.ui" line="14"/>
@@ -1367,6 +1653,59 @@ Die internen Daten zu dieser Disziplin sind vermutlich defekt.</translation>
         <location filename="ui/DlgPickPlayerSex.ui" line="199"/>
         <source>Male</source>
         <translation>Herr</translation>
+    </message>
+</context>
+<context>
+    <name>DlgPickTeam</name>
+    <message>
+        <location filename="ui/DlgPickTeam.ui" line="14"/>
+        <source>Select team</source>
+        <translation>Team auswählen</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgPickTeam.ui" line="37"/>
+        <source>pic&amp;k existing</source>
+        <translation>existierendes Team</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgPickTeam.ui" line="50"/>
+        <source>create new</source>
+        <translation>neues Team</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgPickTeam.ui" line="113"/>
+        <source>Cancel</source>
+        <translation>Abbrechen</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgPickTeam.ui" line="120"/>
+        <source>Ok</source>
+        <translation>Okay</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgPickTeam.cpp" line="22"/>
+        <source>&lt;Please select&gt;</source>
+        <translation>&lt;Bitte auswählen&gt;</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgPickTeam.cpp" line="35"/>
+        <source>&lt;Enter a new team name&gt;</source>
+        <translation>&lt;Bitte einen neuen Teamnamen eingeben&gt;</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgPickTeam.cpp" line="95"/>
+        <source>A team of that name already exists!</source>
+        <translation>Ein Team dieses Names existiert bereits!</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgPickTeam.cpp" line="97"/>
+        <source>The team name is invalid (e.g., too long)!</source>
+        <translation>Der Teamname ist ungültig (z. B. zu lang)</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgPickTeam.cpp" line="100"/>
+        <source>Create new team</source>
+        <translation>Neues Team anlegen</translation>
     </message>
 </context>
 <context>
@@ -3160,184 +3499,204 @@ Die internen Daten zu dieser Disziplin sind vermutlich defekt.</translation>
         <translation>Spieler hinzufügen</translation>
     </message>
     <message>
-        <location filename="ui/PlayerTabWidget.ui" line="38"/>
+        <location filename="ui/PlayerTabWidget.ui" line="41"/>
+        <source>CSV Import</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="ui/PlayerTabWidget.ui" line="51"/>
         <source>Player Database</source>
         <translation>Spielerdatenbank</translation>
     </message>
     <message>
-        <location filename="ui/PlayerTabWidget.ui" line="45"/>
+        <location filename="ui/PlayerTabWidget.ui" line="58"/>
         <source>Registration</source>
         <translation>Anmelden</translation>
     </message>
     <message>
-        <location filename="ui/PlayerTabWidget.ui" line="67"/>
+        <location filename="ui/PlayerTabWidget.ui" line="80"/>
         <source>TextLabel</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="ui/PlayerTabWidget.cpp" line="88"/>
+        <location filename="ui/PlayerTabWidget.cpp" line="90"/>
         <source>Register all...</source>
         <translation>Alle anmelden...</translation>
     </message>
     <message>
-        <location filename="ui/PlayerTabWidget.cpp" line="89"/>
+        <location filename="ui/PlayerTabWidget.cpp" line="91"/>
         <source>Unegister all...</source>
         <translation>Anmeldung für alle zurücksetzen...</translation>
     </message>
     <message>
-        <location filename="ui/PlayerTabWidget.cpp" line="110"/>
+        <location filename="ui/PlayerTabWidget.cpp" line="112"/>
         <source>Import player...</source>
         <translation>Spieler importieren...</translation>
     </message>
     <message>
-        <location filename="ui/PlayerTabWidget.cpp" line="111"/>
+        <location filename="ui/PlayerTabWidget.cpp" line="113"/>
         <source>Export selected player...</source>
         <translation>Ausgewählten Spieler exportieren...</translation>
     </message>
     <message>
-        <location filename="ui/PlayerTabWidget.cpp" line="112"/>
+        <location filename="ui/PlayerTabWidget.cpp" line="114"/>
         <source>Sync all players to database</source>
         <translation>Alle Spieler mit der Datenbank abgleichen</translation>
     </message>
     <message>
-        <location filename="ui/PlayerTabWidget.cpp" line="113"/>
         <source>Import CSV data to database</source>
-        <translation>CSV-Daten in die Spielerdatenbank importieren</translation>
+        <translation type="vanished">CSV-Daten in die Spielerdatenbank importieren</translation>
     </message>
     <message>
-        <location filename="ui/PlayerTabWidget.cpp" line="161"/>
+        <location filename="ui/PlayerTabWidget.cpp" line="159"/>
         <source> players in tournament</source>
         <translation> Spieler gemeldet</translation>
     </message>
     <message>
-        <location filename="ui/PlayerTabWidget.cpp" line="169"/>
-        <location filename="ui/PlayerTabWidget.cpp" line="186"/>
+        <location filename="ui/PlayerTabWidget.cpp" line="167"/>
+        <location filename="ui/PlayerTabWidget.cpp" line="184"/>
         <source>Do you really want to set all players
 </source>
         <translation>Möchten Sie wirklich alle Spieler
 </translation>
     </message>
     <message>
-        <location filename="ui/PlayerTabWidget.cpp" line="170"/>
+        <location filename="ui/PlayerTabWidget.cpp" line="168"/>
         <source>to &quot;registered&quot;?</source>
         <translation>auf &quot;angemeldet&quot; setzen?</translation>
     </message>
     <message>
-        <location filename="ui/PlayerTabWidget.cpp" line="171"/>
+        <location filename="ui/PlayerTabWidget.cpp" line="169"/>
         <source>Register all</source>
         <translation>Alle anmelden</translation>
     </message>
     <message>
-        <location filename="ui/PlayerTabWidget.cpp" line="187"/>
+        <location filename="ui/PlayerTabWidget.cpp" line="185"/>
         <source>to &quot;wait for registration&quot;?</source>
         <translation>auf &quot;Nicht angemeldet&quot; setzen?</translation>
     </message>
     <message>
-        <location filename="ui/PlayerTabWidget.cpp" line="188"/>
+        <location filename="ui/PlayerTabWidget.cpp" line="186"/>
         <source>Unregister all</source>
         <translation>Alle Anmeldungen zurücksetzen</translation>
     </message>
     <message>
-        <location filename="ui/PlayerTabWidget.cpp" line="267"/>
+        <location filename="ui/PlayerTabWidget.cpp" line="279"/>
+        <source>The CSV records contain errors and thus can&apos;t be imported!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="ui/PlayerTabWidget.cpp" line="280"/>
+        <location filename="ui/PlayerTabWidget.cpp" line="335"/>
+        <source>Import CSV</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="ui/PlayerTabWidget.cpp" line="298"/>
+        <source>Error when creating the team &apos;%1&apos;.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="ui/PlayerTabWidget.cpp" line="309"/>
+        <source>Error when creating the player &apos;%1 %2&apos;.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="ui/PlayerTabWidget.cpp" line="333"/>
+        <source>Import aborted.
+
+The import might have </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="ui/PlayerTabWidget.cpp" line="334"/>
+        <source>partially succeeded up to this point.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>Could not open database for player export!</source>
-        <translation>Konnte die Datenbank nicht für den Spielerexport öffnen!</translation>
+        <translation type="vanished">Konnte die Datenbank nicht für den Spielerexport öffnen!</translation>
     </message>
     <message>
-        <location filename="ui/PlayerTabWidget.cpp" line="268"/>
         <source>Export player</source>
-        <translation>Spieler exportieren</translation>
+        <translation type="vanished">Spieler exportieren</translation>
     </message>
     <message>
-        <location filename="ui/PlayerTabWidget.cpp" line="283"/>
         <source>No text provided.</source>
-        <translation>Keine Daten eingegeben.</translation>
+        <translation type="vanished">Keine Daten eingegeben.</translation>
     </message>
     <message>
-        <location filename="ui/PlayerTabWidget.cpp" line="302"/>
         <source>No valid names for the import to the
 </source>
-        <translation>Keine gültigen Namen für den Import in die
+        <translation type="vanished">Keine gültigen Namen für den Import in die
 </translation>
     </message>
     <message>
-        <location filename="ui/PlayerTabWidget.cpp" line="303"/>
         <source>external database and to the tournament found.</source>
-        <translation>Datenbank und in das Turnier gefunden.</translation>
+        <translation type="vanished">Datenbank und in das Turnier gefunden.</translation>
     </message>
     <message>
-        <location filename="ui/PlayerTabWidget.cpp" line="400"/>
-        <location filename="ui/PlayerTabWidget.cpp" line="429"/>
         <source>Import results:
 
 </source>
-        <translation>Ergebnis des Imports:</translation>
+        <translation type="vanished">Ergebnis des Imports:</translation>
     </message>
     <message>
-        <location filename="ui/PlayerTabWidget.cpp" line="401"/>
         <source>	%1 valid names found
 </source>
-        <translation>	%1 gültige Namen gefunden
+        <translation type="vanished">	%1 gültige Namen gefunden
 </translation>
     </message>
     <message>
-        <location filename="ui/PlayerTabWidget.cpp" line="402"/>
         <source>		%2 newly imported
 </source>
-        <translation>		%2 neu importiert
+        <translation type="vanished">		%2 neu importiert
 </translation>
     </message>
     <message>
-        <location filename="ui/PlayerTabWidget.cpp" line="403"/>
         <source>		%3 already existing in the player database
 </source>
-        <translation>		%3 waren bereits in der Datenbank
+        <translation type="vanished">		%3 waren bereits in der Datenbank
 </translation>
     </message>
     <message>
-        <location filename="ui/PlayerTabWidget.cpp" line="404"/>
         <source>	%4 players newly added to the tournament
 </source>
-        <translation>	%4 Spieler dem Turnier hinzugefügt
+        <translation type="vanished">	%4 Spieler dem Turnier hinzugefügt
 </translation>
     </message>
     <message>
-        <location filename="ui/PlayerTabWidget.cpp" line="405"/>
         <source>	%5 players were already in the tournament before the import
 </source>
-        <translation>	%5 Spieler waren bereits vorher im Turnier vorhanden
+        <translation type="vanished">	%5 Spieler waren bereits vorher im Turnier vorhanden
 </translation>
     </message>
     <message>
-        <location filename="ui/PlayerTabWidget.cpp" line="408"/>
         <source>	Of %1 valid players, %6 were added to category %7 and %8 not.</source>
-        <translation>Von %1 gültigen Spielern wurden %6 der Disziplin %7 hinzugefügt und %8 nicht.</translation>
+        <translation type="vanished">Von %1 gültigen Spielern wurden %6 der Disziplin %7 hinzugefügt und %8 nicht.</translation>
     </message>
     <message>
-        <location filename="ui/PlayerTabWidget.cpp" line="410"/>
         <source>	%9 lines contained errors were ignored
 </source>
-        <translation>	%9 Zeilen mit Fehlern wurden ignoriert
+        <translation type="vanished">	%9 Zeilen mit Fehlern wurden ignoriert
 </translation>
     </message>
     <message>
-        <location filename="ui/PlayerTabWidget.cpp" line="430"/>
         <source>	%1 names imported
 </source>
-        <translation>	%1 Namen wurden importiert
+        <translation type="vanished">	%1 Namen wurden importiert
 </translation>
     </message>
     <message>
-        <location filename="ui/PlayerTabWidget.cpp" line="431"/>
         <source>	%2 names already existing and skipped
 </source>
-        <translation>	%2 Namen waren bereits vorhanden und wurden übersprungen
+        <translation type="vanished">	%2 Namen waren bereits vorhanden und wurden übersprungen
 </translation>
     </message>
     <message>
-        <location filename="ui/PlayerTabWidget.cpp" line="432"/>
         <source>	%3 line with errors and ignored
 </source>
-        <translation>	%3 Zeilen mit Fehlern wurden ignoriert
+        <translation type="vanished">	%3 Zeilen mit Fehlern wurden ignoriert
 </translation>
     </message>
 </context>
@@ -4647,17 +5006,57 @@ insgesamt</translation>
         <translation type="vanished">Keine Spielestatistik verfügbar</translation>
     </message>
     <message>
-        <location filename="ui/ScheduleTabWidget.cpp" line="209"/>
+        <location filename="ui/ScheduleTabWidget.cpp" line="225"/>
+        <source>&lt;br&gt;&lt;center&gt;&lt;b&gt;&lt;font color=&quot;red&quot;&gt;SWISS LADDER DEADLOCK&lt;/font&gt;&lt;/b&gt;&lt;/center&gt;&lt;br&gt;&lt;br&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="ui/ScheduleTabWidget.cpp" line="226"/>
+        <source>Unfortuantely, the sequence of matches in past rounds in the category %3 has lead </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="ui/ScheduleTabWidget.cpp" line="227"/>
+        <source>to a deadlock. We can&apos;t play any more rounds in this category without repeating already </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="ui/ScheduleTabWidget.cpp" line="228"/>
+        <source>played matches.&lt;br&gt;&lt;br&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="ui/ScheduleTabWidget.cpp" line="229"/>
+        <source>Thus, the category has been reduced from %1 to %2 rounds and </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="ui/ScheduleTabWidget.cpp" line="230"/>
+        <source>is now finished.&lt;br&gt;&lt;br&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="ui/ScheduleTabWidget.cpp" line="231"/>
+        <source>Normally, such a deadlock should not happen... sincere apologies for this!&lt;br&gt;&lt;br&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="ui/ScheduleTabWidget.cpp" line="234"/>
+        <source>Swiss Ladder Deadlock</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="ui/ScheduleTabWidget.cpp" line="242"/>
         <source>Round %1 of category %2 finished!</source>
         <translation>Runde %1 der Disziplin %2 abgeschlossen!</translation>
     </message>
     <message>
-        <location filename="ui/ScheduleTabWidget.cpp" line="211"/>
+        <location filename="ui/ScheduleTabWidget.cpp" line="244"/>
         <source>Round finished</source>
         <translation>Runde abgeschlossen</translation>
     </message>
     <message>
-        <location filename="ui/ScheduleTabWidget.cpp" line="251"/>
+        <location filename="ui/ScheduleTabWidget.cpp" line="284"/>
         <source>Please confirm:
 
 </source>
@@ -4666,49 +5065,49 @@ insgesamt</translation>
 </translation>
     </message>
     <message>
-        <location filename="ui/ScheduleTabWidget.cpp" line="255"/>
+        <location filename="ui/ScheduleTabWidget.cpp" line="288"/>
         <source>Result: </source>
         <translation>Ergebnis: </translation>
     </message>
     <message>
-        <location filename="ui/ScheduleTabWidget.cpp" line="261"/>
-        <location filename="ui/ScheduleTabWidget.cpp" line="269"/>
+        <location filename="ui/ScheduleTabWidget.cpp" line="294"/>
+        <location filename="ui/ScheduleTabWidget.cpp" line="302"/>
         <source>WINNER: </source>
         <translation>GEWINNER: </translation>
     </message>
     <message>
-        <location filename="ui/ScheduleTabWidget.cpp" line="264"/>
-        <location filename="ui/ScheduleTabWidget.cpp" line="272"/>
+        <location filename="ui/ScheduleTabWidget.cpp" line="297"/>
+        <location filename="ui/ScheduleTabWidget.cpp" line="305"/>
         <source>LOSER: </source>
         <translation>VERLIERER: </translation>
     </message>
     <message>
-        <location filename="ui/ScheduleTabWidget.cpp" line="277"/>
+        <location filename="ui/ScheduleTabWidget.cpp" line="310"/>
         <source>The match result is DRAW</source>
         <translation>Das Spiel endet UNENTSCHIEDEN</translation>
     </message>
     <message>
-        <location filename="ui/ScheduleTabWidget.cpp" line="281"/>
+        <location filename="ui/ScheduleTabWidget.cpp" line="314"/>
         <source>Please confirm match result</source>
         <translation>Bitte Spielergebnis bestätigen</translation>
     </message>
     <message>
-        <location filename="ui/ScheduleTabWidget.cpp" line="289"/>
+        <location filename="ui/ScheduleTabWidget.cpp" line="322"/>
         <source>A dabase error occurred. The match result has not been stored.</source>
         <translation>Es ist ein Datenbankfehler aufgetreten. Das Spielergebnis wurde nicht gespeichert.</translation>
     </message>
     <message>
-        <location filename="ui/ScheduleTabWidget.cpp" line="290"/>
+        <location filename="ui/ScheduleTabWidget.cpp" line="323"/>
         <source>Store match result</source>
         <translation>Spielergebnis abspeichern</translation>
     </message>
     <message>
-        <location filename="ui/ScheduleTabWidget.cpp" line="313"/>
+        <location filename="ui/ScheduleTabWidget.cpp" line="346"/>
         <source>Next Match</source>
         <translation>Nächstes Spiel</translation>
     </message>
     <message>
-        <location filename="ui/ScheduleTabWidget.cpp" line="313"/>
+        <location filename="ui/ScheduleTabWidget.cpp" line="346"/>
         <source>Start the next available match on the free court?</source>
         <translation>Das nächste Spiel auf dem freien Feld aufrufen?</translation>
     </message>
