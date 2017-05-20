@@ -48,7 +48,7 @@ cd libSloppy
 mkdir release
 cd release
 $CMAKE_BIN -DCMAKE_BUILD_TYPE=Release -G "$CMAKE_GENERATOR" ..
-make
+make -j5
 make install
 cd ..
 cd ..
@@ -60,7 +60,7 @@ cd SqliteOverlay
 mkdir release
 cd release
 $CMAKE_BIN -DCMAKE_BUILD_TYPE=Release -G "$CMAKE_GENERATOR" ..
-make
+make -j5
 make install
 cd ..
 cd ..
@@ -71,7 +71,7 @@ mkdir -p Qt/qmake
 mv SimpleReportGeneratorLib-$REPORTLIB_VERSION Qt/qmake/SimpleReportGeneratorLib
 cd Qt/qmake/SimpleReportGeneratorLib
 qmake CONFIG+=release SimpleReportGenerator.pro
-make
+make -j5
 cd ..
 cd ..
 cd ..
@@ -81,7 +81,7 @@ unzip QTournament-$QTOURNAMENT_VERSION.zip
 mv QTournament-$QTOURNAMENT_VERSION Qt/qmake/QTournament
 cd Qt/qmake/QTournament
 qmake CONFIG+=release QTournament.pro
-make
+make -j5
 cd ..
 cd ..
 cd ..

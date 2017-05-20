@@ -41,7 +41,7 @@ cd libSloppy
 mkdir release
 cd release
 cmake -DCMAKE_BUILD_TYPE=Release ..
-make
+make -j5
 cd ..
 cd ..
 
@@ -56,7 +56,7 @@ cd SqliteOverlay
 mkdir release
 cd release
 cmake -DCMAKE_BUILD_TYPE=Release ..
-make
+make -j5
 cd ..
 cd ..
 
@@ -71,7 +71,7 @@ mkdir Qt
 mv SimpleReportGeneratorLib Qt
 cd Qt/SimpleReportGeneratorLib
 qmake CONFIG+="release" SimpleReportGenerator.pro 
-make
+make -j5
 mkdir release
 mv libSimpleReportGenerator.so* release
 cd ..
