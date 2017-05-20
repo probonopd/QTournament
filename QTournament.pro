@@ -11,7 +11,7 @@ TEMPLATE = app
 QMAKE_CXXFLAGS += -Wno-unused-parameter
 CONFIG += c++14
 
-VERSION = 0.4.99
+VERSION = 0.5.0
 
 # Optimization level O3 for release
 #QMAKE_CXXFLAGS_RELEASE -= -O2

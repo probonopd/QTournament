@@ -220,7 +220,7 @@ if [ $TORNAMENT_SEL -eq 2 ]; then
   QTOURNAMENT_VERSION=git
 
   # delete old binary to force new linking
-  rm QTournament.exe
+  rm release/QTournament.exe
 fi
 
 if [ $TORNAMENT_SEL != "3" ]; then
