@@ -23,6 +23,7 @@
 #include <QDebug>
 #include <QFile>
 #include <QLocale>
+#include <QStyleFactory>
 
 #include "ui/MainFrame.h"
 
@@ -31,9 +32,18 @@ int main(int argc, char *argv[])
   // initialize resources, if needed
   Q_INIT_RESOURCE(tournament);
 
-  QApplication::setDesktopSettingsAware(false);
-
   QApplication app(argc, argv);
+
+  // use the "Fusion" style
+  QStyle* fusionStyle = QStyleFactory::create("fusion");
+  if (fusionStyle == nullptr)
+  {
+    fusionStyle = QStyleFactory::create("Fusion");
+  }
+  if (fusionStyle != nullptr)
+  {
+    app.setStyle(fusionStyle);
+  }
   
   QTranslator qtTranslator;
   // Only temporary: hard-coded German translation while in debug mode
