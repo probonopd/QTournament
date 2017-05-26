@@ -150,7 +150,8 @@ HEADERS += \
     ui/DlgImportCSV_Step1.h \
     ui/DlgImportCSV_Step2.h \
     ui/DlgPickTeam.h \
-    ui/DlgPickCategory.h
+    ui/DlgPickCategory.h \
+    ui/DlgRoundFinished.h
 
 SOURCES += \
     Category.cpp \
@@ -273,7 +274,8 @@ SOURCES += \
     ui/DlgImportCSV_Step1.cpp \
     ui/DlgImportCSV_Step2.cpp \
     ui/DlgPickTeam.cpp \
-    ui/DlgPickCategory.cpp
+    ui/DlgPickCategory.cpp \
+    ui/DlgRoundFinished.cpp
 
 RESOURCES += \
     tournament.qrc
@@ -305,7 +307,8 @@ FORMS += \
     ui/DlgImportCSV_Step1.ui \
     ui/DlgImportCSV_Step2.ui \
     ui/DlgPickTeam.ui \
-    ui/DlgPickCategory.ui
+    ui/DlgPickCategory.ui \
+    ui/DlgRoundFinished.ui
 
 TRANSLATIONS = tournament_de.ts
 
