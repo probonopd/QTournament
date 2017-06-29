@@ -48,8 +48,11 @@ PlayerTableView::PlayerTableView(QWidget* parent)
 {
   setRubberBandCol(PlayerTableModel::FILL_COL);
 
-  // set an initial default sorting column
+  // set an initial default sorting column and
+  // make sorting case insensitive so that last names starting with
+  // a lower case character do not show up at the end of the list
   sortByColumn(PlayerTableModel::COL_NAME, Qt::AscendingOrder);
+  sortedModel->setSortCaseSensitivity(Qt::CaseInsensitive);
 
   // handle context menu requests
   setContextMenuPolicy(Qt::CustomContextMenu);
