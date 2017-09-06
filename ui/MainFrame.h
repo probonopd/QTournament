@@ -100,6 +100,7 @@ public slots:
   void onSelectExternalPlayerDatabase();
   void onInfoMenuTriggered();
   void onEditTournamentSettings();
+  void onSetPassword();
 
 private slots:
   void onToggleTestMenuVisibility();

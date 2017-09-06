@@ -31,6 +31,8 @@
 #include "CatMngr.h"
 #include "ui/DlgTournamentSettings.h"
 #include "CourtMngr.h"
+#include "OnlineMngr.h"
+#include "DlgPassword.h"
 
 using namespace QTournament;
 
@@ -387,6 +389,14 @@ void MainFrame::enableControls(bool doEnable)
   ui.actionSave_a_copy->setEnabled(doEnable);
   ui.actionCreate_baseline->setEnabled(doEnable && !(currentDatabaseFileName.isEmpty()));
   ui.actionClose->setEnabled(doEnable);
+
+  ui.menuOnline->setEnabled(doEnable);
+  if (doEnable)
+  {
+    OnlineMngr* om = currentDb->getOnlineManager();
+
+    // enable / disable items based on online status
+  }
 }
 
 //----------------------------------------------------------------------------
@@ -1371,10 +1381,49 @@ void MainFrame::onEditTournamentSettings()
 
 //----------------------------------------------------------------------------
 
+void MainFrame::onSetPassword()
+{
+  if (currentDb == nullptr) return;
+
+  OnlineMngr* om = currentDb->getOnlineManager();
+  bool hasPw = om->hasSecretInDatabase();
+
+  OnlineError oe;
+  if (hasPw)
+  {
+    DlgPassword dlg{this, DlgPassword::DlgMode_ChangePassword};
+    int rc = dlg.exec();
+    if (rc != QDialog::Accepted) return;
+
+    oe = om->setPassword(dlg.getNewPassword(), dlg.getCurrentPassword());
+
+  } else {
+
+    DlgPassword dlg{this, DlgPassword::DlgMode_SetNewPassword};
+    int rc = dlg.exec();
+    if (rc != QDialog::Accepted) return;
+
+    oe = om->setPassword(dlg.getNewPassword());
+  }
+
+  if (oe != OnlineError::Okay)
+  {
+    QString msg{tr("An error occurred an the password could not be stored.")};
+    QMessageBox::warning(this, tr("Set password"), msg);
+    return;
+  }
+
+  QString msg{tr("The password has been set successfully!")};
+  QMessageBox::information(this, tr("Set password"), msg);
+}
+
+//----------------------------------------------------------------------------
+
 void MainFrame::onToggleTestMenuVisibility()
 {
   ui.menubar->clear();
   ui.menubar->addMenu(ui.menuTournament);
+  ui.menubar->addMenu(ui.menuOnline);
   ui.menubar->addMenu(ui.menuAbout_QTournament);
 
   if (!isTestMenuVisible)

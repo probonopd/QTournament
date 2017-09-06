@@ -27,13 +27,16 @@
 #include "TournamentDataDefs.h"
 #include "HelperFunc.h"
 #include "TournamentErrorCodes.h"
+#include "OnlineMngr.h"
 
 namespace QTournament
 {
 
   TournamentDB::TournamentDB(string fName, bool createNew)
     : SqliteOverlay::SqliteDatabase(fName, createNew), curTrans{nullptr}
-  {
+  {    
+    // initialize the internal instance of the online manager
+    om = make_unique<OnlineMngr>(this);
   }
 
   //----------------------------------------------------------------------------
@@ -513,6 +516,13 @@ namespace QTournament
     if (isOkay) curTrans.reset();
 
     return isOkay;
+  }
+
+  //----------------------------------------------------------------------------
+
+  OnlineMngr*TournamentDB::getOnlineManager()
+  {
+    return om.get();
   }
 
   //----------------------------------------------------------------------------

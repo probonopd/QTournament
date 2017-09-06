@@ -29,6 +29,8 @@
 
 namespace QTournament
 {
+  // forward
+  class OnlineMngr;
 
   enum class TransactionState
   {
@@ -63,6 +65,9 @@ namespace QTournament
     bool commitRunningTransaction(int* dbErr = nullptr);
     bool rollbackRunningTransaction(int* dbErr = nullptr);
 
+    // access to the tournament-wide instance of the OnlineMngr
+    OnlineMngr* getOnlineManager();
+
     class TransactionGuard
     {
     public:
@@ -82,6 +87,8 @@ namespace QTournament
     TournamentDB(string fName, bool createNew);
 
     unique_ptr<SqliteOverlay::Transaction> curTrans;
+
+    unique_ptr<OnlineMngr> om;
   };
 
 }
