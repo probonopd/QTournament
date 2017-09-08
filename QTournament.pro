@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += widgets
+QT       += widgets network
 
 TARGET = QTournament
 TEMPLATE = app
@@ -153,7 +153,9 @@ HEADERS += \
     ui/DlgPickCategory.h \
     ui/DlgRoundFinished.h \
     OnlineMngr.h \
-    ui/DlgPassword.h
+    ui/DlgPassword.h \
+    HttpClient.h \
+    ui/DlgRegisterTournament.h
 
 SOURCES += \
     Category.cpp \
@@ -279,7 +281,9 @@ SOURCES += \
     ui/DlgPickCategory.cpp \
     ui/DlgRoundFinished.cpp \
     OnlineMngr.cpp \
-    ui/DlgPassword.cpp
+    ui/DlgPassword.cpp \
+    HttpClient.cpp \
+    ui/DlgRegisterTournament.cpp
 
 RESOURCES += \
     tournament.qrc
@@ -313,7 +317,8 @@ FORMS += \
     ui/DlgPickTeam.ui \
     ui/DlgPickCategory.ui \
     ui/DlgRoundFinished.ui \
-    ui/DlgPassword.ui
+    ui/DlgPassword.ui \
+    ui/DlgRegisterTournament.ui
 
 TRANSLATIONS = tournament_de.ts
 

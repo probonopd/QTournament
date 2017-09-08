@@ -40,7 +40,7 @@ namespace QTournament
   class OnlineMngr
   {
   public:
-    OnlineMngr(TournamentDB* _db);
+    OnlineMngr(TournamentDB* _db, const QString& _apiBaseUrl, int _defaultTimeout_ms);
 
     // password / keybox management
     bool hasSecretInDatabase() const;
@@ -48,11 +48,16 @@ namespace QTournament
     OnlineError isCorrectPassword(const QString& pw) const;
     OnlineError unlockKeystore(const QString& pw);
 
+    // server requests
+    int ping();
+
   protected:
     bool initKeyboxWithFreshKeys(const QString& pw);
 
   private:
     TournamentDB* db;
+    QString apiBaseUrl;
+    int defaultTimeout_ms;
     Sloppy::Crypto::SodiumLib* cryptoLib;
     unique_ptr<SqliteOverlay::KeyValueTab> cfgTab;
     SecSignKey secKey;

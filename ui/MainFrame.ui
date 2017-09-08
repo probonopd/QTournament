@@ -294,27 +294,27 @@
   </action>
   <action name="actionSet_Change_Password">
    <property name="text">
-    <string>Set / Change Password...</string>
+    <string>&amp;Set / Change Password...</string>
    </property>
   </action>
   <action name="actionRegister">
    <property name="text">
-    <string>Register...</string>
+    <string>&amp;Register...</string>
    </property>
   </action>
   <action name="actionConnect">
    <property name="text">
-    <string>Connect...</string>
+    <string>&amp;Connect...</string>
    </property>
   </action>
   <action name="actionForce_full_sync">
    <property name="text">
-    <string>Force full sync...</string>
+    <string>&amp;Force full sync...</string>
    </property>
   </action>
   <action name="actionDisconnect">
    <property name="text">
-    <string>Disconnect</string>
+    <string>&amp;Disconnect</string>
    </property>
   </action>
  </widget>
@@ -726,6 +726,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>actionRegister</sender>
+   <signal>triggered()</signal>
+   <receiver>MainFrame</receiver>
+   <slot>onRegisterTournament()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>508</x>
+     <y>379</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>newTournament()</slot>
@@ -750,5 +766,6 @@
   <slot>onClose()</slot>
   <slot>onEditTournamentSettings()</slot>
   <slot>onSetPassword()</slot>
+  <slot>onRegisterTournament()</slot>
  </slots>
 </ui>

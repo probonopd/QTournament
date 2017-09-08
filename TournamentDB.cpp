@@ -36,7 +36,11 @@ namespace QTournament
     : SqliteOverlay::SqliteDatabase(fName, createNew), curTrans{nullptr}
   {    
     // initialize the internal instance of the online manager
-    om = make_unique<OnlineMngr>(this);
+    //
+    // FIX ME: server name and API url hard coded
+    om = make_unique<OnlineMngr>(this,
+                                 "http://localhost:7777/api/tournament",
+                                 5000);
   }
 
   //----------------------------------------------------------------------------

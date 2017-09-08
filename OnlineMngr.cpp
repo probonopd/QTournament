@@ -2,13 +2,14 @@
 
 #include "TournamentDB.h"
 #include "OnlineMngr.h"
-
+#include "HttpClient.h"
 
 namespace QTournament
 {
 
-  OnlineMngr::OnlineMngr(TournamentDB* _db)
-    :db{_db}, cryptoLib{Sloppy::Crypto::SodiumLib::getInstance()},
+  OnlineMngr::OnlineMngr(TournamentDB* _db, const QString& _apiBaseUrl, int _defaultTimeout_ms)
+    :db{_db}, apiBaseUrl{_apiBaseUrl}, defaultTimeout_ms{_defaultTimeout_ms},
+     cryptoLib{Sloppy::Crypto::SodiumLib::getInstance()},
      cfgTab{SqliteOverlay::KeyValueTab::getTab(db, TAB_CFG)}, secKeyUnlocked{false}
   {
   }
@@ -108,6 +109,18 @@ namespace QTournament
     // extract the public key from the secret key
     isOkay = cryptoLib->genPublicSignKeyFromSecretKey(secKey, pubKey);
     return isOkay ? OnlineError::Okay : OnlineError::DatabaseError;
+  }
+
+  //----------------------------------------------------------------------------
+
+  int OnlineMngr::ping()
+  {
+    QString url = apiBaseUrl + "/ping";
+
+    HttpClient cli;
+    HttpResponse re = cli.blockingRequest(url, "", defaultTimeout_ms);
+
+    return re.roundTripTime_ms;
   }
 
   //----------------------------------------------------------------------------
