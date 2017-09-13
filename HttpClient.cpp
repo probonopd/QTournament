@@ -1,6 +1,7 @@
 #include <chrono>
 
 #include <QNetworkRequest>
+#include <QByteArray>
 #include <QNetworkReply>
 #include <QEventLoop>
 #include <QTimer>
@@ -19,12 +20,25 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  HttpResponse QTournament::HttpClient::blockingRequest(const QString& url, const QString& postData, int timeout_ms)
+  QString HttpResponse::getHeader(const QString& hdrName) const
+  {
+    auto it = headers.find(hdrName);
+
+    return (it == headers.end()) ? "" : it.value();
+  }
+
+  //----------------------------------------------------------------------------
+
+  HttpResponse QTournament::HttpClient::blockingRequest(const QString& url, QMap<QString, QString> extraHeaders, const QString& postData, int timeout_ms)
   {
     QNetworkAccessManager& nam = getNetworkAccessManager();
 
     QNetworkRequest req;
     req.setUrl(QUrl(url));
+    for (auto& hdr : extraHeaders.toStdMap())
+    {
+      req.setRawHeader(hdr.first.toUtf8(), hdr.second.toUtf8());
+    }
 
     QTimer timer;
     timer.setSingleShot(true);
@@ -36,7 +50,12 @@ namespace QTournament
     auto start = chrono::high_resolution_clock::now();
 
     QNetworkReply* re;
-    re = nam.get(req);
+    if (postData.isEmpty())
+    {
+      re = nam.get(req);
+    } else {
+      re = nam.post(req, postData.toUtf8());
+    }
     timer.start(timeout_ms);
 
     loop.exec();
@@ -72,11 +91,26 @@ namespace QTournament
       return result;
     }
 
+    // copy all relevant data from the reply object
     result.respCode = re->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
     result.data = re->readAll();
+    for (const QByteArray& qba : re->rawHeaderList())
+    {
+      QString hdrName = QString::fromUtf8(qba);
+      QString hdrVal = QString::fromUtf8(re->rawHeader(qba));
+      result.headers[hdrName] = hdrVal;
+    }
+
+    // delete the object
     re->deleteLater();
 
     return result;
   }
+
+  HttpResponse HttpClient::blockingRequest(const QString& url, QMap<QString, QString> extraHeaders, const string& postData, int timeout_ms)
+  {
+    return blockingRequest(url, extraHeaders, QString::fromUtf8(postData.c_str()), timeout_ms);
+  }
+
 
 }

@@ -33,7 +33,8 @@
 #include "CourtMngr.h"
 #include "OnlineMngr.h"
 #include "DlgPassword.h"
-#include "DlgRegisterTournament.h"
+#include "commonCommands/cmdOnlineRegistration.h"
+#include "commonCommands/cmdSetOrChangePassword.h"
 
 using namespace QTournament;
 
@@ -1386,65 +1387,22 @@ void MainFrame::onSetPassword()
 {
   if (currentDb == nullptr) return;
 
-  OnlineMngr* om = currentDb->getOnlineManager();
-  bool hasPw = om->hasSecretInDatabase();
+  cmdSetOrChangePassword cmd{this, currentDb.get()};
+  cmd.exec();
 
-  OnlineError oe;
-  if (hasPw)
-  {
-    DlgPassword dlg{this, DlgPassword::DlgMode_ChangePassword};
-    int rc = dlg.exec();
-    if (rc != QDialog::Accepted) return;
-
-    oe = om->setPassword(dlg.getNewPassword(), dlg.getCurrentPassword());
-
-  } else {
-
-    DlgPassword dlg{this, DlgPassword::DlgMode_SetNewPassword};
-    int rc = dlg.exec();
-    if (rc != QDialog::Accepted) return;
-
-    oe = om->setPassword(dlg.getNewPassword());
-  }
-
-  if (oe != OnlineError::Okay)
-  {
-    QString msg{tr("An error occurred an the password could not be stored.")};
-    QMessageBox::warning(this, tr("Set password"), msg);
-    return;
-  }
-
-  QString msg{tr("The password has been set successfully!")};
-  QMessageBox::information(this, tr("Set password"), msg);
 }
 
 //----------------------------------------------------------------------------
 
 void MainFrame::onRegisterTournament()
 {
-  // check whether the server is online and whether we
-  // have a network connection
-  //
-  // this can last up to five seconds (--> timeout) and thus
-  // we better enable the hourglass cursor
-  QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
-  int tripTime = currentDb->getOnlineManager()->ping();
-  QApplication::restoreOverrideCursor();
+  if (currentDb == nullptr) return;
 
-  // if tripTime is less than zero, an error occurred
-  if (tripTime < 0)
-  {
-    QString msg = tr("The tournament server is currently not available or there is no working internet connection.\n\nPlease try again later.");
-    QMessageBox::information(this, "Online registration", msg);
-  }
+  // the online registration is a complex task
+  // so I've moved it to a separate file
 
-  // show the registration form
-  auto cfg = SqliteOverlay::KeyValueTab::getTab(currentDb.get(), TAB_CFG, false);
-  string tName = cfg->operator [](CFG_KEY_TNMT_NAME);
-  string club = cfg->operator [](CFG_KEY_TNMT_ORGA);
-  DlgRegisterTournament dlg{this, QString::fromUtf8(tName.c_str()), QString::fromUtf8(club.c_str())};
-  int rc = dlg.exec();
-  if (rc != QDialog::Accepted) return;
+  cmdOnlineRegistration cmd{this, currentDb.get()};
+  cmd.exec();
 }
 
 //----------------------------------------------------------------------------

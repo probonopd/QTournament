@@ -1,3 +1,6 @@
+#include <Sloppy/json/json.h>
+#include <Sloppy/Crypto/Crypto.h>
+#include <Sloppy/Crypto/Sodium.h>
 #include <SqliteOverlay/KeyValueTab.h>
 
 #include "TournamentDB.h"
@@ -12,6 +15,55 @@ namespace QTournament
      cryptoLib{Sloppy::Crypto::SodiumLib::getInstance()},
      cfgTab{SqliteOverlay::KeyValueTab::getTab(db, TAB_CFG)}, secKeyUnlocked{false}
   {
+    srvPubKey.fillFromString(Sloppy::Crypto::fromBase64(ServerPubKey_B64));
+  }
+
+  //----------------------------------------------------------------------------
+
+  OnlineError OnlineMngr::execSignedServerRequest(const QString& subUrl, const QByteArray& postData, QByteArray& responseOut)
+  {
+    // we need access to the secret key for signing the request
+    if (!secKeyUnlocked)
+    {
+      return OnlineError::KeystoreLocked;
+    }
+
+    // every request will be preceeded by a 10-character
+    // random nonce to avoid replay attacks
+    string nonce = Sloppy::Crypto::getRandomAlphanumString(NonceLength);
+    string body = nonce + string{postData.constData()};
+
+    // create a detached signature of the body
+    string sig = cryptoLib->crypto_sign_detached(body, secKey);
+    string sigB64 = Sloppy::Crypto::toBase64(sig);
+
+    // put the signature in an extra header
+    QMap<QString, QString> hdr;
+    hdr["X-Signature"] = QString::fromUtf8(sigB64.c_str());
+
+    // send the request
+    HttpClient cli;
+    QString url = apiBaseUrl + subUrl;
+    HttpResponse re = cli.blockingRequest(url, hdr, body, defaultTimeout_ms);
+
+    // did we get a response?
+    if (re.respCode < 0) return OnlineError::Timeout;
+    if (re.respCode != 200) return OnlineError::BadRequest;
+
+    // yes, check it's signature
+    sigB64 = string{re.getHeader("X-Signature").toUtf8().constData()};
+    if (sigB64.empty()) return OnlineError::InvalidServerSignature;
+    sig = Sloppy::Crypto::fromBase64(sigB64);
+    bool isOkay = cryptoLib->crypto_sign_verify_detached(re.data.constData(), sig, srvPubKey);
+    if (!isOkay) return OnlineError::InvalidServerSignature;
+
+    // the signature is okay so we can trust the response
+
+    // the response should be preceeded by a 10-character nonce
+    if (re.data.size() < NonceLength) return OnlineError::BadResponse;
+
+    responseOut = re.data.right(re.data.size() - NonceLength);
+    return OnlineError::Okay;
   }
 
   //----------------------------------------------------------------------------
@@ -118,9 +170,45 @@ namespace QTournament
     QString url = apiBaseUrl + "/ping";
 
     HttpClient cli;
-    HttpResponse re = cli.blockingRequest(url, "", defaultTimeout_ms);
+    HttpResponse re = cli.blockingRequest(url, {}, string{}, defaultTimeout_ms);
 
     return re.roundTripTime_ms;
+  }
+
+  //----------------------------------------------------------------------------
+
+  OnlineError OnlineMngr::registerTournament(const OnlineRegistrationData& ord, QString& errCodeOut)
+  {
+    errCodeOut.clear();
+
+    // we need access to the secret key for signing the request
+    if (!secKeyUnlocked)
+    {
+      return OnlineError::KeystoreLocked;
+    }
+
+    // convert the registration data to JSON
+    //
+    // no error checking here, we leave this to the server
+    Json::Value dic;
+    dic["name"] = ord.tnmtName.toUtf8().constData();
+    dic["club"] = ord.club.toUtf8().constData();
+    dic["owner"] = ord.personName.toUtf8().constData();
+    dic["email"] = ord.email.toUtf8().constData();
+    dic["first"] = ord.firstDay.year() * 10000 + ord.firstDay.month() * 100 + ord.firstDay.day();
+    dic["last"] = ord.lastDay.year() * 10000 + ord.lastDay.month() * 100 + ord.lastDay.day();
+    dic["pubkey"] = Sloppy::Crypto::toBase64(pubKey.copyToString());
+
+    // do the actual server request
+    QByteArray response;
+    OnlineError err = execSignedServerRequest("/registration", QByteArray(dic.toStyledString().c_str()), response);
+    if (err != OnlineError::Okay) return err;
+
+    // construct the reply
+    errCodeOut.clear();
+
+    errCodeOut = QString::fromUtf8(response.constData());
+    return (errCodeOut == "OK") ? OnlineError::Okay : OnlineError::TransportOkay_AppError;
   }
 
   //----------------------------------------------------------------------------

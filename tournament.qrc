@@ -1,8 +1,8 @@
-<?xml version="1.0" encoding="utf-8"?>
-<RCC version="1.0">
-    <qresource>
+<RCC>
+    <qresource prefix="/">
         <file>icons/document-new-5.png</file>
         <file>icons/edit-rename.png</file>
         <file>icons/edit-delete-9.png</file>
+        <file>ui/consent.html</file>
     </qresource>
 </RCC>

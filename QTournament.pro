@@ -155,7 +155,10 @@ HEADERS += \
     OnlineMngr.h \
     ui/DlgPassword.h \
     HttpClient.h \
-    ui/DlgRegisterTournament.h
+    ui/DlgRegisterTournament.h \
+    ui/commonCommands/cmdOnlineRegistration.h \
+    ui/commonCommands/cmdSetOrChangePassword.h \
+    ui/commonCommands/cmdUnlockKeystore.h
 
 SOURCES += \
     Category.cpp \
@@ -283,7 +286,10 @@ SOURCES += \
     OnlineMngr.cpp \
     ui/DlgPassword.cpp \
     HttpClient.cpp \
-    ui/DlgRegisterTournament.cpp
+    ui/DlgRegisterTournament.cpp \
+    ui/commonCommands/cmdOnlineRegistration.cpp \
+    ui/commonCommands/cmdSetOrChangePassword.cpp \
+    ui/commonCommands/cmdUnlockKeystore.cpp
 
 RESOURCES += \
     tournament.qrc

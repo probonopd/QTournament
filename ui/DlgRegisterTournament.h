@@ -7,6 +7,12 @@ namespace Ui {
   class DlgRegisterTournament;
 }
 
+// forward
+namespace QTournament
+{
+  struct OnlineRegistrationData;
+}
+
 class DlgRegisterTournament : public QDialog
 {
   Q_OBJECT
@@ -14,6 +20,8 @@ class DlgRegisterTournament : public QDialog
 public:
   explicit DlgRegisterTournament(QWidget *parent, const QString& tnmtName, const QString club);
   ~DlgRegisterTournament();
+
+  QTournament::OnlineRegistrationData getValidatedRegistrationData() const;
 
 protected slots:
   void onBtnOkayClicked();
