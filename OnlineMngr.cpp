@@ -12,8 +12,8 @@ namespace QTournament
 
   OnlineMngr::OnlineMngr(TournamentDB* _db, const QString& _apiBaseUrl, int _defaultTimeout_ms)
     :db{_db}, apiBaseUrl{_apiBaseUrl}, defaultTimeout_ms{_defaultTimeout_ms},
-     cryptoLib{Sloppy::Crypto::SodiumLib::getInstance()},
-     cfgTab{SqliteOverlay::KeyValueTab::getTab(db, TAB_CFG)}, secKeyUnlocked{false}
+      cryptoLib{Sloppy::Crypto::SodiumLib::getInstance()},
+      cfgTab{SqliteOverlay::KeyValueTab::getTab(db, TAB_CFG)}, secKeyUnlocked{false}
   {
     srvPubKey.fillFromString(Sloppy::Crypto::fromBase64(ServerPubKey_B64));
   }
@@ -57,10 +57,17 @@ namespace QTournament
     bool isOkay = cryptoLib->crypto_sign_verify_detached(re.data.constData(), sig, srvPubKey);
     if (!isOkay) return OnlineError::InvalidServerSignature;
 
-    // the signature is okay so we can trust the response
-
     // the response should be preceeded by a 10-character nonce
     if (re.data.size() < NonceLength) return OnlineError::BadResponse;
+
+    // the response-nonce has to be indentical with the request nonce,
+    // otherwise this could be a replay
+    if (!(re.data.startsWith(QByteArray::fromStdString(nonce))))
+    {
+      return OnlineError::BadResponse;
+    }
+
+    // the signature and nonce are okay so we can trust the response
 
     responseOut = re.data.right(re.data.size() - NonceLength);
     return OnlineError::Okay;

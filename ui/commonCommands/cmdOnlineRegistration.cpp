@@ -131,7 +131,7 @@ ERR cmdOnlineRegistration::exec()
   {
     msg = tr("Online registration successful!\n\n");
     msg += tr("Within the next minutes you should receive a confirmation email. ");
-    msg += tr("Please click on the link the in email to complete your registration.");
+    msg += tr("Please click on the link in the email to complete your registration.");
     QMessageBox::information(parentWidget, tr("Online registration"), msg);
 
     return ERR::OK;
