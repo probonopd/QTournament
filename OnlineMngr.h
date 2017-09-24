@@ -80,6 +80,7 @@ namespace QTournament
     // server requests
     int ping();
     OnlineError registerTournament(const OnlineRegistrationData& ord, QString& errCodeOut);
+    OnlineError startSession(QString& errCodeOut);
 
   protected:
     bool initKeyboxWithFreshKeys(const QString& pw);
@@ -94,7 +95,7 @@ namespace QTournament
     PubSignKey pubKey;
     bool secKeyUnlocked;
     PubSignKey srvPubKey;
-
+    QString sessionKey;
   };
 
 }

@@ -102,6 +102,7 @@ public slots:
   void onEditTournamentSettings();
   void onSetPassword();
   void onRegisterTournament();
+  void onStartSession();
 
 private slots:
   void onToggleTestMenuVisibility();

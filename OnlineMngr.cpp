@@ -13,7 +13,8 @@ namespace QTournament
   OnlineMngr::OnlineMngr(TournamentDB* _db, const QString& _apiBaseUrl, int _defaultTimeout_ms)
     :db{_db}, apiBaseUrl{_apiBaseUrl}, defaultTimeout_ms{_defaultTimeout_ms},
       cryptoLib{Sloppy::Crypto::SodiumLib::getInstance()},
-      cfgTab{SqliteOverlay::KeyValueTab::getTab(db, TAB_CFG)}, secKeyUnlocked{false}
+      cfgTab{SqliteOverlay::KeyValueTab::getTab(db, TAB_CFG)}, secKeyUnlocked{false},
+      sessionKey{}
   {
     srvPubKey.fillFromString(Sloppy::Crypto::fromBase64(ServerPubKey_B64));
   }
@@ -216,6 +217,37 @@ namespace QTournament
 
     errCodeOut = QString::fromUtf8(response.constData());
     return (errCodeOut == "OK") ? OnlineError::Okay : OnlineError::TransportOkay_AppError;
+  }
+
+  //----------------------------------------------------------------------------
+
+  OnlineError OnlineMngr::startSession(QString& errCodeOut)
+  {
+    errCodeOut.clear();
+
+    // we need access to the secret key for signing the request
+    if (!secKeyUnlocked)
+    {
+      return OnlineError::KeystoreLocked;
+    }
+
+    // do the actual server request
+    string pkB64 = Sloppy::Crypto::toBase64(pubKey.copyToString());
+    QByteArray response;
+    OnlineError err = execSignedServerRequest("/startSession", QByteArray(pkB64.c_str()), response);
+    if (err != OnlineError::Okay) return err;
+
+    // extract the session key, if we were successful
+    errCodeOut = QString::fromUtf8(response.constData());
+    if (errCodeOut.startsWith("OK"))
+    {
+      sessionKey = errCodeOut.mid(2);
+      errCodeOut = "OK";
+      return OnlineError::Okay;
+    }
+
+    // construct the reply
+    return OnlineError::TransportOkay_AppError;
   }
 
   //----------------------------------------------------------------------------

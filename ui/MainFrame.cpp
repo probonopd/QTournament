@@ -35,6 +35,7 @@
 #include "DlgPassword.h"
 #include "commonCommands/cmdOnlineRegistration.h"
 #include "commonCommands/cmdSetOrChangePassword.h"
+#include "commonCommands/cmdStartOnlineSession.h"
 
 using namespace QTournament;
 
@@ -1402,6 +1403,16 @@ void MainFrame::onRegisterTournament()
   // so I've moved it to a separate file
 
   cmdOnlineRegistration cmd{this, currentDb.get()};
+  cmd.exec();
+}
+
+//----------------------------------------------------------------------------
+
+void MainFrame::onStartSession()
+{
+  if (currentDb == nullptr) return;
+
+  cmdStartOnlineSession cmd{this, currentDb.get()};
   cmd.exec();
 }
 
