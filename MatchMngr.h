@@ -42,7 +42,7 @@ namespace QTournament
 
   typedef vector<MatchGroup> MatchGroupList;
   
-  class MatchMngr : public QObject, TournamentDatabaseObjectManager
+  class MatchMngr : public QObject, public TournamentDatabaseObjectManager
   {
     Q_OBJECT
   public:
@@ -123,6 +123,8 @@ namespace QTournament
     ERR swapPlayers(const Match& ma1, const PlayerPair& ma1PlayerPair,
                     const Match& ma2, const PlayerPair& ma2PlayerPair) const;
 
+    string getSyncString(vector<int> rows) override;
+    string getSyncString_MatchGroups(vector<int> rows);
 
   private:
     DbTab* groupTab;

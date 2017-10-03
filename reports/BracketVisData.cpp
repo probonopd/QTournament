@@ -141,6 +141,9 @@ void BracketVisData::addPage(BRACKET_PAGE_ORIENTATION pageOrientation, BRACKET_L
   string visData = _visData->isNull() ? "" : (_visData->get() + ":");
   visData += pageDef;
 
+  // lock the database before writing
+  DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
+
   // write the new string to the database
   visDataRow.update(CAT_BRACKET_VIS_DATA, visData);
 }
@@ -169,6 +172,10 @@ void BracketVisData::addElement(int idx, const RawBracketVisElement& el)
   cvc.addIntCol(BV_NEXT_LOSER_MATCH, el.nextMatchForLoser);
   cvc.addIntCol(BV_NEXT_MATCH_POS_FOR_WINNER, el.nextMatchPlayerPosForWinner);
   cvc.addIntCol(BV_NEXT_MATCH_POS_FOR_LOSER, el.nextMatchPlayerPosForLoser);
+
+  // lock the database before writing
+  DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
+
   tab->insertRow(cvc);
 }
 
@@ -273,6 +280,9 @@ void BracketVisData::clearExplicitPlayerPairReferences(const PlayerPair& pp) con
   // by the next call to fillMissingPlayerNames() based on the updated match result
 
   int catId = cat.getId();
+
+  // lock the database before writing
+  DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
 
   WhereClause w;
   w.addIntCol(BV_CAT_REF, catId);
@@ -456,6 +466,9 @@ bool BracketVisElement::linkToMatch(const Match& ma) const
   Category myCat = getLinkedCategory();
   if (ma.getCategory() != myCat) return false;
 
+  // lock the database before writing
+  DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
+
   row.update(BV_MATCH_REF, ma.getId());
   return true;
 }
@@ -474,6 +487,9 @@ bool BracketVisElement::linkToPlayerPair(const PlayerPair& pp, int pos) const
 
   int pairId = pp.getPairId();
   if (pairId <= 0) return false;
+
+  // lock the database before writing
+  DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
 
   if (pos == 1)
   {

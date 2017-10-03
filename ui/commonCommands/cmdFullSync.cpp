@@ -26,15 +26,10 @@
 #include <Sloppy/Crypto/Crypto.h>
 #include <SqliteOverlay/KeyValueTab.h>
 
-#include "cmdStartOnlineSession.h"
-#include "cmdSetOrChangePassword.h"
-#include "cmdUnlockKeystore.h"
 #include "OnlineMngr.h"
-#include "ui/DlgRegisterTournament.h"
-#include "ui/DlgPassword.h"
 #include "cmdFullSync.h"
 
-cmdStartOnlineSession::cmdStartOnlineSession(QWidget* p, TournamentDB* _db)
+cmdFullSync::cmdFullSync(QWidget* p, TournamentDB* _db)
   :AbstractCommand(_db, p)
 {
 
@@ -42,47 +37,12 @@ cmdStartOnlineSession::cmdStartOnlineSession(QWidget* p, TournamentDB* _db)
 
 //----------------------------------------------------------------------------
 
-ERR cmdStartOnlineSession::exec()
+ERR cmdFullSync::exec()
 {
   OnlineMngr* om = db->getOnlineManager();
 
-  // if the user hasn't supplied a password yet,
-  // we can't open a session
-  if (!(om->hasSecretInDatabase()))
-  {
-    QString msg = tr("You haven't registered the tournament yet and thus you can't start a server session!");
-    QMessageBox::critical(parentWidget, "Start session", msg);
-    return ERR::WRONG_STATE;  // dummy value
-  }
-
-  // check whether the server is online and whether we
-  // have a network connection
-  //
-  // this can last up to five seconds (--> timeout) and thus
-  // we better enable the hourglass cursor
-  QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
-  int tripTime = om->ping();
-  QApplication::restoreOverrideCursor();
-
-  // if tripTime is less than zero, an error occurred
-  if (tripTime < 0)
-  {
-    QString msg = tr("The tournament server is currently not available or there is no working internet connection.\n\nPlease try again later.");
-    QMessageBox::information(parentWidget, tr("Start session"), msg);
-    return ERR::WRONG_STATE;  // dummy error code; will not be evaluated by caller
-  }
-
-  // if the secret signing key has not yet been unlocked, ask the
-  // user for the password and unlock the keystore
-  if (!(om->isUnlocked()))
-  {
-    cmdUnlockKeystore cmd{parentWidget, db};
-    ERR err = cmd.exec();
-    if (err != ERR::OK) return err;
-  }
-
   QString errTxt;
-  OnlineError err = om->startSession(errTxt);
+  OnlineError err = om->doFullSync(errTxt);
 
   // handle connection / transport errors
   if ((err != OnlineError::Okay) && (err != OnlineError::TransportOkay_AppError))
@@ -103,7 +63,7 @@ ERR cmdStartOnlineSession::exec()
       msg = tr("Session setup failed due to an unspecified network or server error!");
     }
 
-    QMessageBox::warning(parentWidget, tr("Connection failed"), msg);
+    QMessageBox::warning(parentWidget, tr("Full sync failed"), msg);
     return ERR::WRONG_STATE; // dummy value
   }
 
@@ -111,13 +71,9 @@ ERR cmdStartOnlineSession::exec()
   // We only have to check if the request on application level was successful as well.
 
   QString msg;
-  if (errTxt == "NotActive")
-  {
-    msg = tr("You cannot connect because the server administrator has not yet accepted your registration request.");
-  }
   if (errTxt == "DatabaseError")
   {
-    msg = tr("You cannot connect because of a server-side database error.\n");
+    msg = tr("Syncing failed because of a server-side database error.\n");
     msg += tr("Please try again later!");
   }
   if (errTxt == "CSVError")
@@ -132,12 +88,12 @@ ERR cmdStartOnlineSession::exec()
   }
   if (!(msg.isEmpty()))
   {
-    QMessageBox::warning(parentWidget, tr("Connection failed"), msg);
+    QMessageBox::warning(parentWidget, tr("Full sync failed"), msg);
     return ERR::WRONG_STATE; // dummy value
   }
 
-  QMessageBox::information(parentWidget, "Connection successful", "You are now connected to and in sync with the server!");
-
+  QMessageBox::information(parentWidget, tr("Full sync successful"),
+                           tr("The server is now in sync with your local tournament file!"));
   return ERR::OK;
 }
 

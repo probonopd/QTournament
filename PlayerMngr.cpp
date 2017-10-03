@@ -100,6 +100,9 @@ namespace QTournament
       cvc.addIntCol(PL_TEAM_REF, t.getId());
     }
     
+    // lock the database before writing
+    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
+
     // create the new player row
     CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
     cse->beginCreatePlayer();
@@ -196,6 +199,10 @@ namespace QTournament
     ColumnValueClause cvc;
     cvc.addStringCol(PL_FNAME, newFirst.toUtf8().constData());
     cvc.addStringCol(PL_LNAME, newLast.toUtf8().constData());
+
+    // lock the database before writing
+    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
+
     p.row.update(cvc);
     
     CentralSignalEmitter::getInstance()->playerRenamed(p);
@@ -316,6 +323,10 @@ namespace QTournament
 
     // update the status of all players to PLAYING
     PlayerList pl = determineActualPlayersForMatch(ma);
+
+    // lock the database before writing
+    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
+
     for (Player p : pl)
     {
       OBJ_STATE oldStat = p.getState();
@@ -332,6 +343,9 @@ namespace QTournament
   ERR PlayerMngr::releasePlayerPairsAfterMatch(const Match& ma)
   {
     PlayerList pl = determineActualPlayersForMatch(ma);
+
+    // lock the database before writing
+    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
 
     // update all player states back to idle
     for (Player p : pl)
@@ -745,6 +759,33 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
+  string PlayerMngr::getSyncString(vector<int> rows)
+  {
+    vector<string> cols = {"id", PL_FNAME, PL_LNAME, GENERIC_STATE_FIELD_NAME, PL_SEX, PL_REFEREE_COUNT, PL_TEAM_REF};
+
+    return db->getSyncStringForTable(TAB_PLAYER, cols, rows);
+  }
+
+  //----------------------------------------------------------------------------
+
+  string PlayerMngr::getSyncString_P2C(vector<int> rows)
+  {
+    vector<string> cols = {"id", P2C_PLAYER_REF, P2C_CAT_REF};
+
+    return db->getSyncStringForTable(TAB_P2C, cols, rows);
+  }
+
+  //----------------------------------------------------------------------------
+
+  string PlayerMngr::getSyncString_Pairs(vector<int> rows)
+  {
+    vector<string> cols = {"id", PAIRS_PLAYER1_REF, PAIRS_PLAYER2_REF, PAIRS_CAT_REF, PAIRS_GRP_NUM, PAIRS_INITIAL_RANK};
+
+    return db->getSyncStringForTable(TAB_PAIRS, cols, rows);
+  }
+
+  //----------------------------------------------------------------------------
+
   ERR PlayerMngr::canDeletePlayer(const Player &p) const
   {
     // first check: see if we can remove the player from all categories
@@ -826,6 +867,9 @@ namespace QTournament
 
     // there is nothing more to do for us, because there are no more references
     // to this player. This has been checked by canDeletePlayer() before
+
+    // lock the database before writing
+    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
 
     // the actual deletion
     int oldSeqNum = p.getSeqNum();
@@ -985,6 +1029,10 @@ namespace QTournament
   void PlayerMngr::increaseRefereeCountForPlayer(const Player& p)
   {
     int oldCount = p.getRefereeCount();
+
+    // lock the database before writing
+    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
+
     p.row.update(PL_REFEREE_COUNT, oldCount + 1);
   }
 

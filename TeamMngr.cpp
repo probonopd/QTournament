@@ -69,6 +69,9 @@ namespace QTournament
     ColumnValueClause cvc;
     cvc.addStringCol(GENERIC_NAME_FIELD_NAME, teamName.toUtf8().constData());
     
+    // lock the database before writing
+    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
+
     CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
     cse->beginCreateTeam();
     tab->insertRow(cvc);
@@ -138,6 +141,9 @@ namespace QTournament
       return NAME_EXISTS;
     }
     
+    // lock the database before writing
+    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
+
     t.row.update(GENERIC_NAME_FIELD_NAME, newName.toUtf8().constData());
     CentralSignalEmitter::getInstance()->teamRenamed(t.getSeqNum());
     
@@ -206,6 +212,9 @@ namespace QTournament
       return OK;  // no database access necessary
     }
     
+    // lock the database before writing
+    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
+
     TabRow r = p.row;
     r.update(PL_TEAM_REF, newTeam.getId());
     CentralSignalEmitter::getInstance()->teamAssignmentChanged(p, oldTeam, newTeam);
@@ -228,6 +237,15 @@ namespace QTournament
   {
     DbTab* playerTab = db->getTab(TAB_PLAYER);
     return getObjectsByColumnValue<Player>(playerTab, PL_TEAM_REF, t.getId());
+  }
+
+  //----------------------------------------------------------------------------
+
+  string TeamMngr::getSyncString(vector<int> rows)
+  {
+    vector<string> cols = {"id", GENERIC_NAME_FIELD_NAME};
+
+    return db->getSyncStringForTable(TAB_TEAM, cols, rows);
   }
 
 //----------------------------------------------------------------------------

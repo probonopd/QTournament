@@ -35,7 +35,7 @@ using namespace SqliteOverlay;
 namespace QTournament
 {
 
-  class TeamMngr : public QObject, TournamentDatabaseObjectManager
+  class TeamMngr : public QObject, public TournamentDatabaseObjectManager
   {
     Q_OBJECT
   
@@ -52,6 +52,8 @@ namespace QTournament
     ERR changeTeamAssigment(const Player& p, const Team& newTeam);
 
     PlayerList getPlayersForTeam(const Team& t) const;
+
+    string getSyncString(vector<int> rows) override;
 
     static std::function<bool (Team&, Team&)> getTeamSortFunction_byName();
 

@@ -84,6 +84,9 @@ namespace QTournament
 
   void Court::setManualAssignment(bool isManual)
   {
+    // lock the database before writing
+    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
+
     row.update(CO_IS_MANUAL_ASSIGNMENT, isManual ? 1 : 0);
   }
 

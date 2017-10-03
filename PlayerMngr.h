@@ -42,7 +42,7 @@ using namespace SqliteOverlay;
 namespace QTournament
 {
 
-  class PlayerMngr : public QObject, TournamentDatabaseObjectManager
+  class PlayerMngr : public QObject, public TournamentDatabaseObjectManager
   {
     Q_OBJECT
     
@@ -113,6 +113,9 @@ namespace QTournament
     ERR exportPlayerToExternalDatabase(const Player& p);
     ERR syncAllPlayersToExternalDatabase();
 
+    string getSyncString(vector<int> rows) override;
+    string getSyncString_P2C(vector<int> rows);
+    string getSyncString_Pairs(vector<int> rows);
 
   protected:
     upExternalPlayerDB extPlayerDb;

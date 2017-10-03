@@ -36,7 +36,7 @@
 namespace QTournament
 {
 
-  class CourtMngr : public QObject, TournamentDatabaseObjectManager
+  class CourtMngr : public QObject, public TournamentDatabaseObjectManager
   {
     Q_OBJECT
     
@@ -63,6 +63,8 @@ namespace QTournament
     ERR enableCourt(const Court& co);
 
     ERR deleteCourt(const Court& co);
+
+    string getSyncString(vector<int> rows) override;
 
   private:
 

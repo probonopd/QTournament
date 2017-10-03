@@ -93,6 +93,8 @@ namespace QTournament
     // succeeds and that we leave the database in a consistent state
     //
 
+    // lock the database before writing
+    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
 
     // iterate over the player pair list and create entries
     // based on match result and, possibly, previous ranking entries
@@ -441,6 +443,9 @@ namespace QTournament
     };
     //------------------------- end of helper func -------------------
 
+    // lock the database before writing
+    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
+
     // start a new transaction to make sure that
     // the database remains consistent in case something goes wrong
     bool isDbErr;
@@ -501,6 +506,14 @@ namespace QTournament
     return isOkay ? OK : DATABASE_ERROR;
   }
 
+  string RankingMngr::getSyncString(vector<int> rows)
+  {
+    vector<string> cols = {"id", RA_ROUND, RA_PAIR_REF, RA_CAT_REF, RA_GRP_NUM, RA_GAMES_WON, RA_GAMES_LOST,
+                          RA_MATCHES_WON, RA_MATCHES_LOST, RA_MATCHES_DRAW, RA_POINTS_WON, RA_POINTS_LOST, RA_RANK};
+
+    return db->getSyncStringForTable(TAB_RANKING, cols, rows);
+  }
+
 //----------------------------------------------------------------------------
 
   RankingEntryListList RankingMngr::sortRankingEntriesForLastRound(const Category& cat, ERR* err) const
@@ -551,6 +564,9 @@ namespace QTournament
     // prepare the result object
     RankingEntryListList result;
 
+    // lock the database before writing
+    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
+
     // apply separate sorting for every match group.
     //
     // In non-round-robin matches, this does no harm because
@@ -588,6 +604,9 @@ namespace QTournament
   {
     if (rank < 1) return INVALID_RANK;
 
+    // lock the database before writing
+    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
+
     re.row.update(RA_RANK, rank);
 
     return OK;
@@ -597,6 +616,7 @@ namespace QTournament
 
   ERR RankingMngr::clearRank(const RankingEntry& re) const
   {
+    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
     re.row.updateToNull(RA_RANK);
 
     return OK;
@@ -628,6 +648,9 @@ namespace QTournament
 
     RankingEntryListList rll = getSortedRanking(cat, round);
     if (rll.empty()) return;
+
+    // lock the database before writing
+    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
 
     // for each match group, go through the
     // list of ranking entries and fill gaps

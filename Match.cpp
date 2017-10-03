@@ -215,6 +215,7 @@ namespace QTournament
       //
       // but if it does, we clear the invalid database entry
       // and return an error
+      DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
       row.updateToNull(MA_RESULT);
       if (err != nullptr) *err = INCONSISTENT_MATCH_RESULT_STRING;
       return nullptr;
@@ -349,6 +350,9 @@ namespace QTournament
     // we have a limit of 50 chars for this CSV-string
     if (callTimes.length() <= 50)
     {
+      // lock the database before writing
+      DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
+
       row.update(MA_ADDITIONAL_CALL_TIMES, callTimes.toUtf8().constData());
       return true;
     }

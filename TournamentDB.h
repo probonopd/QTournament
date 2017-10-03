@@ -39,6 +39,13 @@ namespace QTournament
     Failed,
   };
 
+  enum class DatabaseAccessRoles
+  {
+    MainThread,
+    SyncThread,
+  };
+  using DbLockHolder = SqliteOverlay::DatabaseLockHolder<DatabaseAccessRoles>;
+
   class TournamentDB : public SqliteOverlay::SqliteDatabase
   {
     friend class SqliteOverlay::SqliteDatabase;
@@ -82,6 +89,12 @@ namespace QTournament
     };
 
     unique_ptr<TransactionGuard> acquireTransactionGuard(bool commitOnDestruction, bool* isDbErr = nullptr, bool* transRunning = nullptr);
+
+    // conversion to CSV for syncing with the server
+    tuple<string,int> tableDataToCSV(const string& tabName, const vector<string>& colNames, int rowId=-1);
+    tuple<string,int> tableDataToCSV(const string& tabName, const vector<string>& colNames, const vector<int>& rowList);
+    string getSyncStringForTable(const string& tabName, const vector<string>& colNames, int rowId=-1);
+    string getSyncStringForTable(const string& tabName, const vector<string>& colNames, vector<int> rowList);
 
   private:
     TournamentDB(string fName, bool createNew);

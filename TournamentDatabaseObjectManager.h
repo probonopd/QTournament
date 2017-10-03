@@ -34,6 +34,9 @@ namespace QTournament
     TournamentDatabaseObjectManager (TournamentDB* _db, const QString& _tabName)
       : SqliteOverlay::GenericObjectManager<TournamentDB>(_db, _tabName.toUtf8().constData()) {}
 
+    virtual string getSyncString(int rowId = -1);
+    virtual string getSyncString(vector<int> rows) { return ""; }
+
   protected:
     void fixSeqNumberAfterInsert(SqliteOverlay::DbTab* tabPtr = nullptr) const;
     void fixSeqNumberAfterDelete(SqliteOverlay::DbTab* tabPtr, int deletedSeqNum) const;

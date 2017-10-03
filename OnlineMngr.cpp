@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include <Sloppy/json/json.h>
 #include <Sloppy/Crypto/Crypto.h>
 #include <Sloppy/Crypto/Sodium.h>
@@ -6,6 +8,14 @@
 #include "TournamentDB.h"
 #include "OnlineMngr.h"
 #include "HttpClient.h"
+#include "TeamMngr.h"
+#include "CourtMngr.h"
+#include "CatMngr.h"
+#include "MatchMngr.h"
+#include "PlayerMngr.h"
+#include "RankingMngr.h"
+
+using namespace std;
 
 namespace QTournament
 {
@@ -14,14 +24,14 @@ namespace QTournament
     :db{_db}, apiBaseUrl{_apiBaseUrl}, defaultTimeout_ms{_defaultTimeout_ms},
       cryptoLib{Sloppy::Crypto::SodiumLib::getInstance()},
       cfgTab{SqliteOverlay::KeyValueTab::getTab(db, TAB_CFG)}, secKeyUnlocked{false},
-      sessionKey{}
+      syncState{}
   {
     srvPubKey.fillFromString(Sloppy::Crypto::fromBase64(ServerPubKey_B64));
   }
 
   //----------------------------------------------------------------------------
 
-  OnlineError OnlineMngr::execSignedServerRequest(const QString& subUrl, const QByteArray& postData, QByteArray& responseOut)
+  OnlineError OnlineMngr::execSignedServerRequest(const QString& subUrl, bool withSession, const QByteArray& postData, QByteArray& responseOut)
   {
     // we need access to the secret key for signing the request
     if (!secKeyUnlocked)
@@ -31,8 +41,13 @@ namespace QTournament
 
     // every request will be preceeded by a 10-character
     // random nonce to avoid replay attacks
+    //
+    // for sessioned requests, we also insert the session key
+    if (withSession && syncState.sessionKey.empty()) return OnlineError::NoSession;
     string nonce = Sloppy::Crypto::getRandomAlphanumString(NonceLength);
-    string body = nonce + string{postData.constData()};
+    string body{nonce};
+    if (withSession) body += syncState.sessionKey;
+    body += string{postData.constData()};
 
     // create a detached signature of the body
     string sig = cryptoLib->crypto_sign_detached(body, secKey);
@@ -209,7 +224,7 @@ namespace QTournament
 
     // do the actual server request
     QByteArray response;
-    OnlineError err = execSignedServerRequest("/registration", QByteArray(dic.toStyledString().c_str()), response);
+    OnlineError err = execSignedServerRequest("/registration", false, QByteArray(dic.toStyledString().c_str()), response);
     if (err != OnlineError::Okay) return err;
 
     // construct the reply
@@ -234,19 +249,112 @@ namespace QTournament
     // do the actual server request
     string pkB64 = Sloppy::Crypto::toBase64(pubKey.copyToString());
     QByteArray response;
-    OnlineError err = execSignedServerRequest("/startSession", QByteArray(pkB64.c_str()), response);
+    OnlineError err = execSignedServerRequest("/startSession", false, QByteArray(pkB64.c_str()), response);
     if (err != OnlineError::Okay) return err;
 
     // extract the session key, if we were successful
     errCodeOut = QString::fromUtf8(response.constData());
     if (errCodeOut.startsWith("OK"))
     {
-      sessionKey = errCodeOut.mid(2);
-      errCodeOut = "OK";
+      syncState.sessionKey = string{errCodeOut.mid(2).toUtf8().constData()};
+      syncState.connStart = UTCTimestamp();
+    } else {
+      return OnlineError::TransportOkay_AppError;
+    }
+
+    // force a full sync at session start
+    err = doFullSync(errCodeOut);
+
+    // if the sync was successfull,
+    // enable the database changelog,
+    // otherwise terminate the session
+    if (err != OnlineError::Okay) return err;
+
+    if (errCodeOut != "OK")
+    {
+      disconnect();
+      return OnlineError::TransportOkay_AppError;
+    }
+
+    db->enableChangeLog(true);
+    return OnlineError::Okay;
+  }
+
+  //----------------------------------------------------------------------------
+
+  void OnlineMngr::disconnect()
+  {
+    db->disableChangeLog(true);
+    syncState = SyncState{};  // reset all clocks, session keys, etc.
+  }
+
+  //----------------------------------------------------------------------------
+
+  OnlineError OnlineMngr::doFullSync(QString& errCodeOut)
+  {
+    errCodeOut.clear();
+
+    // we need access to the secret key for signing the request
+    if (!secKeyUnlocked)
+    {
+      return OnlineError::KeystoreLocked;
+    }
+
+    // we need an active server session
+    if (!(syncState.hasSession()))
+    {
+      return OnlineError::NoSession;
+    }
+
+    //
+    // collect all CSV-data
+    //
+    string csv;
+
+    // courts
+    CourtMngr cm{db};
+    csv += cm.getSyncString({});
+
+    // Teams
+    TeamMngr tm{db};
+    csv += tm.getSyncString({});
+
+    // players
+    PlayerMngr pm{db};
+    csv += pm.getSyncString({});
+    csv += pm.getSyncString_P2C({});
+    csv += pm.getSyncString_Pairs({});
+
+    // categories
+    CatMngr caMngr{db};
+    csv += caMngr.getSyncString({});
+
+    // matches
+    MatchMngr mm{db};
+    csv += mm.getSyncString({});
+    csv += mm.getSyncString_MatchGroups({});
+
+    // rankings
+    RankingMngr rm{db};
+    csv += rm.getSyncString({});
+
+    cout << csv << endl;
+
+    cout << endl << "Total size: " << csv.size() << endl;
+
+    QByteArray response;
+    OnlineError err = execSignedServerRequest("/fullSync", true, QByteArray(csv.c_str()), response);
+    if (err != OnlineError::Okay) return err;
+
+    errCodeOut = QString::fromUtf8(response.constData());
+    if (errCodeOut.startsWith("OK"))
+    {
+      syncState.lastFullSync = UTCTimestamp();
+      syncState.lastPartialSync  = UTCTimestamp();
+      syncState.partialSyncCounter = 0;
       return OnlineError::Okay;
     }
 
-    // construct the reply
     return OnlineError::TransportOkay_AppError;
   }
 

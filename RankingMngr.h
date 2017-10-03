@@ -42,7 +42,7 @@ namespace QTournament
   typedef vector<RankingEntry> RankingEntryList;
   typedef vector<RankingEntryList> RankingEntryListList;
 
-  class RankingMngr : public QObject, TournamentDatabaseObjectManager
+  class RankingMngr : public QObject, public TournamentDatabaseObjectManager
   {
     Q_OBJECT
     
@@ -61,6 +61,8 @@ namespace QTournament
     int getHighestRoundWithRankingEntryForPlayerPair(const Category &cat, const PlayerPair &pp) const;
 
     ERR updateRankingsAfterMatchResultChange(const Match& ma, const MatchScore& oldScore, bool skipSorting=false) const;
+
+    string getSyncString(vector<int> rows) override;
 
   private:
 

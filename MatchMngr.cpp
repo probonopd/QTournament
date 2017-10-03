@@ -134,6 +134,10 @@ namespace QTournament {
     cvc.addIntCol(MG_ROUND, round);
     cvc.addIntCol(MG_GRP_NUM, grpNum);
     cvc.addIntCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MG_CONFIG));
+
+    // lock the database before writing
+    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
+
     CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
     cse->beginCreateMatchGroup();
     int newId = groupTab->insertRow(cvc);
@@ -254,6 +258,10 @@ namespace QTournament {
     cvc.addIntCol(MA_WINNER_RANK, -1);         // default: no rank, no knock out
     cvc.addIntCol(MA_LOSER_RANK, -1);         // default: no rank, no knock out
     cvc.addIntCol(MA_REFEREE_MODE, -1);        // -1: use current tournament default
+
+    // lock the database before writing
+    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
+
     CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
     cse->beginCreateMatch();
     int newId = tab->insertRow(cvc);
@@ -286,6 +294,11 @@ namespace QTournament {
     // MAKE SURE THAT INCOMING LINKS TO MATCH GROUP FROM THE RANKING TAB
     // HAVE BEEN DELETED BEFORE!!
     //
+
+
+    // lock the database before writing
+    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
+
     auto matchesInGroup = mg.getMatches();
     for (const Match& ma : matchesInGroup)
     {
@@ -329,6 +342,9 @@ namespace QTournament {
       return PLAYERS_IDENTICAL;
     }
 
+    // lock the database before writing
+    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
+
     // assign the player pairs
     TabRow matchRow = tab->operator [](ma.getId());
     matchRow.update(MA_PAIR1_REF, pp1.getPairId());
@@ -351,6 +367,9 @@ namespace QTournament {
     // check if an assignment of the player pairs is okay
     ERR e = canAssignPlayerPairToMatch(ma, pp);
     if (e != OK) return e;
+
+    // lock the database before writing
+    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
 
     // assign the player pair
     TabRow matchRow = tab->operator [](ma.getId());
@@ -384,6 +403,9 @@ namespace QTournament {
     }
 
     // okay, the link is valid
+    // lock the database before writing
+    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
+
     TabRow toRow = tab->operator [](toMatch.getId());
     int dstId = asWinner ? fromMatch.getId() : -(fromMatch.getId());
     if (dstPlayerPosInMatch == 1)
@@ -406,6 +428,9 @@ namespace QTournament {
   {
     // Only allow changing / setting player pairs if we not yet fully configured
     if (ma.getState() != STAT_MA_INCOMPLETE) return MATCH_NOT_CONFIGURALE_ANYMORE;
+
+    // lock the database before writing
+    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
 
     TabRow matchRow = tab->operator [](ma.getId());
     if (unusedPlayerPos == 1)
@@ -431,6 +456,9 @@ namespace QTournament {
     if (ma.getState() != STAT_MA_INCOMPLETE) return MATCH_NOT_CONFIGURALE_ANYMORE;
 
     // TODO: check if rank is really valid
+
+    // lock the database before writing
+    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
 
     if (isWinner)
     {
@@ -556,6 +584,9 @@ namespace QTournament {
       return MATCH_NOT_CONFIGURALE_ANYMORE;
     }
 
+    // lock the database before writing
+    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
+
     // set the new mode
     TabRow matchRow = tab->operator [](ma.getId());
     matchRow.update(MA_REFEREE_MODE, static_cast<int>(newMode));
@@ -612,6 +643,9 @@ namespace QTournament {
     upPlayer currentReferee = ma.getAssignedReferee();
 
     // okay, it is safe to assign the referee
+    // lock the database before writing
+    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
+
     TabRow matchRow = tab->operator [](ma.getId());
     matchRow.update(MA_REFEREE_REF, p.getId());
 
@@ -678,6 +712,7 @@ namespace QTournament {
     }
 
     TabRow matchRow = tab->operator [](ma.getId());
+    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
     matchRow.updateToNull(MA_REFEREE_REF);
 
     // maybe the match status changes after the removal, because we're not
@@ -725,6 +760,9 @@ namespace QTournament {
 
     // if both pairs are identical, we're done
     if (ppOld.getPairId() == ppNew.getPairId()) return OK;
+
+    // lock the database before writing
+    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
 
     // start a transaction
     bool isdbErr;
@@ -793,6 +831,28 @@ namespace QTournament {
 
     bool isOk = tg ? tg->commit() : true;
     return isOk ? OK : DATABASE_ERROR;
+  }
+
+  //----------------------------------------------------------------------------
+
+  string MatchMngr::getSyncString(vector<int> rows)
+  {
+    vector<string> cols = {"id", GENERIC_STATE_FIELD_NAME, MA_GRP_REF, MA_NUM, MA_PAIR1_REF, MA_PAIR2_REF,
+                          MA_ACTUAL_PLAYER1A_REF, MA_ACTUAL_PLAYER1B_REF, MA_ACTUAL_PLAYER2A_REF, MA_ACTUAL_PLAYER2B_REF,
+                          MA_RESULT, MA_COURT_REF, MA_START_TIME, MA_ADDITIONAL_CALL_TIMES, MA_FINISH_TIME,
+                           MA_PAIR1_SYMBOLIC_VAL, MA_PAIR2_SYMBOLIC_VAL, MA_WINNER_RANK, MA_LOSER_RANK,
+                           MA_REFEREE_MODE, MA_REFEREE_REF};
+
+    return db->getSyncStringForTable(TAB_MATCH, cols, rows);
+  }
+
+  //----------------------------------------------------------------------------
+
+  string MatchMngr::getSyncString_MatchGroups(vector<int> rows)
+  {
+    vector<string> cols = {"id", MG_CAT_REF, GENERIC_STATE_FIELD_NAME, MG_ROUND, MG_GRP_NUM};
+
+    return db->getSyncStringForTable(TAB_MATCH_GROUP, cols, rows);
   }
 
   //----------------------------------------------------------------------------
@@ -914,6 +974,9 @@ namespace QTournament {
     if (e != OK) return e;
 
     // no further checks necessary. Any IDLE match group can be promoted
+
+    // lock the database before writing
+    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
 
     // promote the group to STAGED and assign a sequence number
     int nextStageSeqNum = getMaxStageSeqNum() + 1;
@@ -1067,6 +1130,7 @@ namespace QTournament {
     int oldStageSeqNumber = grp.getStageSequenceNumber();
     int grpId = grp.getId();
     TabRow r = groupTab->operator [](grpId);
+    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
     r.updateToNull(MG_STAGE_SEQ_NUM);
 
     CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
@@ -1308,6 +1372,9 @@ namespace QTournament {
     int nextMatchNumber = getMaxMatchNum() + 1;
 
     CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
+
+    // lock the database before writing
+    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
 
     for (auto mg : getStagedMatchGroupsOrderedBySequence())
     {
@@ -1567,6 +1634,9 @@ namespace QTournament {
     // update the match state
     cvc.addIntCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_RUNNING));
 
+    // lock the database before writing
+    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
+
     // execute all updates at once
     TabRow matchRow = tab->operator [](ma.getId());
     matchRow.update(cvc);
@@ -1700,6 +1770,9 @@ namespace QTournament {
 
     // everything is fine, so write the result to the database
     // and update the match status
+
+    // lock the database before writing
+    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
 
     // wrap all changes in one giant commit
     bool isDbErr;
@@ -1842,6 +1915,9 @@ namespace QTournament {
       }
     }
 
+    // lock the database before writing
+    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
+
     // everything is fine, so write the result to the database
     int maId = ma.getId();
     int maSeqNum = ma.getSeqNum();
@@ -1922,6 +1998,9 @@ namespace QTournament {
 
     // set the state back to READY
     cvc.addIntCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_READY));
+
+    // lock the database before writing
+    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
 
     // apply all changes at once
     int maId = ma.getId();
@@ -2030,6 +2109,9 @@ namespace QTournament {
     // back from BUSY is to READY!!
 
     CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
+
+    // lock the database before writing
+    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
 
     // set matches that are READY to BUSY, if the necessary players become unavailable
     if (toState == STAT_PL_PLAYING)
@@ -2154,6 +2236,9 @@ namespace QTournament {
     auto loserPair = ma.getLoser();
 
     CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
+
+    // lock the database before writing
+    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
 
     MatchList ml;
     if (winnerPair != nullptr)

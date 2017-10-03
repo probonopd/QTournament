@@ -4,6 +4,8 @@
 #include <memory>
 
 #include <Sloppy/Crypto/Sodium.h>
+#include <Sloppy/DateTime/DateAndTime.h>
+
 #include <QObject>
 #include <QDate>
 
@@ -32,6 +34,7 @@ namespace QTournament
     DatabaseError,
     KeystoreEmpty,
     InvalidServerSignature,
+    NoSession,
 
     // transport layer
     Timeout,
@@ -54,6 +57,25 @@ namespace QTournament
     QDate lastDay;
   };
 
+  // all data related to syncs
+  struct SyncState
+  {
+    string sessionKey;
+    Sloppy::DateTime::UTCTimestamp connStart;
+    Sloppy::DateTime::UTCTimestamp lastFullSync;
+    Sloppy::DateTime::UTCTimestamp lastPartialSync;
+    int partialSyncCounter;
+
+    SyncState()
+      :sessionKey{},
+       connStart{1900,1,1,0,0,0},  // 1900-01-01 as a dummy value for "not set"
+       lastFullSync{1900,1,1,0,0,0},
+       lastPartialSync{1900,1,1,0,0,0},
+       partialSyncCounter{-1} {}
+
+    bool hasSession() const { return (!(sessionKey.empty())); }
+  };
+
   // some type simplifications
   using PubSignKey = Sloppy::Crypto::SodiumLib::AsymSign_PublicKey;
   using SecSignKey = Sloppy::Crypto::SodiumLib::AsymSign_SecretKey;
@@ -68,7 +90,7 @@ namespace QTournament
     OnlineMngr(TournamentDB* _db, const QString& _apiBaseUrl, int _defaultTimeout_ms);
 
     // transport layer
-    OnlineError execSignedServerRequest(const QString& subUrl, const QByteArray& postData, QByteArray& responseOut);
+    OnlineError execSignedServerRequest(const QString& subUrl, bool withSession, const QByteArray& postData, QByteArray& responseOut);
 
     // password / keybox management
     bool hasSecretInDatabase() const;
@@ -81,6 +103,10 @@ namespace QTournament
     int ping();
     OnlineError registerTournament(const OnlineRegistrationData& ord, QString& errCodeOut);
     OnlineError startSession(QString& errCodeOut);
+    void disconnect();
+
+    // sync
+    OnlineError doFullSync(QString& errCodeOut);
 
   protected:
     bool initKeyboxWithFreshKeys(const QString& pw);
@@ -95,7 +121,7 @@ namespace QTournament
     PubSignKey pubKey;
     bool secKeyUnlocked;
     PubSignKey srvPubKey;
-    QString sessionKey;
+    SyncState syncState;
   };
 
 }
