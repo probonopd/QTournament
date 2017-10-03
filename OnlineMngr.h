@@ -66,12 +66,17 @@ namespace QTournament
     Sloppy::DateTime::UTCTimestamp lastPartialSync;
     int partialSyncCounter;
 
+    size_t lastDbChangelogLen;
+    Sloppy::DateTime::UTCTimestamp lastChangelogLenCheck;
+
     SyncState()
       :sessionKey{},
        connStart{1900,1,1,0,0,0},  // 1900-01-01 as a dummy value for "not set"
        lastFullSync{1900,1,1,0,0,0},
        lastPartialSync{1900,1,1,0,0,0},
-       partialSyncCounter{-1} {}
+       partialSyncCounter{-1},
+       lastDbChangelogLen{0},
+       lastChangelogLenCheck{1900,1,1,0,0,0} {}
 
     bool hasSession() const { return (!(sessionKey.empty())); }
   };
@@ -86,6 +91,7 @@ namespace QTournament
   public:
     static constexpr int NonceLength = 10;
     static constexpr const char* ServerPubKey_B64 = "gxgUevEXPrlHKluvDFUVOVZqf9dhR0+Ae3OrmRhYM1o=";
+    static constexpr int DatabaseInactiveBeforeSync_secs = 5;
 
     OnlineMngr(TournamentDB* _db, const QString& _apiBaseUrl, int _defaultTimeout_ms);
 
@@ -107,6 +113,11 @@ namespace QTournament
 
     // sync
     OnlineError doFullSync(QString& errCodeOut);
+    bool wantsToSync();
+    OnlineError doPartialSync();
+
+    // status info for the GUI
+    SyncState getSyncState() const;
 
   protected:
     bool initKeyboxWithFreshKeys(const QString& pw);

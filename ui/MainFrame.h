@@ -77,6 +77,11 @@ private:
   // a label for the status bar that shows the last autosave
   QLabel* lastAutosaveTimeStatusLabel;
 
+  // a timer and label for server syncs
+  static constexpr int ServerSyncStatusInterval_ms = 1000;
+  unique_ptr<QTimer> serverSyncTimer;
+  QLabel* syncStatLabel;
+  QPushButton* btnPingTest;
 
 public slots:
   void newTournament();
@@ -108,6 +113,8 @@ private slots:
   void onToggleTestMenuVisibility();
   void onDirtyFlagPollTimerElapsed();
   void onAutosaveTimerElapsed();
+  void onServerSyncTimerElapsed();
+  void onBtnPingTestClicked();
 
 };
 

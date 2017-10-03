@@ -349,13 +349,69 @@ namespace QTournament
     errCodeOut = QString::fromUtf8(response.constData());
     if (errCodeOut.startsWith("OK"))
     {
-      syncState.lastFullSync = UTCTimestamp();
-      syncState.lastPartialSync  = UTCTimestamp();
+      UTCTimestamp now;
+      syncState.lastFullSync = now;
+      syncState.lastPartialSync  = now;
       syncState.partialSyncCounter = 0;
+      syncState.lastDbChangelogLen = 0;
+      syncState.lastChangelogLenCheck = now;
       return OnlineError::Okay;
     }
 
     return OnlineError::TransportOkay_AppError;
+  }
+
+  //----------------------------------------------------------------------------
+
+  bool OnlineMngr::wantsToSync()
+  {
+    if (!(syncState.hasSession())) return false;
+
+    size_t logLen = db->getChangeLogLength();
+    if (logLen == 0) return false;
+
+    // check the "inactivity hystersis"
+    UTCTimestamp now;
+    TimePeriod dt{syncState.lastChangelogLenCheck, now};
+    if (dt.getLength_Sec() < DatabaseInactiveBeforeSync_secs) return false;
+
+    // if, after the delay, new changes have occured, reset the delay
+    if (logLen > syncState.lastDbChangelogLen)
+    {
+      syncState.lastDbChangelogLen = logLen;
+      syncState.lastChangelogLenCheck = now;
+      return false;
+    }
+
+    // no more changes within the hystersis period
+    // ==> sync!
+    return true;
+  }
+
+  //----------------------------------------------------------------------------
+
+  OnlineError OnlineMngr::doPartialSync()
+  {
+    auto log = db->getAllChangesAndClearQueue();
+
+    UTCTimestamp now;
+    syncState.lastPartialSync  = now;
+    ++syncState.partialSyncCounter;
+    syncState.lastDbChangelogLen = 0;
+    syncState.lastChangelogLenCheck = now;
+    return OnlineError::Okay;
+  }
+
+  //----------------------------------------------------------------------------
+
+  SyncState OnlineMngr::getSyncState() const
+  {
+    SyncState result{syncState};
+
+    // do not leak the session key
+    if (!(result.sessionKey.empty())) result.sessionKey = "XXX";
+
+    return result;
   }
 
   //----------------------------------------------------------------------------

@@ -22,6 +22,7 @@
 #include <QFileDialog>
 #include <QFile>
 #include <QTime>
+#include <QPushButton>
 
 #include "MainFrame.h"
 #include "MatchMngr.h"
@@ -46,10 +47,6 @@ MainFrame::MainFrame()
 {
   ui.setupUi(this);
   showMaximized();
-
-  // disable all widgets by setting their database instance to nullptr
-  distributeCurrentDatabasePointerToWidgets();
-  enableControls(false);
 
   testFileName = QDir().absoluteFilePath("tournamentTestFile.tdb");
 
@@ -76,6 +73,27 @@ MainFrame::MainFrame()
   lastAutosaveTimeStatusLabel = new QLabel(statusBar());
   lastAutosaveTimeStatusLabel->clear();
   statusBar()->addPermanentWidget(lastAutosaveTimeStatusLabel);
+
+  // prepare a timer and label that show the current sync state
+  syncStatLabel = new QLabel(statusBar());
+  syncStatLabel->clear();
+  statusBar()->addWidget(syncStatLabel);
+  serverSyncTimer = make_unique<QTimer>(this);
+  connect(serverSyncTimer.get(), SIGNAL(timeout()), this, SLOT(onServerSyncTimerElapsed()));
+  serverSyncTimer->start(ServerSyncStatusInterval_ms);
+
+  // prepare a button for triggering a server ping test
+  btnPingTest = new QPushButton(statusBar());
+  btnPingTest->setText(tr("Ping"));
+  statusBar()->addWidget(btnPingTest);
+  connect(btnPingTest, SIGNAL(clicked(bool)), this, SLOT(onBtnPingTestClicked()));
+  btnPingTest->setEnabled(false);
+
+
+  // finally disable all widgets by setting their database instance to nullptr
+  distributeCurrentDatabasePointerToWidgets();
+  enableControls(false);
+
 }
 
 //----------------------------------------------------------------------------
@@ -400,6 +418,8 @@ void MainFrame::enableControls(bool doEnable)
 
     // enable / disable items based on online status
   }
+
+  btnPingTest->setEnabled(doEnable);
 }
 
 //----------------------------------------------------------------------------
@@ -1483,6 +1503,67 @@ void MainFrame::onAutosaveTimerElapsed()
       msg += tr("failed");
     }
     lastAutosaveTimeStatusLabel->setText(msg);
+  }
+}
+
+//----------------------------------------------------------------------------
+
+void MainFrame::onServerSyncTimerElapsed()
+{
+  if (currentDb == nullptr)
+  {
+    syncStatLabel->clear();
+    return;
+  }
+
+  // retrieve the status from the online manager
+  OnlineMngr* om = currentDb->getOnlineManager();
+  SyncState st = om->getSyncState();
+
+  // if we're offline, everything's easy
+  if (!(st.hasSession()))
+  {
+    syncStatLabel->setText(tr("Offline"));
+    return;
+  }
+
+  // we're online, thus we'll first update the labels
+  // with the current status
+  QString msg = tr("Online, %1 syncs committed, %2 changes pending");
+  msg = msg.arg(st.partialSyncCounter);
+  msg = msg.arg(currentDb->getChangeLogLength());
+  syncStatLabel->setText(msg);
+
+  // next we check if the OnlineMngr wants to
+  // do a sync call
+  if (!(om->wantsToSync())) return;
+
+  // yes, a sync is necessary
+  QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+  OnlineError err = om->doPartialSync();
+  QApplication::restoreOverrideCursor();
+}
+
+//----------------------------------------------------------------------------
+
+void MainFrame::onBtnPingTestClicked()
+{
+  if (currentDb == nullptr) return;
+  OnlineMngr* om = currentDb->getOnlineManager();
+
+  QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+  int t = om->ping();
+  QApplication::restoreOverrideCursor();
+
+  QString msg;
+  if (t > 0)
+  {
+    msg = tr("The server responded within %1 ms");
+    msg = msg.arg(t);
+    QMessageBox::information(this, tr("Server Ping Test"), msg);
+  } else {
+    msg = tr("The server is not reachable");
+    QMessageBox::warning(this, tr("Server Ping Test"), msg);
   }
 }
 
