@@ -1539,9 +1539,54 @@ void MainFrame::onServerSyncTimerElapsed()
   if (!(om->wantsToSync())) return;
 
   // yes, a sync is necessary
+  QString errMsgFromServer;
   QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
-  OnlineError err = om->doPartialSync();
+  OnlineError err = om->doPartialSync(errMsgFromServer);
   QApplication::restoreOverrideCursor();
+
+  // handle connection / transport errors
+  msg.clear();
+  if ((err != OnlineError::Okay) && (err != OnlineError::TransportOkay_AppError))
+  {
+    switch (err)
+    {
+    case OnlineError::Timeout:
+      msg = tr("The server is currently not available.\n\n");
+      msg += tr("Maybe the server is temporarily down or you are offline.");
+      break;
+
+    case OnlineError::BadRequest:
+      msg = tr("The server did not accept our sync request (400, BadRequest).");
+      break;
+
+    default:
+      msg = tr("Sync failed due to an unspecified network or server error!");
+    }
+  }
+
+  if (err == OnlineError::TransportOkay_AppError)
+  {
+    if (errMsgFromServer == "DatabaseError")
+    {
+      msg = tr("Syncing failed because of a server-side database error.");
+    }
+    if (errMsgFromServer == "CSVError")
+    {
+      msg = tr("Syncing failed because the server couldn't digest our CSV data!\n");
+      msg += tr("Strange, this shouldn't happen...");
+    }
+    if (msg.isEmpty())
+    {
+      msg = tr("Sync failed because of an unexpected server error.\n");
+    }
+  }
+
+  if (!(msg.isEmpty()))
+  {
+    om->disconnect();
+    msg += "\n\nThe server connection has been shut-down. Try to connect again later. Good luck!";
+    QMessageBox::warning(this, tr("Server sync failed"), msg);
+  }
 }
 
 //----------------------------------------------------------------------------

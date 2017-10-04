@@ -603,14 +603,23 @@ namespace QTournament
     } else {
       for (int rowId : rowList)
       {
-        string sql = baseSql + " WHERE id=" + to_string(rowId);
-        SqliteOverlay::upSqlStatement qry = execContentQuery(baseSql);
-        if (qry == nullptr) return make_tuple("", -1);
-        if (!(qry->hasData())) return make_tuple("", -1);
+        // if the rowId is > 0, it indicates an insert
+        // or update and thus we have to fetch the data
+        if (rowId > 0)
+        {
+          string sql = baseSql + " WHERE id=" + to_string(rowId);
+          SqliteOverlay::upSqlStatement qry = execContentQuery(baseSql);
+          if (qry == nullptr) return make_tuple("", -1);
+          if (!(qry->hasData())) return make_tuple("", -1);
 
-        string row = qry->toCSV();
-        if (row.empty()) return make_tuple("", -1);
-        result += row + "\n";
+          string row = qry->toCSV();
+          if (row.empty()) return make_tuple("", -1);
+          result += row + "\n";
+        } else {
+          // negative rowIDs indicate "deletion" and
+          // we simple put them on an otherwise empty line
+          result += to_string(rowId) + "\n";
+        }
         ++totalCount;
       }
     }

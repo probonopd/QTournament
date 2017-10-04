@@ -347,7 +347,7 @@ namespace QTournament
     if (err != OnlineError::Okay) return err;
 
     errCodeOut = QString::fromUtf8(response.constData());
-    if (errCodeOut.startsWith("OK"))
+    if (errCodeOut == "OK0")
     {
       UTCTimestamp now;
       syncState.lastFullSync = now;
@@ -355,6 +355,7 @@ namespace QTournament
       syncState.partialSyncCounter = 0;
       syncState.lastDbChangelogLen = 0;
       syncState.lastChangelogLenCheck = now;
+      errCodeOut = "OK";
       return OnlineError::Okay;
     }
 
@@ -390,16 +391,65 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  OnlineError OnlineMngr::doPartialSync()
+  OnlineError OnlineMngr::doPartialSync(QString& errCodeOut)
   {
-    auto log = db->getAllChangesAndClearQueue();
+    // we need access to the secret key for signing the request
+    if (!secKeyUnlocked)
+    {
+      return OnlineError::KeystoreLocked;
+    }
 
-    UTCTimestamp now;
-    syncState.lastPartialSync  = now;
-    ++syncState.partialSyncCounter;
-    syncState.lastDbChangelogLen = 0;
-    syncState.lastChangelogLenCheck = now;
-    return OnlineError::Okay;
+    // we need an active server session
+    if (!(syncState.hasSession()))
+    {
+      return OnlineError::NoSession;
+    }
+
+    // make sure noone interferes with the database right now
+    //
+    // technically this shouldn't be necessary because we're
+    // basically single-threaded and we don't return to the
+    // event loop before we're finished. But better safe than
+    // sorry...
+    DbLockHolder lk{db, DatabaseAccessRoles::SyncThread};
+
+    // get all recent database changes
+    ChangeLogList log = db->getAllChangesAndClearQueue();
+    if (log.empty()) return OnlineError::Okay;
+
+    // remove unnecessary, redundant entries from the log
+    compactDatabaseChangeLog(log);
+
+    // get the CSV update string
+    string csv = log2SyncString(log);
+
+    // trigger the update
+    QByteArray response;
+    OnlineError err = execSignedServerRequest("/partialSync", true, QByteArray(csv.c_str()), response);
+    if (err != OnlineError::Okay) return err;
+
+    errCodeOut = QString::fromUtf8(response.constData());
+    if (errCodeOut.startsWith("OK"))
+    {
+      int serverSyncCount = errCodeOut.mid(2).toInt();
+      if (serverSyncCount != (syncState.partialSyncCounter + 1))
+      {
+        cerr << "Server and Client are out of sync! Connection forcefully closed!" << endl;
+        disconnect();
+        return OnlineError::TransportOkay_AppError;
+      }
+
+      errCodeOut = "OK";
+
+      UTCTimestamp now;
+      syncState.lastPartialSync  = now;
+      ++syncState.partialSyncCounter;
+      syncState.lastDbChangelogLen = 0;
+      syncState.lastChangelogLenCheck = now;
+      return OnlineError::Okay;
+    }
+
+    return OnlineError::TransportOkay_AppError;
   }
 
   //----------------------------------------------------------------------------
@@ -452,6 +502,184 @@ namespace QTournament
     secKeyUnlocked = true;
 
     return true;
+  }
+
+  //----------------------------------------------------------------------------
+
+  void OnlineMngr::compactDatabaseChangeLog(vector<SqliteOverlay::ChangeLogEntry>& log)
+  {
+    size_t oldLen = log.size();
+
+    // step one:
+    // search from the end of the list if there are any prior
+    // updates for the same row. If yes, remove the prior update
+    // because we'll always transmit the whole row
+    size_t outerIdx = log.size();
+    while (outerIdx > 0)
+    {
+      --outerIdx;
+
+      const ChangeLogEntry cle = log[outerIdx];  // do NOT use references here, because content gets shifted in memory when deleted
+      if (cle.action != RowChangeAction::Update) continue;
+
+      size_t innerIdx = outerIdx;
+      while (innerIdx != 0)
+      {
+        --innerIdx;
+        const ChangeLogEntry& inner = log.at(innerIdx);
+        if ((inner.rowId == cle.rowId) &&
+            (inner.action == RowChangeAction::Update) &&
+            (inner.tabName == cle.tabName))
+        {
+          log.erase(log.begin() + innerIdx);
+
+          // now innerIdx points to the element after the deleted
+          // element but since we're doing a "--" in the loop's head
+          // that's fine
+
+          // but we have to adjust the value of the outerIdx!
+          --outerIdx;
+        }
+      }
+    }
+
+    // step two:
+    // if there is an deletion, remove prior insertions or updates of the same row
+    outerIdx = log.size();
+    while (outerIdx > 0)
+    {
+      --outerIdx;
+
+      const ChangeLogEntry cle = log[outerIdx];  // do NOT use references here, because content gets shifted in memory when deleted
+      if (cle.action != RowChangeAction::Delete) continue;
+
+      bool foundInsert = false;
+      size_t innerIdx = outerIdx;
+      while (innerIdx != 0)
+      {
+        --innerIdx;
+        const ChangeLogEntry& inner = log.at(innerIdx);
+        if ((inner.rowId == cle.rowId) && (inner.tabName == cle.tabName))
+        {
+          if (inner.action == RowChangeAction::Insert)
+          {
+            foundInsert = true;
+          }
+
+          log.erase(log.begin() + innerIdx);
+
+          // now innerIdx points to the element after the deleted
+          // element but since we're doing a "--" in the loop's head
+          // that's fine
+
+          // but we have to adjust the value of the outerIdx!
+          --outerIdx;
+
+          // there is no need to go back before the first insert
+          if (foundInsert) break;
+        }
+      }
+
+      // if we found and deleted the insert, we can also delete
+      // the deletion
+      if (foundInsert) log.erase(log.begin() + outerIdx);
+    }
+
+    cerr << "Log compacter could delete " << (oldLen - log.size()) << " entries!" << endl;
+  }
+
+  //----------------------------------------------------------------------------
+
+  string OnlineMngr::log2SyncString(const vector<ChangeLogEntry>& log)
+  {
+    // copy the log
+    ChangeLogList cll = log;
+
+    // sort copied entries by table name
+    std::sort(cll.begin(), cll.end(), [](const ChangeLogEntry& e1, const ChangeLogEntry& e2)
+    {
+      return (e1.tabName < e2.tabName);
+    });
+
+    // append a dummy entry at the end that triggers
+    // a bogus tablename change in the following algorithm.
+    // the dummy entry never makes it to the result string
+    cll.push_back(ChangeLogEntry{RowChangeAction::Delete, "xxx", "___", 42});
+
+    string result;
+    string curTabName;
+    vector<int> idxList;
+    auto it = cll.begin();
+    while (it != cll.end())
+    {
+      const ChangeLogEntry& cle = *it;
+
+      if (cle.tabName != curTabName)
+      {
+        if (!(idxList.empty()))
+        {
+          if (curTabName == TAB_COURT)
+          {
+            CourtMngr mngr{db};
+            result += mngr.getSyncString(idxList);
+          }
+          if (curTabName == TAB_TEAM)
+          {
+            TeamMngr mngr{db};
+            result += mngr.getSyncString(idxList);
+          }
+          if (curTabName == TAB_PLAYER)
+          {
+            PlayerMngr mngr{db};
+            result += mngr.getSyncString(idxList);
+          }
+          if (curTabName == TAB_P2C)
+          {
+            PlayerMngr mngr{db};
+            result += mngr.getSyncString_P2C(idxList);
+          }
+          if (curTabName == TAB_PAIRS)
+          {
+            PlayerMngr mngr{db};
+            result += mngr.getSyncString_Pairs(idxList);
+          }
+          if (curTabName == TAB_CATEGORY)
+          {
+            CatMngr mngr{db};
+            result += mngr.getSyncString(idxList);
+          }
+          if (curTabName == TAB_MATCH)
+          {
+            MatchMngr mngr{db};
+            result += mngr.getSyncString(idxList);
+          }
+          if (curTabName == TAB_MATCH_GROUP)
+          {
+            MatchMngr mngr{db};
+            result += mngr.getSyncString_MatchGroups(idxList);
+          }
+          if (curTabName == TAB_RANKING)
+          {
+            RankingMngr mngr{db};
+            result += mngr.getSyncString(idxList);
+          }
+        }
+
+        curTabName = cle.tabName;
+        idxList.clear();
+      }
+
+      if (cle.action == RowChangeAction::Delete)
+      {
+        idxList.push_back(- cle.rowId);  // negative ID ==> deletion
+      } else {
+        idxList.push_back(cle.rowId);
+      }
+
+      ++it;
+    }
+
+    return result;
   }
 
 }

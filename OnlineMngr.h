@@ -15,6 +15,7 @@ using namespace std;
 namespace SqliteOverlay
 {
   class KeyValueTab;
+  class ChangeLogEntry;
 }
 
 
@@ -114,13 +115,15 @@ namespace QTournament
     // sync
     OnlineError doFullSync(QString& errCodeOut);
     bool wantsToSync();
-    OnlineError doPartialSync();
+    OnlineError doPartialSync(QString& errCodeOut);
 
     // status info for the GUI
     SyncState getSyncState() const;
 
   protected:
     bool initKeyboxWithFreshKeys(const QString& pw);
+    void compactDatabaseChangeLog(vector<SqliteOverlay::ChangeLogEntry>& log);
+    string log2SyncString(const vector<SqliteOverlay::ChangeLogEntry>& log);
 
   private:
     TournamentDB* db;
