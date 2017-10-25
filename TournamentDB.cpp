@@ -608,7 +608,7 @@ namespace QTournament
         if (rowId > 0)
         {
           string sql = baseSql + " WHERE id=" + to_string(rowId);
-          SqliteOverlay::upSqlStatement qry = execContentQuery(baseSql);
+          SqliteOverlay::upSqlStatement qry = execContentQuery(sql);
           if (qry == nullptr) return make_tuple("", -1);
           if (!(qry->hasData())) return make_tuple("", -1);
 
