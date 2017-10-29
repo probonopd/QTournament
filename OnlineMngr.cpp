@@ -26,23 +26,7 @@ namespace QTournament
       cfgTab{SqliteOverlay::KeyValueTab::getTab(db, TAB_CFG)}, secKeyUnlocked{false},
       syncState{}, lastReqTime_ms{-1}
   {
-    // do we have a custom server or do we use the default?
-    auto srv = cfgTab->getString2(CfgKey_CustomServer);
-    apiBaseUrl = ((srv != nullptr) && (!(srv->isNull()))) ? QString::fromUtf8(srv->get().c_str()) : DefaultApiBaseUrl;
-
-    // do we have a custom key or do we use the default?
-    auto _pubKey = cfgTab->getString2(CfgKey_CustomServerKey);
-    string pubKey = ((_pubKey != nullptr) && (!(_pubKey->isNull()))) ? _pubKey->get() : ServerPubKey_B64;
-    bool isOKay = srvPubKey.fillFromString(Sloppy::Crypto::fromBase64(pubKey));
-    if (!isOKay)
-    {
-      throw std::runtime_error("Inconsistent public server key!");
-    }
-
-    // do we have a custom timeout or do we use the default?
-    auto to = cfgTab->getInt2(CfgKey_CustomServerTimeout);
-    defaultTimeout_ms = ((to != nullptr) && (!(to->isNull()))) ? to->get() : DefaultServerTimeout_ms;
-
+    applyCustomServerSettings();
   }
 
   //----------------------------------------------------------------------------
@@ -391,16 +375,10 @@ namespace QTournament
     // do some bad low-level operations on the database,
     // because the KeyValueTab does not yet allow the deletion
     // of keys
-    DbTab* t = db->getTab(TAB_CFG);
-    if (t == nullptr) return OnlineError::LocalDatabaseError;
     for (const string& keyName : {CFG_KEY_KEYSTORE, CFG_KEY_REGISTRATION_TIMESTAMP,
                                   CfgKey_CustomServer, CfgKey_CustomServerKey, CfgKey_CustomServerTimeout})
     {
-      if (!(cfgTab->hasKey(keyName))) continue;
-
-      int dbErr;
-      t->deleteRowsByColumnValue("K", keyName, &dbErr);
-      if (dbErr != SQLITE_DONE) return OnlineError::LocalDatabaseError;
+      if (!(deleteOptionalConfigKey(keyName))) return OnlineError::LocalDatabaseError;
     }
 
     // commit all changes at once
@@ -590,6 +568,114 @@ namespace QTournament
     if (!(result.sessionKey.empty())) result.sessionKey = "XXX";
 
     return result;
+  }
+
+  //----------------------------------------------------------------------------
+
+  QString OnlineMngr::getCustomUrl() const
+  {
+    if (cfgTab->hasKey(CfgKey_CustomServer))
+    {
+      return QString::fromUtf8(cfgTab->operator [](CfgKey_CustomServer).c_str());
+    }
+
+    return "";
+  }
+
+  //----------------------------------------------------------------------------
+
+  bool OnlineMngr::setCustomUrl(const QString& url)
+  {
+    if (url.isEmpty())
+    {
+      return deleteOptionalConfigKey(CfgKey_CustomServer);
+    }
+
+    int dbErr;
+    cfgTab->set(CfgKey_CustomServer, url.toUtf8().constData(), &dbErr);
+    if (dbErr != SQLITE_DONE) return false;
+
+    apiBaseUrl = url;
+    return true;
+  }
+
+  //----------------------------------------------------------------------------
+
+  QString OnlineMngr::getCustomServerKey() const
+  {
+    if (cfgTab->hasKey(CfgKey_CustomServerKey))
+    {
+      return QString::fromUtf8(cfgTab->operator [](CfgKey_CustomServerKey).c_str());
+    }
+
+    return "";
+  }
+
+  //----------------------------------------------------------------------------
+
+  bool OnlineMngr::setCustomServerKey(const QString& key)
+  {
+    if (key.isEmpty())
+    {
+      return deleteOptionalConfigKey(CfgKey_CustomServerKey);
+    }
+
+    string sKey = key.toUtf8().constData();
+    PubSignKey testKey;
+    bool isOkay = testKey.fillFromString(Sloppy::Crypto::fromBase64(sKey));
+    if (!isOkay) return false;
+
+    int dbErr;
+    cfgTab->set(CfgKey_CustomServerKey, sKey, &dbErr);
+    return (dbErr == SQLITE_DONE);
+  }
+
+  //----------------------------------------------------------------------------
+
+  int OnlineMngr::getCustomTimeout_ms() const
+  {
+    if (cfgTab->hasKey(CfgKey_CustomServerTimeout))
+    {
+      return cfgTab->getInt(CfgKey_CustomServerTimeout);
+    }
+
+    return -1;
+  }
+
+  //----------------------------------------------------------------------------
+
+  bool OnlineMngr::setCustomTimeout_ms(int newTimeout)
+  {
+    if (newTimeout < 0)
+    {
+      return deleteOptionalConfigKey(CfgKey_CustomServerTimeout);
+    }
+
+    if (newTimeout < 1000) return false;  // invalid range, we want at least one second
+
+    int dbErr;
+    cfgTab->set(CfgKey_CustomServerTimeout, newTimeout, &dbErr);
+    if (dbErr != SQLITE_DONE) return false;
+
+    return true;
+  }
+
+  //----------------------------------------------------------------------------
+
+  void OnlineMngr::applyCustomServerSettings()
+  {
+    // do we have a custom server or do we use the default?
+    auto srv = cfgTab->getString2(CfgKey_CustomServer);
+    apiBaseUrl = ((srv != nullptr) && (!(srv->isNull()))) ? "http://" + QString::fromUtf8(srv->get().c_str()) : DefaultApiBaseUrl;
+
+    // do we have a custom key or do we use the default?
+    auto _pubKey = cfgTab->getString2(CfgKey_CustomServerKey);
+    string pubKey = ((_pubKey != nullptr) && (!(_pubKey->isNull()))) ? _pubKey->get() : ServerPubKey_B64;
+    srvPubKey.fillFromString(Sloppy::Crypto::fromBase64(pubKey));  // no error checking, we check the values before writing to the DB
+
+    // do we have a custom timeout or do we use the default?
+    auto to = cfgTab->getInt2(CfgKey_CustomServerTimeout);
+    defaultTimeout_ms = ((to != nullptr) && (!(to->isNull()))) ? to->get() : DefaultServerTimeout_ms;
   }
 
   //----------------------------------------------------------------------------
@@ -808,6 +894,25 @@ namespace QTournament
     }
 
     return result;
+  }
+
+  //----------------------------------------------------------------------------
+
+  bool OnlineMngr::deleteOptionalConfigKey(const string& keyName)
+  {
+    // IMPORTANT:
+    // If more than one key should be deleted, the overall
+    // process should be protected by a transaction.
+    //
+    // The transaction is not this function's responsibility!
+    //
+    DbTab* t = db->getTab(TAB_CFG);
+    if (t == nullptr) return false;
+    if (!(cfgTab->hasKey(keyName))) return true;
+
+    int dbErr;
+    t->deleteRowsByColumnValue("K", keyName, &dbErr);
+    return (dbErr == SQLITE_DONE);
   }
 
 }

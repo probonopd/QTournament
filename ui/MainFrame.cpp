@@ -38,6 +38,7 @@
 #include "commonCommands/cmdSetOrChangePassword.h"
 #include "commonCommands/cmdStartOnlineSession.h"
 #include "commonCommands/cmdDeleteFromServer.h"
+#include "commonCommands/cmdConnectionSettings.h"
 
 using namespace QTournament;
 
@@ -670,6 +671,9 @@ void MainFrame::updateOnlineMenu()
 
   // disconnect only if connected
   ui.actionDisconnect->setEnabled(hasReg && st.hasSession());
+
+  // change server settings only when disconnected
+  ui.actionConnection_Settings->setEnabled(!(st.hasSession()));
 }
 
 //----------------------------------------------------------------------------
@@ -1503,7 +1507,11 @@ void MainFrame::onDeleteFromServer()
 
 void MainFrame::onEditConnectionSettings()
 {
+  if (currentDb == nullptr) return;
 
+  cmdConnectionSetting cmd{this, currentDb.get()};
+  cmd.exec();
+  updateOnlineMenu();
 }
 
 //----------------------------------------------------------------------------

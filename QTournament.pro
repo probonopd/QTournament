@@ -161,7 +161,9 @@ HEADERS += \
     ui/commonCommands/cmdUnlockKeystore.h \
     ui/commonCommands/cmdStartOnlineSession.h \
     ui/commonCommands/cmdFullSync.h \
-    ui/commonCommands/cmdDeleteFromServer.h
+    ui/commonCommands/cmdDeleteFromServer.h \
+    ui/DlgConnectionSettings.h \
+    ui/commonCommands/cmdConnectionSettings.h
 
 SOURCES += \
     Category.cpp \
@@ -295,7 +297,9 @@ SOURCES += \
     ui/commonCommands/cmdUnlockKeystore.cpp \
     ui/commonCommands/cmdStartOnlineSession.cpp \
     ui/commonCommands/cmdFullSync.cpp \
-    ui/commonCommands/cmdDeleteFromServer.cpp
+    ui/commonCommands/cmdDeleteFromServer.cpp \
+    ui/DlgConnectionSettings.cpp \
+    ui/commonCommands/cmdConnectionSettings.cpp
 
 RESOURCES += \
     tournament.qrc
@@ -330,7 +334,8 @@ FORMS += \
     ui/DlgPickCategory.ui \
     ui/DlgRoundFinished.ui \
     ui/DlgPassword.ui \
-    ui/DlgRegisterTournament.ui
+    ui/DlgRegisterTournament.ui \
+    ui/DlgConnectionSettings.ui
 
 TRANSLATIONS = tournament_de.ts
 

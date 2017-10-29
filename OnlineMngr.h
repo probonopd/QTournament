@@ -148,10 +148,20 @@ namespace QTournament
 
     int getLastReqTime_ms() const { return lastReqTime_ms; }
 
+    // custom connection settings
+    QString getCustomUrl() const;
+    bool setCustomUrl(const QString& url);
+    QString getCustomServerKey() const;
+    bool setCustomServerKey(const QString& key);
+    int getCustomTimeout_ms() const;
+    bool setCustomTimeout_ms(int newTimeout);
+    void applyCustomServerSettings();
+
   protected:
     bool initKeyboxWithFreshKeys(const QString& pw);
     void compactDatabaseChangeLog(vector<SqliteOverlay::ChangeLogEntry>& log);
     string log2SyncString(const vector<SqliteOverlay::ChangeLogEntry>& log);
+    bool deleteOptionalConfigKey(const string& keyName);
 
   private:
     TournamentDB* db;
