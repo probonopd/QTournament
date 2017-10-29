@@ -1471,6 +1471,24 @@ void MainFrame::onStartSession()
 
 //----------------------------------------------------------------------------
 
+void MainFrame::onTerminateSession()
+{
+  OnlineMngr* om = currentDb->getOnlineManager();
+  bool isOkay = om->disconnect();
+
+  if (isOkay)
+  {
+    QMessageBox::information(this, tr("Server Disconnect"), tr("You are now disconnected from the server"));
+  } else {
+    QString msg = tr("An error occurred while disconnecting. Nevertheless that, the syncing with the server has now been stopped.");
+    QMessageBox::warning(this, tr("Server Disconnect"), msg);
+  }
+
+  updateOnlineMenu();
+}
+
+//----------------------------------------------------------------------------
+
 void MainFrame::onToggleTestMenuVisibility()
 {
   ui.menubar->clear();

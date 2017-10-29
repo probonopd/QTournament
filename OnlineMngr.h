@@ -129,7 +129,7 @@ namespace QTournament
     int ping();
     OnlineError registerTournament(const OnlineRegistrationData& ord, QString& errCodeOut);
     OnlineError startSession(QString& errCodeOut);
-    void disconnect();
+    bool disconnect();
 
     // sync
     OnlineError doFullSync(QString& errCodeOut);

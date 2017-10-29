@@ -312,10 +312,30 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  void OnlineMngr::disconnect()
+  bool OnlineMngr::disconnect()
   {
+    // we need access to the secret key for signing the request
+    if (!secKeyUnlocked)
+    {
+      return false;
+    }
+
+    // we need an active server session
+    if (!(syncState.hasSession()))
+    {
+      return false;
+    }
+
+    QByteArray response;
+    OnlineError err = execSignedServerRequest("/terminateSession", true, QByteArray{}, response);
     db->disableChangeLog(true);
     syncState = SyncState{};  // reset all clocks, session keys, etc.
+
+    cout << "Terminate Session, server said: " << response.constData() << endl;
+
+    string errCodeOut = string{response.constData()};
+
+    return ((err == OnlineError::Okay) && (errCodeOut == "BYE"));
   }
 
   //----------------------------------------------------------------------------
