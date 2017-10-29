@@ -44,6 +44,9 @@ namespace QTournament
     BadRequest,
     BadResponse,      // e.g, no nonce in response
 
+    // compatibility
+    IncompatibleVersions,
+
     // (partial) success
     TransportOkay_AppError,
     Okay
@@ -97,6 +100,9 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
+  static constexpr const char* ImplementedProtoVersion = "1.0";
+
+  //----------------------------------------------------------------------------
   class OnlineMngr
   {
   public:
@@ -139,6 +145,8 @@ namespace QTournament
     // status info for the GUI
     SyncState getSyncState() const;
 
+    int getLastReqTime_ms() const { return lastReqTime_ms; }
+
   protected:
     bool initKeyboxWithFreshKeys(const QString& pw);
     void compactDatabaseChangeLog(vector<SqliteOverlay::ChangeLogEntry>& log);
@@ -155,6 +163,7 @@ namespace QTournament
     bool secKeyUnlocked;
     PubSignKey srvPubKey;
     SyncState syncState;
+    int lastReqTime_ms;
   };
 
 }

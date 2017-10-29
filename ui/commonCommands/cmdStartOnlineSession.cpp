@@ -99,6 +99,12 @@ ERR cmdStartOnlineSession::exec()
       msg = tr("The server did not accept our connection request (400, BadRequest).");
       break;
 
+    case OnlineError::IncompatibleVersions:
+      msg = tr("<p>This version of QTournament is incompatible with the server.</p>");
+      msg += tr("<p>Please download a more recent version from:</p>");
+      msg += "<p><a href='http://qtournament.org'>QTournament.org</a></p>";
+      break;
+
     default:
       msg = tr("Session setup failed due to an unspecified network or server error!");
     }

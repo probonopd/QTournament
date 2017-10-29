@@ -1564,25 +1564,49 @@ void MainFrame::onServerSyncTimerElapsed()
   if (currentDb == nullptr)
   {
     syncStatLabel->clear();
+    btnPingTest->setVisible(false);
     return;
   }
 
   // retrieve the status from the online manager
   OnlineMngr* om = currentDb->getOnlineManager();
+
+  // show nothing if we've never registered the tournament
+  if (!(om->hasRegistrationSubmitted()))
+  {
+    syncStatLabel->clear();
+    btnPingTest->setVisible(false);
+    return;
+  } else {
+    btnPingTest->setVisible(true);
+  }
+
+  // get the current sync state
   SyncState st = om->getSyncState();
 
   // if we're offline, everything's easy
   if (!(st.hasSession()))
   {
-    syncStatLabel->setText(tr("Offline"));
+    syncStatLabel->setText(tr("<span style='color: red; font-weight: bold;'>Offline</span>"));
     return;
   }
 
   // we're online, thus we'll first update the labels
   // with the current status
-  QString msg = tr("Online, %1 syncs committed, %2 changes pending");
+  QString msg = tr("<span style='color: green; font-weight: bold;'>Online</span>");
+  msg += tr(", %1 syncs committed, %2 changes pending");
   msg = msg.arg(st.partialSyncCounter);
   msg = msg.arg(currentDb->getChangeLogLength());
+
+  // attach the last request time, if available
+  int dt = om->getLastReqTime_ms();
+  if (dt > 0)
+  {
+    msg += tr(" ; the last request took %1 ms");
+    msg = msg.arg(dt);
+  }
+
+  // set the label and we're done with the cosmetics
   syncStatLabel->setText(msg);
 
   // next we check if the OnlineMngr wants to

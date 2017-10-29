@@ -1,4 +1,5 @@
 #include <iostream>
+#include <chrono>
 
 #include <Sloppy/json/json.h>
 #include <Sloppy/Crypto/Crypto.h>
@@ -23,7 +24,7 @@ namespace QTournament
   OnlineMngr::OnlineMngr(TournamentDB* _db)
     :db{_db}, cryptoLib{Sloppy::Crypto::SodiumLib::getInstance()},
       cfgTab{SqliteOverlay::KeyValueTab::getTab(db, TAB_CFG)}, secKeyUnlocked{false},
-      syncState{}
+      syncState{}, lastReqTime_ms{-1}
   {
     // do we have a custom server or do we use the default?
     auto srv = cfgTab->getString2(CfgKey_CustomServer);
@@ -41,6 +42,7 @@ namespace QTournament
     // do we have a custom timeout or do we use the default?
     auto to = cfgTab->getInt2(CfgKey_CustomServerTimeout);
     defaultTimeout_ms = ((to != nullptr) && (!(to->isNull()))) ? to->get() : DefaultServerTimeout_ms;
+
   }
 
   //----------------------------------------------------------------------------
@@ -71,16 +73,32 @@ namespace QTournament
     QMap<QString, QString> hdr;
     hdr["X-Signature"] = QString::fromUtf8(sigB64.c_str());
 
+    // add version information
+    hdr["X-ProtocolVersion"] = QString::fromUtf8(ImplementedProtoVersion);
+    auto _dv = cfgTab->getString2(CFG_KEY_DB_VERSION);
+    string dv = ((_dv != nullptr) && (!(_dv->isNull()))) ? _dv->get() : "unknown";
+    QString dbVersion = QString::fromUtf8(dv.c_str());
+    hdr["X-DatabaseVersion"] = dbVersion;
+
     // send the request
     HttpClient cli;
     QString url = apiBaseUrl + subUrl;
+    auto startTime = chrono::high_resolution_clock::now();
     HttpResponse re = cli.blockingRequest(url, hdr, body, defaultTimeout_ms);
+    auto _elapsedTime = chrono::high_resolution_clock::now() - startTime;
+    lastReqTime_ms = chrono::duration_cast<chrono::milliseconds>(_elapsedTime).count();
 
     // did we get a response?
     if (re.respCode < 0) return OnlineError::Timeout;
     if (re.respCode != 200) return OnlineError::BadRequest;
 
-    // yes, check it's signature
+    // check for a plain "INCOMPATIBLE" message without signature
+    if (re.data.startsWith(QByteArray::fromStdString("INCOMPATIBLE")))
+    {
+      return OnlineError::IncompatibleVersions;
+    }
+
+    // we're compatible, so check the responses signature
     sigB64 = string{re.getHeader("X-Signature").toUtf8().constData()};
     if (sigB64.empty()) return OnlineError::InvalidServerSignature;
     sig = Sloppy::Crypto::fromBase64(sigB64);
