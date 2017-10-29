@@ -64,7 +64,7 @@ namespace QTournament
 #define CFG_KEY_DEFAULT_REFEREE_MODE "DefaultRefereeMode"
 #define CFG_KEY_REFEREE_TEAM_ID "RefereeTeamId"
 #define CFG_KEY_KEYSTORE "Keystore"
-#define CFG_KEY_REMOTE_TNMT_ID "RemoteTournamentId"
+#define CFG_KEY_REGISTRATION_TIMESTAMP "RegistrationTimestamp"
 //#define CFG_KEY_ ""
 
 //----------------------------------------------------------------------------

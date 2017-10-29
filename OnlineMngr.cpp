@@ -20,13 +20,27 @@ using namespace std;
 namespace QTournament
 {
 
-  OnlineMngr::OnlineMngr(TournamentDB* _db, const QString& _apiBaseUrl, int _defaultTimeout_ms)
-    :db{_db}, apiBaseUrl{_apiBaseUrl}, defaultTimeout_ms{_defaultTimeout_ms},
-      cryptoLib{Sloppy::Crypto::SodiumLib::getInstance()},
+  OnlineMngr::OnlineMngr(TournamentDB* _db)
+    :db{_db}, cryptoLib{Sloppy::Crypto::SodiumLib::getInstance()},
       cfgTab{SqliteOverlay::KeyValueTab::getTab(db, TAB_CFG)}, secKeyUnlocked{false},
       syncState{}
   {
-    srvPubKey.fillFromString(Sloppy::Crypto::fromBase64(ServerPubKey_B64));
+    // do we have a custom server or do we use the default?
+    auto srv = cfgTab->getString2(CfgKey_CustomServer);
+    apiBaseUrl = ((srv != nullptr) && (!(srv->isNull()))) ? QString::fromUtf8(srv->get().c_str()) : DefaultApiBaseUrl;
+
+    // do we have a custom key or do we use the default?
+    auto _pubKey = cfgTab->getString2(CfgKey_CustomServerKey);
+    string pubKey = ((_pubKey != nullptr) && (!(_pubKey->isNull()))) ? _pubKey->get() : ServerPubKey_B64;
+    bool isOKay = srvPubKey.fillFromString(Sloppy::Crypto::fromBase64(pubKey));
+    if (!isOKay)
+    {
+      throw std::runtime_error("Inconsistent public server key!");
+    }
+
+    // do we have a custom timeout or do we use the default?
+    auto to = cfgTab->getInt2(CfgKey_CustomServerTimeout);
+    defaultTimeout_ms = ((to != nullptr) && (!(to->isNull()))) ? to->get() : DefaultServerTimeout_ms;
   }
 
   //----------------------------------------------------------------------------
@@ -188,6 +202,13 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
+  bool OnlineMngr::hasRegistrationSubmitted() const
+  {
+    return cfgTab->hasKey(CFG_KEY_REGISTRATION_TIMESTAMP);
+  }
+
+  //----------------------------------------------------------------------------
+
   int OnlineMngr::ping()
   {
     QString url = apiBaseUrl + "/ping";
@@ -231,7 +252,16 @@ namespace QTournament
     errCodeOut.clear();
 
     errCodeOut = QString::fromUtf8(response.constData());
-    return (errCodeOut == "OK") ? OnlineError::Okay : OnlineError::TransportOkay_AppError;
+    OnlineError result = (errCodeOut == "OK") ? OnlineError::Okay : OnlineError::TransportOkay_AppError;
+
+    // if successful, store the registration timestamp in the database
+    if (result == OnlineError::Okay)
+    {
+      UTCTimestamp now;
+      cfgTab->set(CFG_KEY_REGISTRATION_TIMESTAMP, (int)now.getRawTime());
+    }
+
+    return result;
   }
 
   //----------------------------------------------------------------------------

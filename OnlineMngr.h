@@ -24,6 +24,8 @@ namespace QTournament
   // forward
   class TournamentDB;
 
+  //----------------------------------------------------------------------------
+
   // Erros specific to the online manager
   enum class OnlineError
   {
@@ -47,6 +49,8 @@ namespace QTournament
     Okay
   };
 
+  //----------------------------------------------------------------------------
+
   // online registration data as a struct
   struct OnlineRegistrationData
   {
@@ -57,6 +61,8 @@ namespace QTournament
     QDate firstDay;
     QDate lastDay;
   };
+
+  //----------------------------------------------------------------------------
 
   // all data related to syncs
   struct SyncState
@@ -82,10 +88,14 @@ namespace QTournament
     bool hasSession() const { return (!(sessionKey.empty())); }
   };
 
+  //----------------------------------------------------------------------------
+
   // some type simplifications
   using PubSignKey = Sloppy::Crypto::SodiumLib::AsymSign_PublicKey;
   using SecSignKey = Sloppy::Crypto::SodiumLib::AsymSign_SecretKey;
   using SecretBox = Sloppy::Crypto::PasswordProtectedSecret;
+
+  //----------------------------------------------------------------------------
 
   class OnlineMngr
   {
@@ -93,8 +103,16 @@ namespace QTournament
     static constexpr int NonceLength = 10;
     static constexpr const char* ServerPubKey_B64 = "gxgUevEXPrlHKluvDFUVOVZqf9dhR0+Ae3OrmRhYM1o=";
     static constexpr int DatabaseInactiveBeforeSync_secs = 5;
+    static constexpr const char* DefaultApiBaseUrl = "http://localhost:7777/api/tournament";
+    static constexpr int DefaultServerTimeout_ms = 7000;
 
-    OnlineMngr(TournamentDB* _db, const QString& _apiBaseUrl, int _defaultTimeout_ms);
+    // the following to consts would belong into TournamentDataDefs.h, but
+    // I don't want to recompile everthing for these three strings
+    static constexpr const char* CfgKey_CustomServer = "CustomServerBaseUrl";
+    static constexpr const char* CfgKey_CustomServerKey = "CustomServerKey";
+    static constexpr const char* CfgKey_CustomServerTimeout = "CustomServerTimeout";
+
+    OnlineMngr(TournamentDB* _db);
 
     // transport layer
     OnlineError execSignedServerRequest(const QString& subUrl, bool withSession, const QByteArray& postData, QByteArray& responseOut);
@@ -105,6 +123,7 @@ namespace QTournament
     OnlineError isCorrectPassword(const QString& pw) const;
     OnlineError unlockKeystore(const QString& pw);
     bool isUnlocked() const { return secKeyUnlocked; }
+    bool hasRegistrationSubmitted() const;
 
     // server requests
     int ping();

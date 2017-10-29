@@ -65,6 +65,8 @@ private:
 
   void updateWindowTitle();
 
+  void updateOnlineMenu();
+
   // timers for polling the database's dirty flag
   // and triggering the autosave function
   static constexpr int DIRTY_FLAG_POLL_INTERVALL__MS = 1000;

@@ -414,9 +414,7 @@ void MainFrame::enableControls(bool doEnable)
   ui.menuOnline->setEnabled(doEnable);
   if (doEnable)
   {
-    OnlineMngr* om = currentDb->getOnlineManager();
-
-    // enable / disable items based on online status
+    updateOnlineMenu();
   }
 
   btnPingTest->setEnabled(doEnable);
@@ -638,6 +636,39 @@ void MainFrame::updateWindowTitle()
   }
 
   setWindowTitle(title);
+}
+
+//----------------------------------------------------------------------------
+
+void MainFrame::updateOnlineMenu()
+{
+  if (currentDb == nullptr)
+  {
+    ui.menuOnline->setEnabled(false);
+    return;
+  }
+
+  OnlineMngr* om = currentDb->getOnlineManager();
+  bool hasReg = om->hasRegistrationSubmitted();
+  SyncState st = om->getSyncState();
+
+
+  // disable registration if we've already registered once
+  ui.actionRegister->setEnabled(!hasReg);
+
+  // if we've not registered yet, there's no point in
+  // setting / changing the password
+  // ==> online enable the password item for registered tournaments
+  ui.actionSet_Change_Password->setEnabled(hasReg);
+
+  // deletion of the tournament only if we've registered before
+  ui.actionDelete_from_Server->setEnabled(hasReg);
+
+  // connect only if disconnected
+  ui.actionConnect->setEnabled(hasReg && !(st.hasSession()));
+
+  // disconnect only if connected
+  ui.actionDisconnect->setEnabled(hasReg && st.hasSession());
 }
 
 //----------------------------------------------------------------------------
@@ -1410,7 +1441,7 @@ void MainFrame::onSetPassword()
 
   cmdSetOrChangePassword cmd{this, currentDb.get()};
   cmd.exec();
-
+  updateOnlineMenu();
 }
 
 //----------------------------------------------------------------------------
@@ -1424,6 +1455,7 @@ void MainFrame::onRegisterTournament()
 
   cmdOnlineRegistration cmd{this, currentDb.get()};
   cmd.exec();
+  updateOnlineMenu();
 }
 
 //----------------------------------------------------------------------------
@@ -1434,6 +1466,7 @@ void MainFrame::onStartSession()
 
   cmdStartOnlineSession cmd{this, currentDb.get()};
   cmd.exec();
+  updateOnlineMenu();
 }
 
 //----------------------------------------------------------------------------

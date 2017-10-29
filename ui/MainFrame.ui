@@ -135,12 +135,13 @@
     <property name="title">
      <string>On&amp;line</string>
     </property>
-    <addaction name="actionSet_Change_Password"/>
     <addaction name="actionRegister"/>
+    <addaction name="actionSet_Change_Password"/>
     <addaction name="separator"/>
     <addaction name="actionConnect"/>
-    <addaction name="actionForce_full_sync"/>
     <addaction name="actionDisconnect"/>
+    <addaction name="separator"/>
+    <addaction name="actionDelete_from_Server"/>
    </widget>
    <addaction name="menuTournament"/>
    <addaction name="menuTesting"/>
@@ -294,7 +295,7 @@
   </action>
   <action name="actionSet_Change_Password">
    <property name="text">
-    <string>&amp;Set / Change Password...</string>
+    <string>Change &amp;Password...</string>
    </property>
   </action>
   <action name="actionRegister">
@@ -315,6 +316,11 @@
   <action name="actionDisconnect">
    <property name="text">
     <string>&amp;Disconnect</string>
+   </property>
+  </action>
+  <action name="actionDelete_from_Server">
+   <property name="text">
+    <string>Delete from Server</string>
    </property>
   </action>
  </widget>
