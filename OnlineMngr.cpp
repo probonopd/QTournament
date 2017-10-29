@@ -146,7 +146,7 @@ namespace QTournament
     if (!hasExistingPassword)
     {
       bool isOkay = initKeyboxWithFreshKeys(newPassword);
-      return isOkay ? OnlineError::Okay : OnlineError::DatabaseError;
+      return isOkay ? OnlineError::Okay : OnlineError::LocalDatabaseError;
     }
 
     //
@@ -169,9 +169,9 @@ namespace QTournament
     if (cipher.empty()) return OnlineError::InvalidPassword;
     int err;
     cfgTab->set(CFG_KEY_KEYSTORE, cipher, &err);
-    if (err != SQLITE_DONE) return OnlineError::DatabaseError;
+    if (err != SQLITE_DONE) return OnlineError::LocalDatabaseError;
     const string& readBack = cfgTab->operator [](CFG_KEY_KEYSTORE);
-    if (readBack != cipher) return OnlineError::DatabaseError;
+    if (readBack != cipher) return OnlineError::LocalDatabaseError;
 
     return OnlineError::Okay;
   }
@@ -209,13 +209,13 @@ namespace QTournament
     // the box is unlocked. Now copy the secret signing key
     // over to our local key
     string secKeyAsString = box.getSecretAsString();
-    if (secKeyAsString.empty()) return OnlineError::DatabaseError;
+    if (secKeyAsString.empty()) return OnlineError::LocalDatabaseError;
     secKey.fillFromString(secKeyAsString);
     secKeyUnlocked = true;
 
     // extract the public key from the secret key
     isOkay = cryptoLib->genPublicSignKeyFromSecretKey(secKey, pubKey);
-    return isOkay ? OnlineError::Okay : OnlineError::DatabaseError;
+    return isOkay ? OnlineError::Okay : OnlineError::LocalDatabaseError;
   }
 
   //----------------------------------------------------------------------------
@@ -354,6 +354,66 @@ namespace QTournament
     string errCodeOut = string{response.constData()};
 
     return ((err == OnlineError::Okay) && (errCodeOut == "BYE"));
+  }
+
+  //----------------------------------------------------------------------------
+
+  OnlineError OnlineMngr::deleteFromServer(QString& errCodeOut)
+  {
+    errCodeOut.clear();
+
+    // we need access to the secret key for signing the request
+    if (!secKeyUnlocked)
+    {
+      return OnlineError::KeystoreLocked;
+    }
+
+    // disconnect any running sessions;
+    // it's harmless to call this if we don't
+    // have a session
+    disconnect();
+
+    // do the actual request
+    string pkB64 = Sloppy::Crypto::toBase64(pubKey.copyToString());
+    QByteArray response;
+    OnlineError err = execSignedServerRequest("/deleteTournament", false, QByteArray(pkB64.c_str()), response);
+    if (err != OnlineError::Okay) return err;
+
+    // the request was okay on a transport / crypto level.
+    // did we also succeed on application level?
+    errCodeOut = QString::fromUtf8(response.constData());
+    if (errCodeOut != "OK") return OnlineError::TransportOkay_AppError;
+
+    // prepare to delete everything server-related from the database
+    auto trans = db->startTransaction();
+    if (trans == nullptr) return OnlineError::LocalDatabaseError;
+
+    // do some bad low-level operations on the database,
+    // because the KeyValueTab does not yet allow the deletion
+    // of keys
+    DbTab* t = db->getTab(TAB_CFG);
+    if (t == nullptr) return OnlineError::LocalDatabaseError;
+    for (const string& keyName : {CFG_KEY_KEYSTORE, CFG_KEY_REGISTRATION_TIMESTAMP,
+                                  CfgKey_CustomServer, CfgKey_CustomServerKey, CfgKey_CustomServerTimeout})
+    {
+      if (!(cfgTab->hasKey(keyName))) continue;
+
+      int dbErr;
+      t->deleteRowsByColumnValue("K", keyName, &dbErr);
+      if (dbErr != SQLITE_DONE) return OnlineError::LocalDatabaseError;
+    }
+
+    // commit all changes at once
+    if (!(trans->commit())) return OnlineError::LocalDatabaseError;
+
+    // delete all internal state
+    secKey = SecSignKey{};
+    pubKey = PubSignKey{};
+    secKeyUnlocked = false;
+    syncState = SyncState{};
+    lastReqTime_ms = -1;
+
+    return OnlineError::Okay;
   }
 
   //----------------------------------------------------------------------------

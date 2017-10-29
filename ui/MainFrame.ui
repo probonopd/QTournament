@@ -142,6 +142,8 @@
     <addaction name="actionDisconnect"/>
     <addaction name="separator"/>
     <addaction name="actionDelete_from_Server"/>
+    <addaction name="separator"/>
+    <addaction name="actionConnection_Settings"/>
    </widget>
    <addaction name="menuTournament"/>
    <addaction name="menuTesting"/>
@@ -320,7 +322,12 @@
   </action>
   <action name="actionDelete_from_Server">
    <property name="text">
-    <string>Delete &amp;from Server</string>
+    <string>Delete &amp;from Server...</string>
+   </property>
+  </action>
+  <action name="actionConnection_Settings">
+   <property name="text">
+    <string>Connection Settings...</string>
    </property>
   </action>
  </widget>
@@ -780,6 +787,38 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>actionDelete_from_Server</sender>
+   <signal>triggered()</signal>
+   <receiver>MainFrame</receiver>
+   <slot>onDeleteFromServer()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>508</x>
+     <y>379</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionConnection_Settings</sender>
+   <signal>triggered()</signal>
+   <receiver>MainFrame</receiver>
+   <slot>onEditConnectionSettings()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>508</x>
+     <y>379</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>newTournament()</slot>
@@ -807,5 +846,7 @@
   <slot>onRegisterTournament()</slot>
   <slot>onStartSession()</slot>
   <slot>onTerminateSession()</slot>
+  <slot>onDeleteFromServer()</slot>
+  <slot>onEditConnectionSettings()</slot>
  </slots>
 </ui>

@@ -160,7 +160,8 @@ HEADERS += \
     ui/commonCommands/cmdSetOrChangePassword.h \
     ui/commonCommands/cmdUnlockKeystore.h \
     ui/commonCommands/cmdStartOnlineSession.h \
-    ui/commonCommands/cmdFullSync.h
+    ui/commonCommands/cmdFullSync.h \
+    ui/commonCommands/cmdDeleteFromServer.h
 
 SOURCES += \
     Category.cpp \
@@ -293,7 +294,8 @@ SOURCES += \
     ui/commonCommands/cmdSetOrChangePassword.cpp \
     ui/commonCommands/cmdUnlockKeystore.cpp \
     ui/commonCommands/cmdStartOnlineSession.cpp \
-    ui/commonCommands/cmdFullSync.cpp
+    ui/commonCommands/cmdFullSync.cpp \
+    ui/commonCommands/cmdDeleteFromServer.cpp
 
 RESOURCES += \
     tournament.qrc

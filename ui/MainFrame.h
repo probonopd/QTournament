@@ -111,6 +111,8 @@ public slots:
   void onRegisterTournament();
   void onStartSession();
   void onTerminateSession();
+  void onDeleteFromServer();
+  void onEditConnectionSettings();
 
 private slots:
   void onToggleTestMenuVisibility();

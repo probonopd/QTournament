@@ -37,6 +37,7 @@
 #include "commonCommands/cmdOnlineRegistration.h"
 #include "commonCommands/cmdSetOrChangePassword.h"
 #include "commonCommands/cmdStartOnlineSession.h"
+#include "commonCommands/cmdDeleteFromServer.h"
 
 using namespace QTournament;
 
@@ -1485,6 +1486,24 @@ void MainFrame::onTerminateSession()
   }
 
   updateOnlineMenu();
+}
+
+//----------------------------------------------------------------------------
+
+void MainFrame::onDeleteFromServer()
+{
+  if (currentDb == nullptr) return;
+
+  cmdDeleteFromServer cmd{this, currentDb.get()};
+  cmd.exec();
+  updateOnlineMenu();
+}
+
+//----------------------------------------------------------------------------
+
+void MainFrame::onEditConnectionSettings()
+{
+
 }
 
 //----------------------------------------------------------------------------

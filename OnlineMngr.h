@@ -34,7 +34,7 @@ namespace QTournament
     WrongPassword,
     InvalidPassword,
     PasswordAlreadySet,
-    DatabaseError,
+    LocalDatabaseError,
     KeystoreEmpty,
     InvalidServerSignature,
     NoSession,
@@ -136,6 +136,7 @@ namespace QTournament
     OnlineError registerTournament(const OnlineRegistrationData& ord, QString& errCodeOut);
     OnlineError startSession(QString& errCodeOut);
     bool disconnect();
+    OnlineError deleteFromServer(QString& errCodeOut);
 
     // sync
     OnlineError doFullSync(QString& errCodeOut);
