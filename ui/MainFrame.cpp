@@ -1367,9 +1367,9 @@ void MainFrame::onInfoMenuTriggered()
   msg += "<a href='https://github.com/Foorgol/QTournament'>https://github.com/Foorgol/QTournament</a><br><br>";
 
   msg += tr("For more information please visit:<br>");
-  msg += "<a href='http://vkserv.de/qtournament'>http://vkserv.de/qtournament</a> (German)<br>";
-  msg += "<a href='http://vkserv.de/qtournament'>http://vkserv.de/en/qtournament</a> (English)<br><br>";
-  msg += "or send an email to <a href='mailto:QTournament@vkserv.de'>QTournament@vkserv.de</a>";
+  msg += "<a href='http://tournament.de'>http://tournament.de</a> (German)<br>";
+  msg += "<a href='http://tournament.de/en'>http://tournament.de/en</a> (English)<br><br>";
+  msg += "or send an email to <a href='mailto:info@qtournament.de'>info@qtournament.de</a>";
   msg = msg.arg(PRG_VERSION_STRING);
 
   QMessageBox msgBox{this};

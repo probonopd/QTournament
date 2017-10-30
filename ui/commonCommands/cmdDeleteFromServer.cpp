@@ -108,7 +108,7 @@ ERR cmdDeleteFromServer::exec()
     case OnlineError::IncompatibleVersions:
       msg = tr("<p>This version of QTournament is incompatible with the server.</p>");
       msg += tr("<p>Please download a more recent version from:</p>");
-      msg += "<p><a href='http://qtournament.org'>QTournament.org</a></p>";
+      msg += "<p><a href='http://qtournament.de'>QTournament.de</a></p>";
       break;
 
     case OnlineError::LocalDatabaseError:

@@ -125,7 +125,7 @@ ERR cmdOnlineRegistration::exec()
     case OnlineError::IncompatibleVersions:
       msg = tr("<p>This version of QTournament is incompatible with the server.</p>");
       msg += tr("<p>Please download a more recent version from:</p>");
-      msg += "<p><a href='http://qtournament.org'>QTournament.org</a></p>";
+      msg += "<p><a href='http://qtournament.de'>QTournament.de</a></p>";
       break;
 
     default:
@@ -166,7 +166,7 @@ ERR cmdOnlineRegistration::exec()
   {
     msg = tr("Your registration failed due to a database error on the server.\n\n");
     msg += tr("You may try to register again but if the problems persist please send an email to\n\n");
-    msg += tr("\tqtournament@vkserv.de");
+    msg += tr("\tinfo@qtournament.de");
   }
   if (errTxt == "InvalidParameter")
   {
@@ -176,13 +176,13 @@ ERR cmdOnlineRegistration::exec()
   if (errTxt == "MailError")
   {
     msg = tr("The server could not send a confirmation email to the address you've provided.\n\n");
-    msg += tr("Please try again and send an email to info@qtournament.org if the problem persists.");
+    msg += tr("Please try again and send an email to info@qtournament.de if the problem persists.");
   }
   if (errTxt.isEmpty())
   {
     msg = tr("Registration failed due to an unspecified network or server error!\n\n");
     msg += tr("You may try to register again but if the problems persist please send an email to\n\n");
-    msg += tr("\tqtournament@vkserv.de");
+    msg += tr("\tinfo@qtournament.de");
   }
 
   QMessageBox::warning(parentWidget, tr("Online Registration FAILED"), msg);
