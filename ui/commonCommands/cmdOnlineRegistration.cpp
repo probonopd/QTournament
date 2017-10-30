@@ -99,8 +99,14 @@ ERR cmdOnlineRegistration::exec()
   rc = dlgConsent.exec();
   if (rc != QMessageBox::Yes) return ERR::WRONG_STATE;  // dummy error code; will not be evaluated by caller
 
+  // do the actual registration
+  //
+  // this can last up to five seconds (--> timeout) and thus
+  // we better enable the hourglass cursor
+  QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
   QString errTxt;
   OnlineError err = om->registerTournament(dlg.getValidatedRegistrationData(), errTxt);
+  QApplication::restoreOverrideCursor();
 
   if ((err != OnlineError::Okay) && (err != OnlineError::TransportOkay_AppError))
   {
@@ -166,6 +172,11 @@ ERR cmdOnlineRegistration::exec()
   {
     msg = tr("The server refused one or more registration parameters.\n\n");
     msg += tr("Please modify your request and try again.");
+  }
+  if (errTxt == "MailError")
+  {
+    msg = tr("The server could not send a confirmation email to the address you've provided.\n\n");
+    msg += tr("Please try again and send an email to info@qtournament.org if the problem persists.");
   }
   if (errTxt.isEmpty())
   {

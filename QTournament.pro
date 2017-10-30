@@ -25,6 +25,10 @@ win32 {
   DEFINES += "__IS_WINDOWS_BUILD"
 }
 
+CONFIG(release, debug|release) {
+  DEFINES += "RELEASE_BUILD"
+}
+
 # linking against BOOST fails if this is not set
 DEFINES += "BOOST_LOG_DYN_LINK=1"
 

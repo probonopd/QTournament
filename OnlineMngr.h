@@ -107,9 +107,14 @@ namespace QTournament
   {
   public:
     static constexpr int NonceLength = 10;
-    static constexpr const char* ServerPubKey_B64 = "gxgUevEXPrlHKluvDFUVOVZqf9dhR0+Ae3OrmRhYM1o=";
+#ifdef RELEASE_BUILD
+    static constexpr const char* DefaultApiBaseUrl = "http://qtournament.de/api";  // production
+    static constexpr const char* ServerPubKey_B64 = "ACsAKgpqvQuxIFUsDqzI5KD2DrGxyTVPgDSIFrX4CHI=";  // production
+#else
+    static constexpr const char* DefaultApiBaseUrl = "http://localhost:7777/api/tournament";          // local test
+    static constexpr const char* ServerPubKey_B64 = "gxgUevEXPrlHKluvDFUVOVZqf9dhR0+Ae3OrmRhYM1o=";   // local test
+#endif
     static constexpr int DatabaseInactiveBeforeSync_secs = 5;
-    static constexpr const char* DefaultApiBaseUrl = "http://localhost:7777/api/tournament";
     static constexpr int DefaultServerTimeout_ms = 7000;
 
     // the following to consts would belong into TournamentDataDefs.h, but
