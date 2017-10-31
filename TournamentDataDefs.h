@@ -63,8 +63,8 @@ namespace QTournament
 #define CFG_KEY_EXT_PLAYER_DB "ExternalPlayerDatabase"
 #define CFG_KEY_DEFAULT_REFEREE_MODE "DefaultRefereeMode"
 #define CFG_KEY_REFEREE_TEAM_ID "RefereeTeamId"
-//#define CFG_KEY_ ""
-//#define CFG_KEY_ ""
+#define CFG_KEY_KEYSTORE "Keystore"
+#define CFG_KEY_REGISTRATION_TIMESTAMP "RegistrationTimestamp"
 //#define CFG_KEY_ ""
 
 //----------------------------------------------------------------------------
@@ -422,10 +422,28 @@ namespace QTournament
 #define MATCH_NUM_NOT_ASSIGNED -1
 
 //----------------------------------------------------------------------------
-    
+
+  enum OnlineRegState
+  {
+    Off,         // no password set, not online, nothing
+    HasKeys,     // password for remote communication set by user
+    RegSent,     // registration filed with server
+    Pending,     // registration email confirmed by user; registration not confirmed by admin
+    Good,        // tournament registered and activated
+    Expired      // no more synching with server, tournament is in the past
+  };
 
 //----------------------------------------------------------------------------
-    
+
+  enum RemoteTransportResult
+  {
+    NoConnectionToServer,    // no low-level TCP-connection possible
+    TimeoutAfterRequest,     // request sent but no reply received
+    CryptoError,             // signature not valid
+    MsgCorrupted,            // good signature but invalid content
+    SessionExpired,          // the server refused the session token
+    Okay
+  };
 
 //----------------------------------------------------------------------------
     

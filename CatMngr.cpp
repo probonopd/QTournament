@@ -78,6 +78,9 @@ namespace QTournament
     cvc.addIntCol(CAT_DRAW_SCORE, 1);
     cvc.addStringCol(CAT_GROUP_CONFIG, KO_Config(QUARTER, false).toString().toUtf8().constData());
     
+    // lock the database before writing
+    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
+
     CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
     cse->beginCreateCategory();
     tab->insertRow(cvc);
@@ -237,8 +240,11 @@ namespace QTournament
       return CATEGORY_NOT_CONFIGURALE_ANYMORE;
     }
 
+    // lock the database before writing
+    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
+
     // TODO: implement checks, updates to other tables etc
-    int sysInt = static_cast<int>(s);
+    int sysInt = static_cast<int>(s);    
     c.row.update(CAT_SYS, sysInt);
     
     // if we switch to single elimination categories or
@@ -297,8 +303,11 @@ namespace QTournament
       setSex(c, DONT_CARE);   // no error checking here, setting "don't care" should always work because it's least restrictive
     }
     
+    // lock the database before writing
+    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
+
     // change the match type
-    int typeInt = static_cast<int>(t);
+    int typeInt = static_cast<int>(t);    
     c.row.update(CAT_MATCH_TYPE, typeInt);
     
     // try to recreate as many pairs as possible
@@ -387,8 +396,11 @@ namespace QTournament
       }
     }
     
+    // lock the database before writing
+    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
+
     // execute the actual change
-    int sexInt = static_cast<int>(s);
+    int sexInt = static_cast<int>(s);    
     c.row.update(CAT_SEX, sexInt);
     
     return OK;
@@ -415,6 +427,9 @@ namespace QTournament
     
     // TODO: check that player is not permanently disabled
     
+    // lock the database before writing
+    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
+
     // actually add the player
     SqliteOverlay::ColumnValueClause cvc;
     cvc.addIntCol(P2C_CAT_REF, c.getId());
@@ -454,6 +469,9 @@ namespace QTournament
     // has to be removed from the category as well if we're beyond
     // "Category Configuration" state
     
+    // lock the database before writing
+    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
+
     // actually delete the assignment
     SqliteOverlay::WhereClause wc;
     wc.addIntCol(P2C_CAT_REF, c.getId());
@@ -491,6 +509,9 @@ namespace QTournament
     assert(db->getTab(TAB_MATCH_GROUP)->getMatchCountForColumnValue(MG_CAT_REF, catId) == 0);
     assert(db->getTab(TAB_RANKING)->getMatchCountForColumnValue(RA_CAT_REF, catId) == 0);
     assert(db->getTab(TAB_BRACKET_VIS)->getMatchCountForColumnValue(BV_CAT_REF, catId) == 0);
+
+    // lock the database before writing
+    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
 
     // the actual deletion
     int oldSeqNum = cat.getSeqNum();
@@ -545,6 +566,9 @@ namespace QTournament
     // step 3: tell everyone that something baaaad is about to happen
     CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
     cse->beginResetAllModels();
+
+    // lock the database before writing
+    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
 
     //
     // now the actual deletion starts
@@ -702,6 +726,9 @@ namespace QTournament
     {
       if (c.getState() != STAT_CAT_CONFIG) return false;
 
+      // lock the database before writing
+      DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
+
       c.row.update(CAT_GROUP_CONFIG, v.toString().toUtf8().constData());
       return true;
     }
@@ -712,6 +739,10 @@ namespace QTournament
       if (!isOk) return false;
 
       if (iterations <= 0) return false;
+
+      // lock the database before writing
+      DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
+
       c.row.update(CAT_ROUND_ROBIN_ITERATIONS, iterations);
       return true;
     }
@@ -743,6 +774,9 @@ namespace QTournament
     {
       return false;
     }
+
+    // lock the database before writing
+    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
 
     // ensure consistent scoring before accepting draw
     if (allowDraw)
@@ -792,6 +826,9 @@ namespace QTournament
       return false;
     }
     
+    // lock the database before writing
+    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
+
     if (isDraw)
     {
       if (newScore >= winScore)
@@ -833,6 +870,9 @@ namespace QTournament
     cvc.addIntCol(PAIRS_PLAYER2_REF, p2.getId());
     cvc.addIntCol(PAIRS_GRP_NUM, GRP_NUM__NOT_ASSIGNED);   // Default value: no group
 
+    // lock the database before writing
+    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
+
     db->getTab(TAB_PAIRS)->insertRow(cvc);
     
     CentralSignalEmitter::getInstance()->playersPaired(c, p1, p2);
@@ -853,6 +893,9 @@ namespace QTournament
       return e;
     }
     
+    // lock the database before writing
+    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
+
     // delete all combinations of p1/p2 pairs from the database
     SqliteOverlay::WhereClause wc;
     wc.addIntCol(PAIRS_CAT_REF, c.getId());
@@ -910,6 +953,9 @@ namespace QTournament
       return NAME_EXISTS;
     }
     
+    // lock the database before writing
+    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
+
     c.row.update(GENERIC_NAME_FIELD_NAME, newName.toUtf8().constData());
     
     return OK;
@@ -991,6 +1037,9 @@ namespace QTournament
         cvc.addIntCol(PAIRS_PLAYER1_REF, playerId);
         // leave out PAIRS_PLAYER2_REF to assign a NULL value
 
+        // lock the database before writing
+        DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
+
         int dbErr;
         int newId = pairsTab->insertRow(cvc, &dbErr);
         if ((newId < 1) || (dbErr != SQLITE_DONE))
@@ -1030,6 +1079,9 @@ namespace QTournament
       return CATEGORY_UNFREEZEABLE;
     }
     
+    // lock the database before writing
+    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
+
     // remove all player pairs without a partner from the official pair list
     // See also the constraints in freezeConfig()
     PlayerPairList ppList = c.getPlayerPairs();
@@ -1276,6 +1328,16 @@ namespace QTournament
     CentralSignalEmitter::getInstance()->categoryStatusChanged(c, STAT_CAT_WAIT_FOR_INTERMEDIATE_SEEDING, STAT_CAT_IDLE);
 
     return OK;
+  }
+
+  //----------------------------------------------------------------------------
+
+  string CatMngr::getSyncString(vector<int> rows)
+  {
+    vector<string> cols = {"id", GENERIC_NAME_FIELD_NAME, GENERIC_STATE_FIELD_NAME, CAT_MATCH_TYPE, CAT_SEX, CAT_SYS, CAT_ACCEPT_DRAW,
+                          CAT_WIN_SCORE, CAT_DRAW_SCORE, CAT_GROUP_CONFIG, CAT_ROUND_ROBIN_ITERATIONS};
+
+    return db->getSyncStringForTable(TAB_CATEGORY, cols, rows);
   }
 
 //----------------------------------------------------------------------------

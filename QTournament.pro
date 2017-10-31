@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += widgets
+QT       += widgets network
 
 TARGET = QTournament
 TEMPLATE = app
@@ -23,6 +23,10 @@ VERSION = 0.6.0
 # Detect the platform we are running on
 win32 {
   DEFINES += "__IS_WINDOWS_BUILD"
+}
+
+CONFIG(release, debug|release) {
+  DEFINES += "RELEASE_BUILD"
 }
 
 # linking against BOOST fails if this is not set
@@ -150,7 +154,20 @@ HEADERS += \
     ui/DlgImportCSV_Step1.h \
     ui/DlgImportCSV_Step2.h \
     ui/DlgPickTeam.h \
-    ui/DlgPickCategory.h
+    ui/DlgPickCategory.h \
+    ui/DlgRoundFinished.h \
+    OnlineMngr.h \
+    ui/DlgPassword.h \
+    HttpClient.h \
+    ui/DlgRegisterTournament.h \
+    ui/commonCommands/cmdOnlineRegistration.h \
+    ui/commonCommands/cmdSetOrChangePassword.h \
+    ui/commonCommands/cmdUnlockKeystore.h \
+    ui/commonCommands/cmdStartOnlineSession.h \
+    ui/commonCommands/cmdFullSync.h \
+    ui/commonCommands/cmdDeleteFromServer.h \
+    ui/DlgConnectionSettings.h \
+    ui/commonCommands/cmdConnectionSettings.h
 
 SOURCES += \
     Category.cpp \
@@ -273,7 +290,20 @@ SOURCES += \
     ui/DlgImportCSV_Step1.cpp \
     ui/DlgImportCSV_Step2.cpp \
     ui/DlgPickTeam.cpp \
-    ui/DlgPickCategory.cpp
+    ui/DlgPickCategory.cpp \
+    ui/DlgRoundFinished.cpp \
+    OnlineMngr.cpp \
+    ui/DlgPassword.cpp \
+    HttpClient.cpp \
+    ui/DlgRegisterTournament.cpp \
+    ui/commonCommands/cmdOnlineRegistration.cpp \
+    ui/commonCommands/cmdSetOrChangePassword.cpp \
+    ui/commonCommands/cmdUnlockKeystore.cpp \
+    ui/commonCommands/cmdStartOnlineSession.cpp \
+    ui/commonCommands/cmdFullSync.cpp \
+    ui/commonCommands/cmdDeleteFromServer.cpp \
+    ui/DlgConnectionSettings.cpp \
+    ui/commonCommands/cmdConnectionSettings.cpp
 
 RESOURCES += \
     tournament.qrc
@@ -305,7 +335,11 @@ FORMS += \
     ui/DlgImportCSV_Step1.ui \
     ui/DlgImportCSV_Step2.ui \
     ui/DlgPickTeam.ui \
-    ui/DlgPickCategory.ui
+    ui/DlgPickCategory.ui \
+    ui/DlgRoundFinished.ui \
+    ui/DlgPassword.ui \
+    ui/DlgRegisterTournament.ui \
+    ui/DlgConnectionSettings.ui
 
 TRANSLATIONS = tournament_de.ts
 

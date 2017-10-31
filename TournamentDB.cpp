@@ -16,24 +16,33 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <tuple>
+
 #include <QString>
 #include <QStringList>
 #include <QFile>
 
 #include <SqliteOverlay/TableCreator.h>
 #include <SqliteOverlay/KeyValueTab.h>
+#include <SqliteOverlay/DbTab.h>
+#include <SqliteOverlay/TabRow.h>
 
 #include "TournamentDB.h"
 #include "TournamentDataDefs.h"
 #include "HelperFunc.h"
 #include "TournamentErrorCodes.h"
+#include "OnlineMngr.h"
 
 namespace QTournament
 {
 
   TournamentDB::TournamentDB(string fName, bool createNew)
     : SqliteOverlay::SqliteDatabase(fName, createNew), curTrans{nullptr}
-  {
+  {    
+    // initialize the internal instance of the online manager
+    //
+    // FIX ME: server name and API url hard coded
+    om = make_unique<OnlineMngr>(this);
   }
 
   //----------------------------------------------------------------------------
@@ -388,6 +397,9 @@ namespace QTournament
 
   bool TournamentDB::convertToLatestDatabaseVersion()
   {
+    // lock the database before writing
+    DbLockHolder lh{this, DatabaseAccessRoles::MainThread};
+
     // get the current file format version
     int major;
     int minor;
@@ -517,6 +529,13 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
+  OnlineMngr*TournamentDB::getOnlineManager()
+  {
+    return om.get();
+  }
+
+  //----------------------------------------------------------------------------
+
   unique_ptr<TournamentDB::TransactionGuard> TournamentDB::acquireTransactionGuard(bool commitOnDestruction, bool* isDbErr, bool* transRunning)
   {
     if (curTrans != nullptr)
@@ -539,6 +558,96 @@ namespace QTournament
     }
     Sloppy::assignIfNotNull<bool>(isDbErr, true);
     return nullptr;
+  }
+
+  //----------------------------------------------------------------------------
+
+  tuple<string, int> TournamentDB::tableDataToCSV(const string& tabName, const vector<string>& colNames, int rowId)
+  {
+    vector<int> v = (rowId < 0) ? vector<int>{} : vector<int>{rowId,};
+    return tableDataToCSV(tabName, colNames, v);
+  }
+
+  //----------------------------------------------------------------------------
+
+  tuple<string, int> TournamentDB::tableDataToCSV(const string& tabName, const vector<string>& colNames, const vector<int>& rowList)
+  {
+    SqliteOverlay::DbTab* tab = getTab(tabName);
+    if (tab == nullptr) return make_tuple("", -1);  // table doesn't exist
+
+    // build a specific query that fetches all columns at
+    // once which has a higher performance than issuing
+    // one dedicated SELECT for each column
+    string baseSql = "SELECT %1 FROM %2";
+    Sloppy::strArg(baseSql, Sloppy::commaSepStringFromStringList(colNames));
+    Sloppy::strArg(baseSql, tabName);
+
+    string result;
+    int totalCount = 0;
+    if (rowList.empty())  // get all rows
+    {
+      SqliteOverlay::upSqlStatement qry = execContentQuery(baseSql);
+      if (qry == nullptr) return make_tuple("", -1);
+
+      while (!(qry->isDone()))
+      {
+        string row = qry->toCSV();
+        if (row.empty()) return make_tuple("", -1);
+        result += row + "\n";
+        ++totalCount;
+
+        qry->step();
+      }
+    } else {
+      for (int rowId : rowList)
+      {
+        // if the rowId is > 0, it indicates an insert
+        // or update and thus we have to fetch the data
+        if (rowId > 0)
+        {
+          string sql = baseSql + " WHERE id=" + to_string(rowId);
+          SqliteOverlay::upSqlStatement qry = execContentQuery(sql);
+          if (qry == nullptr) return make_tuple("", -1);
+          if (!(qry->hasData())) return make_tuple("", -1);
+
+          string row = qry->toCSV();
+          if (row.empty()) return make_tuple("", -1);
+          result += row + "\n";
+        } else {
+          // negative rowIDs indicate "deletion" and
+          // we simple put them on an otherwise empty line
+          result += to_string(rowId) + "\n";
+        }
+        ++totalCount;
+      }
+    }
+
+    return make_tuple(result, totalCount);
+  }
+
+  //----------------------------------------------------------------------------
+
+  string TournamentDB::getSyncStringForTable(const string& tabName, const vector<string>& colNames, int rowId)
+  {
+    vector<int> v = (rowId < 0) ? vector<int>{} : vector<int>{rowId,};
+    return getSyncStringForTable(tabName, colNames, v);
+  }
+
+  //----------------------------------------------------------------------------
+
+  string TournamentDB::getSyncStringForTable(const string& tabName, const vector<string>& colNames, vector<int> rowList)
+  {
+    int cnt;
+    string data;
+    tie(data, cnt) = tableDataToCSV(tabName, colNames, rowList);
+    if (cnt < 0) return "";  // error
+
+    string header = "%1:%2\n%3\n";
+    Sloppy::strArg(header, tabName);
+    Sloppy::strArg(header, cnt);
+    Sloppy::strArg(header, Sloppy::commaSepStringFromStringList(colNames));
+
+    return header + data;
   }
 
   //----------------------------------------------------------------------------

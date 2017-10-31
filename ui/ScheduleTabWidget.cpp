@@ -29,6 +29,7 @@
 #include "CatMngr.h"
 #include "CourtMngr.h"
 #include "ui/commonCommands/cmdCallMatch.h"
+#include "ui/DlgRoundFinished.h"
 
 ScheduleTabWidget::ScheduleTabWidget(QWidget *parent) :
     QDialog(parent), db(nullptr),
@@ -239,9 +240,10 @@ void ScheduleTabWidget::onRoundCompleted(int catId, int round)
   // --------- End BAD HACK ------------
   //
 
-  QString txt = tr("Round %1 of category %2 finished!").arg(round).arg(cat.getName());
-
-  QMessageBox::information(this, tr("Round finished"), txt);
+  // present an info dialog along with the option to directly
+  // print some useful reports
+  DlgRoundFinished dlg{this, cat, round};
+  dlg.exec();
 }
 
 //----------------------------------------------------------------------------

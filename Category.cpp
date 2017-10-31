@@ -689,6 +689,9 @@ namespace QTournament
     ERR e = canApplyGroupAssignment(grpCfg);
     if (e != OK) return e;
     
+    // lock the database before writing
+    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
+
     // The previous call checked for all possible errors or
     // misconfigurations. So we can safely write directly to the database
     DbTab* pairTab = db->getTab(TAB_PAIRS);
@@ -714,6 +717,9 @@ namespace QTournament
     ERR e = canApplyInitialRanking(seed);
     if (e != OK) return e;
     
+    // lock the database before writing
+    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
+
     // The previous call checked for all possible errors or
     // misconfigurations. So we can safely write directly to the database
     DbTab* pairTab = db->getTab(TAB_PAIRS);

@@ -41,9 +41,11 @@ namespace QTournament
     
     int newSeqNum = t->length() - 1;
     
+    // lock the database before writing
+    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
+
     r.update(GENERIC_SEQNUM_FIELD_NAME, newSeqNum);
   }
-
 
 //----------------------------------------------------------------------------
 
@@ -57,7 +59,9 @@ namespace QTournament
 
     auto it = t->getRowsByWhereClause(wc);
     
-    
+    // lock the database before writing
+    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
+
     // re-number all items behind the deleted item
     int nextSeqNum = deletedSeqNum;
     while (!(it.isEnd()))
@@ -70,6 +74,11 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
+  string TournamentDatabaseObjectManager::getSyncString(int rowId)
+  {
+    vector<int> v = (rowId > 0) ? vector<int>{rowId} : vector<int>{};
+    return getSyncString(v);
+  }
 
 //----------------------------------------------------------------------------
     

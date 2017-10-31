@@ -65,6 +65,8 @@ private:
 
   void updateWindowTitle();
 
+  void updateOnlineMenu();
+
   // timers for polling the database's dirty flag
   // and triggering the autosave function
   static constexpr int DIRTY_FLAG_POLL_INTERVALL__MS = 1000;
@@ -77,6 +79,11 @@ private:
   // a label for the status bar that shows the last autosave
   QLabel* lastAutosaveTimeStatusLabel;
 
+  // a timer and label for server syncs
+  static constexpr int ServerSyncStatusInterval_ms = 1000;
+  unique_ptr<QTimer> serverSyncTimer;
+  QLabel* syncStatLabel;
+  QPushButton* btnPingTest;
 
 public slots:
   void newTournament();
@@ -100,11 +107,19 @@ public slots:
   void onSelectExternalPlayerDatabase();
   void onInfoMenuTriggered();
   void onEditTournamentSettings();
+  void onSetPassword();
+  void onRegisterTournament();
+  void onStartSession();
+  void onTerminateSession();
+  void onDeleteFromServer();
+  void onEditConnectionSettings();
 
 private slots:
   void onToggleTestMenuVisibility();
   void onDirtyFlagPollTimerElapsed();
   void onAutosaveTimerElapsed();
+  void onServerSyncTimerElapsed();
+  void onBtnPingTestClicked();
 
 };
 

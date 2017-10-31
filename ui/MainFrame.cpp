@@ -22,6 +22,7 @@
 #include <QFileDialog>
 #include <QFile>
 #include <QTime>
+#include <QPushButton>
 
 #include "MainFrame.h"
 #include "MatchMngr.h"
@@ -31,6 +32,13 @@
 #include "CatMngr.h"
 #include "ui/DlgTournamentSettings.h"
 #include "CourtMngr.h"
+#include "OnlineMngr.h"
+#include "DlgPassword.h"
+#include "commonCommands/cmdOnlineRegistration.h"
+#include "commonCommands/cmdSetOrChangePassword.h"
+#include "commonCommands/cmdStartOnlineSession.h"
+#include "commonCommands/cmdDeleteFromServer.h"
+#include "commonCommands/cmdConnectionSettings.h"
 
 using namespace QTournament;
 
@@ -41,10 +49,6 @@ MainFrame::MainFrame()
 {
   ui.setupUi(this);
   showMaximized();
-
-  // disable all widgets by setting their database instance to nullptr
-  distributeCurrentDatabasePointerToWidgets();
-  enableControls(false);
 
   testFileName = QDir().absoluteFilePath("tournamentTestFile.tdb");
 
@@ -71,6 +75,27 @@ MainFrame::MainFrame()
   lastAutosaveTimeStatusLabel = new QLabel(statusBar());
   lastAutosaveTimeStatusLabel->clear();
   statusBar()->addPermanentWidget(lastAutosaveTimeStatusLabel);
+
+  // prepare a timer and label that show the current sync state
+  syncStatLabel = new QLabel(statusBar());
+  syncStatLabel->clear();
+  statusBar()->addWidget(syncStatLabel);
+  serverSyncTimer = make_unique<QTimer>(this);
+  connect(serverSyncTimer.get(), SIGNAL(timeout()), this, SLOT(onServerSyncTimerElapsed()));
+  serverSyncTimer->start(ServerSyncStatusInterval_ms);
+
+  // prepare a button for triggering a server ping test
+  btnPingTest = new QPushButton(statusBar());
+  btnPingTest->setText(tr("Ping"));
+  statusBar()->addWidget(btnPingTest);
+  connect(btnPingTest, SIGNAL(clicked(bool)), this, SLOT(onBtnPingTestClicked()));
+  btnPingTest->setEnabled(false);
+
+
+  // finally disable all widgets by setting their database instance to nullptr
+  distributeCurrentDatabasePointerToWidgets();
+  enableControls(false);
+
 }
 
 //----------------------------------------------------------------------------
@@ -230,7 +255,7 @@ void MainFrame::openTournament()
   newDb->restoreFromFile(filename.toUtf8().constData(), &dbErr);
   newDb->setLogLevel(Sloppy::Logger::SeverityLevel::error);
 
-  // handle erros
+  // handle errors
   QString msg;
   if (dbErr == SQLITE_ERROR)
   {
@@ -261,6 +286,16 @@ void MainFrame::openTournament()
   lastDirtyState = false;
   lastAutosaveDirtyCounterValue = 0;
   onAutosaveTimerElapsed();
+
+  // BAAAD HACK: when the OnlineManager instance was created, the config table
+  // was still empty because instanciation takes place before
+  // restoreFromFile() is triggered.
+  // Thus, the OnlineManager does not read custom server settings, if
+  // existent. We need to trigger this manually here.
+  //
+  // Remember: in this application it is bad, bad, bad to keep state in the
+  // xManagers... or somewhere else
+  currentDb->getOnlineManager()->applyCustomServerSettings();
 
   // show the tournament name in the main window's title
   updateWindowTitle();
@@ -387,6 +422,14 @@ void MainFrame::enableControls(bool doEnable)
   ui.actionSave_a_copy->setEnabled(doEnable);
   ui.actionCreate_baseline->setEnabled(doEnable && !(currentDatabaseFileName.isEmpty()));
   ui.actionClose->setEnabled(doEnable);
+
+  ui.menuOnline->setEnabled(doEnable);
+  if (doEnable)
+  {
+    updateOnlineMenu();
+  }
+
+  btnPingTest->setEnabled(doEnable);
 }
 
 //----------------------------------------------------------------------------
@@ -605,6 +648,42 @@ void MainFrame::updateWindowTitle()
   }
 
   setWindowTitle(title);
+}
+
+//----------------------------------------------------------------------------
+
+void MainFrame::updateOnlineMenu()
+{
+  if (currentDb == nullptr)
+  {
+    ui.menuOnline->setEnabled(false);
+    return;
+  }
+
+  OnlineMngr* om = currentDb->getOnlineManager();
+  bool hasReg = om->hasRegistrationSubmitted();
+  SyncState st = om->getSyncState();
+
+
+  // disable registration if we've already registered once
+  ui.actionRegister->setEnabled(!hasReg);
+
+  // if we've not registered yet, there's no point in
+  // setting / changing the password
+  // ==> online enable the password item for registered tournaments
+  ui.actionSet_Change_Password->setEnabled(hasReg);
+
+  // deletion of the tournament only if we've registered before
+  ui.actionDelete_from_Server->setEnabled(hasReg);
+
+  // connect only if disconnected
+  ui.actionConnect->setEnabled(hasReg && !(st.hasSession()));
+
+  // disconnect only if connected
+  ui.actionDisconnect->setEnabled(hasReg && st.hasSession());
+
+  // change server settings only when disconnected
+  ui.actionConnection_Settings->setEnabled(!(st.hasSession()));
 }
 
 //----------------------------------------------------------------------------
@@ -1298,9 +1377,9 @@ void MainFrame::onInfoMenuTriggered()
   msg += "<a href='https://github.com/Foorgol/QTournament'>https://github.com/Foorgol/QTournament</a><br><br>";
 
   msg += tr("For more information please visit:<br>");
-  msg += "<a href='http://vkserv.de/qtournament'>http://vkserv.de/qtournament</a> (German)<br>";
-  msg += "<a href='http://vkserv.de/qtournament'>http://vkserv.de/en/qtournament</a> (English)<br><br>";
-  msg += "or send an email to <a href='mailto:QTournament@vkserv.de'>QTournament@vkserv.de</a>";
+  msg += "<a href='http://tournament.de'>http://tournament.de</a> (German)<br>";
+  msg += "<a href='http://tournament.de/en'>http://tournament.de/en</a> (English)<br><br>";
+  msg += "or send an email to <a href='mailto:info@qtournament.de'>info@qtournament.de</a>";
   msg = msg.arg(PRG_VERSION_STRING);
 
   QMessageBox msgBox{this};
@@ -1371,10 +1450,87 @@ void MainFrame::onEditTournamentSettings()
 
 //----------------------------------------------------------------------------
 
+void MainFrame::onSetPassword()
+{
+  if (currentDb == nullptr) return;
+
+  cmdSetOrChangePassword cmd{this, currentDb.get()};
+  cmd.exec();
+  updateOnlineMenu();
+}
+
+//----------------------------------------------------------------------------
+
+void MainFrame::onRegisterTournament()
+{
+  if (currentDb == nullptr) return;
+
+  // the online registration is a complex task
+  // so I've moved it to a separate file
+
+  cmdOnlineRegistration cmd{this, currentDb.get()};
+  cmd.exec();
+  updateOnlineMenu();
+}
+
+//----------------------------------------------------------------------------
+
+void MainFrame::onStartSession()
+{
+  if (currentDb == nullptr) return;
+
+  cmdStartOnlineSession cmd{this, currentDb.get()};
+  cmd.exec();
+  updateOnlineMenu();
+}
+
+//----------------------------------------------------------------------------
+
+void MainFrame::onTerminateSession()
+{
+  OnlineMngr* om = currentDb->getOnlineManager();
+  bool isOkay = om->disconnect();
+
+  if (isOkay)
+  {
+    QMessageBox::information(this, tr("Server Disconnect"), tr("You are now disconnected from the server"));
+  } else {
+    QString msg = tr("An error occurred while disconnecting. Nevertheless that, the syncing with the server has now been stopped.");
+    QMessageBox::warning(this, tr("Server Disconnect"), msg);
+  }
+
+  updateOnlineMenu();
+}
+
+//----------------------------------------------------------------------------
+
+void MainFrame::onDeleteFromServer()
+{
+  if (currentDb == nullptr) return;
+
+  cmdDeleteFromServer cmd{this, currentDb.get()};
+  cmd.exec();
+  updateOnlineMenu();
+}
+
+//----------------------------------------------------------------------------
+
+void MainFrame::onEditConnectionSettings()
+{
+  if (currentDb == nullptr) return;
+
+  cmdConnectionSetting cmd{this, currentDb.get()};
+  cmd.exec();
+  updateOnlineMenu();
+}
+
+//----------------------------------------------------------------------------
+
 void MainFrame::onToggleTestMenuVisibility()
 {
   ui.menubar->clear();
   ui.menubar->addMenu(ui.menuTournament);
+  ui.menubar->addMenu(ui.menuOnline);
   ui.menubar->addMenu(ui.menuAbout_QTournament);
 
   if (!isTestMenuVisible)
@@ -1435,6 +1591,136 @@ void MainFrame::onAutosaveTimerElapsed()
       msg += tr("failed");
     }
     lastAutosaveTimeStatusLabel->setText(msg);
+  }
+}
+
+//----------------------------------------------------------------------------
+
+void MainFrame::onServerSyncTimerElapsed()
+{
+  if (currentDb == nullptr)
+  {
+    syncStatLabel->clear();
+    btnPingTest->setVisible(false);
+    return;
+  }
+
+  // retrieve the status from the online manager
+  OnlineMngr* om = currentDb->getOnlineManager();
+
+  // show nothing if we've never registered the tournament
+  if (!(om->hasRegistrationSubmitted()))
+  {
+    syncStatLabel->clear();
+    btnPingTest->setVisible(false);
+    return;
+  } else {
+    btnPingTest->setVisible(true);
+  }
+
+  // get the current sync state
+  SyncState st = om->getSyncState();
+
+  // if we're offline, everything's easy
+  if (!(st.hasSession()))
+  {
+    syncStatLabel->setText(tr("<span style='color: red; font-weight: bold;'>Offline</span>"));
+    return;
+  }
+
+  // we're online, thus we'll first update the labels
+  // with the current status
+  QString msg = tr("<span style='color: green; font-weight: bold;'>Online</span>");
+  msg += tr(", %1 syncs committed, %2 changes pending");
+  msg = msg.arg(st.partialSyncCounter);
+  msg = msg.arg(currentDb->getChangeLogLength());
+
+  // attach the last request time, if available
+  int dt = om->getLastReqTime_ms();
+  if (dt > 0)
+  {
+    msg += tr(" ; the last request took %1 ms");
+    msg = msg.arg(dt);
+  }
+
+  // set the label and we're done with the cosmetics
+  syncStatLabel->setText(msg);
+
+  // next we check if the OnlineMngr wants to
+  // do a sync call
+  if (!(om->wantsToSync())) return;
+
+  // yes, a sync is necessary
+  QString errMsgFromServer;
+  QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+  OnlineError err = om->doPartialSync(errMsgFromServer);
+  QApplication::restoreOverrideCursor();
+
+  // handle connection / transport errors
+  msg.clear();
+  if ((err != OnlineError::Okay) && (err != OnlineError::TransportOkay_AppError))
+  {
+    switch (err)
+    {
+    case OnlineError::Timeout:
+      msg = tr("The server is currently not available.\n\n");
+      msg += tr("Maybe the server is temporarily down or you are offline.");
+      break;
+
+    case OnlineError::BadRequest:
+      msg = tr("The server did not accept our sync request (400, BadRequest).");
+      break;
+
+    default:
+      msg = tr("Sync failed due to an unspecified network or server error!");
+    }
+  }
+
+  if (err == OnlineError::TransportOkay_AppError)
+  {
+    if (errMsgFromServer == "DatabaseError")
+    {
+      msg = tr("Syncing failed because of a server-side database error.");
+    }
+    if (errMsgFromServer == "CSVError")
+    {
+      msg = tr("Syncing failed because the server couldn't digest our CSV data!\n");
+      msg += tr("Strange, this shouldn't happen...");
+    }
+    if (msg.isEmpty())
+    {
+      msg = tr("Sync failed because of an unexpected server error.\n");
+    }
+  }
+
+  if (!(msg.isEmpty()))
+  {
+    om->disconnect();
+    msg += "\n\nThe server connection has been shut-down. Try to connect again later. Good luck!";
+    QMessageBox::warning(this, tr("Server sync failed"), msg);
+  }
+}
+
+//----------------------------------------------------------------------------
+
+void MainFrame::onBtnPingTestClicked()
+{
+  if (currentDb == nullptr) return;
+  OnlineMngr* om = currentDb->getOnlineManager();
+
+  QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+  int t = om->ping();
+  QApplication::restoreOverrideCursor();
+
+  QString msg;
+  if (t > 0)
+  {
+    msg = tr("The server responded within %1 ms");
+    msg = msg.arg(t);
+    QMessageBox::information(this, tr("Server Ping Test"), msg);
+  } else {
+    msg = tr("The server is not reachable");
+    QMessageBox::warning(this, tr("Server Ping Test"), msg);
   }
 }
 

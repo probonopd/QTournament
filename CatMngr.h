@@ -88,6 +88,8 @@ namespace QTournament
     bool switchCatToWaitForSeeding(const Category& cat);
     ERR continueWithIntermediateSeeding(const Category& c, const PlayerPairList& seeding, ProgressQueue* progressNotificationQueue=nullptr);
 
+    string getSyncString(vector<int> rows) override;
+
   private:
     bool setCatParam_AllowDraw( Category& c, const QVariant& v);
     bool setCatParam_Score( Category& c, int newScore, bool isDraw);

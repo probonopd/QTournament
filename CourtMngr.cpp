@@ -59,6 +59,9 @@ namespace QTournament
     cvc.addIntCol(CO_IS_MANUAL_ASSIGNMENT, 0);
     cvc.addIntCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_CO_AVAIL));
     
+    // lock the database before writing
+    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
+
     // create the new court row
     CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
     cse->beginCreateCourt();
@@ -134,6 +137,9 @@ namespace QTournament
       return INVALID_NAME;
     }
         
+    // lock the database before writing
+    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
+
     c.row.update(GENERIC_NAME_FIELD_NAME, QString2StdString(newName));
     
     CentralSignalEmitter::getInstance()->courtRenamed(c);
@@ -285,6 +291,10 @@ namespace QTournament
 
     // after this check it is safe to delete to court because we won't
     // harm the database integrity
+
+    // lock the database before writing
+    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
+
     CentralSignalEmitter* cse =CentralSignalEmitter::getInstance();
     int oldSeqNum = co.getSeqNum();
     cse->beginDeleteCourt(oldSeqNum);
@@ -296,7 +306,16 @@ namespace QTournament
     return (dbErr == SQLITE_DONE) ? OK : DATABASE_ERROR;
   }
 
-//----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
+
+  string CourtMngr::getSyncString(vector<int> rows)
+  {
+    vector<string> cols = {"id", GENERIC_NAME_FIELD_NAME, CO_NUMBER};
+
+    return db->getSyncStringForTable(TAB_COURT, cols, rows);
+  }
+
+  //----------------------------------------------------------------------------
 
   unique_ptr<Court> CourtMngr::autoSelectNextUnusedCourt(ERR *err, bool includeManual) const
   {
