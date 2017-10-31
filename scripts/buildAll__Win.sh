@@ -245,8 +245,8 @@ echo
 
 # copy all generated files along with their dependencies
 # to one folder
-cp libSloppy/release/libSloppy.dll dist
-cp SqliteOverlay/release/libSqliteOverlay.dll dist
+cp /usr/local/lib/libSloppy.dll dist
+cp /usr/local/lib/libSqliteOverlay.dll dist
 cp Qt/qmake/SimpleReportGeneratorLib/release/SimpleReportGenerator0.dll dist
 cp Qt/qmake/QTournament/release/QTournament.exe dist
 
@@ -265,7 +265,7 @@ for f in libbz2-*.dll \
 	libicuuc??.dll \
 	libintl-*.dll \
 	libpcre-*.dll \
-	libpcre16-*.dll \
+	libpcre2-16-*.dll \
 	libpng16-*.dll \
 	libsqlite3-0.dll \
 	libstdc++-*.dll \
@@ -283,7 +283,9 @@ for f in libbz2-*.dll \
 	Qt5Gui.dll \
 	Qt5PrintSupport.dll \
 	Qt5Widgets.dll \
+	Qt5Network.dll \
 	libdl.dll \
+        libsodium-18.dll \
 	zlib*.dll; do
 
 	cp $MINGW64_BIN/$f .
