@@ -255,7 +255,7 @@ void MainFrame::openTournament()
   newDb->restoreFromFile(filename.toUtf8().constData(), &dbErr);
   newDb->setLogLevel(Sloppy::Logger::SeverityLevel::error);
 
-  // handle erros
+  // handle errors
   QString msg;
   if (dbErr == SQLITE_ERROR)
   {
@@ -286,6 +286,16 @@ void MainFrame::openTournament()
   lastDirtyState = false;
   lastAutosaveDirtyCounterValue = 0;
   onAutosaveTimerElapsed();
+
+  // BAAAD HACK: when the OnlineManager instance was created, the config table
+  // was still empty because instanciation takes place before
+  // restoreFromFile() is triggered.
+  // Thus, the OnlineManager does not read custom server settings, if
+  // existent. We need to trigger this manually here.
+  //
+  // Remember: in this application it is bad, bad, bad to keep state in the
+  // xManagers... or somewhere else
+  currentDb->getOnlineManager()->applyCustomServerSettings();
 
   // show the tournament name in the main window's title
   updateWindowTitle();
