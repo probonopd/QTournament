@@ -517,7 +517,8 @@ namespace QTournament
     // basically single-threaded and we don't return to the
     // event loop before we're finished. But better safe than
     // sorry...
-    DbLockHolder lk{db, DatabaseAccessRoles::SyncThread};
+    DbLockHolder lk{db, DatabaseAccessRoles::SyncThread, false};
+    if (!(lk.islocked())) return OnlineError::LocalDatabaseBusy;
 
     // get all recent database changes
     ChangeLogList log = db->getAllChangesAndClearQueue();

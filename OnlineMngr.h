@@ -38,6 +38,7 @@ namespace QTournament
     KeystoreEmpty,
     InvalidServerSignature,
     NoSession,
+    LocalDatabaseBusy,
 
     // transport layer
     Timeout,

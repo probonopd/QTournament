@@ -1650,11 +1650,18 @@ void MainFrame::onServerSyncTimerElapsed()
   // do a sync call
   if (!(om->wantsToSync())) return;
 
+  //
   // yes, a sync is necessary
+  //
+
   QString errMsgFromServer;
   QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
   OnlineError err = om->doPartialSync(errMsgFromServer);
   QApplication::restoreOverrideCursor();
+
+  // maybe the database is locked by a different process,
+  // e.g. an open dialog
+  if (err == OnlineError::LocalDatabaseBusy) return; // try again later
 
   // handle connection / transport errors
   msg.clear();
