@@ -88,8 +88,9 @@ ERR cmdOnlineRegistration::exec()
   int rc = dlg.exec();
   if (rc != QDialog::Accepted) return ERR::WRONG_STATE;  // dummy error code; will not be evaluated by caller
 
-  // show a consent form
-  QResource binData(":/ui/consent.html");
+  // show a consent form, either in English or German
+  bool isGerman = QLocale().name().startsWith("de", Qt::CaseInsensitive);
+  QResource binData(isGerman ? ":/ui/consent_de.html" : ":/ui/consent.html");
   QString consentTxt = QString::fromUtf8((const char*)binData.data());
   QMessageBox dlgConsent{parentWidget};
   dlgConsent.setText(consentTxt);

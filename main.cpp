@@ -16,6 +16,8 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <iostream>
+
 #include <QApplication>
 #include <QTranslator>
 #include <QLibraryInfo>
@@ -45,6 +47,7 @@ int main(int argc, char *argv[])
     app.setStyle(fusionStyle);
   }
   
+  cout << "System locale: " << QLocale().name().toStdString() << endl;
   QTranslator qtTranslator;
   // Only temporary: hard-coded German translation while in debug mode
   //qtTranslator.load("qt_de", QLibraryInfo::location(QLibraryInfo::TranslationsPath));
