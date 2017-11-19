@@ -1158,69 +1158,74 @@ Die internen Daten zu dieser Disziplin sind vermutlich defekt.</translation>
 <context>
     <name>CourtTableView</name>
     <message>
-        <location filename="ui/CourtTableView.cpp" line="116"/>
-        <location filename="ui/CourtTableView.cpp" line="268"/>
+        <location filename="ui/CourtTableView.cpp" line="118"/>
+        <location filename="ui/CourtTableView.cpp" line="277"/>
         <source>Add court</source>
         <translation>Feld hinzufügen</translation>
     </message>
     <message>
-        <location filename="ui/CourtTableView.cpp" line="117"/>
+        <location filename="ui/CourtTableView.cpp" line="119"/>
         <source>Undo call</source>
         <translation>Aufruf rückgängig machen</translation>
     </message>
     <message>
-        <location filename="ui/CourtTableView.cpp" line="118"/>
+        <location filename="ui/CourtTableView.cpp" line="120"/>
         <source>Finish match</source>
         <translation>Spiel beenden</translation>
     </message>
     <message>
-        <location filename="ui/CourtTableView.cpp" line="119"/>
-        <location filename="ui/CourtTableView.cpp" line="313"/>
-        <location filename="ui/CourtTableView.cpp" line="320"/>
+        <location filename="ui/CourtTableView.cpp" line="121"/>
+        <location filename="ui/CourtTableView.cpp" line="322"/>
+        <location filename="ui/CourtTableView.cpp" line="329"/>
         <source>Repeat call</source>
         <translation>Wiederholter Aufruf</translation>
     </message>
     <message>
-        <location filename="ui/CourtTableView.cpp" line="120"/>
+        <location filename="ui/CourtTableView.cpp" line="122"/>
         <source>Swap umpire</source>
         <translation>Schiedsrichter wechseln</translation>
     </message>
     <message>
-        <location filename="ui/CourtTableView.cpp" line="121"/>
+        <location filename="ui/CourtTableView.cpp" line="123"/>
         <source>Only manual match assignment on this court</source>
         <translation>Nur manuelle Spielzuweisungen für dieses Feld</translation>
     </message>
     <message>
-        <location filename="ui/CourtTableView.cpp" line="123"/>
+        <location filename="ui/CourtTableView.cpp" line="125"/>
         <source>Court disabled</source>
         <translation>Spielfeld deaktiviert</translation>
     </message>
     <message>
-        <location filename="ui/CourtTableView.cpp" line="125"/>
-        <location filename="ui/CourtTableView.cpp" line="384"/>
-        <location filename="ui/CourtTableView.cpp" line="396"/>
-        <location filename="ui/CourtTableView.cpp" line="406"/>
+        <location filename="ui/CourtTableView.cpp" line="127"/>
+        <location filename="ui/CourtTableView.cpp" line="393"/>
+        <location filename="ui/CourtTableView.cpp" line="405"/>
         <location filename="ui/CourtTableView.cpp" line="415"/>
+        <location filename="ui/CourtTableView.cpp" line="424"/>
         <source>Delete court</source>
         <translation>Spielfeld löschen</translation>
     </message>
     <message>
-        <location filename="ui/CourtTableView.cpp" line="146"/>
+        <location filename="ui/CourtTableView.cpp" line="128"/>
+        <source>Re-print result sheet</source>
+        <translation>Ergebniszettel drucken</translation>
+    </message>
+    <message>
+        <location filename="ui/CourtTableView.cpp" line="150"/>
         <source>Walkover for...</source>
         <translation>Geht kampflos an...</translation>
     </message>
     <message>
-        <location filename="ui/CourtTableView.cpp" line="269"/>
+        <location filename="ui/CourtTableView.cpp" line="278"/>
         <source>Something went wrong, error code = </source>
         <translation>Irgendwas ging schief, Fehlercode = </translation>
     </message>
     <message>
-        <location filename="ui/CourtTableView.cpp" line="320"/>
+        <location filename="ui/CourtTableView.cpp" line="329"/>
         <source>Call cancled</source>
         <translation>Aufruf abgebrochen</translation>
     </message>
     <message>
-        <location filename="ui/CourtTableView.cpp" line="380"/>
+        <location filename="ui/CourtTableView.cpp" line="389"/>
         <source>You are about to delete
 
 </source>
@@ -1229,7 +1234,7 @@ Die internen Daten zu dieser Disziplin sind vermutlich defekt.</translation>
 </translation>
     </message>
     <message>
-        <location filename="ui/CourtTableView.cpp" line="381"/>
+        <location filename="ui/CourtTableView.cpp" line="390"/>
         <source>     Court %1
 
 </source>
@@ -1238,19 +1243,19 @@ Die internen Daten zu dieser Disziplin sind vermutlich defekt.</translation>
 </translation>
     </message>
     <message>
-        <location filename="ui/CourtTableView.cpp" line="382"/>
+        <location filename="ui/CourtTableView.cpp" line="391"/>
         <source>Proceed and delete?</source>
         <translation>Fortsetzen und Feld löschen?</translation>
     </message>
     <message>
-        <location filename="ui/CourtTableView.cpp" line="392"/>
+        <location filename="ui/CourtTableView.cpp" line="401"/>
         <source>The court has already been used for matches and thus
 </source>
         <translation>Das Feld wurde bereits für Spiele verwendet und kann daher
 </translation>
     </message>
     <message>
-        <location filename="ui/CourtTableView.cpp" line="393"/>
+        <location filename="ui/CourtTableView.cpp" line="402"/>
         <source>it can&apos;t be deleted for technical reasons.
 
 </source>
@@ -1259,21 +1264,21 @@ Die internen Daten zu dieser Disziplin sind vermutlich defekt.</translation>
 </translation>
     </message>
     <message>
-        <location filename="ui/CourtTableView.cpp" line="394"/>
-        <location filename="ui/CourtTableView.cpp" line="404"/>
+        <location filename="ui/CourtTableView.cpp" line="403"/>
+        <location filename="ui/CourtTableView.cpp" line="413"/>
         <source>Please consider disabling the court instead of deleting it.</source>
         <translation>Bitte erwägen Sie, das Feld nur zu deaktivieren anstatt es zu löschen.</translation>
     </message>
     <message>
-        <location filename="ui/CourtTableView.cpp" line="402"/>
+        <location filename="ui/CourtTableView.cpp" line="411"/>
         <source>A database error occured when trying to delete the court.
 </source>
         <translation>Beim Entfernen des Spielfelds ist ein Datenbankfehler aufgetreten.
 </translation>
     </message>
     <message>
-        <location filename="ui/CourtTableView.cpp" line="403"/>
-        <location filename="ui/CourtTableView.cpp" line="413"/>
+        <location filename="ui/CourtTableView.cpp" line="412"/>
+        <location filename="ui/CourtTableView.cpp" line="422"/>
         <source>The court can&apos;t be deleted.
 
 </source>
@@ -1282,7 +1287,7 @@ Die internen Daten zu dieser Disziplin sind vermutlich defekt.</translation>
 </translation>
     </message>
     <message>
-        <location filename="ui/CourtTableView.cpp" line="412"/>
+        <location filename="ui/CourtTableView.cpp" line="421"/>
         <source>Some error occured when trying to delete the court.
 
 </source>
@@ -1999,7 +2004,7 @@ hinzufügen zu:</translation>
     <message>
         <location filename="ui/DlgRegisterTournament.ui" line="35"/>
         <source>Please complete the following form for registering your tournament:</source>
-        <translation>Bitte füllen Sie das folgende Formular aus, um Ihr Turnier zu registrieren</translation>
+        <translation>Bitte füllen Sie das folgende Formular aus, um Ihr Turnier zu registrieren:</translation>
     </message>
     <message>
         <location filename="ui/DlgRegisterTournament.ui" line="67"/>
@@ -3464,7 +3469,7 @@ hinzufügen zu:</translation>
     <message>
         <location filename="ui/MainFrame.cpp" line="1707"/>
         <source>Server sync failed</source>
-        <translation>Die Synchronisierung mit dem Server ist gescheitert.</translation>
+        <translation>Synchronisierungsfehler</translation>
     </message>
     <message>
         <location filename="ui/MainFrame.cpp" line="1725"/>
@@ -3725,45 +3730,45 @@ hinzufügen zu:</translation>
         <translation type="vanished">Das Spiel konnte nicht auf dem ausgewählten Feld aufgerufen werden.</translation>
     </message>
     <message>
-        <location filename="ui/MatchTableView.cpp" line="240"/>
-        <location filename="ui/MatchTableView.cpp" line="455"/>
+        <location filename="ui/MatchTableView.cpp" line="242"/>
+        <location filename="ui/MatchTableView.cpp" line="485"/>
         <source>Set umpire mode</source>
         <translation>Schiedsrichtermodus setzen</translation>
     </message>
     <message>
-        <location filename="ui/MatchTableView.cpp" line="241"/>
+        <location filename="ui/MatchTableView.cpp" line="243"/>
         <source>The mode can&apos;t be set for this match.</source>
         <translation>Der Modus kann für dieses Spiel nicht verwendet werden.</translation>
     </message>
     <message>
-        <location filename="ui/MatchTableView.cpp" line="290"/>
+        <location filename="ui/MatchTableView.cpp" line="292"/>
         <source>This match cannot be started at this point in time.
 </source>
         <translation>Das Spiel kann momentan nicht aufgerufen werden.
 </translation>
     </message>
     <message>
-        <location filename="ui/MatchTableView.cpp" line="291"/>
+        <location filename="ui/MatchTableView.cpp" line="293"/>
         <source>It&apos;s probably waiting for all players to become available or 
 </source>
         <translation>Vermutlich sind noch nicht alle Spieler verfügbar oder 
 </translation>
     </message>
     <message>
-        <location filename="ui/MatchTableView.cpp" line="292"/>
+        <location filename="ui/MatchTableView.cpp" line="294"/>
         <source>for matches in earlier rounds to be finished first.</source>
         <translation>Spiele aus vorherigen Runden müssen zunächst abgeschlossen werden.</translation>
     </message>
     <message>
-        <location filename="ui/MatchTableView.cpp" line="293"/>
-        <location filename="ui/MatchTableView.cpp" line="305"/>
-        <location filename="ui/MatchTableView.cpp" line="317"/>
-        <location filename="ui/MatchTableView.cpp" line="326"/>
+        <location filename="ui/MatchTableView.cpp" line="295"/>
+        <location filename="ui/MatchTableView.cpp" line="307"/>
+        <location filename="ui/MatchTableView.cpp" line="319"/>
+        <location filename="ui/MatchTableView.cpp" line="328"/>
         <source>Assign match to court</source>
         <translation>Spielaufruf</translation>
     </message>
     <message>
-        <location filename="ui/MatchTableView.cpp" line="302"/>
+        <location filename="ui/MatchTableView.cpp" line="304"/>
         <source>There are no free courts for automatic match assignment available right now.
 </source>
         <oldsource>There are no free courts for automatic match assignment available right now,
@@ -3772,7 +3777,7 @@ hinzufügen zu:</translation>
 </translation>
     </message>
     <message>
-        <location filename="ui/MatchTableView.cpp" line="303"/>
+        <location filename="ui/MatchTableView.cpp" line="305"/>
         <source>However, there is at least one free court for manual match assignment.
 
 </source>
@@ -3781,85 +3786,85 @@ hinzufügen zu:</translation>
 </translation>
     </message>
     <message>
-        <location filename="ui/MatchTableView.cpp" line="304"/>
+        <location filename="ui/MatchTableView.cpp" line="306"/>
         <source>Use this court for running the match?</source>
         <translation>Soll das Spiel auf diesem Feld aufgerufen werden?</translation>
     </message>
     <message>
-        <location filename="ui/MatchTableView.cpp" line="314"/>
+        <location filename="ui/MatchTableView.cpp" line="316"/>
         <source>An unexpected error occured.
 </source>
         <translation>Es ist ein unerwarteter Fehler aufgetreten.
 </translation>
     </message>
     <message>
-        <location filename="ui/MatchTableView.cpp" line="315"/>
+        <location filename="ui/MatchTableView.cpp" line="317"/>
         <source>Sorry, this shouldn&apos;t happen.
 </source>
         <translation>Das sollte nicht vorkommen.
 </translation>
     </message>
     <message>
-        <location filename="ui/MatchTableView.cpp" line="316"/>
+        <location filename="ui/MatchTableView.cpp" line="318"/>
         <source>The match cannot be started.</source>
         <translation>Das Spiel kann leider nicht aufgerufen werden.</translation>
     </message>
     <message>
-        <location filename="ui/MatchTableView.cpp" line="324"/>
+        <location filename="ui/MatchTableView.cpp" line="326"/>
         <source>The match cannot be started since there is no
 </source>
         <translation>Das Spiel kann nicht aufgerufen werden, weil
 </translation>
     </message>
     <message>
-        <location filename="ui/MatchTableView.cpp" line="325"/>
+        <location filename="ui/MatchTableView.cpp" line="327"/>
         <source>free court available right now.</source>
         <translation>momentan kein freies Feld verfügbar ist.</translation>
     </message>
     <message>
-        <location filename="ui/MatchTableView.cpp" line="371"/>
+        <location filename="ui/MatchTableView.cpp" line="373"/>
         <source>Could not remove umpire assignment from match.
 </source>
         <translation>Konnte die Schiedsrichter-Zuweisung für dieses Spiel nicht aufheben.
 </translation>
     </message>
     <message>
-        <location filename="ui/MatchTableView.cpp" line="372"/>
+        <location filename="ui/MatchTableView.cpp" line="374"/>
         <source>Some unexpected error occured.</source>
         <translation>Es ist ein unerwarteter Fehler aufgetreten.</translation>
     </message>
     <message>
-        <location filename="ui/MatchTableView.cpp" line="373"/>
+        <location filename="ui/MatchTableView.cpp" line="375"/>
         <source>Umpire removal failed</source>
         <translation>Entfernen der Schiedsrichterzuweisung fehlgeschlagen</translation>
     </message>
     <message>
-        <location filename="ui/MatchTableView.cpp" line="434"/>
+        <location filename="ui/MatchTableView.cpp" line="464"/>
         <source>Postpone</source>
         <translation>Zurückstellen</translation>
     </message>
     <message>
-        <location filename="ui/MatchTableView.cpp" line="442"/>
+        <location filename="ui/MatchTableView.cpp" line="472"/>
         <source>Walkover for...</source>
         <translation>Geht kampflos an...</translation>
     </message>
     <message>
-        <location filename="ui/MatchTableView.cpp" line="451"/>
+        <location filename="ui/MatchTableView.cpp" line="481"/>
         <source>Call match on court...</source>
         <translation>Spielaufruf auf Feld...</translation>
     </message>
     <message>
-        <location filename="ui/MatchTableView.cpp" line="456"/>
+        <location filename="ui/MatchTableView.cpp" line="486"/>
         <source>None</source>
         <translation>Kein Schiedsrichter</translation>
     </message>
     <message>
-        <location filename="ui/MatchTableView.cpp" line="459"/>
+        <location filename="ui/MatchTableView.cpp" line="489"/>
         <source>Pick from all players</source>
         <translation>Aus allen Spielern wählen</translation>
     </message>
     <message>
-        <location filename="ui/MatchTableView.cpp" line="461"/>
+        <location filename="ui/MatchTableView.cpp" line="491"/>
         <source>Pick from recent finishers</source>
         <translation>Aus letzten Siegern/Verlierern wählen</translation>
     </message>
@@ -3868,32 +3873,57 @@ hinzufügen zu:</translation>
         <translation type="vanished">Aus letzten Verlierern wählen</translation>
     </message>
     <message>
-        <location filename="ui/MatchTableView.cpp" line="463"/>
+        <location filename="ui/MatchTableView.cpp" line="493"/>
         <source>Pick from special team</source>
         <translation>Aus speziellem Team wählen</translation>
     </message>
     <message>
-        <location filename="ui/MatchTableView.cpp" line="466"/>
+        <location filename="ui/MatchTableView.cpp" line="496"/>
         <source>Manual</source>
         <translation>Manuelle Zuweisung</translation>
     </message>
     <message>
-        <location filename="ui/MatchTableView.cpp" line="469"/>
+        <location filename="ui/MatchTableView.cpp" line="499"/>
         <source>Use tournament default</source>
         <translation>Standardeinstellung des Turniers verwenden</translation>
     </message>
     <message>
-        <location filename="ui/MatchTableView.cpp" line="471"/>
+        <location filename="ui/MatchTableView.cpp" line="501"/>
         <source>Assign umpire...</source>
         <translation>Schiedsrichter zuweisen...</translation>
     </message>
     <message>
-        <location filename="ui/MatchTableView.cpp" line="472"/>
+        <location filename="ui/MatchTableView.cpp" line="502"/>
         <source>Remove assigned umpire</source>
         <translation>Schiedsrichterzuweisung aufheben</translation>
     </message>
     <message>
-        <location filename="ui/MatchTableView.cpp" line="555"/>
+        <location filename="ui/MatchTableView.cpp" line="508"/>
+        <source>Print result sheet</source>
+        <translation>Ergebniszettel drucken</translation>
+    </message>
+    <message>
+        <location filename="ui/MatchTableView.cpp" line="509"/>
+        <source>This match</source>
+        <translation>Nur dieses Spiel</translation>
+    </message>
+    <message>
+        <location filename="ui/MatchTableView.cpp" line="510"/>
+        <source>4 matches</source>
+        <translation>4 Spiele</translation>
+    </message>
+    <message>
+        <location filename="ui/MatchTableView.cpp" line="511"/>
+        <source>8 matches</source>
+        <translation>8 Spiele</translation>
+    </message>
+    <message>
+        <location filename="ui/MatchTableView.cpp" line="512"/>
+        <source>12 matches</source>
+        <translation>12 Spiele</translation>
+    </message>
+    <message>
+        <location filename="ui/MatchTableView.cpp" line="600"/>
         <source>The match cannot be called because:
 
 </source>
@@ -3902,33 +3932,33 @@ hinzufügen zu:</translation>
 </translation>
     </message>
     <message>
-        <location filename="ui/MatchTableView.cpp" line="569"/>
+        <location filename="ui/MatchTableView.cpp" line="614"/>
         <source>%1 is playing</source>
         <translation>%1 spielt</translation>
     </message>
     <message>
-        <location filename="ui/MatchTableView.cpp" line="577"/>
-        <location filename="ui/MatchTableView.cpp" line="594"/>
+        <location filename="ui/MatchTableView.cpp" line="622"/>
+        <location filename="ui/MatchTableView.cpp" line="639"/>
         <source> on court %1</source>
         <translation> auf Feld %1</translation>
     </message>
     <message>
-        <location filename="ui/MatchTableView.cpp" line="586"/>
+        <location filename="ui/MatchTableView.cpp" line="631"/>
         <source>%1 is umpire</source>
         <translation>%1 ist Schiedsrichter</translation>
     </message>
     <message>
-        <location filename="ui/MatchTableView.cpp" line="600"/>
+        <location filename="ui/MatchTableView.cpp" line="645"/>
         <source> is not available (but why???)</source>
         <translation> ist nicht verfügbar (aber warum???)</translation>
     </message>
     <message>
-        <location filename="ui/MatchTableView.cpp" line="649"/>
+        <location filename="ui/MatchTableView.cpp" line="694"/>
         <source>Umpire </source>
         <translation>Schiedsrichter </translation>
     </message>
     <message>
-        <location filename="ui/MatchTableView.cpp" line="655"/>
+        <location filename="ui/MatchTableView.cpp" line="700"/>
         <source>Match status</source>
         <translation>Spielstatus</translation>
     </message>
@@ -5166,39 +5196,43 @@ insgesamt</translation>
         <translation>plus</translation>
     </message>
     <message>
-        <location filename="reports/ResultSheets.cpp" line="181"/>
+        <location filename="reports/ResultSheets.cpp" line="190"/>
         <source>Match Number: </source>
         <translation>Spiel: </translation>
     </message>
     <message>
-        <location filename="reports/ResultSheets.cpp" line="182"/>
-        <source>Court: ____________</source>
-        <translation>Feld: ____________</translation>
+        <location filename="reports/ResultSheets.cpp" line="191"/>
+        <source>Court: </source>
+        <translation>Feld: </translation>
     </message>
     <message>
-        <location filename="reports/ResultSheets.cpp" line="185"/>
+        <source>Court: ____________</source>
+        <translation type="vanished">Feld: ____________</translation>
+    </message>
+    <message>
+        <location filename="reports/ResultSheets.cpp" line="194"/>
         <source>%1, Round %2</source>
         <translation>%1, Runde %2</translation>
     </message>
     <message>
-        <location filename="reports/ResultSheets.cpp" line="209"/>
-        <location filename="reports/ResultSheets.cpp" line="227"/>
+        <location filename="reports/ResultSheets.cpp" line="218"/>
+        <location filename="reports/ResultSheets.cpp" line="236"/>
         <source>Winner of Match #</source>
         <translation>Gewinner Spiel #</translation>
     </message>
     <message>
-        <location filename="reports/ResultSheets.cpp" line="209"/>
-        <location filename="reports/ResultSheets.cpp" line="227"/>
+        <location filename="reports/ResultSheets.cpp" line="218"/>
+        <location filename="reports/ResultSheets.cpp" line="236"/>
         <source>Loser of Match #</source>
         <translation>Verlierer Spiel #</translation>
     </message>
     <message>
-        <location filename="reports/ResultSheets.cpp" line="249"/>
+        <location filename="reports/ResultSheets.cpp" line="258"/>
         <source>Game:</source>
         <translation>Satz:</translation>
     </message>
     <message>
-        <location filename="reports/ResultSheets.cpp" line="259"/>
+        <location filename="reports/ResultSheets.cpp" line="268"/>
         <source>Umpire: </source>
         <translation>Schiedsrichter: </translation>
     </message>
@@ -6430,17 +6464,17 @@ Bitte später noch einmal probieren.</translation>
     </message>
     <message>
         <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="70"/>
-        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="147"/>
+        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="148"/>
         <source>Online registration</source>
         <translation>Online Registrierung</translation>
     </message>
     <message>
-        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="98"/>
+        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="99"/>
         <source>Please read carefully</source>
         <translation>Bitte aufmerksam lesen</translation>
     </message>
     <message>
-        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="117"/>
+        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="118"/>
         <source>The server is currently not available.
 
 </source>
@@ -6449,38 +6483,38 @@ Bitte später noch einmal probieren.</translation>
 </translation>
     </message>
     <message>
-        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="118"/>
+        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="119"/>
         <source>Maybe the server is temporarily down or you are offline.</source>
         <translation>Möglicherweise ist der Server vorübergehend heruntergefahren oder Sie haben keine Internetverbindung.</translation>
     </message>
     <message>
-        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="122"/>
+        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="123"/>
         <source>The server did not accept our registration request (400, BadRequest).</source>
         <translation>Der Server hat unsere Registrierungsanfrage nicht akzeptiert (400, BadRequest).</translation>
     </message>
     <message>
-        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="126"/>
+        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="127"/>
         <source>&lt;p&gt;This version of QTournament is incompatible with the server.&lt;/p&gt;</source>
         <translation>&lt;p&gt;Diese Version von QTournament ist nicht mit dem Server kompatibel.&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="127"/>
+        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="128"/>
         <source>&lt;p&gt;Please download a more recent version from:&lt;/p&gt;</source>
         <translation>&lt;p&gt;Bitte laden Sie eine aktuelle Version hier herunter:&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="132"/>
+        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="133"/>
         <source>Registration failed due to an unspecified network or server error!</source>
         <translation>Die Registrierung ist aufgrund eines unerwarteten Netzwerk- oder Server-Fehlers gescheitert!</translation>
     </message>
     <message>
-        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="135"/>
-        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="188"/>
+        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="136"/>
+        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="189"/>
         <source>Online Registration FAILED</source>
         <translation>Online-Registrierung gescheitert</translation>
     </message>
     <message>
-        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="144"/>
+        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="145"/>
         <source>Online registration successful!
 
 </source>
@@ -6489,17 +6523,17 @@ Bitte später noch einmal probieren.</translation>
 </translation>
     </message>
     <message>
-        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="145"/>
+        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="146"/>
         <source>Within the next minutes you should receive a confirmation email. </source>
-        <translation>Innerhalb der nächsten Minuten sollten Sie eine Email mit einem Bestätigungslink bekommen.</translation>
+        <translation>Innerhalb der nächsten Minuten sollten Sie eine Email mit einem Bestätigungslink bekommen. </translation>
     </message>
     <message>
-        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="146"/>
+        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="147"/>
         <source>Please click on the link in the email to complete your registration.</source>
         <translation>Bitte folgen Sie dem Link in der Email, um Ihre Registrierung abzuschließen.</translation>
     </message>
     <message>
-        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="158"/>
+        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="159"/>
         <source>A tournament with this name already exists.
 
 </source>
@@ -6508,12 +6542,12 @@ Bitte später noch einmal probieren.</translation>
 </translation>
     </message>
     <message>
-        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="159"/>
+        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="160"/>
         <source>Maybe you have already successfully registered your tournament before or </source>
         <translation>Möglicherweise haben Sie Ihr Turnier bereits früher erfolgreich registriert oder </translation>
     </message>
     <message>
-        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="160"/>
+        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="161"/>
         <source>someone else is already using your tournament name.
 
 </source>
@@ -6522,30 +6556,32 @@ Bitte später noch einmal probieren.</translation>
 </translation>
     </message>
     <message>
-        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="161"/>
+        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="162"/>
         <source>Please note that you can only register ONCE with a tournament file, </source>
         <translation>Bitte beachten Sie, dass Sie jede Turnierdatei bzw. jedes Turnier nur EINMAL registrieren können, </translation>
     </message>
     <message>
-        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="162"/>
+        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="163"/>
         <source>regardless of the tournament name. Attempting to register again after </source>
         <translation>unabhängig vom Turniernamen. Der Versuch einer erneuten Registrierung nach einer vorherigen </translation>
     </message>
     <message>
-        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="163"/>
+        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="164"/>
         <source>an already successful prior registration will always fail.</source>
         <translation>erfolgreichen Registrierung wird immer abgewiesen werden.</translation>
     </message>
     <message>
-        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="167"/>
+        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="168"/>
         <source>Your registration failed due to a database error on the server.
 
 </source>
-        <translation>Die Registrierung ist aufgrund eines server-seitigen Datenbankfehlers gescheitert!</translation>
+        <translation>Die Registrierung ist aufgrund eines server-seitigen Datenbankfehlers gescheitert.
+
+</translation>
     </message>
     <message>
-        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="168"/>
-        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="184"/>
+        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="169"/>
+        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="185"/>
         <source>You may try to register again but if the problems persist please send an email to
 
 </source>
@@ -6554,13 +6590,13 @@ Bitte später noch einmal probieren.</translation>
 </translation>
     </message>
     <message>
-        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="169"/>
-        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="185"/>
+        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="170"/>
+        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="186"/>
         <source>	info@qtournament.de</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="173"/>
+        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="174"/>
         <source>The server refused one or more registration parameters.
 
 </source>
@@ -6569,12 +6605,12 @@ Bitte später noch einmal probieren.</translation>
 </translation>
     </message>
     <message>
-        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="174"/>
+        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="175"/>
         <source>Please modify your request and try again.</source>
         <translation>Bitte ändern Sie Ihre Registrierungsanfrage und versuchen es erneut.</translation>
     </message>
     <message>
-        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="178"/>
+        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="179"/>
         <source>The server could not send a confirmation email to the address you&apos;ve provided.
 
 </source>
@@ -6583,16 +6619,18 @@ Bitte später noch einmal probieren.</translation>
 </translation>
     </message>
     <message>
-        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="179"/>
+        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="180"/>
         <source>Please try again and send an email to info@qtournament.de if the problem persists.</source>
         <translation>Bitte versuchen Sie es erneut und senden Sie eine Email an info@qtournament.de falls das Problem weiterhin besteht.</translation>
     </message>
     <message>
-        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="183"/>
+        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="184"/>
         <source>Registration failed due to an unspecified network or server error!
 
 </source>
-        <translation>Die Registrierung ist aufgrund eines unerwarteten Netzwerk- oder Server-Fehlers gescheitert!</translation>
+        <translation>Die Registrierung ist aufgrund eines unerwarteten Netzwerk- oder Server-Fehlers gescheitert!
+
+</translation>
     </message>
 </context>
 <context>
