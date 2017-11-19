@@ -77,8 +77,8 @@ upSimpleReport ResultSheets::regenerateReport()
       // we can only print result sheet for unfinished
       // matches. For now, let's also acceppt FUZZY and POSTPONED matches...
       OBJ_STATE stat = ma->getState();
-      if ((stat == STAT_MA_BUSY) || (stat == STAT_MA_FUZZY) || (stat == STAT_MA_READY) ||
-          (stat == STAT_MA_WAITING) || (stat == STAT_MA_POSTPONED))
+      if ((stat == STAT_MA_BUSY) || (stat == STAT_MA_FUZZY) || (stat == STAT_MA_RUNNING) ||
+          (stat == STAT_MA_READY) || (stat == STAT_MA_WAITING) || (stat == STAT_MA_POSTPONED))
       {
         matchList.append(*ma);
       }
@@ -178,8 +178,17 @@ void ResultSheets::onMatchSelectionChanged(int newlySelectedMatchId)
 
 void ResultSheets::printMatchData(upSimpleReport& rep, const Match& ma) const
 {
+  // if the match already a court assigned, we print the court number. Otherwise,
+  // we simple print some underscores for putting in the court number manually
+  QString courtNumString = "____________";
+  auto co = ma.getCourt();
+  if (co != nullptr)
+  {
+    courtNumString = QString::number(co->getNumber());
+  }
+
   QString header = tr("Match Number: ") + QString::number(ma.getMatchNumber());
-  header += "\t\t\t\t" + tr("Court: ____________");
+  header += "\t\t\t\t" + tr("Court: ") + courtNumString;
   rep->writeLine(header);
 
   header = tr("%1, Round %2").arg(ma.getCategory().getName()).arg(ma.getMatchGroup().getRound());

@@ -25,6 +25,8 @@
 #include "MatchMngr.h"
 #include "ui/GuiHelpers.h"
 #include "ui/commonCommands/cmdAssignRefereeToMatch.h"
+#include "reports/ResultSheets.h"
+#include "SimpleReportViewer.h"
 
 CourtTableView::CourtTableView(QWidget* parent)
   :GuiHelpers::AutoSizingTableView_WithDatabase<CourtTableModel>{
@@ -123,6 +125,7 @@ void CourtTableView::initContextMenu()
   actToggleEnableState = new QAction(tr("Court disabled"), this);
   actToggleEnableState->setCheckable(true);
   actDelCourt = new QAction(tr("Delete court"), this);
+  actReprintResultSheet = new QAction(tr("Re-print result sheet"), this);
 
   // create sub-actions for the walkover-selection
   actWalkoverP1 = new QAction("P1", this);  // this is just a dummy
@@ -138,6 +141,7 @@ void CourtTableView::initContextMenu()
   connect(actToggleAssignmentMode, SIGNAL(triggered(bool)), this, SLOT(onActionToggleMatchAssignmentModeTriggered()));
   connect(actToggleEnableState, SIGNAL(triggered(bool)), this, SLOT(onActionToogleEnableStateTriggered()));
   connect(actDelCourt, SIGNAL(triggered()), this, SLOT(onActionDeleteCourtTriggered()));
+  connect(actReprintResultSheet, SIGNAL(triggered()), this, SLOT(onReprintResultSheetTriggered()));
 
   // create the context menu and connect it to the actions
   contextMenu = make_unique<QMenu>();
@@ -149,6 +153,8 @@ void CourtTableView::initContextMenu()
   contextMenu->addAction(actUndoCall);
   contextMenu->addSeparator();
   contextMenu->addAction(actSwapReferee);
+  contextMenu->addSeparator();
+  contextMenu->addAction(actReprintResultSheet);
   contextMenu->addSeparator();
   contextMenu->addAction(actToggleAssignmentMode);
   contextMenu->addAction(actToggleEnableState);
@@ -199,6 +205,9 @@ void CourtTableView::updateContextMenu(bool isRowClicked)
   } else {
     actSwapReferee->setEnabled(false);
   }
+
+  // disable result sheet printing if there is no match selected
+  actReprintResultSheet->setEnabled(isMatchClicked);
 
   // show the state of the "manual assignment"
   unique_ptr<Court> co = getSelectedCourt();
@@ -415,6 +424,33 @@ void CourtTableView::onActionDeleteCourtTriggered()
     QMessageBox::warning(this, tr("Delete court"), msg);
     return;
   }
+}
+
+//----------------------------------------------------------------------------
+
+void CourtTableView::onReprintResultSheetTriggered()
+{
+  auto curMatch = getSelectedMatch();
+  if (curMatch == nullptr) return;
+
+  // try to create the result sheet report with the
+  // requested number of matches
+  unique_ptr<ResultSheets> rep{nullptr};
+  try
+  {
+    rep = make_unique<ResultSheets>(db, *curMatch, 1);
+  }
+  catch (...) {}
+  if (rep == nullptr) return;
+
+  // let the report object create the actual output
+  upSimpleReport sr = rep->regenerateReport();
+
+  // create an invisible report viewer and directly trigger
+  // the print reaction
+  SimpleReportLib::SimpleReportViewer viewer{this};
+  viewer.setReport(sr.get());
+  viewer.onBtnPrintClicked();
 }
 
 //----------------------------------------------------------------------------

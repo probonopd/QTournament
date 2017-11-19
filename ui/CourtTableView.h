@@ -62,6 +62,7 @@ private slots:
   void onActionToggleMatchAssignmentModeTriggered();
   void onActionToogleEnableStateTriggered();
   void onActionDeleteCourtTriggered();
+  void onReprintResultSheetTriggered();
 
 private:
   static constexpr int MAX_NUM_ADD_CALL = 3;
@@ -79,6 +80,7 @@ private:
   QAction* actSwapReferee;
   QAction* actToggleAssignmentMode;
   QAction* actToggleEnableState;
+  QAction* actReprintResultSheet;
 
   void initContextMenu();
   void updateContextMenu(bool isRowClicked);
