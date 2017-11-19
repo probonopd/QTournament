@@ -7,11 +7,11 @@
     <x>0</x>
     <y>0</y>
     <width>699</width>
-    <height>463</height>
+    <height>492</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Tournament Online Registration</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <item>
@@ -50,7 +50,7 @@
       </spacer>
      </item>
      <item>
-      <layout class="QGridLayout" name="gridLayout" rowstretch="0,0,0,0,0,0">
+      <layout class="QGridLayout" name="gridLayout" rowstretch="0,0,0,0,0,0,0">
        <property name="verticalSpacing">
         <number>10</number>
        </property>
@@ -68,7 +68,7 @@
          </property>
         </widget>
        </item>
-       <item row="2" column="1">
+       <item row="3" column="1">
         <widget class="QCalendarWidget" name="cwFirst">
          <property name="gridVisible">
           <bool>false</bool>
@@ -78,38 +78,38 @@
          </property>
         </widget>
        </item>
-       <item row="3" column="0">
+       <item row="4" column="0">
         <widget class="QLabel" name="label_5">
          <property name="text">
           <string>Your name:</string>
          </property>
         </widget>
        </item>
-       <item row="4" column="1" colspan="2">
+       <item row="5" column="1" colspan="2">
         <widget class="QLineEdit" name="leMail">
          <property name="maxLength">
           <number>60</number>
          </property>
         </widget>
        </item>
-       <item row="2" column="2">
+       <item row="3" column="2">
         <widget class="QCalendarWidget" name="cwLast"/>
        </item>
-       <item row="4" column="0">
+       <item row="5" column="0">
         <widget class="QLabel" name="label_6">
          <property name="text">
           <string>Email address:</string>
          </property>
         </widget>
        </item>
-       <item row="3" column="1" colspan="2">
+       <item row="4" column="1" colspan="2">
         <widget class="QLineEdit" name="leName">
          <property name="maxLength">
           <number>60</number>
          </property>
         </widget>
        </item>
-       <item row="2" column="0">
+       <item row="3" column="0">
         <widget class="QLabel" name="label_7">
          <property name="text">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;First and last&lt;/p&gt;&lt;p&gt;tournament day:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -130,10 +130,30 @@
          </property>
         </widget>
        </item>
-       <item row="5" column="1" colspan="2">
+       <item row="6" column="1" colspan="2">
         <widget class="QLabel" name="label_2">
          <property name="text">
           <string>Note: we'll send a confirmation request to this email address.</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QLabel" name="label_8">
+         <property name="text">
+          <string>First day:</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="2">
+        <widget class="QLabel" name="label_9">
+         <property name="text">
+          <string>Last day:</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
          </property>
         </widget>
        </item>

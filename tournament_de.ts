@@ -609,6 +609,7 @@ insgesamt</translation>
 </source>
         <oldsource>Running categories cannot be deleted anymore.</oldsource>
         <translation>Die Disziplin wurde bereits gestartet.
+
 </translation>
     </message>
     <message>
@@ -1115,7 +1116,7 @@ Die internen Daten zu dieser Disziplin sind vermutlich defekt.</translation>
     <message>
         <location filename="ui/delegates/CourtItemDelegate.cpp" line="72"/>
         <source>Round: </source>
-        <translation>Runde:</translation>
+        <translation>Runde: </translation>
     </message>
     <message>
         <location filename="ui/delegates/CourtItemDelegate.cpp" line="79"/>
@@ -1336,6 +1337,70 @@ Die internen Daten zu dieser Disziplin sind vermutlich defekt.</translation>
         <location filename="ui/DlgBulkImportToExtDb.cpp" line="106"/>
         <source>&lt;Select category&gt;</source>
         <translation>&lt;Disziplin auswählen&gt;</translation>
+    </message>
+</context>
+<context>
+    <name>DlgConnectionSettings</name>
+    <message>
+        <location filename="ui/DlgConnectionSettings.ui" line="14"/>
+        <source>Connection settings</source>
+        <translation>Verbindungsparameter</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgConnectionSettings.ui" line="65"/>
+        <source>Do not tinker with these values unless you know what you&apos;re doing!</source>
+        <translation>Verändern Sie diese Werte nur, wenn Sie genau wissen, was Sie tun!</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgConnectionSettings.ui" line="90"/>
+        <source>without http://</source>
+        <translation>ohne http://</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgConnectionSettings.ui" line="97"/>
+        <source>Server&apos;s API base URL:</source>
+        <translation>Basis-URL der Server-API:</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgConnectionSettings.ui" line="121"/>
+        <source>Base64-encoded</source>
+        <translation>Base64-codiert</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgConnectionSettings.ui" line="128"/>
+        <source>Server&apos;s public key:</source>
+        <translation>Öffentlicher Schlüssel des Servers:</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgConnectionSettings.ui" line="145"/>
+        <source>Request timeout in seconds:</source>
+        <translation>Timeout für Serveranfragen in Sekunden:</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgConnectionSettings.ui" line="172"/>
+        <source>Cancel</source>
+        <translation>Abbrechen</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgConnectionSettings.ui" line="179"/>
+        <source>Ok</source>
+        <translation>Okay</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgConnectionSettings.cpp" line="74"/>
+        <source>Please provide a custom URL or switch back to defaults!</source>
+        <translation>Bitte eine individuelle URL eingeben oder den Standardwert verwenden!</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgConnectionSettings.cpp" line="75"/>
+        <location filename="ui/DlgConnectionSettings.cpp" line="82"/>
+        <source>Connection Settings</source>
+        <translation>Verbindungsparameter</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgConnectionSettings.cpp" line="81"/>
+        <source>Please provide a custom public key or switch back to defaults!</source>
+        <translation>Bitte einen spezifischen öffentlichen Schlüssel eingeben oder den Standardwert verwenden!</translation>
     </message>
 </context>
 <context>
@@ -1586,17 +1651,106 @@ hinzufügen zu:</translation>
     <message>
         <location filename="ui/DlgMatchResult.cpp" line="42"/>
         <source>Match Number: </source>
-        <translation>Spielnummer:</translation>
+        <translation>Spielnummer: </translation>
     </message>
     <message>
         <location filename="ui/DlgMatchResult.cpp" line="181"/>
         <source>Winner: </source>
-        <translation>Gewinner:</translation>
+        <translation>Gewinner: </translation>
     </message>
     <message>
         <location filename="ui/DlgMatchResult.cpp" line="183"/>
         <source>Loser: </source>
-        <translation>Verlierer:</translation>
+        <translation>Verlierer: </translation>
+    </message>
+</context>
+<context>
+    <name>DlgPassword</name>
+    <message>
+        <location filename="ui/DlgPassword.ui" line="14"/>
+        <source>Password</source>
+        <translation>Passwort</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgPassword.ui" line="22"/>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Please set a password for this tournament.&lt;/p&gt;&lt;p&gt;The password will be used for authentication against the server that provides read-access to your tournament data through the internet.&lt;/p&gt;&lt;p&gt;Despite the password, data will be transmitted and stored &lt;span style=&quot; font-style:italic;&quot;&gt;unencrypted&lt;/span&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Bitte legen Sie ein Passwort für dieses Turnier fest.&lt;/p&gt;&lt;p&gt;Das Passwort wird verwendet, um sich gegenüber einem Server zu authentifizieren, der Spielern und anderen Interessierten einen Lesezugriff auf Ihre Turnierdetails über das Internet ermöglicht.&lt;/p&gt;&lt;p&gt;Trotz des Passworts werden alle Daten in diesem Zusammenhang &lt;span style=&quot; font-style:italic;&quot;&gt;unverschlüsselt&lt;/span&gt; übertragen und gespeichert.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgPassword.ui" line="51"/>
+        <source>Use at least six characters with at least one number and one letter.</source>
+        <translation>Bitte verwenden Sie mindestens sechs Zeichen mit wenigstens je einer Ziffer und einem Buchstaben.</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgPassword.ui" line="63"/>
+        <source>Current password: </source>
+        <translation>Aktuelles Passwort: </translation>
+    </message>
+    <message>
+        <location filename="ui/DlgPassword.ui" line="70"/>
+        <source>Repeat:</source>
+        <translation>Wiederholung:</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgPassword.ui" line="91"/>
+        <source>New password: </source>
+        <translation>Neues Passwort: </translation>
+    </message>
+    <message>
+        <location filename="ui/DlgPassword.ui" line="150"/>
+        <source>TextLabel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="ui/DlgPassword.ui" line="188"/>
+        <source>Cancel</source>
+        <translation>Abbrechen</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgPassword.ui" line="195"/>
+        <source>Okay</source>
+        <translation>Okay</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgPassword.cpp" line="25"/>
+        <source>Please enter your current and your new password:</source>
+        <translation>Bitte geben Sie ihr aktuelles und ihr neues Passwort ein:</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgPassword.cpp" line="34"/>
+        <source>Please enter your current password:</source>
+        <translation>Bitte geben Sie ihr aktuelles Passwort ein:</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgPassword.cpp" line="116"/>
+        <source>Hint: please enter a new password</source>
+        <translation>Hinweis: bitte ein neues Passwort eingeben</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgPassword.cpp" line="122"/>
+        <source>Hint: the two passwords do not match</source>
+        <translation>Hinweis: die beiden Passwörter sind nicht identisch</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgPassword.cpp" line="135"/>
+        <location filename="ui/DlgPassword.cpp" line="148"/>
+        <source>Hint: please enter the current password</source>
+        <translation>Hinweis: bitte geben Sie ihr aktuelles Passwort ein</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgPassword.cpp" line="161"/>
+        <source>Hint: the password should have at least %1 characters</source>
+        <translation>Hinweis: das Passwort muss wenigstens %1 Zeichen enthalten</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgPassword.cpp" line="172"/>
+        <source>Hint: the password must contain at least one digit</source>
+        <translation>Hinweis: das Passwort muss wenigstens eine Ziffer enthalten</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgPassword.cpp" line="179"/>
+        <source>Hint: the password must contain at least one letter</source>
+        <translation>Hinweis: das Passwort muss wenigstens einen Buchstaben enthalten</translation>
     </message>
 </context>
 <context>
@@ -1833,6 +1987,152 @@ hinzufügen zu:</translation>
         <location filename="ui/DlgPlayerProfile.cpp" line="166"/>
         <source>%1 services (%2 finished, %3 running, %4 waiting)</source>
         <translation>%1 Einsätze (%2 abgeschlossen, %3 laufend, %4 ausstehend)</translation>
+    </message>
+</context>
+<context>
+    <name>DlgRegisterTournament</name>
+    <message>
+        <location filename="ui/DlgRegisterTournament.ui" line="14"/>
+        <source>Tournament Online Registration</source>
+        <translation>Online Turnier-Registrierung</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgRegisterTournament.ui" line="35"/>
+        <source>Please complete the following form for registering your tournament:</source>
+        <translation>Bitte füllen Sie das folgende Formular aus, um Ihr Turnier zu registrieren</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgRegisterTournament.ui" line="67"/>
+        <source>Organizing club:</source>
+        <translation>Ausrichter:</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgRegisterTournament.ui" line="84"/>
+        <source>Your name:</source>
+        <translation>Ihr Name:</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgRegisterTournament.ui" line="101"/>
+        <source>Email address:</source>
+        <translation>Emailadresse:</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgRegisterTournament.ui" line="115"/>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;First and last&lt;/p&gt;&lt;p&gt;tournament day:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Erster und letzter&lt;/p&gt;&lt;p&gt;Turniertag:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgRegisterTournament.ui" line="129"/>
+        <source>Tournament:</source>
+        <translation>Turniername:</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgRegisterTournament.ui" line="136"/>
+        <source>Note: we&apos;ll send a confirmation request to this email address.</source>
+        <translation>Hinweis: Sie erhalten eine Email mit einem Bestätigungslink an diese Adresse.</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgRegisterTournament.ui" line="143"/>
+        <source>First day:</source>
+        <translation>Erster Tag:</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgRegisterTournament.ui" line="153"/>
+        <source>Last day:</source>
+        <translation>Letzter Tag:</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgRegisterTournament.ui" line="193"/>
+        <source>Cancel</source>
+        <translation>Abbrechen</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgRegisterTournament.ui" line="200"/>
+        <source>Register now...</source>
+        <translation>Jetzt registrieren...</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgRegisterTournament.cpp" line="64"/>
+        <source>&lt;li&gt;The tournament name may not be empty!&lt;/li&gt;</source>
+        <translation>&lt;li&gt;Der Turniername darf nicht leer sein!&lt;/li&gt;</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgRegisterTournament.cpp" line="69"/>
+        <source>&lt;li&gt;The club name may not be empty!&lt;/li&gt;</source>
+        <translation>&lt;li&gt;Der Name des ausrichtenden Vereins darf nicht leer sein!&lt;/li&gt;</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgRegisterTournament.cpp" line="74"/>
+        <source>&lt;li&gt;Your name may not be empty!&lt;/li&gt;</source>
+        <translation>&lt;li&gt;Die Angabe Ihres Namens fehlt!&lt;/li&gt;</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgRegisterTournament.cpp" line="79"/>
+        <source>&lt;li&gt;The email address may not be empty!&lt;/li&gt;</source>
+        <translation>&lt;li&gt;Das Feld für die Emailadresse darf nicht leer sein!&lt;/li&gt;</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgRegisterTournament.cpp" line="83"/>
+        <source>&lt;b&gt;One or more errors occurred:&lt;/b&gt;&lt;ul&gt;</source>
+        <translation>&lt;b&gt;Ein oder mehrere Fehler sind aufgetreten:&lt;/b&gt;&lt;ul&gt;</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgRegisterTournament.cpp" line="92"/>
+        <source>The email address you&apos;ve entered is invalid!</source>
+        <translation>Die von Ihnen angegebene Emailadresse ist ungültig!</translation>
+    </message>
+</context>
+<context>
+    <name>DlgRoundFinished</name>
+    <message>
+        <location filename="ui/DlgRoundFinished.ui" line="14"/>
+        <source>Round finished</source>
+        <translation>Runde abgeschlossen</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgRoundFinished.ui" line="42"/>
+        <source>TextLabel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="ui/DlgRoundFinished.ui" line="65"/>
+        <source>Select which documents to print now:</source>
+        <translation>Bitte auswählen, welche Dokumente jetzt gedruckt werden sollen:</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgRoundFinished.ui" line="72"/>
+        <source>Results and next matches</source>
+        <translation>Ergebnisse und nächste Spiele</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgRoundFinished.ui" line="79"/>
+        <source>Current standings</source>
+        <translation>Aktuelle Platzierungen</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgRoundFinished.ui" line="86"/>
+        <source>Bracket</source>
+        <translation>Turnierbaum</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgRoundFinished.ui" line="93"/>
+        <source>Match matrix</source>
+        <translation>Spielematrix</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgRoundFinished.ui" line="100"/>
+        <source>In/out list</source>
+        <translation>Liste ausgeschiedener Spieler</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgRoundFinished.ui" line="135"/>
+        <source>OK</source>
+        <translation>Okay</translation>
+    </message>
+    <message>
+        <location filename="ui/DlgRoundFinished.cpp" line="48"/>
+        <source>Round %1 of category %2 finished!</source>
+        <translation>Runde %1 der Disziplin %2 abgeschlossen!</translation>
     </message>
 </context>
 <context>
@@ -2401,37 +2701,37 @@ hinzufügen zu:</translation>
         <translation type="vanished">Tests</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="1307"/>
+        <location filename="ui/MainFrame.cpp" line="1386"/>
         <source>About QTournament</source>
         <translation>Über QTournament</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.ui" line="141"/>
+        <location filename="ui/MainFrame.ui" line="156"/>
         <source>&amp;New</source>
         <translation>&amp;Neu</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.ui" line="144"/>
+        <location filename="ui/MainFrame.ui" line="159"/>
         <source>Ctrl+N</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.ui" line="149"/>
+        <location filename="ui/MainFrame.ui" line="164"/>
         <source>&amp;Open</source>
         <translation>Ö&amp;ffnen</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.ui" line="152"/>
+        <location filename="ui/MainFrame.ui" line="167"/>
         <source>Ctrl+O</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.ui" line="160"/>
+        <location filename="ui/MainFrame.ui" line="175"/>
         <source>&amp;Settings...</source>
         <translation>Ein&amp;stellungen...</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.ui" line="165"/>
+        <location filename="ui/MainFrame.ui" line="180"/>
         <source>&amp;Quit QTournament</source>
         <translation>QTournament beenden</translation>
     </message>
@@ -2440,17 +2740,17 @@ hinzufügen zu:</translation>
         <translation type="vanished">Speichern...</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.ui" line="236"/>
+        <location filename="ui/MainFrame.ui" line="251"/>
         <source>Ctrl+S</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.ui" line="244"/>
+        <location filename="ui/MainFrame.ui" line="259"/>
         <source>Save as...</source>
         <translation>Speichern unter...</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.ui" line="247"/>
+        <location filename="ui/MainFrame.ui" line="262"/>
         <source>Ctrl+Shift+S</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2459,7 +2759,7 @@ hinzufügen zu:</translation>
         <translation type="vanished">Kopie speichern unter...</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.ui" line="258"/>
+        <location filename="ui/MainFrame.ui" line="273"/>
         <source>Ctrl+Alt+S</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2468,7 +2768,7 @@ hinzufügen zu:</translation>
         <translation type="vanished">Zwischenstand sichern</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.ui" line="269"/>
+        <location filename="ui/MainFrame.ui" line="284"/>
         <source>Ctrl+B</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2477,7 +2777,7 @@ hinzufügen zu:</translation>
         <translation type="vanished">Schließen...</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.ui" line="280"/>
+        <location filename="ui/MainFrame.ui" line="295"/>
         <source>Ctrl+W</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2492,8 +2792,9 @@ hinzufügen zu:</translation>
     </message>
     <message>
         <location filename="ui/MainFrame.ui" line="86"/>
-        <source>To&amp;urnament</source>
-        <translation>T&amp;urnier</translation>
+        <source>Tourna&amp;ment</source>
+        <oldsource>To&amp;urnament</oldsource>
+        <translation type="unfinished">T&amp;urnier</translation>
     </message>
     <message>
         <location filename="ui/MainFrame.ui" line="93"/>
@@ -2511,91 +2812,131 @@ hinzufügen zu:</translation>
         <translation>Über &amp;QTournament</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.ui" line="170"/>
+        <location filename="ui/MainFrame.ui" line="136"/>
+        <source>On&amp;line</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="ui/MainFrame.ui" line="185"/>
         <source>&amp;Empty</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.ui" line="175"/>
+        <location filename="ui/MainFrame.ui" line="190"/>
         <source>&amp;Scenario01</source>
         <oldsource>Scenario02</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.ui" line="180"/>
+        <location filename="ui/MainFrame.ui" line="195"/>
         <source>S&amp;cenario02</source>
         <oldsource>Scenario03</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.ui" line="185"/>
+        <location filename="ui/MainFrame.ui" line="200"/>
         <source>Sce&amp;nario03</source>
         <oldsource>Scenario04</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.ui" line="190"/>
+        <location filename="ui/MainFrame.ui" line="205"/>
         <source>Scena&amp;rio04</source>
         <oldsource>Scenario05</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.ui" line="195"/>
+        <location filename="ui/MainFrame.ui" line="210"/>
         <source>Scenar&amp;io05</source>
         <oldsource>Scenario06</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.ui" line="200"/>
+        <location filename="ui/MainFrame.ui" line="215"/>
         <source>Scenari&amp;o06</source>
         <oldsource>Scenario07</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.ui" line="205"/>
+        <location filename="ui/MainFrame.ui" line="220"/>
         <source>Scenario&amp;07</source>
         <oldsource>Scenario08</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.ui" line="210"/>
+        <location filename="ui/MainFrame.ui" line="225"/>
         <source>Scenario0&amp;8</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.ui" line="215"/>
+        <location filename="ui/MainFrame.ui" line="230"/>
         <source>&amp;New...</source>
         <translation>&amp;Neu...</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.ui" line="220"/>
+        <location filename="ui/MainFrame.ui" line="235"/>
         <source>&amp;Select...</source>
         <translation>&amp;Auswählen...</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.ui" line="225"/>
+        <location filename="ui/MainFrame.ui" line="240"/>
         <source>&amp;Info...</source>
         <translation>&amp;Info...</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.ui" line="233"/>
+        <location filename="ui/MainFrame.ui" line="248"/>
         <source>Sa&amp;ve...</source>
         <translation>&amp;Speichern...</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.ui" line="255"/>
+        <location filename="ui/MainFrame.ui" line="270"/>
         <source>Save a co&amp;py...</source>
         <translation>&amp;Kopie speichern...</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.ui" line="266"/>
+        <location filename="ui/MainFrame.ui" line="281"/>
         <source>&amp;Create baseline</source>
         <translation>&amp;Zwischenstand sichern</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.ui" line="277"/>
+        <location filename="ui/MainFrame.ui" line="292"/>
         <source>C&amp;lose...</source>
         <translation>S&amp;chließen...</translation>
+    </message>
+    <message>
+        <location filename="ui/MainFrame.ui" line="300"/>
+        <source>Change &amp;Password...</source>
+        <translation>Passwort ändern...</translation>
+    </message>
+    <message>
+        <location filename="ui/MainFrame.ui" line="305"/>
+        <source>&amp;Register...</source>
+        <translation>Registrierung...</translation>
+    </message>
+    <message>
+        <location filename="ui/MainFrame.ui" line="310"/>
+        <source>&amp;Connect...</source>
+        <translation>Mit Server verbinden...</translation>
+    </message>
+    <message>
+        <location filename="ui/MainFrame.ui" line="315"/>
+        <source>&amp;Force full sync...</source>
+        <translation>Synchronisierung erzwingen</translation>
+    </message>
+    <message>
+        <location filename="ui/MainFrame.ui" line="320"/>
+        <source>&amp;Disconnect</source>
+        <translation>Verbindung trennen</translation>
+    </message>
+    <message>
+        <location filename="ui/MainFrame.ui" line="325"/>
+        <source>Delete &amp;from Server...</source>
+        <translation>Turnier vom Server löschen...</translation>
+    </message>
+    <message>
+        <location filename="ui/MainFrame.ui" line="330"/>
+        <source>Connection Settings...</source>
+        <translation>Verbindungseinstellungen...</translation>
     </message>
     <message>
         <source>New...</source>
@@ -2610,25 +2951,25 @@ hinzufügen zu:</translation>
         <translation type="vanished">Turnier</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="100"/>
-        <location filename="ui/MainFrame.cpp" line="117"/>
+        <location filename="ui/MainFrame.cpp" line="125"/>
+        <location filename="ui/MainFrame.cpp" line="142"/>
         <source>New tournament</source>
         <translation>Neues Tournier</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="100"/>
-        <location filename="ui/MainFrame.cpp" line="117"/>
+        <location filename="ui/MainFrame.cpp" line="125"/>
+        <location filename="ui/MainFrame.cpp" line="142"/>
         <source>Something went wrong; no new tournament created.</source>
         <translation>Irgendwas ist schiefgelaufen. Es wurde kein neues Turnier angelegt.</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="151"/>
-        <location filename="ui/MainFrame.cpp" line="569"/>
+        <location filename="ui/MainFrame.cpp" line="176"/>
+        <location filename="ui/MainFrame.cpp" line="612"/>
         <source>QTournament Files (*.tdb)</source>
         <translation>Turnierdateien (*.tdb)</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="1227"/>
+        <location filename="ui/MainFrame.cpp" line="1306"/>
         <source>Could not delete </source>
         <translation>Fehler beim Löschen von </translation>
     </message>
@@ -2637,36 +2978,41 @@ hinzufügen zu:</translation>
         <translation type="vanished">, daher wurde kein neues Turnier angelegt.</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="172"/>
+        <location filename="ui/MainFrame.cpp" line="89"/>
+        <source>Ping</source>
+        <translation>Ping</translation>
+    </message>
+    <message>
+        <location filename="ui/MainFrame.cpp" line="197"/>
         <source>The file has been created with an incompatible
 </source>
         <translation>Die Datei wurde mit einer inkompatiblen Version
 </translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="173"/>
+        <location filename="ui/MainFrame.cpp" line="198"/>
         <source>version of QTournament and can&apos;t be opened.</source>
         <translation>von QTournament erstellt und kann nicht geöffnet werden.</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="174"/>
-        <location filename="ui/MainFrame.cpp" line="180"/>
-        <location filename="ui/MainFrame.cpp" line="185"/>
+        <location filename="ui/MainFrame.cpp" line="199"/>
+        <location filename="ui/MainFrame.cpp" line="205"/>
+        <location filename="ui/MainFrame.cpp" line="210"/>
         <source>Open tournament</source>
         <translation>Turnierdatei öffnen</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="179"/>
+        <location filename="ui/MainFrame.cpp" line="204"/>
         <source>Couldn&apos;t open </source>
         <translation>Öffnen fehlgeschlagen für </translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="185"/>
+        <location filename="ui/MainFrame.cpp" line="210"/>
         <source>Something went wrong; no tournament opened.</source>
         <translation>Es ist ein Fehler beim Öffnen der Turnierdatei aufgetreten.</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="192"/>
+        <location filename="ui/MainFrame.cpp" line="217"/>
         <source>The file has been created with an older version of QTournament.
 
 </source>
@@ -2675,17 +3021,17 @@ hinzufügen zu:</translation>
 </translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="193"/>
+        <location filename="ui/MainFrame.cpp" line="218"/>
         <source>The file is not compatible with the current version but it can be updated </source>
         <translation>Die Datei ist nicht kompatibel mit der aktuellen Version aber sie kann auf die aktuelle </translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="194"/>
+        <location filename="ui/MainFrame.cpp" line="219"/>
         <source>to the current version. If you upgrade, you will no longer be able to open </source>
         <translation>Version aktualisiert werden. Nach dieser Aktualisierung kann die Datei jedoch nicht mehr </translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="195"/>
+        <location filename="ui/MainFrame.cpp" line="220"/>
         <source>the file with older versions of QTournament.
 
 </source>
@@ -2694,7 +3040,7 @@ hinzufügen zu:</translation>
 </translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="196"/>
+        <location filename="ui/MainFrame.cpp" line="221"/>
         <source>The conversion cannot be undone.
 
 </source>
@@ -2703,43 +3049,43 @@ hinzufügen zu:</translation>
 </translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="197"/>
+        <location filename="ui/MainFrame.cpp" line="222"/>
         <source>Do you want to proceed and update the file?</source>
         <translation>Möchten Sie fortfahren und die Datei aktualisieren?</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="198"/>
+        <location filename="ui/MainFrame.cpp" line="223"/>
         <source>Convert file format?</source>
         <translation>Dateiformat aktualisieren?</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="204"/>
+        <location filename="ui/MainFrame.cpp" line="229"/>
         <source>The file was successfully converted!</source>
         <translation>Die Datei wurde erfolgreich aktualisiert!</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="205"/>
-        <location filename="ui/MainFrame.cpp" line="208"/>
+        <location filename="ui/MainFrame.cpp" line="230"/>
+        <location filename="ui/MainFrame.cpp" line="233"/>
         <source>Convert file format</source>
         <translation>Dateiformat aktualisieren</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="207"/>
+        <location filename="ui/MainFrame.cpp" line="232"/>
         <source>The file conversion failed. The tournament could not be opened.</source>
         <translation>Die Aktualisierung ist fehlgeschlagen. Die Turnierdatei konnte nicht geöffnet werden.</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="224"/>
+        <location filename="ui/MainFrame.cpp" line="249"/>
         <source>An internal error occured. No tournament opened.</source>
         <translation>Es ist ein interner Fehler aufgetreten. Die Turnierdatei konnte nicht geöffnet werden.</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="225"/>
+        <location filename="ui/MainFrame.cpp" line="250"/>
         <source>Open failed</source>
         <translation>Öffnen fehlgeschlagen</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="237"/>
+        <location filename="ui/MainFrame.cpp" line="262"/>
         <source>Could not read from the source file:
 
 </source>
@@ -2748,12 +3094,12 @@ hinzufügen zu:</translation>
 </translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="239"/>
+        <location filename="ui/MainFrame.cpp" line="264"/>
         <source>The tournament has not been opened.</source>
         <translation>Die Datei wurde nicht geöffnet.</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="243"/>
+        <location filename="ui/MainFrame.cpp" line="268"/>
         <source>A database error occured while opening.
 
 </source>
@@ -2762,18 +3108,18 @@ hinzufügen zu:</translation>
 </translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="244"/>
-        <location filename="ui/MainFrame.cpp" line="499"/>
+        <location filename="ui/MainFrame.cpp" line="269"/>
+        <location filename="ui/MainFrame.cpp" line="542"/>
         <source>Internal hint: SQLite error code = %1</source>
         <translation>Interner Hinweis: SQLIte Fehlercode = %1</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="249"/>
+        <location filename="ui/MainFrame.cpp" line="274"/>
         <source>Opening failed</source>
         <translation>Öffnen fehlgeschlagen</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="280"/>
+        <location filename="ui/MainFrame.cpp" line="315"/>
         <source>Could not find the player database
 
 </source>
@@ -2782,12 +3128,12 @@ hinzufügen zu:</translation>
 </translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="282"/>
+        <location filename="ui/MainFrame.cpp" line="317"/>
         <source>Please make sure the file exists and is valid.</source>
         <translation>Bitte stellen Sie sicher, dass die Datei existiert und korrekt ist.</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="286"/>
+        <location filename="ui/MainFrame.cpp" line="321"/>
         <source>The player database
 
 </source>
@@ -2796,24 +3142,24 @@ hinzufügen zu:</translation>
 </translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="288"/>
+        <location filename="ui/MainFrame.cpp" line="323"/>
         <source>is invalid.</source>
         <translation>ist ungültig.</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="319"/>
+        <location filename="ui/MainFrame.cpp" line="354"/>
         <source>Save a copy</source>
         <translation>Kopie speichern</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="340"/>
+        <location filename="ui/MainFrame.cpp" line="375"/>
         <source>The current file name is unexpectedly ugly. Can&apos;t derive
 </source>
         <translation>Es gibt ein unerwartetes Problem mit dem Dateinamen. Ein Name
 </translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="341"/>
+        <location filename="ui/MainFrame.cpp" line="376"/>
         <source>baseline names from it.
 
 </source>
@@ -2822,17 +3168,17 @@ hinzufügen zu:</translation>
 </translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="342"/>
+        <location filename="ui/MainFrame.cpp" line="377"/>
         <source>Nothing has been saved.</source>
         <translation>Es wurde nichts gespeichert.</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="343"/>
+        <location filename="ui/MainFrame.cpp" line="378"/>
         <source>Baseline creation failed</source>
         <translation>Anlegen des Zwischenstands gescheitert</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="363"/>
+        <location filename="ui/MainFrame.cpp" line="398"/>
         <source>A snapshot of the current tournament status has been saved to:
 
 %1</source>
@@ -2841,14 +3187,14 @@ hinzufügen zu:</translation>
 </translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="401"/>
+        <location filename="ui/MainFrame.cpp" line="444"/>
         <source>Warning: all unsaved changes to the current tournament
 </source>
         <translation>Achtung: alle nicht gespeicherten Änderungen an diesem Turnier
 </translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="402"/>
+        <location filename="ui/MainFrame.cpp" line="445"/>
         <source>will be lost.
 
 </source>
@@ -2857,17 +3203,17 @@ hinzufügen zu:</translation>
 </translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="403"/>
+        <location filename="ui/MainFrame.cpp" line="446"/>
         <source>Do you want to save your changes?</source>
         <translation>Möchten Sie Ihre Änderungen speichern?</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="408"/>
+        <location filename="ui/MainFrame.cpp" line="451"/>
         <source>Save changes?</source>
         <translation>Änderungen speichern?</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="492"/>
+        <location filename="ui/MainFrame.cpp" line="535"/>
         <source>Could not write to the destination file:
 
 </source>
@@ -2876,12 +3222,12 @@ hinzufügen zu:</translation>
 </translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="494"/>
+        <location filename="ui/MainFrame.cpp" line="537"/>
         <source>The tournament has not been saved.</source>
         <translation>Das Turnier wurde nicht gespeichert.</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="498"/>
+        <location filename="ui/MainFrame.cpp" line="541"/>
         <source>A database error occured while saving.
 
 </source>
@@ -2890,146 +3236,251 @@ hinzufügen zu:</translation>
 </translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="504"/>
+        <location filename="ui/MainFrame.cpp" line="547"/>
         <source>Saving failed</source>
         <translation>Speichern fehlgeschlagen</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="540"/>
+        <location filename="ui/MainFrame.cpp" line="583"/>
         <source>Save tournament as</source>
         <translation>Turnier speichern unter</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="600"/>
+        <location filename="ui/MainFrame.cpp" line="643"/>
         <source>unsaved</source>
         <translation>noch nicht gespeichert</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="1205"/>
-        <location filename="ui/MainFrame.cpp" line="1250"/>
+        <location filename="ui/MainFrame.cpp" line="1284"/>
+        <location filename="ui/MainFrame.cpp" line="1329"/>
         <source>QTournament Player Database (*.pdb)</source>
         <translation>QTournament Spielerdatenbank (*.pdb)</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="1227"/>
-        <location filename="ui/MainFrame.cpp" line="1237"/>
+        <location filename="ui/MainFrame.cpp" line="1306"/>
+        <location filename="ui/MainFrame.cpp" line="1316"/>
         <source>New player database</source>
         <translation>Neue Spielerdatenbank</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="1227"/>
+        <location filename="ui/MainFrame.cpp" line="1306"/>
         <source>, no new database created.</source>
         <translation>, es wurde keine neue Datenbank angelegt.</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="1237"/>
+        <location filename="ui/MainFrame.cpp" line="1316"/>
         <source>Could not create </source>
         <translation>Löschen fehlgeschlagen für </translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="1266"/>
+        <location filename="ui/MainFrame.cpp" line="1345"/>
         <source>Could not open </source>
         <translation>Öffen fehlgeschlagen für </translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="1273"/>
+        <location filename="ui/MainFrame.cpp" line="1352"/>
         <source>Select player database</source>
         <translation>Spielerdatenbank auswählen</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="1282"/>
+        <location filename="ui/MainFrame.cpp" line="1361"/>
         <source>This is QTournament version %1.&lt;br&gt;</source>
         <translation>Dies ist QTournament Version %1.&lt;br&gt;</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="1283"/>
+        <location filename="ui/MainFrame.cpp" line="1362"/>
         <source>© Volker Knollmann, 2014 - 2017&lt;br&gt;&lt;br&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="1284"/>
+        <location filename="ui/MainFrame.cpp" line="1363"/>
         <source>This program is free software: you can redistribute it and/or modify </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="1285"/>
+        <location filename="ui/MainFrame.cpp" line="1364"/>
         <source>it under the terms of the GNU General Public License as published by </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="1286"/>
+        <location filename="ui/MainFrame.cpp" line="1365"/>
         <source>the Free Software Foundation, either version 3 of the License, or </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="1287"/>
+        <location filename="ui/MainFrame.cpp" line="1366"/>
         <source>any later version.&lt;br&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="1289"/>
+        <location filename="ui/MainFrame.cpp" line="1368"/>
         <source>This program is distributed in the hope that it will be useful, </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="1290"/>
+        <location filename="ui/MainFrame.cpp" line="1369"/>
         <source>but WITHOUT ANY WARRANTY; without even the implied warranty of </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="1291"/>
+        <location filename="ui/MainFrame.cpp" line="1370"/>
         <source>MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="1292"/>
+        <location filename="ui/MainFrame.cpp" line="1371"/>
         <source>GNU General Public License for more details.&lt;br&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="1294"/>
+        <location filename="ui/MainFrame.cpp" line="1373"/>
         <source>You should have received a copy of the GNU General Public License </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="1295"/>
+        <location filename="ui/MainFrame.cpp" line="1374"/>
         <source>along with this program. If not, see &lt;a href=&apos;http://www.gnu.org/licenses/&apos;&gt;http://www.gnu.org/licenses/&lt;/a&gt;.&lt;br&gt;&lt;br&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="1297"/>
+        <location filename="ui/MainFrame.cpp" line="1376"/>
         <source>The source code for this program is hosted on Github:&lt;br&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="1300"/>
+        <location filename="ui/MainFrame.cpp" line="1379"/>
         <source>For more information please visit:&lt;br&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="1333"/>
+        <location filename="ui/MainFrame.cpp" line="1412"/>
         <source>Edit tournament settings</source>
         <translation>Turniereinstellungen bearbeiten</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="1334"/>
+        <location filename="ui/MainFrame.cpp" line="1413"/>
         <source>The tournament settings could not be updated.</source>
         <translation>Die Turniereinstellungen konnten nicht gespeichert werden.</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="1417"/>
+        <location filename="ui/MainFrame.cpp" line="1496"/>
+        <location filename="ui/MainFrame.cpp" line="1499"/>
+        <source>Server Disconnect</source>
+        <translation>Verbindung getrennt</translation>
+    </message>
+    <message>
+        <location filename="ui/MainFrame.cpp" line="1496"/>
+        <source>You are now disconnected from the server</source>
+        <translation>Die Verbindung zum Server ist nun abgebaut</translation>
+    </message>
+    <message>
+        <location filename="ui/MainFrame.cpp" line="1498"/>
+        <source>An error occurred while disconnecting. Nevertheless that, the syncing with the server has now been stopped.</source>
+        <translation>Ein Fehler ist beim Verbindungsabbau aufgetreten. Nichtsdestotrotz wurde die Synchronisierung des Turniers mit dem Server gestoppt.</translation>
+    </message>
+    <message>
+        <location filename="ui/MainFrame.cpp" line="1573"/>
         <source>Last autosave: </source>
         <translation>Letzte automatische Sicherung: </translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="1420"/>
+        <location filename="ui/MainFrame.cpp" line="1576"/>
         <source>not yet possible</source>
         <translation>noch nicht möglich</translation>
     </message>
     <message>
-        <location filename="ui/MainFrame.cpp" line="1435"/>
+        <location filename="ui/MainFrame.cpp" line="1591"/>
         <source>failed</source>
         <translation>gescheitert</translation>
+    </message>
+    <message>
+        <location filename="ui/MainFrame.cpp" line="1627"/>
+        <source>&lt;span style=&apos;color: red; font-weight: bold;&apos;&gt;Offline&lt;/span&gt;</source>
+        <translation>&lt;span style=&apos;color: red; font-weight: bold;&apos;&gt;Nicht verbunden&lt;/span&gt;</translation>
+    </message>
+    <message>
+        <location filename="ui/MainFrame.cpp" line="1633"/>
+        <source>&lt;span style=&apos;color: green; font-weight: bold;&apos;&gt;Online&lt;/span&gt;</source>
+        <translation>&lt;span style=&apos;color: green; font-weight: bold;&apos;&gt;Verbunden&lt;/span&gt;</translation>
+    </message>
+    <message>
+        <location filename="ui/MainFrame.cpp" line="1634"/>
+        <source>, %1 syncs committed, %2 changes pending</source>
+        <translation>, %1 mal synchronisiert, %2 Änderungen noch zu übertragen</translation>
+    </message>
+    <message>
+        <location filename="ui/MainFrame.cpp" line="1642"/>
+        <source> ; the last request took %1 ms</source>
+        <translation> ; die letzte Synchronisierung dauerte %1 ms</translation>
+    </message>
+    <message>
+        <location filename="ui/MainFrame.cpp" line="1673"/>
+        <source>The server is currently not available.
+
+</source>
+        <translation>Der Server ist aktuell nicht erreichbar.
+
+</translation>
+    </message>
+    <message>
+        <location filename="ui/MainFrame.cpp" line="1674"/>
+        <source>Maybe the server is temporarily down or you are offline.</source>
+        <translation>Möglicherweise ist der Server vorübergehend heruntergefahren oder Sie haben keine Internetverbindung.</translation>
+    </message>
+    <message>
+        <location filename="ui/MainFrame.cpp" line="1678"/>
+        <source>The server did not accept our sync request (400, BadRequest).</source>
+        <translation>Der Server hat unsere Synchronisierungsanfrage nicht akzeptiert (400, BadRequest).</translation>
+    </message>
+    <message>
+        <location filename="ui/MainFrame.cpp" line="1682"/>
+        <source>Sync failed due to an unspecified network or server error!</source>
+        <translation>Die Synchronisierung ist aufgrund eines nicht näher bekannten Server- oder Netzwerkfehlers gescheitert!</translation>
+    </message>
+    <message>
+        <location filename="ui/MainFrame.cpp" line="1690"/>
+        <source>Syncing failed because of a server-side database error.</source>
+        <translation>Die Synchronisierung ist an einem server-seitigen Datenbankfehler gescheitert.</translation>
+    </message>
+    <message>
+        <location filename="ui/MainFrame.cpp" line="1694"/>
+        <source>Syncing failed because the server couldn&apos;t digest our CSV data!
+</source>
+        <translation>Die Synchronisierung ist gescheitert, weil der Server unsere CSV-Daten nicht akzeptiert hat!
+</translation>
+    </message>
+    <message>
+        <location filename="ui/MainFrame.cpp" line="1695"/>
+        <source>Strange, this shouldn&apos;t happen...</source>
+        <translation>Komisch, das sollte eigentlich nicht passieren...</translation>
+    </message>
+    <message>
+        <location filename="ui/MainFrame.cpp" line="1699"/>
+        <source>Sync failed because of an unexpected server error.
+</source>
+        <translation>Die Synchronisierung ist aufgrund eines unerwarteten Serverfehlers gescheitert.
+</translation>
+    </message>
+    <message>
+        <location filename="ui/MainFrame.cpp" line="1707"/>
+        <source>Server sync failed</source>
+        <translation>Die Synchronisierung mit dem Server ist gescheitert.</translation>
+    </message>
+    <message>
+        <location filename="ui/MainFrame.cpp" line="1725"/>
+        <source>The server responded within %1 ms</source>
+        <translation>Der Server hat binnen %1 ms geantwortet</translation>
+    </message>
+    <message>
+        <location filename="ui/MainFrame.cpp" line="1727"/>
+        <location filename="ui/MainFrame.cpp" line="1730"/>
+        <source>Server Ping Test</source>
+        <translation>Sever Ping-Test</translation>
+    </message>
+    <message>
+        <location filename="ui/MainFrame.cpp" line="1729"/>
+        <source>The server is not reachable</source>
+        <translation>Der Server ist nicht erreichbar</translation>
     </message>
 </context>
 <context>
@@ -3589,7 +4040,7 @@ hinzufügen zu:</translation>
         <location filename="ui/PlayerTabWidget.cpp" line="280"/>
         <location filename="ui/PlayerTabWidget.cpp" line="335"/>
         <source>Import CSV</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">CSV Import</translation>
     </message>
     <message>
         <location filename="ui/PlayerTabWidget.cpp" line="298"/>
@@ -3722,90 +4173,90 @@ The import might have </source>
         <translation type="vanished">Beim Einfügen des Spielers ist etwas schiefgelaufen. Das sollte nicht passieren.</translation>
     </message>
     <message>
-        <location filename="ui/PlayerTableView.cpp" line="176"/>
-        <location filename="ui/PlayerTableView.cpp" line="196"/>
-        <location filename="ui/PlayerTableView.cpp" line="206"/>
-        <location filename="ui/PlayerTableView.cpp" line="222"/>
-        <location filename="ui/PlayerTableView.cpp" line="314"/>
+        <location filename="ui/PlayerTableView.cpp" line="179"/>
+        <location filename="ui/PlayerTableView.cpp" line="199"/>
+        <location filename="ui/PlayerTableView.cpp" line="209"/>
+        <location filename="ui/PlayerTableView.cpp" line="225"/>
+        <location filename="ui/PlayerTableView.cpp" line="317"/>
         <source>For the records: error code = </source>
         <translation>Fürs Protokoll: Fehlercode = </translation>
     </message>
     <message>
-        <location filename="ui/PlayerTableView.cpp" line="177"/>
-        <location filename="ui/PlayerTableView.cpp" line="197"/>
-        <location filename="ui/PlayerTableView.cpp" line="207"/>
-        <location filename="ui/PlayerTableView.cpp" line="223"/>
-        <location filename="ui/PlayerTableView.cpp" line="315"/>
+        <location filename="ui/PlayerTableView.cpp" line="180"/>
+        <location filename="ui/PlayerTableView.cpp" line="200"/>
+        <location filename="ui/PlayerTableView.cpp" line="210"/>
+        <location filename="ui/PlayerTableView.cpp" line="226"/>
+        <location filename="ui/PlayerTableView.cpp" line="318"/>
         <source>WTF??</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="ui/PlayerTableView.cpp" line="205"/>
+        <location filename="ui/PlayerTableView.cpp" line="208"/>
         <source>Something went wrong when adding the player to a category. This shouldn&apos;t happen.</source>
         <translation>Beim Zuordnen des Spielers zur Disziplin ist etwas schiefgelaufen. Das sollte nicht passieren.</translation>
     </message>
     <message>
-        <location filename="ui/PlayerTableView.cpp" line="175"/>
+        <location filename="ui/PlayerTableView.cpp" line="178"/>
         <source>Something went wrong when renaming the player. This shouldn&apos;t happen.</source>
         <translation>Beim Umbenennen des Spielers ist etwas schiefgelaufen. Das sollte nicht passieren.</translation>
     </message>
     <message>
-        <location filename="ui/PlayerTableView.cpp" line="195"/>
+        <location filename="ui/PlayerTableView.cpp" line="198"/>
         <source>Something went wrong when removing the player from a category. This shouldn&apos;t happen.</source>
         <translation>Beim Entfernen des Spielers aus der Disziplin ist etwas schiefgelaufen. Das sollte nicht passieren.</translation>
     </message>
     <message>
-        <location filename="ui/PlayerTableView.cpp" line="221"/>
+        <location filename="ui/PlayerTableView.cpp" line="224"/>
         <source>Something went wrong when changing the player&apos;s team assignment. This shouldn&apos;t happen.</source>
         <translation>Beim Ändern der Teamzuordnung ist etwas schiefgelaufen. Das sollte nicht passieren.</translation>
     </message>
     <message>
-        <location filename="ui/PlayerTableView.cpp" line="286"/>
+        <location filename="ui/PlayerTableView.cpp" line="289"/>
         <source>The player can&apos;t be removed from all categories.
 </source>
         <translation>Der Spiele konnte nicht aus allen Disziplinen entfernt werden.
 </translation>
     </message>
     <message>
-        <location filename="ui/PlayerTableView.cpp" line="287"/>
+        <location filename="ui/PlayerTableView.cpp" line="290"/>
         <source>Please make sure that the player is not assigned to any
 </source>
         <translation>Bitte sicherstellen, dass der Spieler keinem Doppel- oder
 </translation>
     </message>
     <message>
-        <location filename="ui/PlayerTableView.cpp" line="288"/>
+        <location filename="ui/PlayerTableView.cpp" line="291"/>
         <source>partners in doubles or mixed categories!</source>
         <translation>Mixedpartner zugeordnet ist!</translation>
     </message>
     <message>
-        <location filename="ui/PlayerTableView.cpp" line="289"/>
-        <location filename="ui/PlayerTableView.cpp" line="298"/>
-        <location filename="ui/PlayerTableView.cpp" line="307"/>
+        <location filename="ui/PlayerTableView.cpp" line="292"/>
+        <location filename="ui/PlayerTableView.cpp" line="301"/>
+        <location filename="ui/PlayerTableView.cpp" line="310"/>
         <source>Delete player</source>
         <translation>Spieler löschen</translation>
     </message>
     <message>
-        <location filename="ui/PlayerTableView.cpp" line="296"/>
+        <location filename="ui/PlayerTableView.cpp" line="299"/>
         <source>The player can&apos;t be deleted anymore. The player is
 </source>
         <translation>Der Spieler kann nicht mehr gelöscht werden. Der Spieler ist
 </translation>
     </message>
     <message>
-        <location filename="ui/PlayerTableView.cpp" line="297"/>
+        <location filename="ui/PlayerTableView.cpp" line="300"/>
         <source>most likely already involved/scheduled in matches.</source>
         <translation>bereits für Spiele eingeplant bzw. hat schon gespielt.</translation>
     </message>
     <message>
-        <location filename="ui/PlayerTableView.cpp" line="303"/>
+        <location filename="ui/PlayerTableView.cpp" line="306"/>
         <source>Note: this will remove the player from all categories
 </source>
         <translation>Hinweis: der Spieler wird aus allen Disziplinen und
 </translation>
     </message>
     <message>
-        <location filename="ui/PlayerTableView.cpp" line="304"/>
+        <location filename="ui/PlayerTableView.cpp" line="307"/>
         <source>and from the whole tournament.
 
 </source>
@@ -3814,7 +4265,7 @@ The import might have </source>
 </translation>
     </message>
     <message>
-        <location filename="ui/PlayerTableView.cpp" line="305"/>
+        <location filename="ui/PlayerTableView.cpp" line="308"/>
         <source>This step is irrevocable!
 
 </source>
@@ -3823,12 +4274,12 @@ The import might have </source>
 </translation>
     </message>
     <message>
-        <location filename="ui/PlayerTableView.cpp" line="306"/>
+        <location filename="ui/PlayerTableView.cpp" line="309"/>
         <source>Proceed?</source>
         <translation>Ausführen?</translation>
     </message>
     <message>
-        <location filename="ui/PlayerTableView.cpp" line="313"/>
+        <location filename="ui/PlayerTableView.cpp" line="316"/>
         <source>Something went wrong when deleting the player. This shouldn&apos;t happen.
 
 </source>
@@ -3837,12 +4288,12 @@ The import might have </source>
 </translation>
     </message>
     <message>
-        <location filename="ui/PlayerTableView.cpp" line="332"/>
+        <location filename="ui/PlayerTableView.cpp" line="335"/>
         <source>%1 has currently no scheduled matches.</source>
         <translation>Für %1 sind zur Zeit keine Spiele geplant.</translation>
     </message>
     <message>
-        <location filename="ui/PlayerTableView.cpp" line="335"/>
+        <location filename="ui/PlayerTableView.cpp" line="338"/>
         <source>Next scheduled matches for %1:
 
 </source>
@@ -3851,7 +4302,7 @@ The import might have </source>
 </translation>
     </message>
     <message>
-        <location filename="ui/PlayerTableView.cpp" line="344"/>
+        <location filename="ui/PlayerTableView.cpp" line="347"/>
         <source>   Match %1, %2, round %3 ; estimated call at %4
 
 </source>
@@ -3860,84 +4311,84 @@ The import might have </source>
 </translation>
     </message>
     <message>
-        <location filename="ui/PlayerTableView.cpp" line="406"/>
-        <location filename="ui/PlayerTableView.cpp" line="413"/>
+        <location filename="ui/PlayerTableView.cpp" line="409"/>
+        <location filename="ui/PlayerTableView.cpp" line="416"/>
         <source>Export player</source>
         <translation>Spieler exportieren</translation>
     </message>
     <message>
-        <location filename="ui/PlayerTableView.cpp" line="406"/>
+        <location filename="ui/PlayerTableView.cpp" line="409"/>
         <source>No player selected!</source>
         <translation>Kein Spieler ausgewählt!</translation>
     </message>
     <message>
-        <location filename="ui/PlayerTableView.cpp" line="413"/>
+        <location filename="ui/PlayerTableView.cpp" line="416"/>
         <source>Player data successfully exported.</source>
         <translation>Die Spielerdaten wurden erfolgreich exportiert.</translation>
     </message>
     <message>
-        <location filename="ui/PlayerTableView.cpp" line="426"/>
-        <location filename="ui/PlayerTableView.cpp" line="430"/>
+        <location filename="ui/PlayerTableView.cpp" line="429"/>
+        <location filename="ui/PlayerTableView.cpp" line="433"/>
         <source>Sync players</source>
         <translation>Spieler abgleichen</translation>
     </message>
     <message>
-        <location filename="ui/PlayerTableView.cpp" line="426"/>
+        <location filename="ui/PlayerTableView.cpp" line="429"/>
         <source>No database open!</source>
         <translation>Keine Spielerdatenbank geöffnet!</translation>
     </message>
     <message>
-        <location filename="ui/PlayerTableView.cpp" line="430"/>
+        <location filename="ui/PlayerTableView.cpp" line="433"/>
         <source>Player data successfully synced.</source>
         <translation>Alle Spielerdaten erfolgreich abgeglichen.</translation>
     </message>
     <message>
-        <location filename="ui/PlayerTableView.cpp" line="450"/>
+        <location filename="ui/PlayerTableView.cpp" line="453"/>
         <source>Add Player...</source>
         <translation>Spieler hinzufügen...</translation>
     </message>
     <message>
-        <location filename="ui/PlayerTableView.cpp" line="451"/>
+        <location filename="ui/PlayerTableView.cpp" line="454"/>
         <source>Edit Player...</source>
         <translation>Spieler bearbeiten...</translation>
     </message>
     <message>
-        <location filename="ui/PlayerTableView.cpp" line="452"/>
+        <location filename="ui/PlayerTableView.cpp" line="455"/>
         <source>Remove Player...</source>
         <translation>Spieler löschen...</translation>
     </message>
     <message>
-        <location filename="ui/PlayerTableView.cpp" line="453"/>
+        <location filename="ui/PlayerTableView.cpp" line="456"/>
         <source>Show next Matches...</source>
         <translation>Nächste Spiele anzeigen...</translation>
     </message>
     <message>
-        <location filename="ui/PlayerTableView.cpp" line="454"/>
+        <location filename="ui/PlayerTableView.cpp" line="457"/>
         <source>Register</source>
         <translation>Anmelden</translation>
     </message>
     <message>
-        <location filename="ui/PlayerTableView.cpp" line="455"/>
+        <location filename="ui/PlayerTableView.cpp" line="458"/>
         <source>Undo registration</source>
         <translation>Anmeldung zurücksetzen</translation>
     </message>
     <message>
-        <location filename="ui/PlayerTableView.cpp" line="456"/>
+        <location filename="ui/PlayerTableView.cpp" line="459"/>
         <source>Import player...</source>
         <translation>Spieler importieren...</translation>
     </message>
     <message>
-        <location filename="ui/PlayerTableView.cpp" line="457"/>
+        <location filename="ui/PlayerTableView.cpp" line="460"/>
         <source>Export selected player...</source>
         <translation>Ausgewählten Spieler exportieren...</translation>
     </message>
     <message>
-        <location filename="ui/PlayerTableView.cpp" line="458"/>
+        <location filename="ui/PlayerTableView.cpp" line="461"/>
         <source>Sync all players to database</source>
         <translation>Alle Spieler mit der Datenbank abgleichen</translation>
     </message>
     <message>
-        <location filename="ui/PlayerTableView.cpp" line="459"/>
+        <location filename="ui/PlayerTableView.cpp" line="462"/>
         <source>Show extended player info...</source>
         <translation>Detaillierte Spieler-Informationen...</translation>
     </message>
@@ -4733,13 +5184,13 @@ insgesamt</translation>
         <location filename="reports/ResultSheets.cpp" line="209"/>
         <location filename="reports/ResultSheets.cpp" line="227"/>
         <source>Winner of Match #</source>
-        <translation>Gewinner Spiel </translation>
+        <translation>Gewinner Spiel #</translation>
     </message>
     <message>
         <location filename="reports/ResultSheets.cpp" line="209"/>
         <location filename="reports/ResultSheets.cpp" line="227"/>
         <source>Loser of Match #</source>
-        <translation>Verlierer Spiel </translation>
+        <translation>Verlierer Spiel #</translation>
     </message>
     <message>
         <location filename="reports/ResultSheets.cpp" line="249"/>
@@ -5006,57 +5457,55 @@ insgesamt</translation>
         <translation type="vanished">Keine Spielestatistik verfügbar</translation>
     </message>
     <message>
-        <location filename="ui/ScheduleTabWidget.cpp" line="225"/>
+        <location filename="ui/ScheduleTabWidget.cpp" line="226"/>
         <source>&lt;br&gt;&lt;center&gt;&lt;b&gt;&lt;font color=&quot;red&quot;&gt;SWISS LADDER DEADLOCK&lt;/font&gt;&lt;/b&gt;&lt;/center&gt;&lt;br&gt;&lt;br&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui/ScheduleTabWidget.cpp" line="226"/>
+        <location filename="ui/ScheduleTabWidget.cpp" line="227"/>
         <source>Unfortuantely, the sequence of matches in past rounds in the category %3 has lead </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui/ScheduleTabWidget.cpp" line="227"/>
+        <location filename="ui/ScheduleTabWidget.cpp" line="228"/>
         <source>to a deadlock. We can&apos;t play any more rounds in this category without repeating already </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui/ScheduleTabWidget.cpp" line="228"/>
+        <location filename="ui/ScheduleTabWidget.cpp" line="229"/>
         <source>played matches.&lt;br&gt;&lt;br&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui/ScheduleTabWidget.cpp" line="229"/>
+        <location filename="ui/ScheduleTabWidget.cpp" line="230"/>
         <source>Thus, the category has been reduced from %1 to %2 rounds and </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui/ScheduleTabWidget.cpp" line="230"/>
+        <location filename="ui/ScheduleTabWidget.cpp" line="231"/>
         <source>is now finished.&lt;br&gt;&lt;br&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui/ScheduleTabWidget.cpp" line="231"/>
+        <location filename="ui/ScheduleTabWidget.cpp" line="232"/>
         <source>Normally, such a deadlock should not happen... sincere apologies for this!&lt;br&gt;&lt;br&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui/ScheduleTabWidget.cpp" line="234"/>
+        <location filename="ui/ScheduleTabWidget.cpp" line="235"/>
         <source>Swiss Ladder Deadlock</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui/ScheduleTabWidget.cpp" line="242"/>
         <source>Round %1 of category %2 finished!</source>
-        <translation>Runde %1 der Disziplin %2 abgeschlossen!</translation>
+        <translation type="vanished">Runde %1 der Disziplin %2 abgeschlossen!</translation>
     </message>
     <message>
-        <location filename="ui/ScheduleTabWidget.cpp" line="244"/>
         <source>Round finished</source>
-        <translation>Runde abgeschlossen</translation>
+        <translation type="vanished">Runde abgeschlossen</translation>
     </message>
     <message>
-        <location filename="ui/ScheduleTabWidget.cpp" line="284"/>
+        <location filename="ui/ScheduleTabWidget.cpp" line="286"/>
         <source>Please confirm:
 
 </source>
@@ -5065,49 +5514,49 @@ insgesamt</translation>
 </translation>
     </message>
     <message>
-        <location filename="ui/ScheduleTabWidget.cpp" line="288"/>
+        <location filename="ui/ScheduleTabWidget.cpp" line="290"/>
         <source>Result: </source>
         <translation>Ergebnis: </translation>
     </message>
     <message>
-        <location filename="ui/ScheduleTabWidget.cpp" line="294"/>
-        <location filename="ui/ScheduleTabWidget.cpp" line="302"/>
+        <location filename="ui/ScheduleTabWidget.cpp" line="296"/>
+        <location filename="ui/ScheduleTabWidget.cpp" line="304"/>
         <source>WINNER: </source>
         <translation>GEWINNER: </translation>
     </message>
     <message>
-        <location filename="ui/ScheduleTabWidget.cpp" line="297"/>
-        <location filename="ui/ScheduleTabWidget.cpp" line="305"/>
+        <location filename="ui/ScheduleTabWidget.cpp" line="299"/>
+        <location filename="ui/ScheduleTabWidget.cpp" line="307"/>
         <source>LOSER: </source>
         <translation>VERLIERER: </translation>
     </message>
     <message>
-        <location filename="ui/ScheduleTabWidget.cpp" line="310"/>
+        <location filename="ui/ScheduleTabWidget.cpp" line="312"/>
         <source>The match result is DRAW</source>
         <translation>Das Spiel endet UNENTSCHIEDEN</translation>
     </message>
     <message>
-        <location filename="ui/ScheduleTabWidget.cpp" line="314"/>
+        <location filename="ui/ScheduleTabWidget.cpp" line="316"/>
         <source>Please confirm match result</source>
         <translation>Bitte Spielergebnis bestätigen</translation>
     </message>
     <message>
-        <location filename="ui/ScheduleTabWidget.cpp" line="322"/>
+        <location filename="ui/ScheduleTabWidget.cpp" line="324"/>
         <source>A dabase error occurred. The match result has not been stored.</source>
         <translation>Es ist ein Datenbankfehler aufgetreten. Das Spielergebnis wurde nicht gespeichert.</translation>
     </message>
     <message>
-        <location filename="ui/ScheduleTabWidget.cpp" line="323"/>
+        <location filename="ui/ScheduleTabWidget.cpp" line="325"/>
         <source>Store match result</source>
         <translation>Spielergebnis abspeichern</translation>
     </message>
     <message>
-        <location filename="ui/ScheduleTabWidget.cpp" line="346"/>
+        <location filename="ui/ScheduleTabWidget.cpp" line="348"/>
         <source>Next Match</source>
         <translation>Nächstes Spiel</translation>
     </message>
     <message>
-        <location filename="ui/ScheduleTabWidget.cpp" line="346"/>
+        <location filename="ui/ScheduleTabWidget.cpp" line="348"/>
         <source>Start the next available match on the free court?</source>
         <translation>Das nächste Spiel auf dem freien Feld aufrufen?</translation>
     </message>
@@ -5196,7 +5645,7 @@ insgesamt</translation>
     <message>
         <location filename="ui/TeamTableView.cpp" line="209"/>
         <source>A team of this name already exists</source>
-        <translation>Ein Team dieses Names existiert bereits!</translation>
+        <translation>Ein Team dieses Names existiert bereits</translation>
     </message>
 </context>
 <context>
@@ -5366,7 +5815,9 @@ insgesamt</translation>
         <source>Could not remove player
 
 </source>
-        <translation>Konnte</translation>
+        <translation>Konnte
+
+</translation>
     </message>
     <message>
         <location filename="ui/commonCommands/cmdBulkRemovePlayersFromCat.cpp" line="54"/>
@@ -5415,6 +5866,52 @@ insgesamt</translation>
         <location filename="ui/commonCommands/cmdCallMatch.cpp" line="116"/>
         <source>Call cancled, match not started</source>
         <translation>Aufruf abgebrochen, Spiel nicht gestartet</translation>
+    </message>
+</context>
+<context>
+    <name>cmdConnectionSetting</name>
+    <message>
+        <location filename="ui/commonCommands/cmdConnectionSettings.cpp" line="47"/>
+        <source>Please disconnect before changing the server settings!</source>
+        <translation>Bitte vor dem Ändern der Servereinstellungen die bestehende Verbindung trennen!</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdConnectionSettings.cpp" line="48"/>
+        <location filename="ui/commonCommands/cmdConnectionSettings.cpp" line="68"/>
+        <location filename="ui/commonCommands/cmdConnectionSettings.cpp" line="81"/>
+        <location filename="ui/commonCommands/cmdConnectionSettings.cpp" line="95"/>
+        <location filename="ui/commonCommands/cmdConnectionSettings.cpp" line="109"/>
+        <location filename="ui/commonCommands/cmdConnectionSettings.cpp" line="118"/>
+        <source>Edit Connection Settings</source>
+        <translation>Verbindungseinstellungen ändern</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdConnectionSettings.cpp" line="67"/>
+        <location filename="ui/commonCommands/cmdConnectionSettings.cpp" line="117"/>
+        <source>A local database error occured and thus settings can&apos;t be applied!</source>
+        <translation>Es ist Fehler in der lokalen Datenbank aufgetreten und daher konnten die Änderungen nicht gespeichert werden!</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdConnectionSettings.cpp" line="78"/>
+        <source>The server URL could not be updated.</source>
+        <translation>Die Server-URL konnte nicht aktualisiert werden.</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdConnectionSettings.cpp" line="80"/>
+        <location filename="ui/commonCommands/cmdConnectionSettings.cpp" line="94"/>
+        <location filename="ui/commonCommands/cmdConnectionSettings.cpp" line="108"/>
+        <source>All connection settings remain untouched!</source>
+        <translation>Alle Verbindungseinstellungen bleiben unverändert!</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdConnectionSettings.cpp" line="92"/>
+        <source>The server&apos;s public key could not be updated. Maybe your input was malformed?</source>
+        <translation>Der öffentliche Schlüssel des Servers konnte nicht aktualisiert werden. Vielleicht war die Eingabe fehlerhaft?</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdConnectionSettings.cpp" line="106"/>
+        <source>The timeout setting could not be updated.</source>
+        <translation>Die Timeout-Einstellungen konnten nicht aktualisiert werden.</translation>
     </message>
 </context>
 <context>
@@ -5479,6 +5976,123 @@ insgesamt</translation>
     </message>
 </context>
 <context>
+    <name>cmdDeleteFromServer</name>
+    <message>
+        <location filename="ui/commonCommands/cmdDeleteFromServer.cpp" line="59"/>
+        <source>&lt;p&gt;Do you really want to delete the tournament from the server?&lt;/p&gt;</source>
+        <translation>&lt;p&gt;Wollen Sie wirklich das Turnier vom Server löschen?&lt;/p&gt;</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdDeleteFromServer.cpp" line="60"/>
+        <source>&lt;p&gt;The deletion &lt;b&gt;cannot be undone&lt;/b&gt; and is effective immediately.&lt;/p&gt;</source>
+        <translation>&lt;p&gt;Das Löschen &lt;b&gt;kann nicht rückgängig gemacht werden&lt;/b&gt; und wird sofort wirksam.&lt;/p&gt;</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdDeleteFromServer.cpp" line="61"/>
+        <source>Delete tournament from server</source>
+        <translation>Turnier vom Server löschen</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdDeleteFromServer.cpp" line="76"/>
+        <source>The tournament server is currently not available or there is no working internet connection.
+
+Please try again later.</source>
+        <translation>Der Turnier-Server ist momentan nicht erreichbar oder es besteht keine funktionierende Internetverbindung.
+
+Bitte später noch einmal probieren.</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdDeleteFromServer.cpp" line="77"/>
+        <source>Remove tournament from server</source>
+        <translation>Turnier vom Server löschen</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdDeleteFromServer.cpp" line="100"/>
+        <source>The server is currently not available.
+
+</source>
+        <translation>Der Server ist momentan nicht erreichbar.
+
+</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdDeleteFromServer.cpp" line="101"/>
+        <source>Maybe the server is temporarily down or you are offline.</source>
+        <translation>Möglicherweise ist der Server vorübergebend außer Betrieb oder Sie sind offline.</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdDeleteFromServer.cpp" line="105"/>
+        <source>The server did not accept our connection request (400, BadRequest).</source>
+        <translation>Der Server hat unsere Verbindungsanfrage nicht akzeptiert (400, BadRequest).</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdDeleteFromServer.cpp" line="109"/>
+        <source>&lt;p&gt;This version of QTournament is incompatible with the server.&lt;/p&gt;</source>
+        <translation>&lt;p&gt;Diese Version von QTournament ist nicht mit dem Server kompatibel.&lt;/p&gt;</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdDeleteFromServer.cpp" line="110"/>
+        <source>&lt;p&gt;Please download a more recent version from:&lt;/p&gt;</source>
+        <translation>&lt;p&gt;Bitte laden Sie eine aktuelle Version hier herunter:&lt;/p&gt;</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdDeleteFromServer.cpp" line="115"/>
+        <source>&lt;p&gt;A local database error has occurred.&lt;/p&gt;</source>
+        <translation>&lt;p&gt;Ein lokaler Datenbankfehler ist aufgetreten.&lt;/p&gt;</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdDeleteFromServer.cpp" line="116"/>
+        <source>&lt;p&gt;The tournament has been deleted on the server but the local database file is now inconsistent.&lt;/p&gt;</source>
+        <translation>&lt;p&gt;Das Turnier wurde vom Server gelöscht aber die lokale Turnierdatei konnte nicht entsprechend aktualisiert werden.&lt;/p&gt;</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdDeleteFromServer.cpp" line="117"/>
+        <source>&lt;p&gt;You can safely continue with the tournament but online functions will not work as expected anymore.&lt;/p&gt;</source>
+        <translation>&lt;p&gt;Sie können das Turnier problemlos fortsetzen, aber die Online-Funktionen werden nicht mehr verfügbar sein.&lt;/p&gt;</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdDeleteFromServer.cpp" line="121"/>
+        <source>Deletion failed due to an unspecified network or server error!</source>
+        <translation>Das Löschen ist aufgrund eines unerwarteten Netzwerk- oder Server-Fehlers gescheitert!</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdDeleteFromServer.cpp" line="124"/>
+        <location filename="ui/commonCommands/cmdDeleteFromServer.cpp" line="149"/>
+        <source>Connection failed</source>
+        <translation>Verbindungsaufbau gescheitert</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdDeleteFromServer.cpp" line="133"/>
+        <source>Deletion successful</source>
+        <translation>Löschen erfolgreich</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdDeleteFromServer.cpp" line="133"/>
+        <source>The tournament has been successfully deleted from the server!</source>
+        <translation>Das Turnier wurde erfolgreich vom Server gelöscht!</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdDeleteFromServer.cpp" line="140"/>
+        <source>You cannot connect because of a server-side database error.
+</source>
+        <translation>Sie können sich aufgrund eines server-seitigen Datenbankfehlers aktuell nicht verbinden.
+</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdDeleteFromServer.cpp" line="141"/>
+        <location filename="ui/commonCommands/cmdDeleteFromServer.cpp" line="146"/>
+        <source>Please try again later!</source>
+        <translation>Bitte versuchen Sie es später noch einmal!</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdDeleteFromServer.cpp" line="145"/>
+        <source>You cannot delete the tournament because of an unexpected server error.
+</source>
+        <translation>Sie können das Turnier aufgrund eines unerwarteten Serverfehlers aktuell nicht löschen.
+</translation>
+    </message>
+</context>
+<context>
     <name>cmdExportPlayerToExternalDatabase</name>
     <message>
         <source>No valid database for player export open.</source>
@@ -5527,6 +6141,81 @@ insgesamt</translation>
         <source>been exported to the external database</source>
         <oldsource>exported to the external database</oldsource>
         <translation>in die Spielerdatenbank exportiert werden.</translation>
+    </message>
+</context>
+<context>
+    <name>cmdFullSync</name>
+    <message>
+        <location filename="ui/commonCommands/cmdFullSync.cpp" line="54"/>
+        <source>The server is currently not available.
+
+</source>
+        <translation>Der Server ist momentan nicht verfügbar.
+
+</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdFullSync.cpp" line="55"/>
+        <source>Maybe the server is temporarily down or you are offline.</source>
+        <translation>Möglicherweise ist der Server vorübergebend außer Betrieb oder Sie sind offline.</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdFullSync.cpp" line="59"/>
+        <source>The server did not accept our connection request (400, BadRequest).</source>
+        <translation>Der Server hat unsere Verbindungsanfrage nicht akzeptiert (400, BadRequest).</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdFullSync.cpp" line="63"/>
+        <source>Session setup failed due to an unspecified network or server error!</source>
+        <translation>Die Verbindungsanfrage ist aufgrund eines unerwarteten Netzwerk- oder Server-Fehlers gescheitert!</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdFullSync.cpp" line="66"/>
+        <location filename="ui/commonCommands/cmdFullSync.cpp" line="91"/>
+        <source>Full sync failed</source>
+        <translation>Voll-Synchronisierung gescheitert</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdFullSync.cpp" line="76"/>
+        <source>Syncing failed because of a server-side database error.
+</source>
+        <translation>Die Synchronisierung ist an einem server-seitigen Datenbankfehler gescheitert.
+</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdFullSync.cpp" line="77"/>
+        <location filename="ui/commonCommands/cmdFullSync.cpp" line="87"/>
+        <source>Please try again later!</source>
+        <translation>Bitte versuchen Sie es später noch einmal!</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdFullSync.cpp" line="81"/>
+        <source>Syncing failed because the server couldn&apos;t digest our CSV data!
+</source>
+        <translation>Die Synchronisierung ist gescheitert, weil der Server unsere CSV-Daten nicht akzeptiert hat!
+</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdFullSync.cpp" line="82"/>
+        <source>Strange, this shouldn&apos;t happen...</source>
+        <translation>Komisch, das sollte eigentlich nicht passieren...</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdFullSync.cpp" line="86"/>
+        <source>You cannot connect because of an unexpected server error.
+</source>
+        <translation>Sie können sich aufgrund eines unerwarteten server-seitigen Fehlers aktuell nicht verbinden.
+</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdFullSync.cpp" line="95"/>
+        <source>Full sync successful</source>
+        <translation>Voll-Synchronisierung erfolgreich</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdFullSync.cpp" line="96"/>
+        <source>The server is now in sync with your local tournament file!</source>
+        <translation>Der Server ist nun mit Ihrer Turnierdatei bzw. ihrem aktuellen Turnierstand synchronisiert!</translation>
     </message>
 </context>
 <context>
@@ -5729,6 +6418,184 @@ insgesamt</translation>
     </message>
 </context>
 <context>
+    <name>cmdOnlineRegistration</name>
+    <message>
+        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="69"/>
+        <source>The tournament server is currently not available or there is no working internet connection.
+
+Please try again later.</source>
+        <translation>Der Turnier-Server ist momentan nicht erreichbar oder es besteht keine funktionierende Internetverbindung.
+
+Bitte später noch einmal probieren.</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="70"/>
+        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="147"/>
+        <source>Online registration</source>
+        <translation>Online Registrierung</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="98"/>
+        <source>Please read carefully</source>
+        <translation>Bitte aufmerksam lesen</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="117"/>
+        <source>The server is currently not available.
+
+</source>
+        <translation>Der Server ist aktuell nicht erreichbar.
+
+</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="118"/>
+        <source>Maybe the server is temporarily down or you are offline.</source>
+        <translation>Möglicherweise ist der Server vorübergehend heruntergefahren oder Sie haben keine Internetverbindung.</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="122"/>
+        <source>The server did not accept our registration request (400, BadRequest).</source>
+        <translation>Der Server hat unsere Registrierungsanfrage nicht akzeptiert (400, BadRequest).</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="126"/>
+        <source>&lt;p&gt;This version of QTournament is incompatible with the server.&lt;/p&gt;</source>
+        <translation>&lt;p&gt;Diese Version von QTournament ist nicht mit dem Server kompatibel.&lt;/p&gt;</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="127"/>
+        <source>&lt;p&gt;Please download a more recent version from:&lt;/p&gt;</source>
+        <translation>&lt;p&gt;Bitte laden Sie eine aktuelle Version hier herunter:&lt;/p&gt;</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="132"/>
+        <source>Registration failed due to an unspecified network or server error!</source>
+        <translation>Die Registrierung ist aufgrund eines unerwarteten Netzwerk- oder Server-Fehlers gescheitert!</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="135"/>
+        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="188"/>
+        <source>Online Registration FAILED</source>
+        <translation>Online-Registrierung gescheitert</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="144"/>
+        <source>Online registration successful!
+
+</source>
+        <translation>Online-Registrierung erfolgreich!
+
+</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="145"/>
+        <source>Within the next minutes you should receive a confirmation email. </source>
+        <translation>Innerhalb der nächsten Minuten sollten Sie eine Email mit einem Bestätigungslink bekommen.</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="146"/>
+        <source>Please click on the link in the email to complete your registration.</source>
+        <translation>Bitte folgen Sie dem Link in der Email, um Ihre Registrierung abzuschließen.</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="158"/>
+        <source>A tournament with this name already exists.
+
+</source>
+        <translation>Ein Turnier dieses Namens gibt es bereits.
+
+</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="159"/>
+        <source>Maybe you have already successfully registered your tournament before or </source>
+        <translation>Möglicherweise haben Sie Ihr Turnier bereits früher erfolgreich registriert oder </translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="160"/>
+        <source>someone else is already using your tournament name.
+
+</source>
+        <translation>jemand anders verwendet bereits Ihren Turniernamen.
+
+</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="161"/>
+        <source>Please note that you can only register ONCE with a tournament file, </source>
+        <translation>Bitte beachten Sie, dass Sie jede Turnierdatei bzw. jedes Turnier nur EINMAL registrieren können, </translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="162"/>
+        <source>regardless of the tournament name. Attempting to register again after </source>
+        <translation>unabhängig vom Turniernamen. Der Versuch einer erneuten Registrierung nach einer vorherigen </translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="163"/>
+        <source>an already successful prior registration will always fail.</source>
+        <translation>erfolgreichen Registrierung wird immer abgewiesen werden.</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="167"/>
+        <source>Your registration failed due to a database error on the server.
+
+</source>
+        <translation>Die Registrierung ist aufgrund eines server-seitigen Datenbankfehlers gescheitert!</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="168"/>
+        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="184"/>
+        <source>You may try to register again but if the problems persist please send an email to
+
+</source>
+        <translation>Sie können versuchen, sich erneut zu registrieren. Sollte das Problem bestehen bleiben, senden Sie bitte eine Email an
+
+</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="169"/>
+        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="185"/>
+        <source>	info@qtournament.de</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="173"/>
+        <source>The server refused one or more registration parameters.
+
+</source>
+        <translation>Der Server hat einen oder mehrere Angaben zu Ihrem Turnier abgewiesen.
+
+</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="174"/>
+        <source>Please modify your request and try again.</source>
+        <translation>Bitte ändern Sie Ihre Registrierungsanfrage und versuchen es erneut.</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="178"/>
+        <source>The server could not send a confirmation email to the address you&apos;ve provided.
+
+</source>
+        <translation>Der Server konnte an die von Ihnen angegebene Emailadresse keine Bestätigungsmail versenden.
+
+</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="179"/>
+        <source>Please try again and send an email to info@qtournament.de if the problem persists.</source>
+        <translation>Bitte versuchen Sie es erneut und senden Sie eine Email an info@qtournament.de falls das Problem weiterhin besteht.</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdOnlineRegistration.cpp" line="183"/>
+        <source>Registration failed due to an unspecified network or server error!
+
+</source>
+        <translation>Die Registrierung ist aufgrund eines unerwarteten Netzwerk- oder Server-Fehlers gescheitert!</translation>
+    </message>
+</context>
+<context>
     <name>cmdRegisterPlayer</name>
     <message>
         <location filename="ui/commonCommands/cmdRegisterPlayer.cpp" line="42"/>
@@ -5782,6 +6649,148 @@ insgesamt</translation>
         <location filename="ui/commonCommands/cmdRemovePlayerFromCategory.cpp" line="54"/>
         <source>Remove player from category</source>
         <translation>Spieler aus der Disziplin entfernen</translation>
+    </message>
+</context>
+<context>
+    <name>cmdSetOrChangePassword</name>
+    <message>
+        <location filename="ui/commonCommands/cmdSetOrChangePassword.cpp" line="63"/>
+        <source>An error occurred an the password could not be stored.</source>
+        <translation>Es ist Fehler aufgetreten und das Passwort konnte nicht gespeichert werden.</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdSetOrChangePassword.cpp" line="64"/>
+        <location filename="ui/commonCommands/cmdSetOrChangePassword.cpp" line="69"/>
+        <source>Set password</source>
+        <translation>Passwort setzen</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdSetOrChangePassword.cpp" line="68"/>
+        <source>The password has been set successfully!</source>
+        <translation>Das Passwort wurde erfolgreich gespeichert!</translation>
+    </message>
+</context>
+<context>
+    <name>cmdStartOnlineSession</name>
+    <message>
+        <location filename="ui/commonCommands/cmdStartOnlineSession.cpp" line="53"/>
+        <source>You haven&apos;t registered the tournament yet and thus you can&apos;t start a server session!</source>
+        <translation>Sie haben das Turnier noch nicht beim Server registriert und können daher auch keine Server-Verbindung aufbauen!</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdStartOnlineSession.cpp" line="70"/>
+        <source>The tournament server is currently not available or there is no working internet connection.
+
+Please try again later.</source>
+        <translation>Der Turnier-Server ist momentan nicht erreichbar oder es besteht keine funktionierende Internetverbindung.
+
+Bitte später noch einmal probieren.</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdStartOnlineSession.cpp" line="71"/>
+        <source>Start session</source>
+        <translation>Verbindungsaufbau</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdStartOnlineSession.cpp" line="94"/>
+        <source>The server is currently not available.
+
+</source>
+        <translation>Der Server ist momentan nicht erreichbar.
+
+</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdStartOnlineSession.cpp" line="95"/>
+        <source>Maybe the server is temporarily down or you are offline.</source>
+        <translation>Möglicherweise ist der Server vorübergehend heruntergefahren oder Sie haben keine Internetverbindung.</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdStartOnlineSession.cpp" line="99"/>
+        <source>The server did not accept our connection request (400, BadRequest).</source>
+        <translation>Der Server hat unsere Verbindungsanfrage nicht akzeptiert (400, BadRequest).</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdStartOnlineSession.cpp" line="103"/>
+        <source>&lt;p&gt;This version of QTournament is incompatible with the server.&lt;/p&gt;</source>
+        <translation>&lt;p&gt;Diese Version von QTournament ist nicht mit dem Server kompatibel.&lt;/p&gt;</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdStartOnlineSession.cpp" line="104"/>
+        <source>&lt;p&gt;Please download a more recent version from:&lt;/p&gt;</source>
+        <translation>&lt;p&gt;Bitte laden Sie eine aktuelle Version hier herunter:&lt;/p&gt;</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdStartOnlineSession.cpp" line="109"/>
+        <source>Session setup failed due to an unspecified network or server error!</source>
+        <translation>Die Verbindungsanfrage ist aufgrund eines unerwarteten Netzwerk- oder Server-Fehlers gescheitert!</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdStartOnlineSession.cpp" line="112"/>
+        <location filename="ui/commonCommands/cmdStartOnlineSession.cpp" line="141"/>
+        <source>Connection failed</source>
+        <translation>Verbindungsaufbau gescheitert</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdStartOnlineSession.cpp" line="122"/>
+        <source>You cannot connect because the server administrator has not yet accepted your registration request.</source>
+        <translation>Sie können sich noch nicht mit dem Server verbinden, weil der Administrator Ihre Registrierungsanfrage noch nicht angenommen hat.</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdStartOnlineSession.cpp" line="126"/>
+        <source>You cannot connect because of a server-side database error.
+</source>
+        <translation>Sie können sich aufgrund eines server-seitigen Datenbankfehlers aktuell nicht verbinden.
+</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdStartOnlineSession.cpp" line="127"/>
+        <location filename="ui/commonCommands/cmdStartOnlineSession.cpp" line="137"/>
+        <source>Please try again later!</source>
+        <translation>Bitte versuchen Sie es später noch einmal!</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdStartOnlineSession.cpp" line="131"/>
+        <source>Syncing failed because the server couldn&apos;t digest our CSV data!
+</source>
+        <translation>Die Synchronisierung ist gescheitert, weil der Server unsere CSV-Daten nicht akzeptiert hat!
+</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdStartOnlineSession.cpp" line="132"/>
+        <source>Strange, this shouldn&apos;t happen...</source>
+        <translation>Komisch, das sollte eigentlich nicht passieren...</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdStartOnlineSession.cpp" line="136"/>
+        <source>You cannot connect because of an unexpected server error.
+</source>
+        <translation>Sie können sich aufgrund eines unerwarteten server-seitigen Fehlers aktuell nicht verbinden.
+</translation>
+    </message>
+</context>
+<context>
+    <name>cmdUnlockKeystore</name>
+    <message>
+        <location filename="ui/commonCommands/cmdUnlockKeystore.cpp" line="62"/>
+        <source>Please enter your tournament password:</source>
+        <translation>Bitte geben Sie ihr aktuelles Passwort ein:</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdUnlockKeystore.cpp" line="69"/>
+        <location filename="ui/commonCommands/cmdUnlockKeystore.cpp" line="77"/>
+        <source>Enter password</source>
+        <translation>Passwort eingeben</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdUnlockKeystore.cpp" line="70"/>
+        <source>Please enter the password!</source>
+        <translation>Bitte geben Sie ihr aktuelles Passwort ein!</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdUnlockKeystore.cpp" line="78"/>
+        <source>The password was not correct!</source>
+        <translation>Das Passwort ist falsch!</translation>
     </message>
 </context>
 <context>

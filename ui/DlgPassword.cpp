@@ -1,6 +1,7 @@
 #include <QLabel>
 #include <QPushButton>
 #include <QLineEdit>
+#include <QRegularExpression>
 
 #include "DlgPassword.h"
 #include "ui_DlgPassword.h"
@@ -142,8 +143,13 @@ bool DlgPassword::validateInput_PasswordChangeMode()
 
 bool DlgPassword::validateInput_PasswordEnterMode()
 {
-  ui->laHint->setText(tr("=== PW entry checks not yet implemented ==="));
-  return false;
+  if (ui->leCurPw->text().isEmpty())
+  {
+    ui->laHint->setText(tr("Hint: please enter the current password"));
+    return false;
+  }
+
+  return validateInput_NewPasswordMode();
 }
 
 //----------------------------------------------------------------------------
@@ -154,6 +160,23 @@ bool DlgPassword::checkPasswordRules(const QString& pw)
   {
     QString msg = tr("Hint: the password should have at least %1 characters");
     msg = msg.arg(MinPasswordLen);
+    ui->laHint->setText(msg);
+    return false;
+  }
+
+  QRegularExpression reDigit{"\\d"};
+  QRegularExpression reChar{"[a-z]", QRegularExpression::CaseInsensitiveOption};
+
+  if (!(pw.contains(reDigit)))
+  {
+    QString msg = tr("Hint: the password must contain at least one digit");
+    ui->laHint->setText(msg);
+    return false;
+  }
+
+  if (!(pw.contains(reChar)))
+  {
+    QString msg = tr("Hint: the password must contain at least one letter");
     ui->laHint->setText(msg);
     return false;
   }
