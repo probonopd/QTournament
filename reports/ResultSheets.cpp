@@ -42,8 +42,8 @@ ResultSheets::ResultSheets(TournamentDB* _db, const QString& _name, int _numMatc
 
 //----------------------------------------------------------------------------
 
-ResultSheets::ResultSheets(TournamentDB* _db, const Match& singleMatchForPrinting)
-  :AbstractReport(_db, "Dummy"), numMatches(1), firstMatchNum(singleMatchForPrinting.getMatchNumber())
+ResultSheets::ResultSheets(TournamentDB* _db, const Match& firstMatchForPrinting, int _numMatches)
+  :AbstractReport(_db, "Dummy"), numMatches(_numMatches), firstMatchNum(firstMatchForPrinting.getMatchNumber())
 {
   // No connection to the SignalRelay here!
   // We are completely independent.

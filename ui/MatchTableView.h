@@ -68,6 +68,10 @@ private slots:
   void onSectionHeaderDoubleClicked();
   void onMatchTimePredictionUpdate();
   void onMatchStatusChanged(int maId, int maSeqNum, OBJ_STATE oldStat, OBJ_STATE newStat);
+  void onPrint1Selected();
+  void onPrint4Selected();
+  void onPrint8Selected();
+  void onPrint12Selected();
 
 signals:
   void matchSelectionChanged(int newlySelectedMatchId);
@@ -87,12 +91,19 @@ private:
   QAction* actAssignReferee;
   QAction* actRemoveReferee;
 
+  QMenu* printSelectionMenu;
+  QAction* printResultSheet1;
+  QAction* printResultSheet4;
+  QAction* printResultSheet8;
+  QAction* printResultSheet12;
+
   unique_ptr<QTimer> predictionUpdateTimer;
 
   void initContextMenu();
   void updateContextMenu();
   void execWalkover(int playerNum);
   void showMatchBusyReason(const Match& ma);
+  void printResultSheets(int matchCount);
 };
 
 #endif	/* MATCHTABLEVIEW_H */

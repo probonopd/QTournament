@@ -37,7 +37,7 @@ namespace QTournament
 
   public:
     ResultSheets(TournamentDB* _db, const QString& _name, int _numMatches);
-    ResultSheets(TournamentDB* _db, const Match& singleMatchForPrinting);
+    ResultSheets(TournamentDB* _db, const Match& firstMatchForPrinting, int _numMatches=1);
 
     virtual upSimpleReport regenerateReport() override;
     virtual QStringList getReportLocators() const override;

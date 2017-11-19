@@ -33,6 +33,8 @@
 #include "ui/commonCommands/cmdAssignRefereeToMatch.h"
 #include "ui/commonCommands/cmdCallMatch.h"
 #include "CentralSignalEmitter.h"
+#include "reports/ResultSheets.h"
+#include "SimpleReportViewer.h"
 
 MatchTableView::MatchTableView(QWidget* parent)
   :AutoSizingTableView_WithDatabase<MatchTableModel>{GuiHelpers::AutosizeColumnDescrList{
@@ -428,6 +430,34 @@ void MatchTableView::onMatchStatusChanged(int maId, int maSeqNum, OBJ_STATE oldS
 
 //----------------------------------------------------------------------------
 
+void MatchTableView::onPrint1Selected()
+{
+  printResultSheets(1);
+}
+
+//----------------------------------------------------------------------------
+
+void MatchTableView::onPrint4Selected()
+{
+  printResultSheets(4);
+}
+
+//----------------------------------------------------------------------------
+
+void MatchTableView::onPrint8Selected()
+{
+  printResultSheets(8);
+}
+
+//----------------------------------------------------------------------------
+
+void MatchTableView::onPrint12Selected()
+{
+  printResultSheets(12);
+}
+
+//----------------------------------------------------------------------------
+
 void MatchTableView::initContextMenu()
 {
   // prepare all actions
@@ -473,11 +503,23 @@ void MatchTableView::initContextMenu()
   contextMenu->addAction(actAssignReferee);
   contextMenu->addAction(actRemoveReferee);
 
+  // create a sub-menu for printing result sheets
+  contextMenu->addSeparator();
+  printSelectionMenu = contextMenu->addMenu(tr("Print result sheet"));
+  printResultSheet1 = printSelectionMenu->addAction(tr("This match"));
+  printResultSheet4 = printSelectionMenu->addAction(tr("4 matches"));
+  printResultSheet8 = printSelectionMenu->addAction(tr("8 matches"));
+  printResultSheet12 = printSelectionMenu->addAction(tr("12 matches"));
+
   // connect actions and slots
   connect(actWalkoverP1, SIGNAL(triggered(bool)), this, SLOT(onWalkoverP1Triggered()));
   connect(actWalkoverP2, SIGNAL(triggered(bool)), this, SLOT(onWalkoverP2Triggered()));
   connect(actAssignReferee, SIGNAL(triggered(bool)), this, SLOT(onAssignRefereeTriggered()));
   connect(actRemoveReferee, SIGNAL(triggered(bool)), this, SLOT(onRemoveRefereeTriggered()));
+  connect(printResultSheet1, SIGNAL(triggered(bool)), this, SLOT(onPrint1Selected()));
+  connect(printResultSheet4, SIGNAL(triggered(bool)), this, SLOT(onPrint4Selected()));
+  connect(printResultSheet8, SIGNAL(triggered(bool)), this, SLOT(onPrint8Selected()));
+  connect(printResultSheet12, SIGNAL(triggered(bool)), this, SLOT(onPrint12Selected()));
 
   updateContextMenu();
 }
@@ -531,6 +573,9 @@ void MatchTableView::updateContextMenu()
 
   // update the "postpone" action
   actPostponeMatch->setEnabled(ma != nullptr);
+
+  // enable / disable print the result sheet
+  printSelectionMenu->setEnabled(ma != nullptr);
 }
 
 //----------------------------------------------------------------------------
@@ -653,6 +698,36 @@ void MatchTableView::showMatchBusyReason(const Match& ma)
 
   txt += reason;
   QMessageBox::information(this, tr("Match status"), txt);
+}
+
+//----------------------------------------------------------------------------
+
+void MatchTableView::printResultSheets(int matchCount)
+{
+  if (matchCount < 1) return;
+
+  auto curMatch = getSelectedMatch();
+  if (curMatch == nullptr) return;
+
+  // try to create the result sheet report with the
+  // requested number of matches
+  unique_ptr<ResultSheets> rep{nullptr};
+  try
+  {
+    rep = make_unique<ResultSheets>(db, *curMatch, matchCount);
+  }
+  catch (...) {}
+  if (rep == nullptr) return;
+
+  // let the report object create the actual output
+  upSimpleReport sr = rep->regenerateReport();
+
+  // create an invisible report viewer and directly trigger
+  // the print reaction
+  SimpleReportLib::SimpleReportViewer viewer{this};
+  viewer.setReport(sr.get());
+  viewer.onBtnPrintClicked();
+
 }
 
 //----------------------------------------------------------------------------
