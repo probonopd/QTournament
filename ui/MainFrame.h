@@ -27,7 +27,7 @@
 
 #include "ui_MainFrame.h"
 
-#define PRG_VERSION_STRING "0.6.0-pre01"
+#define PRG_VERSION_STRING "0.6.0"
 
 using namespace QTournament;
 

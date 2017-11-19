@@ -3189,7 +3189,7 @@ hinzufügen zu:</translation>
 %1</source>
         <translation>Der aktuelle Stand des Turniers wurde gespeichert unter:
 
-</translation>
+%1</translation>
     </message>
     <message>
         <location filename="ui/MainFrame.cpp" line="444"/>
@@ -6805,6 +6805,16 @@ Bitte später noch einmal probieren.</translation>
 </source>
         <translation>Sie können sich aufgrund eines unerwarteten server-seitigen Fehlers aktuell nicht verbinden.
 </translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdStartOnlineSession.cpp" line="145"/>
+        <source>Connection successful</source>
+        <translation>Verbindungsaufbau erfolgreich</translation>
+    </message>
+    <message>
+        <location filename="ui/commonCommands/cmdStartOnlineSession.cpp" line="145"/>
+        <source>You are now connected to and in sync with the server!</source>
+        <translation>Sie sind jetzt mit dem Server verbunden und synchronisiert!</translation>
     </message>
 </context>
 <context>

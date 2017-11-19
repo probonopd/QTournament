@@ -142,7 +142,7 @@ ERR cmdStartOnlineSession::exec()
     return ERR::WRONG_STATE; // dummy value
   }
 
-  QMessageBox::information(parentWidget, "Connection successful", "You are now connected to and in sync with the server!");
+  QMessageBox::information(parentWidget, tr("Connection successful"), tr("You are now connected to and in sync with the server!"));
 
   return ERR::OK;
 }
