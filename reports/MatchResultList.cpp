@@ -19,8 +19,8 @@
 #include <QList>
 
 #include "MatchResultList.h"
-#include "SimpleReportGenerator.h"
-#include "TableWriter.h"
+#include <SimpleReportGeneratorLib/SimpleReportGenerator.h>
+#include <SimpleReportGeneratorLib/TableWriter.h>
 
 #include "PlayerMngr.h"
 #include "TeamMngr.h"

@@ -18,8 +18,8 @@
 
 #include <QObject>
 
-#include "SimpleReportGenerator.h"
-#include "TableWriter.h"
+#include <SimpleReportGeneratorLib/SimpleReportGenerator.h>
+#include <SimpleReportGeneratorLib/TableWriter.h>
 
 #include "AbstractReport.h"
 

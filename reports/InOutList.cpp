@@ -21,8 +21,8 @@
 #include <QList>
 
 #include "InOutList.h"
-#include "SimpleReportGenerator.h"
-#include "TableWriter.h"
+#include <SimpleReportGeneratorLib/SimpleReportGenerator.h>
+#include <SimpleReportGeneratorLib/TableWriter.h>
 
 #include "CatRoundStatus.h"
 #include "ui/GuiHelpers.h"

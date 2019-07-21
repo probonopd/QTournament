@@ -26,7 +26,7 @@
 #include "ui/GuiHelpers.h"
 #include "ui/commonCommands/cmdAssignRefereeToMatch.h"
 #include "reports/ResultSheets.h"
-#include "SimpleReportViewer.h"
+#include <SimpleReportGeneratorLib/SimpleReportViewer.h>
 
 CourtTableView::CourtTableView(QWidget* parent)
   :GuiHelpers::AutoSizingTableView_WithDatabase<CourtTableModel>{
