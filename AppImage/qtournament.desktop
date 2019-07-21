@@ -1,0 +1,13 @@
+[Desktop Entry]
+
+Type=Application
+
+Name=QTournament
+
+Comment=Badminton tournament software
+
+Exec=QTournament
+
+Icon=qtournament
+
+Categories=Office;Education;Sports;

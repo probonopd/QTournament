@@ -1,0 +1,5 @@
+FROM debian:stretch
+
+ADD installDockerBuildDeps.sh /installDockerBuildDeps.sh
+RUN bash -ex installDockerBuildDeps.sh
+
