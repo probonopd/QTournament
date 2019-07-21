@@ -6,6 +6,8 @@
 # THAT WILL BE USED FOR BUILDING THE APPIMAGE!!
 #
 
+export CXX=gcc-8
+
 
 TRANSFER_DIR=/tmp/transfer
 APP_DIR="$TRANSFER_DIR"/AppDir
@@ -84,7 +86,6 @@ deploy()
   $LDEPLOY -e "$BUILD_DIR"/tnmt/QTournament \
            -d "$TRANSFER_DIR"/qtournament.desktop \
            -i "$TRANSFER_DIR"/qtournament.svg \
-           -l /usr/lib/x86_64-linux-gnu/libssl.so.1.0.2 \
            -l /usr/lib/x86_64-linux-gnu/libssl.so.1.1 \
            -l /usr/lib/x86_64-linux-gnu/libsodium.so \
            --appdir $APP_DIR \
