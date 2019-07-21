@@ -34,21 +34,23 @@ mkdir dist Qt
 #
 # make sure the right libSloppy exists
 #
-SLOPPY_LIB=/usr/local/lib/libSloppy.so.$SLOPPY_VERSION
+SLOPPY_LIB="/usr/local/lib/libSloppy.so.$SLOPPY_VERSION"
 if [ ! -f $SLOPPY_LIB ]; then
   echo
   echo !!! could not find $SLOPPY_LIB !!!
   echo
+  exit
 fi
 
 #
 # make sure the right SqliteOverlay exists
 #
-OVERLAY_LIB=/usr/local/lib/libSqliteOverlay.so.$DBOVERLAY_VERSION
+OVERLAY_LIB="/usr/local/lib/libSqliteOverlay.so.$DBOVERLAY_VERSION"
 if [ ! -f $OVERLAY_LIB ]; then
   echo
-  echo !!! could not find $SLOPPY_LIB !!!
+  echo !!! could not find $OVERLAY_LIB !!!
   echo
+  exit
 fi
 
 #
@@ -134,7 +136,8 @@ if [ $TORNAMENT_SEL -eq 0 ]; then
   unzip $QTOURNAMENT_VERSION.zip
   rm *zip
   mv QTournament-$QTOURNAMENT_VERSION QTournament
-  cd QTournament
+  mv QTournament Qt
+  cd Qt/QTournament
 fi
 
 if [ $TORNAMENT_SEL -eq 1 ]; then
