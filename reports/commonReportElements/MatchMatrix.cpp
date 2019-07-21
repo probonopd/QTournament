@@ -16,7 +16,7 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "TableWriter.h"
+#include <SimpleReportGeneratorLib/TableWriter.h>
 
 #include "MatchMatrix.h"
 #include "MatchMngr.h"

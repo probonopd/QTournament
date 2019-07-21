@@ -21,8 +21,8 @@
 #include <QList>
 
 #include "BracketSheet.h"
-#include "SimpleReportGenerator.h"
-#include "TextStyle.h"
+#include <SimpleReportGeneratorLib/SimpleReportGenerator.h>
+#include <SimpleReportGeneratorLib/TextStyle.h>
 
 #include "ui/GuiHelpers.h"
 #include "Match.h"

@@ -22,7 +22,7 @@
 #include <QPointF>
 #include <QRectF>
 
-#include "SimpleReportGenerator.h"
+#include <SimpleReportGeneratorLib/SimpleReportGenerator.h>
 
 using namespace SimpleReportLib;
 

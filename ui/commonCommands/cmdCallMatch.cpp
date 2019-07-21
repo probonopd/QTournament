@@ -19,7 +19,7 @@
 #include <QObject>
 #include <QMessageBox>
 
-#include "SimpleReportViewer.h"
+#include <SimpleReportGeneratorLib/SimpleReportViewer.h>
 
 #include "cmdCallMatch.h"
 #include "PlayerMngr.h"

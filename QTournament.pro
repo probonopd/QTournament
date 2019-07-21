@@ -13,13 +13,6 @@ CONFIG += c++14
 
 VERSION = 0.6.0
 
-# Optimization level O3 for release
-#QMAKE_CXXFLAGS_RELEASE -= -O2
-#QMAKE_CXXFLAGS_RELEASE += -O3
-
-# Optimization level O1 for debug
-#QMAKE_CXXFLAGS_DEBUG += -O0
-
 # Detect the platform we are running on
 win32 {
   DEFINES += "__IS_WINDOWS_BUILD"
@@ -343,28 +336,19 @@ FORMS += \
 
 TRANSLATIONS = tournament_de.ts
 
-win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../SimpleReportGeneratorLib/release -lSimpleReportGenerator0
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../SimpleReportGeneratorLib/debug -lSimpleReportGenerator0
-else:unix:CONFIG(release, debug|release): LIBS += -L$$PWD/../SimpleReportGeneratorLib/release -lSimpleReportGenerator -L/usr/local/lib
-else:unix:CONFIG(debug, debug|release): LIBS += -L$$PWD/../SimpleReportGeneratorLib/debug -lSimpleReportGenerator -L/usr/local/lib
 
-INCLUDEPATH += $$PWD/../SimpleReportGeneratorLib
-DEPENDPATH += $$PWD/../SimpleReportGeneratorLib
+!unix {
+  INCLUDEPATH += D:/msys64/usr/local/include
+  LIBS += -LD:/msys64/usr/local/lib
+  CONFIG(debug, debug|release):   LIBS += -lSimpleReportGeneratord0
+  CONFIG(release, debug|release): LIBS += -lSimpleReportGenerator0
+}
 
-win32: INCLUDEPATH += D:/PortablePrograms/msys64/usr/local/include
-
-win32: LIBS += -lboost_filesystem-mt -lboost_system-mt -lboost_log-mt -lboost_log_setup-mt -lboost_date_time-mt -lboost_thread-mt -lboost_regex-mt -lboost_chrono-mt -lboost_atomic-mt -Ld:/PortablePrograms/msys64/usr/local/lib
-else: LIBS += -lboost_filesystem -lboost_system -lboost_log -lboost_log_setup -lboost_date_time -lboost_thread -lboost_regex -lboost_chrono -lboost_atomic
+unix {
+  INCLUDEPATH += /usr/local/include
+  LIBS += -L/usr/local/lib
+  CONFIG(debug, debug|release):   LIBS += -lSimpleReportGeneratord
+  CONFIG(release, debug|release): LIBS += -lSimpleReportGenerator
+}
 
 LIBS += -lSqliteOverlay -lSloppy  
-
-#win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../../SqliteOverlay/release/ -lSqliteOverlay
-#else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../../SqliteOverlay/debug/ -lSqliteOverlay
-#else:unix:!macx:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../SqliteOverlay/debug/ -lSqliteOverlay
-#else:unix:!macx:CONFIG(release, debug|release): LIBS += -L$$PWD/../../SqliteOverlay/release/ -lSqliteOverlay
-
-#win32: INCLUDEPATH += $$PWD/../../../SqliteOverlay
-#else:unix:!macx: INCLUDEPATH += $$PWD/../../SqliteOverlay
-
-#INCLUDEPATH += $$PWD/../../SqliteOverlay
-#DEPENDPATH += $$PWD/../../SqliteOverlay

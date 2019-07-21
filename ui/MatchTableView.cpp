@@ -34,7 +34,7 @@
 #include "ui/commonCommands/cmdCallMatch.h"
 #include "CentralSignalEmitter.h"
 #include "reports/ResultSheets.h"
-#include "SimpleReportViewer.h"
+#include <SimpleReportGeneratorLib/SimpleReportViewer.h>
 
 MatchTableView::MatchTableView(QWidget* parent)
   :AutoSizingTableView_WithDatabase<MatchTableModel>{GuiHelpers::AutosizeColumnDescrList{
