@@ -59,7 +59,6 @@ HEADERS += \
     RoundRobinGenerator.h \
     ui/delegates/CatItemDelegate.h \
     ui/delegates/DelegateItemLED.h \
-    ThreadSafeQueue.h \
     ui/ScheduleTabWidget.h \
     models/MatchGroupTabModel.h \
     ui/MatchGroupTableView.h \
@@ -195,7 +194,6 @@ SOURCES += \
     RoundRobinGenerator.cpp \
     ui/delegates/CatItemDelegate.cpp \
     ui/delegates/DelegateItemLED.cpp \
-    ThreadSafeQueue.cpp \
     ui/ScheduleTabWidget.cpp \
     models/MatchGroupTabModel.cpp \
     ui/MatchGroupTableView.cpp \
