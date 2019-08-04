@@ -34,42 +34,51 @@ namespace QTournament
    *    * Except for the new row, all other sequence numbers in the table are correct
    *
    */
-  void TournamentDatabaseObjectManager::fixSeqNumberAfterInsert(SqliteOverlay::DbTab* tabPtr) const
+  void TournamentDatabaseObjectManager::fixSeqNumberAfterInsert(const SqliteOverlay::DbTab& otherTab) const
   {
-    SqliteOverlay::DbTab* t = (tabPtr == nullptr) ? tab : tabPtr;
-    auto r = t->getSingleRowByColumnValueNull(GENERIC_SEQNUM_FIELD_NAME);
+    auto r = otherTab.getSingleRowByColumnValueNull(GENERIC_SEQNUM_FIELD_NAME);
     
-    int newSeqNum = t->length() - 1;
+    int newSeqNum = otherTab.length() - 1;
     
-    // lock the database before writing
-    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
-
     r.update(GENERIC_SEQNUM_FIELD_NAME, newSeqNum);
+  }
+
+  //----------------------------------------------------------------------------
+
+  void TournamentDatabaseObjectManager::fixSeqNumberAfterInsert() const
+  {
+    fixSeqNumberAfterInsert(tab);
+  }
+
+  //----------------------------------------------------------------------------
+
+  void TournamentDatabaseObjectManager::fixSeqNumberAfterDelete(int deletedSeqNum) const
+  {
+    fixSeqNumberAfterDelete(tab, deletedSeqNum);
   }
 
 //----------------------------------------------------------------------------
 
-  void TournamentDatabaseObjectManager::fixSeqNumberAfterDelete(SqliteOverlay::DbTab* tabPtr, int deletedSeqNum) const
+  void TournamentDatabaseObjectManager::fixSeqNumberAfterDelete(const SqliteOverlay::DbTab& otherTab, int deletedSeqNum) const
   {
-    SqliteOverlay::DbTab* t = (tabPtr == nullptr) ? tab : tabPtr;
-
     SqliteOverlay::WhereClause wc;
-    wc.addIntCol(GENERIC_SEQNUM_FIELD_NAME, ">", deletedSeqNum);
+    wc.addCol(GENERIC_SEQNUM_FIELD_NAME, ">", deletedSeqNum);
     wc.setOrderColumn_Asc(GENERIC_SEQNUM_FIELD_NAME);
 
-    auto it = t->getRowsByWhereClause(wc);
-    
-    // lock the database before writing
-    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
+    // make sure we update all rows in a single transaction
+    auto trans = db.get().startTransaction(DefaultTransactionType);
 
+    auto rows = otherTab.getRowsByWhereClause(wc);
+    
     // re-number all items behind the deleted item
     int nextSeqNum = deletedSeqNum;
-    while (!(it.isEnd()))
+    for (const auto& row : rows)
     {
-      (*it).update(GENERIC_SEQNUM_FIELD_NAME, nextSeqNum);
-      nextSeqNum++;
-      ++it;
+      row.update(GENERIC_SEQNUM_FIELD_NAME, nextSeqNum);
+      ++nextSeqNum;
     }
+
+    trans.commit();
   }
 
 //----------------------------------------------------------------------------

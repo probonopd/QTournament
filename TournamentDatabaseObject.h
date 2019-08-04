@@ -31,10 +31,10 @@ namespace QTournament
   class TournamentDatabaseObject : public SqliteOverlay::GenericDatabaseObject<TournamentDB>
   {
   public:
-    TournamentDatabaseObject (TournamentDB* _db, const QString& _tabName, int _id)
+    TournamentDatabaseObject (const TournamentDB& _db, const QString& _tabName, int _id)
       : SqliteOverlay::GenericDatabaseObject<TournamentDB>(_db, _tabName.toUtf8().constData(), _id) {}
 
-    TournamentDatabaseObject (TournamentDB* _db, SqliteOverlay::TabRow _row)
+    TournamentDatabaseObject (const TournamentDB& _db, const SqliteOverlay::TabRow& _row)
       : SqliteOverlay::GenericDatabaseObject<TournamentDB>(_db, _row) {}
     
     OBJ_STATE getState() const;

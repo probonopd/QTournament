@@ -35,6 +35,9 @@ namespace QTournament
   // forward
   class OnlineMngr;
 
+  // the default transaction type for all transactional database operations
+  static constexpr SqliteOverlay::TransactionType DefaultTransactionType{SqliteOverlay::TransactionType::Immediate};
+
   class TournamentDB : public SqliteOverlay::SqliteDatabase
   {
     friend class SqliteOverlay::SqliteDatabase;
