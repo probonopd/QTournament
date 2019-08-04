@@ -7,8 +7,6 @@
 #include <QNetworkAccessManager>
 #include <QMap>
 
-using namespace std;
-
 namespace QTournament
 {
   enum class HttpRequestErr

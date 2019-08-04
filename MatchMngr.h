@@ -35,8 +35,6 @@
 #include "Court.h"
 #include "Score.h"
 
-using namespace SqliteOverlay;
-
 namespace QTournament
 {
 

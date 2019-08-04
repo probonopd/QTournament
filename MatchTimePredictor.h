@@ -29,9 +29,6 @@
 #include "TournamentDB.h"
 #include "Match.h"
 
-using namespace std;
-using namespace SqliteOverlay;
-
 namespace QTournament
 {
   struct MatchTimePrediction

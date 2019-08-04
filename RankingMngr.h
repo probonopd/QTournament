@@ -33,8 +33,6 @@
 #include "PlayerPair.h"
 
 
-using namespace SqliteOverlay;
-
 namespace QTournament
 {
   class RankingEntry;

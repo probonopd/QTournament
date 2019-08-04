@@ -37,8 +37,6 @@
 #include "ExternalPlayerDB.h"
 
 
-using namespace SqliteOverlay;
-
 namespace QTournament
 {
 
@@ -48,7 +46,7 @@ namespace QTournament
     
   public:
     // Ctor
-    PlayerMngr (TournamentDB* _db);
+    PlayerMngr (const TournamentDB& _db);
 
     // player creation
     ERR createNewPlayer (const QString& firstName, const QString& lastName, SEX sex, const QString& teamName);

@@ -25,8 +25,6 @@
 
 #include <QString>
 
-using namespace std;
-
 namespace QTournament
 {
   inline string QString2StdString(const QString& s) {

@@ -9,8 +9,6 @@
 #include <QObject>
 #include <QDate>
 
-using namespace std;
-
 // forward
 namespace SqliteOverlay
 {

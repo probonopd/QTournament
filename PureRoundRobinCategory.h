@@ -24,8 +24,6 @@
 #include "RankingEntry.h"
 
 
-using namespace SqliteOverlay;
-
 namespace QTournament
 {
 

@@ -27,8 +27,6 @@
 
 #include <QList>
 
-using namespace std;
-
 namespace QTournament
 {
   class SwissLadderGenerator

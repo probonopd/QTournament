@@ -33,8 +33,6 @@
 #include <SqliteOverlay/DbTab.h>
 #include "TournamentDatabaseObjectManager.h"
 
-using namespace SqliteOverlay;
-
 namespace QTournament
 {
 

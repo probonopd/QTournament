@@ -38,7 +38,7 @@ using namespace SqliteOverlay;
 namespace QTournament
 {
 
-  PlayerMngr::PlayerMngr(TournamentDB* _db)
+  PlayerMngr::PlayerMngr(const TournamentDB& _db)
   : TournamentDatabaseObjectManager(_db, TAB_PLAYER)
   {
   }

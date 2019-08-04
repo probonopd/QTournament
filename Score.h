@@ -25,8 +25,6 @@
 #include <QString>
 #include <QList>
 
-using namespace std;
-
 namespace QTournament {
 
 class GameScore

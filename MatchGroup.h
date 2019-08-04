@@ -31,8 +31,6 @@
 #include "Category.h"
 #include "Match.h"
 
-using namespace SqliteOverlay;
-
 namespace QTournament
 {
 

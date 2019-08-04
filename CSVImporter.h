@@ -8,8 +8,6 @@
 #include "TournamentDataDefs.h"
 #include "Player.h"
 
-using namespace std;
-
 namespace QTournament
 {
   class TournamentDB;
