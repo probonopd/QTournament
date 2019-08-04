@@ -19,6 +19,8 @@
 #ifndef TOURNAMENTERRORCODES_H
 #define	TOURNAMENTERRORCODES_H
 
+#include <Sloppy/BasicException.h>
+
 namespace QTournament
 {
     enum ERR {
@@ -99,6 +101,21 @@ namespace QTournament
         REFEREE_NOT_IDLE,
         COURT_NOT_DISABLED,
         COURT_ALREADY_USED,
+    };
+
+    class TournamentException : public Sloppy::BasicException
+    {
+    public:
+      TournamentException(const std::string& sender, const std::string& context, ERR errorCode)
+        :Sloppy::BasicException{
+           "QTournament logic exception", sender, context,
+           "Error code = " + std::to_string(static_cast<int>(errorCode))},
+         err{errorCode} {}
+
+      ERR error() const { return err; }
+
+    private:
+      ERR err;
     };
 }
 
