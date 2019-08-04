@@ -46,9 +46,6 @@ namespace QTournament
   // HAS NO "State" COLUMN
   void TournamentDatabaseObject::setState(OBJ_STATE newState) const
   {
-    // lock the database before writing
-    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
-
     int stateInt = static_cast<int>(newState);
     row.update(GENERIC_STATE_FIELD_NAME, stateInt);
   }
