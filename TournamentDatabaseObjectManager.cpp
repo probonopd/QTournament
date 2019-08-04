@@ -83,7 +83,7 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  string TournamentDatabaseObjectManager::getSyncString(int rowId)
+  string TournamentDatabaseObjectManager::getSyncString(int rowId) const
   {
     vector<int> v = (rowId > 0) ? vector<int>{rowId} : vector<int>{};
     return getSyncString(v);

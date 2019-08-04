@@ -121,7 +121,7 @@ unique_ptr<Team> TeamTableView::getSelectedTeam()
   // return the selected item
   TeamMngr tm{db};
   int selectedSourceRow = sortedModel->mapToSource(indexes.at(0)).row();
-  return tm.getTeamBySeqNum_up(selectedSourceRow);
+  return tm.getTeamBySeqNum2(selectedSourceRow);
 }
 
 //----------------------------------------------------------------------------

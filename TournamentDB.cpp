@@ -363,7 +363,7 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  tuple<string, int> TournamentDB::tableDataToCSV(const string& tabName, const vector<Sloppy::estring>& colNames, int rowId)
+  tuple<string, int> TournamentDB::tableDataToCSV(const string& tabName, const vector<Sloppy::estring>& colNames, int rowId) const
   {
     vector<int> v = (rowId < 0) ? vector<int>{} : vector<int>{rowId,};
     return tableDataToCSV(tabName, colNames, v);
@@ -371,7 +371,7 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  tuple<string, int> TournamentDB::tableDataToCSV(const string& tabName, const vector<Sloppy::estring>& colNames, const vector<int>& rowList)
+  tuple<string, int> TournamentDB::tableDataToCSV(const string& tabName, const vector<Sloppy::estring>& colNames, const vector<int>& rowList) const
   {
     SqliteOverlay::DbTab tab{*this, tabName, false};
 
@@ -424,7 +424,7 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  string TournamentDB::getSyncStringForTable(const string& tabName, const vector<Sloppy::estring>& colNames, int rowId)
+  string TournamentDB::getSyncStringForTable(const string& tabName, const vector<Sloppy::estring>& colNames, int rowId) const
   {
     vector<int> v = (rowId < 0) ? vector<int>{} : vector<int>{rowId,};
     return getSyncStringForTable(tabName, colNames, v);
@@ -432,7 +432,7 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  string TournamentDB::getSyncStringForTable(const string& tabName, const vector<Sloppy::estring>& colNames, vector<int> rowList)
+  string TournamentDB::getSyncStringForTable(const string& tabName, const vector<Sloppy::estring>& colNames, vector<int> rowList) const
   {
     int cnt;
     string data;

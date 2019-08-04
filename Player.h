@@ -55,18 +55,17 @@ namespace QTournament
     ERR rename(const QString& newFirst, const QString& newLast);
     SEX getSex() const;
     Team getTeam() const;
-    vector<Category> getAssignedCategories() const;
+    std::vector<Category> getAssignedCategories() const;
     int getRefereeCount() const;
-    unique_ptr<Court> getRefereeCourt() const;
-    unique_ptr<Court> getMatchCourt() const;
+    std::optional<Court> getRefereeCourt() const;
+    std::optional<Court> getMatchCourt() const;
 
   private:
     Player (TournamentDB* db, int rowId);
     Player (TournamentDB* db, SqliteOverlay::TabRow row);
   };
 
-  typedef vector<Player> PlayerList;
-  typedef unique_ptr<Player> upPlayer;
+  typedef std::vector<Player> PlayerList;
 
 }
 #endif	/* TEAM_H */

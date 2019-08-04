@@ -25,14 +25,14 @@
 namespace QTournament
 {
 
-  Team::Team(TournamentDB* db, int rowId)
+  Team::Team(const TournamentDB& db, int rowId)
   :TournamentDatabaseObject(db, TAB_TEAM, rowId)
   {
   }
 
 //----------------------------------------------------------------------------
 
-  Team::Team(TournamentDB* db, SqliteOverlay::TabRow row)
+  Team::Team(const TournamentDB& db, SqliteOverlay::TabRow row)
   :TournamentDatabaseObject(db, row)
   {
   }
@@ -78,8 +78,8 @@ namespace QTournament
 
   int Team::getMemberCount() const
   {
-    DbTab* playerTab = db->getTab(TAB_PLAYER);
-    return playerTab->getMatchCountForColumnValue(PL_TEAM_REF, getId());
+    DbTab playerTab = DbTab{db.get(), TAB_PLAYER, false};
+    return playerTab.getMatchCountForColumnValue(PL_TEAM_REF, getId());
   }
 
 //----------------------------------------------------------------------------
@@ -87,10 +87,10 @@ namespace QTournament
   int Team::getUnregisteredMemberCount() const
   {
     WhereClause wc;
-    wc.addIntCol(PL_TEAM_REF, getId());
-    wc.addIntCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_PL_WAIT_FOR_REGISTRATION));
-    DbTab* playerTab = db->getTab(TAB_PLAYER);
-    return playerTab->getMatchCountForWhereClause(wc);
+    wc.addCol(PL_TEAM_REF, getId());
+    wc.addCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_PL_WAIT_FOR_REGISTRATION));
+    DbTab playerTab = DbTab{db.get(), TAB_PLAYER, false};
+    return playerTab.getMatchCountForWhereClause(wc);
   }
 
 //----------------------------------------------------------------------------

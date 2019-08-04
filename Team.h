@@ -41,8 +41,8 @@ namespace QTournament
     int getUnregisteredMemberCount() const;
 
   private:
-    Team (TournamentDB* db, int rowId);
-    Team (TournamentDB* db, SqliteOverlay::TabRow row);
+    Team (const TournamentDB& db, int rowId);
+    Team (const TournamentDB& db, SqliteOverlay::TabRow row);
   };
 
 }

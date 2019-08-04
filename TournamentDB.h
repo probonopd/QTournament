@@ -70,10 +70,10 @@ namespace QTournament
     OnlineMngr* getOnlineManager();
 
     // conversion to CSV for syncing with the server
-    std::tuple<std::string,int> tableDataToCSV(const std::string& tabName, const std::vector<Sloppy::estring>& colNames, int rowId=-1);
-    std::tuple<std::string,int> tableDataToCSV(const std::string& tabName, const std::vector<Sloppy::estring>& colNames, const std::vector<int>& rowList);
-    std::string getSyncStringForTable(const std::string& tabName, const std::vector<Sloppy::estring>& colNames, int rowId=-1);
-    std::string getSyncStringForTable(const std::string& tabName, const std::vector<Sloppy::estring>& colNames, std::vector<int> rowList);
+    std::tuple<std::string,int> tableDataToCSV(const std::string& tabName, const std::vector<Sloppy::estring>& colNames, int rowId=-1) const;
+    std::tuple<std::string,int> tableDataToCSV(const std::string& tabName, const std::vector<Sloppy::estring>& colNames, const std::vector<int>& rowList) const;
+    std::string getSyncStringForTable(const std::string& tabName, const std::vector<Sloppy::estring>& colNames, int rowId=-1) const;
+    std::string getSyncStringForTable(const std::string& tabName, const std::vector<Sloppy::estring>& colNames, std::vector<int> rowList) const;
 
   protected:
     void initBlankDb(const TournamentSettings& cfg);
