@@ -29,14 +29,14 @@ using namespace SqliteOverlay;
 namespace QTournament
 {
 
-  CourtMngr::CourtMngr(TournamentDB* _db)
+  CourtMngr::CourtMngr(const TournamentDB& _db)
   : TournamentDatabaseObjectManager(_db, TAB_COURT)
   {
   }
 
 //----------------------------------------------------------------------------
 
-  unique_ptr<Court> CourtMngr::createNewCourt(const int courtNum, const QString& _name, ERR *err)
+  std::optional<Court> CourtMngr::createNewCourt(const int courtNum, const QString& _name, ERR *err)
   {
     QString name = _name.trimmed();
     
@@ -54,10 +54,10 @@ namespace QTournament
     
     // prepare a new table row
     SqliteOverlay::ColumnValueClause cvc;
-    cvc.addIntCol(CO_NUMBER, courtNum);
-    cvc.addStringCol(GENERIC_NAME_FIELD_NAME, QString2StdString(name));
-    cvc.addIntCol(CO_IS_MANUAL_ASSIGNMENT, 0);
-    cvc.addIntCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_CO_AVAIL));
+    cvc.addCol(CO_NUMBER, courtNum);
+    cvc.addCol(GENERIC_NAME_FIELD_NAME, QString2StdString(name));
+    cvc.addCol(CO_IS_MANUAL_ASSIGNMENT, 0);
+    cvc.addCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_CO_AVAIL));
     
     // lock the database before writing
     DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
@@ -73,7 +73,7 @@ namespace QTournament
     // to this new object
     Court* co_raw = new Court(db, newId);
     if (err != nullptr) *err = OK;
-    return unique_ptr<Court>(co_raw);
+    return std::unique_ptr<Court>(co_raw);
   }
 
 //----------------------------------------------------------------------------
@@ -92,7 +92,7 @@ namespace QTournament
 
     // okay, get the highest used court number
     SqliteOverlay::WhereClause wc;
-    wc.addIntCol("id", ">", 0);
+    wc.addCol("id", ">", 0);
     wc.setOrderColumn_Desc(CO_NUMBER);
     auto r = tab->getSingleRowByWhereClause(wc);
 
@@ -108,7 +108,7 @@ namespace QTournament
    *
    * @return a unique_ptr to the requested court or nullptr if the court doesn't exits
    */
-  unique_ptr<Court> CourtMngr::getCourt(const int courtNum)
+  std::optional<Court> CourtMngr::getCourt(const int courtNum)
   {
     return getSingleObjectByColumnValue<Court>(CO_NUMBER, courtNum);
   }
@@ -120,7 +120,7 @@ namespace QTournament
    *
    * @Return QList holding all courts
    */
-  vector<Court> CourtMngr::getAllCourts()
+  std::vector<Court> CourtMngr::getAllCourts()
   {
     return getAllObjects<Court>();
   }
@@ -156,7 +156,7 @@ namespace QTournament
    *
    * @return a unique_ptr to the requested court or nullptr if the court doesn't exits
    */
-  unique_ptr<Court> CourtMngr::getCourtBySeqNum(int seqNum)
+  std::optional<Court> CourtMngr::getCourtBySeqNum(int seqNum)
   {
     return getSingleObjectByColumnValue<Court>(GENERIC_SEQNUM_FIELD_NAME, seqNum);
   }
@@ -171,7 +171,7 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  unique_ptr<Court> CourtMngr::getCourtById(int id)
+  std::optional<Court> CourtMngr::getCourtById(int id)
   {
     return getSingleObjectByColumnValue<Court>("id", id);
   }
@@ -188,17 +188,17 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  unique_ptr<Court> CourtMngr::getNextUnusedCourt(bool includeManual) const
+  std::optional<Court> CourtMngr::getNextUnusedCourt(bool includeManual) const
   {
     int reqState = static_cast<int>(STAT_CO_AVAIL);
     SqliteOverlay::WhereClause wc;
-    wc.addIntCol(GENERIC_STATE_FIELD_NAME, reqState);
+    wc.addCol(GENERIC_STATE_FIELD_NAME, reqState);
 
     // further restrict the search criteria if courts for manual
     // match assignment are excluded
     if (!includeManual)
     {
-      wc.addIntCol(CO_IS_MANUAL_ASSIGNMENT, 0);
+      wc.addCol(CO_IS_MANUAL_ASSIGNMENT, 0);
     }
 
     // always get the court with the lowest number first
@@ -233,8 +233,8 @@ namespace QTournament
     // make sure there is no currently running match
     // assigned to this court
     SqliteOverlay::WhereClause wc;
-    wc.addIntCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_RUNNING));
-    wc.addIntCol(MA_COURT_REF, co.getId());
+    wc.addCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_RUNNING));
+    wc.addCol(MA_COURT_REF, co.getId());
     auto matchTab = db->getTab(TAB_MATCH);
     if (matchTab->getMatchCountForWhereClause(wc) > 0)
     {
@@ -308,16 +308,16 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  string CourtMngr::getSyncString(vector<int> rows)
+  string CourtMngr::getSyncString(const std::vector<int>& rows) const
   {
-    vector<string> cols = {"id", GENERIC_NAME_FIELD_NAME, CO_NUMBER};
+    std::vector<string> cols = {"id", GENERIC_NAME_FIELD_NAME, CO_NUMBER};
 
     return db->getSyncStringForTable(TAB_COURT, cols, rows);
   }
 
   //----------------------------------------------------------------------------
 
-  unique_ptr<Court> CourtMngr::autoSelectNextUnusedCourt(ERR *err, bool includeManual) const
+  std::optional<Court> CourtMngr::autoSelectNextUnusedCourt(ERR *err, bool includeManual) const
   {
     // find the next free court that is not subject to manual assignment
     auto nextAutoCourt = getNextUnusedCourt(false);

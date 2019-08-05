@@ -24,15 +24,14 @@
 #include "AbstractCommand.h"
 #include "Category.h"
 
-using namespace QTournament;
 
 class cmdImportSinglePlayerFromExternalDatabase : public QObject, AbstractCommand
 {
   Q_OBJECT
 
 public:
-  cmdImportSinglePlayerFromExternalDatabase(TournamentDB* _db, QWidget* p, int _preselectedCatId=-1);
-  virtual ERR exec() override;
+  cmdImportSinglePlayerFromExternalDatabase(const QTournament::TournamentDB& _db, QWidget* p, int _preselectedCatId=-1);
+  virtual QTournament::ERR exec() override;
   virtual ~cmdImportSinglePlayerFromExternalDatabase() {}
 
 protected:

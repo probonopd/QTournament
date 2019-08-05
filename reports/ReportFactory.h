@@ -33,7 +33,7 @@ namespace QTournament
   class ReportFactory
   {
   public:
-    ReportFactory(TournamentDB* _db);
+    ReportFactory(const QTournament::TournamentDB& _db);
     ~ReportFactory();
 
     QStringList getReportCatalogue() const;
@@ -55,7 +55,7 @@ namespace QTournament
     static constexpr char REP__MATRIX_AND_STANDINGS[] = "MatrixAndStandings";
 
   private:
-    TournamentDB* db;
+    std::reference_wrapper<const QTournament::TournamentDB> db;
     QString genRepName(QString repBaseName, const Category& cat, int intParam) const;
     QString genRepName(QString repBaseName, int intParam1, int intParam2) const;
   };

@@ -113,7 +113,7 @@ namespace QTournament
     int getNumPages() const { return pageOrientationList.size();}
     int getNumElements() const { return bracketElementList.size();}
 
-    tuple<BRACKET_PAGE_ORIENTATION, BRACKET_LABEL_POS> getPageInfo(int idxPage) const;
+    std::tuple<BRACKET_PAGE_ORIENTATION, BRACKET_LABEL_POS> getPageInfo(int idxPage) const;
     RawBracketVisElement getElement(int idxElement) const;
 
     void clear();
@@ -131,7 +131,7 @@ namespace QTournament
   {
     friend class BracketVisData;
     friend class TournamentDatabaseObjectManager;
-    friend class GenericObjectManager<TournamentDB>;
+    friend class SqliteOverlay::GenericObjectManager<TournamentDB>;
 
   public:
     // getters
@@ -158,9 +158,9 @@ namespace QTournament
 
     int getCategoryId() const {return row.getInt(BV_CAT_REF);}
 
-    unique_ptr<Match> getLinkedMatch() const;
+    std::unique_ptr<Match> getLinkedMatch() const;
     Category getLinkedCategory() const;
-    unique_ptr<PlayerPair> getLinkedPlayerPair(int pos) const;
+    std::unique_ptr<PlayerPair> getLinkedPlayerPair(int pos) const;
 
     // setters
     bool linkToMatch(const Match& ma) const;
@@ -168,11 +168,11 @@ namespace QTournament
 
 
   private:
-    BracketVisElement (TournamentDB* _db, int rowId);
-    BracketVisElement (TournamentDB* _db, SqliteOverlay::TabRow row);
+    BracketVisElement (const QTournament::TournamentDB& _db, int rowId);
+    BracketVisElement (const QTournament::TournamentDB& _db, SqliteOverlay::TabRow row);
   };
-  typedef vector<BracketVisElement> BracketVisElementList;
-  typedef unique_ptr<BracketVisElement> upBracketVisElement;
+  using BracketVisElementList = std::vector<BracketVisElement>;
+  using upBracketVisElement = std::unique_ptr<BracketVisElement>;
 
   //----------------------------------------------------------------------------
 
@@ -180,12 +180,12 @@ namespace QTournament
   {
   public:
 
-    static unique_ptr<BracketVisData> getExisting(const Category& _cat);
-    static unique_ptr<BracketVisData> createNew(const Category& _cat, BRACKET_PAGE_ORIENTATION orientation, BRACKET_LABEL_POS firstPageLabelPos);
+    static std::unique_ptr<BracketVisData> getExisting(const Category& _cat);
+    static std::unique_ptr<BracketVisData> createNew(const Category& _cat, BRACKET_PAGE_ORIENTATION orientation, BRACKET_LABEL_POS firstPageLabelPos);
 
     int getNumPages() const;
 
-    tuple<BRACKET_PAGE_ORIENTATION, BRACKET_LABEL_POS> getPageInfo(int idxPage) const;
+    std::tuple<BRACKET_PAGE_ORIENTATION, BRACKET_LABEL_POS> getPageInfo(int idxPage) const;
     BracketVisElementList getVisElements(int idxPage=-1);
     upBracketVisElement getVisElement(int idx) const;
 
@@ -196,13 +196,13 @@ namespace QTournament
     void clearExplicitPlayerPairReferences(const PlayerPair& pp) const;
 
   private:
-    BracketVisData(TournamentDB* _db, const Category& _cat);
+    BracketVisData(const QTournament::TournamentDB& _db, const Category& _cat);
     Category cat;
     QList<int> labelPosOnPage;
 
-    unique_ptr<PlayerPair> getParentPlayerPairForElement(const BracketVisElement& el, int pos) const;
+    std::unique_ptr<PlayerPair> getParentPlayerPairForElement(const BracketVisElement& el, int pos) const;
   };
-  typedef unique_ptr<BracketVisData> upBracketVisData;
+  using upBracketVisData = std::unique_ptr<BracketVisData>;
 
 
 }

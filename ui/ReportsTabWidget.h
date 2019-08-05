@@ -37,18 +37,17 @@ namespace QTournament {
   class Tournament;
 }
 
-using namespace QTournament;
 
 class ReportsTabWidget : public QWidget
 {
   Q_OBJECT
 
 public:
-  explicit ReportsTabWidget(QWidget *parent = 0);
+  explicit ReportsTabWidget(QWidget *parent = nullptr);
   ~ReportsTabWidget();
 
   void updateRepPool();
-  void setDatabase(TournamentDB* _db);
+  void setDatabase(QTournament::TournamentDB* _db);
 
 public slots:
   void onTreeSelectionChanged();
@@ -56,16 +55,16 @@ public slots:
   void onResetRequested();
 
 private:
-  TournamentDB* db;
+  QTournament::TournamentDB* db;
   Ui::ReportsTabWidget *ui;
-  std::vector<upAbstractReport> repPool;
+  std::vector<QTournament::upAbstractReport> repPool;
   QTreeWidgetItem* treeRoot;
 
   QTreeWidgetItem* createOrRetrieveTreeItem(const QString& locator);
   QTreeWidgetItem* findTreeItemChildByName(QTreeWidgetItem* _parent, const QString& childName) const;
   void createRootItem();
   void showReport(const QString& repName);
-  upSimpleReport curReport;
+  QTournament::upSimpleReport curReport;
   bool isInResetProcedure;
 };
 

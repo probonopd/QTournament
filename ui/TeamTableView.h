@@ -28,9 +28,6 @@
 #include "ui/delegates/TeamItemDelegate.h"
 #include "Team.h"
 
-
-using namespace QTournament;
-
 class TeamTableView : public QTableView
 {
   Q_OBJECT
@@ -38,8 +35,8 @@ class TeamTableView : public QTableView
 public:
   TeamTableView (QWidget* parent);
   virtual ~TeamTableView();
-  void setDatabase(TournamentDB* _db);
-  unique_ptr<Team> getSelectedTeam();
+  void setDatabase(QTournament::TournamentDB* _db);
+  std::optional<QTournament::Team> getSelectedTeam();
   
 protected:
   static constexpr int REL_NAME_COL_WIDTH = 10;
@@ -58,11 +55,11 @@ public slots:
   QModelIndex mapToSource(const QModelIndex& proxyIndex);
 
 private:
-  TournamentDB* db;
+  QTournament::TournamentDB* db;
   QStringListModel* emptyModel;
-  TeamTableModel* curDataModel;
+  QTournament::TeamTableModel* curDataModel;
   QSortFilterProxyModel* sortedModel;
-  unique_ptr<TeamItemDelegate> teamItemDelegate;
+  std::unique_ptr<TeamItemDelegate> teamItemDelegate;
   QAbstractItemDelegate* defaultDelegate;
 
 };

@@ -24,19 +24,18 @@
 #include "AbstractCommand.h"
 #include "Category.h"
 
-using namespace QTournament;
 
 class cmdBulkAddPlayerToCategory : public QObject, AbstractCommand
 {
   Q_OBJECT
 
 public:
-  cmdBulkAddPlayerToCategory(QWidget* p, const Category& _cat);
-  virtual ERR exec() override;
+  cmdBulkAddPlayerToCategory(QWidget* p, const QTournament::Category& _cat);
+  virtual QTournament::ERR exec() override;
   virtual ~cmdBulkAddPlayerToCategory() {}
 
 protected:
-  Category cat;
+  QTournament::Category cat;
 };
 
 #endif // CMDREGISTERPLAYER_H

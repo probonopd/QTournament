@@ -63,7 +63,7 @@ CourtTableView::~CourtTableView()
 
 //----------------------------------------------------------------------------
     
-unique_ptr<Court> CourtTableView::getSelectedCourt() const
+std::optional<Court> CourtTableView::getSelectedCourt() const
 {
   int srcRow = getSelectedSourceRow();
   if (srcRow < 0) return nullptr;
@@ -74,7 +74,7 @@ unique_ptr<Court> CourtTableView::getSelectedCourt() const
 
 //----------------------------------------------------------------------------
 
-unique_ptr<Match> CourtTableView::getSelectedMatch() const
+std::optional<QTournament::Match> CourtTableView::getSelectedMatch() const
 {
   auto co = getSelectedCourt();
   if (co == nullptr) return nullptr;
@@ -210,7 +210,7 @@ void CourtTableView::updateContextMenu(bool isRowClicked)
   actReprintResultSheet->setEnabled(isMatchClicked);
 
   // show the state of the "manual assignment"
-  unique_ptr<Court> co = getSelectedCourt();
+  std::unique_ptr<Court> co = getSelectedCourt();
   actToggleAssignmentMode->setEnabled(isRowClicked);
   if (co != nullptr)
   {
@@ -355,7 +355,7 @@ void CourtTableView::onSectionHeaderDoubleClicked()
 
 void CourtTableView::onActionToggleMatchAssignmentModeTriggered()
 {
-  unique_ptr<Court> co = getSelectedCourt();
+  std::unique_ptr<Court> co = getSelectedCourt();
   if (co == nullptr) return;
 
   bool isManual = co->isManualAssignmentOnly();
@@ -366,7 +366,7 @@ void CourtTableView::onActionToggleMatchAssignmentModeTriggered()
 
 void CourtTableView::onActionToogleEnableStateTriggered()
 {
-  unique_ptr<Court> co = getSelectedCourt();
+  std::unique_ptr<Court> co = getSelectedCourt();
   if (co == nullptr) return;
 
   CourtMngr cm{db};
@@ -382,7 +382,7 @@ void CourtTableView::onActionToogleEnableStateTriggered()
 
 void CourtTableView::onActionDeleteCourtTriggered()
 {
-  unique_ptr<Court> co = getSelectedCourt();
+  std::unique_ptr<Court> co = getSelectedCourt();
   if (co == nullptr) return;
 
   // ask a safety question
@@ -435,7 +435,7 @@ void CourtTableView::onReprintResultSheetTriggered()
 
   // try to create the result sheet report with the
   // requested number of matches
-  unique_ptr<ResultSheets> rep{nullptr};
+  std::unique_ptr<ResultSheets> rep{nullptr};
   try
   {
     rep = make_unique<ResultSheets>(db, *curMatch, 1);

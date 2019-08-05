@@ -31,8 +31,6 @@
 #include "TournamentDB.h"
 #include "TournamentDataDefs.h"
 
-using namespace SqliteOverlay;
-
 namespace QTournament
 {
   class BracketSheet : public QObject, public AbstractReport
@@ -55,7 +53,7 @@ namespace QTournament
     static constexpr char BRACKET_STYLE_BOLD[] = "BracketTextBold";
 
   public:
-    BracketSheet(TournamentDB* _db, const QString& _name, const Category& _cat);
+    BracketSheet(const QTournament::TournamentDB& _db, const QString& _name, const Category& _cat);
 
     virtual upSimpleReport regenerateReport() override;
     virtual QStringList getReportLocators() const override;
@@ -71,7 +69,7 @@ namespace QTournament
 
     void determineGridSize();
     void setupTextStyle();
-    tuple<double, double> grid2MM(int gridX, int gridY) const;
+    std::tuple<double, double> grid2MM(int gridX, int gridY) const;
     void drawBracketTextItem(int bracketX0, int bracketY0, int ySpan, BRACKET_ORIENTATION orientation, QString txt, BRACKET_TEXT_ELEMENT item, const QString& styleNameOverride="") const;
     QString getTruncatedPlayerName(const Player& p, const QString& postfix, double maxWidth, SimpleReportLib::TextStyle* style) const;
     QString getTruncatedPlayerName(const PlayerPair& pp, double maxWidth, SimpleReportLib::TextStyle* style) const;

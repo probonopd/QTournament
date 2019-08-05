@@ -453,7 +453,7 @@ void CatTabWidget::initContextMenu()
 
 //----------------------------------------------------------------------------
 
-upPlayer CatTabWidget::lwUnpaired_getSelectedPlayer() const
+std::optional<Player> CatTabWidget::lwUnpaired_getSelectedPlayer() const
 {
   // we can only handle exactly one selected item
   if (ui.lwUnpaired->selectedItems().length() != 1)
@@ -465,12 +465,12 @@ upPlayer CatTabWidget::lwUnpaired_getSelectedPlayer() const
   int playerId = selItem->data(Qt::UserRole).toInt();
 
   PlayerMngr pm{db};
-  return pm.getPlayer_up(playerId);
+  return pm.getPlayer2(playerId);
 }
 
 //----------------------------------------------------------------------------
 
-unique_ptr<PlayerPair> CatTabWidget::lwPaired_getSelectedPair() const
+std::optional<QTournament::PlayerPair> CatTabWidget::lwPaired_getSelectedPair() const
 {
   // we can only handle exactly one selected item
   if (ui.lwPaired->selectedItems().length() != 1)

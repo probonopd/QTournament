@@ -25,20 +25,26 @@
 #include <QString>
 
 #include <SqliteOverlay/GenericObjectManager.h>
-#include <SqliteOverlay/DbTab.h>
 
-#include "TournamentDB.h"
+namespace SqliteOverlay
+{
+  class DbTab;
+}
 
 namespace QTournament
 {
+  class TournamentDB;
+
   class TournamentDatabaseObjectManager : public SqliteOverlay::GenericObjectManager<TournamentDB>
   {
   public:
     TournamentDatabaseObjectManager (const TournamentDB& _db, const QString& _tabName)
       : SqliteOverlay::GenericObjectManager<TournamentDB>(_db, _tabName.toUtf8().constData()) {}
 
+    virtual ~TournamentDatabaseObjectManager() {}
+
     virtual std::string getSyncString(int rowId = -1) const;
-    virtual std::string getSyncString(std::vector<int> rows) const { return ""; }
+    virtual std::string getSyncString(const std::vector<int>& rows) const { return ""; }
 
   protected:
     void fixSeqNumberAfterInsert() const;

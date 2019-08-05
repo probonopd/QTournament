@@ -39,15 +39,15 @@ namespace QTournament
     static constexpr int STAGE_SEQ_COL_ID = 5;  // id of the column with the stage sequence number
     static constexpr int COLUMN_COUNT = 6;  // number of columns in the model
 
-    MatchGroupTableModel (TournamentDB* _db);
+    MatchGroupTableModel (const QTournament::TournamentDB& _db);
     int rowCount(const QModelIndex & parent = QModelIndex()) const;
     int columnCount(const QModelIndex & parent = QModelIndex()) const;
     QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const;
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
 
   private:
-    TournamentDB* db;
-    SqliteOverlay::DbTab* mgTab;
+    std::reference_wrapper<const QTournament::TournamentDB> db;
+    SqliteOverlay::DbTab mgTab;
     
   public slots:
     void onBeginCreateMatchGroup();

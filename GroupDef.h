@@ -60,7 +60,7 @@ namespace QTournament
   class GroupDefList : public QList<GroupDef>
   {
   public:
-    GroupDefList() : QList<GroupDef>(){};
+    GroupDefList() : QList<GroupDef>(){}
     
     int getTotalGroupCount() const;
     int getTotalMatchCount() const;

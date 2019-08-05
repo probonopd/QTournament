@@ -265,13 +265,13 @@ void PlayerTabWidget::onImportCsv()
   if (rc != QDialog::Accepted) return;
 
   // get the "consolidated" records
-  vector<CSVImportRecord> records = dlg2.getRecords();
+  std::vector<CSVImportRecord> records = dlg2.getRecords();
   if (records.empty()) return;  // nothing to do
 
   // make sure the data set is error free.
   // this SHOULD have been checked by the DlgImportCSV_Step2 before,
   // but better safe than sorry
-  vector<CSVError> errList = analyseCSV(db, records);
+  std::vector<CSVError> errList = analyseCSV(db, records);
   for (const CSVError& err : errList)
   {
     if (err.isFatal)

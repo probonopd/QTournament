@@ -43,44 +43,44 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  unique_ptr<Match> PlayerProfile::getLastPlayedMatch() const
+  std::optional<Match> PlayerProfile::getLastPlayedMatch() const
   {
-    return returnMatchOrNullptr(lastPlayedMatchId);
+    return returnMatchOrEmpty(lastPlayedMatchId);
   }
 
   //----------------------------------------------------------------------------
 
-  unique_ptr<Match> PlayerProfile::getCurrentMatch() const
+  std::optional<Match> PlayerProfile::getCurrentMatch() const
   {
-    return returnMatchOrNullptr(currentMatchId);
+    return returnMatchOrEmpty(currentMatchId);
   }
 
   //----------------------------------------------------------------------------
 
-  unique_ptr<Match> PlayerProfile::getNextMatch() const
+  std::optional<Match> PlayerProfile::getNextMatch() const
   {
-    return returnMatchOrNullptr(nextMatchId);
+    return returnMatchOrEmpty(nextMatchId);
   }
 
   //----------------------------------------------------------------------------
 
-  unique_ptr<Match> PlayerProfile::getLastUmpireMatch() const
+  std::optional<Match> PlayerProfile::getLastUmpireMatch() const
   {
-    return returnMatchOrNullptr(lastUmpireMatchId);
+    return returnMatchOrEmpty(lastUmpireMatchId);
   }
 
   //----------------------------------------------------------------------------
 
-  unique_ptr<Match> PlayerProfile::getCurrentUmpireMatch() const
+  std::optional<Match> PlayerProfile::getCurrentUmpireMatch() const
   {
-    return returnMatchOrNullptr(currentUmpireMatchId);
+    return returnMatchOrEmpty(currentUmpireMatchId);
   }
 
   //----------------------------------------------------------------------------
 
-  unique_ptr<Match> PlayerProfile::getNextUmpireMatch() const
+  std::optional<Match> PlayerProfile::getNextUmpireMatch() const
   {
-    return returnMatchOrNullptr(nextUmpireMatchId);
+    return returnMatchOrEmpty(nextUmpireMatchId);
   }
 
   //----------------------------------------------------------------------------
@@ -187,7 +187,7 @@ namespace QTournament
     where = where.arg(PAIRS_PLAYER2_REF);
     DbTab* pairsTab = db->getTab(TAB_PAIRS);
     auto it = pairsTab->getRowsByWhereClause(where.toUtf8().constData());
-    vector<int> matchIdList;
+    std::vector<int> matchIdList;
 
     DbTab* matchTab = db->getTab(TAB_MATCH);
     MatchMngr mm{db};
@@ -270,7 +270,7 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  unique_ptr<Match> PlayerProfile::returnMatchOrNullptr(int maId) const
+  std::optional<Match> PlayerProfile::returnMatchOrEmpty(int maId) const
   {
     if (maId < 1) return nullptr;
 

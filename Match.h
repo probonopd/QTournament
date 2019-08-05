@@ -68,11 +68,11 @@ namespace QTournament
                                  QString& row1Right_out, QString& row2Right_out) const;
     QString getDisplayName(const QString& localWinnerName, const QString& localLoserName) const;
 
-    unique_ptr<MatchScore> getScore(ERR *err=nullptr) const;
-    unique_ptr<PlayerPair> getWinner() const;
-    unique_ptr<PlayerPair> getLoser() const;
+    std::optional<MatchScore> getScore(ERR *err=nullptr) const;
+    std::optional<PlayerPair> getWinner() const;
+    std::optional<PlayerPair> getLoser() const;
 
-    unique_ptr<Court> getCourt(ERR *err=nullptr) const;
+    std::optional<Court> getCourt(ERR *err=nullptr) const;
     PlayerList determineActualPlayers() const;
 
     int getSymbolicPlayerPair1Name() const;
@@ -92,19 +92,18 @@ namespace QTournament
 
     REFEREE_MODE get_RAW_RefereeMode() const;
     REFEREE_MODE get_EFFECTIVE_RefereeMode() const;
-    upPlayer getAssignedReferee() const;
+    std::optional<Player> getAssignedReferee() const;
     bool hasRefereeAssigned() const;
     ERR canAssignReferee(REFEREE_ACTION refAction) const;
 
   private:
-    Match (TournamentDB* db, int rowId);
-    Match (TournamentDB* db, SqliteOverlay::TabRow row);
+    Match (const TournamentDB& _db, int rowId);
+    Match (const TournamentDB& _db, const SqliteOverlay::TabRow& _row);
     int getSymbolicPlayerPairName(int playerPos) const;
 
   };
 
-  typedef unique_ptr<Match> upMatch;
-
+  using MatchList = std::vector<Match>;
 }
 #endif	/* MATCH_H */
 

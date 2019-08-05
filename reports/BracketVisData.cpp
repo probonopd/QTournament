@@ -44,7 +44,7 @@ unique_ptr<QTournament::BracketVisData> QTournament::BracketVisData::getExisting
 
   // the category is valid, create and return a new object
   auto result = new BracketVisData(_db, _cat);
-  return unique_ptr<BracketVisData>(result);
+  return std::unique_ptr<BracketVisData>(result);
 }
 
 //----------------------------------------------------------------------------
@@ -67,7 +67,7 @@ unique_ptr<BracketVisData> BracketVisData::createNew(const Category& _cat, BRACK
   result->addPage(orientation, firstPageLabelPos);
 
   // return the object
-  return unique_ptr<BracketVisData>(result);
+  return std::unique_ptr<BracketVisData>(result);
 }
 
 //----------------------------------------------------------------------------
@@ -103,10 +103,10 @@ tuple<BRACKET_PAGE_ORIENTATION, BRACKET_LABEL_POS> BracketVisData::getPageInfo(i
 QTournament::BracketVisElementList BracketVisData::getVisElements(int idxPage)
 {
   WhereClause wc;
-  wc.addIntCol(BV_CAT_REF, cat.getId());
+  wc.addCol(BV_CAT_REF, cat.getId());
   if (idxPage >= 0)
   {
-    wc.addIntCol(BV_PAGE, idxPage);
+    wc.addCol(BV_PAGE, idxPage);
   }
   return getObjectsByWhereClause<BracketVisElement>(wc);
 }
@@ -116,8 +116,8 @@ QTournament::BracketVisElementList BracketVisData::getVisElements(int idxPage)
 QTournament::upBracketVisElement BracketVisData::getVisElement(int idx) const
 {
   WhereClause wc;
-  wc.addIntCol(BV_CAT_REF, cat.getId());
-  wc.addIntCol(BV_ELEMENT_ID, idx);
+  wc.addCol(BV_CAT_REF, cat.getId());
+  wc.addCol(BV_ELEMENT_ID, idx);
 
   return getSingleObjectByWhereClause<BracketVisElement>(wc);
 }
@@ -154,24 +154,24 @@ void BracketVisData::addElement(int idx, const RawBracketVisElement& el)
 {
   ColumnValueClause cvc;
 
-  cvc.addIntCol(BV_CAT_REF, cat.getId());
+  cvc.addCol(BV_CAT_REF, cat.getId());
 
-  cvc.addIntCol(BV_PAGE, el.page);
-  cvc.addIntCol(BV_GRID_X0, el.gridX0);
-  cvc.addIntCol(BV_GRID_Y0, el.gridY0);
-  cvc.addIntCol(BV_SPAN_Y, el.ySpan);
-  cvc.addIntCol(BV_ORIENTATION, static_cast<int>(el.orientation));
-  cvc.addIntCol(BV_TERMINATOR, static_cast<int>(el.terminator));
-  cvc.addIntCol(BV_Y_PAGEBREAK_SPAN, el.yPageBreakSpan);
-  cvc.addIntCol(BV_NEXT_PAGE_NUM, el.nextPageNum);
-  cvc.addIntCol(BV_TERMINATOR_OFFSET_Y, el.terminatorOffsetY);
-  cvc.addIntCol(BV_ELEMENT_ID, idx);
-  cvc.addIntCol(BV_INITIAL_RANK1, el.initialRank1);
-  cvc.addIntCol(BV_INITIAL_RANK2, el.initialRank2);
-  cvc.addIntCol(BV_NEXT_WINNER_MATCH, el.nextMatchForWinner);
-  cvc.addIntCol(BV_NEXT_LOSER_MATCH, el.nextMatchForLoser);
-  cvc.addIntCol(BV_NEXT_MATCH_POS_FOR_WINNER, el.nextMatchPlayerPosForWinner);
-  cvc.addIntCol(BV_NEXT_MATCH_POS_FOR_LOSER, el.nextMatchPlayerPosForLoser);
+  cvc.addCol(BV_PAGE, el.page);
+  cvc.addCol(BV_GRID_X0, el.gridX0);
+  cvc.addCol(BV_GRID_Y0, el.gridY0);
+  cvc.addCol(BV_SPAN_Y, el.ySpan);
+  cvc.addCol(BV_ORIENTATION, static_cast<int>(el.orientation));
+  cvc.addCol(BV_TERMINATOR, static_cast<int>(el.terminator));
+  cvc.addCol(BV_Y_PAGEBREAK_SPAN, el.yPageBreakSpan);
+  cvc.addCol(BV_NEXT_PAGE_NUM, el.nextPageNum);
+  cvc.addCol(BV_TERMINATOR_OFFSET_Y, el.terminatorOffsetY);
+  cvc.addCol(BV_ELEMENT_ID, idx);
+  cvc.addCol(BV_INITIAL_RANK1, el.initialRank1);
+  cvc.addCol(BV_INITIAL_RANK2, el.initialRank2);
+  cvc.addCol(BV_NEXT_WINNER_MATCH, el.nextMatchForWinner);
+  cvc.addCol(BV_NEXT_LOSER_MATCH, el.nextMatchForLoser);
+  cvc.addCol(BV_NEXT_MATCH_POS_FOR_WINNER, el.nextMatchPlayerPosForWinner);
+  cvc.addCol(BV_NEXT_MATCH_POS_FOR_LOSER, el.nextMatchPlayerPosForLoser);
 
   // lock the database before writing
   DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
@@ -285,8 +285,8 @@ void BracketVisData::clearExplicitPlayerPairReferences(const PlayerPair& pp) con
   DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
 
   WhereClause w;
-  w.addIntCol(BV_CAT_REF, catId);
-  w.addIntCol(BV_PAIR1_REF, pp.getPairId());
+  w.addCol(BV_CAT_REF, catId);
+  w.addCol(BV_PAIR1_REF, pp.getPairId());
   DbTab::CachingRowIterator it = tab->getRowsByWhereClause(w);
   while (!(it.isEnd()))
   {
@@ -295,8 +295,8 @@ void BracketVisData::clearExplicitPlayerPairReferences(const PlayerPair& pp) con
   }
 
   w.clear();
-  w.addIntCol(BV_CAT_REF, catId);
-  w.addIntCol(BV_PAIR2_REF, pp.getPairId());
+  w.addCol(BV_CAT_REF, catId);
+  w.addCol(BV_PAIR2_REF, pp.getPairId());
   it = tab->getRowsByWhereClause(w);
   while (!(it.isEnd()))
   {
@@ -450,7 +450,7 @@ unique_ptr<PlayerPair> BracketVisElement::getLinkedPlayerPair(int pos) const
 {
   if ((pos != 1) && (pos != 2)) return nullptr;
 
-  unique_ptr<ScalarQueryResult<int>> _pairId;
+  std::unique_ptr<ScalarQueryResult<int>> _pairId;
   if (pos == 1) _pairId = row.getInt2(BV_PAIR1_REF);
   else _pairId = row.getInt2(BV_PAIR2_REF);
 

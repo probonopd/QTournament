@@ -27,8 +27,6 @@ namespace Ui {
   class DlgPickPlayerSex;
 }
 
-using namespace QTournament;
-
 class DlgPickPlayerSex : public QDialog
 {
   Q_OBJECT
@@ -36,7 +34,7 @@ class DlgPickPlayerSex : public QDialog
 public:
   explicit DlgPickPlayerSex(QWidget *parent, const QString& playerName);
   ~DlgPickPlayerSex();
-  SEX getSelectedSex();
+  QTournament::SEX getSelectedSex();
 
 private slots:
   void onBtnMaleClicked();
@@ -44,7 +42,7 @@ private slots:
 
 private:
   Ui::DlgPickPlayerSex *ui;
-  SEX selectedSex = M;
+  QTournament::SEX selectedSex = QTournament::SEX::M;
 
 };
 

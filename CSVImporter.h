@@ -43,12 +43,12 @@ namespace QTournament
     static constexpr int Categories = 4;
   };
 
-  SEX strToSex(const string& s);
+  SEX strToSex(const std::string& s);
 
   class CSVImportRecord
   {
   public:
-    CSVImportRecord(TournamentDB* _db, vector<string> rawTexts);
+    CSVImportRecord(const TournamentDB& _db, std::vector<std::string> rawTexts);
     void enforceConsistentSex();
     void insertMissingDataForExistingPlayers();
 
@@ -60,34 +60,34 @@ namespace QTournament
     bool hasExistingName() const;
 
     // getters
-    vector<QString> getCatNames() const { return catNames; }
+    std::vector<QString> getCatNames() const { return catNames; }
     QString getCatNames_str() const;
     SEX getSex() const { return sex; }
     QString getLastName() const { return lName; }
     QString getFirstName() const { return fName; }
     QString getTeamName() const { return teamName; }
 
-    unique_ptr<QTournament::Player> getExistingPlayer() const;
+    std::optional<Player> getExistingPlayer() const;
 
     // setters
     bool updateFirstName(const QString& newName);
     bool updateLastName(const QString& newName);
     bool updateTeamName(const QString& newName);
     bool updateSex(SEX newSex);
-    bool updateCategories(const vector<QString>& catOverwrite);
+    bool updateCategories(const std::vector<QString>& catOverwrite);
 
   private:
-    TournamentDB* db;
+    std::reference_wrapper<const QTournament::TournamentDB> db;
     QString fName;
     QString lName;
     SEX sex;
     QString teamName;
-    vector<QString> catNames;
+    std::vector<QString> catNames;
   };
 
-  vector<vector<string>> splitCSV(const string& rawText, const string& delim = ",", const string& optionalCatName="");
-  vector<CSVImportRecord> convertCSVfromPlainText(TournamentDB* db, const vector<vector<string>>& splitData);
-  vector<CSVError> analyseCSV(TournamentDB* db, const vector<CSVImportRecord>& data);
+  std::vector<std::vector<std::string>> splitCSV(const std::string& rawText, const std::string& delim = ",", const std::string& optionalCatName="");
+  std::vector<CSVImportRecord> convertCSVfromPlainText(const TournamentDB& db, const std::vector<std::vector<std::string>>& splitData);
+  std::vector<CSVError> analyseCSV(const TournamentDB& db, const std::vector<CSVImportRecord>& data);
 
 }
 

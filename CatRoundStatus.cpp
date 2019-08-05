@@ -24,7 +24,7 @@
 namespace QTournament
 {
 
-CatRoundStatus::CatRoundStatus(TournamentDB* _db, const Category& _cat)
+CatRoundStatus::CatRoundStatus(const TournamentDB& _db, const Category& _cat)
   :db(nullptr), cat(_cat)
 {
   if (_db == nullptr)

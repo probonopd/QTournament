@@ -69,7 +69,7 @@ PlayerTableView::PlayerTableView(QWidget* parent)
 
 //----------------------------------------------------------------------------
     
-unique_ptr<Player> PlayerTableView::getSelectedPlayer() const
+std::optional<QTournament::Player> PlayerTableView::getSelectedPlayer() const
 {
   int srcRow = getSelectedSourceRow();
   if (srcRow < 0) return nullptr;
@@ -327,7 +327,7 @@ void PlayerTableView::onShowNextMatchesForPlayerTriggered()
   if (selectedPlayer == nullptr) return;
 
   PlayerMngr pm{db};
-  vector<Match> nextMatches = pm.getAllScheduledMatchesForPlayer(*selectedPlayer);
+  std::vector<Match> nextMatches = pm.getAllScheduledMatchesForPlayer(*selectedPlayer);
 
   QString msg;
   if (nextMatches.empty())

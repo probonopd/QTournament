@@ -35,16 +35,15 @@
 #include "Match.h"
 #include "AutoSizingTable.h"
 
-using namespace QTournament;
 
-class MatchTableView : public GuiHelpers::AutoSizingTableView_WithDatabase<MatchTableModel>
+class MatchTableView : public GuiHelpers::AutoSizingTableView_WithDatabase<QTournament::MatchTableModel>
 {
   Q_OBJECT
   
 public:
   MatchTableView (QWidget* parent);
   virtual ~MatchTableView ();
-  unique_ptr<Match> getSelectedMatch() const;
+  std::optional<QTournament::Match> getSelectedMatch() const;
   void updateSelectionAfterDataChange();
   void updateRefereeColumn();
   
@@ -67,7 +66,7 @@ private slots:
   void onRemoveRefereeTriggered();
   void onSectionHeaderDoubleClicked();
   void onMatchTimePredictionUpdate();
-  void onMatchStatusChanged(int maId, int maSeqNum, OBJ_STATE oldStat, OBJ_STATE newStat);
+  void onMatchStatusChanged(int maId, int maSeqNum, QTournament::OBJ_STATE oldStat, QTournament::OBJ_STATE newStat);
   void onPrint1Selected();
   void onPrint4Selected();
   void onPrint8Selected();
@@ -80,7 +79,7 @@ private:
   static constexpr int PREDICTION_UPDATE_INTERVAL__MS = 10 * 1000; // update every 10 secs
   MatchItemDelegate* matchItemDelegate;
 
-  unique_ptr<QMenu> contextMenu;
+  std::unique_ptr<QMenu> contextMenu;
   QAction* actPostponeMatch;
   QMenu* walkoverSelectionMenu;
   QMenu* courtSelectionMenu;
@@ -97,12 +96,12 @@ private:
   QAction* printResultSheet8;
   QAction* printResultSheet12;
 
-  unique_ptr<QTimer> predictionUpdateTimer;
+  std::unique_ptr<QTimer> predictionUpdateTimer;
 
   void initContextMenu();
   void updateContextMenu();
   void execWalkover(int playerNum);
-  void showMatchBusyReason(const Match& ma);
+  void showMatchBusyReason(const QTournament::Match& ma);
   void printResultSheets(int matchCount);
 };
 

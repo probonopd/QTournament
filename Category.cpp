@@ -38,15 +38,15 @@
 namespace QTournament
 {
 
-  Category::Category(TournamentDB* db, int rowId)
-  :TournamentDatabaseObject(db, TAB_CATEGORY, rowId)
+  Category::Category(const TournamentDB& _db, int rowId)
+  :TournamentDatabaseObject(_db, TAB_CATEGORY, rowId)
   {
   }
 
   //----------------------------------------------------------------------------
 
-  Category::Category(TournamentDB* db, SqliteOverlay::TabRow row)
-  :TournamentDatabaseObject(db, row)
+  Category::Category(const TournamentDB& _db, const SqliteOverlay::TabRow& row)
+  :TournamentDatabaseObject(_db, row)
   {
   }
 
@@ -181,8 +181,8 @@ namespace QTournament
   bool Category::hasPlayer(const Player& p) const
   {
     SqliteOverlay::WhereClause wc;
-    wc.addIntCol(P2C_PLAYER_REF, p.getId());
-    wc.addIntCol(P2C_CAT_REF, getId());
+    wc.addCol(P2C_PLAYER_REF, p.getId());
+    wc.addCol(P2C_CAT_REF, getId());
 
     return (db->getTab(TAB_P2C)->getMatchCountForWhereClause(wc) > 0);
   }
@@ -314,8 +314,8 @@ namespace QTournament
     // filter out the players that are paired and have already
     // entries in the database
     SqliteOverlay::WhereClause wc;
-    wc.addIntCol(PAIRS_CAT_REF, getId());
-    if (grp > 0) wc.addIntCol(PAIRS_GRP_NUM, grp);
+    wc.addCol(PAIRS_CAT_REF, getId());
+    if (grp > 0) wc.addCol(PAIRS_GRP_NUM, grp);
     auto it = db->getTab(TAB_PAIRS)->getRowsByWhereClause(wc);
     while (!(it.isEnd()))
     {
@@ -366,8 +366,8 @@ namespace QTournament
 
     DbTab* pairTab = db->getTab(TAB_PAIRS);
     SqliteOverlay::WhereClause wc;
-    wc.addIntCol(PAIRS_CAT_REF, getId());
-    if (grp > 0) wc.addIntCol(PAIRS_GRP_NUM, grp);
+    wc.addCol(PAIRS_CAT_REF, getId());
+    if (grp > 0) wc.addCol(PAIRS_GRP_NUM, grp);
     return pairTab->getMatchCountForWhereClause(wc);
   }
 
@@ -480,9 +480,9 @@ namespace QTournament
 
     // check if the two players are paired for this category
     SqliteOverlay::WhereClause wc;
-    wc.addIntCol(PAIRS_CAT_REF, getId());
-    wc.addIntCol(PAIRS_PLAYER1_REF, p1.getId());
-    wc.addIntCol(PAIRS_PLAYER2_REF, p2.getId());
+    wc.addCol(PAIRS_CAT_REF, getId());
+    wc.addCol(PAIRS_PLAYER1_REF, p1.getId());
+    wc.addCol(PAIRS_PLAYER2_REF, p2.getId());
     SqliteOverlay::DbTab* pairsTab = db->getTab(TAB_PAIRS);
     if (pairsTab->getMatchCountForWhereClause(wc) != 0)
     {
@@ -491,9 +491,9 @@ namespace QTournament
 
     // swap player 1 and player 2 and make a new query
     wc.clear();
-    wc.addIntCol(PAIRS_CAT_REF, getId());
-    wc.addIntCol(PAIRS_PLAYER1_REF, p2.getId());
-    wc.addIntCol(PAIRS_PLAYER2_REF, p1.getId());
+    wc.addCol(PAIRS_CAT_REF, getId());
+    wc.addCol(PAIRS_PLAYER1_REF, p2.getId());
+    wc.addCol(PAIRS_PLAYER2_REF, p1.getId());
     if (pairsTab->getMatchCountForWhereClause(wc) != 0)
     {
       return OK;
@@ -554,31 +554,31 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  unique_ptr<Category> Category::convertToSpecializedObject() const
+  std::optional<Category> Category::convertToSpecializedObject() const
   {
     // return an instance of a suitable, specialized category-child
     MATCH_SYSTEM sys = getMatchSystem();
 
     if (sys == GROUPS_WITH_KO) {
-      return unique_ptr<Category>(new RoundRobinCategory(db, row));
+      return std::unique_ptr<Category>(new RoundRobinCategory(db, row));
     }
 
     if (sys == SINGLE_ELIM) {
-      return unique_ptr<Category>(new EliminationCategory(db, row, BracketGenerator::BRACKET_SINGLE_ELIM));
+      return std::unique_ptr<Category>(new EliminationCategory(db, row, BracketGenerator::BRACKET_SINGLE_ELIM));
     }
 
     if (sys == RANKING) {
-      return unique_ptr<Category>(new EliminationCategory(db, row, BracketGenerator::BRACKET_RANKING1));
+      return std::unique_ptr<Category>(new EliminationCategory(db, row, BracketGenerator::BRACKET_RANKING1));
     }
 
     if (sys == ROUND_ROBIN)
     {
-      return unique_ptr<Category>(new PureRoundRobinCategory(db, row));
+      return std::unique_ptr<Category>(new PureRoundRobinCategory(db, row));
     }
 
     if (sys == SWISS_LADDER)
     {
-      return unique_ptr<Category>(new SwissLadderCategory(db, row));
+      return std::unique_ptr<Category>(new SwissLadderCategory(db, row));
     }
 
     // THIS IS JUST A HOT FIX UNTIL WE HAVE
@@ -586,7 +586,7 @@ namespace QTournament
     //
     // Returning an object of the base class instead of the derived class
     // will end up in exceptions and abnormal program termination
-    return unique_ptr<Category>(new Category(db, row));
+    return std::unique_ptr<Category>(new Category(db, row));
   }
 
   //----------------------------------------------------------------------------
@@ -595,7 +595,7 @@ namespace QTournament
   {
     if (getState() != STAT_CAT_FROZEN) return CATEGORY_NOT_YET_FROZEN;
 
-    unique_ptr<Category> specializedCat = convertToSpecializedObject();
+    std::unique_ptr<Category> specializedCat = convertToSpecializedObject();
     if (!(specializedCat->needsGroupInitialization()))
     {
       return CATEGORY_NEEDS_NO_GROUP_ASSIGNMENTS;
@@ -649,7 +649,7 @@ namespace QTournament
   {
     if (getState() != STAT_CAT_FROZEN) return CATEGORY_NOT_YET_FROZEN;
 
-    unique_ptr<Category> specializedCat = convertToSpecializedObject();
+    std::unique_ptr<Category> specializedCat = convertToSpecializedObject();
     if (!(specializedCat->needsInitialRanking()))
     {
       return CATEGORY_NEEDS_NO_SEEDING;
@@ -912,7 +912,7 @@ namespace QTournament
     MatchMngr mm{db};
     int curRound = -1;
     int curDepth = -1;
-    unique_ptr<MatchGroup> curGroup = nullptr;
+    std::unique_ptr<MatchGroup> curGroup = nullptr;
     QHash<int, int> bracket2Match;
     for (BracketMatchData bmd : bmdl)
     {
@@ -1324,6 +1324,90 @@ namespace QTournament
 
     // default value, should never be reached
     return false;
+  }
+
+  //----------------------------------------------------------------------------
+
+  ERR Category::canFreezeConfig()
+  {
+    throw std::runtime_error("Unimplemented Method: canFreezeConfig");
+  }
+
+  //----------------------------------------------------------------------------
+
+  bool Category::needsInitialRanking()
+  {
+    throw std::runtime_error("Unimplemented Method: needsInitialRanking");
+  }
+
+  //----------------------------------------------------------------------------
+
+  bool Category::needsGroupInitialization()
+  {
+    throw std::runtime_error("Unimplemented Method: needsGroupInitialization");
+  }
+
+  //----------------------------------------------------------------------------
+
+  ERR Category::prepareFirstRound(ProgressQueue* progressNotificationQueue)
+  {
+    throw std::runtime_error("Unimplemented Method: prepareFirstRound");
+  }
+
+  //----------------------------------------------------------------------------
+
+  int Category::calcTotalRoundsCount() const
+  {
+    throw std::runtime_error("Unimplemented Method: calcTotalRoundsCount");
+  }
+
+  //----------------------------------------------------------------------------
+
+  ERR Category::onRoundCompleted(int round)
+  {
+    throw std::runtime_error("Unimplemented Method: onRoundCompleted");
+  }
+
+  //----------------------------------------------------------------------------
+
+  std::function<bool (RankingEntry&, RankingEntry&)> Category::getLessThanFunction()
+  {
+    throw std::runtime_error("Unimplemented Method: getLessThanFunction");
+  }
+
+  //----------------------------------------------------------------------------
+
+  PlayerPairList Category::getRemainingPlayersAfterRound(int round, ERR* err) const
+  {
+    throw std::runtime_error("Unimplemented Method: getRemainingPlayersAfterRound");
+  }
+
+  //----------------------------------------------------------------------------
+
+  PlayerPairList Category::getPlayerPairsForIntermediateSeeding() const
+  {
+    throw std::runtime_error("Unimplemented Method: getPlayerPairsForIntermediateSeeding");
+  }
+
+  //----------------------------------------------------------------------------
+
+  ERR Category::resolveIntermediateSeeding(const PlayerPairList& seed, ProgressQueue* progressNotificationQueue) const
+  {
+    throw std::runtime_error("Unimplemented Method: resolveIntermediateSeeding");
+  }
+
+  //----------------------------------------------------------------------------
+
+  ModMatchResult Category::canModifyMatchResult(const Match& ma) const
+  {
+    return ModMatchResult::NotImplemented;
+  }
+
+  //----------------------------------------------------------------------------
+
+  ModMatchResult Category::modifyMatchResult(const Match& ma, const MatchScore& newScore) const
+  {
+    return ModMatchResult::NotImplemented;
   }
 
   //----------------------------------------------------------------------------

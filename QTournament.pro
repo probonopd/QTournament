@@ -159,7 +159,8 @@ HEADERS += \
     ui/commonCommands/cmdFullSync.h \
     ui/commonCommands/cmdDeleteFromServer.h \
     ui/DlgConnectionSettings.h \
-    ui/commonCommands/cmdConnectionSettings.h
+    ui/commonCommands/cmdConnectionSettings.h \
+    SqliteQverlayForwards.h
 
 SOURCES += \
     Category.cpp \

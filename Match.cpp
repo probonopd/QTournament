@@ -30,15 +30,15 @@
 namespace QTournament
 {
 
-  Match::Match(TournamentDB* db, int rowId)
-  :TournamentDatabaseObject(db, TAB_MATCH, rowId)
+  Match::Match(const TournamentDB& _db, int rowId)
+  :TournamentDatabaseObject(_db, TAB_MATCH, rowId)
   {
   }
 
 //----------------------------------------------------------------------------
 
-  Match::Match(TournamentDB* db, SqliteOverlay::TabRow row)
-  :TournamentDatabaseObject(db, row)
+  Match::Match(const TournamentDB& _db, const SqliteOverlay::TabRow& _row)
+  :TournamentDatabaseObject(_db, _row)
   {
   }
 
@@ -194,7 +194,7 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  unique_ptr<MatchScore> Match::getScore(ERR *err) const
+  std::optional<MatchScore> Match::getScore(ERR *err) const
   {
     auto scoreEntry = row.getString2(MA_RESULT);
 
@@ -230,7 +230,7 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  unique_ptr<Court> Match::getCourt(ERR *err) const
+  std::optional<Court> Match::getCourt(ERR *err) const
   {
     auto courtEntry = row.getInt2(MA_COURT_REF);
     if (courtEntry->isNull())
@@ -422,8 +422,8 @@ namespace QTournament
     REFEREE_MODE mode = get_RAW_RefereeMode();
     if (mode == REFEREE_MODE::USE_DEFAULT)
     {
-      auto cfg = KeyValueTab::getTab(db, TAB_CFG, false);
-      int tnmtDefaultRefereeModeId = cfg->getInt(CFG_KEY_DEFAULT_REFEREE_MODE);
+      auto cfg = SqliteOverlay::KeyValueTab{db.get(), TAB_CFG};
+      int tnmtDefaultRefereeModeId = cfg.getInt(CFG_KEY_DEFAULT_REFEREE_MODE);
       mode = static_cast<REFEREE_MODE>(tnmtDefaultRefereeModeId);
     }
 
@@ -434,13 +434,13 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  upPlayer Match::getAssignedReferee() const
+  std::optional<Player> Match::getAssignedReferee() const
   {
     auto _refereeId = row.getInt2(MA_REFEREE_REF);
     if (_refereeId->isNull()) return nullptr;
 
     PlayerMngr pm{db};
-    return pm.getPlayer_up(_refereeId->get());
+    return pm.getPlayer2(_refereeId->get());
   }
 
   //----------------------------------------------------------------------------
@@ -523,9 +523,9 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  unique_ptr<PlayerPair> Match::getWinner() const
+  std::optional<PlayerPair> Match::getWinner() const
   {
-    unique_ptr<MatchScore> score = getScore();
+    std::unique_ptr<MatchScore> score = getScore();
     if (score == nullptr)
     {
       return nullptr;   // score is not yet set
@@ -539,14 +539,14 @@ namespace QTournament
 
     PlayerPair w = (winner == 1) ? getPlayerPair1() : getPlayerPair2();
 
-    return unique_ptr<PlayerPair>(new PlayerPair(w));
+    return std::unique_ptr<PlayerPair>(new PlayerPair(w));
   }
 
 //----------------------------------------------------------------------------
 
-  unique_ptr<PlayerPair> Match::getLoser() const
+  std::optional<PlayerPair> Match::getLoser() const
   {
-    unique_ptr<MatchScore> score = getScore();
+    std::unique_ptr<MatchScore> score = getScore();
     if (score == nullptr)
     {
       return nullptr;   // score is not yet set
@@ -560,7 +560,7 @@ namespace QTournament
 
     PlayerPair l = (loser == 1) ? getPlayerPair1() : getPlayerPair2();
 
-    return unique_ptr<PlayerPair>(new PlayerPair(l));
+    return std::unique_ptr<PlayerPair>(new PlayerPair(l));
   }
 
 //----------------------------------------------------------------------------

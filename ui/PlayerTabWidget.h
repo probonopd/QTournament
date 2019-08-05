@@ -39,17 +39,17 @@ class PlayerTabWidget : public QWidget
 public:
   PlayerTabWidget();
   virtual ~PlayerTabWidget ();
-  void setDatabase(TournamentDB* _db);
+  void setDatabase(QTournament::TournamentDB* _db);
   
 private:
-  TournamentDB* db;
+  QTournament::TournamentDB* db;
   Ui::PlayerTabWidget ui;
 
-  unique_ptr<QMenu> registrationMenu;
+  std::unique_ptr<QMenu> registrationMenu;
   QAction* actRegisterAll;
   QAction* actUnregisterAll;
 
-  unique_ptr<QMenu> extDatabaseMenu;
+  std::unique_ptr<QMenu> extDatabaseMenu;
   QAction* actImportFromExtDatabase;
   QAction* actExportToExtDatabase;
   QAction* actSyncAllToExtDatabase;

@@ -30,7 +30,6 @@
 #include "delegates/PairItemDelegate.h"
 #include "TournamentDB.h"
 
-using namespace QTournament;
 
 class SeedingListWidget : public QListWidget
 {
@@ -38,7 +37,7 @@ class SeedingListWidget : public QListWidget
 
 public:
   SeedingListWidget(QWidget* parent);
-  void initSeedingList(const PlayerPairList& _seed);
+  void initSeedingList(const QTournament::PlayerPairList& _seed);
   ~SeedingListWidget();
   int getSelectedItemIndex() const;
   bool canMoveSelectedPlayerUp() const;
@@ -47,13 +46,13 @@ public:
   void moveSelectedPlayerUp();
   void moveSelectedPlayerDown();
   void warpSelectedPlayerTo(int targetRow);
-  PlayerPairList getSeedList() const;
-  void clearListAndFillFromSeed(const PlayerPairList& seed);
-  void setDatabase(TournamentDB* _db);
+  QTournament::PlayerPairList getSeedList() const;
+  void clearListAndFillFromSeed(const QTournament::PlayerPairList& seed);
+  void setDatabase(QTournament::TournamentDB* _db);
 
 private:
-  TournamentDB* db;
-  unique_ptr<PairItemDelegate> pairDelegate;
+  QTournament::TournamentDB* db;
+  std::unique_ptr<PairItemDelegate> pairDelegate;
   QAbstractItemDelegate* defaultDelegate;
   QQueue<QListWidgetItem*> selectionQueue;
   void swapListItems(int row1, int row2);

@@ -25,19 +25,17 @@
 #include "RankingMngr.h"
 #include "RankingEntry.h"
 
-using namespace QTournament;
-
 class plotStandings : public QObject, AbstractReportElement
 {
   Q_OBJECT
 
 public:
-  plotStandings(SimpleReportGenerator* _rep, const RankingEntryList& _rel, const QString& tabName);
+  plotStandings(SimpleReportLib::SimpleReportGenerator* _rep, const QTournament::RankingEntryList& _rel, const QString& tabName);
   virtual QRectF plot(const QPointF& topLeft = QPointF(-1, -1));
   virtual ~plotStandings() {}
 
 protected:
-  RankingEntryList rel;
+  QTournament::RankingEntryList rel;
   QString tableName;
 };
 

@@ -24,18 +24,17 @@
 #include "AbstractCommand.h"
 #include "Category.h"
 
-using namespace QTournament;
 
 class cmdBulkRemovePlayersFromCategory : public QObject, AbstractCommand
 {
   Q_OBJECT
 public:
-  cmdBulkRemovePlayersFromCategory(QWidget* p, const Category& _cat);
-  virtual ERR exec() override;
+  cmdBulkRemovePlayersFromCategory(QWidget* p, const QTournament::Category& _cat);
+  virtual QTournament::ERR exec() override;
   virtual ~cmdBulkRemovePlayersFromCategory() {}
 
 protected:
-  Category cat;
+  QTournament::Category cat;
 };
 
 #endif // CMDREGISTERPLAYER_H

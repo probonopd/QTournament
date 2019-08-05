@@ -514,7 +514,7 @@ QString GuiHelpers::getStatusSummaryForPlayer(const QTournament::Player& p, cons
       txt += QObject::tr("; no played matches yet.");
     }
   }
-  unique_ptr<Match> ma;
+  std::unique_ptr<Match> ma;
   if ((plStat == QTournament::OBJ_STATE::STAT_PL_PLAYING) ||
       (plStat == QTournament::OBJ_STATE::STAT_PL_REFEREE))
   {

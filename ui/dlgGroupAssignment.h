@@ -27,23 +27,21 @@
 #include "TournamentDB.h"
 #include "KO_Config.h"
 
-using namespace QTournament;
-
 class dlgGroupAssignment : public QDialog
 {
   Q_OBJECT
 public:
-  dlgGroupAssignment(TournamentDB* _db, QWidget* p, Category &_cat);
+  dlgGroupAssignment(const QTournament::TournamentDB& _db, QWidget* p, QTournament::Category& _cat);
   virtual ~dlgGroupAssignment();
-  vector<PlayerPairList> getGroupAssignments();
+  std::vector<QTournament::PlayerPairList> getGroupAssignments();
 
 private:
   Ui::dlgGroupAssignment ui;
-  TournamentDB* db;
-  Category& cat;
-  KO_Config cfg;
+  std::reference_wrapper<const QTournament::TournamentDB> db;
+  QTournament::Category& cat;
+  QTournament::KO_Config cfg;
   
-  QList<PlayerPairList> getRandomizedPlayerPairListList();
+  QList<QTournament::PlayerPairList> getRandomizedPlayerPairListList();
   
 public slots:
   virtual void done (int result);

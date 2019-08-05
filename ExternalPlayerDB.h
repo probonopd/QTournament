@@ -62,8 +62,8 @@ namespace QTournament
     SEX sex;
     static std::function<bool (ExternalPlayerDatabaseEntry&, ExternalPlayerDatabaseEntry&)> getPlayerSortFunction_byName();
   };
-  typedef unique_ptr<ExternalPlayerDatabaseEntry> upExternalPlayerDatabaseEntry;
-  typedef QList<ExternalPlayerDatabaseEntry> ExternalPlayerDatabaseEntryList;
+  using upExternalPlayerDatabaseEntry = std::unique_ptr<ExternalPlayerDatabaseEntry>;
+  using ExternalPlayerDatabaseEntryList = QList<ExternalPlayerDatabaseEntry>;
 
   //----------------------------------------------------------------------------
 
@@ -72,8 +72,8 @@ namespace QTournament
     friend class SqliteDatabase;
 
   public:
-    static unique_ptr<ExternalPlayerDB> createNew(const QString& fname);
-    static unique_ptr<ExternalPlayerDB> openExisting(const QString& fname);
+    static std::unique_ptr<ExternalPlayerDB> createNew(const QString& fname);
+    static std::unique_ptr<ExternalPlayerDB> openExisting(const QString& fname);
     virtual void populateTables();
     virtual void populateViews();
 
@@ -84,13 +84,14 @@ namespace QTournament
     upExternalPlayerDatabaseEntry storeNewPlayer(const ExternalPlayerDatabaseEntry& newPlayer);
     bool hasPlayer(const QString& fname, const QString& lname);
     bool updatePlayerSexIfUndefined(int extPlayerId, SEX newSex);
-    tuple<QList<int>, QList<int>, QHash<int, QString>, int> bulkImportCSV(const QString& csv);
+    std::tuple<QList<int>, QList<int>, QHash<int, QString>, int> bulkImportCSV(const QString& csv);
 
   private:
     upExternalPlayerDatabaseEntry row2upEntry(const SqliteOverlay::TabRow& r) const;
-    ExternalPlayerDB(const string& fname, bool createNew);
+    ExternalPlayerDB(const std::string& fname, bool createNew);
   };
-  typedef unique_ptr<ExternalPlayerDB> upExternalPlayerDB;
+
+  using upExternalPlayerDB = std::unique_ptr<ExternalPlayerDB>;
 }
 
 #endif	/* EXTERNALPLAYERDB_H */

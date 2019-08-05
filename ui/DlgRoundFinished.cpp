@@ -21,7 +21,7 @@
 #include "DlgRoundFinished.h"
 #include "ui_DlgRoundFinished.h"
 
-DlgRoundFinished::DlgRoundFinished(QWidget *parent, Category _cat, int _round) :
+DlgRoundFinished::DlgRoundFinished(QWidget *parent, const QTournament::Category& _cat, int _round) :
   QDialog(parent),
   ui(new Ui::DlgRoundFinished),
   db{_cat.getDatabaseHandle()}, cat{_cat}, round{_round},

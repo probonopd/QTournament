@@ -61,11 +61,11 @@ namespace QTournament
     std::optional<Court> getMatchCourt() const;
 
   private:
-    Player (TournamentDB* db, int rowId);
-    Player (TournamentDB* db, SqliteOverlay::TabRow row);
+    Player (const TournamentDB& _db, int rowId);
+    Player (const TournamentDB& _db, const SqliteOverlay::TabRow& _row);
   };
 
-  typedef std::vector<Player> PlayerList;
+  using PlayerList = std::vector<Player>;
 
 }
 #endif	/* TEAM_H */

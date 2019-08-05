@@ -82,8 +82,8 @@ ERR cmdOnlineRegistration::exec()
 
   // show the registration form
   auto cfg = SqliteOverlay::KeyValueTab::getTab(db, TAB_CFG, false);
-  string tName = cfg->operator [](CFG_KEY_TNMT_NAME);
-  string club = cfg->operator [](CFG_KEY_TNMT_ORGA);
+  string tName = cfg.operator [](CFG_KEY_TNMT_NAME);
+  string club = cfg.operator [](CFG_KEY_TNMT_ORGA);
   DlgRegisterTournament dlg{parentWidget, QString::fromUtf8(tName.c_str()), QString::fromUtf8(club.c_str())};
   int rc = dlg.exec();
   if (rc != QDialog::Accepted) return ERR::WRONG_STATE;  // dummy error code; will not be evaluated by caller

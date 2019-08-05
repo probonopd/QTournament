@@ -72,7 +72,7 @@ void MatchGroupTableView::onFilterUpdateTriggered()
 
 //----------------------------------------------------------------------------
 
-unique_ptr<MatchGroup> MatchGroupTableView::getSelectedMatchGroup()
+std::optional<QTournament::MatchGroup> MatchGroupTableView::getSelectedMatchGroup()
 {
   int srcRow = getSelectedSourceRow();
   if (srcRow < 0) return nullptr;

@@ -38,7 +38,7 @@ class DlgPickTeam : public QDialog
   Q_OBJECT
 
 public:
-  explicit DlgPickTeam(QWidget *parent, QTournament::TournamentDB* _db);
+  explicit DlgPickTeam(QWidget *parent, const QTournament::TournamentDB& _db);
   ~DlgPickTeam();
   int getSelectedTeamId() const { return selectedTeamId; }
 
@@ -49,7 +49,7 @@ protected slots:
 
 private:
   Ui::DlgPickTeam *ui;
-  QTournament::TournamentDB* db;
+  std::reference_wrapper<const QTournament::TournamentDB> db;
   int selectedTeamId;
   bool leShowsHelpText;
 };

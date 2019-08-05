@@ -48,7 +48,7 @@ void RefereeSelectionDelegate::commonPaint(QPainter* painter, const QStyleOption
 {
   PlayerMngr pm{db};
   int playerId = index.data(Qt::UserRole).toInt();
-  auto p = pm.getPlayer_up(playerId);
+  auto p = pm.getPlayer2(playerId);
   if (p == nullptr) return;
 
   OBJ_STATE plStat = p->getState();

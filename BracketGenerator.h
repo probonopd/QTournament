@@ -78,9 +78,9 @@ namespace QTournament
     int bracketMatchId;
   };
 
-  typedef unique_ptr<BracketMatchData> upBracketMatchData;
+  using upBracketMatchData = std::unique_ptr<BracketMatchData>;
   //typedef QList<BracketMatchData> BracketMatchDataList;
-  typedef vector<BracketMatchData> BracketMatchDataList;
+  using BracketMatchDataList = std::vector<BracketMatchData>;
   //typedef std::vector<upBracketMatchData> upBracketMatchDataVector;
 
   class BracketGenerator

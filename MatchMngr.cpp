@@ -35,14 +35,14 @@ using namespace SqliteOverlay;
 
 namespace QTournament {
 
-  MatchMngr::MatchMngr(TournamentDB* _db)
-    : TournamentDatabaseObjectManager(_db, TAB_MATCH), groupTab(db->getTab(TAB_MATCH_GROUP))
+  MatchMngr::MatchMngr(const TournamentDB& _db)
+    : TournamentDatabaseObjectManager(_db, TAB_MATCH), groupTab{db, TAB_MATCH_GROUP, false}
   {
   }
 
   //----------------------------------------------------------------------------
 
-  unique_ptr<MatchGroup> MatchMngr::createMatchGroup(const Category& cat, const int round, const int grpNum, ERR *err)
+  std::optional<MatchGroup> MatchMngr::createMatchGroup(const Category& cat, const int round, const int grpNum, ERR *err)
   {
     assert(err != nullptr);
 
@@ -92,9 +92,9 @@ namespace QTournament {
       // in this case, no other match groups with group numbers
       // below zero (e. g. semi finals) may exist
       WhereClause wc;
-      wc.addIntCol(MG_GRP_NUM, "<=", 0);
-      wc.addIntCol(MG_ROUND, round);
-      wc.addIntCol(MG_CAT_REF, cat.getId());
+      wc.addCol(MG_GRP_NUM, "<=", 0);
+      wc.addCol(MG_ROUND, round);
+      wc.addCol(MG_CAT_REF, cat.getId());
       int nOtherGroups = groupTab->getMatchCountForWhereClause(wc);
       if (nOtherGroups != 0)
       {
@@ -105,7 +105,7 @@ namespace QTournament {
 
     // make sure the match group doesn't already exist
     ERR e;
-    unique_ptr<MatchGroup> mg = getMatchGroup(cat, round, grpNum, &e);
+    std::unique_ptr<MatchGroup> mg = getMatchGroup(cat, round, grpNum, &e);
     if (e == OK)    // match group exists
     {
       *err = MATCH_GROUP_EXISTS;
@@ -130,10 +130,10 @@ namespace QTournament {
     // Okay, parameters are valid
     // create a new match group entry in the database
     ColumnValueClause cvc;
-    cvc.addIntCol(MG_CAT_REF, cat.getId());
-    cvc.addIntCol(MG_ROUND, round);
-    cvc.addIntCol(MG_GRP_NUM, grpNum);
-    cvc.addIntCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MG_CONFIG));
+    cvc.addCol(MG_CAT_REF, cat.getId());
+    cvc.addCol(MG_ROUND, round);
+    cvc.addCol(MG_GRP_NUM, grpNum);
+    cvc.addCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MG_CONFIG));
 
     // lock the database before writing
     DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
@@ -149,7 +149,7 @@ namespace QTournament {
     // to this new object
     MatchGroup* mg_raw = new MatchGroup(db, newId);
     *err = OK;
-    return unique_ptr<MatchGroup>(mg_raw);
+    return std::unique_ptr<MatchGroup>(mg_raw);
   }
 
   //----------------------------------------------------------------------------
@@ -157,10 +157,10 @@ namespace QTournament {
   MatchGroupList MatchMngr::getMatchGroupsForCat(const Category& cat, int round) const
   {
     WhereClause wc;
-    wc.addIntCol(MG_CAT_REF, cat.getId());
+    wc.addCol(MG_CAT_REF, cat.getId());
     if (round > 0)
     {
-      wc.addIntCol(MG_ROUND, round);
+      wc.addCol(MG_ROUND, round);
     }
 
     return getObjectsByWhereClause<MatchGroup>(groupTab, wc);
@@ -175,7 +175,7 @@ namespace QTournament {
 
   //----------------------------------------------------------------------------
 
-  unique_ptr<MatchGroup> MatchMngr::getMatchGroup(const Category& cat, const int round, const int grpNum, ERR *err)
+  std::optional<MatchGroup> MatchMngr::getMatchGroup(const Category& cat, const int round, const int grpNum, ERR *err)
   {
     assert(err != nullptr);
 
@@ -201,16 +201,16 @@ namespace QTournament {
     }
     
     WhereClause wc;
-    wc.addIntCol(MG_CAT_REF, cat.getId());
-    wc.addIntCol(MG_ROUND, round);
-    wc.addIntCol(MG_GRP_NUM, grpNum);
+    wc.addCol(MG_CAT_REF, cat.getId());
+    wc.addCol(MG_ROUND, round);
+    wc.addCol(MG_GRP_NUM, grpNum);
     
     try
     {
       TabRow r = groupTab->getSingleRowByWhereClause(wc);
       MatchGroup* grp = new MatchGroup(db, r);
       *err = OK;
-      return unique_ptr<MatchGroup>(grp);
+      return std::unique_ptr<MatchGroup>(grp);
     } catch (exception e) {
       *err = NO_SUCH_MATCH_GROUP;
       return nullptr;
@@ -236,7 +236,7 @@ namespace QTournament {
 
   //----------------------------------------------------------------------------
 
-  unique_ptr<Match> MatchMngr::createMatch(const MatchGroup &grp, ERR* err)
+  std::optional<Match> MatchMngr::createMatch(const MatchGroup &grp, ERR* err)
   {
     assert(err != nullptr);
 
@@ -251,13 +251,13 @@ namespace QTournament {
     // Okay, parameters are valid
     // create a new match entry in the database
     ColumnValueClause cvc;
-    cvc.addIntCol(MA_GRP_REF, grp.getId());
-    cvc.addIntCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_INCOMPLETE));
-    cvc.addIntCol(MA_PAIR1_SYMBOLIC_VAL, 0);   // default: no symbolic name
-    cvc.addIntCol(MA_PAIR2_SYMBOLIC_VAL, 0);   // default: no symbolic name
-    cvc.addIntCol(MA_WINNER_RANK, -1);         // default: no rank, no knock out
-    cvc.addIntCol(MA_LOSER_RANK, -1);         // default: no rank, no knock out
-    cvc.addIntCol(MA_REFEREE_MODE, -1);        // -1: use current tournament default
+    cvc.addCol(MA_GRP_REF, grp.getId());
+    cvc.addCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_INCOMPLETE));
+    cvc.addCol(MA_PAIR1_SYMBOLIC_VAL, 0);   // default: no symbolic name
+    cvc.addCol(MA_PAIR2_SYMBOLIC_VAL, 0);   // default: no symbolic name
+    cvc.addCol(MA_WINNER_RANK, -1);         // default: no rank, no knock out
+    cvc.addCol(MA_LOSER_RANK, -1);         // default: no rank, no knock out
+    cvc.addCol(MA_REFEREE_MODE, -1);        // -1: use current tournament default
 
     // lock the database before writing
     DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
@@ -272,7 +272,7 @@ namespace QTournament {
     // to this new object
     Match* ma = new Match(db, newId);
     *err = OK;
-    return unique_ptr<Match>(ma);
+    return std::unique_ptr<Match>(ma);
   }
 
   //----------------------------------------------------------------------------
@@ -835,9 +835,9 @@ namespace QTournament {
 
   //----------------------------------------------------------------------------
 
-  string MatchMngr::getSyncString(vector<int> rows)
+  string MatchMngr::getSyncString(const std::vector<int>& rows) const
   {
-    vector<string> cols = {"id", GENERIC_STATE_FIELD_NAME, MA_GRP_REF, MA_NUM, MA_PAIR1_REF, MA_PAIR2_REF,
+    std::vector<string> cols = {"id", GENERIC_STATE_FIELD_NAME, MA_GRP_REF, MA_NUM, MA_PAIR1_REF, MA_PAIR2_REF,
                           MA_ACTUAL_PLAYER1A_REF, MA_ACTUAL_PLAYER1B_REF, MA_ACTUAL_PLAYER2A_REF, MA_ACTUAL_PLAYER2B_REF,
                           MA_RESULT, MA_COURT_REF, MA_START_TIME, MA_ADDITIONAL_CALL_TIMES, MA_FINISH_TIME,
                            MA_PAIR1_SYMBOLIC_VAL, MA_PAIR2_SYMBOLIC_VAL, MA_WINNER_RANK, MA_LOSER_RANK,
@@ -850,7 +850,7 @@ namespace QTournament {
 
   string MatchMngr::getSyncString_MatchGroups(vector<int> rows)
   {
-    vector<string> cols = {"id", MG_CAT_REF, GENERIC_STATE_FIELD_NAME, MG_ROUND, MG_GRP_NUM};
+    std::vector<string> cols = {"id", MG_CAT_REF, GENERIC_STATE_FIELD_NAME, MG_ROUND, MG_GRP_NUM};
 
     return db->getSyncStringForTable(TAB_MATCH_GROUP, cols, rows);
   }
@@ -942,12 +942,12 @@ namespace QTournament {
 
   //----------------------------------------------------------------------------
 
-  unique_ptr<MatchGroup> MatchMngr::getMatchGroupBySeqNum(int mgSeqNum)
+  std::optional<MatchGroup> MatchMngr::getMatchGroupBySeqNum(int mgSeqNum)
   {
     try {
       TabRow r = groupTab->getSingleRowByColumnValue(GENERIC_SEQNUM_FIELD_NAME, mgSeqNum);
       MatchGroup* mg_raw = new MatchGroup(db, r.getId());
-      return unique_ptr<MatchGroup>(mg_raw);
+      return std::unique_ptr<MatchGroup>(mg_raw);
     }
     catch (std::exception e)
     {
@@ -1048,9 +1048,9 @@ namespace QTournament {
 
     // check for a match group with "round + 1" in the staging area
     WhereClause wc;
-    wc.addIntCol(MG_ROUND, round+1);
-    wc.addIntCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MG_STAGED));
-    wc.addIntCol(MG_CAT_REF, catId);
+    wc.addCol(MG_ROUND, round+1);
+    wc.addCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MG_STAGED));
+    wc.addCol(MG_CAT_REF, catId);
     if (groupTab->getMatchCountForWhereClause(wc) == 0)
     {
       // there is no match group of this category and with a higher
@@ -1139,7 +1139,7 @@ namespace QTournament {
 
     // update all subsequent sequence numbers
     WhereClause wc;
-    wc.addIntCol(MG_STAGE_SEQ_NUM, ">", oldStageSeqNumber);
+    wc.addCol(MG_STAGE_SEQ_NUM, ">", oldStageSeqNumber);
     for (MatchGroup mg : getObjectsByWhereClause<MatchGroup>(groupTab, wc))
     {
       int old = mg.getStageSequenceNumber();
@@ -1154,9 +1154,9 @@ namespace QTournament {
     int catId = grp.getCategory().getId();
 
     wc.clear();
-    wc.addIntCol(MG_ROUND, round+1);
-    wc.addIntCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MG_IDLE));
-    wc.addIntCol(MG_CAT_REF, catId);
+    wc.addCol(MG_ROUND, round+1);
+    wc.addCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MG_IDLE));
+    wc.addCol(MG_CAT_REF, catId);
     for (MatchGroup mg : getObjectsByWhereClause<MatchGroup>(groupTab, wc))
     {
       // if our demoted match group and the IDLE match group are round-robin-groups,
@@ -1414,7 +1414,7 @@ namespace QTournament {
     MatchGroupList result;
 
     WhereClause wc;
-    wc.addIntCol(MG_STAGE_SEQ_NUM, ">", 0);
+    wc.addCol(MG_STAGE_SEQ_NUM, ">", 0);
     wc.setOrderColumn_Asc(MG_STAGE_SEQ_NUM);
     return getObjectsByWhereClause<MatchGroup>(groupTab, wc);
   }
@@ -1430,7 +1430,7 @@ namespace QTournament {
   {
     // Is there any scheduled match at all?
     WhereClause wc;
-    wc.addIntCol(MA_NUM, ">", 0);
+    wc.addCol(MA_NUM, ">", 0);
     if (tab->getMatchCountForWhereClause(wc) < 1)
     {
       return 0;  // no assigned match numbers so far
@@ -1452,12 +1452,12 @@ namespace QTournament {
 
   //----------------------------------------------------------------------------
 
-  unique_ptr<Match> MatchMngr::getMatchBySeqNum(int maSeqNum) const
+  std::optional<Match> MatchMngr::getMatchBySeqNum(int maSeqNum) const
   {
     try {
       TabRow r = tab->getSingleRowByColumnValue(GENERIC_SEQNUM_FIELD_NAME, maSeqNum);
       Match* ma_raw = new Match(db, r.getId());
-      return unique_ptr<Match>(ma_raw);
+      return std::unique_ptr<Match>(ma_raw);
     }
     catch (std::exception e)
     {
@@ -1468,12 +1468,12 @@ namespace QTournament {
 
   //----------------------------------------------------------------------------
 
-  unique_ptr<Match> MatchMngr::getMatchByMatchNum(int maNum) const
+  std::optional<Match> MatchMngr::getMatchByMatchNum(int maNum) const
   {
     try {
       TabRow r = tab->getSingleRowByColumnValue(MA_NUM, maNum);
       Match* ma_raw = new Match(db, r.getId());
-      return unique_ptr<Match>(ma_raw);
+      return std::unique_ptr<Match>(ma_raw);
     }
     catch (std::exception e)
     {
@@ -1503,7 +1503,7 @@ namespace QTournament {
     // find the next available match with the lowest match number
     int reqState = static_cast<int>(STAT_MA_READY);
     WhereClause wc;
-    wc.addIntCol(GENERIC_STATE_FIELD_NAME, reqState);
+    wc.addCol(GENERIC_STATE_FIELD_NAME, reqState);
     wc.setOrderColumn_Asc(MA_NUM);
     if (tab->getMatchCountForWhereClause(wc) < 1)
     {
@@ -1613,26 +1613,26 @@ namespace QTournament {
     ColumnValueClause cvc;
 
     // assign the court
-    cvc.addIntCol(MA_COURT_REF, court.getId());
+    cvc.addCol(MA_COURT_REF, court.getId());
 
     // copy the actual players to the database
     // TODO: implement substitute players etc. So far, we only copy
     // the contents of the player pairs blindly
     PlayerPair pp = ma.getPlayerPair1();
-    cvc.addIntCol(MA_ACTUAL_PLAYER1A_REF, pp.getPlayer1().getId());
+    cvc.addCol(MA_ACTUAL_PLAYER1A_REF, pp.getPlayer1().getId());
     if (pp.hasPlayer2())
     {
-      cvc.addIntCol(MA_ACTUAL_PLAYER1B_REF, pp.getPlayer2().getId());
+      cvc.addCol(MA_ACTUAL_PLAYER1B_REF, pp.getPlayer2().getId());
     }
     pp = ma.getPlayerPair2();
-    cvc.addIntCol(MA_ACTUAL_PLAYER2A_REF, pp.getPlayer1().getId());
+    cvc.addCol(MA_ACTUAL_PLAYER2A_REF, pp.getPlayer1().getId());
     if (pp.hasPlayer2())
     {
-      cvc.addIntCol(MA_ACTUAL_PLAYER2B_REF, pp.getPlayer2().getId());
+      cvc.addCol(MA_ACTUAL_PLAYER2B_REF, pp.getPlayer2().getId());
     }
 
     // update the match state
-    cvc.addIntCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_RUNNING));
+    cvc.addCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_RUNNING));
 
     // lock the database before writing
     DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
@@ -1678,8 +1678,8 @@ namespace QTournament {
       // above we've already changed to match state to RUNNING and
       // setRefereeMode() refuses to update matches in state RUNNING.
       // So we have to hard-code the mode change here
-      auto cfg = KeyValueTab::getTab(db, TAB_CFG, false);
-      int tnmtDefaultRefereeModeId = cfg->getInt(CFG_KEY_DEFAULT_REFEREE_MODE);
+      auto cfg = SqliteOverlay::KeyValueTab{db.get(), TAB_CFG};
+      int tnmtDefaultRefereeModeId = cfg.getInt(CFG_KEY_DEFAULT_REFEREE_MODE);
       ma.row.update(MA_REFEREE_MODE, tnmtDefaultRefereeModeId);
     }
 
@@ -1711,7 +1711,7 @@ namespace QTournament {
 
   //----------------------------------------------------------------------------
 
-  unique_ptr<Court> MatchMngr::autoAssignMatchToNextAvailCourt(const Match &ma, ERR *err, bool includeManualCourts) const
+  std::optional<Court> MatchMngr::autoAssignMatchToNextAvailCourt(const Match &ma, ERR *err, bool includeManualCourts) const
   {
     ERR e;
     CourtMngr cm{db};
@@ -1782,8 +1782,8 @@ namespace QTournament {
     int maId = ma.getId();
     int maSeqNum = ma.getSeqNum();
     ColumnValueClause cvc;
-    cvc.addStringCol(MA_RESULT, score.toString().toUtf8().constData());
-    cvc.addIntCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_FINISHED));
+    cvc.addCol(MA_RESULT, score.toString().toUtf8().constData());
+    cvc.addCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_FINISHED));
     TabRow matchRow = tab->operator [](maId);
     int dbErr;
     matchRow.update(cvc, &dbErr);
@@ -1906,7 +1906,7 @@ namespace QTournament {
     // the new score with the old one
     if (!winnerLoserChangePermitted)
     {
-      unique_ptr<MatchScore> oldScore = ma.getScore();
+      std::unique_ptr<MatchScore> oldScore = ma.getScore();
 
       if (oldScore->getWinner() != newScore.getWinner())
       {
@@ -1997,7 +1997,7 @@ namespace QTournament {
     cvc.addNullCol(MA_COURT_REF);
 
     // set the state back to READY
-    cvc.addIntCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_READY));
+    cvc.addCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_READY));
 
     // lock the database before writing
     DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
@@ -2041,12 +2041,12 @@ namespace QTournament {
 
   //----------------------------------------------------------------------------
 
-  unique_ptr<Match> MatchMngr::getMatchForCourt(const Court &court)
+  std::optional<Match> MatchMngr::getMatchForCourt(const Court &court)
   {
     // search for matches in state RUNNING and assigned to the court
     WhereClause wc;
-    wc.addIntCol(MA_COURT_REF, court.getId());
-    wc.addIntCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_RUNNING));
+    wc.addCol(MA_COURT_REF, court.getId());
+    wc.addCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_RUNNING));
 
     if (tab->getMatchCountForWhereClause(wc) != 1)
     {
@@ -2055,17 +2055,17 @@ namespace QTournament {
 
     TabRow r = tab->getSingleRowByWhereClause(wc);
 
-    return unique_ptr<Match>(new Match(db, r));
+    return std::unique_ptr<Match>(new Match(db, r));
   }
 
   //----------------------------------------------------------------------------
 
-  unique_ptr<Match> MatchMngr::getMatch(int id) const
+  std::optional<Match> MatchMngr::getMatch(int id) const
   {
     try
     {
       Match* ma = new Match(db, id);
-      return unique_ptr<Match>(ma);
+      return std::unique_ptr<Match>(ma);
     }
     catch (std::exception e)
     {
@@ -2076,7 +2076,7 @@ namespace QTournament {
 
   //----------------------------------------------------------------------------
 
-  tuple<int, int, int, int> MatchMngr::getMatchStats() const
+  std::tuple<int, int, int, int> MatchMngr::getMatchStats() const
   {
     // get the total number of matches
     int nTotal = tab->length();
@@ -2089,7 +2089,7 @@ namespace QTournament {
 
     // get the number of scheduled matches
     WhereClause wc;
-    wc.addIntCol(MA_NUM, ">", 0);
+    wc.addCol(MA_NUM, ">", 0);
     int nScheduled = tab->getMatchCountForWhereClause(wc) - nRunning - nFinished;
 
     return make_tuple(nTotal, nScheduled, nRunning, nFinished);
@@ -2206,7 +2206,7 @@ namespace QTournament {
 
   //----------------------------------------------------------------------------
 
-  unique_ptr<Match> MatchMngr::getMatchForPlayerPairAndRound(const PlayerPair &pp, int round) const
+  std::optional<Match> MatchMngr::getMatchForPlayerPairAndRound(const PlayerPair &pp, int round) const
   {
     auto cat = pp.getCategory(db);
     if (cat == nullptr) return nullptr;

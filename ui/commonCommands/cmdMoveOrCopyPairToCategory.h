@@ -25,21 +25,22 @@
 #include "Category.h"
 #include "PlayerPair.h"
 
-using namespace QTournament;
 
 class cmdMoveOrCopyPairToCategory : public QObject, AbstractCommand
 {
   Q_OBJECT
 
 public:
-  cmdMoveOrCopyPairToCategory(QWidget* p, const PlayerPair& _pp, const Category& _srcCat, const Category& _dstCat, bool _isMove=false);
-  virtual ERR exec() override;
+  cmdMoveOrCopyPairToCategory(QWidget* p, const QTournament::PlayerPair& _pp,
+                              const QTournament::Category& _srcCat, const QTournament::Category& _dstCat,
+                              bool _isMove=false);
+  virtual QTournament::ERR exec() override;
   virtual ~cmdMoveOrCopyPairToCategory() {}
 
 protected:
-  PlayerPair pp;
-  Category srcCat;
-  Category dstCat;
+  QTournament::PlayerPair pp;
+  QTournament::Category srcCat;
+  QTournament::Category dstCat;
   bool isMove;
 };
 

@@ -18,7 +18,7 @@
 
 using namespace QTournament;
 
-DlgImportCSV_Step2::DlgImportCSV_Step2(QWidget *parent, TournamentDB* _db, const vector<CSVImportRecord>& initialData) :
+DlgImportCSV_Step2::DlgImportCSV_Step2(QWidget *parent, const TournamentDB& _db, const std::vector<CSVImportRecord>& initialData) :
   QDialog(parent),
   ui(new Ui::DlgImportCSV_Step2), db{_db}
 {
@@ -104,7 +104,7 @@ CSVDataTableWidget::CSVDataTableWidget(QWidget* parent)
 
 //----------------------------------------------------------------------------
 
-void CSVDataTableWidget::setData(QTournament::TournamentDB* _db, const vector<CSVImportRecord>& initialData)
+void CSVDataTableWidget::setData(const TournamentDB& _db, const std::vector<CSVImportRecord>& initialData)
 {
   db = _db;
   records = initialData;

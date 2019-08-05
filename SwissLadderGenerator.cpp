@@ -23,7 +23,7 @@ using namespace std;
 namespace QTournament
 {
 
-  SwissLadderGenerator::SwissLadderGenerator(const vector<int>& _ranking, const vector<tuple<int, int> >& _pastMatches)
+  SwissLadderGenerator::SwissLadderGenerator(const std::vector<int>& _ranking, const std::vector<std::tuple<int, int> >& _pastMatches)
     :ranking{_ranking}, pastMatches{_pastMatches}, nPairs{_ranking.size()}
   {
     // no consistency checks here (e.g., do the PlayerPairIDs
@@ -47,7 +47,7 @@ namespace QTournament
     }
 
     // count the number of matches that each player already has played
-    for (const tuple<int, int>& m : pastMatches)
+    for (const std::tuple<int, int>& m : pastMatches)
     {
       int pp1Id = get<0>(m);
       int pp2Id = get<1>(m);
@@ -63,7 +63,7 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  int SwissLadderGenerator::getNextMatches(vector<tuple<int, int>>& resultVector)
+  int SwissLadderGenerator::getNextMatches(vector<std::tuple<int, int>>& resultVector)
   {
     //
     // a few status variables for the generator
@@ -97,7 +97,7 @@ namespace QTournament
       // get the list of effective players for
       // the next round. remove one player (bye)
       // if necessary
-      vector<int> ppList;
+      std::vector<int> ppList;
       tie(curByeRank, ppList) = getEffectivePlayerList(curByeRank);
       if (ppList.empty())
       {
@@ -106,11 +106,11 @@ namespace QTournament
       size_t effPairCount = ppList.size();
 
       // prepare a list of already "used" ranks for next matches
-      vector<int> usedRanks;
+      std::vector<int> usedRanks;
 
       // keep a list of "isRankUsed"-flags. This is redundant to
       // the usedRanks-list, but makes some operations easier
-      vector<bool> isRankUsed;
+      std::vector<bool> isRankUsed;
       for (size_t i=0; i < effPairCount; ++i) isRankUsed.push_back(false);
 
       // start building new player combinations. Follow the approach
@@ -219,10 +219,10 @@ namespace QTournament
 
   bool SwissLadderGenerator::hasMatchBeenPlayed(int pair1Id, int pair2Id) const
   {
-    tuple<int, int> regular{pair1Id, pair2Id};
-    tuple<int, int> swapped{pair2Id, pair1Id};
+    std::tuple<int, int> regular{pair1Id, pair2Id};
+    std::tuple<int, int> swapped{pair2Id, pair1Id};
 
-    auto it = find_if(pastMatches.cbegin(), pastMatches.cend(), [&](const tuple<int, int>& m) {
+    auto it = find_if(pastMatches.cbegin(), pastMatches.cend(), [&](const std::tuple<int, int>& m) {
       if (m == regular) return true;
       return (m == swapped);
     });
@@ -232,7 +232,7 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  pair<int, vector<int>> SwissLadderGenerator::getEffectivePlayerList(int curByeRank)
+  pair<int, std::vector<int>> SwissLadderGenerator::getEffectivePlayerList(int curByeRank)
   {
     // if the number of pairs is even, all pairs participate in the next round
     if ((nPairs % 2) == 0)
@@ -255,7 +255,7 @@ namespace QTournament
       if (nRounds == roundsPlayed)
       {
         // create a copy of the ranking
-        vector<int> ppList = ranking;
+        std::vector<int> ppList = ranking;
 
         // remove the player pair at nextByeRank
         ppList.erase(ppList.begin() + nextByeRank);
@@ -271,12 +271,12 @@ namespace QTournament
 
     // we couldn't find a bye player, that's weird and
     // should not happen
-    return make_pair(-1, vector<int>{});
+    return make_pair(-1, std::vector<int>{});
   }
 
   //----------------------------------------------------------------------------
 
-  int SwissLadderGenerator::getNextUnusedRank(const vector<bool>& isRankUsed, int minRank) const
+  int SwissLadderGenerator::getNextUnusedRank(const std::vector<bool>& isRankUsed, int minRank) const
   {
     size_t rank = minRank;
     while (rank < isRankUsed.size())
@@ -290,7 +290,7 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  int SwissLadderGenerator::findOpponentRank(int pair1Rank, int minPair2Rank, const vector<bool>& isRankUsed, const vector<int> effPairList) const
+  int SwissLadderGenerator::findOpponentRank(int pair1Rank, int minPair2Rank, const std::vector<bool>& isRankUsed, const std::vector<int> effPairList) const
   {
     if ((pair1Rank < 0) || (pair1Rank > (effPairList.size() - 2))) return -1;
     if ((minPair2Rank <= pair1Rank) || (minPair2Rank > (effPairList.size() - 1))) return -1;
@@ -325,7 +325,7 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  bool SwissLadderGenerator::matchSelectionCausesDeadlock(const vector<tuple<int, int>>& nextMatches)
+  bool SwissLadderGenerator::matchSelectionCausesDeadlock(const std::vector<std::tuple<int, int>>& nextMatches)
   {
     // check whether the selection of next matches causes
     // a deadlock after playing those played matches in the next
@@ -370,7 +370,7 @@ namespace QTournament
       //
       for (tuple<int, int>& m : pastMatches)
       {
-        tuple<int, int> swapped = make_tuple(get<1>(m), get<0>(m));
+        std::tuple<int, int> swapped = make_tuple(get<1>(m), get<0>(m));
         auto it = find(remainingMatches.begin(), remainingMatches.end(), m);
         if (it == remainingMatches.end())
         {
@@ -386,10 +386,10 @@ namespace QTournament
     //
     // Step 3: subtract next matches
     //
-    vector<tuple<int, int>> remain = remainingMatches;
-    for (const tuple<int, int>& m : nextMatches)
+    std::vector<std::tuple<int, int>> remain = remainingMatches;
+    for (const std::tuple<int, int>& m : nextMatches)
     {
-      tuple<int, int> swapped = make_tuple(get<1>(m), get<0>(m));
+      std::tuple<int, int> swapped = make_tuple(get<1>(m), get<0>(m));
       auto it = find(remain.begin(), remain.end(), m);
       if (it == remain.end())
       {
@@ -410,14 +410,14 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  bool SwissLadderGenerator::canBuildAnotherRound(const vector<tuple<int, int> >& remain, const vector<tuple<int, int> >& nextMatches) const
+  bool SwissLadderGenerator::canBuildAnotherRound(const std::vector<std::tuple<int, int> >& remain, const std::vector<std::tuple<int, int> >& nextMatches) const
   {
     // a list of indices to matchSet that make up a
     // match combination for the next round
-    vector<int> usedMatchSequence;
+    std::vector<int> usedMatchSequence;
 
     // a list of flags that tags each entry in matchSet as used or not
-    vector<bool> isMatchUsed;
+    std::vector<bool> isMatchUsed;
     for (size_t i=0; i < remain.size(); ++i) isMatchUsed.push_back(false);
 
     // calculate the number of matches for a round
@@ -444,7 +444,7 @@ namespace QTournament
       if (idxNextMatch < remain.size())
       {
         usedMatchSequence.push_back(idxNextMatch);
-        tuple<int, int> m = remain[idxNextMatch];
+        std::tuple<int, int> m = remain[idxNextMatch];
 
         // flag all matches with these two pairs
         // as "used".
@@ -460,7 +460,7 @@ namespace QTournament
       // is valid. Each player should only have ONE bye
       if ((usedMatchSequence.size() == requiredMatchCount) && ((ranking.size() % 2) != 0))
       {
-        vector<tuple<int, int>> matchSubset;
+        std::vector<std::tuple<int, int>> matchSubset;
         for (int idx : usedMatchSequence)
         {
           matchSubset.push_back(remain[idx]);
@@ -469,7 +469,7 @@ namespace QTournament
         int byePairId = findByePlayerInMatchSet(matchSubset);
         if (byePairId >= 0)
         {
-          vector<int> potentialBye = getPotentialByePairs(nextMatches);
+          std::vector<int> potentialBye = getPotentialByePairs(nextMatches);
           auto it = find(potentialBye.begin(), potentialBye.end(), byePairId);
 
           // if the selected bye pair is not in the list
@@ -492,7 +492,7 @@ namespace QTournament
       {
         idxNextMatch = usedMatchSequence.back();
         usedMatchSequence.pop_back();
-        tuple<int, int> m = remain[idxNextMatch];
+        std::tuple<int, int> m = remain[idxNextMatch];
 
         // flag all matches with these two pairs
         // as "unused".
@@ -516,8 +516,8 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  void SwissLadderGenerator::flagMatchesWithPlayerPairOccurence(const vector<tuple<int, int> >& matchSet, vector<bool>& flagList,
-                                                                const tuple<int, int>& refMatch, bool newState) const
+  void SwissLadderGenerator::flagMatchesWithPlayerPairOccurence(const std::vector<std::tuple<int, int> >& matchSet, std::vector<bool>& flagList,
+                                                                const std::tuple<int, int>& refMatch, bool newState) const
   {
     int pp1Id = get<0>(refMatch);
     int pp2Id = get<1>(refMatch);
@@ -528,7 +528,7 @@ namespace QTournament
       // are in the new state
       if (flagList[i] == newState) continue;
 
-      const tuple<int, int>& m = matchSet[i];
+      const std::tuple<int, int>& m = matchSet[i];
       int other1Id = get<0>(m);
       int other2Id = get<1>(m);
 
@@ -541,11 +541,11 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  vector<int> SwissLadderGenerator::getPotentialByePairs(const vector<tuple<int, int> >& optionalAdditionalMatches) const
+  std::vector<int> SwissLadderGenerator::getPotentialByePairs(const std::vector<std::tuple<int, int> >& optionalAdditionalMatches) const
   {
     unordered_map<int, int> matchCountCopy = matchCount;
 
-    for (const tuple<int, int>& m : optionalAdditionalMatches)
+    for (const std::tuple<int, int>& m : optionalAdditionalMatches)
     {
       int pp1Id = get<0>(m);
       int pp2Id = get<1>(m);
@@ -559,7 +559,7 @@ namespace QTournament
 
     int nRounds = optionalAdditionalMatches.empty() ? roundsPlayed : (roundsPlayed + 1);
 
-    vector<int> result;
+    std::vector<int> result;
     for (int ppId : ranking)
     {
       if (matchCountCopy.at(ppId) == nRounds) result.push_back(ppId);
@@ -570,11 +570,11 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  int SwissLadderGenerator::findByePlayerInMatchSet(const vector<tuple<int, int> >& matchSet) const
+  int SwissLadderGenerator::findByePlayerInMatchSet(const std::vector<std::tuple<int, int> >& matchSet) const
   {
-    vector<int> allPlayers = ranking;
+    std::vector<int> allPlayers = ranking;
 
-    for (const tuple<int, int>& m : matchSet)
+    for (const std::tuple<int, int>& m : matchSet)
     {
       int ppId = get<0>(m);
       auto it = find(allPlayers.begin(), allPlayers.end(), ppId);

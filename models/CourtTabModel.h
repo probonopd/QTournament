@@ -42,16 +42,16 @@ namespace QTournament
 
     static constexpr int DURATION_UPDATE_PERIOD__MS = 10000;   // update every 10 seconds
 
-    CourtTableModel (TournamentDB* _db);
+    CourtTableModel (const QTournament::TournamentDB& _db);
     int rowCount(const QModelIndex & parent = QModelIndex()) const;
     int columnCount(const QModelIndex & parent = QModelIndex()) const;
     QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const;
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
 
   private:
-    TournamentDB* db;
-    SqliteOverlay::DbTab* courtTab;
-    unique_ptr<QTimer> durationUpdateTimer;
+    std::reference_wrapper<const QTournament::TournamentDB> db;
+    SqliteOverlay::DbTab courtTab;
+    std::unique_ptr<QTimer> durationUpdateTimer;
 
   public slots:
     void onBeginCreateCourt();

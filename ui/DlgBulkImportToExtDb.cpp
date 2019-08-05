@@ -27,7 +27,7 @@
 
 using namespace QTournament;
 
-DlgBulkImportToExtDb::DlgBulkImportToExtDb(TournamentDB* _db, QWidget *parent) :
+DlgBulkImportToExtDb::DlgBulkImportToExtDb(const TournamentDB& _db, QWidget *parent) :
   QDialog(parent),
   ui(new Ui::DlgBulkImportToExtDb), db(_db)
 {

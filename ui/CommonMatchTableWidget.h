@@ -27,7 +27,6 @@
 #include "delegates/MatchLogItemDelegate.h"
 #include "AutoSizingTable.h"
 
-using namespace QTournament;
 
 class CommonMatchTableWidget : public GuiHelpers::AutoSizingTableWidget_WithDatabase
 {
@@ -48,10 +47,10 @@ public:
   CommonMatchTableWidget(QWidget* parent);
   virtual ~CommonMatchTableWidget() {}
 
-  void insertMatch(int beforeRowIdx, const Match& ma);
-  void appendMatch(const Match& ma);
-  void appendMatchList(const QList<Match> maList) {
-    for (const Match& ma : maList) appendMatch(ma);
+  void insertMatch(int beforeRowIdx, const QTournament::Match& ma);
+  void appendMatch(const QTournament::Match& ma);
+  void appendMatchList(const QList<QTournament::Match> maList) {
+    for (const QTournament::Match& ma : maList) appendMatch(ma);
   }
 
 protected slots:

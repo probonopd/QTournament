@@ -30,7 +30,6 @@
 #include "TournamentDatabaseObjectManager.h"
 #include "Category.h"
 #include "PlayerPair.h"
-#include "ThreadSafeQueue.h"
 
 namespace QTournament
 {
@@ -41,7 +40,7 @@ namespace QTournament
     
   public:
     // constructor
-    CatMngr (TournamentDB* _db);
+    CatMngr (const TournamentDB& _db);
 
     // creation of categories
     ERR createNewCategory (const QString& catName);
@@ -52,14 +51,14 @@ namespace QTournament
 
     // getters
     Category getCategory(const QString& name);
-    unique_ptr<Category> getCategory(int id);
+    std::optional<Category> getCategory(int id);
     Category getCategoryById(int id);
     Category getCategoryBySeqNum(int seqNum);
     CategoryList getAllCategories();
     QHash<Category, CAT_ADD_STATE> getAllCategoryAddStates(SEX s);
     QHash<Category, CAT_ADD_STATE> getAllCategoryAddStates(const Player& p);
     static std::function<bool (Category&, Category&)> getCategorySortFunction_byName();
-    vector<PlayerPair> getSeeding(const Category& c) const;
+    std::vector<PlayerPair> getSeeding(const Category& c) const;
     ERR canDeleteCategory(const Category& cat) const;
 
     // setters
@@ -83,12 +82,12 @@ namespace QTournament
     // freezing, starting, updating while running
     ERR freezeConfig(const Category& c);
     ERR unfreezeConfig(const Category& c);
-    ERR startCategory(const Category& c, vector<PlayerPairList> grpCfg, PlayerPairList seed, ProgressQueue* progressNotificationQueue=nullptr);
+    ERR startCategory(const Category& c, std::vector<PlayerPairList> grpCfg, PlayerPairList seed, ProgressQueue* progressNotificationQueue=nullptr);
     void updateCatStatusFromMatchStatus(const Category& c);
     bool switchCatToWaitForSeeding(const Category& cat);
     ERR continueWithIntermediateSeeding(const Category& c, const PlayerPairList& seeding, ProgressQueue* progressNotificationQueue=nullptr);
 
-    string getSyncString(vector<int> rows) override;
+    std::string getSyncString(const std::vector<int>& rows) const override;
 
   private:
     bool setCatParam_AllowDraw( Category& c, const QVariant& v);

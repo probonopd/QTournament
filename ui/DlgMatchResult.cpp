@@ -79,7 +79,7 @@ DlgMatchResult::~DlgMatchResult()
 
 //----------------------------------------------------------------------------
 
-unique_ptr<MatchScore> DlgMatchResult::getMatchScore() const
+std::optional<QTournament::MatchScore> DlgMatchResult::getMatchScore() const
 {
   if (!hasValidResult())
   {

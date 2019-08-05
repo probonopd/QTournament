@@ -30,7 +30,7 @@ class RoundRobinGenerator
 {
 public:
   RoundRobinGenerator();
-  vector<tuple<int, int>> operator() (int numPlayers, int round);
+  std::vector<std::tuple<int, int>> operator() (int numPlayers, int round);
 
 
 private:

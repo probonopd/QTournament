@@ -89,7 +89,7 @@ namespace QTournament
   public slots:
 
   private:
-    explicit CentralSignalEmitter(QObject *parent = 0);
+    explicit CentralSignalEmitter(QObject *parent = nullptr);
     static CentralSignalEmitter* inst;
   };
 

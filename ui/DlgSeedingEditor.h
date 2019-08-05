@@ -29,16 +29,15 @@ namespace Ui {
   class DlgSeedingEditor;
 }
 
-using namespace QTournament;
 
 class DlgSeedingEditor : public QDialog
 {
   Q_OBJECT
 
 public:
-  explicit DlgSeedingEditor(TournamentDB* _db, QWidget *parent = 0);
+  explicit DlgSeedingEditor(const QTournament::TournamentDB& _db, QWidget *parent = nullptr);
   ~DlgSeedingEditor();
-  void initSeedingList(const PlayerPairList& _seed);
+  void initSeedingList(const QTournament::PlayerPairList& _seed);
 
 public slots:
   void onBtnUpClicked();
@@ -46,7 +45,7 @@ public slots:
   void onBtnShuffleClicked();
   void onShuffleModeChange();
   void onSelectionChanged();
-  PlayerPairList getSeeding();
+  QTournament::PlayerPairList getSeeding();
 
 private slots:
   void onKeypressTimerElapsed();
@@ -54,7 +53,7 @@ private slots:
 private:
   static constexpr int SUBSEQUENT_KEYPRESS_TIMEOUT__MS = 1000;
   Ui::DlgSeedingEditor *ui;
-  TournamentDB* db;
+  std::reference_wrapper<const QTournament::TournamentDB> db;
   void updateButtons();
   bool eventFilter(QObject *target, QEvent *event);
   int positionInput;

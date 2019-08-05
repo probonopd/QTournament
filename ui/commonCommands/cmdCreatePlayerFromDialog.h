@@ -25,15 +25,14 @@
 #include "Player.h"
 #include "../dlgEditPlayer.h"
 
-using namespace QTournament;
 
 class cmdCreatePlayerFromDialog : public QObject, AbstractCommand
 {
   Q_OBJECT
 
 public:
-  cmdCreatePlayerFromDialog(TournamentDB* _db, QWidget* p, DlgEditPlayer* initializedDialog);
-  virtual ERR exec() override;
+  cmdCreatePlayerFromDialog(const QTournament::TournamentDB& _db, QWidget* p, DlgEditPlayer* initializedDialog);
+  virtual QTournament::ERR exec() override;
   virtual ~cmdCreatePlayerFromDialog() {}
 
 protected:

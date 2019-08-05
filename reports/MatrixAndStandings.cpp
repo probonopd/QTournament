@@ -37,7 +37,7 @@ namespace QTournament
 {
 
 
-MartixAndStandings::MartixAndStandings(TournamentDB* _db, const QString& _name, const Category& _cat, int _round)
+MatrixAndStandings::MatrixAndStandings(TournamentDB* _db, const QString& _name, const Category& _cat, int _round)
   :AbstractReport(_db, _name), cat(_cat), round(_round)
 {
   MATCH_SYSTEM msys = cat.getMatchSystem();
@@ -81,7 +81,7 @@ MartixAndStandings::MartixAndStandings(TournamentDB* _db, const QString& _name, 
 
 //----------------------------------------------------------------------------
 
-upSimpleReport MartixAndStandings::regenerateReport()
+upSimpleReport MatrixAndStandings::regenerateReport()
 {
   // retrieve the ranking(s) for this round
   RankingMngr rm{db};
@@ -96,7 +96,7 @@ upSimpleReport MartixAndStandings::regenerateReport()
   int curIteration = -1;
   if (msys == ROUND_ROBIN)
   {
-    unique_ptr<PureRoundRobinCategory> rrCat = PureRoundRobinCategory::getFromGenericCat(cat);
+    std::unique_ptr<PureRoundRobinCategory> rrCat = PureRoundRobinCategory::getFromGenericCat(cat);
     if (rrCat->getIterationCount() > 1)
     {
       int rpi = rrCat->getRoundCountPerIteration();
@@ -193,7 +193,7 @@ upSimpleReport MartixAndStandings::regenerateReport()
 
 //----------------------------------------------------------------------------
 
-QStringList MartixAndStandings::getReportLocators() const
+QStringList MatrixAndStandings::getReportLocators() const
 {
   QStringList result;
 
@@ -204,7 +204,7 @@ QStringList MartixAndStandings::getReportLocators() const
   MATCH_SYSTEM msys = cat.getMatchSystem();
   if (msys == ROUND_ROBIN)
   {
-    unique_ptr<PureRoundRobinCategory> rrCat = PureRoundRobinCategory::getFromGenericCat(cat);
+    std::unique_ptr<PureRoundRobinCategory> rrCat = PureRoundRobinCategory::getFromGenericCat(cat);
     if (rrCat != nullptr)   // should always be true
     {
       // if we play more than one iteration, add another

@@ -249,7 +249,7 @@ void GroupAssignmentListWidget::swapSelectedPlayers()
 
 vector<PlayerPairList> GroupAssignmentListWidget::getGroupAssignments()
 {
-  vector<PlayerPairList> result;
+  std::vector<PlayerPairList> result;
   if (!isInitialized) return result;
 
   PlayerMngr pmngr{db};

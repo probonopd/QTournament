@@ -51,7 +51,7 @@ namespace QTournament
                                  const QString& postData="", int timeout_ms=5000);
     HttpResponse blockingRequest(const QString& url,
                                  QMap<QString, QString> extraHeaders = {},
-                                 const string& postData="", int timeout_ms=5000);
+                                 const std::string& postData="", int timeout_ms=5000);
   };
 }
 #endif // HTTPCLIENT_H

@@ -28,8 +28,6 @@
 #include "Category.h"
 #include "Match.h"
 
-using namespace QTournament;
-
 class MatrixGrid
 {
 public:
@@ -66,21 +64,21 @@ public:
 
   static constexpr double GAP_TEXT_TO_GRID__MM = 1.0;
 
-  MatchMatrix(SimpleReportGenerator* _rep, const QString& tabName, const Category& _cat, int _round, int _grpNum = -1);
+  MatchMatrix(SimpleReportLib::SimpleReportGenerator* _rep, const QString& tabName, const QTournament::Category& _cat, int _round, int _grpNum = -1);
   virtual QRectF plot(const QPointF& topLeft = QPointF(-1, -1));
   virtual ~MatchMatrix(){}
 
 protected:
   QString tableName;
-  Category cat;
+  QTournament::Category cat;
   int round;
   int grpNum;
   bool showMatchNumbersOnly;
 
-  upMatch getMatchForCell(const PlayerPairList& ppList, int row, int col, int minRound, int maxRound) const;
-  QStringList getSortedMatchScoreStrings(const Match& ma, const PlayerPair& ppRow, const PlayerPair& ppCol) const;
-  tuple<CELL_CONTENT_TYPE, QString> getCellContent(const PlayerPairList& ppList, int row, int col, int minRound, int maxRound) const;
-  QString getTruncatedPlayerNames(const PlayerPair& pp, const TextStyle* style, double maxWidth) const;
+  std::optional<QTournament::Match> getMatchForCell(const QTournament::PlayerPairList& ppList, int row, int col, int minRound, int maxRound) const;
+  QStringList getSortedMatchScoreStrings(const QTournament::Match& ma, const QTournament::PlayerPair& ppRow, const QTournament::PlayerPair& ppCol) const;
+  std::tuple<CELL_CONTENT_TYPE, QString> getCellContent(const QTournament::PlayerPairList& ppList, int row, int col, int minRound, int maxRound) const;
+  QString getTruncatedPlayerNames(const QTournament::PlayerPair& pp, const SimpleReportLib::TextStyle* style, double maxWidth) const;
 };
 
 #endif // MATCHMATRIX_H

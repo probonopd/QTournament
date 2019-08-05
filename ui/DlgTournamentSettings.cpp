@@ -48,7 +48,7 @@ DlgTournamentSettings::DlgTournamentSettings(TournamentDB* _db, QWidget* parent)
   ui->leOrgaClub->setText(QString::fromUtf8(tmp.c_str()));
   tmp = (*cfg)[CFG_KEY_TNMT_NAME];
   ui->leTournamentName->setText(QString::fromUtf8(tmp.c_str()));
-  int tnmtDefaultRefereeModeId = cfg->getInt(CFG_KEY_DEFAULT_REFEREE_MODE);
+  int tnmtDefaultRefereeModeId = cfg.getInt(CFG_KEY_DEFAULT_REFEREE_MODE);
   int idx = ui->cbUmpire->findData(tnmtDefaultRefereeModeId);
   ui->cbUmpire->setCurrentIndex(idx);
 

@@ -46,15 +46,15 @@ namespace QTournament
     static constexpr int COL_WAITING_MATCHES = 6;
     static constexpr int COL_TOTAL_MATCHES = 7;
 
-    CategoryTableModel (TournamentDB* _db);
+    CategoryTableModel (const QTournament::TournamentDB& _db);
     int rowCount(const QModelIndex & parent = QModelIndex()) const;
     int columnCount(const QModelIndex & parent = QModelIndex()) const;
     QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const;
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
 
   private:
-    TournamentDB* db;
-    SqliteOverlay::DbTab* catTab;
+    std::reference_wrapper<const QTournament::TournamentDB> db;
+    SqliteOverlay::DbTab catTab;
     
   public slots:
     void onBeginCreateCategory();

@@ -37,17 +37,15 @@ namespace Ui {
   class DlgRoundFinished;
 }
 
-using namespace QTournament;
-
 class DlgRoundFinished : public QDialog
 {
   Q_OBJECT
 
 public:
-  explicit DlgRoundFinished(QWidget *parent, Category _cat, int _round = -1);
+  explicit DlgRoundFinished(QWidget *parent, const QTournament::Category& _cat, int _round = -1);
   ~DlgRoundFinished();
 
-  void printReport(AbstractReport* rep);
+  void printReport(QTournament::AbstractReport* rep);
 
 public slots:
   void onBtnBracketClicked();
@@ -58,15 +56,15 @@ public slots:
 
 private:
   Ui::DlgRoundFinished *ui;
-  TournamentDB* db;
-  Category cat;
+  std::reference_wrapper<const QTournament::TournamentDB> db;
+  const QTournament::Category& cat;
   int round;
 
-  unique_ptr<BracketSheet> upBracket;
-  unique_ptr<InOutList> upInOut;
-  unique_ptr<ResultsAndNextMatches> upResults;
-  unique_ptr<MartixAndStandings> upMatrix;
-  unique_ptr<Standings> upStandings;
+  std::optional<QTournament::BracketSheet> upBracket;
+  std::optional<QTournament::InOutList> upInOut;
+  std::optional<QTournament::ResultsAndNextMatches> upResults;
+  std::optional<QTournament::MatrixAndStandings> upMatrix;
+  std::optional<QTournament::Standings> upStandings;
 };
 
 #endif // DLGROUNDFINISHED_H

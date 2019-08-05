@@ -24,15 +24,15 @@
 namespace QTournament
 {
 
-  MatchGroup::MatchGroup(TournamentDB* db, int rowId)
-  :TournamentDatabaseObject(db, TAB_MATCH_GROUP, rowId), matchTab(db->getTab(TAB_MATCH))
+  MatchGroup::MatchGroup(const TournamentDB& _db, int rowId)
+    :TournamentDatabaseObject(_db, TAB_MATCH_GROUP, rowId), matchTab{db, TAB_MATCH, false}
   {
   }
 
 //----------------------------------------------------------------------------
 
-  MatchGroup::MatchGroup(TournamentDB* db, SqliteOverlay::TabRow row)
-  :TournamentDatabaseObject(db, row), matchTab(db->getTab(TAB_MATCH))
+  MatchGroup::MatchGroup(const TournamentDB& _db, const SqliteOverlay::TabRow& _row)
+  :TournamentDatabaseObject(_db, _row), matchTab{db, TAB_MATCH, false}
   {
   }
 
@@ -94,8 +94,8 @@ namespace QTournament
     // for performance reasons, we issue a single SQL-statement here
     // instead of looping through all matches in the group
     WhereClause wc;
-    wc.addIntCol(MA_GRP_REF, getId());
-    wc.addIntCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(stat));
+    wc.addCol(MA_GRP_REF, getId());
+    wc.addCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(stat));
     return (matchTab->getMatchCountForWhereClause(wc) > 0);
   }
 

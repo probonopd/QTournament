@@ -30,16 +30,15 @@
 #include "delegates/CatItemDelegate.h"
 #include "AutoSizingTable.h"
 
-using namespace QTournament;
 
-class CategoryTableView : public GuiHelpers::AutoSizingTableView_WithDatabase<CategoryTableModel>
+class CategoryTableView : public GuiHelpers::AutoSizingTableView_WithDatabase<QTournament::CategoryTableModel>
 {
   Q_OBJECT
   
 public:
   CategoryTableView (QWidget* parent);
   virtual ~CategoryTableView () {}
-  Category getSelectedCategory();
+  QTournament::Category getSelectedCategory();
   bool hasCategorySelected();
 
 protected:
@@ -65,7 +64,7 @@ signals:
 private:
   CatItemDelegate* catItemDelegate;
 
-  unique_ptr<QMenu> contextMenu;
+  std::unique_ptr<QMenu> contextMenu;
   QAction* actAddCategory;
   QAction* actCloneCategory;
   QAction* actRunCategory;
@@ -78,7 +77,7 @@ private:
   void initContextMenu();
 
   void handleIntermediateSeedingForSelectedCat();
-  bool unfreezeAndCleanup(unique_ptr<Category> selectedCat);
+  bool unfreezeAndCleanup(std::unique_ptr<QTournament::Category> selectedCat);
 
 };
 

@@ -197,7 +197,7 @@ void DlgEditPlayer::initFromPlayerData()
 void DlgEditPlayer::initTeamList()
 {
   TeamMngr tm{db};
-  vector<Team> allTeams = tm.getAllTeams();
+  std::vector<Team> allTeams = tm.getAllTeams();
 
   // Sort the list aphabetically
   std::sort(allTeams.begin(), allTeams.end(), [](Team& t1, Team& t2) {

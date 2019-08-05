@@ -125,7 +125,7 @@ namespace QTournament
       {
         // initial matches
         result.append(genRepName(REP__MATRIX_AND_STANDINGS, cat, 0));
-        unique_ptr<PureRoundRobinCategory> rrCat = PureRoundRobinCategory::getFromGenericCat(cat);
+        std::unique_ptr<PureRoundRobinCategory> rrCat = PureRoundRobinCategory::getFromGenericCat(cat);
         int rpi = rrCat->getRoundCountPerIteration();
         int itCnt = rrCat->getIterationCount();
         for (int i=1; i < itCnt; ++i)
@@ -297,7 +297,7 @@ namespace QTournament
       int catId = intParam1;
       int round = intParam2;
       Category cat = cm.getCategoryById(catId);
-      return upAbstractReport(new MartixAndStandings(db, repName, cat, round));
+      return upAbstractReport(new MatrixAndStandings(db, repName, cat, round));
     }
 
     return nullptr;

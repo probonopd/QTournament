@@ -115,7 +115,7 @@ namespace QTournament
    *
    * @Return QList holding all Teams
    */
-  vector<Team> TeamMngr::getAllTeams()
+  std::vector<Team> TeamMngr::getAllTeams()
   {
     return getAllObjects<Team>();
   }
@@ -163,7 +163,7 @@ namespace QTournament
     }
     catch (SqliteOverlay::NoDataException&)
     {
-     throw std::invalid_argument("The team with sequence number " + to_string(seqNum) + " does not exist");
+     throw std::invalid_argument("The team with sequence number " + std::to_string(seqNum) + " does not exist");
     }
   }
 
@@ -184,7 +184,7 @@ namespace QTournament
     }
     catch (SqliteOverlay::NoDataException&)
     {
-     throw std::invalid_argument("The team with ID " + to_string(id) + " does not exist");
+     throw std::invalid_argument("The team with ID " + std::to_string(id) + " does not exist");
     }
   }
 
@@ -231,9 +231,9 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  string TeamMngr::getSyncString(vector<int> rows) const
+  std::string TeamMngr::getSyncString(const std::vector<int>& rows) const
   {
-    vector<Sloppy::estring> cols = {"id", GENERIC_NAME_FIELD_NAME};
+    std::vector<Sloppy::estring> cols = {"id", GENERIC_NAME_FIELD_NAME};
 
     return db.get().getSyncStringForTable(TAB_TEAM, cols, rows);
   }

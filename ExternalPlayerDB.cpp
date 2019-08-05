@@ -54,7 +54,7 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  unique_ptr<ExternalPlayerDB> ExternalPlayerDB::createNew(const QString& fname)
+  std::unique_ptr<ExternalPlayerDB> ExternalPlayerDB::createNew(const QString& fname)
   {
     // try to create the new database
     upExternalPlayerDB result = SqliteDatabase::get<ExternalPlayerDB>(fname.toUtf8().constData(), true);
@@ -62,7 +62,7 @@ namespace QTournament
 
     // write the database version to the file
     auto cfg = SqliteOverlay::KeyValueTab::getTab(result.get(), TAB_EPD_CFG, true);
-    cfg->set(CFG_KEY_EPD_DB_VERSION, EXT_PLAYER_DB_VERSION);
+    cfg.set(CFG_KEY_EPD_DB_VERSION, EXT_PLAYER_DB_VERSION);
 
     result->setLogLevel(Sloppy::Logger::SeverityLevel::error);
 
@@ -71,7 +71,7 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  unique_ptr<ExternalPlayerDB> ExternalPlayerDB::openExisting(const QString& fname)
+  std::unique_ptr<ExternalPlayerDB> ExternalPlayerDB::openExisting(const QString& fname)
   {
     // try to open the existing database
     upExternalPlayerDB result = SqliteDatabase::get<ExternalPlayerDB>(fname.toUtf8().constData(), false);
@@ -79,7 +79,7 @@ namespace QTournament
 
     // check the database version
     auto cfg = SqliteOverlay::KeyValueTab::getTab(result.get(), TAB_EPD_CFG);
-    int actualDbVersion = cfg->getInt(CFG_KEY_EPD_DB_VERSION);
+    int actualDbVersion = cfg.getInt(CFG_KEY_EPD_DB_VERSION);
     if (actualDbVersion != EXT_PLAYER_DB_VERSION)
     {
       return nullptr;
@@ -149,7 +149,7 @@ namespace QTournament
   {
     SqliteOverlay::DbTab* playerTab = getTab(TAB_EPD_PLAYER);
     SqliteOverlay::WhereClause wc;
-    wc.addIntCol("id", ">", 0);   // match all rows
+    wc.addCol("id", ">", 0);   // match all rows
     wc.setOrderColumn_Asc(EPD_PL_LNAME);  // sort by last name first
     wc.setOrderColumn_Asc(EPD_PL_FNAME);  // then by given name
     auto it = playerTab->getRowsByWhereClause(wc);
@@ -188,8 +188,8 @@ namespace QTournament
   upExternalPlayerDatabaseEntry ExternalPlayerDB::getPlayer(const QString& fname, const QString& lname)
   {
     SqliteOverlay::WhereClause w;
-    w.addStringCol(EPD_PL_FNAME, QString2StdString(fname));
-    w.addStringCol(EPD_PL_LNAME, QString2StdString(lname));
+    w.addCol(EPD_PL_FNAME, QString2StdString(fname));
+    w.addCol(EPD_PL_LNAME, QString2StdString(lname));
 
     auto playerTab = getTab(TAB_EPD_PLAYER);
     if (playerTab->getMatchCountForWhereClause(w) != 1)
@@ -212,12 +212,12 @@ namespace QTournament
     }
 
     SqliteOverlay::ColumnValueClause cvc;
-    cvc.addStringCol(EPD_PL_FNAME, QString2StdString(newPlayer.getFirstname()));
-    cvc.addStringCol(EPD_PL_LNAME, QString2StdString(newPlayer.getLastname()));
+    cvc.addCol(EPD_PL_FNAME, QString2StdString(newPlayer.getFirstname()));
+    cvc.addCol(EPD_PL_LNAME, QString2StdString(newPlayer.getLastname()));
 
     if (newPlayer.getSex() != DONT_CARE)
     {
-      cvc.addIntCol(EPD_PL_SEX, static_cast<int>(newPlayer.getSex()));
+      cvc.addCol(EPD_PL_SEX, static_cast<int>(newPlayer.getSex()));
     }
 
     auto playerTab = getTab(TAB_EPD_PLAYER);
@@ -259,7 +259,7 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  tuple<QList<int>, QList<int>, QHash<int,QString>, int> ExternalPlayerDB::bulkImportCSV(const QString& csv)
+  std::tuple<QList<int>, QList<int>, QHash<int,QString>, int> ExternalPlayerDB::bulkImportCSV(const QString& csv)
   {
     int errorCnt = 0;
     QList<int> newExtPlayerIds;

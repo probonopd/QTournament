@@ -26,12 +26,11 @@
 #include "TournamentDB.h"
 #include "BaseItemDelegate.h"
 
-using namespace QTournament;
 
 class CatItemDelegate : public BaseItemDelegate
 {
 public:
-  CatItemDelegate(TournamentDB* _db, QObject* parent = 0)
+  CatItemDelegate(const QTournament::TournamentDB& _db, QObject* parent = 0)
     :BaseItemDelegate(_db, CatItemRowHeight, -1, parent) {}
 
 protected:

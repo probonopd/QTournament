@@ -33,7 +33,6 @@
 #include "PlayerPair.h"
 #include "TournamentErrorCodes.h"
 #include "KO_Config.h"
-#include "ThreadSafeQueue.h"
 
 namespace QTournament
 {
@@ -77,7 +76,7 @@ namespace QTournament
     int getDatabasePlayerPairCount(int grp = GRP_NUM__NOT_ASSIGNED) const;
     PlayerList getAllPlayersInCategory() const;
     Player getPartner(const Player& p) const;
-    unique_ptr<Category> convertToSpecializedObject() const;
+    std::optional<Category> convertToSpecializedObject() const;
     int getGroupNumForPredecessorRound(const int grpNum) const;
     CatRoundStatus getRoundStatus() const;
     PlayerPairList getEliminatedPlayersAfterRound(int round, ERR *err) const;
@@ -103,39 +102,39 @@ namespace QTournament
     ERR canPairPlayers(const Player& p1, const Player& p2) const;
     ERR canSplitPlayers(const Player& p1, const Player& p2) const;
     bool hasUnpairedPlayers() const;
-    ERR canApplyGroupAssignment(vector<PlayerPairList> grpCfg);
+    ERR canApplyGroupAssignment(std::vector<PlayerPairList> grpCfg);
     ERR canApplyInitialRanking(PlayerPairList seed);
     bool hasMatchesInState(OBJ_STATE stat, int round=-1) const;
     bool isDrawAllowedInRound(int round) const;
 
     
-    virtual ~Category() {};
+    virtual ~Category() {}
     
     //
     // The following methods MUST be overwritten by derived classes for a specific match system
     //
-    virtual ERR canFreezeConfig() { throw std::runtime_error("Unimplemented Method: canFreezeConfig"); };
-    virtual bool needsInitialRanking() { throw std::runtime_error("Unimplemented Method: needsInitialRanking"); };
-    virtual bool needsGroupInitialization() { throw std::runtime_error("Unimplemented Method: needsGroupInitialization"); };
-    virtual ERR prepareFirstRound(ProgressQueue* progressNotificationQueue=nullptr) { throw std::runtime_error("Unimplemented Method: prepareFirstRound"); };
-    virtual int calcTotalRoundsCount() const { throw std::runtime_error("Unimplemented Method: calcTotalRoundsCount"); };
-    virtual ERR onRoundCompleted(int round) { throw std::runtime_error("Unimplemented Method: onRoundCompleted"); };
-    virtual std::function<bool (RankingEntry&, RankingEntry&)> getLessThanFunction()  { throw std::runtime_error("Unimplemented Method: getLessThanFunction"); };
-    virtual PlayerPairList getRemainingPlayersAfterRound(int round, ERR *err) const { throw std::runtime_error("Unimplemented Method: getRemainingPlayersAfterRound"); };
-    virtual PlayerPairList getPlayerPairsForIntermediateSeeding() const { throw std::runtime_error("Unimplemented Method: getPlayerPairsForIntermediateSeeding"); };
-    virtual ERR resolveIntermediateSeeding(const PlayerPairList& seed, ProgressQueue* progressNotificationQueue=nullptr) const { throw std::runtime_error("Unimplemented Method: resolveIntermediateSeeding"); };
+    virtual ERR canFreezeConfig();
+    virtual bool needsInitialRanking();
+    virtual bool needsGroupInitialization();
+    virtual ERR prepareFirstRound(ProgressQueue* progressNotificationQueue=nullptr);
+    virtual int calcTotalRoundsCount() const;
+    virtual ERR onRoundCompleted(int round);
+    virtual std::function<bool (RankingEntry&, RankingEntry&)> getLessThanFunction();
+    virtual PlayerPairList getRemainingPlayersAfterRound(int round, ERR *err) const;
+    virtual PlayerPairList getPlayerPairsForIntermediateSeeding() const;
+    virtual ERR resolveIntermediateSeeding(const PlayerPairList& seed, ProgressQueue* progressNotificationQueue=nullptr) const;
 
     //
     // The following methods CAN be overwritten to extend the
     // categories functionality
     //
-    virtual ModMatchResult canModifyMatchResult(const Match& ma) const { return ModMatchResult::NotImplemented; }
-    virtual ModMatchResult modifyMatchResult(const Match& ma, const MatchScore& newScore) const { return ModMatchResult::NotImplemented; }
+    virtual ModMatchResult canModifyMatchResult(const Match& ma) const;
+    virtual ModMatchResult modifyMatchResult(const Match& ma, const MatchScore& newScore) const;
 
   private:
-    Category (TournamentDB* db, int rowId);
-    Category (TournamentDB* db, SqliteOverlay::TabRow row);
-    ERR applyGroupAssignment(vector<PlayerPairList> grpCfg);
+    Category (const TournamentDB& _db, int rowId);
+    Category (const TournamentDB& _db, const SqliteOverlay::TabRow& row);
+    ERR applyGroupAssignment(std::vector<PlayerPairList> grpCfg);
     ERR applyInitialRanking(PlayerPairList seed);
     ERR generateGroupMatches(const PlayerPairList &grpMembers, int grpNum, int firstRoundNum=1, ProgressQueue* progressNotificationQueue=nullptr) const;
     ERR generateBracketMatches(int bracketMode, const PlayerPairList& seeding, int firstRoundNum, ProgressQueue* progressNotificationQueue=nullptr) const;
@@ -144,10 +143,10 @@ namespace QTournament
   // we need this to have a category object in a QHash
   inline uint qHash(const Category& c)
   {
-    return c.getId(); // bad style: implicit conversion from int to uint...
+    return static_cast<uint>(c.getId()); // bad style: conversion from int to uint...
   }
 
-  typedef vector<Category> CategoryList;
+  using CategoryList = std::vector<Category>;
 
 }
 #endif	/* CATEGORY_H */

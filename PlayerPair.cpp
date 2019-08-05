@@ -272,7 +272,7 @@ namespace QTournament {
 //----------------------------------------------------------------------------
 
   // this serves only as a hot fix until this class will be re-factored to inherit GenericDatabaseObject
-  unique_ptr<Category> PlayerPair::getCategory(TournamentDB* db) const
+  std::optional<Category> PlayerPair::getCategory(const TournamentDB& db) const
   {
     assert(db != nullptr);
 
@@ -282,7 +282,7 @@ namespace QTournament {
     CatMngr cm{db};
     Category cat = cm.getCategoryById(pairRow.getInt(PAIRS_CAT_REF));
 
-    return unique_ptr<Category>(new Category(cat));
+    return std::unique_ptr<Category>(new Category(cat));
   }
 
 //----------------------------------------------------------------------------

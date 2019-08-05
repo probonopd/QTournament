@@ -35,13 +35,13 @@ namespace QTournament
   public:
     PlayerProfile(const Player& _p);
 
-    unique_ptr<Match> getLastPlayedMatch() const;
-    unique_ptr<Match> getCurrentMatch() const;
-    unique_ptr<Match> getNextMatch() const;
+    std::optional<Match> getLastPlayedMatch() const;
+    std::optional<Match> getCurrentMatch() const;
+    std::optional<Match> getNextMatch() const;
 
-    unique_ptr<Match> getLastUmpireMatch() const;
-    unique_ptr<Match> getCurrentUmpireMatch() const;
-    unique_ptr<Match> getNextUmpireMatch() const;
+    std::optional<Match> getLastUmpireMatch() const;
+    std::optional<Match> getCurrentUmpireMatch() const;
+    std::optional<Match> getNextUmpireMatch() const;
 
     QList<Match> getMatchesAsPlayer() const { return matchesAsPlayer; }
     QList<Match> getMatchesAsUmpire() const { return matchesAsUmpire; }
@@ -57,7 +57,7 @@ namespace QTournament
     int getUmpireScheduledAndNotFinishedCount() const { return (matchesAsUmpire.length() - umpireFinishedCount); }
 
   protected:
-    TournamentDB* db;
+    std::reference_wrapper<const QTournament::TournamentDB> db;
     const Player p;
 
     int lastPlayedMatchId;
@@ -77,7 +77,7 @@ namespace QTournament
     void initMatchIds();
     void initMatchLists();
 
-    unique_ptr<Match> returnMatchOrNullptr(int maId) const;
+    std::optional<Match> returnMatchOrEmpty(int maId) const;
   };
 
 }

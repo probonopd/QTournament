@@ -636,7 +636,7 @@ void MainFrame::updateWindowTitle()
   {
     // determine the tournament title
     auto cfg = KeyValueTab::getTab(currentDb.get(), TAB_CFG);
-    QString tnmtTitle = QString(cfg->operator[](CFG_KEY_TNMT_NAME).data());
+    QString tnmtTitle = QString(cfg.operator[](CFG_KEY_TNMT_NAME).data());
     title += " - " + tnmtTitle + " (%1)";
 
     // insert the current filename, if any
@@ -820,12 +820,12 @@ void MainFrame::setupTestScenario(int scenarioID)
     Category ls = cmngr.getCategory("LS");
 
     // run the category
-    unique_ptr<Category> specialCat = ls.convertToSpecializedObject();
+    std::unique_ptr<Category> specialCat = ls.convertToSpecializedObject();
     ERR e = cmngr.freezeConfig(ls);
     assert(e == OK);
 
     // fake a list of player-pair-lists for the group assignments
-    vector<PlayerPairList> ppListList;
+    std::vector<PlayerPairList> ppListList;
     for (int grpNum=0; grpNum < 8; ++grpNum)
     {
         PlayerPairList thisGroup;
@@ -1011,12 +1011,12 @@ void MainFrame::setupTestScenario(int scenarioID)
     assert(e == OK);
 
     // run the category
-    unique_ptr<Category> specialCat = ls.convertToSpecializedObject();
+    std::unique_ptr<Category> specialCat = ls.convertToSpecializedObject();
     e = cmngr.freezeConfig(ls);
     assert(e == OK);
 
     // prepare an empty list for the not-required initial group assignment
-    vector<PlayerPairList> ppListList;
+    std::vector<PlayerPairList> ppListList;
 
     // prepare a list for the (faked) initial ranking
     PlayerPairList initialRanking = ls.getPlayerPairs();
@@ -1108,7 +1108,7 @@ void MainFrame::setupTestScenario(int scenarioID)
     assert(e == OK);
 
     // prepare an empty list for the not-required initial group assignment
-    vector<PlayerPairList> ppListList;
+    std::vector<PlayerPairList> ppListList;
 
     // prepare a list for the (faked) initial ranking
     PlayerPairList initialRanking = ls.getPlayerPairs();
@@ -1406,7 +1406,7 @@ void MainFrame::onEditTournamentSettings()
   }
 
   // get the new settings
-  unique_ptr<TournamentSettings> newSettings = dlg.getTournamentSettings();
+  std::unique_ptr<TournamentSettings> newSettings = dlg.getTournamentSettings();
   if (newSettings == nullptr)
   {
     QMessageBox::warning(this, tr("Edit tournament settings"),
@@ -1423,7 +1423,7 @@ void MainFrame::onEditTournamentSettings()
   if (oldTnmtOrga != newSettings->organizingClub)
   {
     tmp = (newSettings->organizingClub).toUtf8().constData();
-    cfg->set(CFG_KEY_TNMT_ORGA, tmp);
+    cfg.set(CFG_KEY_TNMT_ORGA, tmp);
   }
 
   // the tournament name
@@ -1432,18 +1432,18 @@ void MainFrame::onEditTournamentSettings()
   if (oldTnmtName != newSettings->tournamentName)
   {
     tmp = (newSettings->tournamentName).toUtf8().constData();
-    cfg->set(CFG_KEY_TNMT_NAME, tmp);
+    cfg.set(CFG_KEY_TNMT_NAME, tmp);
 
     // refresh the window title to show the new name
     updateWindowTitle();
   }
 
   // the umpire mode
-  int oldRefereeModeId = cfg->getInt(CFG_KEY_DEFAULT_REFEREE_MODE);
+  int oldRefereeModeId = cfg.getInt(CFG_KEY_DEFAULT_REFEREE_MODE);
   REFEREE_MODE oldRefereeMode = static_cast<REFEREE_MODE>(oldRefereeModeId);
   if (oldRefereeMode != newSettings->refereeMode)
   {
-    cfg->set(CFG_KEY_DEFAULT_REFEREE_MODE, static_cast<int>(newSettings->refereeMode));
+    cfg.set(CFG_KEY_DEFAULT_REFEREE_MODE, static_cast<int>(newSettings->refereeMode));
     ui.tabSchedule->updateRefereeColumn();
   }
 }

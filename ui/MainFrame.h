@@ -29,8 +29,6 @@
 
 #define PRG_VERSION_STRING "0.6.0"
 
-using namespace QTournament;
-
 class MainFrame : public QMainWindow
 {
   Q_OBJECT
@@ -47,7 +45,7 @@ private:
   void enableControls(bool doEnable = true);
   void setupTestScenario(int scenarioID);
   
-  unique_ptr<TournamentDB> currentDb;
+  std::unique_ptr<QTournament::TournamentDB> currentDb;
   
   QString testFileName;
   QString currentDatabaseFileName;
@@ -71,8 +69,8 @@ private:
   // and triggering the autosave function
   static constexpr int DIRTY_FLAG_POLL_INTERVALL__MS = 1000;
   static constexpr int AUTOSAVE_INTERVALL__MS = 120000;
-  unique_ptr<QTimer> dirtyFlagPollTimer;
-  unique_ptr<QTimer> autosaveTimer;
+  std::unique_ptr<QTimer> dirtyFlagPollTimer;
+  std::unique_ptr<QTimer> autosaveTimer;
   bool lastDirtyState;
   int lastAutosaveDirtyCounterValue;
 
@@ -81,7 +79,7 @@ private:
 
   // a timer and label for server syncs
   static constexpr int ServerSyncStatusInterval_ms = 1000;
-  unique_ptr<QTimer> serverSyncTimer;
+  std::unique_ptr<QTimer> serverSyncTimer;
   QLabel* syncStatLabel;
   QPushButton* btnPingTest;
 

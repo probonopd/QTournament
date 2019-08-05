@@ -31,14 +31,14 @@ class SignalRelay : public QObject
 public:
   static SignalRelay* getInstance();
   void registerSender(MatchTableView* s);
-  void registerReceiver(ResultSheets* r);
+  void registerReceiver(QTournament::ResultSheets* r);
   static void cleanUp();
 
 private:
-  explicit SignalRelay(QObject *parent = 0);
+  explicit SignalRelay(QObject *parent = nullptr);
   static SignalRelay* instance;
   MatchTableView* matchTabView_Sender;
-  QQueue<ResultSheets*> receiverQueue;
+  QQueue<QTournament::ResultSheets*> receiverQueue;
   void checkConnection();
 
 signals:

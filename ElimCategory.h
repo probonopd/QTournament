@@ -20,7 +20,6 @@
 #define	ELIMCATEGORY_H
 
 #include "Category.h"
-#include "ThreadSafeQueue.h"
 #include "RankingEntry.h"
 
 namespace QTournament
@@ -44,12 +43,12 @@ namespace QTournament
     ModMatchResult modifyMatchResult(const Match& ma, const MatchScore& newScore) const override;
 
   protected:
-    unique_ptr<Match> getFollowUpMatch(const Match& ma, bool searchLoserNotWinner) const;
+    std::optional<Match> getFollowUpMatch(const Match& ma, bool searchLoserNotWinner) const;
     ERR rewriteFinalRankForMultipleRounds(int minRound = 1, int maxRound = -1) const;
 
   private:
-    EliminationCategory (TournamentDB* db, int rowId, int eliminationMode);
-    EliminationCategory (TournamentDB* db, SqliteOverlay::TabRow row, int eliminationMode);
+    EliminationCategory (const TournamentDB& _db, int rowId, int eliminationMode);
+    EliminationCategory (const TournamentDB& _db, const SqliteOverlay::TabRow& _row, int eliminationMode);
 
     int elimMode;
 

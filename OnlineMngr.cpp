@@ -1,7 +1,7 @@
 #include <iostream>
 #include <chrono>
 
-#include <Sloppy/json/json.h>
+#include <Sloppy/json.hpp>
 #include <Sloppy/Crypto/Crypto.h>
 #include <Sloppy/Crypto/Sodium.h>
 #include <SqliteOverlay/KeyValueTab.h>
@@ -21,9 +21,9 @@ using namespace std;
 namespace QTournament
 {
 
-  OnlineMngr::OnlineMngr(TournamentDB* _db)
+  OnlineMngr::OnlineMngr(const TournamentDB& _db)
     :db{_db}, cryptoLib{Sloppy::Crypto::SodiumLib::getInstance()},
-      cfgTab{SqliteOverlay::KeyValueTab::getTab(db, TAB_CFG)}, secKeyUnlocked{false},
+      cfgTab{SqliteOverlay::KeyValueTab{db, TAB_CFG}}, secKeyUnlocked{false},
       syncState{}, lastReqTime_ms{-1}
   {
     applyCustomServerSettings();
@@ -805,7 +805,7 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  string OnlineMngr::log2SyncString(const vector<ChangeLogEntry>& log)
+  string OnlineMngr::log2SyncString(const std::vector<ChangeLogEntry>& log)
   {
     // copy the log
     ChangeLogList cll = log;
@@ -823,7 +823,7 @@ namespace QTournament
 
     string result;
     string curTabName;
-    vector<int> idxList;
+    std::vector<int> idxList;
     auto it = cll.begin();
     while (it != cll.end())
     {

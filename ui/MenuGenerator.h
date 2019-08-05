@@ -26,16 +26,14 @@
 #include "TournamentDB.h"
 #include "Category.h"
 
-using namespace std;
-using namespace QTournament;
 
 class MenuGenerator
 {
 public:
   MenuGenerator() = delete;
 
-  static void allCategories(TournamentDB* db, QMenu* targetMenu);
-  static void fromCategoryList(TournamentDB* db, const CategoryList& catList, QMenu* targetMenu);
+  static void allCategories(const QTournament::TournamentDB& db, QMenu* targetMenu);
+  static void fromCategoryList(const QTournament::TournamentDB& db, const QTournament::CategoryList& catList, QMenu* targetMenu);
 
   static bool isActionInMenu(const QMenu* m, const QAction* a);
 };

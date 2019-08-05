@@ -41,7 +41,7 @@ namespace QTournament
     static constexpr int UNREGISTERED_MEMBER_COUNT_COL_ID = 2;
     static constexpr int COL_COUNT = 3;
 
-    TeamTableModel (TournamentDB* _db);
+    TeamTableModel (const QTournament::TournamentDB& _db);
     int rowCount (const QModelIndex &parent = QModelIndex ()) const;
     int columnCount(const QModelIndex & parent = QModelIndex()) const;
     QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const;
@@ -49,8 +49,8 @@ namespace QTournament
                          int role = Qt::DisplayRole) const;
     
   private:
-    TournamentDB* db;
-    SqliteOverlay::DbTab* teamTab;
+    std::reference_wrapper<const QTournament::TournamentDB> db;
+    SqliteOverlay::DbTab teamTab;
     
   public slots:
     void onBeginCreateTeam();

@@ -19,15 +19,14 @@
 #ifndef KO_CONFIG_H
 #define	KO_CONFIG_H
 
+#include <QString>
+
 #include "TournamentDataDefs.h"
 #include "GroupDef.h"
-#include <QString>
 
 namespace QTournament
 {
 
-  //typedef QList<GroupDef> GroupDefList;
-  
   class KO_Config
   {
   public:

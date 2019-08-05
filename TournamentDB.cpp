@@ -280,7 +280,7 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  tuple<int, int> TournamentDB::getVersion()
+  std::tuple<int, int> TournamentDB::getVersion()
   {
     SqliteOverlay::KeyValueTab cfg{*this, TAB_CFG};
 
@@ -363,15 +363,15 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  tuple<string, int> TournamentDB::tableDataToCSV(const string& tabName, const vector<Sloppy::estring>& colNames, int rowId) const
+  std::tuple<string, int> TournamentDB::tableDataToCSV(const string& tabName, const std::vector<Sloppy::estring>& colNames, int rowId) const
   {
-    vector<int> v = (rowId < 0) ? vector<int>{} : vector<int>{rowId,};
+    std::vector<int> v = (rowId < 0) ? std::vector<int>{} : std::vector<int>{rowId,};
     return tableDataToCSV(tabName, colNames, v);
   }
 
   //----------------------------------------------------------------------------
 
-  tuple<string, int> TournamentDB::tableDataToCSV(const string& tabName, const vector<Sloppy::estring>& colNames, const vector<int>& rowList) const
+  std::tuple<string, int> TournamentDB::tableDataToCSV(const string& tabName, const std::vector<Sloppy::estring>& colNames, const std::vector<int>& rowList) const
   {
     SqliteOverlay::DbTab tab{*this, tabName, false};
 
@@ -424,15 +424,15 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  string TournamentDB::getSyncStringForTable(const string& tabName, const vector<Sloppy::estring>& colNames, int rowId) const
+  string TournamentDB::getSyncStringForTable(const string& tabName, const std::vector<Sloppy::estring>& colNames, int rowId) const
   {
-    vector<int> v = (rowId < 0) ? vector<int>{} : vector<int>{rowId,};
+    std::vector<int> v = (rowId < 0) ? std::vector<int>{} : std::vector<int>{rowId,};
     return getSyncStringForTable(tabName, colNames, v);
   }
 
   //----------------------------------------------------------------------------
 
-  string TournamentDB::getSyncStringForTable(const string& tabName, const vector<Sloppy::estring>& colNames, vector<int> rowList) const
+  string TournamentDB::getSyncStringForTable(const string& tabName, const std::vector<Sloppy::estring>& colNames, std::vector<int> rowList) const
   {
     int cnt;
     string data;

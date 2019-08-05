@@ -33,9 +33,7 @@ namespace Ui {
   class DlgSelectReferee;
 }
 
-using namespace QTournament;
-
-using TaggedPlayer = pair<Player, int>;
+using TaggedPlayer = std::pair<QTournament::Player, int>;
 using TaggedPlayerList = QList<TaggedPlayer>;
 
 class DlgSelectReferee : public QDialog
@@ -44,9 +42,9 @@ class DlgSelectReferee : public QDialog
 
 public:
   static constexpr int MAX_NUM_LOSERS = 30;
-  explicit DlgSelectReferee(TournamentDB* _db, const Match& _ma, REFEREE_ACTION _refAction, QWidget *parent = 0);
+  explicit DlgSelectReferee(const QTournament::TournamentDB& _db, const QTournament::Match& _ma, QTournament::REFEREE_ACTION _refAction, QWidget *parent = nullptr);
   ~DlgSelectReferee();
-  upPlayer getFinalPlayerSelection();
+  std::optional<QTournament::Player> getFinalPlayerSelection();
 
 public slots:
   void onFilterModeChanged();
@@ -58,9 +56,9 @@ public slots:
 
 private:
   Ui::DlgSelectReferee *ui;
-  TournamentDB* db;
-  Match ma;
-  REFEREE_ACTION refAction;
+  std::reference_wrapper<const QTournament::TournamentDB> db;
+  QTournament::Match ma;
+  QTournament::REFEREE_ACTION refAction;
   void updateControls();
 
   void initTeamList(int defaultTeamId = -1);
@@ -69,7 +67,7 @@ private:
 
   TaggedPlayerList getPlayerList_recentFinishers();
 
-  upPlayer finalPlayerSelection;
+  std::optional<QTournament::Player> finalPlayerSelection;
 };
 
 //----------------------------------------------------------------------------
@@ -88,8 +86,8 @@ public:
   RefereeTableWidget(QWidget* parent=0);
   virtual ~RefereeTableWidget() {}
 
-  void rebuildPlayerList(const TaggedPlayerList& pList, int selectedMatchNumer, REFEREE_MODE _refMode);
-  upPlayer getSelectedPlayer();
+  void rebuildPlayerList(const TaggedPlayerList& pList, int selectedMatchNumer, QTournament::REFEREE_MODE _refMode);
+  std::optional<QTournament::Player> getSelectedPlayer();
   bool hasPlayerSelected();
 
 protected:
@@ -101,7 +99,7 @@ protected:
 
   void hook_onDatabaseOpened() override;
 
-  REFEREE_MODE refMode;
+  QTournament::REFEREE_MODE refMode;
 };
 
 #endif // DLGSELECTREFEREE_H

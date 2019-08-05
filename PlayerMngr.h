@@ -54,26 +54,26 @@ namespace QTournament
     // getters and (boolean) queries
     bool hasPlayer (const QString& firstName, const QString& lastName);
     Player getPlayer(const QString& firstName, const QString& lastName);
-    vector<Player> getAllPlayers();
-    unique_ptr<Player> getPlayerBySeqNum(int seqNum);
+    std::vector<Player> getAllPlayers();
+    std::optional<Player> getPlayerBySeqNum(int seqNum);
     bool hasPlayer(int id);
     Player getPlayer(int id);
-    unique_ptr<Player> getPlayer_up(int id) const;
+    std::optional<Player> getPlayer2(int id) const;
     PlayerPair getPlayerPair(int id);
-    upPlayerPair getPlayerPair_up(int pairId) const;
+    std::optional<PlayerPair> getPlayerPair2(int pairId) const;
     PlayerList determineActualPlayersForMatch(const Match& ma) const;
     ERR canDeletePlayer(const Player& p) const;
     int getTotalPlayerCount() const;
     void getRecentFinishers(int maxCnt, PlayerPairList& winners_out, PlayerPairList& losers_out, PlayerPairList& draw_out) const;
-    upMatch getLastFinishedMatchForPlayer(const Player& p);
-    upMatch getNextMatchForPlayer(const Player& p);
-    vector<Match> getAllScheduledMatchesForPlayer(const Player& p, bool findFirstOnly = false);
+    std::optional<Match> getLastFinishedMatchForPlayer(const Player& p);
+    std::optional<Match> getNextMatchForPlayer(const Player& p);
+    std::vector<Match> getAllScheduledMatchesForPlayer(const Player& p, bool findFirstOnly = false);
 
     // referee functions
     void increaseRefereeCountForPlayer(const Player& p);
 
     // player modification
-    ERR renamePlayer (Player& p, const QString& newFirst, const QString& newLast);
+    ERR renamePlayer (const Player& p, const QString& newFirst, const QString& newLast);
     ERR deletePlayer(const Player& p) const;
 
     // allocating and releasing players for matches
@@ -106,17 +106,17 @@ namespace QTournament
     void closeExternalPlayerDatabase();
 
     // importing and exporting players
-    unique_ptr<Player> importPlayerFromExternalDatabase(ERR* err, int extPlayerId, SEX sexOverride = DONT_CARE);
+    std::optional<Player> importPlayerFromExternalDatabase(ERR* err, int extPlayerId, SEX sexOverride = DONT_CARE);
     ERR exportPlayerToExternalDatabase(int playerId);
     ERR exportPlayerToExternalDatabase(const Player& p);
     ERR syncAllPlayersToExternalDatabase();
 
-    string getSyncString(vector<int> rows) override;
-    string getSyncString_P2C(vector<int> rows);
-    string getSyncString_Pairs(vector<int> rows);
+    std::string getSyncString(const std::vector<int>& rows) const override;
+    std::string getSyncString_P2C(std::vector<int> rows) const;
+    std::string getSyncString_Pairs(std::vector<int> rows) const;
 
   protected:
-    upExternalPlayerDB extPlayerDb;
+    std::unique_ptr<ExternalPlayerDB> extPlayerDb;
   };
 }
 

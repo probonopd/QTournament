@@ -29,7 +29,6 @@
 #include "delegates/MatchLogItemDelegate.h"
 #include "CommonMatchTableWidget.h"
 
-using namespace QTournament;
 
 class MatchLogTable : public CommonMatchTableWidget
 {
@@ -38,10 +37,10 @@ class MatchLogTable : public CommonMatchTableWidget
 public:
   MatchLogTable(QWidget* parent);
   virtual ~MatchLogTable() {}
-  unique_ptr<Match> getSelectedMatch() const;
+  std::optional<QTournament::Match> getSelectedMatch() const;
 
 public slots:
-  void onMatchStatusChanged(int maId, int maSeqNum, OBJ_STATE oldStat, OBJ_STATE newStat);
+  void onMatchStatusChanged(int maId, int maSeqNum, QTournament::OBJ_STATE oldStat, QTournament::OBJ_STATE newStat);
   void onCategoryRemoved();
 
 protected slots:
@@ -53,7 +52,7 @@ protected:
 
   void fillFromDatabase();
 
-  unique_ptr<QMenu> contextMenu;
+  std::unique_ptr<QMenu> contextMenu;
   QAction* actModMatchResult;
 
   void initContextMenu();

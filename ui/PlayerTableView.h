@@ -31,16 +31,14 @@
 #include "models/PlayerTableModel.h"
 #include "AutoSizingTable.h"
 
-using namespace QTournament;
-
-class PlayerTableView : public GuiHelpers::AutoSizingTableView_WithDatabase<PlayerTableModel>
+class PlayerTableView : public GuiHelpers::AutoSizingTableView_WithDatabase<QTournament::PlayerTableModel>
 {
   Q_OBJECT
   
 public:
   PlayerTableView (QWidget* parent);
   virtual ~PlayerTableView () {}
-  unique_ptr<Player> getSelectedPlayer() const;
+  std::optional<QTournament::Player> getSelectedPlayer() const;
     
 protected:
   static constexpr int REL_NAME_COL_WIDTH = 10;
@@ -74,7 +72,7 @@ private slots:
 private:
   PlayerItemDelegate* playerItemDelegate;
 
-  unique_ptr<QMenu> contextMenu;
+  std::unique_ptr<QMenu> contextMenu;
   QAction* actAddPlayer;
   QAction* actEditPlayer;
   QAction* actRemovePlayer;

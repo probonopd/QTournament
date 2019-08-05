@@ -30,15 +30,12 @@ namespace Ui {
   class DlgBulkImportToExtDb;
 }
 
-using namespace std;
-using namespace QTournament;
-
 class DlgBulkImportToExtDb : public QDialog
 {
   Q_OBJECT
 
 public:
-  explicit DlgBulkImportToExtDb(TournamentDB* _db, QWidget *parent = 0);
+  explicit DlgBulkImportToExtDb(const QTournament::TournamentDB& _db, QWidget *parent = nullptr);
   ~DlgBulkImportToExtDb();
   QString getText() const;
   int getTargetTeamId() const;
@@ -46,7 +43,7 @@ public:
 
 private:
   Ui::DlgBulkImportToExtDb *ui;
-  TournamentDB* db;
+  std::reference_wrapper<const QTournament::TournamentDB> db;
   void initDropBoxes();
 
 private slots:

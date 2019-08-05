@@ -27,8 +27,6 @@
 #include "TournamentDB.h"
 #include "TournamentDataDefs.h"
 
-using namespace SqliteOverlay;
-
 namespace QTournament
 {
   class MatchResultList : public QObject, public AbstractReport
@@ -36,7 +34,7 @@ namespace QTournament
     Q_OBJECT
 
   public:
-    MatchResultList(TournamentDB* _db, const QString& _name, const Category& _cat, int _round);
+    MatchResultList(const QTournament::TournamentDB& _db, const QString& _name, const Category& _cat, int _round);
 
     virtual upSimpleReport regenerateReport() override;
     virtual QStringList getReportLocators() const override;

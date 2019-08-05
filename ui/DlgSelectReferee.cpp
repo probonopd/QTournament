@@ -91,7 +91,7 @@ DlgSelectReferee::DlgSelectReferee(TournamentDB* _db, const Match& _ma, REFEREE_
 
   // get the tournament-wide default value for the referee-team, if any
   auto cfg = SqliteOverlay::KeyValueTab::getTab(db, TAB_CFG);
-  int defaultRefereeTeamId = cfg->getInt(CFG_KEY_REFEREE_TEAM_ID);
+  int defaultRefereeTeamId = cfg.getInt(CFG_KEY_REFEREE_TEAM_ID);
   initTeamList(defaultRefereeTeamId);
 
 
@@ -137,7 +137,7 @@ DlgSelectReferee::~DlgSelectReferee()
 
 //----------------------------------------------------------------------------
 
-upPlayer DlgSelectReferee::getFinalPlayerSelection()
+std::optional<Player> DlgSelectReferee::getFinalPlayerSelection()
 {
   return std::move(finalPlayerSelection);
 }
@@ -182,7 +182,7 @@ void DlgSelectReferee::onBtnSelectClicked()
   {
     int curTeamId = ui->cbTeamSelection->currentData().toInt();
     auto cfg = SqliteOverlay::KeyValueTab::getTab(db, TAB_CFG);
-    cfg->set(CFG_KEY_REFEREE_TEAM_ID, curTeamId);
+    cfg.set(CFG_KEY_REFEREE_TEAM_ID, curTeamId);
   }
 
   accept();
@@ -237,7 +237,7 @@ void DlgSelectReferee::updateControls()
 void DlgSelectReferee::initTeamList(int defaultTeamId)
 {
   TeamMngr tm{db};
-  vector<Team> allTeams = tm.getAllTeams();
+  std::vector<Team> allTeams = tm.getAllTeams();
 
   // Sort the list aphabetically
   std::sort(allTeams.begin(), allTeams.end(), [](Team& t1, Team& t2) {
@@ -349,7 +349,7 @@ TaggedPlayerList DlgSelectReferee::getPlayerList_recentFinishers()
   pm.getRecentFinishers(MAX_NUM_LOSERS, winners, losers, draws);
 
   // process winners, losers and draws
-  vector<pair<PlayerPairList&, int>> allLists = {
+  std::vector<pair<PlayerPairList&, int>> allLists = {
     {winners, RefereeSelectionDelegate::WinnerTag},
     {losers, RefereeSelectionDelegate::LoserTag},
     {draws, RefereeSelectionDelegate::NeutralTag},
@@ -523,7 +523,7 @@ void RefereeTableWidget::rebuildPlayerList(const TaggedPlayerList& pList, int se
 
 //----------------------------------------------------------------------------
 
-upPlayer RefereeTableWidget::getSelectedPlayer()
+std::optional<QTournament::Player> RefereeTableWidget::getSelectedPlayer()
 {
   // could we ever store a database handle? If not,
   // we can't determine the player
@@ -541,7 +541,7 @@ upPlayer RefereeTableWidget::getSelectedPlayer()
 
   // return the associated player
   PlayerMngr pm{db};
-  return pm.getPlayer_up(playerId);
+  return pm.getPlayer2(playerId);
 }
 
 //----------------------------------------------------------------------------

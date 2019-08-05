@@ -33,7 +33,7 @@
 
 namespace QTournament {
 
-  MatchTimePredictor::MatchTimePredictor(TournamentDB* _db)
+  MatchTimePredictor::MatchTimePredictor(const TournamentDB& _db)
     :db(_db), totalMatchTime_secs(0), nMatches(0), lastMatchFinishTime(0)
   {
     resetPrediction();
@@ -85,7 +85,7 @@ namespace QTournament {
 
   //----------------------------------------------------------------------------
 
-  vector<MatchTimePrediction> MatchTimePredictor::getMatchTimePrediction()
+  std::vector<MatchTimePrediction> MatchTimePredictor::getMatchTimePrediction()
   {
     updatePrediction();
 
@@ -135,14 +135,14 @@ namespace QTournament {
       if (it != catId2MatchTime.end()) continue;
 
       // insert an empty element
-      tuple<int, unsigned long> empty = make_tuple(0, 0);
+      std::tuple<int, unsigned long> empty = make_tuple(0, 0);
       catId2MatchTime[catId] = empty;
     }
 
     // find all matches that have been finished since the last update
     WhereClause wc;
-    wc.addIntCol(MA_FINISH_TIME, ">", lastMatchFinishTime);
-    wc.addIntCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_FINISHED));
+    wc.addCol(MA_FINISH_TIME, ">", lastMatchFinishTime);
+    wc.addCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_FINISHED));
     wc.setOrderColumn_Asc(MA_FINISH_TIME);
 
     DbTab* maTab = db->getTab(TAB_MATCH);
@@ -218,7 +218,7 @@ namespace QTournament {
     // expected time when they'll be free again
     MatchMngr mm{db};
     time_t now = time(nullptr);
-    deque<tuple<int, int>> courtFreeList;
+    deque<std::tuple<int, int>> courtFreeList;
     for (const Court& c : allCourts)
     {
       int coNum = c.getNumber();
@@ -256,7 +256,7 @@ namespace QTournament {
 
     // define a lambda for sorting courts according to their
     // availability
-    auto courtSortFunc = [](const tuple<int, int>& c1, const tuple<int, int>& c2) {
+    auto courtSortFunc = [](const std::tuple<int, int>& c1, const std::tuple<int, int>& c2) {
       int c1Num;
       int c1Free;
       int c2Num;
@@ -276,14 +276,14 @@ namespace QTournament {
     std::sort(courtFreeList.begin(), courtFreeList.end(), courtSortFunc);
 
     // prepare the result vector
-    vector<MatchTimePrediction> result;
+    std::vector<MatchTimePrediction> result;
 
     // iterate over all queued, not running and not finished
     // matches and assign estimated start and end times
     WhereClause wc;
-    wc.addIntCol(MA_NUM, ">", 0);   // the match needs to have a match number
-    wc.addIntCol(GENERIC_STATE_FIELD_NAME, "!=", static_cast<int>(STAT_MA_FINISHED));  // the match is not finished
-    wc.addIntCol(GENERIC_STATE_FIELD_NAME, "!=", static_cast<int>(STAT_MA_RUNNING));  // the match is not running
+    wc.addCol(MA_NUM, ">", 0);   // the match needs to have a match number
+    wc.addCol(GENERIC_STATE_FIELD_NAME, "!=", static_cast<int>(STAT_MA_FINISHED));  // the match is not finished
+    wc.addCol(GENERIC_STATE_FIELD_NAME, "!=", static_cast<int>(STAT_MA_RUNNING));  // the match is not running
     wc.setOrderColumn_Asc(MA_NUM);
     DbTab* maTab = db->getTab(TAB_MATCH);
     auto it = maTab->getRowsByWhereClause(wc);

@@ -14,7 +14,7 @@ DlgPickCategory::DlgPickCategory(QWidget *parent, QTournament::TournamentDB* _db
   ui->setupUi(this);
 
   // build a list of available categories
-  vector<Category> availCats;
+  std::vector<Category> availCats;
   CatMngr cm{db};
   for (const Category& cat : cm.getAllCategories())
   {
@@ -46,7 +46,7 @@ DlgPickCategory::DlgPickCategory(QWidget *parent, QTournament::TournamentDB* _db
 
 //----------------------------------------------------------------------------
 
-void DlgPickCategory::applyPreselection(const vector<Category>& preSelection)
+void DlgPickCategory::applyPreselection(const std::vector<Category>& preSelection)
 {
   CatMngr cm{db};
 
@@ -70,7 +70,7 @@ void DlgPickCategory::applyPreselection(const vector<Category>& preSelection)
 void DlgPickCategory::applyPreselection(const QString& commaSepCatNames)
 {
   CatMngr cm{db};
-  vector<Category> catSelection;
+  std::vector<Category> catSelection;
 
   for (const QString& catName : commaSepCatNames.split(","))
   {
@@ -89,7 +89,7 @@ void DlgPickCategory::applyPreselection(const QString& commaSepCatNames)
 QString DlgPickCategory::getSelection_CommaSep() const
 {
   QString result;
-  vector<Category> selection = getSelection();
+  std::vector<Category> selection = getSelection();
   for (const Category& cat : selection)
   {
     result += cat.getName() + ", ";
@@ -106,7 +106,7 @@ QString DlgPickCategory::getSelection_CommaSep() const
 
 vector<int> DlgPickCategory::getSelection_Id() const
 {
-  vector<int> result;
+  std::vector<int> result;
 
   for (int row = 0; row < ui->catList->count(); ++row)
   {
@@ -125,7 +125,7 @@ vector<int> DlgPickCategory::getSelection_Id() const
 vector<QString> DlgPickCategory::getSelection_strVec() const
 {
   CatMngr cm{db};
-  vector<QString> result;
+  std::vector<QString> result;
 
   for (int row = 0; row < ui->catList->count(); ++row)
   {
@@ -145,7 +145,7 @@ vector<QString> DlgPickCategory::getSelection_strVec() const
 vector<Category> DlgPickCategory::getSelection() const
 {
   CatMngr cm{db};
-  vector<Category> result;
+  std::vector<Category> result;
 
   for (int row = 0; row < ui->catList->count(); ++row)
   {

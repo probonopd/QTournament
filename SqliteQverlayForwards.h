@@ -16,28 +16,15 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CMDCALLMATCH_H
-#define CMDCALLMATCH_H
+#ifndef SQLITEOVERLAYFWD_H
+#define	SQLITEOVERLAYFWD_H
 
-#include <QObject>
-
-#include "AbstractCommand.h"
-#include "Match.h"
-#include "Court.h"
-
-
-class cmdCallMatch : public QObject, AbstractCommand
+namespace SqliteOverlay
 {
-  Q_OBJECT
+  class DbTab;
+  class TabRow;
+  class SqliteDatabase;
+}
 
-public:
-  cmdCallMatch(QWidget* p, const QTournament::Match& _ma, const QTournament::Court& _co);
-  virtual QTournament::ERR exec() override;
-  virtual ~cmdCallMatch() {}
+#endif	/* SQLITEOVERLAYFWD_H */
 
-protected:
-  QTournament::Match ma;
-  QTournament::Court co;
-};
-
-#endif // CMDCALLMATCH_H

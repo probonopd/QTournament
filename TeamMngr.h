@@ -30,7 +30,6 @@
 #include "Player.h"
 #include "TournamentDataDefs.h"
 #include "TournamentErrorCodes.h"
-#include <SqliteOverlay/DbTab.h>
 #include "TournamentDatabaseObjectManager.h"
 
 namespace QTournament
@@ -54,7 +53,7 @@ namespace QTournament
 
     PlayerList getPlayersForTeam(const Team& t) const;
 
-    std::string getSyncString(std::vector<int> rows) const override;
+    std::string getSyncString(const std::vector<int>& rows) const override;
 
     static std::function<bool (Team&, Team&)> getTeamSortFunction_byName();
 

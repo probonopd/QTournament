@@ -34,15 +34,15 @@ using namespace SqliteOverlay;
 namespace QTournament
 {
 
-  RoundRobinCategory::RoundRobinCategory(TournamentDB* db, int rowId)
-  : Category(db, rowId)
+  RoundRobinCategory::RoundRobinCategory(const TournamentDB& _db, int rowId)
+  : Category(_db, rowId)
   {
   }
 
 //----------------------------------------------------------------------------
 
-  RoundRobinCategory::RoundRobinCategory(TournamentDB* db, SqliteOverlay::TabRow row)
-  : Category(db, row)
+  RoundRobinCategory::RoundRobinCategory(const TournamentDB& _db, const TabRow& _row)
+  : Category(_db, _row)
   {
   }
 
@@ -160,24 +160,24 @@ namespace QTournament
   {
     return [](RankingEntry& a, RankingEntry& b) {
       // first criterion: delta between won and lost matches
-      tuple<int, int, int, int> matchStatsA = a.getMatchStats();
-      tuple<int, int, int, int> matchStatsB = b.getMatchStats();
+      std::tuple<int, int, int, int> matchStatsA = a.getMatchStats();
+      std::tuple<int, int, int, int> matchStatsB = b.getMatchStats();
       int deltaA = get<0>(matchStatsA) - get<2>(matchStatsA);
       int deltaB = get<0>(matchStatsB) - get<2>(matchStatsB);
       if (deltaA > deltaB) return true;
       if (deltaA < deltaB) return false;
 
       // second criteria: delta between won and lost games
-      tuple<int, int, int> gameStatsA = a.getGameStats();
-      tuple<int, int, int> gameStatsB = b.getGameStats();
+      std::tuple<int, int, int> gameStatsA = a.getGameStats();
+      std::tuple<int, int, int> gameStatsB = b.getGameStats();
       deltaA = get<0>(gameStatsA) - get<1>(gameStatsA);
       deltaB = get<0>(gameStatsB) - get<1>(gameStatsB);
       if (deltaA > deltaB) return true;
       if (deltaA < deltaB) return false;
 
       // second criteria: delta between won and lost points
-      tuple<int, int> pointStatsA = a.getPointStats();
-      tuple<int, int> pointStatsB = b.getPointStats();
+      std::tuple<int, int> pointStatsA = a.getPointStats();
+      std::tuple<int, int> pointStatsB = b.getPointStats();
       deltaA = get<0>(pointStatsA) - get<1>(pointStatsA);
       deltaB = get<0>(pointStatsB) - get<1>(pointStatsB);
       if (deltaA > deltaB) return true;

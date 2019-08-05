@@ -25,9 +25,10 @@
 #include <QList>
 #include <QString>
 
+#include <SqliteOverlay/DbTab.h>
+
 #include "TournamentDataDefs.h"
 #include "TournamentErrorCodes.h"
-#include <SqliteOverlay/DbTab.h>
 #include "TournamentDatabaseObjectManager.h"
 #include "Category.h"
 #include "MatchGroup.h"
@@ -38,18 +39,17 @@
 namespace QTournament
 {
 
-  typedef vector<MatchGroup> MatchGroupList;
   
   class MatchMngr : public QObject, public TournamentDatabaseObjectManager
   {
     Q_OBJECT
   public:
     // ctor
-    MatchMngr(TournamentDB* _db);
+    MatchMngr(const TournamentDB& _db);
 
     // creators
-    unique_ptr<MatchGroup> createMatchGroup(const Category& cat, const int round, const int grpNum, ERR* err);
-    unique_ptr<Match> createMatch(const MatchGroup& grp, ERR* err);
+    std::optional<MatchGroup> createMatchGroup(const Category& cat, const int round, const int grpNum, ERR* err);
+    std::optional<Match> createMatch(const MatchGroup& grp, ERR* err);
 
     // deletion
     void deleteMatchGroupAndMatch(const MatchGroup& mg) const;
@@ -58,12 +58,12 @@ namespace QTournament
     MatchList getCurrentlyRunningMatches() const;
     MatchList getFinishedMatches() const;
     MatchList getMatchesForMatchGroup(const MatchGroup& grp) const;
-    unique_ptr<Match> getMatchForCourt(const Court& court);
-    unique_ptr<Match> getMatchForPlayerPairAndRound(const PlayerPair& pp, int round) const;
-    unique_ptr<Match> getMatchBySeqNum(int maSeqNum) const;
-    unique_ptr<Match> getMatchByMatchNum(int maNum) const;
-    unique_ptr<Match> getMatch(int id) const;
-    tuple<int, int, int, int> getMatchStats() const;
+    std::optional<Match> getMatchForCourt(const Court& court);
+    std::optional<Match> getMatchForPlayerPairAndRound(const PlayerPair& pp, int round) const;
+    std::optional<Match> getMatchBySeqNum(int maSeqNum) const;
+    std::optional<Match> getMatchByMatchNum(int maNum) const;
+    std::optional<Match> getMatch(int id) const;
+    std::tuple<int, int, int, int> getMatchStats() const;
 
     // boolean hasXXXXX functions for MATCHES
     bool hasMatchesInCategory(const Category& cat, int round=-1) const;
@@ -71,8 +71,8 @@ namespace QTournament
     // retrievers / enumerators for MATCH GROUPS
     MatchGroupList getMatchGroupsForCat(const Category& cat, int round=-1) const;
     MatchGroupList getAllMatchGroups() const;
-    unique_ptr<MatchGroup> getMatchGroup(const Category& cat, const int round, const int grpNum,  ERR* err);
-    unique_ptr<MatchGroup> getMatchGroupBySeqNum(int mgSeqNum);
+    std::optional<MatchGroup> getMatchGroup(const Category& cat, const int round, const int grpNum,  ERR* err);
+    std::optional<MatchGroup> getMatchGroupBySeqNum(int mgSeqNum);
     MatchGroupList getStagedMatchGroupsOrderedBySequence() const;
 
     // boolean hasXXXXX functions for MATCH GROUPS
@@ -100,7 +100,7 @@ namespace QTournament
     ERR getNextViableMatchCourtPair(int* matchId, int* courtId, bool includeManualCourts=false) const;
     ERR canAssignMatchToCourt(const Match& ma, const Court &court) const;
     ERR assignMatchToCourt(const Match& ma, const Court& court) const;
-    unique_ptr<Court> autoAssignMatchToNextAvailCourt(const Match& ma, ERR* err, bool includeManualCourts=false) const;
+    std::optional<Court> autoAssignMatchToNextAvailCourt(const Match& ma, ERR* err, bool includeManualCourts=false) const;
     ERR setMatchScoreAndFinalizeMatch(const Match& ma, const MatchScore& score, bool isWalkover=false) const;
     ERR updateMatchScore(const Match& ma, const MatchScore& newScore, bool winnerLoserChangePermitted) const;
     ERR setNextMatchForWinner(const Match& fromMatch, const Match& toMatch, int playerNum) const;
@@ -121,11 +121,11 @@ namespace QTournament
     ERR swapPlayers(const Match& ma1, const PlayerPair& ma1PlayerPair,
                     const Match& ma2, const PlayerPair& ma2PlayerPair) const;
 
-    string getSyncString(vector<int> rows) override;
-    string getSyncString_MatchGroups(vector<int> rows);
+    std::string getSyncString(const std::vector<int>& rows) const override;
+    std::string getSyncString_MatchGroups(std::vector<int> rows);
 
   private:
-    DbTab* groupTab;
+    SqliteOverlay::DbTab groupTab;
     void updateAllMatchGroupStates(const Category& cat) const;
     bool hasUnfinishedMandatoryPredecessor(const Match& ma) const;
     void resolveSymbolicNamesAfterFinishedMatch(const Match& ma) const;

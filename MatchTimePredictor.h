@@ -47,13 +47,13 @@ namespace QTournament
 
   public:
     // ctor
-    MatchTimePredictor(TournamentDB* _db);
+    MatchTimePredictor(const TournamentDB& _db);
 
     // getters
     int getGlobalAverageMatchDuration__secs();
     inline int getAverageMatchDurationForCat__secs(const Match& matchInCat) { return getAverageMatchDurationForCat__secs(matchInCat.getCategory()); }
     int getAverageMatchDurationForCat__secs(const Category& cat);
-    vector<MatchTimePrediction> getMatchTimePrediction();
+    std::vector<MatchTimePrediction> getMatchTimePrediction();
     MatchTimePrediction getPredictionForMatch(const Match& ma, bool refreshCache = false);
     void updatePrediction();
     void resetPrediction();
@@ -64,14 +64,14 @@ namespace QTournament
     static constexpr int COURTS_IS_BUSY_AND_PREDICTION_WRONG__CORRECTION_OFFSET__SECS = 5 * 60;
     static constexpr int NUM_INITIALLY_ASSUMED_MATCHES = 5;
 
-    TournamentDB* db;
+    std::reference_wrapper<const QTournament::TournamentDB> db;
     unsigned long totalMatchTime_secs;
     int nMatches;
     time_t lastMatchFinishTime;
 
-    unordered_map<int, tuple<int, unsigned long>> catId2MatchTime;
+    std::unordered_map<int, std::tuple<int, unsigned long>> catId2MatchTime;
 
-    vector<MatchTimePrediction> lastPrediction;
+    std::vector<MatchTimePrediction> lastPrediction;
 
     void updateAvgMatchTimeFromDatabase();
   };

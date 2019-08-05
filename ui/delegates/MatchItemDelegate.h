@@ -26,7 +26,6 @@
 #include "TournamentDB.h"
 #include "BaseItemDelegate.h"
 
-using namespace QTournament;
 
 namespace QTournament
 {
@@ -44,7 +43,7 @@ public:
   static constexpr int ItemStatusIndicatorSize = 15;
   static constexpr int ItemMargin = 5;
 
-  MatchItemDelegate(TournamentDB* _db, QObject* parent = 0)
+  MatchItemDelegate(const QTournament::TournamentDB& _db, QObject* parent = nullptr)
     :BaseItemDelegate{_db, ItemRowHeight, ItemRowHeightSelected, parent} {}
 
 private:
@@ -56,7 +55,7 @@ private:
   void paintSelectedMatchCell(QPainter* painter, const QStyleOptionViewItem& option, int srcRowId) const;
   void paintUnselectedMatchCell(QPainter* painter, const QStyleOptionViewItem& option, int srcRowId) const;
 
-  void drawPlayerStatus(QPainter* painter, const QRectF& r, const Player& p) const;
+  void drawPlayerStatus(QPainter* painter, const QRectF& r, const QTournament::Player& p) const;
   void drawMatchStatus(QPainter* painter, const QRectF& r, int matchNum) const;
 } ;
 

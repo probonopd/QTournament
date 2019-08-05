@@ -33,7 +33,6 @@
 #include <QAbstractTableModel>
 #include "TournamentDB.h"
 
-using namespace std;
 
 namespace GuiHelpers
 {
@@ -47,7 +46,7 @@ namespace GuiHelpers
     AutosizeColumnDescr(const QString& cName, int rw, int minW = -1, int maxW = -1)
       :colName{cName}, relWidth{rw}, absMinWidth{minW}, absMaxWidth{maxW} {}
   };
-  using AutosizeColumnDescrList = vector<AutosizeColumnDescr>;
+  using AutosizeColumnDescrList = std::vector<AutosizeColumnDescr>;
 
   //----------------------------------------------------------------------------
 
@@ -64,7 +63,7 @@ namespace GuiHelpers
     AutosizeColumnDescrList colList;
     int rubberBandCol;
 
-    vector<int> getColWidths(int useableWidth) const;
+    std::vector<int> getColWidths(int useableWidth) const;
   };
 
   //----------------------------------------------------------------------------
@@ -73,7 +72,7 @@ namespace GuiHelpers
   class AutoSizingTable : public TableTypeName, public ColumnAutoSizer
   {
   public:
-    explicit AutoSizingTable(const AutosizeColumnDescrList& colDescr, QWidget *parent = 0)
+    explicit AutoSizingTable(const AutosizeColumnDescrList& colDescr, QWidget *parent = nullptr)
       :TableTypeName{parent}, ColumnAutoSizer{colDescr}, defaultDelegate{nullptr}, customDelegate{nullptr}
     {
       // hide row numbers
@@ -143,7 +142,7 @@ namespace GuiHelpers
 
   protected:
     QAbstractItemDelegate* defaultDelegate;
-    unique_ptr<QAbstractItemDelegate> customDelegate;
+    std::unique_ptr<QAbstractItemDelegate> customDelegate;
 
     virtual void resizeEvent(QResizeEvent* _event) override
     {
@@ -168,7 +167,7 @@ namespace GuiHelpers
     Q_OBJECT
 
   public:
-    explicit AutoSizingTableWidget(const AutosizeColumnDescrList& colDescr, QWidget *parent = 0);
+    explicit AutoSizingTableWidget(const AutosizeColumnDescrList& colDescr, QWidget *parent = nullptr);
     virtual ~AutoSizingTableWidget() {}
   };
 
@@ -178,7 +177,7 @@ namespace GuiHelpers
   class AutoSizingTable_WithDatabase : public AutoSizingTable<TableTypeName>
   {
   public:
-    explicit AutoSizingTable_WithDatabase(const AutosizeColumnDescrList& colDescr, QWidget *parent = 0)
+    explicit AutoSizingTable_WithDatabase(const AutosizeColumnDescrList& colDescr, QWidget *parent = nullptr)
       :AutoSizingTable<TableTypeName>(colDescr, parent), db{nullptr}
     {
       setDatabase(nullptr);
@@ -229,7 +228,7 @@ namespace GuiHelpers
     Q_OBJECT
 
   public:
-    explicit AutoSizingTableWidget_WithDatabase(const AutosizeColumnDescrList& colDescr, QWidget *parent = 0);
+    explicit AutoSizingTableWidget_WithDatabase(const AutosizeColumnDescrList& colDescr, QWidget *parent = nullptr);
     virtual ~AutoSizingTableWidget_WithDatabase() {}
 
   protected:
@@ -243,15 +242,15 @@ namespace GuiHelpers
   class AutoSizingTableView_WithDatabase : public AutoSizingTable_WithDatabase<QTableView>
   {
   public:
-    explicit AutoSizingTableView_WithDatabase(const AutosizeColumnDescrList& colDescr, bool _useSortedModel = true, QWidget *parent = 0)
+    explicit AutoSizingTableView_WithDatabase(const AutosizeColumnDescrList& colDescr, bool _useSortedModel = true, QWidget *parent = nullptr)
       :AutoSizingTable_WithDatabase<QTableView>(colDescr, parent),
         customDataModel{nullptr}, sortedModel{nullptr}, useSortedModel{_useSortedModel}
     {
-      emptyModel = make_unique<QStringListModel>();
+      emptyModel = std::make_unique<QStringListModel>();
 
       if (useSortedModel)
       {
-        sortedModel = make_unique<QSortFilterProxyModel>();
+        sortedModel = std::make_unique<QSortFilterProxyModel>();
         sortedModel->setSourceModel(emptyModel.get());
         setModel(sortedModel.get());
       } else {
@@ -324,9 +323,9 @@ namespace GuiHelpers
     }
 
   protected:
-    unique_ptr<QStringListModel> emptyModel;
-    unique_ptr<CustomDataModelType> customDataModel;
-    unique_ptr<QSortFilterProxyModel> sortedModel;
+    std::unique_ptr<QStringListModel> emptyModel;
+    std::unique_ptr<CustomDataModelType> customDataModel;
+    std::unique_ptr<QSortFilterProxyModel> sortedModel;
     bool useSortedModel;
 
   protected:

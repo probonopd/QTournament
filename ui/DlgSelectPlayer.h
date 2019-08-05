@@ -30,7 +30,6 @@ namespace Ui {
   class DlgSelectPlayer;
 }
 
-using namespace QTournament;
 
 class DlgSelectPlayer : public QDialog
 {
@@ -44,18 +43,20 @@ public:
     NONE
   };
 
-  explicit DlgSelectPlayer(TournamentDB* _db, QWidget *parent = 0, DLG_CONTEXT _ctxt = DLG_CONTEXT::NONE, Category* _cat = nullptr);
+  explicit DlgSelectPlayer(const QTournament::TournamentDB& _db, QWidget *parent = nullptr,
+                           DLG_CONTEXT _ctxt = DLG_CONTEXT::NONE,
+                           std::optional<QTournament::Category> _cat = {});
   ~DlgSelectPlayer();
-  PlayerList getSelectedPlayers() const;
+  QTournament::PlayerList getSelectedPlayers() const;
 
 public slots:
   virtual int exec() override;
 
 private:
   Ui::DlgSelectPlayer *ui;
-  TournamentDB* db;
+  std::reference_wrapper<const QTournament::TournamentDB> db;
   DLG_CONTEXT ctxt;
-  Category* cat;
+  std::optional<QTournament::Category> cat;
 
 private slots:
   void onItemSelectionChanged();

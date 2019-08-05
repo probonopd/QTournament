@@ -168,7 +168,7 @@ int Standings::determineBestPossibleRankForPlayerAfterRound(const PlayerPair& pp
   // determine the last FINISHED match that this player has played.
   // Note: this must not be in this round because the player
   // could have had a bye
-  unique_ptr<Match> lastMatch = nullptr;
+  std::unique_ptr<Match> lastMatch = nullptr;
   int _r = round;
   MatchMngr mm{db};
   while ((lastMatch == nullptr) && (_r > 0))
@@ -210,7 +210,7 @@ int Standings::determineBestPossibleRankForPlayerAfterRound(const PlayerPair& pp
 
   // a little helper function to get the next match for a match winner
   int finalRound = crs.getTotalRoundsCount();
-  auto getNextWinnerMatch = [this, &finalRound, &mm](const Match& ma) -> unique_ptr<Match> {
+  auto getNextWinnerMatch = [this, &finalRound, &mm](const Match& ma) -> std::unique_ptr<Match> {
     if (ma.getWinnerRank() > 0)
     {
       return nullptr;  // no next match
@@ -225,7 +225,7 @@ int Standings::determineBestPossibleRankForPlayerAfterRound(const PlayerPair& pp
       int r = ma.getMatchGroup().getRound();
 
       ++r;
-      unique_ptr<Match> nextMatch = nullptr;
+      std::unique_ptr<Match> nextMatch = nullptr;
       while ((nextMatch == nullptr) && (r <= finalRound))
       {
         nextMatch = mm.getMatchForPlayerPairAndRound(*w, r);
@@ -254,7 +254,7 @@ int Standings::determineBestPossibleRankForPlayerAfterRound(const PlayerPair& pp
   // and the match must be identifiable by the pair ID, not by a symbolic name (the symbolic
   // name should be resolved by now).
   _r = round + 1;
-  unique_ptr<Match> nextMatch = nullptr;
+  std::unique_ptr<Match> nextMatch = nullptr;
   while ((nextMatch == nullptr) && (_r <= finalRound))
   {
     nextMatch = mm.getMatchForPlayerPairAndRound(pp, _r);

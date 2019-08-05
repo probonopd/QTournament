@@ -30,7 +30,6 @@ namespace Ui {
   class DlgTournamentSettings;
 }
 
-using namespace QTournament;
 
 class DlgTournamentSettings : public QDialog
 {
@@ -38,10 +37,10 @@ class DlgTournamentSettings : public QDialog
 
 public:
   // ctor for new tournament
-  explicit DlgTournamentSettings(QWidget *parent = 0);
+  explicit DlgTournamentSettings(QWidget *parent = nullptr);
 
   // ctor for editing settings of existing tournaments
-  explicit DlgTournamentSettings(TournamentDB* _db, QWidget *parent = 0);
+  explicit DlgTournamentSettings(const QTournament::TournamentDB& _db, QWidget *parent = nullptr);
 
   ~DlgTournamentSettings();
   std::unique_ptr<QTournament::TournamentSettings> getTournamentSettings() const;
@@ -56,7 +55,7 @@ public slots:
 private:
   Ui::DlgTournamentSettings *ui;
   void updateButtons();
-  TournamentDB* db;
+  std::reference_wrapper<const QTournament::TournamentDB> db;
   void fillRefereeComboBox(bool includeSelectHint);
 };
 

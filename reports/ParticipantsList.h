@@ -27,8 +27,6 @@
 #include "TournamentDB.h"
 #include "TournamentDataDefs.h"
 
-using namespace SqliteOverlay;
-
 namespace QTournament
 {
   class ParticipantsList : public QObject, public AbstractReport
@@ -40,7 +38,7 @@ namespace QTournament
     static constexpr int SORT_BY_TEAM = 2;
     static constexpr int SORT_BY_CATEGORY = 3;
 
-    ParticipantsList(TournamentDB* _db, const QString& _name, int _sortCriterion=SORT_BY_NAME);
+    ParticipantsList(const QTournament::TournamentDB& _db, const QString& _name, int _sortCriterion=SORT_BY_NAME);
     virtual ~ParticipantsList();
 
     virtual upSimpleReport regenerateReport() override;

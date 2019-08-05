@@ -20,7 +20,7 @@
 #include <SqliteOverlay/TabRow.h>
 
 #include "TournamentDatabaseObjectManager.h"
-#include "HelperFunc.h"
+#include "TournamentDB.h"
 
 namespace QTournament
 {
@@ -83,9 +83,9 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  string TournamentDatabaseObjectManager::getSyncString(int rowId) const
+  std::string TournamentDatabaseObjectManager::getSyncString(int rowId) const
   {
-    vector<int> v = (rowId > 0) ? vector<int>{rowId} : vector<int>{};
+    std::vector<int> v = (rowId > 0) ? std::vector<int>{rowId} : std::vector<int>{};
     return getSyncString(v);
   }
 

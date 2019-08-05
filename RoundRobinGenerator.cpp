@@ -104,14 +104,14 @@ namespace QTournament {
 
 //----------------------------------------------------------------------------
 
-  vector<tuple<int, int>> RoundRobinGenerator::operator() (int numPlayers, int round)
+  std::vector<std::tuple<int, int>> RoundRobinGenerator::operator() (int numPlayers, int round)
   {
     // fake a dummy player, if necessary
     bool isOdd = (numPlayers % 2) != 0;
     if (isOdd) ++numPlayers;
 
     // prepare the result container
-    vector<tuple<int, int>> result;
+    std::vector<std::tuple<int, int>> result;
 
     // check parameter validity
     if (numPlayers < 2) return result;

@@ -93,7 +93,7 @@ MatchTableView::~MatchTableView()
 
 //----------------------------------------------------------------------------
     
-unique_ptr<Match> MatchTableView::getSelectedMatch() const
+std::optional<QTournament::Match> MatchTableView::getSelectedMatch() const
 {
   int srcRow = getSelectedSourceRow();
   if (srcRow < 0) return nullptr;
@@ -616,7 +616,7 @@ void MatchTableView::showMatchBusyReason(const Match& ma)
 
       // try to retrieve the court number where the player
       // is the referee
-      unique_ptr<Court> co = pl.getMatchCourt();
+      std::unique_ptr<Court> co = pl.getMatchCourt();
       if (co != nullptr)
       {
         result += tr(" on court %1");
@@ -633,7 +633,7 @@ void MatchTableView::showMatchBusyReason(const Match& ma)
 
       // try to retrieve the court number where the player
       // is the referee
-      unique_ptr<Court> co = pl.getRefereeCourt();
+      std::unique_ptr<Court> co = pl.getRefereeCourt();
       if (co != nullptr)
       {
         result += tr(" on court %1");
@@ -711,7 +711,7 @@ void MatchTableView::printResultSheets(int matchCount)
 
   // try to create the result sheet report with the
   // requested number of matches
-  unique_ptr<ResultSheets> rep{nullptr};
+  std::unique_ptr<ResultSheets> rep{nullptr};
   try
   {
     rep = make_unique<ResultSheets>(db, *curMatch, matchCount);

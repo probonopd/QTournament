@@ -56,13 +56,13 @@ bool GameScore::isValidScore(int sc1, int sc2)
 
 //----------------------------------------------------------------------------
 
-unique_ptr<GameScore> GameScore::fromScore(int sc1, int sc2)
+std::optional<GameScore> GameScore::fromScore(int sc1, int sc2)
 {
   // allow only valid scores to be instanciated as a new GameScore object
   if (!(isValidScore(sc1, sc2))) return nullptr;
 
   // create and return new object
-  return unique_ptr<GameScore>(new GameScore(sc1, sc2));
+  return std::unique_ptr<GameScore>(new GameScore(sc1, sc2));
 }
 
 //----------------------------------------------------------------------------
@@ -83,7 +83,7 @@ GameScore::GameScore(int sc1, int sc2)
 
 //----------------------------------------------------------------------------
 
-unique_ptr<GameScore> GameScore::fromString(const QString &s)
+std::optional<GameScore> GameScore::fromString(const QString &s)
 {
   // we need exactly one delimiter
   QStringList scores = s.split(":");
@@ -164,7 +164,7 @@ int GameScore::getWinnerScoreForLoserScore(int loserScore)
 
 //----------------------------------------------------------------------------
 
-unique_ptr<GameScore> GameScore::genRandomGame(int winner)
+std::optional<GameScore> GameScore::genRandomGame(int winner)
 {
   if ((winner < 0) || (winner > 2)) return nullptr;
 
@@ -291,7 +291,7 @@ bool MatchScore::isValidScore(const GameScoreList& gsl, int numWinGames, bool dr
 
 //----------------------------------------------------------------------------
 
-unique_ptr<MatchScore> MatchScore::fromString(const QString& s, int numWinGames, bool drawAllowed)
+std::optional<MatchScore> MatchScore::fromString(const QString& s, int numWinGames, bool drawAllowed)
 {
   GameScoreList gsl = string2GameScoreList(s);
 
@@ -300,7 +300,7 @@ unique_ptr<MatchScore> MatchScore::fromString(const QString& s, int numWinGames,
 
 //----------------------------------------------------------------------------
 
-unique_ptr<MatchScore> MatchScore::fromStringWithoutValidation(const QString& s)
+std::optional<MatchScore> MatchScore::fromStringWithoutValidation(const QString& s)
 {
   GameScoreList gsl = string2GameScoreList(s);
 
@@ -309,7 +309,7 @@ unique_ptr<MatchScore> MatchScore::fromStringWithoutValidation(const QString& s)
 
 //----------------------------------------------------------------------------
 
-unique_ptr<MatchScore> MatchScore::fromGameScoreList(const GameScoreList& gsl, int numWinGames, bool drawAllowed)
+std::optional<MatchScore> MatchScore::fromGameScoreList(const GameScoreList& gsl, int numWinGames, bool drawAllowed)
 {
   if (!(isValidScore(gsl, numWinGames, drawAllowed)))
   {
@@ -321,7 +321,7 @@ unique_ptr<MatchScore> MatchScore::fromGameScoreList(const GameScoreList& gsl, i
 
 //----------------------------------------------------------------------------
 
-unique_ptr<MatchScore> MatchScore::fromGameScoreListWithoutValidation(const GameScoreList& gsl)
+std::optional<MatchScore> MatchScore::fromGameScoreListWithoutValidation(const GameScoreList& gsl)
 {
   MatchScore* result = new MatchScore();
   for (GameScore game : gsl)
@@ -329,7 +329,7 @@ unique_ptr<MatchScore> MatchScore::fromGameScoreListWithoutValidation(const Game
     result->addGame(game);
   }
 
-  return unique_ptr<MatchScore>(result);
+  return std::unique_ptr<MatchScore>(result);
 }
 
 //----------------------------------------------------------------------------
@@ -444,7 +444,7 @@ bool MatchScore::isValidScore(int numWinGames, bool drawAllowed) const
 
 //----------------------------------------------------------------------------
 
-unique_ptr<MatchScore> MatchScore::genRandomScore(int numWinGames, bool drawAllowed)
+std::optional<MatchScore> MatchScore::genRandomScore(int numWinGames, bool drawAllowed)
 {
   // a nice little lambda expression for returning a random number
   // in the range 0 <= r < 1.0
@@ -516,14 +516,14 @@ unique_ptr<MatchScore> MatchScore::genRandomScore(int numWinGames, bool drawAllo
 
 //----------------------------------------------------------------------------
 
-unique_ptr<GameScore> MatchScore::getGame(int n) const
+std::optional<GameScore> MatchScore::getGame(int n) const
 {
   if ((n < 0) || (n > (games.count() - 1)))
   {
     return nullptr;
   }
 
-  return unique_ptr<GameScore>(new GameScore(games.at(n)));
+  return std::unique_ptr<GameScore>(new GameScore(games.at(n)));
 }
 
 //----------------------------------------------------------------------------

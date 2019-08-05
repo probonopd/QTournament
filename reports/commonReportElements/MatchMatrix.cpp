@@ -115,7 +115,7 @@ QRectF MatchMatrix::plot(const QPointF& topLeft)
   int minRoundNum = 1;
   if (msys == ROUND_ROBIN)
   {
-    unique_ptr<PureRoundRobinCategory> rrCat = PureRoundRobinCategory::getFromGenericCat(cat);
+    std::unique_ptr<PureRoundRobinCategory> rrCat = PureRoundRobinCategory::getFromGenericCat(cat);
     if ((rrCat != nullptr) && (round > 0))
     {
       int rpi = rrCat->getRoundCountPerIteration();
@@ -243,7 +243,7 @@ QRectF MatchMatrix::plot(const QPointF& topLeft)
 
 //----------------------------------------------------------------------------
 
-upMatch MatchMatrix::getMatchForCell(const PlayerPairList& ppList, int row, int col, int minRound, int maxRound) const
+std::optional<QTournament::Match> MatchMatrix::getMatchForCell(const PlayerPairList& ppList, int row, int col, int minRound, int maxRound) const
 {
   if ((row < 1) || (col < 1) || (row > ppList.size()) || (col > ppList.size()))
   {

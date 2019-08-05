@@ -40,7 +40,7 @@
 namespace QTournament
 {
 
-  CatMngr::CatMngr(TournamentDB* _db)
+  CatMngr::CatMngr(const TournamentDB& _db)
   : TournamentDatabaseObjectManager(_db, TAB_CATEGORY)
   {
   }
@@ -68,15 +68,15 @@ namespace QTournament
     
     // create a new table row and set some arbitrary default data
     SqliteOverlay::ColumnValueClause cvc;
-    cvc.addStringCol(GENERIC_NAME_FIELD_NAME, catName.toUtf8().constData());
-    cvc.addIntCol(CAT_ACCEPT_DRAW, false);
-    cvc.addIntCol(CAT_SYS, static_cast<int>(GROUPS_WITH_KO));
-    cvc.addIntCol(CAT_MATCH_TYPE, static_cast<int>(SINGLES));
-    cvc.addIntCol(CAT_SEX, static_cast<int>(M));
-    cvc.addIntCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_CAT_CONFIG));
-    cvc.addIntCol(CAT_WIN_SCORE, 2);
-    cvc.addIntCol(CAT_DRAW_SCORE, 1);
-    cvc.addStringCol(CAT_GROUP_CONFIG, KO_Config(QUARTER, false).toString().toUtf8().constData());
+    cvc.addCol(GENERIC_NAME_FIELD_NAME, catName.toUtf8().constData());
+    cvc.addCol(CAT_ACCEPT_DRAW, false);
+    cvc.addCol(CAT_SYS, static_cast<int>(GROUPS_WITH_KO));
+    cvc.addCol(CAT_MATCH_TYPE, static_cast<int>(SINGLES));
+    cvc.addCol(CAT_SEX, static_cast<int>(M));
+    cvc.addCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_CAT_CONFIG));
+    cvc.addCol(CAT_WIN_SCORE, 2);
+    cvc.addCol(CAT_DRAW_SCORE, 1);
+    cvc.addCol(CAT_GROUP_CONFIG, KO_Config(QUARTER, false).toString().toUtf8().constData());
     
     // lock the database before writing
     DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
@@ -214,7 +214,7 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  unique_ptr<Category> CatMngr::getCategory(int id)
+  std::optional<Category> CatMngr::getCategory(int id)
   {
     return getSingleObjectByColumnValue<Category>("id", id);
   }
@@ -432,8 +432,8 @@ namespace QTournament
 
     // actually add the player
     SqliteOverlay::ColumnValueClause cvc;
-    cvc.addIntCol(P2C_CAT_REF, c.getId());
-    cvc.addIntCol(P2C_PLAYER_REF, p.getId());
+    cvc.addCol(P2C_CAT_REF, c.getId());
+    cvc.addCol(P2C_PLAYER_REF, p.getId());
     db->getTab(TAB_P2C)->insertRow(cvc);
     
     CentralSignalEmitter::getInstance()->playerAddedToCategory(p, c);
@@ -474,8 +474,8 @@ namespace QTournament
 
     // actually delete the assignment
     SqliteOverlay::WhereClause wc;
-    wc.addIntCol(P2C_CAT_REF, c.getId());
-    wc.addIntCol(P2C_PLAYER_REF, p.getId());
+    wc.addCol(P2C_CAT_REF, c.getId());
+    wc.addCol(P2C_PLAYER_REF, p.getId());
     int cnt = db->getTab(TAB_P2C)->deleteRowsByWhereClause(wc);
     assert(cnt == 1);
     
@@ -865,10 +865,10 @@ namespace QTournament
     
     // create the pair
     SqliteOverlay::ColumnValueClause cvc;
-    cvc.addIntCol(PAIRS_CAT_REF, c.getId());
-    cvc.addIntCol(PAIRS_PLAYER1_REF, p1.getId());
-    cvc.addIntCol(PAIRS_PLAYER2_REF, p2.getId());
-    cvc.addIntCol(PAIRS_GRP_NUM, GRP_NUM__NOT_ASSIGNED);   // Default value: no group
+    cvc.addCol(PAIRS_CAT_REF, c.getId());
+    cvc.addCol(PAIRS_PLAYER1_REF, p1.getId());
+    cvc.addCol(PAIRS_PLAYER2_REF, p2.getId());
+    cvc.addCol(PAIRS_GRP_NUM, GRP_NUM__NOT_ASSIGNED);   // Default value: no group
 
     // lock the database before writing
     DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
@@ -898,15 +898,15 @@ namespace QTournament
 
     // delete all combinations of p1/p2 pairs from the database
     SqliteOverlay::WhereClause wc;
-    wc.addIntCol(PAIRS_CAT_REF, c.getId());
-    wc.addIntCol(PAIRS_PLAYER1_REF, p1.getId());
-    wc.addIntCol(PAIRS_PLAYER2_REF, p2.getId());
+    wc.addCol(PAIRS_CAT_REF, c.getId());
+    wc.addCol(PAIRS_PLAYER1_REF, p1.getId());
+    wc.addCol(PAIRS_PLAYER2_REF, p2.getId());
     SqliteOverlay::DbTab* pairsTab = db->getTab(TAB_PAIRS);
     pairsTab->deleteRowsByWhereClause(wc);
     wc.clear();
-    wc.addIntCol(PAIRS_CAT_REF, c.getId());
-    wc.addIntCol(PAIRS_PLAYER1_REF, p2.getId());
-    wc.addIntCol(PAIRS_PLAYER2_REF, p1.getId());
+    wc.addCol(PAIRS_CAT_REF, c.getId());
+    wc.addCol(PAIRS_PLAYER1_REF, p2.getId());
+    wc.addCol(PAIRS_PLAYER2_REF, p1.getId());
     pairsTab->deleteRowsByWhereClause(wc);
     
     CentralSignalEmitter::getInstance()->playersSplit(c, p1, p2);
@@ -966,7 +966,7 @@ namespace QTournament
   ERR CatMngr::freezeConfig(const Category& c)
   {
     // make sure that we can actually freeze the config
-    unique_ptr<Category> specialObj = c.convertToSpecializedObject();
+    std::unique_ptr<Category> specialObj = c.convertToSpecializedObject();
     ERR e = specialObj->canFreezeConfig();
     if (e != OK) return e;
 
@@ -1032,9 +1032,9 @@ namespace QTournament
         int playerId = pp.getPlayer1().getId();
 
         SqliteOverlay::ColumnValueClause cvc;
-        cvc.addIntCol(PAIRS_CAT_REF, catId);
-        cvc.addIntCol(PAIRS_GRP_NUM, GRP_NUM__NOT_ASSIGNED);
-        cvc.addIntCol(PAIRS_PLAYER1_REF, playerId);
+        cvc.addCol(PAIRS_CAT_REF, catId);
+        cvc.addCol(PAIRS_GRP_NUM, GRP_NUM__NOT_ASSIGNED);
+        cvc.addCol(PAIRS_PLAYER1_REF, playerId);
         // leave out PAIRS_PLAYER2_REF to assign a NULL value
 
         // lock the database before writing
@@ -1112,7 +1112,7 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  ERR CatMngr::startCategory(const Category &c, vector<PlayerPairList> grpCfg, PlayerPairList seed, ProgressQueue *progressNotificationQueue)
+  ERR CatMngr::startCategory(const Category &c, std::vector<PlayerPairList> grpCfg, PlayerPairList seed, ProgressQueue *progressNotificationQueue)
   {
     // we can only transition to "IDLE" if we are "FROZEN"
     if (c.getState() != STAT_CAT_FROZEN)
@@ -1121,7 +1121,7 @@ namespace QTournament
     }
 
     // let's check if we have all the data we need
-    unique_ptr<Category> specializedCat = c.convertToSpecializedObject();
+    std::unique_ptr<Category> specializedCat = c.convertToSpecializedObject();
     if (specializedCat->needsGroupInitialization())
     {
       ERR e = specializedCat->canApplyGroupAssignment(grpCfg);
@@ -1262,7 +1262,7 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  vector<PlayerPair> CatMngr::getSeeding(const Category& c) const
+  std::vector<PlayerPair> CatMngr::getSeeding(const Category& c) const
   {
     // as long as the category is still in configuration, we can't rely
     // on the existence of valid player pairs in the database and thus
@@ -1272,7 +1272,7 @@ namespace QTournament
     // get the player pairs for the category
     SqliteOverlay::DbTab* pairTab = db->getTab(TAB_PAIRS);
     SqliteOverlay::WhereClause wc;
-    wc.addIntCol(PAIRS_CAT_REF, c.getId());
+    wc.addCol(PAIRS_CAT_REF, c.getId());
     wc.setOrderColumn_Asc(PAIRS_INITIAL_RANK);
 
     return getObjectsByWhereClause<PlayerPair>(pairTab, wc);
@@ -1332,9 +1332,9 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  string CatMngr::getSyncString(vector<int> rows)
+  string CatMngr::getSyncString(const std::vector<int>& rows) const
   {
-    vector<string> cols = {"id", GENERIC_NAME_FIELD_NAME, GENERIC_STATE_FIELD_NAME, CAT_MATCH_TYPE, CAT_SEX, CAT_SYS, CAT_ACCEPT_DRAW,
+    std::vector<string> cols = {"id", GENERIC_NAME_FIELD_NAME, GENERIC_STATE_FIELD_NAME, CAT_MATCH_TYPE, CAT_SEX, CAT_SYS, CAT_ACCEPT_DRAW,
                           CAT_WIN_SCORE, CAT_DRAW_SCORE, CAT_GROUP_CONFIG, CAT_ROUND_ROBIN_ITERATIONS};
 
     return db->getSyncStringForTable(TAB_CATEGORY, cols, rows);

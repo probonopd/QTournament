@@ -26,7 +26,6 @@
 #include "TournamentDB.h"
 #include "BaseItemDelegate.h"
 
-using namespace QTournament;
 
 class MatchLogItemDelegate : public BaseItemDelegate
 {
@@ -37,14 +36,14 @@ public:
   static constexpr int ItemMargin = 5;
   static constexpr double ItemTextRowSkip_Perc = 0.2;
 
-  MatchLogItemDelegate(TournamentDB* _db, QObject* parent = 0)
+  MatchLogItemDelegate(const QTournament::TournamentDB& _db, QObject* parent = 0)
     :BaseItemDelegate{_db, ItemRowHeight, -1, parent} {}
 
 protected:
   virtual void paintSelectedCell(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index, int srcRowId) const override;
   virtual void paintUnselectedCell(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index, int srcRowId) const override;
 
-  void paintMatchInfoCell(QPainter* painter, const QStyleOptionViewItem& option, const Match& ma, bool isSelected) const;
+  void paintMatchInfoCell(QPainter* painter, const QStyleOptionViewItem& option, const QTournament::Match& ma, bool isSelected) const;
 
 };
 

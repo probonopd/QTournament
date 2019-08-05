@@ -25,7 +25,6 @@
 #include "TournamentDB.h"
 #include "BaseItemDelegate.h"
 
-using namespace QTournament;
 
 class CatTabPlayerItemDelegate : public BaseItemDelegate
 {

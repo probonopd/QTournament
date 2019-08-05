@@ -7,8 +7,6 @@
 
 #include "TournamentDB.h"
 
-using namespace SqliteOverlay;
-using namespace QTournament;
 
 class TournamentProgressBar : public QProgressBar
 {
@@ -16,7 +14,7 @@ class TournamentProgressBar : public QProgressBar
 
 public:
   TournamentProgressBar(QWidget* parentWidget = nullptr);
-  void setDatabase(TournamentDB* _db);
+  void setDatabase(QTournament::TournamentDB* _db);
 
 public slots:
   void updateProgressBar();
@@ -24,11 +22,11 @@ public slots:
 
 private:
   static constexpr int STAT_POLL_TIMER_INTERVAL__MS = 1000;  // update once a second
-  TournamentDB* db;
+  QTournament::TournamentDB* db;
   QString rawStatusString;
   time_t lastMatchFinishTime__UTC;
   int avgMatchDuration__secs;
-  unique_ptr<QTimer> statPollTimer;
+  std::unique_ptr<QTimer> statPollTimer;
 };
 
 #endif // TOURNAMENTPROGRESSBAR_H

@@ -29,15 +29,15 @@
 namespace QTournament
 {
 
-  Court::Court(TournamentDB* db, int rowId)
-    :TournamentDatabaseObject(db, TAB_COURT, rowId)
+  Court::Court(const TournamentDB& _db, int rowId)
+    :TournamentDatabaseObject(_db, TAB_COURT, rowId)
   {
   }
 
 //----------------------------------------------------------------------------
 
-  Court::Court(TournamentDB* db, const SqliteOverlay::TabRow& row)
-  :TournamentDatabaseObject(db, row)
+  Court::Court(const TournamentDB& _db, const SqliteOverlay::TabRow& _row)
+  :TournamentDatabaseObject(_db, _row)
   {
   }
 
@@ -92,7 +92,7 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  unique_ptr<Match> Court::getMatch() const
+  std::optional<Match> Court::getMatch() const
   {
     MatchMngr mm{db};
     return mm.getMatchForCourt(*this);

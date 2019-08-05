@@ -58,7 +58,7 @@ void DlgPlayerProfile::fillLabels()
   //
   // set the next match
   //
-  unique_ptr<Match> ma;
+  std::unique_ptr<Match> ma;
   ma = pp.getNextMatch();
   txt.clear();
   if (ma != nullptr)

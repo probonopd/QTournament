@@ -24,19 +24,18 @@
 #include "AbstractCommand.h"
 #include "Category.h"
 
-using namespace QTournament;
 
 class cmdCreateNewPlayerInCat : public QObject, AbstractCommand
 {
   Q_OBJECT
 
 public:
-  cmdCreateNewPlayerInCat(QWidget* p, const Category& _cat);
-  virtual ERR exec() override;
+  cmdCreateNewPlayerInCat(QWidget* p, const QTournament::Category& _cat);
+  virtual QTournament::ERR exec() override;
   virtual ~cmdCreateNewPlayerInCat() {}
 
 protected:
-  Category cat;
+  QTournament::Category cat;
 };
 
 #endif // CMDREGISTERPLAYER_H

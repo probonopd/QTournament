@@ -9,20 +9,19 @@ namespace Ui {
   class MatchLogTabWidget;
 }
 
-using namespace QTournament;
 
 class MatchLogTabWidget : public QWidget
 {
   Q_OBJECT
 
 public:
-  explicit MatchLogTabWidget(QWidget *parent = 0);
+  explicit MatchLogTabWidget(QWidget *parent = nullptr);
   ~MatchLogTabWidget();
 
-  void setDatabase(TournamentDB* _db);
+  void setDatabase(QTournament::TournamentDB* _db);
 
 private:
-  TournamentDB* db;
+  QTournament::TournamentDB* db;
   Ui::MatchLogTabWidget *ui;
 };
 

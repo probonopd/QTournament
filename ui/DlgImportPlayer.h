@@ -27,14 +27,13 @@ namespace Ui {
   class DlgImportPlayer;
 }
 
-using namespace QTournament;
 
 class DlgImportPlayer : public QDialog
 {
   Q_OBJECT
 
 public:
-  explicit DlgImportPlayer(QWidget *parent = 0, ExternalPlayerDB* _extDb = nullptr);
+  explicit DlgImportPlayer(QWidget *parent = nullptr, QTournament::ExternalPlayerDB* _extDb = nullptr);
   ~DlgImportPlayer();
 
   int getSelectedExternalPlayerId();
@@ -44,9 +43,9 @@ public slots:
 
 private:
   Ui::DlgImportPlayer *ui;
-  ExternalPlayerDB* extDb;
-  void addPlayerEntryToListWidget(const ExternalPlayerDatabaseEntryList& entryList);
-  ExternalPlayerDatabaseEntryList allDatabaseEntries;
+  QTournament::ExternalPlayerDB* extDb;
+  void addPlayerEntryToListWidget(const QTournament::ExternalPlayerDatabaseEntryList& entryList);
+  QTournament::ExternalPlayerDatabaseEntryList allDatabaseEntries;
   bool isViewFiltered;
 
 private slots:

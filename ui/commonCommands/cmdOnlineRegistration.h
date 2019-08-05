@@ -24,15 +24,14 @@
 #include "AbstractCommand.h"
 #include "Player.h"
 
-using namespace QTournament;
 
 class cmdOnlineRegistration : public QObject, AbstractCommand
 {
   Q_OBJECT
 
 public:
-  cmdOnlineRegistration(QWidget* p, TournamentDB* _db);
-  virtual ERR exec() override;
+  cmdOnlineRegistration(QWidget* p, const QTournament::TournamentDB& _db);
+  virtual QTournament::ERR exec() override;
   virtual ~cmdOnlineRegistration() {}
 
 };

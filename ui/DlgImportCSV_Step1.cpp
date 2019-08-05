@@ -17,7 +17,7 @@
 
 using namespace QTournament;
 
-DlgImportCSV_Step1::DlgImportCSV_Step1(QWidget *parent, QTournament::TournamentDB* _db) :
+DlgImportCSV_Step1::DlgImportCSV_Step1(QWidget *parent, const TournamentDB& _db) :
   QDialog(parent),
   ui(new Ui::DlgImportCSV_Step1), db{_db}
 {
@@ -55,7 +55,7 @@ DlgImportCSV_Step1::~DlgImportCSV_Step1()
 
 vector<vector<string>> DlgImportCSV_Step1::getSplitData() const
 {
-  vector<vector<string>> result;
+  std::vector<vector<string>> result;
   QString plain = ui->txtBox->document()->toPlainText();
   plain.replace('"', "");
   string raw{plain.toUtf8().constData()};

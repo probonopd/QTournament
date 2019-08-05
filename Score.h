@@ -27,74 +27,74 @@
 
 namespace QTournament {
 
-class GameScore
-{
-public:
-  static bool isValidScore(int sc1, int sc2);
-  static unique_ptr<GameScore> fromScore(int sc1, int sc2);
-  static unique_ptr<GameScore> fromString(const QString& s);
-  static int getWinnerScoreForLoserScore(int loserScore);
-  static unique_ptr<GameScore> genRandomGame(int winner = 0);
+  class GameScore
+  {
+  public:
+    static bool isValidScore(int sc1, int sc2);
+    static std::optional<GameScore> fromScore(int sc1, int sc2);
+    static std::optional<GameScore> fromString(const QString& s);
+    static int getWinnerScoreForLoserScore(int loserScore);
+    static std::optional<GameScore> genRandomGame(int winner = 0);
 
-  QString toString() const;
+    QString toString() const;
 
-  tuple<int, int> getScore() const;
-  int getWinner() const;
-  int getLoser() const;
-  int getWinnerScore() const;
-  int getLoserScore() const;
+    std::tuple<int, int> getScore() const;
+    int getWinner() const;
+    int getLoser() const;
+    int getWinnerScore() const;
+    int getLoserScore() const;
 
-private:
-  GameScore(int sc1, int sc2);
+  private:
+    GameScore(int sc1, int sc2);
 
-  int player1Score;
-  int player2Score;
+    int player1Score;
+    int player2Score;
 
-};
+  };
 
-typedef QList<GameScore> GameScoreList;
+  using GameScoreList = QList<GameScore>;
 
-class MatchScore
-{
-public:
-  static unique_ptr<MatchScore> fromString(const QString& s, int numWinGames=2, bool drawAllowed=false);
-  static unique_ptr<MatchScore> fromStringWithoutValidation(const QString& s);
-  static unique_ptr<MatchScore> fromGameScoreList(const GameScoreList& gsl, int numWinGames=2, bool drawAllowed=false);
-  static unique_ptr<MatchScore> fromGameScoreListWithoutValidation(const GameScoreList& gsl);
-  static bool isValidScore(const QString& s, int numWinGames=2, bool drawAllowed=false);
-  static bool isValidScore(const GameScoreList& gsl, int numWinGames=2, bool drawAllowed=false);
-  bool isValidScore(int numWinGames=2, bool drawAllowed=false) const;
+  class MatchScore
+  {
+  public:
+    static std::optional<MatchScore> fromString(const QString& s, int numWinGames=2, bool drawAllowed=false);
+    static std::optional<MatchScore> fromStringWithoutValidation(const QString& s);
+    static std::optional<MatchScore> fromGameScoreList(const GameScoreList& gsl, int numWinGames=2, bool drawAllowed=false);
+    static std::optional<MatchScore> fromGameScoreListWithoutValidation(const GameScoreList& gsl);
+    static bool isValidScore(const QString& s, int numWinGames=2, bool drawAllowed=false);
+    static bool isValidScore(const GameScoreList& gsl, int numWinGames=2, bool drawAllowed=false);
+    bool isValidScore(int numWinGames=2, bool drawAllowed=false) const;
 
-  QString toString() const;
+    QString toString() const;
 
-  int getWinner() const;
-  int getLoser() const;
+    int getWinner() const;
+    int getLoser() const;
 
-  int getNumGames() const;
-  int getPointsSum() const;
+    int getNumGames() const;
+    int getPointsSum() const;
 
-  unique_ptr<GameScore> getGame(int n) const;
+    std::optional<GameScore> getGame(int n) const;
 
-  tuple<int, int> getScoreSum() const;
+    std::tuple<int, int> getScoreSum() const;
 
-  tuple<int, int> getGameSum() const;
-  static tuple<int, int> getGameSum(const GameScoreList& gsl);
+    std::tuple<int, int> getGameSum() const;
+    static std::tuple<int, int> getGameSum(const GameScoreList& gsl);
 
-  tuple<int, int> getMatchSum() const;
+    std::tuple<int, int> getMatchSum() const;
 
-  static unique_ptr<MatchScore> genRandomScore(int numWinGames=2, bool drawAllowed=false);
+    static std::optional<MatchScore> genRandomScore(int numWinGames=2, bool drawAllowed=false);
 
-private:
-  MatchScore() {};
-  bool addGame(const GameScore& sc);
-  bool addGame(const QString& scString);
-  static GameScoreList string2GameScoreList(QString s);
+  private:
+    MatchScore() {}
+    bool addGame(const GameScore& sc);
+    bool addGame(const QString& scString);
+    static GameScoreList string2GameScoreList(QString s);
 
-  GameScoreList games;
+    GameScoreList games;
 
-};
+  };
 
-typedef QList<MatchScore> MatchScoreList;
+  using MatchScoreList = QList<MatchScore>;
 
 }
 #endif // SCORE_H

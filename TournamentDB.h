@@ -55,6 +55,8 @@ namespace QTournament
      */
     TournamentDB(const std::string& fName);
 
+    ~TournamentDB() override = default;
+
     void populateTables() override;
     void populateViews() override;
     void createIndices();

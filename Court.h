@@ -46,13 +46,13 @@ namespace QTournament
     int getNumber() const;
     bool isManualAssignmentOnly() const;
     void setManualAssignment(bool isManual);
-    unique_ptr<Match> getMatch() const;
+    std::optional<Match> getMatch() const;
 
   private:
-    Court (TournamentDB* db, int rowId);
-    Court (TournamentDB* db, const SqliteOverlay::TabRow& row);
+    Court (const TournamentDB& db, int rowId);
+    Court (const TournamentDB& _db, const SqliteOverlay::TabRow& _row);
   };
-  typedef vector<Court> CourtList;
+  using CourtList = std::vector<Court>;
 
 }
 #endif	/* COURT_H */

@@ -34,8 +34,6 @@
 namespace QTournament
 {
 
-  typedef vector<Match> MatchList;
-
   class MatchGroup : public TournamentDatabaseObject
   {
     friend class MatchMngr;
@@ -54,11 +52,12 @@ namespace QTournament
     bool hasMatches__NOT__InState(OBJ_STATE stat) const;
 
   private:
-    DbTab* matchTab;
-    MatchGroup(TournamentDB* db, int rowId);
-    MatchGroup(TournamentDB* db, SqliteOverlay::TabRow row);
+    SqliteOverlay::DbTab matchTab;
+    MatchGroup(const TournamentDB& _db, int rowId);
+    MatchGroup(const TournamentDB& _db, const SqliteOverlay::TabRow& _row);
   } ;
 
+  using MatchGroupList = std::vector<MatchGroup> ;
 }
 #endif	/* MATCHGROUP_H */
 

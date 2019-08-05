@@ -25,33 +25,32 @@
 #include "ExternalPlayerDB.h"
 #include "TournamentDB.h"
 
-using namespace QTournament;
 
 class DlgEditPlayer : public QDialog
 {
   Q_OBJECT
 public:
-  DlgEditPlayer (TournamentDB* _db, QWidget *parent, Player* _selectedPlayer = nullptr);
-  DlgEditPlayer (TournamentDB* _db, QWidget *parent, SEX _sexPreset, const Category& _catPreset);
-  DlgEditPlayer (TournamentDB* _db, QWidget *parent, const ExternalPlayerDatabaseEntry& nameAndSexPreset, int _presetCatId=-1);
+  DlgEditPlayer (const QTournament::TournamentDB& _db, QWidget *parent, QTournament::Player* _selectedPlayer = nullptr);
+  DlgEditPlayer (const QTournament::TournamentDB& _db, QWidget *parent, QTournament::SEX _sexPreset, const QTournament::Category& _catPreset);
+  DlgEditPlayer (const QTournament::TournamentDB& _db, QWidget *parent, const QTournament::ExternalPlayerDatabaseEntry& nameAndSexPreset, int _presetCatId=-1);
   virtual ~DlgEditPlayer ();
   QString getFirstName();
   QString getLastName();
   bool hasNameChange();
-  SEX getSex();
-  Team getTeam();
-  QHash<Category, bool> getCategoryCheckState();
+  QTournament::SEX getSex();
+  QTournament::Team getTeam();
+  QHash<QTournament::Category, bool> getCategoryCheckState();
   
 private:
   Ui::dlgEditPlayer ui;
-  TournamentDB* db;
-  Player* selectedPlayer;
+  std::reference_wrapper<const QTournament::TournamentDB> db;
+  QTournament::Player* selectedPlayer;
   void initFromPlayerData();
   void initTeamList();
   bool _hasNameChange;
-  void updateCatList(QHash<Category, CAT_ADD_STATE> catStatus, int preselectCatId = -1);
+  void updateCatList(QHash<QTournament::Category, QTournament::CAT_ADD_STATE> catStatus, int preselectCatId = -1);
 
-  SEX sexPreset;
+  QTournament::SEX sexPreset;
   int presetCatId = -1;
 
 public slots:

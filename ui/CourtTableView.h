@@ -31,17 +31,15 @@
 #include "models/CourtTabModel.h"
 #include "AutoSizingTable.h"
 
-using namespace QTournament;
-
-class CourtTableView : public GuiHelpers::AutoSizingTableView_WithDatabase<CourtTableModel>
+class CourtTableView : public GuiHelpers::AutoSizingTableView_WithDatabase<QTournament::CourtTableModel>
 {
   Q_OBJECT
   
 public:
   CourtTableView (QWidget* parent);
   virtual ~CourtTableView ();
-  unique_ptr<Court> getSelectedCourt() const;
-  unique_ptr<Match> getSelectedMatch() const;
+  std::optional<QTournament::Court> getSelectedCourt() const;
+  std::optional<QTournament::Match> getSelectedMatch() const;
 
 protected:
   static constexpr int ABS_COURT_COL_WIDTH = 40;
@@ -68,7 +66,7 @@ private:
   static constexpr int MAX_NUM_ADD_CALL = 3;
   CourtItemDelegate* courtItemDelegate;
 
-  unique_ptr<QMenu> contextMenu;
+  std::unique_ptr<QMenu> contextMenu;
   QAction* actAddCourt;
   QAction* actDelCourt;
   QAction* actUndoCall;

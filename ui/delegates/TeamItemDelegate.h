@@ -25,7 +25,6 @@
 
 #include "TournamentDB.h"
 
-using namespace QTournament;
 
 class TeamItemDelegate : public QStyledItemDelegate
 {
@@ -33,13 +32,13 @@ public:
   static constexpr int ITEM_HEIGHT = 25;
   static constexpr int ITEM_MARGIN = 5;
 
-  TeamItemDelegate(TournamentDB* _db, QObject* parent = 0);
+  TeamItemDelegate(const QTournament::TournamentDB& _db, QObject* parent = nullptr);
   void setProxy(QAbstractProxyModel* _proxy);
   void paint (QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index ) const;
   QSize sizeHint (const QStyleOptionViewItem& option, const QModelIndex& index ) const;
   
 private:
-  TournamentDB* db;
+  std::reference_wrapper<const QTournament::TournamentDB> db;
   QAbstractProxyModel* proxy;
   QFontMetrics fntMetrics;
 } ;

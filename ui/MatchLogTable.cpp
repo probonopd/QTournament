@@ -49,7 +49,7 @@ MatchLogTable::MatchLogTable(QWidget* parent)
 
 //----------------------------------------------------------------------------
 
-unique_ptr<Match> MatchLogTable::getSelectedMatch() const
+std::optional<Match> MatchLogTable::getSelectedMatch() const
 {
   if ((currentRow() < 0) || (currentItem() == nullptr)) return nullptr;
 

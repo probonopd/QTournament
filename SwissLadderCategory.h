@@ -45,8 +45,8 @@ namespace QTournament
     ModMatchResult modifyMatchResult(const Match& ma, const MatchScore& newScore) const override;
 
   private:
-    SwissLadderCategory (TournamentDB* db, int rowId);
-    SwissLadderCategory (TournamentDB* db, SqliteOverlay::TabRow row);
+    SwissLadderCategory (const TournamentDB& _db, int rowId);
+    SwissLadderCategory (const TournamentDB& _db, const SqliteOverlay::TabRow _row);
     bool genMatchesForNextRound() const;
     ERR handleDeadlock() const;
 

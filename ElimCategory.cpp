@@ -38,8 +38,8 @@ using namespace SqliteOverlay;
 namespace QTournament
 {
 
-  EliminationCategory::EliminationCategory(TournamentDB* db, int rowId, int eliminationMode)
-  : Category(db, rowId)
+  EliminationCategory::EliminationCategory(const TournamentDB& _db, int rowId, int eliminationMode)
+  : Category(_db, rowId)
   {
     if ((eliminationMode != BracketGenerator::BRACKET_SINGLE_ELIM) &&
         (eliminationMode != BracketGenerator::BRACKET_DOUBLE_ELIM) &&
@@ -53,8 +53,8 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  EliminationCategory::EliminationCategory(TournamentDB* db, SqliteOverlay::TabRow row, int eliminationMode)
-  : Category(db, row)
+  EliminationCategory::EliminationCategory(const TournamentDB& _db, const TabRow& _row, int eliminationMode)
+  : Category(_db, _row)
   {
     if ((eliminationMode != BracketGenerator::BRACKET_SINGLE_ELIM) &&
         (eliminationMode != BracketGenerator::BRACKET_DOUBLE_ELIM) &&
@@ -472,7 +472,7 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  unique_ptr<Match> EliminationCategory::getFollowUpMatch(const Match& ma, bool searchLoserNotWinner) const
+  std::optional<Match> EliminationCategory::getFollowUpMatch(const Match& ma, bool searchLoserNotWinner) const
   {
     if (ma.getCategory().getId() != getId()) return nullptr;
 
@@ -543,7 +543,7 @@ namespace QTournament
     RankingMngr rm{db};
     for (int curRound = minRound; curRound <= maxRound; ++curRound)
     {
-      vector<int> pairsWithRank;
+      std::vector<int> pairsWithRank;
 
       for (int r=1; r <= curRound; ++r)
       {

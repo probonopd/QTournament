@@ -32,31 +32,29 @@
 
 #define MIN_PLAYER_LIST_WIDTH 200
 
-using namespace QTournament;
-
 class GroupAssignmentListWidget : public QWidget
 {
   Q_OBJECT
 public:
-  GroupAssignmentListWidget(QWidget* parent = 0);
+  GroupAssignmentListWidget(QWidget* parent = nullptr);
   virtual ~GroupAssignmentListWidget();
   
-  void setup(TournamentDB* _db, QList<PlayerPairList> ppListList);
+  void setup(QTournament::TournamentDB* _db, QList<QTournament::PlayerPairList> ppListList);
   void teardown();
-  PlayerPairList getSelectedPlayerPairs();
+  QTournament::PlayerPairList getSelectedPlayerPairs();
   void swapSelectedPlayers();
-  vector<PlayerPairList> getGroupAssignments();
-  void setDatabase(TournamentDB* _db);
+  std::vector<QTournament::PlayerPairList> getGroupAssignments();
+  void setDatabase(QTournament::TournamentDB* _db);
 
 public slots:
   void onRowSelectionChanged();
   
 private:
   Ui::GroupAssignmentListWidget ui;
-  TournamentDB* db;
+  QTournament::TournamentDB* db;
   QListWidget* lwGroup[MAX_GROUP_COUNT];
   QLabel* laGroup[MAX_GROUP_COUNT];
-  unique_ptr<PairItemDelegate> delegate[MAX_GROUP_COUNT];
+  std::unique_ptr<PairItemDelegate> delegate[MAX_GROUP_COUNT];
   bool isInitialized;
   int getColCountForGroupCount(int grpCount);
   QQueue<QListWidget*> selectionQueue;

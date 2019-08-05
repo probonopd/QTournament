@@ -31,7 +31,6 @@ namespace Ui {
   class ScheduleTabWidget;
 }
 
-using namespace QTournament;
 
 class ScheduleTabWidget : public QDialog
 {
@@ -41,10 +40,10 @@ public:
   static constexpr int INITIAL_AVG_MATCH_DURATION__SECS = 25 * 60;
   static constexpr int PROGRESSBAR_UPDATE_INTERVAL__SECS = 20;
 
-  explicit ScheduleTabWidget(QWidget *parent = 0);
+  explicit ScheduleTabWidget(QWidget *parent = nullptr);
   ~ScheduleTabWidget();
 
-  void setDatabase(TournamentDB* _db);
+  void setDatabase(QTournament::TournamentDB* _db);
 
   void updateRefereeColumn();
 
@@ -60,10 +59,10 @@ public slots:
   void onBtnHideStagingAreaClicked();
 
 private:
-  TournamentDB* db;
+  QTournament::TournamentDB* db;
   Ui::ScheduleTabWidget *ui;
   void updateButtons();
-  void askAndStoreMatchResult(const Match& ma);
+  void askAndStoreMatchResult(const QTournament::Match& ma);
 
 };
 

@@ -34,8 +34,8 @@
 namespace QTournament
 {
 
-  typedef unique_ptr<SimpleReportLib::SimpleReportGenerator> upSimpleReport;
-  typedef shared_ptr<SimpleReportLib::SimpleReportGenerator> spSimpleReport;
+  using upSimpleReport = std::unique_ptr<SimpleReportLib::SimpleReportGenerator>;
+  using spSimpleReport = shared_ptr<SimpleReportLib::SimpleReportGenerator>;
 
   class AbstractReport
   {
@@ -57,11 +57,11 @@ namespace QTournament
     static constexpr char RESULTSHEET_GAMELABEL_STYLE[] = "ResultSheet_GameLabel";
     static constexpr char BOLD_STYLE[] = "Bold";
 
-    AbstractReport(TournamentDB* _db, const QString& _name);
+    AbstractReport(const QTournament::TournamentDB& _db, const QString& _name);
     virtual ~AbstractReport();
 
-    virtual upSimpleReport regenerateReport() { throw std::runtime_error("Unimplemented Method: regenerateReport"); };
-    virtual QStringList getReportLocators() const { throw std::runtime_error("Unimplemented Method: getReportLocators"); };
+    virtual upSimpleReport regenerateReport() { throw std::runtime_error("Unimplemented Method: regenerateReport"); }
+    virtual QStringList getReportLocators() const { throw std::runtime_error("Unimplemented Method: getReportLocators"); }
 
     upSimpleReport createEmptyReport_Portrait() const;
     upSimpleReport createEmptyReport_Landscape() const;
@@ -70,9 +70,9 @@ namespace QTournament
     void setHeaderAndHeadline(SimpleReportLib::SimpleReportGenerator* rep, const QString& headline, const QString& subHead=QString()) const;
 
   protected:
-    TournamentDB* db;
+    std::reference_wrapper<const QTournament::TournamentDB> db;
     QString name;
-    unique_ptr<KeyValueTab> cfg;
+    std::unique_ptr<SqliteOverlay::KeyValueTab> cfg;
 
     void prepStyles(upSimpleReport& rep) const;
     void printIntermediateHeader(upSimpleReport& rep, const QString& txt, double skipBefore__MM=SKIP_BEFORE_INTERMEDIATE_HEADER__MM) const;
@@ -80,8 +80,8 @@ namespace QTournament
     void setHeaderAndFooter(upSimpleReport& rep, const QString& reportName) const;
   };
 
-  typedef unique_ptr<AbstractReport> upAbstractReport;
-  typedef shared_ptr<AbstractReport> spAbstractReport;
+  using upAbstractReport = std::unique_ptr<AbstractReport>;
+  using spAbstractReport = shared_ptr<AbstractReport>;
 
 }
 

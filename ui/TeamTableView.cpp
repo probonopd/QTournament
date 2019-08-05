@@ -104,7 +104,7 @@ void TeamTableView::setDatabase(TournamentDB* _db)
 
 //----------------------------------------------------------------------------
 
-unique_ptr<Team> TeamTableView::getSelectedTeam()
+std::optional<QTournament::Team> TeamTableView::getSelectedTeam()
 {
   // make sure we have a non-empty model
   auto mod = model();
@@ -164,7 +164,7 @@ void TeamTableView::autosizeColumns()
 
 void TeamTableView::onTeamDoubleClicked(const QModelIndex& index)
 {
-  unique_ptr<Team> selectedTeam = getSelectedTeam();
+  std::unique_ptr<Team> selectedTeam = getSelectedTeam();
   if (selectedTeam == nullptr) return;
 
   QString oldName = selectedTeam->getName();

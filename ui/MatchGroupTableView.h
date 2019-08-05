@@ -29,9 +29,7 @@
 #include "models/MatchGroupTabModel.h"
 #include "AutoSizingTable.h"
 
-using namespace QTournament;
-
-class MatchGroupTableView : public GuiHelpers::AutoSizingTableView_WithDatabase<MatchGroupTableModel>
+class MatchGroupTableView : public GuiHelpers::AutoSizingTableView_WithDatabase<QTournament::MatchGroupTableModel>
 {
   Q_OBJECT
   
@@ -42,7 +40,7 @@ public:
   virtual ~MatchGroupTableView () {}
   void setFilter(FilterType ft);
   void clearFilter();
-  unique_ptr<MatchGroup> getSelectedMatchGroup();
+  std::optional<QTournament::MatchGroup> getSelectedMatchGroup();
   
 protected:
   static constexpr int REL_NUMERIC_COL_WIDTH = 2;

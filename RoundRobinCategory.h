@@ -20,8 +20,8 @@
 #define	ROUNDROBINCATEGORY_H
 
 #include "Category.h"
-#include "ThreadSafeQueue.h"
 #include "RankingEntry.h"
+#include "PlayerPair.h"
 
 namespace QTournament
 {
@@ -46,8 +46,8 @@ namespace QTournament
 
     
   private:
-    RoundRobinCategory (TournamentDB* db, int rowId);
-    RoundRobinCategory (TournamentDB* db, SqliteOverlay::TabRow row);
+    RoundRobinCategory (const TournamentDB& _db, int rowId);
+    RoundRobinCategory (const TournamentDB& _db, const SqliteOverlay::TabRow& _row);
 
   } ;
 }

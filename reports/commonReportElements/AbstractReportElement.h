@@ -24,18 +24,16 @@
 
 #include <SimpleReportGeneratorLib/SimpleReportGenerator.h>
 
-using namespace SimpleReportLib;
-
 class AbstractReportElement
 {
 
 public:
-  AbstractReportElement(SimpleReportGenerator* _rep);
+  AbstractReportElement(SimpleReportLib::SimpleReportGenerator* _rep);
   virtual QRectF plot(const QPointF& topLeft = QPointF(-1, -1)) = 0;
   virtual ~AbstractReportElement() {}
 
 protected:
-  SimpleReportGenerator* rep;
+  SimpleReportLib::SimpleReportGenerator* rep;
 };
 
 #endif

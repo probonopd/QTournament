@@ -248,7 +248,7 @@ void AbstractReport::printMatchList(upSimpleReport& rep, const MatchList& maList
         auto gs = ms->getGame(i);
         assert(gs != nullptr);
 
-        tuple<int, int> sc = gs->getScore();
+        std::tuple<int, int> sc = gs->getScore();
         rowContent << QString::number(get<0>(sc));
         rowContent << ":";
         rowContent << QString::number(get<1>(sc));
@@ -312,8 +312,8 @@ void AbstractReport::printMatchList(upSimpleReport& rep, const MatchList& maList
 
 void AbstractReport::setHeaderAndFooter(upSimpleReport& rep, const QString& reportName) const
 {
-  QString tName = QString::fromUtf8(cfg->operator[](CFG_KEY_TNMT_NAME).data());
-  QString cName = QString::fromUtf8(cfg->operator[](CFG_KEY_TNMT_ORGA).data());
+  QString tName = QString::fromUtf8(cfg.operator[](CFG_KEY_TNMT_NAME).data());
+  QString cName = QString::fromUtf8(cfg.operator[](CFG_KEY_TNMT_ORGA).data());
   rep->setGlobalHeader(cName, tName, SimpleReportLib::HeaderFooterStrings::TOKEN_CURDATE);
 
   QString fl = SimpleReportLib::HeaderFooterStrings::TOKEN_CURTIME;

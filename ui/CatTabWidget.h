@@ -32,37 +32,37 @@ class CatTabWidget : public QDialog
 public:
   CatTabWidget();
   virtual ~CatTabWidget();
-  void setDatabase(TournamentDB* _db);
+  void setDatabase(QTournament::TournamentDB* _db);
 
 private:
-  TournamentDB* db;
+  QTournament::TournamentDB* db;
   Ui::CatTabWidget ui;
   void updateControls();
   void updatePairs();
   int unpairedPlayerId1;
   int unpairedPlayerId2;
 
-  unique_ptr<QMenu> lwUnpairedContextMenu;
+  std::unique_ptr<QMenu> lwUnpairedContextMenu;
   QAction* actRemovePlayer;
   QAction* actBulkRemovePlayers;
   QAction* actAddPlayer;
   QAction* actRegister;
   QAction* actUnregister;
-  unique_ptr<QMenu> listOfCats_CopyPlayerSubmenu;
-  unique_ptr<QMenu> listOfCats_MovePlayerSubmenu;
+  std::unique_ptr<QMenu> listOfCats_CopyPlayerSubmenu;
+  std::unique_ptr<QMenu> listOfCats_MovePlayerSubmenu;
   QAction* actCreateNewPlayerInCat;
   QAction* actImportPlayerToCat;
 
-  unique_ptr<QMenu> lwPairsContextMenu;
+  std::unique_ptr<QMenu> lwPairsContextMenu;
   QAction* actSplitPair;
-  unique_ptr<QMenu> listOfCats_CopyPairSubmenu;
-  unique_ptr<QMenu> listOfCats_MovePairSubmenu;
+  std::unique_ptr<QMenu> listOfCats_CopyPairSubmenu;
+  std::unique_ptr<QMenu> listOfCats_MovePairSubmenu;
 
   void initContextMenu();
-  upPlayer lwUnpaired_getSelectedPlayer() const;
-  unique_ptr<PlayerPair> lwPaired_getSelectedPair() const;
+  std::optional<QTournament::Player> lwUnpaired_getSelectedPlayer() const;
+  std::optional<QTournament::PlayerPair> lwPaired_getSelectedPair() const;
 
-  unique_ptr<CatTabPlayerItemDelegate> playerItemDelegate;
+  std::unique_ptr<CatTabPlayerItemDelegate> playerItemDelegate;
 
 public slots:
   void onCatModelChanged();
@@ -80,12 +80,12 @@ public slots:
   void onBtnAddCatClicked();
   void onBtnRunCatClicked();
   void onMatchSystemChanged(int newId);
-  void onGroupConfigChanged(const KO_Config& newCfg);
-  void onPlayerAddedToCategory(const Player& p, const Category& c);
-  void onPlayerRemovedFromCategory(const Player& p, const Category& c);
-  void onPlayerRenamed(const Player& p);
-  void onCatStateChanged(const Category& c, const OBJ_STATE fromState, const OBJ_STATE toState);
-  void onPlayerStateChanged(int playerId, int seqNum, const OBJ_STATE fromState, const OBJ_STATE toState);
+  void onGroupConfigChanged(const QTournament::KO_Config& newCfg);
+  void onPlayerAddedToCategory(const QTournament::Player& p, const QTournament::Category& c);
+  void onPlayerRemovedFromCategory(const QTournament::Player& p, const QTournament::Category& c);
+  void onPlayerRenamed(const QTournament::Player& p);
+  void onCatStateChanged(const QTournament::Category& c, const QTournament::OBJ_STATE fromState, const QTournament::OBJ_STATE toState);
+  void onPlayerStateChanged(int playerId, int seqNum, const QTournament::OBJ_STATE fromState, const QTournament::OBJ_STATE toState);
   void onRemovePlayerFromCat();
   void onBulkRemovePlayersFromCat();
   void onAddPlayerToCat();
@@ -94,7 +94,7 @@ public slots:
   void onRegisterPlayer();
   void onUnregisterPlayer();
   void onCopyOrMovePlayer(int targetCatId, bool isMove);
-  void onCopyOrMovePair(const PlayerPair& selPair, int targetCatId, bool isMove);
+  void onCopyOrMovePair(const QTournament::PlayerPair& selPair, int targetCatId, bool isMove);
   void onCreatePlayer();
   void onImportPlayer();
   void onCategoryRemoved();

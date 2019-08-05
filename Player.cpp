@@ -32,15 +32,15 @@
 namespace QTournament
 {
 
-  Player::Player(TournamentDB* db, int rowId)
-  :TournamentDatabaseObject(db, TAB_PLAYER, rowId)
+  Player::Player(const TournamentDB& _db, int rowId)
+  :TournamentDatabaseObject(_db, TAB_PLAYER, rowId)
   {
   }
 
 //----------------------------------------------------------------------------
 
-  Player::Player(TournamentDB* db, SqliteOverlay::TabRow row)
-  :TournamentDatabaseObject(db, row)
+  Player::Player(const TournamentDB& _db, const SqliteOverlay::TabRow& _row)
+  :TournamentDatabaseObject(_db, _row)
   {
   }
 
@@ -144,7 +144,7 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  vector<Category> Player::getAssignedCategories() const
+  std::vector<Category> Player::getAssignedCategories() const
   {
     CategoryList result;
     auto it = db->getTab(TAB_P2C)->getRowsByColumnValue(P2C_PLAYER_REF, getId());
@@ -169,15 +169,15 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  unique_ptr<Court> Player::getRefereeCourt() const
+  std::unique_ptr<Court> Player::getRefereeCourt() const
   {
     if (getState() != STAT_PL_REFEREE) return nullptr;
 
     // find the court on which the player is umpire
     DbTab* matchTab = db->getTab(TAB_MATCH);
     WhereClause wc;
-    wc.addIntCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_RUNNING));
-    wc.addIntCol(MA_REFEREE_REF, getId());
+    wc.addCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_RUNNING));
+    wc.addCol(MA_REFEREE_REF, getId());
 
     // do we have a matching match entry?
     if (matchTab->getMatchCountForWhereClause(wc) == 0) return nullptr;
@@ -191,7 +191,7 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  unique_ptr<Court> Player::getMatchCourt() const
+  std::unique_ptr<Court> Player::getMatchCourt() const
   {
     if (getState() != STAT_PL_PLAYING) return nullptr;
 

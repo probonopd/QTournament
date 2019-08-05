@@ -24,9 +24,9 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  vector<vector<string>> splitCSV(const string& rawText, const string& delim, const string& optionalCatName)
+  std::vector<vector<string>> splitCSV(const string& rawText, const string& delim, const string& optionalCatName)
   {
-    vector<vector<string>> result;
+    std::vector<vector<string>> result;
 
     Sloppy::StringList lines;
     Sloppy::stringSplitter(lines, rawText, "\n", true);
@@ -91,10 +91,10 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  vector<CSVImportRecord> convertCSVfromPlainText(TournamentDB* db, const vector<vector<string> >& splitData)
+  std::vector<CSVImportRecord> convertCSVfromPlainText(TournamentDB* db, const std::vector<vector<string> >& splitData)
   {
-    vector<CSVImportRecord> result;
-    for (const vector<string>& s : splitData)
+    std::vector<CSVImportRecord> result;
+    for (const std::vector<string>& s : splitData)
     {
       result.push_back(CSVImportRecord{db, s});
     }
@@ -104,9 +104,9 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  vector<CSVError> analyseCSV(TournamentDB* db, const vector<CSVImportRecord>& data)
+  std::vector<CSVError> analyseCSV(const TournamentDB& db, const std::vector<CSVImportRecord>& data)
   {
-    vector<CSVError> result;
+    std::vector<CSVError> result;
 
     PlayerMngr pm{db};
     CatMngr cm{db};
@@ -207,7 +207,7 @@ namespace QTournament
   //----------------------------------------------------------------------------
   //----------------------------------------------------------------------------
 
-  CSVImportRecord::CSVImportRecord(TournamentDB* _db, vector<string> rawTexts)
+  CSVImportRecord::CSVImportRecord(const TournamentDB& _db, std::vector<string> rawTexts)
     :db{_db}
   {
     // copy the lastname
@@ -239,7 +239,7 @@ namespace QTournament
     // copy the cat names
     if (rawTexts.size() > 4)
     {
-      vector<string> names;
+      std::vector<string> names;
       Sloppy::stringSplitter(names, rawTexts[4], ",", true);
       for (const string& s : names)
       {
@@ -284,7 +284,7 @@ namespace QTournament
 
     // merge already assigned and potentially new categories
     CatMngr cm{db};
-    vector<QString> alreadyAssignedCats;
+    std::vector<QString> alreadyAssignedCats;
     for (const Category& cat : cm.getAllCategories())
     {
       // skip categories that are already locked
@@ -333,13 +333,13 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  unique_ptr<Player> CSVImportRecord::getExistingPlayer() const
+  std::optional<Player> CSVImportRecord::getExistingPlayer() const
   {
     PlayerMngr pm{db};
     if (pm.hasPlayer(fName, lName))
     {
       Player p = pm.getPlayer(fName, lName);
-      return pm.getPlayer_up(p.getId());
+      return pm.getPlayer2(p.getId());
     }
 
     return nullptr;
@@ -392,7 +392,7 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  bool CSVImportRecord::updateCategories(const vector<QString>& catOverwrite)
+  bool CSVImportRecord::updateCategories(const std::vector<QString>& catOverwrite)
   {
     if (catOverwrite.empty()) return false;
 

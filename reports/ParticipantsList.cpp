@@ -154,7 +154,7 @@ void ParticipantsList::createTeamSortedReport(upSimpleReport &rep) const
 {
   TeamMngr tm{db};
 
-  vector<Team> tl = tm.getAllTeams();
+  std::vector<Team> tl = tm.getAllTeams();
 
   // do we have any teams at all?
   if (tl.size() == 0) return;

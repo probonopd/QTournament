@@ -34,14 +34,14 @@ using namespace SqliteOverlay;
 namespace QTournament
 {
 
-  RankingMngr::RankingMngr(TournamentDB* _db)
+  RankingMngr::RankingMngr(const TournamentDB& _db)
   : TournamentDatabaseObjectManager(_db, TAB_RANKING)
   {
   }
 
 //----------------------------------------------------------------------------
 
-  RankingEntryList RankingMngr::createUnsortedRankingEntriesForLastRound(const Category &cat, ERR *err, PlayerPairList _ppList, bool reset)
+  RankingEntryList RankingMngr::createUnsortedRankingEntriesForLastRound(const Category &cat, ERR *err, const PlayerPairList& _ppList, bool reset)
   {
     // determine the round we should create the entries for
     CatRoundStatus crs = cat.getRoundStatus();
@@ -70,11 +70,11 @@ namespace QTournament
     MatchMngr mm{db};
     for (PlayerPair pp : ppList)
     {
-      unique_ptr<Match> ma = mm.getMatchForPlayerPairAndRound(pp, lastRound);
+      std::unique_ptr<Match> ma = mm.getMatchForPlayerPairAndRound(pp, lastRound);
       if (ma != nullptr)
       {
         ERR e;
-        unique_ptr<MatchScore> score = ma->getScore(&e);
+        std::unique_ptr<MatchScore> score = ma->getScore(&e);
         if (e != OK)
         {
           if (err != nullptr) *err = e;
@@ -112,7 +112,7 @@ namespace QTournament
 
       // get match results, if the player played in this round
       // (maybe the player had a bye; in this case we skip this section)
-      unique_ptr<Match> ma = mm.getMatchForPlayerPairAndRound(pp, lastRound);
+      std::unique_ptr<Match> ma = mm.getMatchForPlayerPairAndRound(pp, lastRound);
       if (ma != nullptr)
       {
         // determine whether our pp is player 1 or player 2
@@ -121,7 +121,7 @@ namespace QTournament
 
         // create column values for match data
         ERR e;
-        unique_ptr<MatchScore> score = ma->getScore(&e);
+        std::unique_ptr<MatchScore> score = ma->getScore(&e);
         if (score == nullptr) qDebug() << "!!! NULL !!!";
         if (e != OK) qDebug() << e;
         wonMatches = (score->getWinner() == playerNum) ? 1 : 0;
@@ -129,19 +129,19 @@ namespace QTournament
         drawMatches = (score->getWinner() == 0) ? 1 : 0;
 
         // create column values for game data
-        tuple<int, int> gameSum = score->getGameSum();
+        std::tuple<int, int> gameSum = score->getGameSum();
         int gamesTotal = get<0>(gameSum) + get<1>(gameSum);
         wonGames = (playerNum == 1) ? get<0>(gameSum) : get<1>(gameSum);
         lostGames = gamesTotal - wonGames;
 
         // create column values for point data
-        tuple<int, int> scoreSum = score->getScoreSum();
+        std::tuple<int, int> scoreSum = score->getScoreSum();
         wonPoints = (playerNum == 1) ? get<0>(scoreSum) : get<1>(scoreSum);
         lostPoints = score->getPointsSum() - wonPoints;
       }
 
       // add values from previous round, if required
-      unique_ptr<RankingEntry> prevEntry = nullptr;
+      std::unique_ptr<RankingEntry> prevEntry = nullptr;
       if (!reset)
       {
         // the next call may return nullptr, but this is fine.
@@ -152,16 +152,16 @@ namespace QTournament
 
       if (prevEntry != nullptr)
       {
-        tuple<int, int, int, int> maStat = prevEntry->getMatchStats();
+        std::tuple<int, int, int, int> maStat = prevEntry->getMatchStats();
         wonMatches += get<0>(maStat);
         drawMatches += get<1>(maStat);
         lostMatches += get<2>(maStat);
 
-        tuple<int, int, int> gameStat = prevEntry->getGameStats();
+        std::tuple<int, int, int> gameStat = prevEntry->getGameStats();
         wonGames += get<0>(gameStat);
         lostGames += get<1>(gameStat);
 
-        tuple<int, int> pointStat = prevEntry->getPointStats();
+        std::tuple<int, int> pointStat = prevEntry->getPointStats();
         wonPoints += get<0>(pointStat);
         lostPoints += get<1>(pointStat);
       }
@@ -197,17 +197,17 @@ namespace QTournament
       // prep the complete data set for the entry,
       // but leave the "rank" column empty
       ColumnValueClause cvc;
-      cvc.addIntCol(RA_MATCHES_WON, wonMatches);
-      cvc.addIntCol(RA_MATCHES_DRAW, drawMatches);
-      cvc.addIntCol(RA_MATCHES_LOST, lostMatches);
-      cvc.addIntCol(RA_GAMES_WON, wonGames);
-      cvc.addIntCol(RA_GAMES_LOST, lostGames);
-      cvc.addIntCol(RA_POINTS_WON, wonPoints);
-      cvc.addIntCol(RA_POINTS_LOST, lostPoints);
-      cvc.addIntCol(RA_PAIR_REF, pp.getPairId());
-      cvc.addIntCol(RA_ROUND, lastRound);
-      cvc.addIntCol(RA_CAT_REF, cat.getId());  // eases searching, but is redundant information
-      cvc.addIntCol(RA_GRP_NUM, grpNum); // eases searching, but is redundant information
+      cvc.addCol(RA_MATCHES_WON, wonMatches);
+      cvc.addCol(RA_MATCHES_DRAW, drawMatches);
+      cvc.addCol(RA_MATCHES_LOST, lostMatches);
+      cvc.addCol(RA_GAMES_WON, wonGames);
+      cvc.addCol(RA_GAMES_LOST, lostGames);
+      cvc.addCol(RA_POINTS_WON, wonPoints);
+      cvc.addCol(RA_POINTS_LOST, lostPoints);
+      cvc.addCol(RA_PAIR_REF, pp.getPairId());
+      cvc.addCol(RA_ROUND, lastRound);
+      cvc.addCol(RA_CAT_REF, cat.getId());  // eases searching, but is redundant information
+      cvc.addCol(RA_GRP_NUM, grpNum); // eases searching, but is redundant information
 
       // create the new entry and add an instance
       // of the entry to the result list
@@ -221,12 +221,12 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  unique_ptr<RankingEntry> RankingMngr::getRankingEntry(const PlayerPair &pp, int round) const
+  std::optional<RankingEntry> RankingMngr::getRankingEntry(const PlayerPair &pp, int round) const
   {
     WhereClause wc;
-    wc.addIntCol(RA_CAT_REF, pp.getCategory(db)->getId());
-    wc.addIntCol(RA_PAIR_REF, pp.getPairId());
-    wc.addIntCol(RA_ROUND, round);
+    wc.addCol(RA_CAT_REF, pp.getCategory(db)->getId());
+    wc.addCol(RA_PAIR_REF, pp.getPairId());
+    wc.addCol(RA_ROUND, round);
 
     return getSingleObjectByWhereClause<RankingEntry>(wc);
   }
@@ -237,8 +237,8 @@ namespace QTournament
   {
     // make sure we have ranking entries
     WhereClause wc;
-    wc.addIntCol(RA_CAT_REF, cat.getId());
-    wc.addIntCol(RA_ROUND, round);
+    wc.addCol(RA_CAT_REF, cat.getId());
+    wc.addCol(RA_ROUND, round);
     RankingEntryList rel = getObjectsByWhereClause<RankingEntry>(wc);
     if (rel.empty())
     {
@@ -274,9 +274,9 @@ namespace QTournament
     for (int grpNum : applicableMatchGroupNumbers)
     {
       WhereClause wc;
-      wc.addIntCol(RA_CAT_REF, cat.getId());
-      wc.addIntCol(RA_ROUND, round);
-      wc.addIntCol(RA_GRP_NUM, grpNum);
+      wc.addCol(RA_CAT_REF, cat.getId());
+      wc.addCol(RA_ROUND, round);
+      wc.addCol(RA_GRP_NUM, grpNum);
       wc.setOrderColumn_Asc(RA_GRP_NUM);
       wc.setOrderColumn_Asc(RA_RANK);
 
@@ -291,8 +291,8 @@ namespace QTournament
   int RankingMngr::getHighestRoundWithRankingEntryForPlayerPair(const Category& cat, const PlayerPair& pp) const
   {
     WhereClause wc;
-    wc.addIntCol(RA_CAT_REF, cat.getId());
-    wc.addIntCol(RA_PAIR_REF, pp.getPairId());
+    wc.addCol(RA_CAT_REF, cat.getId());
+    wc.addCol(RA_PAIR_REF, pp.getPairId());
     wc.setOrderColumn_Desc(RA_ROUND);
 
     auto re = getSingleObjectByWhereClause<RankingEntry>(wc);
@@ -313,44 +313,44 @@ namespace QTournament
 
     // determine the score differences (delta) for each affected player pair
     MatchScore newScore = *(ma.getScore());  // is guaranteed to be != nullptr
-    tuple<int, int, int> deltaMatches_P1{0,0,0};  // to be added to PlayerPair1
-    tuple<int, int, int> deltaMatches_P2{0,0,0};  // to be added to PlayerPair2
+    std::tuple<int, int, int> deltaMatches_P1{0,0,0};  // to be added to PlayerPair1
+    std::tuple<int, int, int> deltaMatches_P2{0,0,0};  // to be added to PlayerPair2
 
     int oldWinner = oldScore.getWinner();
     int newWinner = newScore.getWinner();
     if ((oldWinner == 0) && (newWinner == 1))
     {
-      deltaMatches_P1 = tuple<int, int, int>{1, 0, -1};
-      deltaMatches_P2 = tuple<int, int, int>{0, 1, -1};
+      deltaMatches_P1 = std::tuple<int, int, int>{1, 0, -1};
+      deltaMatches_P2 = std::tuple<int, int, int>{0, 1, -1};
     }
     if ((oldWinner == 0) && (newWinner == 2))
     {
-      deltaMatches_P1 = tuple<int, int, int>{0, 1, -1};
-      deltaMatches_P2 = tuple<int, int, int>{1, 0, -1};
+      deltaMatches_P1 = std::tuple<int, int, int>{0, 1, -1};
+      deltaMatches_P2 = std::tuple<int, int, int>{1, 0, -1};
     }
     if ((oldWinner == 1) && (newWinner == 0))
     {
-      deltaMatches_P1 = tuple<int, int, int>{-1, 0, 1};
-      deltaMatches_P2 = tuple<int, int, int>{0, -1, 1};
+      deltaMatches_P1 = std::tuple<int, int, int>{-1, 0, 1};
+      deltaMatches_P2 = std::tuple<int, int, int>{0, -1, 1};
     }
     if ((oldWinner == 2) && (newWinner == 0))
     {
-      deltaMatches_P1 = tuple<int, int, int>{0, -1, 1};
-      deltaMatches_P2 = tuple<int, int, int>{-1, 0, 1};
+      deltaMatches_P1 = std::tuple<int, int, int>{0, -1, 1};
+      deltaMatches_P2 = std::tuple<int, int, int>{-1, 0, 1};
     }
     if ((oldWinner == 1) && (newWinner == 2))
     {
-      deltaMatches_P1 = tuple<int, int, int>{-1, 1, 0};
-      deltaMatches_P2 = tuple<int, int, int>{1, -1, 0};
+      deltaMatches_P1 = std::tuple<int, int, int>{-1, 1, 0};
+      deltaMatches_P2 = std::tuple<int, int, int>{1, -1, 0};
     }
     if ((oldWinner == 2) && (newWinner == 1))
     {
-      deltaMatches_P1 = tuple<int, int, int>{1, -1, 0};
-      deltaMatches_P2 = tuple<int, int, int>{-1, 1, 0};
+      deltaMatches_P1 = std::tuple<int, int, int>{1, -1, 0};
+      deltaMatches_P2 = std::tuple<int, int, int>{-1, 1, 0};
     }
 
-    tuple<int, int> gameSumOld = oldScore.getGameSum();
-    tuple<int, int> gameSumNew = newScore.getGameSum();
+    std::tuple<int, int> gameSumOld = oldScore.getGameSum();
+    std::tuple<int, int> gameSumNew = newScore.getGameSum();
     int gamesTotalOld = get<0>(gameSumOld) + get<1>(gameSumOld);
     int gamesTotalNew = get<0>(gameSumNew) + get<1>(gameSumNew);
 
@@ -358,19 +358,19 @@ namespace QTournament
     int deltaLostGamesP1 = -(gamesTotalOld - get<0>(gameSumOld)) + (gamesTotalNew - get<0>(gameSumNew));
     int deltaWonGamesP2 = -get<1>(gameSumOld) + get<1>(gameSumNew);
     int deltaLostGamesP2 = -(gamesTotalOld - get<1>(gameSumOld)) + (gamesTotalNew - get<1>(gameSumNew));
-    tuple<int, int> deltaGames_P1{deltaWonGamesP1, deltaLostGamesP1};  // to be added to PlayerPair1
-    tuple<int, int> deltaGames_P2{deltaWonGamesP2, deltaLostGamesP2};  // to be added to PlayerPair2
+    std::tuple<int, int> deltaGames_P1{deltaWonGamesP1, deltaLostGamesP1};  // to be added to PlayerPair1
+    std::tuple<int, int> deltaGames_P2{deltaWonGamesP2, deltaLostGamesP2};  // to be added to PlayerPair2
 
-    tuple<int, int> scoreSumOld = oldScore.getScoreSum();
-    tuple<int, int> scoreSumNew = newScore.getScoreSum();
+    std::tuple<int, int> scoreSumOld = oldScore.getScoreSum();
+    std::tuple<int, int> scoreSumNew = newScore.getScoreSum();
     int oldWonPoints_P1 = get<0>(scoreSumOld);
     int newWonPoints_P1 = get<0>(scoreSumNew);
     int deltaWonPoints_P1 = newWonPoints_P1 - oldWonPoints_P1;
     int oldLostPoints_P1 = oldScore.getPointsSum() - oldWonPoints_P1;
     int newLostPoints_P1 = newScore.getPointsSum() - newWonPoints_P1;
     int deltaLostPoints_P1 = newLostPoints_P1 - oldLostPoints_P1;
-    tuple<int, int> deltaPoints_P1{deltaWonPoints_P1, deltaLostPoints_P1};
-    tuple<int, int> deltaPoints_P2{deltaLostPoints_P1, deltaWonPoints_P1};
+    std::tuple<int, int> deltaPoints_P1{deltaWonPoints_P1, deltaLostPoints_P1};
+    std::tuple<int, int> deltaPoints_P2{deltaLostPoints_P1, deltaWonPoints_P1};
 
     // determine who actually is P1 and P2
     int pp1Id = ma.getPlayerPair1().getPairId();
@@ -388,9 +388,9 @@ namespace QTournament
     // we get the group number from the first entry of the
     // first player pair to be modified
     WhereClause w;
-    w.addIntCol(RA_CAT_REF, catId);
-    w.addIntCol(RA_PAIR_REF, pp1Id);
-    w.addIntCol(RA_ROUND, firstRoundToModify);
+    w.addCol(RA_CAT_REF, catId);
+    w.addCol(RA_PAIR_REF, pp1Id);
+    w.addCol(RA_ROUND, firstRoundToModify);
     auto re = getSingleObjectByWhereClause<RankingEntry>(w);
     if (re == nullptr) return OK;  // no ranking entries yet
     int grpNum = re->getGroupNumber();
@@ -398,27 +398,27 @@ namespace QTournament
     //
     // a helper function that does the actual modification
     //
-    auto doMod = [&](int pairId, const tuple<int, int, int>& matchDelta,
-                     const tuple<int, int>& gamesDelta, const tuple<int, int>& pointsDelta)
+    auto doMod = [&](int pairId, const std::tuple<int, int, int>& matchDelta,
+                     const std::tuple<int, int>& gamesDelta, const std::tuple<int, int>& pointsDelta)
     {
       // let's build a where clause that captures all entries
       // to modified
       w.clear();
-      w.addIntCol(RA_CAT_REF, catId);
-      w.addIntCol(RA_PAIR_REF, pairId);
-      w.addIntCol(RA_ROUND, ">=", firstRoundToModify);
+      w.addCol(RA_CAT_REF, catId);
+      w.addCol(RA_PAIR_REF, pairId);
+      w.addCol(RA_ROUND, ">=", firstRoundToModify);
       if (grpNum > 0)
       {
-        w.addIntCol(RA_GRP_NUM, grpNum);   // a dedicated group number (1, 2, 3...)
+        w.addCol(RA_GRP_NUM, grpNum);   // a dedicated group number (1, 2, 3...)
       } else {
-        w.addIntCol(RA_GRP_NUM, "<", 0);   // a functional number (iteration, quarter finals, ...)
+        w.addCol(RA_GRP_NUM, "<", 0);   // a functional number (iteration, quarter finals, ...)
       }
       DbTab::CachingRowIterator it = tab->getRowsByWhereClause(w);
       while (!(it.isEnd()))
       {
         TabRow r = *it;
 
-        vector<tuple <string, int>> colDelta = {
+        std::vector<std::tuple <string, int>> colDelta = {
           {RA_MATCHES_WON, get<0>(matchDelta)},
           {RA_MATCHES_LOST, get<1>(matchDelta)},
           {RA_MATCHES_DRAW, get<2>(matchDelta)},
@@ -428,7 +428,7 @@ namespace QTournament
           {RA_POINTS_LOST, get<1>(pointsDelta)},
         };
 
-        for (const tuple<string, int>& cd : colDelta)
+        for (const std::tuple<string, int>& cd : colDelta)
         {
           int dbErr;
           int oldVal = r.getInt(get<0>(cd));
@@ -478,9 +478,9 @@ namespace QTournament
       while (true)
       {
         w.clear();
-        w.addIntCol(RA_CAT_REF, catId);
-        w.addIntCol(RA_ROUND, round);
-        w.addIntCol(RA_GRP_NUM, grpNum);
+        w.addCol(RA_CAT_REF, catId);
+        w.addCol(RA_ROUND, round);
+        w.addCol(RA_GRP_NUM, grpNum);
 
         // get the ranking entries
         RankingEntryList rankList = getObjectsByWhereClause<RankingEntry>(w);
@@ -506,9 +506,9 @@ namespace QTournament
     return isOkay ? OK : DATABASE_ERROR;
   }
 
-  string RankingMngr::getSyncString(vector<int> rows)
+  string RankingMngr::getSyncString(const std::vector<int>& rows) const
   {
-    vector<string> cols = {"id", RA_ROUND, RA_PAIR_REF, RA_CAT_REF, RA_GRP_NUM, RA_GAMES_WON, RA_GAMES_LOST,
+    std::vector<string> cols = {"id", RA_ROUND, RA_PAIR_REF, RA_CAT_REF, RA_GRP_NUM, RA_GAMES_WON, RA_GAMES_LOST,
                           RA_MATCHES_WON, RA_MATCHES_LOST, RA_MATCHES_DRAW, RA_POINTS_WON, RA_POINTS_LOST, RA_RANK};
 
     return db->getSyncStringForTable(TAB_RANKING, cols, rows);
@@ -529,8 +529,8 @@ namespace QTournament
 
     // make sure we have (unsorted) ranking entries
     WhereClause wc;
-    wc.addIntCol(RA_CAT_REF, cat.getId());
-    wc.addIntCol(RA_ROUND, lastRound);
+    wc.addCol(RA_CAT_REF, cat.getId());
+    wc.addCol(RA_ROUND, lastRound);
     RankingEntryList rel = getObjectsByWhereClause<RankingEntry>(wc);
     if (rel.empty())
     {
@@ -574,7 +574,7 @@ namespace QTournament
     for (int grpNum : applicableMatchGroupNumbers)
     {
       WhereClause wcWithGroupNum = wc;
-      wcWithGroupNum.addIntCol(RA_GRP_NUM, grpNum);
+      wcWithGroupNum.addCol(RA_GRP_NUM, grpNum);
 
       // get the ranking entries
       RankingEntryList rankList = getObjectsByWhereClause<RankingEntry>(wcWithGroupNum);
@@ -631,18 +631,18 @@ namespace QTournament
     // a little helper function for creating a dummy ranking entry
     auto insertRankingEntry = [&](int g, int r) {
       ColumnValueClause cvc;
-      cvc.addIntCol(RA_MATCHES_WON, -1);
-      cvc.addIntCol(RA_MATCHES_DRAW, -1);
-      cvc.addIntCol(RA_MATCHES_LOST, -1);
-      cvc.addIntCol(RA_GAMES_WON, -1);
-      cvc.addIntCol(RA_GAMES_LOST, -1);
-      cvc.addIntCol(RA_POINTS_WON, -1);
-      cvc.addIntCol(RA_POINTS_LOST, -1);
+      cvc.addCol(RA_MATCHES_WON, -1);
+      cvc.addCol(RA_MATCHES_DRAW, -1);
+      cvc.addCol(RA_MATCHES_LOST, -1);
+      cvc.addCol(RA_GAMES_WON, -1);
+      cvc.addCol(RA_GAMES_LOST, -1);
+      cvc.addCol(RA_POINTS_WON, -1);
+      cvc.addCol(RA_POINTS_LOST, -1);
       cvc.addNullCol(RA_PAIR_REF);
-      cvc.addIntCol(RA_ROUND, round);
-      cvc.addIntCol(RA_CAT_REF, catId);
-      cvc.addIntCol(RA_GRP_NUM, g);
-      cvc.addIntCol(RA_RANK, r);
+      cvc.addCol(RA_ROUND, round);
+      cvc.addCol(RA_CAT_REF, catId);
+      cvc.addCol(RA_GRP_NUM, g);
+      cvc.addCol(RA_RANK, r);
       tab->insertRow(cvc);
     };
 
@@ -686,13 +686,13 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  unique_ptr<RankingEntry> RankingMngr::getRankingEntry(const Category& cat, int round, int grpNum, int rank) const
+  std::optional<RankingEntry> RankingMngr::getRankingEntry(const Category& cat, int round, int grpNum, int rank) const
   {
     WhereClause wc;
-    wc.addIntCol(RA_CAT_REF, cat.getId());
-    wc.addIntCol(RA_ROUND, round);
-    wc.addIntCol(RA_GRP_NUM, grpNum);
-    wc.addIntCol(RA_RANK, rank);
+    wc.addCol(RA_CAT_REF, cat.getId());
+    wc.addCol(RA_ROUND, round);
+    wc.addCol(RA_GRP_NUM, grpNum);
+    wc.addCol(RA_RANK, rank);
 
     return getSingleObjectByWhereClause<RankingEntry>(wc);
   }

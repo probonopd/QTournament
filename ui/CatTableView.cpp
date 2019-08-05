@@ -242,7 +242,7 @@ void CategoryTableView::onRunCategory()
 {
   if (!(hasCategorySelected())) return;
 
-  unique_ptr<Category> selectedCat = getSelectedCategory().convertToSpecializedObject();
+  std::unique_ptr<Category> selectedCat = getSelectedCategory().convertToSpecializedObject();
 
   // make sure that the category contains at least three players
   int playerCount = selectedCat->getAllPlayersInCategory().size();
@@ -314,7 +314,7 @@ void CategoryTableView::onRunCategory()
    */
 
   // show the dialog for the initial group assignments, if necessary
-  vector<PlayerPairList> ppListList;
+  std::vector<PlayerPairList> ppListList;
   if (selectedCat->needsGroupInitialization())
   {
     dlgGroupAssignment dlg(db, this, *selectedCat);
@@ -543,7 +543,7 @@ void CategoryTableView::onImportPlayer()
 void CategoryTableView::handleIntermediateSeedingForSelectedCat()
 {
   if (!(hasCategorySelected())) return;
-  unique_ptr<Category> selectedCat = getSelectedCategory().convertToSpecializedObject();
+  std::unique_ptr<Category> selectedCat = getSelectedCategory().convertToSpecializedObject();
   if (selectedCat == nullptr) return;
 
   if (selectedCat->getState() != STAT_CAT_WAIT_FOR_INTERMEDIATE_SEEDING)
