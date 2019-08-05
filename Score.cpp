@@ -59,10 +59,10 @@ bool GameScore::isValidScore(int sc1, int sc2)
 std::optional<GameScore> GameScore::fromScore(int sc1, int sc2)
 {
   // allow only valid scores to be instanciated as a new GameScore object
-  if (!(isValidScore(sc1, sc2))) return nullptr;
+  if (!(isValidScore(sc1, sc2))) return {};
 
   // create and return new object
-  return std::unique_ptr<GameScore>(new GameScore(sc1, sc2));
+  return GameScore{sc1, sc2};
 }
 
 //----------------------------------------------------------------------------
@@ -87,7 +87,7 @@ std::optional<GameScore> GameScore::fromString(const QString &s)
 {
   // we need exactly one delimiter
   QStringList scores = s.split(":");
-  if (scores.size() != 2) return nullptr;
+  if (scores.size() != 2) return {};
 
   // both scores must be valid numbers
   int sc1 = -1;
@@ -96,14 +96,14 @@ std::optional<GameScore> GameScore::fromString(const QString &s)
   {
     bool isOk = false;
     sc1 = scores[0].trimmed().toInt(&isOk);
-    if (!isOk) return nullptr;
+    if (!isOk) return {};
 
     isOk = false;
     sc2 = scores[1].trimmed().toInt(&isOk);
-    if (!isOk) return nullptr;
+    if (!isOk) return {};
   }
-  catch (exception ex) {
-    return nullptr;
+  catch (std::exception& ex) {
+    return {};
   }
 
   return fromScore(sc1, sc2);
@@ -118,9 +118,9 @@ QString GameScore::toString() const
 
 //----------------------------------------------------------------------------
 
-tuple<int, int> GameScore::getScore() const
+std::tuple<int, int> GameScore::getScore() const
 {
-  return make_tuple(player1Score, player2Score);
+  return std::tuple{player1Score, player2Score};
 }
 
 //----------------------------------------------------------------------------
@@ -166,7 +166,7 @@ int GameScore::getWinnerScoreForLoserScore(int loserScore)
 
 std::optional<GameScore> GameScore::genRandomGame(int winner)
 {
-  if ((winner < 0) || (winner > 2)) return nullptr;
+  if ((winner < 0) || (winner > 2)) return {};
 
   // a nice little lambda expression for returning a random number
   // in the range 0 <= r < 1.0
@@ -226,7 +226,7 @@ GameScoreList MatchScore::string2GameScoreList(QString s)
     auto gameSore = GameScore::fromString(gameString);
 
     // on error return an empty list
-    if (gameSore == nullptr)
+    if (!gameSore.has_value())
     {
       return GameScoreList();
     }
@@ -253,9 +253,7 @@ bool MatchScore::isValidScore(const GameScoreList& gsl, int numWinGames, bool dr
   if (gsl.isEmpty()) return false;
 
   // get statistics about wins and losses of the two players
-  auto gameSum = getGameSum(gsl);
-  int p1Wins = get<0>(gameSum);
-  int p2Wins = get<1>(gameSum);
+  auto [p1Wins, p2Wins] = getGameSum(gsl);
 
   // check for draw
   if (p1Wins == p2Wins)
@@ -313,7 +311,7 @@ std::optional<MatchScore> MatchScore::fromGameScoreList(const GameScoreList& gsl
 {
   if (!(isValidScore(gsl, numWinGames, drawAllowed)))
   {
-    return nullptr;
+    return {};
   }
 
   return fromGameScoreListWithoutValidation(gsl);
@@ -323,13 +321,13 @@ std::optional<MatchScore> MatchScore::fromGameScoreList(const GameScoreList& gsl
 
 std::optional<MatchScore> MatchScore::fromGameScoreListWithoutValidation(const GameScoreList& gsl)
 {
-  MatchScore* result = new MatchScore();
+  MatchScore result;
   for (GameScore game : gsl)
   {
-    result->addGame(game);
+    result.addGame(game);
   }
 
-  return std::unique_ptr<MatchScore>(result);
+  return result;
 }
 
 //----------------------------------------------------------------------------
@@ -345,7 +343,7 @@ bool MatchScore::addGame(const GameScore& sc)
 bool MatchScore::addGame(const QString& scString)
 {
   auto sc = GameScore::fromString(scString);
-  if (sc == nullptr) return false;
+  if (!sc.has_value()) return false;
 
   games.append(*sc);
   return true;
@@ -370,9 +368,7 @@ QString MatchScore::toString() const
 
 int MatchScore::getWinner() const
 {
-  auto gamesSum = getGameSum();
-  int p1Games = get<0>(gamesSum);
-  int p2Games = get<1>(gamesSum);
+  auto [p1Games, p2Games] = getGameSum();
   if (p1Games > p2Games) return 1;
   if (p2Games > p1Games) return 2;
   return 0; // draw
@@ -390,14 +386,14 @@ int MatchScore::getLoser() const
 
 //----------------------------------------------------------------------------
 
-tuple<int, int> MatchScore::getGameSum() const
+std::tuple<int, int> MatchScore::getGameSum() const
 {
   return getGameSum(games);
 }
 
 //----------------------------------------------------------------------------
 
-tuple<int, int> MatchScore::getGameSum(const GameScoreList& gsl)
+std::tuple<int, int> MatchScore::getGameSum(const GameScoreList& gsl)
 {
   // get statistics about wins and losses of the two players
   int p1Wins = 0;
@@ -407,32 +403,32 @@ tuple<int, int> MatchScore::getGameSum(const GameScoreList& gsl)
   }
   int p2Wins = gsl.count() - p1Wins;
 
-  return make_tuple(p1Wins, p2Wins);
+  return std::tuple{p1Wins, p2Wins};
 }
 
 //----------------------------------------------------------------------------
 
-tuple<int, int> MatchScore::getMatchSum() const
+std::tuple<int, int> MatchScore::getMatchSum() const
 {
-  if (getWinner() == 1) return make_tuple(1, 0);
-  if (getWinner() == 2) return make_tuple(0, 1);
-  return make_tuple(0,0); //draw
+  if (getWinner() == 1) return std::tuple{1, 0};
+  if (getWinner() == 2) return std::tuple{0, 1};
+  return std::tuple{0,0}; //draw
 }
 
 //----------------------------------------------------------------------------
 
-tuple<int, int> MatchScore::getScoreSum() const
+std::tuple<int, int> MatchScore::getScoreSum() const
 {
   int p1Score = 0;
   int p2Score = 0;
   for (GameScore game : games)
   {
     auto sc = game.getScore();
-    p1Score += get<0>(sc);
-    p2Score += get<1>(sc);
+    p1Score += std::get<0>(sc);
+    p2Score += std::get<1>(sc);
   }
 
-  return make_tuple(p1Score, p2Score);
+  return std::tuple{p1Score, p2Score};
 }
 
 //----------------------------------------------------------------------------
@@ -520,10 +516,10 @@ std::optional<GameScore> MatchScore::getGame(int n) const
 {
   if ((n < 0) || (n > (games.count() - 1)))
   {
-    return nullptr;
+    return {};
   }
 
-  return std::unique_ptr<GameScore>(new GameScore(games.at(n)));
+  return games.at(n);
 }
 
 //----------------------------------------------------------------------------

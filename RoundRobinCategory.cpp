@@ -162,24 +162,24 @@ namespace QTournament
       // first criterion: delta between won and lost matches
       std::tuple<int, int, int, int> matchStatsA = a.getMatchStats();
       std::tuple<int, int, int, int> matchStatsB = b.getMatchStats();
-      int deltaA = get<0>(matchStatsA) - get<2>(matchStatsA);
-      int deltaB = get<0>(matchStatsB) - get<2>(matchStatsB);
+      int deltaA = std::get<0>(matchStatsA) - std::get<2>(matchStatsA);
+      int deltaB = std::get<0>(matchStatsB) - std::get<2>(matchStatsB);
       if (deltaA > deltaB) return true;
       if (deltaA < deltaB) return false;
 
       // second criteria: delta between won and lost games
       std::tuple<int, int, int> gameStatsA = a.getGameStats();
       std::tuple<int, int, int> gameStatsB = b.getGameStats();
-      deltaA = get<0>(gameStatsA) - get<1>(gameStatsA);
-      deltaB = get<0>(gameStatsB) - get<1>(gameStatsB);
+      deltaA = std::get<0>(gameStatsA) - std::get<1>(gameStatsA);
+      deltaB = std::get<0>(gameStatsB) - std::get<1>(gameStatsB);
       if (deltaA > deltaB) return true;
       if (deltaA < deltaB) return false;
 
       // second criteria: delta between won and lost points
       std::tuple<int, int> pointStatsA = a.getPointStats();
       std::tuple<int, int> pointStatsB = b.getPointStats();
-      deltaA = get<0>(pointStatsA) - get<1>(pointStatsA);
-      deltaB = get<0>(pointStatsB) - get<1>(pointStatsB);
+      deltaA = std::get<0>(pointStatsA) - std::get<1>(pointStatsA);
+      deltaB = std::get<0>(pointStatsB) - std::get<1>(pointStatsB);
       if (deltaA > deltaB) return true;
       if (deltaA < deltaB) return false;
 
@@ -253,17 +253,17 @@ namespace QTournament
         for (Match ma : mg.getMatches())
         {
           auto winner = ma.getWinner();
-          assert(winner != nullptr);
+          assert(winner.has_value());
           auto re = rm.getRankingEntry(*winner, lastFinishedRound);
-          assert(re != nullptr);
+          assert(re.has_value());
           int winnerRank = ma.getWinnerRank();
           assert(winnerRank > 0);
           rm.forceRank(*re, winnerRank);
 
           auto loser = ma.getLoser();
-          assert(loser != nullptr);
+          assert(loser.has_value());
           re = rm.getRankingEntry(*loser, lastFinishedRound);
-          assert(re != nullptr);
+          assert(re.has_value());
           int loserRank = ma.getLoserRank();
           assert(loserRank > 0);
           rm.forceRank(*re, loserRank);
@@ -338,8 +338,8 @@ namespace QTournament
         for (Match ma : mg.getMatches())
         {
           auto loser = ma.getLoser();
-          if (loser == nullptr) continue;   // shouldn't happen
-          eraseAllValuesFromVector<PlayerPair>(result, *loser);
+          if (!loser.has_value()) continue;   // shouldn't happen
+          Sloppy::eraseAllOccurencesFromVector<PlayerPair>(result, *loser);
         }
       }
 
@@ -382,7 +382,7 @@ namespace QTournament
       {
         return INVALID_SEEDING_LIST;
       }
-      eraseAllValuesFromVector<PlayerPair>(controlList, pp);
+      Sloppy::eraseAllOccurencesFromVector<PlayerPair>(controlList, pp);
     }
     if (!(controlList.empty()))
     {
@@ -422,14 +422,14 @@ namespace QTournament
 
       // the first in each group is always qualified
       auto qualifiedPP = rl.at(0).getPlayerPair();
-      assert(qualifiedPP != nullptr);
+      assert(qualifiedPP.has_value());
       result.insert(result.begin(), *qualifiedPP);
 
       // maybe the second qualifies as well
       if (cfg.getSecondSurvives())
       {
         qualifiedPP = rl.at(1).getPlayerPair();
-        assert(qualifiedPP != nullptr);
+        assert(qualifiedPP.has_value());
         result.push_back(*qualifiedPP);
       }
     }

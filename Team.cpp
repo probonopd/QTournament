@@ -22,18 +22,20 @@
 #include "TournamentErrorCodes.h"
 #include "TeamMngr.h"
 
+using namespace SqliteOverlay;
+
 namespace QTournament
 {
 
-  Team::Team(const TournamentDB& db, int rowId)
-  :TournamentDatabaseObject(db, TAB_TEAM, rowId)
+  Team::Team(const TournamentDB& _db, int rowId)
+  :TournamentDatabaseObject(_db, TAB_TEAM, rowId)
   {
   }
 
 //----------------------------------------------------------------------------
 
-  Team::Team(const TournamentDB& db, SqliteOverlay::TabRow row)
-  :TournamentDatabaseObject(db, row)
+  Team::Team(const TournamentDB& _db, const SqliteOverlay::TabRow& _row)
+  :TournamentDatabaseObject(_db, _row)
   {
   }
 

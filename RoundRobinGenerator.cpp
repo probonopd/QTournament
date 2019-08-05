@@ -138,7 +138,7 @@ namespace QTournament {
       // better readibility
       if ((isOdd) && ((player1 == pMax) || (player2 == pMax))) continue;
 
-      result.push_back(make_tuple(player1, player2));
+      result.push_back(std::tuple{player1, player2});
     }
 
     return result;

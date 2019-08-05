@@ -73,7 +73,7 @@ namespace QTournament
   {
     MATCH_SYSTEM msys = cat.getMatchSystem();
 
-    return (msys == ROUND_ROBIN) ? std::unique_ptr<PureRoundRobinCategory>(new PureRoundRobinCategory(cat.db, cat.row)) : nullptr;
+    return (msys == ROUND_ROBIN) ? PureRoundRobinCategory{cat.db, cat.row} : std::optional<PureRoundRobinCategory>{};
   }
 
   //----------------------------------------------------------------------------
@@ -215,24 +215,24 @@ namespace QTournament
       // first criterion: delta between won and lost matches
       std::tuple<int, int, int, int> matchStatsA = a.getMatchStats();
       std::tuple<int, int, int, int> matchStatsB = b.getMatchStats();
-      int deltaA = get<0>(matchStatsA) - get<2>(matchStatsA);
-      int deltaB = get<0>(matchStatsB) - get<2>(matchStatsB);
+      int deltaA = std::get<0>(matchStatsA) - std::get<2>(matchStatsA);
+      int deltaB = std::get<0>(matchStatsB) - std::get<2>(matchStatsB);
       if (deltaA > deltaB) return true;
       if (deltaA < deltaB) return false;
 
       // second criteria: delta between won and lost games
       std::tuple<int, int, int> gameStatsA = a.getGameStats();
       std::tuple<int, int, int> gameStatsB = b.getGameStats();
-      deltaA = get<0>(gameStatsA) - get<1>(gameStatsA);
-      deltaB = get<0>(gameStatsB) - get<1>(gameStatsB);
+      deltaA = std::get<0>(gameStatsA) - std::get<1>(gameStatsA);
+      deltaB = std::get<0>(gameStatsB) - std::get<1>(gameStatsB);
       if (deltaA > deltaB) return true;
       if (deltaA < deltaB) return false;
 
       // second criteria: delta between won and lost points
       std::tuple<int, int> pointStatsA = a.getPointStats();
       std::tuple<int, int> pointStatsB = b.getPointStats();
-      deltaA = get<0>(pointStatsA) - get<1>(pointStatsA);
-      deltaB = get<0>(pointStatsB) - get<1>(pointStatsB);
+      deltaA = std::get<0>(pointStatsA) - std::get<1>(pointStatsA);
+      deltaB = std::get<0>(pointStatsB) - std::get<1>(pointStatsB);
       if (deltaA > deltaB) return true;
       if (deltaA < deltaB) return false;
 

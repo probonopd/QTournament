@@ -23,6 +23,8 @@
 #include "PlayerMngr.h"
 #include "CatMngr.h"
 
+using namespace SqliteOverlay;
+
 namespace QTournament {
 
   // ctor for a player pair with a single player only and without database entry
@@ -51,13 +53,13 @@ namespace QTournament {
 //----------------------------------------------------------------------------
 
   // ctor for a PlayerPair constructed from a row in TAB_PAIRS
-  PlayerPair::PlayerPair(TournamentDB* _db, const TabRow& row)
-    :id1(row.getInt(PAIRS_PLAYER1_REF)), id2(-1), pairId(row.getId()), db(_db)
+  PlayerPair::PlayerPair(const TournamentDB& _db, const TabRow& row)
+    :id1(row.getInt(PAIRS_PLAYER1_REF)), id2(-1), pairId(row.id()), db(_db)
   {
     auto _id2 = row.getInt2(PAIRS_PLAYER2_REF);
-    if (!(_id2->isNull()))
+    if (_id2.has_value())
     {
-      id2 = _id2->get();
+      id2 = *_id2;
       sortPlayers();
     }
   }
@@ -65,19 +67,19 @@ namespace QTournament {
 //----------------------------------------------------------------------------
 
   // ctor for a PlayerPair constructed from a row in TAB_PAIRS identified by its ID
-  PlayerPair::PlayerPair(TournamentDB* _db, int ppId)
+  PlayerPair::PlayerPair(const TournamentDB& _db, int ppId)
     :db(_db)
   {
-    TabRow row = db->getTab(TAB_PAIRS)->operator [](ppId);
+    TabRow row{db, TAB_PAIRS, ppId};
 
-    pairId = row.getId();
+    pairId = ppId;
     id1 = row.getInt(PAIRS_PLAYER1_REF);
     id2 = -1;
 
     auto _id2 = row.getInt2(PAIRS_PLAYER2_REF);
-    if (!(_id2->isNull()))
+    if (_id2.has_value())
     {
-      id2 = _id2->get();
+      id2 = *_id2;
       sortPlayers();
     }
   }
@@ -274,15 +276,11 @@ namespace QTournament {
   // this serves only as a hot fix until this class will be re-factored to inherit GenericDatabaseObject
   std::optional<Category> PlayerPair::getCategory(const TournamentDB& db) const
   {
-    assert(db != nullptr);
+    if (pairId <= 0) return {};
 
-    if (pairId <= 0) return nullptr;
-
-    TabRow pairRow = db->getTab(TAB_PAIRS)->operator [](pairId);
+    TabRow pairRow{db, TAB_PAIRS, pairId};
     CatMngr cm{db};
-    Category cat = cm.getCategoryById(pairRow.getInt(PAIRS_CAT_REF));
-
-    return std::unique_ptr<Category>(new Category(cat));
+    return cm.getCategoryById(pairRow.getInt(PAIRS_CAT_REF));
   }
 
 //----------------------------------------------------------------------------
@@ -292,19 +290,14 @@ namespace QTournament {
   // for debugging and unit testing only
   bool PlayerPair::isConsistent() const
   {
-    assert(db != nullptr);
-
     if (pairId > 0)
     {
-      TabRow pairRow = db->getTab(TAB_PAIRS)->operator [](pairId);
+      TabRow pairRow{db, TAB_PAIRS, pairId};
       if (pairRow.getInt(PAIRS_PLAYER1_REF) != id1) return false;
 
       auto p2Id = pairRow.getInt2(PAIRS_PLAYER2_REF);
-      if (p2Id->isNull() && (id2 > 0)) return false;
-      if (!(p2Id->isNull()))
-      {
-        if (id2 != p2Id->get()) return false;
-      }
+      if (!p2Id.has_value() && (id2 > 0)) return false;
+      if ((p2Id.has_value()) && (id2 != *p2Id)) return false;
     }
 
     return true;
@@ -315,14 +308,12 @@ namespace QTournament {
   // this serves only as a hot fix until this class will be re-factored to inherit GenericDatabaseObject
   int PlayerPair::getPairsGroupNum() const
   {
-    assert(db != nullptr);
-
     if (pairId <= 0)
     {
       throw std::runtime_error("Queried PlayerPair does not yet exist in the database");
     }
 
-    TabRow pairRow = db->getTab(TAB_PAIRS)->operator [](pairId);
+    TabRow pairRow{db, TAB_PAIRS, pairId};
     return pairRow.getInt(PAIRS_GRP_NUM);
   }
 

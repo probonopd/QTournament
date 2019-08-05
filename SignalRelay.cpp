@@ -34,7 +34,7 @@ void SignalRelay::checkConnection()
   {
     while(!(receiverQueue.isEmpty()))
     {
-      ResultSheets* r = receiverQueue.dequeue();
+      QTournament::ResultSheets* r = receiverQueue.dequeue();
       connect(matchTabView_Sender, SIGNAL(matchSelectionChanged(int)), r, SLOT(onMatchSelectionChanged(int)));
     }
   }
@@ -54,7 +54,7 @@ void SignalRelay::registerSender(MatchTableView* s)
 
 //----------------------------------------------------------------------------
 
-void SignalRelay::registerReceiver(ResultSheets* r)
+void SignalRelay::registerReceiver(QTournament::ResultSheets* r)
 {
   if (r != nullptr)
   {

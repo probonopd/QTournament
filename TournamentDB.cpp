@@ -37,6 +37,8 @@
 #include "TournamentErrorCodes.h"
 #include "OnlineMngr.h"
 
+using namespace std;
+
 namespace QTournament
 {
 

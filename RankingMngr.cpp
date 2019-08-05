@@ -70,17 +70,17 @@ namespace QTournament
     MatchMngr mm{db};
     for (PlayerPair pp : ppList)
     {
-      std::unique_ptr<Match> ma = mm.getMatchForPlayerPairAndRound(pp, lastRound);
-      if (ma != nullptr)
+      auto ma = mm.getMatchForPlayerPairAndRound(pp, lastRound);
+      if (ma.has_value())
       {
         ERR e;
-        std::unique_ptr<MatchScore> score = ma->getScore(&e);
+        auto score = ma->getScore(&e);
         if (e != OK)
         {
           if (err != nullptr) *err = e;
           return RankingEntryList();
         }
-        if (score == nullptr)
+        if (!score.has_value())
         {
           if (err != nullptr) *err = NO_MATCH_RESULT_SET;
           return RankingEntryList();
@@ -92,9 +92,6 @@ namespace QTournament
     // Okay, we can be pretty sure that the rest of this method
     // succeeds and that we leave the database in a consistent state
     //
-
-    // lock the database before writing
-    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
 
     // iterate over the player pair list and create entries
     // based on match result and, possibly, previous ranking entries
@@ -112,8 +109,8 @@ namespace QTournament
 
       // get match results, if the player played in this round
       // (maybe the player had a bye; in this case we skip this section)
-      std::unique_ptr<Match> ma = mm.getMatchForPlayerPairAndRound(pp, lastRound);
-      if (ma != nullptr)
+      auto ma = mm.getMatchForPlayerPairAndRound(pp, lastRound);
+      if (ma.has_value())
       {
         // determine whether our pp is player 1 or player 2
         int pp1Id = ma->getPlayerPair1().getPairId();
@@ -121,27 +118,26 @@ namespace QTournament
 
         // create column values for match data
         ERR e;
-        std::unique_ptr<MatchScore> score = ma->getScore(&e);
-        if (score == nullptr) qDebug() << "!!! NULL !!!";
-        if (e != OK) qDebug() << e;
+        auto score = ma->getScore(&e);
+        assert(score.has_value());
         wonMatches = (score->getWinner() == playerNum) ? 1 : 0;
         lostMatches = (score->getLoser() == playerNum) ? 1 : 0;
         drawMatches = (score->getWinner() == 0) ? 1 : 0;
 
         // create column values for game data
         std::tuple<int, int> gameSum = score->getGameSum();
-        int gamesTotal = get<0>(gameSum) + get<1>(gameSum);
-        wonGames = (playerNum == 1) ? get<0>(gameSum) : get<1>(gameSum);
+        int gamesTotal = std::get<0>(gameSum) + std::get<1>(gameSum);
+        wonGames = (playerNum == 1) ? std::get<0>(gameSum) : std::get<1>(gameSum);
         lostGames = gamesTotal - wonGames;
 
         // create column values for point data
         std::tuple<int, int> scoreSum = score->getScoreSum();
-        wonPoints = (playerNum == 1) ? get<0>(scoreSum) : get<1>(scoreSum);
+        wonPoints = (playerNum == 1) ? std::get<0>(scoreSum) : std::get<1>(scoreSum);
         lostPoints = score->getPointsSum() - wonPoints;
       }
 
       // add values from previous round, if required
-      std::unique_ptr<RankingEntry> prevEntry = nullptr;
+      std::optional<RankingEntry> prevEntry{};
       if (!reset)
       {
         // the next call may return nullptr, but this is fine.
@@ -150,25 +146,25 @@ namespace QTournament
         prevEntry = getRankingEntry(pp, lastRound-1);
       }
 
-      if (prevEntry != nullptr)
+      if (prevEntry.has_value())
       {
         std::tuple<int, int, int, int> maStat = prevEntry->getMatchStats();
-        wonMatches += get<0>(maStat);
-        drawMatches += get<1>(maStat);
-        lostMatches += get<2>(maStat);
+        wonMatches += std::get<0>(maStat);
+        drawMatches += std::get<1>(maStat);
+        lostMatches += std::get<2>(maStat);
 
         std::tuple<int, int, int> gameStat = prevEntry->getGameStats();
-        wonGames += get<0>(gameStat);
-        lostGames += get<1>(gameStat);
+        wonGames += std::get<0>(gameStat);
+        lostGames += std::get<1>(gameStat);
 
         std::tuple<int, int> pointStat = prevEntry->getPointStats();
-        wonPoints += get<0>(pointStat);
-        lostPoints += get<1>(pointStat);
+        wonPoints += std::get<0>(pointStat);
+        lostPoints += std::get<1>(pointStat);
       }
 
       // determine the match group number for this entry
       int grpNum;
-      if (ma != nullptr)
+      if (ma.has_value())
       {
         // easiest and most likely case
         grpNum = ma->getMatchGroup().getGroupNumber();
@@ -211,7 +207,7 @@ namespace QTournament
 
       // create the new entry and add an instance
       // of the entry to the result list
-      int newId = tab->insertRow(cvc);
+      int newId = tab.insertRow(cvc);
       result.push_back(RankingEntry(db, newId));
     }
 
@@ -296,7 +292,7 @@ namespace QTournament
     wc.setOrderColumn_Desc(RA_ROUND);
 
     auto re = getSingleObjectByWhereClause<RankingEntry>(wc);
-    if (re == nullptr) return -1;
+    if (!re.has_value()) return -1;
 
     return re->getRound();
   }
@@ -351,20 +347,20 @@ namespace QTournament
 
     std::tuple<int, int> gameSumOld = oldScore.getGameSum();
     std::tuple<int, int> gameSumNew = newScore.getGameSum();
-    int gamesTotalOld = get<0>(gameSumOld) + get<1>(gameSumOld);
-    int gamesTotalNew = get<0>(gameSumNew) + get<1>(gameSumNew);
+    int gamesTotalOld = std::get<0>(gameSumOld) + std::get<1>(gameSumOld);
+    int gamesTotalNew = std::get<0>(gameSumNew) + std::get<1>(gameSumNew);
 
-    int deltaWonGamesP1 = -get<0>(gameSumOld) + get<0>(gameSumNew);
-    int deltaLostGamesP1 = -(gamesTotalOld - get<0>(gameSumOld)) + (gamesTotalNew - get<0>(gameSumNew));
-    int deltaWonGamesP2 = -get<1>(gameSumOld) + get<1>(gameSumNew);
-    int deltaLostGamesP2 = -(gamesTotalOld - get<1>(gameSumOld)) + (gamesTotalNew - get<1>(gameSumNew));
+    int deltaWonGamesP1 = -std::get<0>(gameSumOld) + std::get<0>(gameSumNew);
+    int deltaLostGamesP1 = -(gamesTotalOld - std::get<0>(gameSumOld)) + (gamesTotalNew - std::get<0>(gameSumNew));
+    int deltaWonGamesP2 = -std::get<1>(gameSumOld) + std::get<1>(gameSumNew);
+    int deltaLostGamesP2 = -(gamesTotalOld - std::get<1>(gameSumOld)) + (gamesTotalNew - std::get<1>(gameSumNew));
     std::tuple<int, int> deltaGames_P1{deltaWonGamesP1, deltaLostGamesP1};  // to be added to PlayerPair1
     std::tuple<int, int> deltaGames_P2{deltaWonGamesP2, deltaLostGamesP2};  // to be added to PlayerPair2
 
     std::tuple<int, int> scoreSumOld = oldScore.getScoreSum();
     std::tuple<int, int> scoreSumNew = newScore.getScoreSum();
-    int oldWonPoints_P1 = get<0>(scoreSumOld);
-    int newWonPoints_P1 = get<0>(scoreSumNew);
+    int oldWonPoints_P1 = std::get<0>(scoreSumOld);
+    int newWonPoints_P1 = std::get<0>(scoreSumNew);
     int deltaWonPoints_P1 = newWonPoints_P1 - oldWonPoints_P1;
     int oldLostPoints_P1 = oldScore.getPointsSum() - oldWonPoints_P1;
     int newLostPoints_P1 = newScore.getPointsSum() - newWonPoints_P1;
@@ -392,7 +388,7 @@ namespace QTournament
     w.addCol(RA_PAIR_REF, pp1Id);
     w.addCol(RA_ROUND, firstRoundToModify);
     auto re = getSingleObjectByWhereClause<RankingEntry>(w);
-    if (re == nullptr) return OK;  // no ranking entries yet
+    if (!re.has_value()) return OK;  // no ranking entries yet
     int grpNum = re->getGroupNumber();
 
     //
@@ -413,105 +409,100 @@ namespace QTournament
       } else {
         w.addCol(RA_GRP_NUM, "<", 0);   // a functional number (iteration, quarter finals, ...)
       }
-      DbTab::CachingRowIterator it = tab->getRowsByWhereClause(w);
-      while (!(it.isEnd()))
-      {
-        TabRow r = *it;
 
-        std::vector<std::tuple <string, int>> colDelta = {
-          {RA_MATCHES_WON, get<0>(matchDelta)},
-          {RA_MATCHES_LOST, get<1>(matchDelta)},
-          {RA_MATCHES_DRAW, get<2>(matchDelta)},
-          {RA_GAMES_WON, get<0>(gamesDelta)},
-          {RA_GAMES_LOST, get<1>(gamesDelta)},
-          {RA_POINTS_WON, get<0>(pointsDelta)},
-          {RA_POINTS_LOST, get<1>(pointsDelta)},
+      auto rowsList = tab.getRowsByWhereClause(w);
+      for (const auto& r : rowsList)
+      {
+        std::vector<std::tuple <std::string, int>> colDelta = {
+          {RA_MATCHES_WON, std::get<0>(matchDelta)},
+          {RA_MATCHES_LOST, std::get<1>(matchDelta)},
+          {RA_MATCHES_DRAW, std::get<2>(matchDelta)},
+          {RA_GAMES_WON, std::get<0>(gamesDelta)},
+          {RA_GAMES_LOST, std::get<1>(gamesDelta)},
+          {RA_POINTS_WON, std::get<0>(pointsDelta)},
+          {RA_POINTS_LOST, std::get<1>(pointsDelta)},
         };
 
-        for (const std::tuple<string, int>& cd : colDelta)
+        for (auto [colName, deltaVal] : colDelta)
         {
-          int dbErr;
-          int oldVal = r.getInt(get<0>(cd));
-          r.update(get<0>(cd), oldVal + get<1>(cd), &dbErr);
-          if (dbErr != SQLITE_DONE) return false;
+          int oldVal = r.getInt(colName);
+          r.update(colName, oldVal + deltaVal);
         }
-
-        ++it;
       }
-
-      return true;
     };
     //------------------------- end of helper func -------------------
 
-    // lock the database before writing
-    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
-
-    // start a new transaction to make sure that
-    // the database remains consistent in case something goes wrong
-    bool isDbErr;
-    auto tg = db->acquireTransactionGuard(false, &isDbErr);
-    if (isDbErr) return DATABASE_ERROR;
-
-    // modify the ranking entries
-    bool isOkay = doMod(pp1Id, deltaMatches_P1, deltaGames_P1, deltaPoints_P1);
-    if (!isOkay)
+    try
     {
-      return DATABASE_ERROR; // triggers implicit rollback through tg's dtor
-    }
-    isOkay = doMod(pp2Id, deltaMatches_P2, deltaGames_P2, deltaPoints_P2);
-    if (!isOkay)
-    {
-      return DATABASE_ERROR;  // triggers implicit rollback through tg's dtor
-    }
+      // start a new transaction to make sure that
+      // the database remains consistent in case something goes wrong
+      auto trans = db.get().startTransaction(DefaultTransactionType);
 
-    // now we have to re-sort the entries, round by round
-    // UNLESS the caller decided to skip the sorting.
-    //
-    // skipping the sorting (and thus assigning ranks) is only
-    // usefull in bracket matches where ranks are not derived
-    // from points but from bracket logic
-    if (!skipSorting)
-    {
-      auto specializedCat = cat.convertToSpecializedObject();
-      auto lessThanFunc = specializedCat->getLessThanFunction();
-      int round = firstRoundToModify;
-      while (true)
+      // modify the ranking entries
+      doMod(pp1Id, deltaMatches_P1, deltaGames_P1, deltaPoints_P1);
+      doMod(pp2Id, deltaMatches_P2, deltaGames_P2, deltaPoints_P2);
+
+      // now we have to re-sort the entries, round by round
+      // UNLESS the caller decided to skip the sorting.
+      //
+      // skipping the sorting (and thus assigning ranks) is only
+      // usefull in bracket matches where ranks are not derived
+      // from points but from bracket logic
+      if (!skipSorting)
       {
-        w.clear();
-        w.addCol(RA_CAT_REF, catId);
-        w.addCol(RA_ROUND, round);
-        w.addCol(RA_GRP_NUM, grpNum);
-
-        // get the ranking entries
-        RankingEntryList rankList = getObjectsByWhereClause<RankingEntry>(w);
-        if (rankList.empty()) break;   // no more rounds to modify
-
-        // call the standard sorting algorithm
-        std::sort(rankList.begin(), rankList.end(), lessThanFunc);
-
-        // write the sort results back to the database
-        int rank = 1;
-        for (RankingEntry re : rankList)
+        auto specializedCat = cat.convertToSpecializedObject();
+        auto lessThanFunc = specializedCat->getLessThanFunction();
+        int round = firstRoundToModify;
+        while (true)
         {
-          re.row.update(RA_RANK, rank);
-          ++rank;
-        }
+          w.clear();
+          w.addCol(RA_CAT_REF, catId);
+          w.addCol(RA_ROUND, round);
+          w.addCol(RA_GRP_NUM, grpNum);
 
-        ++round;
+          // get the ranking entries
+          RankingEntryList rankList = getObjectsByWhereClause<RankingEntry>(w);
+          if (rankList.empty()) break;   // no more rounds to modify
+
+          // call the standard sorting algorithm
+          std::sort(rankList.begin(), rankList.end(), lessThanFunc);
+
+          // write the sort results back to the database
+          int rank = 1;
+          for (RankingEntry re : rankList)
+          {
+            re.row.update(RA_RANK, rank);
+            ++rank;
+          }
+
+          ++round;
+        }
       }
     }
+    catch (SqliteOverlay::BusyException&)
+    {
+      return DATABASE_ERROR;
+    }
+    catch (SqliteOverlay::GenericSqliteException&)
+    {
+      return DATABASE_ERROR;
+    }
+    catch (...)
+    {
+      throw;
+    }
 
-    // Done. Finish the transaction
-    isOkay = tg ? tg->commit() : true;
-    return isOkay ? OK : DATABASE_ERROR;
+    return OK;
   }
 
-  string RankingMngr::getSyncString(const std::vector<int>& rows) const
+  //----------------------------------------------------------------------------
+
+  std::string RankingMngr::getSyncString(const std::vector<int>& rows) const
   {
-    std::vector<string> cols = {"id", RA_ROUND, RA_PAIR_REF, RA_CAT_REF, RA_GRP_NUM, RA_GAMES_WON, RA_GAMES_LOST,
+    std::vector<Sloppy::estring> cols = {"id", RA_ROUND, RA_PAIR_REF, RA_CAT_REF, RA_GRP_NUM, RA_GAMES_WON, RA_GAMES_LOST,
                           RA_MATCHES_WON, RA_MATCHES_LOST, RA_MATCHES_DRAW, RA_POINTS_WON, RA_POINTS_LOST, RA_RANK};
 
-    return db->getSyncStringForTable(TAB_RANKING, cols, rows);
+    return db.get().getSyncStringForTable(TAB_RANKING, cols, rows);
   }
 
 //----------------------------------------------------------------------------
@@ -564,9 +555,6 @@ namespace QTournament
     // prepare the result object
     RankingEntryListList result;
 
-    // lock the database before writing
-    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
-
     // apply separate sorting for every match group.
     //
     // In non-round-robin matches, this does no harm because
@@ -604,9 +592,6 @@ namespace QTournament
   {
     if (rank < 1) return INVALID_RANK;
 
-    // lock the database before writing
-    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
-
     re.row.update(RA_RANK, rank);
 
     return OK;
@@ -616,7 +601,6 @@ namespace QTournament
 
   ERR RankingMngr::clearRank(const RankingEntry& re) const
   {
-    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
     re.row.updateToNull(RA_RANK);
 
     return OK;
@@ -643,14 +627,11 @@ namespace QTournament
       cvc.addCol(RA_CAT_REF, catId);
       cvc.addCol(RA_GRP_NUM, g);
       cvc.addCol(RA_RANK, r);
-      tab->insertRow(cvc);
+      tab.insertRow(cvc);
     };
 
     RankingEntryListList rll = getSortedRanking(cat, round);
     if (rll.empty()) return;
-
-    // lock the database before writing
-    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
 
     // for each match group, go through the
     // list of ranking entries and fill gaps

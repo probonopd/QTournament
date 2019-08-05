@@ -185,33 +185,27 @@ namespace QTournament
     where = where.arg(PAIRS_PLAYER1_REF);
     where = where.arg(p.getId());
     where = where.arg(PAIRS_PLAYER2_REF);
-    DbTab* pairsTab = db->getTab(TAB_PAIRS);
-    auto it = pairsTab->getRowsByWhereClause(where.toUtf8().constData());
+    DbTab pairsTab{db, TAB_PAIRS, false};
+    auto rows = pairsTab.getRowsByWhereClause(where.toUtf8().constData());
     std::vector<int> matchIdList;
 
-    DbTab* matchTab = db->getTab(TAB_MATCH);
+    DbTab matchTab{db, TAB_MATCH, false};
     MatchMngr mm{db};
-    while (!(it.isEnd()))
+    for (const auto& r : rows)
     {
-      TabRow r = *it;
-      int ppId = r.getId();
+      int ppId = r.id();
 
       // search for all matches involving this player pair
       where = "%1=%2 OR %3=%2";
       where = where.arg(MA_PAIR1_REF);
       where = where.arg(ppId);
       where = where.arg(MA_PAIR2_REF);
-      auto matchIt = matchTab->getRowsByWhereClause(where.toUtf8().constData());
-      while (!(matchIt.isEnd()))
+      auto matchRows = matchTab.getRowsByWhereClause(where.toUtf8().constData());
+      for (const auto& matchRow : matchRows)
       {
-        int maId = (*matchIt).getId();
-
+        int maId = matchRow.id();
         if (!(Sloppy::isInVector<int>(matchIdList, maId))) matchIdList.push_back(maId);
-
-        ++matchIt;
       }
-
-      ++it;
     }
 
     // step 2: search via ACTUAL_PLAYER
@@ -221,14 +215,11 @@ namespace QTournament
     where = where.arg(MA_ACTUAL_PLAYER1B_REF);
     where = where.arg(MA_ACTUAL_PLAYER2A_REF);
     where = where.arg(MA_ACTUAL_PLAYER2B_REF);
-    it = matchTab->getRowsByWhereClause(where.toUtf8().constData());
-    while (!(it.isEnd()))
+    auto matchRows = matchTab.getRowsByWhereClause(where.toUtf8().constData());
+    for (const auto& matchRow : matchRows)
     {
-      int maId = (*it).getId();
-
+      int maId = matchRow.id();
       if (!(Sloppy::isInVector<int>(matchIdList, maId))) matchIdList.push_back(maId);
-
-      ++it;
     }
 
     // copy the results to the matchesAsPlayer-list
@@ -249,15 +240,13 @@ namespace QTournament
     // find all matches involving the participant as an UMPIRE
     //
     matchIdList.clear();
-    it = matchTab->getRowsByColumnValue(MA_REFEREE_REF, p.getId());
-    while (!(it.isEnd()))
+    matchRows = matchTab.getRowsByColumnValue(MA_REFEREE_REF, p.getId());
+    for (const auto& matchRow : matchRows)
     {
-      int maId = (*it).getId();
+      int maId = matchRow.id();
 
       auto ma = mm.getMatch(maId);
       matchesAsUmpire.push_back(*ma);
-
-      ++it;
     }
 
     // sort by match number
@@ -272,7 +261,7 @@ namespace QTournament
 
   std::optional<Match> PlayerProfile::returnMatchOrEmpty(int maId) const
   {
-    if (maId < 1) return nullptr;
+    if (maId < 1) return {};
 
     MatchMngr mm{db};
     return mm.getMatch(maId);

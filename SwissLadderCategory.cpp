@@ -31,6 +31,7 @@
 #include "CentralSignalEmitter.h"
 #include "SwissLadderGenerator.h"
 
+using namespace std;
 using namespace SqliteOverlay;
 
 namespace QTournament
@@ -133,7 +134,7 @@ namespace QTournament
     // match information from newMatches
     ERR e;
     auto mg = mm.getMatchGroup(*this, lastRound+1, GROUP_NUM__ITERATION, &e);
-    assert(mg != nullptr);
+    assert(mg.has_value());
     assert(e == OK);
     assert(mg->getMatches().size() == nextMatches.size());
     int cnt = 0;
@@ -290,13 +291,13 @@ namespace QTournament
     {
       ERR e;
       auto mg = mm.createMatchGroup(*this, r, GROUP_NUM__ITERATION, &e);
-      assert(mg != nullptr);
+      assert(mg.has_value());
       assert(e == OK);
 
       for (int m=0; m < nMatchesPerRound; ++m)
       {
         auto ma = mm.createMatch(*mg, &e);
-        assert(ma != nullptr);
+        assert(ma.has_value());
         assert(e == OK);
       }
 
