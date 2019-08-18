@@ -97,7 +97,7 @@ namespace QTournament
     bool hasExternalPlayerDatabaseOpen() const;
     bool hasExternalPlayerDatabaseAvailable() const;
     bool hasExternalPlayerDatabaseConfigured() const;
-    ExternalPlayerDB* getExternalPlayerDatabaseHandle() const;
+    ExternalPlayerDB* getExternalPlayerDatabaseHandle();  // this returns the address of the LOCAL, internal database handle!
     QString getExternalDatabaseName() const;
 
     // creation, opening, closing
@@ -106,7 +106,7 @@ namespace QTournament
     void closeExternalPlayerDatabase();
 
     // importing and exporting players
-    std::optional<Player> importPlayerFromExternalDatabase(ERR* err, int extPlayerId, SEX sexOverride = DONT_CARE);
+    //std::optional<Player> importPlayerFromExternalDatabase(ERR* err, int extPlayerId, SEX sexOverride = DONT_CARE);  // never used in the project
     ERR exportPlayerToExternalDatabase(int playerId);
     ERR exportPlayerToExternalDatabase(const Player& p);
     ERR syncAllPlayersToExternalDatabase();
@@ -116,7 +116,7 @@ namespace QTournament
     std::string getSyncString_Pairs(std::vector<int> rows) const;
 
   protected:
-    std::unique_ptr<ExternalPlayerDB> extPlayerDb;
+    std::optional<ExternalPlayerDB> extPlayerDb;
   };
 }
 

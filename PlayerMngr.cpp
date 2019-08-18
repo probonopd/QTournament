@@ -483,7 +483,7 @@ namespace QTournament
 
   bool PlayerMngr::hasExternalPlayerDatabaseOpen() const
   {
-    return (extPlayerDb != nullptr);
+    return (extPlayerDb.has_value());
   }
 
   //----------------------------------------------------------------------------
@@ -513,9 +513,9 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  ExternalPlayerDB* PlayerMngr::getExternalPlayerDatabaseHandle() const
+  ExternalPlayerDB* PlayerMngr::getExternalPlayerDatabaseHandle()
   {
-    return ((extPlayerDb == nullptr) ? nullptr : extPlayerDb.get());
+    return (!extPlayerDb.has_value()) ? nullptr : &(*extPlayerDb);
   }
 
   //----------------------------------------------------------------------------
@@ -535,7 +535,7 @@ namespace QTournament
 
   ERR PlayerMngr::setExternalPlayerDatabase(const QString& fname, bool createNew)
   {
-    std::unique_ptr<ExternalPlayerDB> extDb{nullptr};
+    std::optional<ExternalPlayerDB> extDb{};
 
     if (fname.isEmpty()) return EPD__INVALID_DATABASE_NAME;
 
@@ -543,19 +543,19 @@ namespace QTournament
     if (createNew)
     {
       extDb = ExternalPlayerDB::createNew(fname);
-      if (extDb == nullptr) return EPD__CREATION_FAILED;
+      if (!extDb) return EPD__CREATION_FAILED;
     }
     // try to open an existing database
     else
     {
       extDb = ExternalPlayerDB::openExisting(fname);
-      if (extDb == nullptr) return EPD__NOT_FOUND;
+      if (!extDb) return EPD__NOT_FOUND;
     }
 
     // close the old database, if open
     closeExternalPlayerDatabase();
 
-    // store the pointer to the new database and
+    // store the handle to the new database and
     // overwrite the database config key with
     // the new filename
     //
@@ -593,24 +593,27 @@ namespace QTournament
 
   void PlayerMngr::closeExternalPlayerDatabase()
   {
-    if (extPlayerDb == nullptr) return;
+    if (!extPlayerDb) return;
 
     extPlayerDb->close();
 
     // this operation automatically calls the destructor
     // of the underlying database object
-    extPlayerDb.reset(nullptr);
+    extPlayerDb.reset();
 
     CentralSignalEmitter::getInstance()->externalPlayerDatabaseChanged();
   }
 
   //----------------------------------------------------------------------------
 
+  /*
+   * Obviously this method is never called from anyone... weird....
+   *
   std::optional<Player> PlayerMngr::importPlayerFromExternalDatabase(ERR* err, int extPlayerId, SEX sexOverride)
   {
     // if no player database has been opened by this instance of the PlayerMngr,
     // try to open the database
-    if (extPlayerDb == nullptr)
+    if (!extPlayerDb)
     {
       ERR e = openConfiguredExternalPlayerDatabase();
       if (e != OK)
@@ -622,13 +625,9 @@ namespace QTournament
 
     // check the ID's validity
     auto extPlayer = extPlayerDb->getPlayer(extPlayerId);
-    if (extPlayer == nullptr)
+    if (!extPlayer)
     {
       Sloppy::assignIfNotNull<ERR>(err, INVALID_ID);
-      if (err != nullptr)
-      {
-        *err = INVALID_ID;
-      }
       return std::optional<Player>{};
     }
 
@@ -637,6 +636,7 @@ namespace QTournament
 
     return extPlayer;
   }
+  */
 
   //----------------------------------------------------------------------------
 
@@ -657,7 +657,7 @@ namespace QTournament
   {
     // if no player database has been opened by this instance of the PlayerMngr,
     // try to open the database
-    if (extPlayerDb == nullptr)
+    if (!extPlayerDb)
     {
       ERR err = openConfiguredExternalPlayerDatabase();
       if (err != OK)
@@ -667,13 +667,13 @@ namespace QTournament
     }
 
     auto extPlayer = extPlayerDb->getPlayer(p.getFirstName(), p.getLastName());
-    if (extPlayer == nullptr)
+    if (!extPlayer)
     {
       // create a new player
       ExternalPlayerDatabaseEntry entry{p.getFirstName(), p.getLastName(), p.getSex()};
       auto newPlayer = extPlayerDb->storeNewPlayer(entry);
 
-      return (newPlayer == nullptr) ? EPD__CREATION_FAILED : OK;
+      return (!newPlayer) ? EPD__CREATION_FAILED : OK;
     }
 
     // update existing player, if applicable
@@ -691,7 +691,7 @@ namespace QTournament
   {
     // if no player database has been opened by this instance of the PlayerMngr,
     // try to open the database
-    if (extPlayerDb == nullptr)
+    if (!extPlayerDb)
     {
       ERR err = openConfiguredExternalPlayerDatabase();
       if (err != OK)
@@ -770,8 +770,8 @@ namespace QTournament
       where.arg(MA_PAIR1_REF);
       where.arg(ppId);
       where.arg(MA_PAIR2_REF);
-      MatchList maList = getObjectsByWhereClause<Match>(matchTab, where);
-      if (!(maList.empty()))
+      int cnt = matchTab.getMatchCountForWhereClause(where);
+      if (cnt != 0)
       {
         return PLAYER_ALREADY_IN_MATCHES;
       }
@@ -779,11 +779,14 @@ namespace QTournament
 
     // third check: the player may not be referenced as an actual player
     // (e.g., as a substitue) in any match
-    where = "%1 = %2 OR %3 = %2 OR %4 = %2 OR %5 = %2";
-    where = where.arg(MA_ACTUAL_PLAYER1A_REF).arg(p.getId());
-    where = where.arg(MA_ACTUAL_PLAYER1B_REF).arg(MA_ACTUAL_PLAYER2A_REF).arg(MA_ACTUAL_PLAYER2B_REF);
-    MatchList maList = getObjectsByWhereClause<Match>(matchTab, where.toUtf8().constData());
-    if (!(maList.empty()))
+    where = Sloppy::estring{"%1 = %2 OR %3 = %2 OR %4 = %2 OR %5 = %2"};
+    where.arg(MA_ACTUAL_PLAYER1A_REF);
+    where.arg(p.getId());
+    where.arg(MA_ACTUAL_PLAYER1B_REF);
+    where.arg(MA_ACTUAL_PLAYER2A_REF);
+    where.arg(MA_ACTUAL_PLAYER2B_REF);
+    int cnt = matchTab.getMatchCountForWhereClause(where);
+    if (cnt != 0)
     {
       return PLAYER_ALREADY_IN_MATCHES;
     }
@@ -823,14 +826,11 @@ namespace QTournament
     // there is nothing more to do for us, because there are no more references
     // to this player. This has been checked by canDeletePlayer() before
 
-    // lock the database before writing
-    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
-
     // the actual deletion
     int oldSeqNum = p.getSeqNum();
     CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
     cse->beginDeletePlayer(oldSeqNum);
-    tab->deleteRowsByColumnValue("id", p.getId());
+    tab.deleteRowsByColumnValue("id", p.getId());
     fixSeqNumberAfterDelete(tab, oldSeqNum);
     cse->endDeletePlayer();
 
@@ -841,7 +841,7 @@ namespace QTournament
 
   int PlayerMngr::getTotalPlayerCount() const
   {
-    return tab->length();
+    return tab.length();
   }
 
   //----------------------------------------------------------------------------
@@ -851,8 +851,8 @@ namespace QTournament
     if (maxCnt < 0) return;
 
     // search for up to maxCnt recently finished matches
+    DbTab matchTab{db, TAB_MATCH, false};
     WhereClause wc;
-    DbTab* matchTab = db->getTab(TAB_MATCH);
     wc.addCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_FINISHED));
     wc.setOrderColumn_Desc(MA_FINISH_TIME);
     wc.setLimit(maxCnt);
@@ -864,11 +864,11 @@ namespace QTournament
       auto loser = ma.getLoser();
       auto winner = ma.getWinner();
 
-      if (loser != nullptr) losers_out.push_back(*loser);
-      if (winner != nullptr) winners_out.push_back(*winner);
+      if (loser) losers_out.push_back(*loser);
+      if (winner) winners_out.push_back(*winner);
 
       // handle draws
-      if ((loser == nullptr) && (winner == nullptr))
+      if (!loser && !winner)
       {
         if (ma.hasPlayerPair1()) // should always be true
         {
@@ -886,21 +886,26 @@ namespace QTournament
 
   std::optional<Match> PlayerMngr::getLastFinishedMatchForPlayer(const Player& p)
   {
-    QString sql = "SELECT id FROM %1 WHERE %2=%3 OR %4=%3 OR %5=%3 OR %6=%3 ORDER BY %7 DESC LIMIT 1";
-    sql = sql.arg(TAB_MATCH);
-    sql = sql.arg(MA_ACTUAL_PLAYER1A_REF);
-    sql = sql.arg(p.getId());
-    sql = sql.arg(MA_ACTUAL_PLAYER1B_REF);
-    sql = sql.arg(MA_ACTUAL_PLAYER2A_REF);
-    sql = sql.arg(MA_ACTUAL_PLAYER2B_REF);
-    sql = sql.arg(MA_FINISH_TIME);
+    Sloppy::estring sql = "SELECT id FROM %1 WHERE %2=%3 OR %4=%3 OR %5=%3 OR %6=%3 ORDER BY %7 DESC LIMIT 1";
+    sql.arg(TAB_MATCH);
+    sql.arg(MA_ACTUAL_PLAYER1A_REF);
+    sql.arg(p.getId());
+    sql.arg(MA_ACTUAL_PLAYER1B_REF);
+    sql.arg(MA_ACTUAL_PLAYER2A_REF);
+    sql.arg(MA_ACTUAL_PLAYER2B_REF);
+    sql.arg(MA_FINISH_TIME);
 
-    int matchId;
-    bool isOk = db->execScalarQueryInt(sql.toUtf8().constData(), &matchId, nullptr);
-    if (!isOk) return nullptr;  // no match found
+    try
+    {
+      int matchId = db.get().execScalarQueryInt(sql);
 
-    MatchMngr mm{db};
-    return mm.getMatch(matchId);
+      MatchMngr mm{db};
+      return mm.getMatch(matchId);
+    }
+    catch (SqliteOverlay::NoDataException)
+    {
+      return {};  // no match found
+    }
   }
 
   //----------------------------------------------------------------------------
@@ -908,10 +913,10 @@ namespace QTournament
   std::optional<Match> PlayerMngr::getNextMatchForPlayer(const Player& p)
   {
     std::vector<Match> allNextMatches = getAllScheduledMatchesForPlayer(p, true);
-    if (allNextMatches.empty()) return nullptr;
+    if (allNextMatches.empty()) return {};
 
     MatchMngr mm{db};
-    return mm.getMatch(allNextMatches.at(0).getId());
+    return allNextMatches[0];
   }
 
   //----------------------------------------------------------------------------
@@ -921,17 +926,19 @@ namespace QTournament
     std::vector<Match> result;
 
     // get all scheduled matches
-    QString where = "%1 > 0 AND %2 != %3 AND %2 != %4 ORDER BY %5 ASC";
-    where = where.arg(MA_NUM);
-    where = where.arg(GENERIC_STATE_FIELD_NAME);
-    where = where.arg(static_cast<int>(STAT_MA_RUNNING));
-    where = where.arg(static_cast<int>(STAT_MA_FINISHED));
-    where = where.arg(MA_NUM);
+    WhereClause wc;
+    wc.addCol(MA_NUM, ">", 0);
+    wc.addCol(GENERIC_STATE_FIELD_NAME, "!=", static_cast<int>(STAT_MA_RUNNING));
+    wc.addCol(GENERIC_STATE_FIELD_NAME, "!=", static_cast<int>(STAT_MA_FINISHED));
+    wc.setOrderColumn_Asc(MA_NUM);
 
-    DbTab* matchTab = db->getTab(TAB_MATCH);
+    DbTab matchTab{db, TAB_MATCH, false};
     MatchMngr mm{db};
-    for (const Match& ma : getObjectsByWhereClause<Match>(matchTab, where.toUtf8().constData()))
+    for (const Match& ma : getObjectsByWhereClause<Match>(matchTab, wc))
     {
+      // stop the loop if we only need one match
+      if (findFirstOnly && (!(result.empty()))) return result;
+
       if (ma.hasPlayerPair1())
       {
         PlayerPair pp = ma.getPlayerPair1();
@@ -969,11 +976,6 @@ namespace QTournament
           }
         }
       }
-
-      // stop the loop if we only need one match
-      // (okay, since we use "continue" above, we make at least one
-      // extra cycle after the first match before we hit this "if")
-      if (findFirstOnly && (!(result.empty()))) return result;
     }
 
     return result;
@@ -984,9 +986,6 @@ namespace QTournament
   void PlayerMngr::increaseRefereeCountForPlayer(const Player& p)
   {
     int oldCount = p.getRefereeCount();
-
-    // lock the database before writing
-    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
 
     p.row.update(PL_REFEREE_COUNT, oldCount + 1);
   }

@@ -34,60 +34,70 @@
 namespace QTournament
 {
 
-  upExternalPlayerDatabaseEntry ExternalPlayerDB::row2upEntry(const SqliteOverlay::TabRow& r) const
+  opExternalPlayerDatabaseEntry ExternalPlayerDB::row2upEntry(const SqliteOverlay::TabRow& r) const
   {
     auto sexValue = r.getInt2(EPD_PL_SEX);
-    ExternalPlayerDatabaseEntry* entry = new ExternalPlayerDatabaseEntry(
-          r.getId(), stdString2QString(r[EPD_PL_FNAME]), stdString2QString(r[EPD_PL_LNAME]),
-          sexValue->isNull() ? DONT_CARE : static_cast<SEX>(sexValue->get()));
+    SEX sex = sexValue.has_value() ? static_cast<SEX>(*sexValue) : DONT_CARE;
+    return ExternalPlayerDatabaseEntry{r.id(), stdString2QString(r[EPD_PL_FNAME]), stdString2QString(r[EPD_PL_LNAME]),
+          sex};
 
-    return upExternalPlayerDatabaseEntry(entry);
   }
 
   //----------------------------------------------------------------------------
 
-  ExternalPlayerDB::ExternalPlayerDB(const string& fname, bool createNew)
-    :SqliteOverlay::SqliteDatabase(fname, createNew)
+  ExternalPlayerDB::ExternalPlayerDB(const std::string& fname, SqliteOverlay::OpenMode om)
+    :SqliteOverlay::SqliteDatabase(fname, om)
   {
 
   }
 
   //----------------------------------------------------------------------------
 
-  std::unique_ptr<ExternalPlayerDB> ExternalPlayerDB::createNew(const QString& fname)
+  std::optional<ExternalPlayerDB> ExternalPlayerDB::createNew(const QString& fname)
   {
     // try to create the new database
-    upExternalPlayerDB result = SqliteDatabase::get<ExternalPlayerDB>(fname.toUtf8().constData(), true);
-    if (result == nullptr) return nullptr;
-
-    // write the database version to the file
-    auto cfg = SqliteOverlay::KeyValueTab::getTab(result.get(), TAB_EPD_CFG, true);
-    cfg.set(CFG_KEY_EPD_DB_VERSION, EXT_PLAYER_DB_VERSION);
-
-    result->setLogLevel(Sloppy::Logger::SeverityLevel::error);
-
-    return result;
+    try
+    {
+      return ExternalPlayerDB{fname.toUtf8().constData(), SqliteOverlay::OpenMode::ForceNew};
+    }
+    catch (std::invalid_argument&)
+    {
+      return {};  // file already exists or could not be created
+    }
+    catch (SqliteOverlay::GenericSqliteException&)
+    {
+      return {};  // some SQLite error
+    }
   }
 
   //----------------------------------------------------------------------------
 
-  std::unique_ptr<ExternalPlayerDB> ExternalPlayerDB::openExisting(const QString& fname)
+  std::optional<ExternalPlayerDB> ExternalPlayerDB::openExisting(const QString& fname)
   {
     // try to open the existing database
-    upExternalPlayerDB result = SqliteDatabase::get<ExternalPlayerDB>(fname.toUtf8().constData(), false);
-    if (result == nullptr) return nullptr;
-
-    // check the database version
-    auto cfg = SqliteOverlay::KeyValueTab::getTab(result.get(), TAB_EPD_CFG);
-    int actualDbVersion = cfg.getInt(CFG_KEY_EPD_DB_VERSION);
-    if (actualDbVersion != EXT_PLAYER_DB_VERSION)
+    try
     {
-      return nullptr;
+      auto extDb = ExternalPlayerDB{fname.toUtf8().constData(), SqliteOverlay::OpenMode::OpenExisting_RW};
+
+      // check the database version
+      SqliteOverlay::KeyValueTab cfg{extDb, TAB_EPD_CFG};
+      int actualDbVersion = cfg.getInt(CFG_KEY_EPD_DB_VERSION);
+      if (actualDbVersion != EXT_PLAYER_DB_VERSION)
+      {
+        return {};
+      }
+
+      return extDb;
+    }
+    catch (std::invalid_argument&)
+    {
+      return {};  // file does not exist or could not be accessed
+    }
+    catch (SqliteOverlay::GenericSqliteException&)
+    {
+      return {};  // some SQLite error
     }
 
-    result->setLogLevel(Sloppy::Logger::SeverityLevel::error);
-
-    return result;
   }
 
   //----------------------------------------------------------------------------
@@ -95,14 +105,14 @@ namespace QTournament
   void ExternalPlayerDB::populateTables()
   {
     // Generate the key-value-table with the database version
-    SqliteOverlay::KeyValueTab::getTab(this, TAB_EPD_CFG);
+    createNewKeyValueTab(TAB_EPD_CFG);
 
     // Generate the table for the players
-    SqliteOverlay::TableCreator tc{this};
-    tc.addVarchar(EPD_PL_FNAME, MAX_NAME_LEN);
-    tc.addVarchar(EPD_PL_LNAME, MAX_NAME_LEN);
-    tc.addInt(EPD_PL_SEX);
-    tc.createTableAndResetCreator(TAB_EPD_PLAYER);
+    SqliteOverlay::TableCreator tc;
+    tc.addCol(EPD_PL_FNAME, SqliteOverlay::ColumnDataType::Text, SqliteOverlay::ConflictClause::NotUsed, SqliteOverlay::ConflictClause::Abort);
+    tc.addCol(EPD_PL_LNAME, SqliteOverlay::ColumnDataType::Text, SqliteOverlay::ConflictClause::NotUsed, SqliteOverlay::ConflictClause::Abort);
+    tc.addCol(EPD_PL_SEX, SqliteOverlay::ColumnDataType::Integer, SqliteOverlay::ConflictClause::NotUsed, SqliteOverlay::ConflictClause::NotUsed);
+    tc.createTableAndResetCreator(*this, TAB_EPD_PLAYER);
   }
 
   //----------------------------------------------------------------------------
@@ -119,27 +129,27 @@ namespace QTournament
     QString s = substring.trimmed();
     if (s.length() < 3) return ExternalPlayerDatabaseEntryList();
 
-    // create a WHERE clause that matches any name with the substring in it
-    string _s = QString2StdString(s);
-    string where = EPD_PL_FNAME + " LIKE '%" + _s + "%' or ";
-    where += EPD_PL_LNAME + " LIKE '%" + _s + "%'";
-    where += "ORDER BY " + EPD_PL_LNAME + " ASC, " + EPD_PL_FNAME + " ASC";
+    // create a specific SQL statement that returns all
+    // rows that contain the substring
+    const std::string sql = "SELECT id FROM " + TAB_EPD_PLAYER + " WHERE " +
+                            EPD_PL_FNAME + " LIKE ?1 or " +
+                            EPD_PL_LNAME + " LIKE ?2 " +
+                            "ORDER BY " + EPD_PL_LNAME + " ASC, " + EPD_PL_FNAME + " ASC";
+    const std::string pattern = "%" + QString2StdString(substring) + "%";
 
-    // search for names matching this pattern
-    SqliteOverlay::DbTab* playerTab = getTab(TAB_EPD_PLAYER);
-    auto it = playerTab->getRowsByWhereClause(where);
+    auto stmt = prepStatement(sql);
+    stmt.bind(1, pattern);
+    stmt.bind(2, pattern);
+
     ExternalPlayerDatabaseEntryList result;
-    while (!(it.isEnd()))
+    for (stmt.step(); stmt.hasData(); stmt.step())
     {
-      auto tmp = row2upEntry(*it);
+      int id = stmt.getInt(0);
 
-      result.push_back(*tmp);   // the QList creates a copy internally
+      auto player = row2upEntry(SqliteOverlay::TabRow{*this, TAB_EPD_PLAYER, id, true});
+      if (player.has_value()) result.push_back(*player);
+    }
 
-      ++it;
-
-      // the object behind tmp is automatically deleted
-      // when we leave this scope.
-     }
     return result;
   }
 
@@ -147,68 +157,60 @@ namespace QTournament
 
   ExternalPlayerDatabaseEntryList ExternalPlayerDB::getAllPlayers()
   {
-    SqliteOverlay::DbTab* playerTab = getTab(TAB_EPD_PLAYER);
+    SqliteOverlay::DbTab playerTab{*this, TAB_EPD_PLAYER, false};
     SqliteOverlay::WhereClause wc;
     wc.addCol("id", ">", 0);   // match all rows
     wc.setOrderColumn_Asc(EPD_PL_LNAME);  // sort by last name first
     wc.setOrderColumn_Asc(EPD_PL_FNAME);  // then by given name
-    auto it = playerTab->getRowsByWhereClause(wc);
+
     ExternalPlayerDatabaseEntryList result;
-    while (!(it.isEnd()))
+    for (auto it = SqliteOverlay::TabRowIterator{*this, TAB_EPD_PLAYER, wc}; it.hasData(); ++it)
     {
       auto tmp = row2upEntry(*it);
 
-      result.push_back(*tmp);   // the QList creates a copy internally
-
-      ++it;
-
-      // the object behind tmp is automatically deleted
-      // when we leave this scope.
+      if (tmp.has_value()) result.push_back(*tmp);   // the QList creates a copy internally
     }
+
     return result;
   }
 
   //----------------------------------------------------------------------------
 
-  upExternalPlayerDatabaseEntry ExternalPlayerDB::getPlayer(int id)
+  opExternalPlayerDatabaseEntry ExternalPlayerDB::getPlayer(int id)
   {
-    auto playerTab = getTab(TAB_EPD_PLAYER);
-    if (playerTab->getMatchCountForColumnValue("id", id) != 1)
+    try
     {
-      return nullptr;
+      SqliteOverlay::TabRow r{*this, TAB_EPD_PLAYER, id};
+      return row2upEntry(r);
     }
-
-    auto r = playerTab->operator [](id);
-
-    return row2upEntry(r);
+    catch (std::invalid_argument&)
+    {
+      return {};
+    }
   }
 
   //----------------------------------------------------------------------------
 
-  upExternalPlayerDatabaseEntry ExternalPlayerDB::getPlayer(const QString& fname, const QString& lname)
+  opExternalPlayerDatabaseEntry ExternalPlayerDB::getPlayer(const QString& fname, const QString& lname)
   {
     SqliteOverlay::WhereClause w;
     w.addCol(EPD_PL_FNAME, QString2StdString(fname));
     w.addCol(EPD_PL_LNAME, QString2StdString(lname));
 
-    auto playerTab = getTab(TAB_EPD_PLAYER);
-    if (playerTab->getMatchCountForWhereClause(w) != 1)
-    {
-      return nullptr;
-    }
+    SqliteOverlay::DbTab playerTab{*this, TAB_EPD_PLAYER, false};
+    auto r = playerTab.getSingleRowByWhereClause2(w);
+    if (r.has_value()) return row2upEntry(*r);
 
-    auto r = playerTab->getSingleRowByWhereClause(w);
-
-    return row2upEntry(r);
+    return {};
   }
 
   //----------------------------------------------------------------------------
 
-  upExternalPlayerDatabaseEntry ExternalPlayerDB::storeNewPlayer(const ExternalPlayerDatabaseEntry& newPlayer)
+  opExternalPlayerDatabaseEntry ExternalPlayerDB::storeNewPlayer(const ExternalPlayerDatabaseEntry& newPlayer)
   {
     if (hasPlayer(newPlayer.getFirstname(), newPlayer.getLastname()))
     {
-      return nullptr;
+      return {};
     }
 
     SqliteOverlay::ColumnValueClause cvc;
@@ -220,9 +222,8 @@ namespace QTournament
       cvc.addCol(EPD_PL_SEX, static_cast<int>(newPlayer.getSex()));
     }
 
-    auto playerTab = getTab(TAB_EPD_PLAYER);
-    int newId = playerTab->insertRow(cvc);
-    assert(newId > 0);
+    SqliteOverlay::DbTab playerTab{*this, TAB_EPD_PLAYER, false};
+    int newId = playerTab.insertRow(cvc);
 
     return getPlayer(newId);
   }
@@ -233,26 +234,26 @@ namespace QTournament
   {
     auto tmp = getPlayer(fname, lname);
 
-    return (tmp != nullptr);
+    return tmp.has_value();
   }
 
   //----------------------------------------------------------------------------
 
   bool ExternalPlayerDB::updatePlayerSexIfUndefined(int extPlayerId, SEX newSex)
   {
-    // only permit updates with a defined sey
+    // only permit updates with a defined sex
     if (newSex == DONT_CARE) return false;
 
     // check for a valid player ID
     auto pl = getPlayer(extPlayerId);
-    if (pl == nullptr) return false;
+    if (!pl.has_value()) return false;
 
     // no modification if the player's sex is already defined
     if (pl->getSex() != DONT_CARE) return false;
 
     // update the player entry
-    auto playerTab = getTab(TAB_EPD_PLAYER);
-    playerTab->operator [](extPlayerId).update(EPD_PL_SEX, static_cast<int>(newSex));
+    SqliteOverlay::DbTab playerTab{*this, TAB_EPD_PLAYER, false};
+    playerTab[extPlayerId].update(EPD_PL_SEX, static_cast<int>(newSex));
 
     return true;
   }
@@ -313,7 +314,7 @@ namespace QTournament
 
       // check if the player name already exists
       auto existingPlayer = getPlayer(fName, lName);
-      if (existingPlayer != nullptr)
+      if (existingPlayer.has_value())
       {
         int existingId = existingPlayer->getId();
         skippedPlayerIds.push_back(existingId);
@@ -324,14 +325,14 @@ namespace QTournament
       // actually create the new entry
       ExternalPlayerDatabaseEntry entry{fName, lName, sex};
       auto newPlayer = storeNewPlayer(entry);
-      if (newPlayer == nullptr) ++errorCnt;
+      if (!newPlayer.has_value()) ++errorCnt;
 
       int newExtPlayerId = newPlayer->getId();
       newExtPlayerIds.push_back(newExtPlayerId);
       extPlayerId2TeamName[newExtPlayerId] = teamName;
     }
 
-    return make_tuple(newExtPlayerIds, skippedPlayerIds, extPlayerId2TeamName, errorCnt);
+    return std::make_tuple(newExtPlayerIds, skippedPlayerIds, extPlayerId2TeamName, errorCnt);
   }
 
   //----------------------------------------------------------------------------
@@ -344,12 +345,12 @@ namespace QTournament
   {
     if ((fName.isEmpty()) || (lName.isEmpty()))
     {
-      throw invalid_argument("Received empty string in ctor for ExternalPlayerDatabaseEntry");
+      throw std::invalid_argument("Received empty string in ctor for ExternalPlayerDatabaseEntry");
     }
 
     if (_id < 1)
     {
-      throw invalid_argument("Received invalid ID in ctor for ExternalPlayerDatabaseEntry");
+      throw std::invalid_argument("Received invalid ID in ctor for ExternalPlayerDatabaseEntry");
     }
   }
 
@@ -360,7 +361,7 @@ namespace QTournament
   {
     if ((fName.isEmpty()) || (lName.isEmpty()))
     {
-      throw invalid_argument("Received empty string in ctor for ExternalPlayerDatabaseEntry");
+      throw std::invalid_argument("Received empty string in ctor for ExternalPlayerDatabaseEntry");
     }
   }
 

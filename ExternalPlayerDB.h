@@ -36,13 +36,13 @@ namespace QTournament
 
 #define EXT_PLAYER_DB_VERSION 1
 #define MIN_REQUIRED_EXT_PLAYER_DB_VERSION 1
-#define TAB_EPD_CFG string("Config")
-#define CFG_KEY_EPD_DB_VERSION string("DatabaseVersion")
+#define TAB_EPD_CFG std::string("Config")
+#define CFG_KEY_EPD_DB_VERSION std::string("DatabaseVersion")
 
-#define TAB_EPD_PLAYER string("Player")
-#define EPD_PL_FNAME string("FirstName")
-#define EPD_PL_LNAME string("LastName")
-#define EPD_PL_SEX string("Sex")
+#define TAB_EPD_PLAYER std::string("Player")
+#define EPD_PL_FNAME std::string("FirstName")
+#define EPD_PL_LNAME std::string("LastName")
+#define EPD_PL_SEX std::string("Sex")
 
   class ExternalPlayerDatabaseEntry
   {
@@ -62,7 +62,7 @@ namespace QTournament
     SEX sex;
     static std::function<bool (ExternalPlayerDatabaseEntry&, ExternalPlayerDatabaseEntry&)> getPlayerSortFunction_byName();
   };
-  using upExternalPlayerDatabaseEntry = std::unique_ptr<ExternalPlayerDatabaseEntry>;
+  using opExternalPlayerDatabaseEntry = std::optional<ExternalPlayerDatabaseEntry>;
   using ExternalPlayerDatabaseEntryList = QList<ExternalPlayerDatabaseEntry>;
 
   //----------------------------------------------------------------------------
@@ -72,23 +72,23 @@ namespace QTournament
     friend class SqliteDatabase;
 
   public:
-    static std::unique_ptr<ExternalPlayerDB> createNew(const QString& fname);
-    static std::unique_ptr<ExternalPlayerDB> openExisting(const QString& fname);
+    static std::optional<ExternalPlayerDB> createNew(const QString& fname);
+    static std::optional<ExternalPlayerDB> openExisting(const QString& fname);
     virtual void populateTables();
     virtual void populateViews();
 
     ExternalPlayerDatabaseEntryList searchForMatchingPlayers(const QString& substring);
     ExternalPlayerDatabaseEntryList getAllPlayers();
-    upExternalPlayerDatabaseEntry getPlayer(int id);
-    upExternalPlayerDatabaseEntry getPlayer(const QString& fname, const QString& lname);
-    upExternalPlayerDatabaseEntry storeNewPlayer(const ExternalPlayerDatabaseEntry& newPlayer);
+    opExternalPlayerDatabaseEntry getPlayer(int id);
+    opExternalPlayerDatabaseEntry getPlayer(const QString& fname, const QString& lname);
+    opExternalPlayerDatabaseEntry storeNewPlayer(const ExternalPlayerDatabaseEntry& newPlayer);
     bool hasPlayer(const QString& fname, const QString& lname);
     bool updatePlayerSexIfUndefined(int extPlayerId, SEX newSex);
     std::tuple<QList<int>, QList<int>, QHash<int, QString>, int> bulkImportCSV(const QString& csv);
 
   private:
-    upExternalPlayerDatabaseEntry row2upEntry(const SqliteOverlay::TabRow& r) const;
-    ExternalPlayerDB(const std::string& fname, bool createNew);
+    opExternalPlayerDatabaseEntry row2upEntry(const SqliteOverlay::TabRow& r) const;
+    ExternalPlayerDB(const std::string& fname, SqliteOverlay::OpenMode om);
   };
 
   using upExternalPlayerDB = std::unique_ptr<ExternalPlayerDB>;

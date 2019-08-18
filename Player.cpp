@@ -133,30 +133,30 @@ namespace QTournament
     auto teamRef = row.getInt2(PL_TEAM_REF);
     
     // if we don't use teams, throw an exception
-    if (teamRef->isNull())
+    if (!teamRef)
     {
       throw std::runtime_error("Query for team of a player occurred; however, we're not using teams in this tournament!");
     }
     
     TeamMngr tm{db};
-    return tm.getTeamById(teamRef->get());
+    return tm.getTeamById(*teamRef);
   }
 
 //----------------------------------------------------------------------------
 
   std::vector<Category> Player::getAssignedCategories() const
   {
+    SqliteOverlay::WhereClause wc;
+    wc.addCol(P2C_PLAYER_REF, getId());
+
     CategoryList result;
-    auto it = db->getTab(TAB_P2C)->getRowsByColumnValue(P2C_PLAYER_REF, getId());
-    
     CatMngr cmngr{db};
-    while (!(it.isEnd()))
+    for (SqliteOverlay::TabRowIterator it{db, TAB_P2C, wc}; it.hasData(); ++it)
     {
-      int catId = (*it).getInt(P2C_CAT_REF);
+      int catId = it->getInt(P2C_CAT_REF);
       result.push_back(cmngr.getCategoryById(catId));
-      ++it;
     }
-    
+
     return result;
   }
 
@@ -169,31 +169,32 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  std::unique_ptr<Court> Player::getRefereeCourt() const
+  std::optional<Court> Player::getRefereeCourt() const
   {
-    if (getState() != STAT_PL_REFEREE) return nullptr;
+    if (getState() != STAT_PL_REFEREE) return {};
 
     // find the court on which the player is umpire
-    DbTab* matchTab = db->getTab(TAB_MATCH);
-    WhereClause wc;
+    SqliteOverlay::DbTab matchTab{db, TAB_MATCH, false};
+    SqliteOverlay::WhereClause wc;
     wc.addCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_RUNNING));
     wc.addCol(MA_REFEREE_REF, getId());
 
     // do we have a matching match entry?
-    if (matchTab->getMatchCountForWhereClause(wc) == 0) return nullptr;
-    TabRow r = matchTab->getSingleRowByWhereClause(wc);
+    auto r = matchTab.getSingleRowByWhereClause2(wc);
+    if (!r) return {};
+
     MatchMngr mm{db};
-    upMatch ma = mm.getMatch(r.getId());
-    if (ma == nullptr) return nullptr;
+    auto ma = mm.getMatch(r->id());
+    if (!ma) return {};  // shouldn't happen
 
     return ma->getCourt();
   }
 
   //----------------------------------------------------------------------------
 
-  std::unique_ptr<Court> Player::getMatchCourt() const
+  std::optional<Court> Player::getMatchCourt() const
   {
-    if (getState() != STAT_PL_PLAYING) return nullptr;
+    if (getState() != STAT_PL_PLAYING) return {};
 
     // find the court on which the player is playing
     //
@@ -204,16 +205,16 @@ namespace QTournament
     for (const Court& co : cm.getAllCourts())
     {
       if (co.getState() != STAT_CO_BUSY) continue;
-      upMatch ma = co.getMatch();
-      if (ma == nullptr) continue;
+      auto ma = co.getMatch();
+      if (!ma) continue;
 
       for (const Player& pl : ma->determineActualPlayers())
       {
-        if (pl == *this) return cm.getCourt(co.getId());
+        if (pl == *this) return co;
       }
     }
 
-    return nullptr;
+    return {};
   }
 
 //----------------------------------------------------------------------------
