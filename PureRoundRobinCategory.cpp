@@ -159,7 +159,7 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  ERR PureRoundRobinCategory::prepareFirstRound(ProgressQueue *progressNotificationQueue)
+  ERR PureRoundRobinCategory::prepareFirstRound()
   {
     if (getState() != STAT_CAT_IDLE) return WRONG_STATE;
 

@@ -749,7 +749,7 @@ namespace QTournament
 
     \return error code
     */
-  ERR Category::generateGroupMatches(const PlayerPairList& grpMembers, int grpNum, int firstRoundNum, ProgressQueue *progressNotificationQueue) const
+  ERR Category::generateGroupMatches(const PlayerPairList& grpMembers, int grpNum, int firstRoundNum) const
   {
     if ((grpNum < 1) && (grpNum != GROUP_NUM__ITERATION)) return INVALID_GROUP_NUM;
 
@@ -814,7 +814,7 @@ namespace QTournament
 
     \return error code
     */
-  ERR Category::generateBracketMatches(int bracketMode, const PlayerPairList& seeding, int firstRoundNum, ProgressQueue* progressNotificationQueue) const
+  ERR Category::generateBracketMatches(int bracketMode, const PlayerPairList& seeding, int firstRoundNum) const
   {
     CatRoundStatus crs = getRoundStatus();
     if (firstRoundNum <= crs.getHighestGeneratedMatchRound()) return INVALID_ROUND;
@@ -1349,7 +1349,7 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  ERR Category::prepareFirstRound(ProgressQueue* progressNotificationQueue)
+  ERR Category::prepareFirstRound()
   {
     throw std::runtime_error("Unimplemented Method: prepareFirstRound");
   }
@@ -1391,7 +1391,7 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  ERR Category::resolveIntermediateSeeding(const PlayerPairList& seed, ProgressQueue* progressNotificationQueue) const
+  ERR Category::resolveIntermediateSeeding(const PlayerPairList& seed) const
   {
     throw std::runtime_error("Unimplemented Method: resolveIntermediateSeeding");
   }

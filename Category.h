@@ -116,13 +116,13 @@ namespace QTournament
     virtual ERR canFreezeConfig();
     virtual bool needsInitialRanking();
     virtual bool needsGroupInitialization();
-    virtual ERR prepareFirstRound(ProgressQueue* progressNotificationQueue=nullptr);
+    virtual ERR prepareFirstRound();
     virtual int calcTotalRoundsCount() const;
     virtual ERR onRoundCompleted(int round);
     virtual std::function<bool (RankingEntry&, RankingEntry&)> getLessThanFunction();
     virtual PlayerPairList getRemainingPlayersAfterRound(int round, ERR *err) const;
     virtual PlayerPairList getPlayerPairsForIntermediateSeeding() const;
-    virtual ERR resolveIntermediateSeeding(const PlayerPairList& seed, ProgressQueue* progressNotificationQueue=nullptr) const;
+    virtual ERR resolveIntermediateSeeding(const PlayerPairList& seed) const;
 
     //
     // The following methods CAN be overwritten to extend the
@@ -136,8 +136,8 @@ namespace QTournament
     Category (const TournamentDB& _db, const SqliteOverlay::TabRow& row);
     ERR applyGroupAssignment(std::vector<PlayerPairList> grpCfg);
     ERR applyInitialRanking(PlayerPairList seed);
-    ERR generateGroupMatches(const PlayerPairList &grpMembers, int grpNum, int firstRoundNum=1, ProgressQueue* progressNotificationQueue=nullptr) const;
-    ERR generateBracketMatches(int bracketMode, const PlayerPairList& seeding, int firstRoundNum, ProgressQueue* progressNotificationQueue=nullptr) const;
+    ERR generateGroupMatches(const PlayerPairList &grpMembers, int grpNum, int firstRoundNum=1) const;
+    ERR generateBracketMatches(int bracketMode, const PlayerPairList& seeding, int firstRoundNum) const;
   };
 
   // we need this to have a category object in a QHash

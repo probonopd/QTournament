@@ -82,10 +82,10 @@ namespace QTournament
     // freezing, starting, updating while running
     ERR freezeConfig(const Category& c);
     ERR unfreezeConfig(const Category& c);
-    ERR startCategory(const Category& c, std::vector<PlayerPairList> grpCfg, PlayerPairList seed, ProgressQueue* progressNotificationQueue=nullptr);
+    ERR startCategory(const Category& c, std::vector<PlayerPairList> grpCfg, PlayerPairList seed);
     void updateCatStatusFromMatchStatus(const Category& c);
     bool switchCatToWaitForSeeding(const Category& cat);
-    ERR continueWithIntermediateSeeding(const Category& c, const PlayerPairList& seeding, ProgressQueue* progressNotificationQueue=nullptr);
+    ERR continueWithIntermediateSeeding(const Category& c, const PlayerPairList& seeding);
 
     std::string getSyncString(const std::vector<int>& rows) const override;
 

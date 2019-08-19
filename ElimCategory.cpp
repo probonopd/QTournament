@@ -118,7 +118,7 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  ERR EliminationCategory::prepareFirstRound(ProgressQueue *progressNotificationQueue)
+  ERR EliminationCategory::prepareFirstRound()
   {
     if (getState() != STAT_CAT_IDLE) return WRONG_STATE;
 

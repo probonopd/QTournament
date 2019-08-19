@@ -94,7 +94,7 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  ERR RoundRobinCategory::prepareFirstRound(ProgressQueue *progressNotificationQueue)
+  ERR RoundRobinCategory::prepareFirstRound()
   {
     if (getState() != STAT_CAT_IDLE) return WRONG_STATE;
 
@@ -366,7 +366,7 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  ERR RoundRobinCategory::resolveIntermediateSeeding(const PlayerPairList& seed, ProgressQueue* progressNotificationQueue) const
+  ERR RoundRobinCategory::resolveIntermediateSeeding(const PlayerPairList& seed) const
   {
     if (getState() != STAT_CAT_WAIT_FOR_INTERMEDIATE_SEEDING)
     {

@@ -1112,7 +1112,7 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  ERR CatMngr::startCategory(const Category &c, std::vector<PlayerPairList> grpCfg, PlayerPairList seed, ProgressQueue *progressNotificationQueue)
+  ERR CatMngr::startCategory(const Category &c, std::vector<PlayerPairList> grpCfg, PlayerPairList seed)
   {
     // we can only transition to "IDLE" if we are "FROZEN"
     if (c.getState() != STAT_CAT_FROZEN)
@@ -1303,7 +1303,7 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  ERR CatMngr::continueWithIntermediateSeeding(const Category& c, const PlayerPairList& seeding, ProgressQueue* progressNotificationQueue)
+  ERR CatMngr::continueWithIntermediateSeeding(const Category& c, const PlayerPairList& seeding)
   {
     if (c.getState() != STAT_CAT_WAIT_FOR_INTERMEDIATE_SEEDING)
     {

@@ -265,7 +265,7 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  ERR SwissLadderCategory::prepareFirstRound(ProgressQueue *progressNotificationQueue)
+  ERR SwissLadderCategory::prepareFirstRound()
   {
     if (getState() != STAT_CAT_IDLE) return WRONG_STATE;
 

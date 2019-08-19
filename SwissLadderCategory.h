@@ -20,7 +20,6 @@
 #define	SWISSLADDERCATEGORY_H
 
 #include "Category.h"
-#include "ThreadSafeQueue.h"
 #include "RankingEntry.h"
 
 
@@ -35,7 +34,7 @@ namespace QTournament
     virtual ERR canFreezeConfig() override;
     virtual bool needsInitialRanking() override;
     virtual bool needsGroupInitialization() override;
-    virtual ERR prepareFirstRound(ProgressQueue* progressNotificationQueue=nullptr) override;
+    virtual ERR prepareFirstRound() override;
     virtual int calcTotalRoundsCount() const override;
     virtual std::function<bool(RankingEntry& a, RankingEntry& b)> getLessThanFunction() override;
     virtual ERR onRoundCompleted(int round) override;

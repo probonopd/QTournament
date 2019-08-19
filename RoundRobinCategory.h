@@ -34,13 +34,13 @@ namespace QTournament
     virtual ERR canFreezeConfig() override;
     virtual bool needsInitialRanking() override;
     virtual bool needsGroupInitialization() override;
-    virtual ERR prepareFirstRound(ProgressQueue* progressNotificationQueue=nullptr) override;
+    virtual ERR prepareFirstRound() override;
     virtual int calcTotalRoundsCount() const override;
     virtual std::function<bool(RankingEntry& a, RankingEntry& b)> getLessThanFunction() override;
     virtual ERR onRoundCompleted(int round) override;
     virtual PlayerPairList getRemainingPlayersAfterRound(int round, ERR *err) const override;
     virtual PlayerPairList getPlayerPairsForIntermediateSeeding() const override;
-    virtual ERR resolveIntermediateSeeding(const PlayerPairList& seed, ProgressQueue* progressNotificationQueue=nullptr) const override;
+    virtual ERR resolveIntermediateSeeding(const PlayerPairList& seed) const override;
 
     PlayerPairList getQualifiedPlayersAfterRoundRobin_sorted() const;
 
