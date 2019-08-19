@@ -47,7 +47,7 @@ namespace QTournament {
     // large number of real matches
     if (nMatches >= NUM_INITIALLY_ASSUMED_MATCHES)
     {
-      return totalMatchTime_secs / ((long) nMatches);
+      return totalMatchTime_secs / nMatches;
     }
 
     // return the default duration if we have no matches at all
@@ -57,10 +57,10 @@ namespace QTournament {
     }
 
     // blend default and real duration for the first few matches
-    unsigned long matchTimeBlended = totalMatchTime_secs + \
+    long matchTimeBlended = totalMatchTime_secs + \
                                      (NUM_INITIALLY_ASSUMED_MATCHES - nMatches) * DEFAULT_MATCH_TIME__SECS;
 
-    return matchTimeBlended / ((long) NUM_INITIALLY_ASSUMED_MATCHES);
+    return matchTimeBlended / NUM_INITIALLY_ASSUMED_MATCHES;
   }
 
   //----------------------------------------------------------------------------
@@ -68,9 +68,7 @@ namespace QTournament {
   int MatchTimePredictor::getAverageMatchDurationForCat__secs(const Category& cat)
   {
     int catId = cat.getId();
-    int cnt;
-    unsigned long catTime;
-    tie(cnt, catTime) = catId2MatchTime[catId];
+    auto [cnt, catTime] = catId2MatchTime[catId];
     if (cnt < NUM_INITIALLY_ASSUMED_MATCHES)
     {
       // blend with the global average if we don't have enough
@@ -135,60 +133,43 @@ namespace QTournament {
       if (it != catId2MatchTime.end()) continue;
 
       // insert an empty element
-      std::tuple<int, unsigned long> empty = make_tuple(0, 0);
+      std::tuple<int, long> empty = std::tuple{0, 0l};
       catId2MatchTime[catId] = empty;
     }
 
     // find all matches that have been finished since the last update
-    WhereClause wc;
+    SqliteOverlay::WhereClause wc;
     wc.addCol(MA_FINISH_TIME, ">", lastMatchFinishTime);
     wc.addCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_FINISHED));
     wc.setOrderColumn_Asc(MA_FINISH_TIME);
 
-    DbTab* maTab = db->getTab(TAB_MATCH);
-    auto it = maTab->getRowsByWhereClause(wc);
     MatchMngr mm{db};
-    while (!(it.isEnd()))
+    for (SqliteOverlay::TabRowIterator it{db, TAB_MATCH, wc}; it.hasData(); ++it)
     {
-      TabRow row = *it;
+      const SqliteOverlay::TabRow& row = *it;
 
       // treat all times as ints, that's easier
 
       // check for the existence of the timestamps, because
       // walkovers might not have one
-      auto _startTime = row.getInt2(MA_START_TIME);
-      if (_startTime->isNull())
-      {
-        ++it;
-        continue;
-      }
-      int startTime = _startTime->get();
+      auto startTime = row.getInt2(MA_START_TIME);
+      if (!startTime) continue;
 
-      auto _finishTime = row.getInt2(MA_FINISH_TIME);
-      if (_finishTime->isNull())
-      {
-        ++it;
-        continue;
-      }
-      int finishTime = _finishTime->get();
-
+      auto finishTime = row.getInt2(MA_FINISH_TIME);
+      if (!finishTime) continue;
 
       // update the accumulated match times
-      int matchDuration_secs = finishTime - startTime;
+      int matchDuration_secs = *finishTime - *startTime;
       totalMatchTime_secs += matchDuration_secs;
-      auto ma = mm.getMatch(row.getId());   // this is very expensive in terms of cycles and DB queries... especially since basically all information is already at hand
+      auto ma = mm.getMatch(row.id());   // this is very expensive in terms of cycles and DB queries... especially since basically all information is already at hand
       int catId = ma->getCategory().getId();
-      int cnt;
-      unsigned long catTime;
-      tie(cnt, catTime) = catId2MatchTime[catId];  // a key for this value MUST exist, see above
+      auto [cnt, catTime] = catId2MatchTime[catId];  // a key for this value MUST exist, see above
       ++cnt;
       catTime += matchDuration_secs;
-      catId2MatchTime[catId] = make_tuple(cnt, catTime);
+      catId2MatchTime[catId] = std::tuple{cnt, catTime};
 
-      lastMatchFinishTime = finishTime;  // we've ordered the results by finish time, see above
+      lastMatchFinishTime = *finishTime;  // we've ordered the results by finish time, see above
       ++nMatches;
-
-      ++it;
     }
   }
 
@@ -218,7 +199,7 @@ namespace QTournament {
     // expected time when they'll be free again
     MatchMngr mm{db};
     time_t now = time(nullptr);
-    deque<std::tuple<int, int>> courtFreeList;
+    std::vector<std::tuple<int, int>> courtFreeList;
     for (const Court& c : allCourts)
     {
       int coNum = c.getNumber();
@@ -226,8 +207,8 @@ namespace QTournament {
       // default value for empty courts
       int finishTime = now - GRACE_TIME_BETWEEN_MATCHES__SECS;  // will be added again later
 
-      upMatch ma = mm.getMatchForCourt(c);
-      if (ma != nullptr)
+      auto ma = mm.getMatchForCourt(c);
+      if (ma)
       {
         QDateTime start = ma->getStartTime();
         int avgMatchTime = getAverageMatchDurationForCat__secs(*ma);
@@ -251,18 +232,14 @@ namespace QTournament {
         }
       }
 
-      courtFreeList.push_back(make_tuple(coNum, finishTime));
+      courtFreeList.push_back(std::tuple{coNum, finishTime});
     }
 
-    // define a lambda for sorting courts according to their
-    // availability
-    auto courtSortFunc = [](const std::tuple<int, int>& c1, const std::tuple<int, int>& c2) {
-      int c1Num;
-      int c1Free;
-      int c2Num;
-      int c2Free;
-      tie(c1Num, c1Free) = c1;
-      tie(c2Num, c2Free) = c2;
+    // define a lambda for comparing two court entries wrt
+    // the time when they become available
+    auto courtCmpFunc_less = [](const std::tuple<int, int>& c1, const std::tuple<int, int>& c2) {
+      auto [c1Num, c1Free] = c1;
+      auto [c2Num, c2Free] = c2;
 
       // if the courts have different times, sort by time
       if (c1Free != c2Free) return (c1Free < c2Free);
@@ -272,35 +249,27 @@ namespace QTournament {
       return (c1Free < c2Free);
     };
 
-    // sort the list so that the earliest free court is first
-    std::sort(courtFreeList.begin(), courtFreeList.end(), courtSortFunc);
-
     // prepare the result vector
     std::vector<MatchTimePrediction> result;
 
     // iterate over all queued, not running and not finished
     // matches and assign estimated start and end times
-    WhereClause wc;
+    SqliteOverlay::WhereClause wc;
     wc.addCol(MA_NUM, ">", 0);   // the match needs to have a match number
     wc.addCol(GENERIC_STATE_FIELD_NAME, "!=", static_cast<int>(STAT_MA_FINISHED));  // the match is not finished
     wc.addCol(GENERIC_STATE_FIELD_NAME, "!=", static_cast<int>(STAT_MA_RUNNING));  // the match is not running
     wc.setOrderColumn_Asc(MA_NUM);
-    DbTab* maTab = db->getTab(TAB_MATCH);
-    auto it = maTab->getRowsByWhereClause(wc);
 
-    bool needsAnotherSorting = true;   // explanation at the end of the while() loop
-    while (!(it.isEnd()))
+    for (SqliteOverlay::TabRowIterator it{db, TAB_MATCH, wc}; it.hasData(); ++it)
     {
-      TabRow matchRow = *it;
-      auto ma = mm.getMatch(matchRow.getId());
+      const SqliteOverlay::TabRow& matchRow = *it;
+
+      auto ma = mm.getMatch(matchRow.id());
       int avgMatchTime = getAverageMatchDurationForCat__secs(*ma);
 
-      // get the earliest available court, which is always the first
-      // court in the list
-      int coNum;
-      int coFree;
-      tie(coNum, coFree) = courtFreeList.front();
-      courtFreeList.pop_front();
+      // get the earliest available court
+      auto itNextAvailCout = std::min_element(begin(courtFreeList), end(courtFreeList), courtCmpFunc_less);
+      auto [coNum, coFree] = *itNextAvailCout;
 
       // calc start and finish time
       //
@@ -313,7 +282,7 @@ namespace QTournament {
 
       // prepare a new prediction element
       struct MatchTimePrediction mtp;
-      mtp.matchId = matchRow.getId();
+      mtp.matchId = matchRow.id();
       mtp.estStartTime__UTC = start;
       mtp.estFinishTime__UTC = finish;
       mtp.estCourtNum = coNum;
@@ -321,42 +290,9 @@ namespace QTournament {
       // store the element
       result.push_back(mtp);
 
-      // virtually allocate the court for a length of avgMatchTime
-      //
-      // this means implicitly that this court is last to become
-      // available again and so we push it at the of the court list
-      courtFreeList.push_back(make_tuple(coNum, finish));
-
-      // exception: if we have currently running matches that last already
-      // significantly longer than avgMatchTime, the pushed_back court is NOT
-      // correctly positioned at the end of the list. Example: run two matches
-      // on court 1 while there's still the first match on court 2 ongoing. In
-      // this case, court 1 needs to go BEFORE court 2 and court 2 remains at the
-      // end of the list.
-      //
-      // to solve this, we simply sort the list after every match BUT to avoid
-      // unnecessary sort/runtime/comparisons in every loop iteration, we stop
-      // doing this once the added element is still at the end of the deque AFTER sorting.
-      //
-      // if this criterion is met, no match longer than avgMatchTime is in the deque
-      // and we may safely assume that the element push to the end of the list will
-      // always represent the court that will be available last.
-      if (needsAnotherSorting)
-      {
-        std::sort(courtFreeList.begin(), courtFreeList.end(), courtSortFunc);
-
-        // check the element at the end of the list
-        int coNumOld = coNum;
-        tie(coNum, coFree) = courtFreeList.back();
-
-        // stop sorting if it is still the same that we pushed there
-        // earlier. or positively phrased: sort as long as the last
-        // element does not remain the last element after sorting
-        needsAnotherSorting = (coNum != coNumOld);
-      }
-
-      // next match
-      ++it;
+      // virtually allocate the court until the predicted
+      // match finish time
+      *itNextAvailCout = std::tuple{coNum, finish};
     }
 
     // inform everyone about the latest statistics

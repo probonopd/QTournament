@@ -65,11 +65,11 @@ namespace QTournament
     static constexpr int NUM_INITIALLY_ASSUMED_MATCHES = 5;
 
     std::reference_wrapper<const QTournament::TournamentDB> db;
-    unsigned long totalMatchTime_secs;
+    long totalMatchTime_secs;
     int nMatches;
     time_t lastMatchFinishTime;
 
-    std::unordered_map<int, std::tuple<int, unsigned long>> catId2MatchTime;
+    std::unordered_map<int, std::tuple<int, long>> catId2MatchTime;
 
     std::vector<MatchTimePrediction> lastPrediction;
 
