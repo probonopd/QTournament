@@ -1,11 +1,12 @@
 #include <QString>
 
-#include <Sloppy/libSloppy.h>
-
 #include "CSVImporter.h"
 #include "TournamentDB.h"
 #include "PlayerMngr.h"
 #include "CatMngr.h"
+#include "HelperFunc.h"
+
+using namespace std;
 
 namespace QTournament
 {
@@ -24,19 +25,17 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  std::vector<vector<string>> splitCSV(const string& rawText, const string& delim, const string& optionalCatName)
+  std::vector<vector<Sloppy::estring>> splitCSV(const Sloppy::estring& rawText, const string& delim, const string& optionalCatName)
   {
-    std::vector<vector<string>> result;
+    std::vector<vector<Sloppy::estring>> result;
 
-    Sloppy::StringList lines;
-    Sloppy::stringSplitter(lines, rawText, "\n", true);
+    auto lines = rawText.split("\n", false, true);
 
-    for (const string& line : lines)
+    for (const auto& line : lines)
     {
       if (line.empty()) continue;
 
-      Sloppy::StringList fields;
-      Sloppy::stringSplitter(fields, line, delim, true);
+      auto fields = line.split(delim, true, true);
 
       // remove empty fields at the end
       while (!(fields.empty()))
@@ -63,7 +62,7 @@ namespace QTournament
 
           // do not add a category twice
           string cName = fields[idx];
-          if (Sloppy::isInVector<string>(catNames, cName)) continue;
+          if (Sloppy::isInVector<Sloppy::estring>(catNames, cName)) continue;
 
           catNames.push_back(cName);
         }
@@ -75,7 +74,7 @@ namespace QTournament
       if (!(catNames.empty()))
       {
         while (fields.size() < 4) fields.push_back("");
-        fields.push_back(Sloppy::commaSepStringFromStringList(catNames, ", "));  // store the comma sep. list...
+        fields.push_back(Sloppy::estring{catNames, ", "});  // store the comma sep. list...
       }
 
       // make sure we have always five columns;
@@ -91,10 +90,10 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  std::vector<CSVImportRecord> convertCSVfromPlainText(TournamentDB* db, const std::vector<vector<string> >& splitData)
+  std::vector<CSVImportRecord> convertCSVfromPlainText(const TournamentDB& db, const std::vector<vector<Sloppy::estring> >& splitData)
   {
     std::vector<CSVImportRecord> result;
-    for (const std::vector<string>& s : splitData)
+    for (const auto& s : splitData)
     {
       result.push_back(CSVImportRecord{db, s});
     }
@@ -207,19 +206,19 @@ namespace QTournament
   //----------------------------------------------------------------------------
   //----------------------------------------------------------------------------
 
-  CSVImportRecord::CSVImportRecord(const TournamentDB& _db, std::vector<string> rawTexts)
+  CSVImportRecord::CSVImportRecord(const TournamentDB& _db, std::vector<Sloppy::estring> rawTexts)
     :db{_db}
   {
     // copy the lastname
     if (rawTexts.size() > 0)
     {
-      lName = QString::fromUtf8(rawTexts[0].c_str());
+      lName = stdString2QString(rawTexts[0]);
     }
 
     // copy the given name
     if (rawTexts.size() > 1)
     {
-      fName = QString::fromUtf8(rawTexts[1].c_str());
+      fName = stdString2QString(rawTexts[1]);
     }
 
     // copy the sex
@@ -233,17 +232,16 @@ namespace QTournament
     // copy the team name
     if (rawTexts.size() > 3)
     {
-      teamName = QString::fromUtf8(rawTexts[3].c_str());
+      teamName = stdString2QString(rawTexts[3]);
     }
 
     // copy the cat names
     if (rawTexts.size() > 4)
     {
-      std::vector<string> names;
-      Sloppy::stringSplitter(names, rawTexts[4], ",", true);
+      auto names = rawTexts[4].split(",", false, true);
       for (const string& s : names)
       {
-        catNames.push_back(QString::fromUtf8(s.c_str()));
+        catNames.push_back(stdString2QString(s));
       }
     }
 
@@ -262,8 +260,8 @@ namespace QTournament
 
   void CSVImportRecord::enforceConsistentSex()
   {
-    upPlayer p = getExistingPlayer();
-    if (p != nullptr)
+    auto p = getExistingPlayer();
+    if (p)
     {
       sex = p->getSex();
     }
@@ -335,14 +333,15 @@ namespace QTournament
 
   std::optional<Player> CSVImportRecord::getExistingPlayer() const
   {
-    PlayerMngr pm{db};
-    if (pm.hasPlayer(fName, lName))
+    try
     {
-      Player p = pm.getPlayer(fName, lName);
-      return pm.getPlayer2(p.getId());
+      PlayerMngr pm{db};
+      return pm.getPlayer(fName, lName);
     }
-
-    return nullptr;
+    catch (std::invalid_argument&)
+    {
+      return {};
+    }
   }
 
   //----------------------------------------------------------------------------

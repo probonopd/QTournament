@@ -48,7 +48,7 @@ namespace QTournament
   class CSVImportRecord
   {
   public:
-    CSVImportRecord(const TournamentDB& _db, std::vector<std::string> rawTexts);
+    CSVImportRecord(const TournamentDB& _db, std::vector<Sloppy::estring> rawTexts);
     void enforceConsistentSex();
     void insertMissingDataForExistingPlayers();
 
@@ -85,8 +85,8 @@ namespace QTournament
     std::vector<QString> catNames;
   };
 
-  std::vector<std::vector<std::string>> splitCSV(const std::string& rawText, const std::string& delim = ",", const std::string& optionalCatName="");
-  std::vector<CSVImportRecord> convertCSVfromPlainText(const TournamentDB& db, const std::vector<std::vector<std::string>>& splitData);
+  std::vector<std::vector<Sloppy::estring> > splitCSV(const Sloppy::estring& rawText, const std::string& delim = ",", const std::string& optionalCatName="");
+  std::vector<CSVImportRecord> convertCSVfromPlainText(const TournamentDB& db, const std::vector<std::vector<Sloppy::estring> >& splitData);
   std::vector<CSVError> analyseCSV(const TournamentDB& db, const std::vector<CSVImportRecord>& data);
 
 }
