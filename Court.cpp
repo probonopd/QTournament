@@ -46,9 +46,9 @@ namespace QTournament
   QString Court::getName(int maxLen) const
   {
     auto _result = row.getString2(GENERIC_NAME_FIELD_NAME);
-    if (_result->isNull()) return QString();  // empty name field
+    if (!_result) return QString();  // empty name field
 
-    QString result = stdString2QString(_result->get());
+    QString result = stdString2QString(*_result);
 
     if ((maxLen > 0) && (result.length() > maxLen))
     {
@@ -84,9 +84,6 @@ namespace QTournament
 
   void Court::setManualAssignment(bool isManual)
   {
-    // lock the database before writing
-    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
-
     row.update(CO_IS_MANUAL_ASSIGNMENT, isManual ? 1 : 0);
   }
 
