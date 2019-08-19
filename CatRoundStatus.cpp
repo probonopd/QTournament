@@ -25,20 +25,7 @@ namespace QTournament
 {
 
 CatRoundStatus::CatRoundStatus(const TournamentDB& _db, const Category& _cat)
-  :db(nullptr), cat(_cat)
-{
-  if (_db == nullptr)
-  {
-    throw std::invalid_argument("Rceived nullptr for database handle");
-  }
-
-  db = _db;
-  cat = _cat;
-}
-
-//----------------------------------------------------------------------------
-
-CatRoundStatus::~CatRoundStatus()
+  :db(_db), cat(_cat)
 {
 }
 
@@ -142,14 +129,14 @@ int CatRoundStatus::getFinishedRoundsCount() const
 
 //----------------------------------------------------------------------------
 
-tuple<int, int, int> CatRoundStatus::getMatchCountForCurrentRound() const
+std::tuple<int, int, int> CatRoundStatus::getMatchCountForCurrentRound() const
 {
   QList<int> runningRounds = getCurrentlyRunningRoundNumbers();
 
   if (runningRounds.count() == 0)
   {
     int tmp = NO_CURRENTLY_RUNNING_ROUND;
-    return make_tuple(tmp, tmp, tmp);
+    return std::tuple{tmp, tmp, tmp};
   }
 
   int unfinishedMatchCount = 0;
@@ -172,7 +159,7 @@ tuple<int, int, int> CatRoundStatus::getMatchCountForCurrentRound() const
   }
 
   // total, unfinished, running
-  return make_tuple(totalMatchCount, unfinishedMatchCount, runningMatchCount);
+  return std::tuple{totalMatchCount, unfinishedMatchCount, runningMatchCount};
 }
 
 //----------------------------------------------------------------------------

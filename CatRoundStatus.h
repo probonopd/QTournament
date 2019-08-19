@@ -35,7 +35,6 @@ public:
   static constexpr int MULTIPLE_ROUNDS_RUNNING = -2;
 
   CatRoundStatus(const TournamentDB& _db, const Category& _cat);
-  ~CatRoundStatus();
 
   int getFinishedRoundsCount() const;
   int getCurrentlyRunningRoundNumber() const;
