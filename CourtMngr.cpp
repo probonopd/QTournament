@@ -42,14 +42,14 @@ namespace QTournament
     
     if (name.length() > MAX_NAME_LEN)
     {
-      if (err != nullptr) *err = INVALID_NAME;
-      return nullptr;
+      Sloppy::assignIfNotNull<ERR>(err, INVALID_NAME);
+      return {};
     }
     
     if (hasCourt(courtNum))
     {
-      if (err != nullptr) *err = COURT_NUMBER_EXISTS;
-      return nullptr;
+      Sloppy::assignIfNotNull<ERR>(err, COURT_NUMBER_EXISTS);
+      return {};
     }
     
     // prepare a new table row
@@ -59,44 +59,38 @@ namespace QTournament
     cvc.addCol(CO_IS_MANUAL_ASSIGNMENT, 0);
     cvc.addCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_CO_AVAIL));
     
-    // lock the database before writing
-    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
-
     // create the new court row
     CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
     cse->beginCreateCourt();
-    int newId = tab->insertRow(cvc);
+    int newId = tab.insertRow(cvc);
     fixSeqNumberAfterInsert();
-    cse->endCreateCourt(tab->length() - 1); // the new sequence number is always the highest
+    cse->endCreateCourt(tab.length() - 1); // the new sequence number is always the highest
     
     // create a court object for the new court and return a pointer
     // to this new object
-    Court* co_raw = new Court(db, newId);
-    if (err != nullptr) *err = OK;
-    return std::unique_ptr<Court>(co_raw);
+    return Court{db, newId};
   }
 
 //----------------------------------------------------------------------------
 
   bool CourtMngr::hasCourt(const int courtNum)
   {
-    return (tab->getMatchCountForColumnValue(CO_NUMBER, courtNum) > 0);
+    return (tab.getMatchCountForColumnValue(CO_NUMBER, courtNum) > 0);
   }
 
 //----------------------------------------------------------------------------
 
   int CourtMngr::getHighestUnusedCourtNumber() const
   {
-    // do we have any courts at all?
-    if (tab->length() == 0) return 1;
+    static const std::string sql{"SELECT max(" + std::string{CO_NUMBER} + ") FROM " + std::string{TAB_COURT}};
 
-    // okay, get the highest used court number
-    SqliteOverlay::WhereClause wc;
-    wc.addCol("id", ">", 0);
-    wc.setOrderColumn_Desc(CO_NUMBER);
-    auto r = tab->getSingleRowByWhereClause(wc);
-
-    return r.getInt(CO_NUMBER) + 1;
+    try
+    {
+      return db.get().execScalarQueryIntOrNull(sql).value_or(1);
+    }
+    catch (NoDataException&) {
+      return 1;
+    }
   }
 
 //----------------------------------------------------------------------------
@@ -137,9 +131,6 @@ namespace QTournament
       return INVALID_NAME;
     }
         
-    // lock the database before writing
-    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
-
     c.row.update(GENERIC_NAME_FIELD_NAME, QString2StdString(newName));
     
     CentralSignalEmitter::getInstance()->courtRenamed(c);
@@ -166,7 +157,7 @@ namespace QTournament
 
   bool CourtMngr::hasCourtById(int id)
   {
-    return (tab->getMatchCountForColumnValue("id", id) != 0);
+    return (tab.getMatchCountForColumnValue("id", id) != 0);
   }
 
 //----------------------------------------------------------------------------
@@ -180,8 +171,8 @@ namespace QTournament
 
   int CourtMngr::getActiveCourtCount()
   {
-    int allCourts = tab->length();
-    int disabledCourts = tab->getMatchCountForColumnValue(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_CO_DISABLED));
+    int allCourts = tab.length();
+    int disabledCourts = tab.getMatchCountForColumnValue(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_CO_DISABLED));
 
     return (allCourts - disabledCourts);
   }
@@ -235,8 +226,8 @@ namespace QTournament
     SqliteOverlay::WhereClause wc;
     wc.addCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_RUNNING));
     wc.addCol(MA_COURT_REF, co.getId());
-    auto matchTab = db->getTab(TAB_MATCH);
-    if (matchTab->getMatchCountForWhereClause(wc) > 0)
+    DbTab matchTab{db, TAB_MATCH, false};
+    if (matchTab.getMatchCountForWhereClause(wc) > 0)
     {
       return false;   // there is at least one running match assigned to this court
     }
@@ -283,8 +274,8 @@ namespace QTournament
   ERR CourtMngr::deleteCourt(const Court& co)
   {
     // check if the court has already been used in the past
-    auto matchTab = db->getTab(TAB_MATCH);
-    if (matchTab->getMatchCountForColumnValue(MA_COURT_REF, co.getId()) > 0)
+    DbTab matchTab{db, TAB_MATCH, false};
+    if (matchTab.getMatchCountForColumnValue(MA_COURT_REF, co.getId()) > 0)
     {
       return COURT_ALREADY_USED;
     }
@@ -292,27 +283,23 @@ namespace QTournament
     // after this check it is safe to delete to court because we won't
     // harm the database integrity
 
-    // lock the database before writing
-    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
-
     CentralSignalEmitter* cse =CentralSignalEmitter::getInstance();
     int oldSeqNum = co.getSeqNum();
     cse->beginDeleteCourt(oldSeqNum);
-    int dbErr;
-    tab->deleteRowsByColumnValue("id", co.getId(), &dbErr);
+    tab.deleteRowsByColumnValue("id", co.getId());
     fixSeqNumberAfterDelete(tab, oldSeqNum);
     cse->endDeleteCourt();
 
-    return (dbErr == SQLITE_DONE) ? OK : DATABASE_ERROR;
+    return OK;
   }
 
   //----------------------------------------------------------------------------
 
-  string CourtMngr::getSyncString(const std::vector<int>& rows) const
+  std::string CourtMngr::getSyncString(const std::vector<int>& rows) const
   {
-    std::vector<string> cols = {"id", GENERIC_NAME_FIELD_NAME, CO_NUMBER};
+    std::vector<Sloppy::estring> cols = {"id", GENERIC_NAME_FIELD_NAME, CO_NUMBER};
 
-    return db->getSyncStringForTable(TAB_COURT, cols, rows);
+    return db.get().getSyncStringForTable(TAB_COURT, cols, rows);
   }
 
   //----------------------------------------------------------------------------
@@ -321,21 +308,21 @@ namespace QTournament
   {
     // find the next free court that is not subject to manual assignment
     auto nextAutoCourt = getNextUnusedCourt(false);
-    if (nextAutoCourt != nullptr)
+    if (nextAutoCourt)
     {
       // okay, we have a regular court
-      if (err != nullptr) *err = OK;
+      Sloppy::assignIfNotNull<ERR>(err, OK);
       return nextAutoCourt;
     }
 
     // Damn, no court for automatic assignment available.
     // So let's check for courts with manual assignment, too.
     auto nextManualCourt = getNextUnusedCourt(true);
-    if (nextManualCourt == nullptr)
+    if (nextManualCourt)
     {
       // okay, there is court available at all
-      if (err != nullptr) *err = NO_COURT_AVAIL;
-      return nullptr;
+      Sloppy::assignIfNotNull<ERR>(err, NO_COURT_AVAIL);
+      return {};
     }
 
     // great, so there is a free court, but it's for
@@ -343,13 +330,13 @@ namespace QTournament
     // manual courts, everything is fine
     if (includeManual)
     {
-      if (err != nullptr) *err = OK;
+      Sloppy::assignIfNotNull<ERR>(err, OK);
       return nextManualCourt;
     }
 
     // indicate to the user that there would be a manual court
-    if (err != nullptr) *err = ONLY_MANUAL_COURT_AVAIL;
-    return nullptr;
+    Sloppy::assignIfNotNull<ERR>(err, ONLY_MANUAL_COURT_AVAIL);
+    return {};
   }
 
 //----------------------------------------------------------------------------
