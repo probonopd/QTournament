@@ -58,19 +58,19 @@ namespace QTournament
     QHash<Category, CAT_ADD_STATE> getAllCategoryAddStates(SEX s);
     QHash<Category, CAT_ADD_STATE> getAllCategoryAddStates(const Player& p);
     static std::function<bool (Category&, Category&)> getCategorySortFunction_byName();
-    std::vector<PlayerPair> getSeeding(const Category& c) const;
+    std::vector<PlayerPair> getSeeding(const Category& cat) const;
     ERR canDeleteCategory(const Category& cat) const;
 
     // setters
-    ERR setMatchType(Category& c, MATCH_TYPE t);
-    ERR setMatchSystem(Category& c, MATCH_SYSTEM s);
-    ERR setSex(Category& c, SEX s);
-    bool setCatParameter( Category& c, CAT_PARAMETER p, const QVariant& v);
+    ERR setMatchType(Category& cat, MATCH_TYPE newMatchType);
+    ERR setMatchSystem(Category& cat, MATCH_SYSTEM newMatchSystem);
+    ERR setSex(Category& cat, SEX newSex);
+    bool setCatParameter(Category& cat, CAT_PARAMETER p, const QVariant& v);
 
     // modifications
-    ERR renameCategory(Category& c, const QString& newName);
-    ERR addPlayerToCategory(const Player& p, const Category& c);
-    ERR removePlayerFromCategory(const Player& p, const Category& c) const;
+    ERR renameCategory(Category& cat, const QString& newName);
+    ERR addPlayerToCategory(const Player& p, const Category& cat);
+    ERR removePlayerFromCategory(const Player& p, const Category& cat) const;
     ERR deleteCategory(const Category& cat) const;
     ERR deleteRunningCategory(const Category& cat) const;
 
@@ -82,8 +82,8 @@ namespace QTournament
     // freezing, starting, updating while running
     ERR freezeConfig(const Category& c);
     ERR unfreezeConfig(const Category& c);
-    ERR startCategory(const Category& c, std::vector<PlayerPairList> grpCfg, PlayerPairList seed);
-    void updateCatStatusFromMatchStatus(const Category& c);
+    ERR startCategory(const Category& c, const std::vector<PlayerPairList>& grpCfg, const PlayerPairList& seed);
+    void updateCatStatusFromMatchStatus(const Category& cat);
     bool switchCatToWaitForSeeding(const Category& cat);
     ERR continueWithIntermediateSeeding(const Category& c, const PlayerPairList& seeding);
 

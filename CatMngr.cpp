@@ -37,6 +37,8 @@
 #include "MatchMngr.h"
 #include "PlayerMngr.h"
 
+using namespace SqliteOverlay;
+
 namespace QTournament
 {
 
@@ -67,8 +69,8 @@ namespace QTournament
     }
     
     // create a new table row and set some arbitrary default data
-    SqliteOverlay::ColumnValueClause cvc;
-    cvc.addCol(GENERIC_NAME_FIELD_NAME, catName.toUtf8().constData());
+    ColumnValueClause cvc;
+    cvc.addCol(GENERIC_NAME_FIELD_NAME, QString2StdString(catName));
     cvc.addCol(CAT_ACCEPT_DRAW, false);
     cvc.addCol(CAT_SYS, static_cast<int>(GROUPS_WITH_KO));
     cvc.addCol(CAT_MATCH_TYPE, static_cast<int>(SINGLES));
@@ -78,14 +80,11 @@ namespace QTournament
     cvc.addCol(CAT_DRAW_SCORE, 1);
     cvc.addCol(CAT_GROUP_CONFIG, KO_Config(QUARTER, false).toString().toUtf8().constData());
     
-    // lock the database before writing
-    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
-
     CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
     cse->beginCreateCategory();
-    tab->insertRow(cvc);
+    tab.insertRow(cvc);
     fixSeqNumberAfterInsert();
-    cse->endCreateCategory(tab->length() - 1); // the new sequence number is always the greatest
+    cse->endCreateCategory(tab.length() - 1); // the new sequence number is always the highest
     
     return OK;
   }
@@ -186,7 +185,7 @@ namespace QTournament
 
   bool CatMngr::hasCategory(const QString& catName) const
   {
-    return (tab->getMatchCountForColumnValue(GENERIC_NAME_FIELD_NAME, catName.toUtf8().constData()) > 0);
+    return (tab.getMatchCountForColumnValue(GENERIC_NAME_FIELD_NAME, QString2StdString(catName)) > 0);
   }
 
 //----------------------------------------------------------------------------
@@ -202,14 +201,13 @@ namespace QTournament
    */
   Category CatMngr::getCategory(const QString& name)
   {
-    if (!(hasCategory(name)))
+    auto cat = getSingleObjectByColumnValue<Category>(GENERIC_NAME_FIELD_NAME, QString2StdString(name));
+    if (!cat)
     {
       throw std::invalid_argument("The category '" + QString2StdString(name) + "' does not exist");
     }
     
-    SqliteOverlay::TabRow r = tab->getSingleRowByColumnValue(GENERIC_NAME_FIELD_NAME, name.toUtf8().constData());
-    
-    return Category(db, r);
+    return *cat;
   }
 
 //----------------------------------------------------------------------------
@@ -233,26 +231,22 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  ERR CatMngr::setMatchSystem(Category& c, MATCH_SYSTEM s)
+  ERR CatMngr::setMatchSystem(Category& cat, MATCH_SYSTEM newMatchSystem)
   {
-    if (c.getState() != STAT_CAT_CONFIG)
+    if (cat.getState() != STAT_CAT_CONFIG)
     {
       return CATEGORY_NOT_CONFIGURALE_ANYMORE;
     }
 
-    // lock the database before writing
-    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
-
     // TODO: implement checks, updates to other tables etc
-    int sysInt = static_cast<int>(s);    
-    c.row.update(CAT_SYS, sysInt);
+    cat.row.update(CAT_SYS, static_cast<int>(newMatchSystem));
     
     // if we switch to single elimination categories or
     // to the ranking system, we want to
     // prevent draw
-    if ((s == SINGLE_ELIM) || (s == RANKING))
+    if ((newMatchSystem == SINGLE_ELIM) || (newMatchSystem == RANKING))
     {
-      setCatParam_AllowDraw(c, false);
+      setCatParam_AllowDraw(cat, false);
     }
 
     return OK;
@@ -260,16 +254,16 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  ERR CatMngr::setMatchType(Category& c, MATCH_TYPE t)
+  ERR CatMngr::setMatchType(Category& cat, MATCH_TYPE newMatchType)
   {
     // we can only change the match type while being in config mode
-    if (c.getState() != STAT_CAT_CONFIG)
+    if (cat.getState() != STAT_CAT_CONFIG)
     {
       return CATEGORY_NOT_CONFIGURALE_ANYMORE;
     }
     
     // temporarily store all existing player pairs
-    PlayerPairList pairList = c.getPlayerPairs();
+    PlayerPairList pairList = cat.getPlayerPairs();
     
     // check if we can split all pairs
     bool canSplit = true;
@@ -277,7 +271,7 @@ namespace QTournament
     {
       if (!(pp.hasPlayer2())) continue;
       
-      if (c.canSplitPlayers(pp.getPlayer1(), pp.getPlayer2()) != OK)
+      if (cat.canSplitPlayers(pp.getPlayer1(), pp.getPlayer2()) != OK)
       {
         canSplit = false;
       }
@@ -292,30 +286,26 @@ namespace QTournament
     {
       if (!(pp.hasPlayer2())) continue;
       
-      splitPlayers(c, pp.getPlayer1(), pp.getPlayer2());
+      splitPlayers(cat, pp.getPlayer1(), pp.getPlayer2());
     }
     
     // if we come from mixed, we force the sex type "Don't care" to avoid
     // that too many players will be removed (unwanted) from the category
-    MATCH_TYPE oldType = c.getMatchType();
+    MATCH_TYPE oldType = cat.getMatchType();
     if (oldType == MIXED)
     {
-      setSex(c, DONT_CARE);   // no error checking here, setting "don't care" should always work because it's least restrictive
+      setSex(cat, DONT_CARE);   // no error checking here, setting "don't care" should always work because it's least restrictive
     }
     
-    // lock the database before writing
-    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
-
     // change the match type
-    int typeInt = static_cast<int>(t);    
-    c.row.update(CAT_MATCH_TYPE, typeInt);
+    cat.row.update(CAT_MATCH_TYPE, static_cast<int>(newMatchType));
     
     // try to recreate as many pairs as possible
     for (const PlayerPair& pp : pairList)
     {
       if (!(pp.hasPlayer2())) continue;
       
-      pairPlayers(c, pp.getPlayer1(), pp.getPlayer2());
+      pairPlayers(cat, pp.getPlayer1(), pp.getPlayer2());
     }
     
     // IMPORTANT:
@@ -326,26 +316,26 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  ERR CatMngr::setSex(Category& c, SEX s)
+  ERR CatMngr::setSex(Category& cat, SEX newSex)
   {
     // we can only change the sex while being in config mode
-    if (c.getState() != STAT_CAT_CONFIG)
+    if (cat.getState() != STAT_CAT_CONFIG)
     {
       return CATEGORY_NOT_CONFIGURALE_ANYMORE;
     }
     
     // unless we switch to "don't care", we have to make sure that
     // we can remove the wrong players
-    if ((s != DONT_CARE) && (c.getMatchType() != MIXED))
+    if ((newSex != DONT_CARE) && (cat.getMatchType() != MIXED))
     {
-      PlayerList allPlayers = c.getAllPlayersInCategory();
+      PlayerList allPlayers = cat.getAllPlayersInCategory();
       for (const Player& p : allPlayers)
       {
         // skip players with matching sex
-        if (p.getSex() == s) continue;
+        if (p.getSex() == newSex) continue;
 
         // for all other players, check if we can remove them
-        if (!(c.canRemovePlayer(p)))
+        if (!(cat.canRemovePlayer(p)))
         {
           return INVALID_RECONFIG;
         }
@@ -356,17 +346,17 @@ namespace QTournament
       for (const Player& p : allPlayers)
       {
         // skip players with matching sex
-        if (p.getSex() == s) continue;
+        if (p.getSex() == newSex) continue;
 
         // for all other players, check if we can remove them
-        c.removePlayer(p);
+        cat.removePlayer(p);
       }
     }
     
     // if we de-active "don't care" in a mixed category, we have to split
     // all non-compliant pairs. The players itself can remain in the category
-    if ((s != DONT_CARE) && (c.getMatchType() == MIXED)) {
-      PlayerPairList allPairs = c.getPlayerPairs();
+    if ((newSex != DONT_CARE) && (cat.getMatchType() == MIXED)) {
+      PlayerPairList allPairs = cat.getPlayerPairs();
       
       for (const PlayerPair& pp : allPairs) {
 
@@ -377,7 +367,7 @@ namespace QTournament
         if (pp.getPlayer1().getSex() != pp.getPlayer2().getSex()) continue;
 
         // check if we can split "false" mixed pairs (= same sex pairs)
-        if (c.canSplitPlayers(pp.getPlayer1(), pp.getPlayer2()) != OK) {
+        if (cat.canSplitPlayers(pp.getPlayer1(), pp.getPlayer2()) != OK) {
           return INVALID_RECONFIG;
         }
       }
@@ -392,73 +382,68 @@ namespace QTournament
         if (pp.getPlayer1().getSex() != pp.getPlayer2().getSex()) continue;
 
         // check if we can split "false" mixed pairs (= same sex pairs)
-        splitPlayers(c, pp.getPairId());
+        splitPlayers(cat, pp.getPairId());
       }
     }
     
-    // lock the database before writing
-    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
-
     // execute the actual change
-    int sexInt = static_cast<int>(s);    
-    c.row.update(CAT_SEX, sexInt);
+    int sexInt = static_cast<int>(newSex);
+    cat.row.update(CAT_SEX, sexInt);
     
     return OK;
   }
 
 //----------------------------------------------------------------------------
 
-  ERR CatMngr::addPlayerToCategory(const Player& p, const Category& c)
+  ERR CatMngr::addPlayerToCategory(const Player& p, const Category& cat)
   {
-    if (!(c.canAddPlayers()))
+    if (!(cat.canAddPlayers()))
     {
       return CATEGORY_CLOSED_FOR_MORE_PLAYERS;
     }
     
-    if (c.hasPlayer(p))
+    if (cat.hasPlayer(p))
     {
       return PLAYER_ALREADY_IN_CATEGORY;
     }
     
-    if (c.getAddState(p) != CAN_JOIN)
+    if (cat.getAddState(p) != CAN_JOIN)
     {
       return PLAYER_NOT_SUITABLE;
     }
     
     // TODO: check that player is not permanently disabled
     
-    // lock the database before writing
-    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
-
     // actually add the player
-    SqliteOverlay::ColumnValueClause cvc;
-    cvc.addCol(P2C_CAT_REF, c.getId());
+    ColumnValueClause cvc;
+    cvc.addCol(P2C_CAT_REF, cat.getId());
     cvc.addCol(P2C_PLAYER_REF, p.getId());
-    db->getTab(TAB_P2C)->insertRow(cvc);
+    DbTab tabP2C{db, TAB_P2C, false};
+    tabP2C.insertRow(cvc);
     
-    CentralSignalEmitter::getInstance()->playerAddedToCategory(p, c);
+    CentralSignalEmitter::getInstance()->playerAddedToCategory(p, cat);
     
     return OK;
   }
 
 //----------------------------------------------------------------------------
 
-  ERR CatMngr::removePlayerFromCategory(const Player& p, const Category& c) const
+  ERR CatMngr::removePlayerFromCategory(const Player& p, const Category& cat) const
   {
-    if (!(c.canRemovePlayer(p)))
+    if (!(cat.canRemovePlayer(p)))
     {
       return PLAYER_NOT_REMOVABLE_FROM_CATEGORY;
     }
     
-    if (!(c.hasPlayer(p)))
+    if (!(cat.hasPlayer(p)))
     {
       return PLAYER_NOT_IN_CATEGORY;
     }
     
-    if (c.isPaired(p))
+    if (cat.isPaired(p))
     {
-      Player partner = c.getPartner(p);
-      ERR e = splitPlayers(c, p, partner);
+      Player partner = cat.getPartner(p);
+      ERR e = splitPlayers(cat, p, partner);
       if (e != OK)
       {
         return e;
@@ -469,17 +454,15 @@ namespace QTournament
     // has to be removed from the category as well if we're beyond
     // "Category Configuration" state
     
-    // lock the database before writing
-    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
-
     // actually delete the assignment
-    SqliteOverlay::WhereClause wc;
-    wc.addCol(P2C_CAT_REF, c.getId());
+    WhereClause wc;
+    wc.addCol(P2C_CAT_REF, cat.getId());
     wc.addCol(P2C_PLAYER_REF, p.getId());
-    int cnt = db->getTab(TAB_P2C)->deleteRowsByWhereClause(wc);
+    DbTab tabP2C{db, TAB_P2C, false};
+    int cnt = tabP2C.deleteRowsByWhereClause(wc);
     assert(cnt == 1);
     
-    CentralSignalEmitter::getInstance()->playerRemovedFromCategory(p, c);
+    CentralSignalEmitter::getInstance()->playerRemovedFromCategory(p, cat);
     
     return OK;
   }
@@ -504,20 +487,17 @@ namespace QTournament
 
     // a few checks for the cowards
     int catId = cat.getId();
-    assert(db->getTab(TAB_P2C)->getMatchCountForColumnValue(P2C_CAT_REF, catId) == 0);
-    assert(db->getTab(TAB_PAIRS)->getMatchCountForColumnValue(PAIRS_CAT_REF, catId) == 0);
-    assert(db->getTab(TAB_MATCH_GROUP)->getMatchCountForColumnValue(MG_CAT_REF, catId) == 0);
-    assert(db->getTab(TAB_RANKING)->getMatchCountForColumnValue(RA_CAT_REF, catId) == 0);
-    assert(db->getTab(TAB_BRACKET_VIS)->getMatchCountForColumnValue(BV_CAT_REF, catId) == 0);
-
-    // lock the database before writing
-    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
+    assert(DbTab(db, TAB_P2C, false).getMatchCountForColumnValue(P2C_CAT_REF, catId) == 0);
+    assert(DbTab(db, TAB_PAIRS, false).getMatchCountForColumnValue(PAIRS_CAT_REF, catId) == 0);
+    assert(DbTab(db, TAB_MATCH_GROUP, false).getMatchCountForColumnValue(MG_CAT_REF, catId) == 0);
+    assert(DbTab(db, TAB_RANKING, false).getMatchCountForColumnValue(RA_CAT_REF, catId) == 0);
+    assert(DbTab(db, TAB_BRACKET_VIS, false).getMatchCountForColumnValue(BV_CAT_REF, catId) == 0);
 
     // the actual deletion
     int oldSeqNum = cat.getSeqNum();
     CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
     cse->beginDeleteCategory(oldSeqNum);
-    tab->deleteRowsByColumnValue("id", catId);
+    tab.deleteRowsByColumnValue("id", catId);
     fixSeqNumberAfterDelete(tab, oldSeqNum);
     cse->endDeleteCategory();
 
@@ -567,113 +547,99 @@ namespace QTournament
     CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
     cse->beginResetAllModels();
 
-    // lock the database before writing
-    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
-
     //
     // now the actual deletion starts
     //
-    bool isDbErr;
-    auto tg = db->acquireTransactionGuard(false, &isDbErr);
-    if (isDbErr) return DATABASE_ERROR;
-
-    int catId = cat.getId();
-
-    // deletion 1: bracket vis data, because it has only outgoing refs
-    int dbErr;
-    auto t = db->getTab(TAB_BRACKET_VIS);
-    t->deleteRowsByColumnValue(BV_CAT_REF, catId, &dbErr);
-    if (dbErr != SQLITE_DONE) return DATABASE_ERROR;  // implicit rollback through tg's dtor
-
-    // deletion 2: ranking data, because it has only outgoing refs
-    t = db->getTab(TAB_RANKING);
-    t->deleteRowsByColumnValue(RA_CAT_REF, catId, &dbErr);
-    if (dbErr != SQLITE_DONE) return DATABASE_ERROR;  // implicit rollback through tg's dtor
-
-    // deletion 3a: matches, they are refered to by bracket vis data only
-    // deletion 3b: match groups, they are refered to only by ranking data and matches
-    t = db->getTab(TAB_MATCH);
-    auto mgTab = db->getTab(TAB_MATCH_GROUP);
-    for (const MatchGroup& mg : mm.getAllMatchGroups())
+    try
     {
-      if (mg.getCategory() == cat)
+      auto trans = db.get().startTransaction();
+
+      int catId = cat.getId();
+
+      // deletion 1: bracket vis data, because it has only outgoing refs
+      DbTab t{db, TAB_BRACKET_VIS, false};
+      t.deleteRowsByColumnValue(BV_CAT_REF, catId);
+
+      // deletion 2: ranking data, because it has only outgoing refs
+      t = DbTab{db, TAB_RANKING, false};
+      t.deleteRowsByColumnValue(RA_CAT_REF, catId);
+
+      // deletion 3a: matches, they are refered to by bracket vis data only
+      // deletion 3b: match groups, they are refered to only by ranking data and matches
+      t = DbTab{db, TAB_MATCH, false};
+      DbTab mgTab{db, TAB_MATCH_GROUP, false};
+      for (const auto& mg : getObjectsByColumnValue<MatchGroup>(mgTab, MG_CAT_REF, cat.getId()))
       {
-        auto matchesInGroup = mg.getMatches();
-        for (const Match& ma : matchesInGroup)
+        for (const auto& ma : mg.getMatches())
         {
           int deletedSeqNum = ma.getSeqNum();
-          t->deleteRowsByColumnValue("id", ma.getId(), &dbErr);
-          if (dbErr != SQLITE_DONE) return DATABASE_ERROR;  // implicit rollback through tg's dtor
+          t.deleteRowsByColumnValue("id", ma.getId());
           fixSeqNumberAfterDelete(t, deletedSeqNum);
         }
 
         // the match group has incoming links from matches
         // and ranking and both have been deleted by now
         int deletedSeqNum = mg.getSeqNum();
-        mgTab->deleteRowsByColumnValue("id", mg.getId(), &dbErr);
-        if (dbErr != SQLITE_DONE) return DATABASE_ERROR;  // implicit rollback through tg's dtor
+        mgTab.deleteRowsByColumnValue("id", mg.getId());
         fixSeqNumberAfterDelete(mgTab, deletedSeqNum);
       }
+
+      // deletion 4: player pairs
+      t = DbTab{db, TAB_PAIRS, false};
+      t.deleteRowsByColumnValue(PAIRS_CAT_REF, catId);
+
+      // deletion 5: player to category allocation
+      t = DbTab{db, TAB_P2C, false};
+      t.deleteRowsByColumnValue(P2C_CAT_REF, catId);
+
+      // final deletion: the category itself
+      int deletedSeqNum = cat.getSeqNum();
+      tab.deleteRowsByColumnValue("id", catId);
+      fixSeqNumberAfterDelete(tab, deletedSeqNum);
+
+      //
+      // deletion completed
+      //
+      trans.commit();
+
+      // refresh all models and the reports tab
+      cse->endResetAllModels();
+
+      // tell all other widgets that a category has been deleted
+      cse->categoryRemovedFromTournament(catId, deletedSeqNum);
+
+      return OK;
     }
-
-    // deletion 4: player pairs
-    t = db->getTab(TAB_PAIRS);
-    t->deleteRowsByColumnValue(PAIRS_CAT_REF, catId, &dbErr);
-    if (dbErr != SQLITE_DONE) return DATABASE_ERROR;  // implicit rollback through tg's dtor
-
-    // deletion 5: player to category allocation
-    t = db->getTab(TAB_P2C);
-    t->deleteRowsByColumnValue(P2C_CAT_REF, catId, &dbErr);
-    if (dbErr != SQLITE_DONE) return DATABASE_ERROR;  // implicit rollback through tg's dtor
-
-    // final deletion: the category itself
-    int deletedSeqNum = cat.getSeqNum();
-    tab->deleteRowsByColumnValue("id", catId, &dbErr);
-    if (dbErr != SQLITE_DONE) return DATABASE_ERROR;  // implicit rollback through tg's dtor
-    fixSeqNumberAfterDelete(tab, deletedSeqNum);
-
-    //
-    // deletion completed
-    //
-    bool isOkay = tg ? tg->commit() : true;
-    if (!isOkay) return DATABASE_ERROR;
-    tg.reset();  // explicit deletion, otherwise tg's dtor might interfere with other transactions
-
-    // refresh all models and the reports tab
-    cse->endResetAllModels();
-
-    // tell all other widgets that a category has been deleted
-    cse->categoryRemovedFromTournament(catId, deletedSeqNum);
-
-    return OK;
+    catch (...)
+    {
+      return DATABASE_ERROR;
+    }
   }
 
 //----------------------------------------------------------------------------
 
   Category CatMngr::getCategoryById(int id)
   {
-    try {
-      SqliteOverlay::TabRow r = tab->operator [](id);
-      return Category(db, r);
-      }
-    catch (std::exception e)
+    auto cat = getSingleObjectByColumnValue<Category>("id", id);
+    if (!cat)
     {
-     throw std::invalid_argument("The category with ID " + to_string(id) + " does not exist");
+     throw std::invalid_argument("The category with ID " + std::to_string(id) + " does not exist");
     }
+
+    return *cat;
   }
 
 //----------------------------------------------------------------------------
 
   Category CatMngr::getCategoryBySeqNum(int seqNum)
   {
-    try {
-      SqliteOverlay::TabRow r = tab->getSingleRowByColumnValue(GENERIC_SEQNUM_FIELD_NAME, seqNum);
-      return Category(db, r);
-    }
-    catch (std::exception e)
+    auto cat = getSingleObjectByColumnValue<Category>(GENERIC_SEQNUM_FIELD_NAME, seqNum);
+    if (!cat)
     {
-     throw std::invalid_argument("The category with sequence number " + to_string(seqNum) + " does not exist");
+      throw std::invalid_argument("The category with sequence number " + std::to_string(seqNum) + " does not exist");
     }
+
+    return *cat;
   }
 
 //----------------------------------------------------------------------------
@@ -683,7 +649,7 @@ namespace QTournament
     CategoryList allCat = getAllCategories();
     QHash<Category, CAT_ADD_STATE> result;
     
-    for (Category& c : allCat)
+    for (const Category& c : allCat)
     {
       result[c] = c.getAddState(s);
     }
@@ -708,28 +674,25 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  bool CatMngr::setCatParameter(Category& c, CAT_PARAMETER p, const QVariant& v)
+  bool CatMngr::setCatParameter(Category& cat, CAT_PARAMETER p, const QVariant& v)
   {
     if (p == ALLOW_DRAW)
     {
-      return setCatParam_AllowDraw(c, v);
+      return setCatParam_AllowDraw(cat, v);
     }
     if (p == DRAW_SCORE)
     {
-      return setCatParam_Score(c, v.toInt(), true);
+      return setCatParam_Score(cat, v.toInt(), true);
     }
     if (p == WIN_SCORE)
     {
-      return setCatParam_Score(c, v.toInt(), false);
+      return setCatParam_Score(cat, v.toInt(), false);
     }
     if (p == GROUP_CONFIG)
     {
-      if (c.getState() != STAT_CAT_CONFIG) return false;
+      if (cat.getState() != STAT_CAT_CONFIG) return false;
 
-      // lock the database before writing
-      DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
-
-      c.row.update(CAT_GROUP_CONFIG, v.toString().toUtf8().constData());
+      cat.row.update(CAT_GROUP_CONFIG, v.toString().toUtf8().constData());
       return true;
     }
     if (p == ROUND_ROBIN_ITERATIONS)
@@ -740,10 +703,7 @@ namespace QTournament
 
       if (iterations <= 0) return false;
 
-      // lock the database before writing
-      DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
-
-      c.row.update(CAT_ROUND_ROBIN_ITERATIONS, iterations);
+      cat.row.update(CAT_ROUND_ROBIN_ITERATIONS, iterations);
       return true;
     }
     
@@ -774,9 +734,6 @@ namespace QTournament
     {
       return false;
     }
-
-    // lock the database before writing
-    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
 
     // ensure consistent scoring before accepting draw
     if (allowDraw)
@@ -826,9 +783,6 @@ namespace QTournament
       return false;
     }
     
-    // lock the database before writing
-    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
-
     if (isDraw)
     {
       if (newScore >= winScore)
@@ -864,16 +818,13 @@ namespace QTournament
     }
     
     // create the pair
-    SqliteOverlay::ColumnValueClause cvc;
+    ColumnValueClause cvc;
     cvc.addCol(PAIRS_CAT_REF, c.getId());
     cvc.addCol(PAIRS_PLAYER1_REF, p1.getId());
     cvc.addCol(PAIRS_PLAYER2_REF, p2.getId());
     cvc.addCol(PAIRS_GRP_NUM, GRP_NUM__NOT_ASSIGNED);   // Default value: no group
 
-    // lock the database before writing
-    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
-
-    db->getTab(TAB_PAIRS)->insertRow(cvc);
+    DbTab{db, TAB_PAIRS, false}.insertRow(cvc);
     
     CentralSignalEmitter::getInstance()->playersPaired(c, p1, p2);
     
@@ -893,21 +844,18 @@ namespace QTournament
       return e;
     }
     
-    // lock the database before writing
-    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
-
     // delete all combinations of p1/p2 pairs from the database
-    SqliteOverlay::WhereClause wc;
+    WhereClause wc;
     wc.addCol(PAIRS_CAT_REF, c.getId());
     wc.addCol(PAIRS_PLAYER1_REF, p1.getId());
     wc.addCol(PAIRS_PLAYER2_REF, p2.getId());
-    SqliteOverlay::DbTab* pairsTab = db->getTab(TAB_PAIRS);
-    pairsTab->deleteRowsByWhereClause(wc);
+    DbTab pairsTab{db, TAB_PAIRS, false};
+    pairsTab.deleteRowsByWhereClause(wc);
     wc.clear();
     wc.addCol(PAIRS_CAT_REF, c.getId());
     wc.addCol(PAIRS_PLAYER1_REF, p2.getId());
     wc.addCol(PAIRS_PLAYER2_REF, p1.getId());
-    pairsTab->deleteRowsByWhereClause(wc);
+    pairsTab.deleteRowsByWhereClause(wc);
     
     CentralSignalEmitter::getInstance()->playersSplit(c, p1, p2);
     
@@ -919,25 +867,26 @@ namespace QTournament
 
   ERR CatMngr::splitPlayers(const Category c, int pairId) const
   {
-    SqliteOverlay::DbTab* pairsTab = db->getTab(TAB_PAIRS);
+    DbTab pairsTab{db, TAB_PAIRS, false};
+    auto row = tab.get2(pairId);
+    if (!row) return INVALID_ID;
+
+    auto p1Id = row->getInt2(PAIRS_PLAYER1_REF);
+    auto p2Id = row->getInt2(PAIRS_PLAYER2_REF);
+    if (!p1Id || !p2Id)
+    {
+      return INVALID_ID;
+    }
+
     PlayerMngr pmngr{db};
-    try
-    {
-      SqliteOverlay::TabRow r = pairsTab->operator [](pairId);
-      Player p1 = pmngr.getPlayer(r.getInt(PAIRS_PLAYER1_REF));
-      Player p2 = pmngr.getPlayer(r.getInt(PAIRS_PLAYER2_REF));
-      return splitPlayers(c, p1, p2);
-    }
-    catch (exception e)
-    {
-      
-    }
-    return INVALID_ID;
+    Player p1 = pmngr.getPlayer(*p1Id);
+    Player p2 = pmngr.getPlayer(*p2Id);
+    return splitPlayers(c, p1, p2);
   }
 
 //----------------------------------------------------------------------------
 
-  ERR CatMngr::renameCategory(Category& c, const QString& nn)
+  ERR CatMngr::renameCategory(Category& cat, const QString& nn)
   {
     QString newName = nn.trimmed();
     
@@ -953,10 +902,7 @@ namespace QTournament
       return NAME_EXISTS;
     }
     
-    // lock the database before writing
-    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
-
-    c.row.update(GENERIC_NAME_FIELD_NAME, newName.toUtf8().constData());
+    cat.row.update(GENERIC_NAME_FIELD_NAME, QString2StdString(newName));
     
     return OK;
   }
@@ -966,7 +912,7 @@ namespace QTournament
   ERR CatMngr::freezeConfig(const Category& c)
   {
     // make sure that we can actually freeze the config
-    std::unique_ptr<Category> specialObj = c.convertToSpecializedObject();
+    auto specialObj = c.convertToSpecializedObject();
     ERR e = specialObj->canFreezeConfig();
     if (e != OK) return e;
 
@@ -1020,54 +966,47 @@ namespace QTournament
     
     PlayerPairList ppList = c.getPlayerPairs();
     int catId = c.getId();
-    DbTab* pairsTab = db->getTab(TAB_PAIRS);
-    bool isDbErr;
-    auto tg = db->acquireTransactionGuard(false, &isDbErr);
-    if (isDbErr) return DATABASE_ERROR;
-    for (int i=0; i < ppList.size(); ++i)
-    {
-      PlayerPair pp = ppList.at(i);
-      if (!(pp.hasPlayer2()))
-      {
-        int playerId = pp.getPlayer1().getId();
+    DbTab pairsTab{db, TAB_PAIRS, false};
 
-        SqliteOverlay::ColumnValueClause cvc;
+    try
+    {
+      auto trans = db.get().startTransaction();
+
+      for (const auto& pp : ppList)
+      {
+        if (pp.hasPlayer2()) continue;
+
+        ColumnValueClause cvc;
         cvc.addCol(PAIRS_CAT_REF, catId);
         cvc.addCol(PAIRS_GRP_NUM, GRP_NUM__NOT_ASSIGNED);
-        cvc.addCol(PAIRS_PLAYER1_REF, playerId);
-        // leave out PAIRS_PLAYER2_REF to assign a NULL value
+        cvc.addCol(PAIRS_PLAYER1_REF, pp.getPlayer1().getId());
+        cvc.addNullCol(PAIRS_PLAYER2_REF);
 
-        // lock the database before writing
-        DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
-
-        int dbErr;
-        int newId = pairsTab->insertRow(cvc, &dbErr);
-        if ((newId < 1) || (dbErr != SQLITE_DONE))
-        {
-          return DATABASE_ERROR;   // implicit rollback
-        }
+        pairsTab.insertRow(cvc);
       }
+
+      // update the category state
+      OBJ_STATE oldState = c.getState();  // this MUST be STAT_CAT_CONFIG, ensured by canFreezeConfig
+      c.setState(STAT_CAT_FROZEN);
+
+      trans.commit();
+
+      CentralSignalEmitter::getInstance()->categoryStatusChanged(c, oldState, STAT_CAT_FROZEN);
+
+      return OK;
     }
-
-    // update the category state
-    OBJ_STATE oldState = c.getState();  // this MUST be STAT_CAT_CONFIG, ensured by canFreezeConfig
-    c.setState(STAT_CAT_FROZEN);
-
-    bool isOkay = tg ? tg->commit() : true;
-    if (!isOkay) return DATABASE_ERROR;
-    tg.reset();   // explicitly destroy the guard
-
-    CentralSignalEmitter::getInstance()->categoryStatusChanged(c, oldState, STAT_CAT_FROZEN);
-    
-    return OK;
+    catch (...)
+    {
+      return DATABASE_ERROR;
+    }
   }
 
 
 //----------------------------------------------------------------------------
   
-  ERR CatMngr::unfreezeConfig(const Category& c)
+  ERR CatMngr::unfreezeConfig(const Category& cat)
   {
-    OBJ_STATE oldState = c.getState();
+    OBJ_STATE oldState = cat.getState();
     
     if (oldState == STAT_CAT_CONFIG)
     {
@@ -1076,52 +1015,60 @@ namespace QTournament
     
     if (oldState != STAT_CAT_FROZEN)
     {
-      return CATEGORY_UNFREEZEABLE;
+      return CATEGORY_NOT_UNFREEZEABLE;
     }
     
-    // lock the database before writing
-    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
-
     // remove all player pairs without a partner from the official pair list
     // See also the constraints in freezeConfig()
-    PlayerPairList ppList = c.getPlayerPairs();
-    SqliteOverlay::DbTab* ppTab = db->getTab(TAB_PAIRS);
-    for (int i=0; i < ppList.size(); ++i)
+    PlayerPairList ppList = cat.getPlayerPairs();
+    DbTab pairsTab{db, TAB_PAIRS, false};
+    try
     {
-      PlayerPair pp = ppList.at(i);
-      if (pp.hasPlayer2()) continue;  // this is a "real" pair and should survive
-      
-      // okay, we just encountered a player pair for removal
-      int ppId = pp.getPairId();
-      if (ppId < 1)
+      auto trans = db.get().startTransaction();
+
+      for (const auto& pp : ppList)
       {
-        // We should never get here
-        throw std::runtime_error("Inconsistent player pair data!");
+        if (pp.hasPlayer2()) continue;  // this is a "real" pair and should survive
+
+        // okay, we just encountered a player pair for removal
+        int ppId = pp.getPairId();
+        if (ppId < 1)
+        {
+          // We should never get here
+          throw std::runtime_error("Inconsistent player pair data!");
+        }
+
+        // the actual removal
+        pairsTab.deleteRowsByColumnValue("id", ppId);
       }
-      
-      // the actual removal
-      ppTab->deleteRowsByColumnValue("id", ppId);
+      // update the category state
+      cat.setState(STAT_CAT_CONFIG);
+
+      trans.commit();
+
+      CentralSignalEmitter::getInstance()->categoryStatusChanged(cat, STAT_CAT_FROZEN, STAT_CAT_CONFIG);
+
+      return OK;
     }
-    // update the category state
-    c.setState(STAT_CAT_CONFIG);
-    CentralSignalEmitter::getInstance()->categoryStatusChanged(c, STAT_CAT_FROZEN, STAT_CAT_CONFIG);
-    
-    return OK;
+    catch (...)
+    {
+      return DATABASE_ERROR;
+    }
   }
 
 
 //----------------------------------------------------------------------------
 
-  ERR CatMngr::startCategory(const Category &c, std::vector<PlayerPairList> grpCfg, PlayerPairList seed)
+  ERR CatMngr::startCategory(const Category& cat, const std::vector<PlayerPairList>& grpCfg, const PlayerPairList& seed)
   {
     // we can only transition to "IDLE" if we are "FROZEN"
-    if (c.getState() != STAT_CAT_FROZEN)
+    if (cat.getState() != STAT_CAT_FROZEN)
     {
       return CATEGORY_NOT_YET_FROZEN;
     }
 
     // let's check if we have all the data we need
-    std::unique_ptr<Category> specializedCat = c.convertToSpecializedObject();
+    std::unique_ptr<Category> specializedCat = cat.convertToSpecializedObject();
     if (specializedCat->needsGroupInitialization())
     {
       ERR e = specializedCat->canApplyGroupAssignment(grpCfg);
@@ -1154,23 +1101,17 @@ namespace QTournament
     }
 
     // switch the category to IDLE state
-    c.setState(STAT_CAT_IDLE);
-    CentralSignalEmitter::getInstance()->categoryStatusChanged(c, STAT_CAT_FROZEN, STAT_CAT_IDLE);
+    cat.setState(STAT_CAT_IDLE);
+    CentralSignalEmitter::getInstance()->categoryStatusChanged(cat, STAT_CAT_FROZEN, STAT_CAT_IDLE);
 
     // do the individual prep of the first round
-    ERR result = specializedCat->prepareFirstRound(progressNotificationQueue);
+    ERR result = specializedCat->prepareFirstRound();
 
     // trigger another signal for updating match counters, match time
     // predictions etc.
     //
     // this shouldn't do any harm
-    CentralSignalEmitter::getInstance()->categoryStatusChanged(c, STAT_CAT_IDLE, STAT_CAT_IDLE);
-
-    // indicate the completeness of the initialization to the queue, if necessary
-    if (progressNotificationQueue != nullptr)
-    {
-      progressNotificationQueue->push(-1);
-    }
+    CentralSignalEmitter::getInstance()->categoryStatusChanged(cat, STAT_CAT_IDLE, STAT_CAT_IDLE);
 
     return result;
   }
@@ -1183,9 +1124,9 @@ namespace QTournament
    *
    * @param c the category to update
    */
-  void CatMngr::updateCatStatusFromMatchStatus(const Category &c)
+  void CatMngr::updateCatStatusFromMatchStatus(const Category &cat)
   {
-    OBJ_STATE curStat = c.getState();
+    OBJ_STATE curStat = cat.getState();
     if ((curStat != STAT_CAT_IDLE) && (curStat != STAT_CAT_PLAYING) && (curStat != STAT_CAT_WAIT_FOR_INTERMEDIATE_SEEDING))
     {
       return;  // nothing to do for us
@@ -1197,7 +1138,7 @@ namespace QTournament
     // match in the category
     MatchMngr mm{db};
     bool hasMatchRunning = false;
-    for (auto mg : mm.getMatchGroupsForCat(c))
+    for (auto mg : mm.getMatchGroupsForCat(cat))
     {
       hasMatchRunning = mg.hasMatchesInState(STAT_MA_RUNNING);
       //hasUnfinishedMatch = mg.hasMatches__NOT__InState(STAT_MA_FINISHED);
@@ -1209,13 +1150,13 @@ namespace QTournament
     // change state to PLAYING
     if ((curStat == STAT_CAT_IDLE) && hasMatchRunning)
     {
-      c.setState(STAT_CAT_PLAYING);
-      cse->categoryStatusChanged(c, STAT_CAT_IDLE, STAT_CAT_PLAYING);
+      cat.setState(STAT_CAT_PLAYING);
+      cse->categoryStatusChanged(cat, STAT_CAT_IDLE, STAT_CAT_PLAYING);
       return;
     }
 
     // check if the whole category is finished
-    CatRoundStatus crs = c.getRoundStatus();
+    CatRoundStatus crs = cat.getRoundStatus();
     int lastFinishedRound = crs.getFinishedRoundsCount();
     int totalRounds = crs.getTotalRoundsCount();
     bool catIsFinished = ((totalRounds > 0) && (totalRounds == lastFinishedRound));
@@ -1224,8 +1165,8 @@ namespace QTournament
     // change state to FINALIZED
     if ((curStat != STAT_CAT_FINALIZED) && catIsFinished)
     {
-      c.setState(STAT_CAT_FINALIZED);
-      cse->categoryStatusChanged(c, STAT_CAT_PLAYING, STAT_CAT_FINALIZED);
+      cat.setState(STAT_CAT_FINALIZED);
+      cse->categoryStatusChanged(cat, STAT_CAT_PLAYING, STAT_CAT_FINALIZED);
       return;
     }
 
@@ -1233,8 +1174,8 @@ namespace QTournament
     // change state back to IDLE
     if ((curStat == STAT_CAT_PLAYING) && !catIsFinished && !hasMatchRunning)
     {
-      c.setState(STAT_CAT_IDLE);
-      cse->categoryStatusChanged(c, STAT_CAT_PLAYING, STAT_CAT_IDLE);
+      cat.setState(STAT_CAT_IDLE);
+      cse->categoryStatusChanged(cat, STAT_CAT_PLAYING, STAT_CAT_IDLE);
       return;
     }
   }
@@ -1262,20 +1203,20 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  std::vector<PlayerPair> CatMngr::getSeeding(const Category& c) const
+  std::vector<PlayerPair> CatMngr::getSeeding(const Category& cat) const
   {
     // as long as the category is still in configuration, we can't rely
     // on the existence of valid player pairs in the database and thus
     // we'll return an empty list as an error indicator
-    if (c.getState() == STAT_CAT_CONFIG) return PlayerPairList();
+    if (cat.getState() == STAT_CAT_CONFIG) return PlayerPairList();
 
     // get the player pairs for the category
-    SqliteOverlay::DbTab* pairTab = db->getTab(TAB_PAIRS);
-    SqliteOverlay::WhereClause wc;
-    wc.addCol(PAIRS_CAT_REF, c.getId());
+    DbTab pairsTab{db, TAB_PAIRS, false};
+    WhereClause wc;
+    wc.addCol(PAIRS_CAT_REF, cat.getId());
     wc.setOrderColumn_Asc(PAIRS_INITIAL_RANK);
 
-    return getObjectsByWhereClause<PlayerPair>(pairTab, wc);
+    return getObjectsByWhereClause<PlayerPair>(pairsTab, wc);
   }
 
   //----------------------------------------------------------------------------
@@ -1311,14 +1252,7 @@ namespace QTournament
     }
 
     auto specialCat = c.convertToSpecializedObject();
-    ERR e = specialCat->resolveIntermediateSeeding(seeding, progressNotificationQueue);
-
-    // indicate the completeness of the initialization to the queue, if necessary
-    if (progressNotificationQueue != nullptr)
-    {
-      progressNotificationQueue->push(-1);
-    }
-
+    ERR e = specialCat->resolveIntermediateSeeding(seeding);
     if (e != OK) return e;
 
     // if the previous calls succeeded, we are guaranteed to
@@ -1332,12 +1266,12 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  string CatMngr::getSyncString(const std::vector<int>& rows) const
+  std::string CatMngr::getSyncString(const std::vector<int>& rows) const
   {
-    std::vector<string> cols = {"id", GENERIC_NAME_FIELD_NAME, GENERIC_STATE_FIELD_NAME, CAT_MATCH_TYPE, CAT_SEX, CAT_SYS, CAT_ACCEPT_DRAW,
+    std::vector<Sloppy::estring> cols = {"id", GENERIC_NAME_FIELD_NAME, GENERIC_STATE_FIELD_NAME, CAT_MATCH_TYPE, CAT_SEX, CAT_SYS, CAT_ACCEPT_DRAW,
                           CAT_WIN_SCORE, CAT_DRAW_SCORE, CAT_GROUP_CONFIG, CAT_ROUND_ROBIN_ITERATIONS};
 
-    return db->getSyncStringForTable(TAB_CATEGORY, cols, rows);
+    return db.get().getSyncStringForTable(TAB_CATEGORY, cols, rows);
   }
 
 //----------------------------------------------------------------------------

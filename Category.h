@@ -76,7 +76,7 @@ namespace QTournament
     int getDatabasePlayerPairCount(int grp = GRP_NUM__NOT_ASSIGNED) const;
     PlayerList getAllPlayersInCategory() const;
     Player getPartner(const Player& p) const;
-    std::optional<Category> convertToSpecializedObject() const;
+    std::unique_ptr<Category> convertToSpecializedObject() const;
     int getGroupNumForPredecessorRound(const int grpNum) const;
     CatRoundStatus getRoundStatus() const;
     PlayerPairList getEliminatedPlayersAfterRound(int round, ERR *err) const;

@@ -554,7 +554,7 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  std::optional<Category> Category::convertToSpecializedObject() const
+  std::unique_ptr<Category> Category::convertToSpecializedObject() const
   {
     // return an instance of a suitable, specialized category-child
     MATCH_SYSTEM sys = getMatchSystem();
