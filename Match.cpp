@@ -25,6 +25,7 @@
 #include "MatchMngr.h"
 #include "PlayerMngr.h"
 #include "CourtMngr.h"
+#include "HelperFunc.h"
 #include <SqliteOverlay/KeyValueTab.h>
 
 namespace QTournament
@@ -61,18 +62,14 @@ namespace QTournament
 
   bool Match::hasPlayerPair1() const
   {
-    auto ppId = row.getInt2(MA_PAIR1_REF);
-    if (ppId->isNull()) return false;
-    return true;
+    return row.getInt2(MA_PAIR1_REF).has_value();
   }
 
 //----------------------------------------------------------------------------
 
   bool Match::hasPlayerPair2() const
   {
-    auto ppId = row.getInt2(MA_PAIR2_REF);
-    if (ppId->isNull()) return false;
-    return true;
+    return row.getInt2(MA_PAIR2_REF).has_value();
   }
 
 //----------------------------------------------------------------------------
@@ -86,37 +83,37 @@ namespace QTournament
 
   PlayerPair Match::getPlayerPair1() const
   {
-    if (!(hasPlayerPair1()))
+    auto ppId = row.getInt2(MA_PAIR1_REF);
+
+    if (!ppId)
     {
       throw std::runtime_error("Invalid request for PlayerPair1 of a match");
     }
 
-    int ppId = row.getInt(MA_PAIR1_REF);
     PlayerMngr pm{db};
-    return pm.getPlayerPair(ppId);
+    return pm.getPlayerPair(*ppId);
   }
 
 //----------------------------------------------------------------------------
 
   PlayerPair Match::getPlayerPair2() const
   {
-    if (!(hasPlayerPair2()))
+    auto ppId = row.getInt2(MA_PAIR2_REF);
+
+    if (!ppId)
     {
       throw std::runtime_error("Invalid request for PlayerPair2 of a match");
     }
 
-    int ppId = row.getInt(MA_PAIR2_REF);
     PlayerMngr pm{db};
-    return pm.getPlayerPair(ppId);
+    return pm.getPlayerPair(*ppId);
   }
 
 //----------------------------------------------------------------------------
 
   int Match::getMatchNumber() const
   {
-    auto num = row.getInt2(MA_NUM);
-    if (num->isNull()) return MATCH_NUM_NOT_ASSIGNED;
-    return num->get();
+    return row.getInt2(MA_NUM).value_or(MATCH_NUM_NOT_ASSIGNED);
   }
 
   //----------------------------------------------------------------------------
@@ -198,30 +195,29 @@ namespace QTournament
   {
     auto scoreEntry = row.getString2(MA_RESULT);
 
-    if (scoreEntry->isNull())
+    if (!scoreEntry)
     {
-      if (err != nullptr) *err = NO_MATCH_RESULT_SET;
-      return nullptr;
+      Sloppy::assignIfNotNull<ERR>(err, NO_MATCH_RESULT_SET);
+      return {};
     }
 
     // we assume that any score that has been written to the database
     // is valid. So we simply parse it from the database string
     // without further validating it against the category settings
-    QString scoreString = QString::fromUtf8(scoreEntry->get().data());
+    QString scoreString = stdString2QString(*scoreEntry);
     auto result = MatchScore::fromStringWithoutValidation(scoreString);
-    if (result == nullptr)
+    if (!result)
     {
       // this should never happen
       //
       // but if it does, we clear the invalid database entry
       // and return an error
-      DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
       row.updateToNull(MA_RESULT);
-      if (err != nullptr) *err = INCONSISTENT_MATCH_RESULT_STRING;
-      return nullptr;
+      Sloppy::assignIfNotNull<ERR>(err, INCONSISTENT_MATCH_RESULT_STRING);
+      return {};
     }
 
-    if (err != nullptr) *err = OK;
+    Sloppy::assignIfNotNull<ERR>(err, OK);
     return result;
   }
 
@@ -271,9 +267,9 @@ namespace QTournament
   int Match::getWinnerRank() const
   {
     auto _wr = row.getInt2(MA_WINNER_RANK);
-    if (_wr->isNull()) return -1;
+    if (!_wr) return -1;
 
-    int wr = _wr->get();
+    int wr = *_wr;
     return (wr < 1) ? -1 : wr;
   }
 
@@ -282,9 +278,9 @@ namespace QTournament
   int Match::getLoserRank() const
   {
     auto _lr = row.getInt2(MA_LOSER_RANK);
-    if (_lr->isNull()) return -1;
+    if (!_lr) return -1;
 
-    int lr = _lr->get();
+    int lr = *_lr;
     return (lr < 1) ? -1 : lr;
   }
 
@@ -305,6 +301,9 @@ namespace QTournament
 
     // if the match is finished but has no starting time, it
     // has been won by a walkover
+    //
+    // 2019-08-19: FIX, the comment above doesn't seem to fit
+    // to the code below
     QDateTime fTime = getFinishTime();
     return (!(fTime.isValid()));
   }
@@ -314,10 +313,9 @@ namespace QTournament
   QDateTime Match::getStartTime() const
   {
     auto startTime = row.getInt2(MA_START_TIME);
-    if (startTime->isNull()) return QDateTime();   // return null-time as error indicator
-    uint epochSecs = startTime->get();   // Hmmm... conversion from int to uint... should work until 2035 or something
+    if (!startTime) return QDateTime();   // return null-time as error indicator
 
-    return QDateTime::fromTime_t(epochSecs);
+    return QDateTime::fromTime_t(*startTime); // Hmmm... conversion from int to uint... should work until 2035 or something
   }
 
 //----------------------------------------------------------------------------
@@ -325,39 +323,26 @@ namespace QTournament
   QDateTime Match::getFinishTime() const
   {
     auto finishTime = row.getInt2(MA_FINISH_TIME);
-    if (finishTime->isNull()) return QDateTime();   // return null-time as error indicator
-    uint epochSecs = finishTime->get();   // Hmmm... conversion from int to uint... should work until 2035 or something
+    if (!finishTime) return QDateTime();   // return null-time as error indicator
 
-    return QDateTime::fromTime_t(epochSecs);
+    return QDateTime::fromTime_t(*finishTime);  // Hmmm... conversion from int to uint... should work until 2035 or something
   }
 
 //----------------------------------------------------------------------------
 
-  bool Match::addAddtionalCallTime() const
+  void Match::addAddtionalCallTime() const
   {
-    QDateTime curDateTime = QDateTime::currentDateTimeUtc();
-    uint epochSecs = curDateTime.toTime_t();
-    QString sEpochSecs = QString::number(epochSecs);
-
-    QString callTimes = "";
+    std::string callTimes{};
     auto _callTimes = row.getString2(MA_ADDITIONAL_CALL_TIMES);
-    if (!(_callTimes->isNull()))
+    if (_callTimes)
     {
-      callTimes = QString::fromUtf8(_callTimes->get().data()) + ",";
-    }
-    callTimes += sEpochSecs;
-
-    // we have a limit of 50 chars for this CSV-string
-    if (callTimes.length() <= 50)
-    {
-      // lock the database before writing
-      DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
-
-      row.update(MA_ADDITIONAL_CALL_TIMES, callTimes.toUtf8().constData());
-      return true;
+      callTimes = *_callTimes + ",";
     }
 
-    return false;
+    UTCTimestamp now;
+    callTimes += std::to_string(now.getRawTime());
+
+    row.update(MA_ADDITIONAL_CALL_TIMES, callTimes);
   }
 
 //----------------------------------------------------------------------------
@@ -367,14 +352,14 @@ namespace QTournament
     QList<QDateTime> result;
 
     auto _callTimes = row.getString2(MA_ADDITIONAL_CALL_TIMES);
-    if (_callTimes->isNull())
+    if (!_callTimes)
     {
       return result;
     }
-    QString allTimes = QString::fromUtf8(_callTimes->get().data());
+    QString allTimes = stdString2QString(*_callTimes);
     QStringList sCallTimes = allTimes.split(",");
 
-    for (QString sCallTime : sCallTimes)
+    for (const QString& sCallTime : sCallTimes)
     {
       uint epochSecs = sCallTime.toUInt();
       result.append(QDateTime::fromTime_t(epochSecs));
@@ -390,21 +375,20 @@ namespace QTournament
     OBJ_STATE stat = getState();
     if ((stat != STAT_MA_FINISHED) && (stat != STAT_MA_RUNNING)) return -1;
 
-    auto _startTime = row.getInt2(MA_START_TIME);
-    if (_startTime->isNull()) return -1;
-    int startTime = _startTime->get();
+    auto startTime = row.getInt2(MA_START_TIME);
+    if (!startTime) return -1;
 
     int finishTime;
     if (stat == STAT_MA_FINISHED)
     {
       auto _finishTime = row.getInt2(MA_FINISH_TIME);
-      if (_finishTime->isNull()) return -1;
-      finishTime = _finishTime->get();
+      if (!_finishTime) return -1;
+      finishTime = *_finishTime;
     } else {
       finishTime = QDateTime::currentDateTimeUtc().toTime_t();
     }
 
-    return finishTime - startTime;
+    return finishTime - *startTime;
   }
 
   //----------------------------------------------------------------------------
@@ -436,19 +420,18 @@ namespace QTournament
 
   std::optional<Player> Match::getAssignedReferee() const
   {
-    auto _refereeId = row.getInt2(MA_REFEREE_REF);
-    if (_refereeId->isNull()) return nullptr;
+    auto refereeId = row.getInt2(MA_REFEREE_REF);
+    if (!refereeId) return {};
 
     PlayerMngr pm{db};
-    return pm.getPlayer2(_refereeId->get());
+    return pm.getPlayer2(*refereeId);
   }
 
   //----------------------------------------------------------------------------
 
   bool Match::hasRefereeAssigned() const
   {
-    auto _refereeId = row.getInt2(MA_REFEREE_REF);
-    return (_refereeId->isNull() == false);
+    return row.getInt2(MA_REFEREE_REF).has_value();
   }
 
   //----------------------------------------------------------------------------
@@ -504,10 +487,10 @@ namespace QTournament
 
     // check if we have a symbolic name
     auto symName = (playerPos == 1) ? row.getInt2(MA_PAIR1_SYMBOLIC_VAL) : row.getInt2(MA_PAIR2_SYMBOLIC_VAL);
-    if (symName->isNull()) return 0;
+    if (!symName) return 0;
 
     // okay, there is a symbolic name
-    int matchRef = symName->get();
+    int matchRef = *symName;
     if (matchRef == 0) return 0;
 
     bool isWinner = matchRef > 0;
@@ -525,42 +508,42 @@ namespace QTournament
 
   std::optional<PlayerPair> Match::getWinner() const
   {
-    std::unique_ptr<MatchScore> score = getScore();
-    if (score == nullptr)
+    auto score = getScore();
+    if (!score)
     {
-      return nullptr;   // score is not yet set
+      return {};   // score is not yet set
     }
 
     int winner = score->getWinner();
     if (winner == 0)
     {
-      return nullptr;   // draw; no winner
+      return {};   // draw; no winner
     }
 
     PlayerPair w = (winner == 1) ? getPlayerPair1() : getPlayerPair2();
 
-    return std::unique_ptr<PlayerPair>(new PlayerPair(w));
+    return PlayerPair(w);
   }
 
 //----------------------------------------------------------------------------
 
   std::optional<PlayerPair> Match::getLoser() const
   {
-    std::unique_ptr<MatchScore> score = getScore();
-    if (score == nullptr)
+    auto score = getScore();
+    if (!score)
     {
-      return nullptr;   // score is not yet set
+      return {};   // score is not yet set
     }
 
     int loser = score->getLoser();
     if (loser == 0)
     {
-      return nullptr;   // draw; no loser
+      return {};   // draw; no loser
     }
 
     PlayerPair l = (loser == 1) ? getPlayerPair1() : getPlayerPair2();
 
-    return std::unique_ptr<PlayerPair>(new PlayerPair(l));
+    return PlayerPair(l);
   }
 
 //----------------------------------------------------------------------------

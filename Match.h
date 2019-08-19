@@ -86,7 +86,7 @@ namespace QTournament
 
     QDateTime getStartTime() const;
     QDateTime getFinishTime() const;
-    bool addAddtionalCallTime() const;
+    void addAddtionalCallTime() const;
     QList<QDateTime> getAdditionalCallTimes() const;
     int getMatchDuration() const;
 

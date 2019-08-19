@@ -71,7 +71,7 @@ namespace QTournament
 
   int MatchGroup::getMatchCount() const
   {
-    return matchTab->getMatchCountForColumnValue(MA_GRP_REF, getId());
+    return matchTab.getMatchCountForColumnValue(MA_GRP_REF, getId());
   }
 
 //----------------------------------------------------------------------------
@@ -79,12 +79,7 @@ namespace QTournament
   int MatchGroup::getStageSequenceNumber() const
   {
     auto result = row.getInt2(MG_STAGE_SEQ_NUM);
-    if (result->isNull())
-    {
-      return -1;  // group not staged
-    }
-
-    return result->get();
+    return result.value_or(-1);
   }
 
 //----------------------------------------------------------------------------
@@ -93,10 +88,11 @@ namespace QTournament
   {
     // for performance reasons, we issue a single SQL-statement here
     // instead of looping through all matches in the group
-    WhereClause wc;
+    SqliteOverlay::WhereClause wc;
     wc.addCol(MA_GRP_REF, getId());
     wc.addCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(stat));
-    return (matchTab->getMatchCountForWhereClause(wc) > 0);
+
+    return (matchTab.getMatchCountForWhereClause(wc) > 0);
   }
 
 //----------------------------------------------------------------------------
@@ -105,11 +101,11 @@ namespace QTournament
   {
     // for performance reasons, we issue a single SQL-statement here
     // instead of looping through all matches in the group
-    QString where = "%1 = %2 AND %3 != %4";
-    where = where.arg(MA_GRP_REF).arg(getId());
-    where = where.arg(GENERIC_STATE_FIELD_NAME).arg(static_cast<int>(stat));
+    SqliteOverlay::WhereClause wc;
+    wc.addCol(MA_GRP_REF, getId());
+    wc.addCol(GENERIC_STATE_FIELD_NAME, "!=", static_cast<int>(stat));
 
-    return (matchTab->getMatchCountForWhereClause(where.toUtf8().constData()) > 0);
+    return (matchTab.getMatchCountForWhereClause(wc) > 0);
   }
 
 //----------------------------------------------------------------------------
