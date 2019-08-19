@@ -18,6 +18,8 @@
 
 #include <QDebug>
 
+#include <Sloppy/Utils.h>
+
 #include <SqliteOverlay/Transaction.h>
 
 #include "ElimCategory.h"
@@ -136,7 +138,7 @@ namespace QTournament
     // for each group
     CatMngr cm{db};
     PlayerPairList seeding = cm.getSeeding(*this);
-    return generateBracketMatches(elimMode, seeding, 1, progressNotificationQueue);
+    return generateBracketMatches(elimMode, seeding, 1);
   }
 
 //----------------------------------------------------------------------------
@@ -190,7 +192,7 @@ namespace QTournament
         if (re.getRank() != RankingEntry::NO_RANK_ASSIGNED)
         {
           auto pp = re.getPlayerPair();
-          assert(pp != nullptr);
+          assert(pp);
           bool hasPair = (std::find(ppList.begin(), ppList.end(), *pp) != ppList.end());
           if (!hasPair)
           {
@@ -262,12 +264,12 @@ namespace QTournament
       for (Match ma : mg.getMatches())
       {
         auto loser = ma.getLoser();
-        assert(loser != nullptr);
+        assert(loser);
         int loserPairId = loser->getPairId();
         assert(loserPairId > 0);
 
         auto winner = ma.getWinner();
-        assert(winner != nullptr);
+        assert(winner);
         int winnerPairId = winner->getPairId();
         assert(winnerPairId > 0);
 
@@ -277,14 +279,14 @@ namespace QTournament
         // check 1: is there a final rank for the winner?
         if (ma.getWinnerRank() > 0)
         {
-          eraseAllValuesFromVector<PlayerPair>(result, *winner);
+          Sloppy::eraseAllOccurencesFromVector<PlayerPair>(result, *winner);
           winnerOut = true;
         }
 
         // check 2: is there a final rank for the loser?
         if (ma.getLoserRank() > 0)
         {
-          eraseAllValuesFromVector<PlayerPair>(result, *loser);
+          Sloppy::eraseAllOccurencesFromVector<PlayerPair>(result, *loser);
           loserOut = true;
         }
 
@@ -292,13 +294,13 @@ namespace QTournament
         // Intermezzo: a helper function for searching
         // for future matches of a pair ID
         //
-        DbTab* matchTab = db->getTab(TAB_MATCH);
+        DbTab matchTab{db, TAB_MATCH, false};
         auto hasFutureMatch = [&](const PlayerPair& pp, bool asWinner) {
           // step 1: search by pair
           for (int r=round+1; r <= lastRoundInThisCat; ++r)
           {
             auto next = mm.getMatchForPlayerPairAndRound(pp, r);
-            if (next != nullptr)
+            if (next)
             {
               return true;
             }
@@ -306,11 +308,12 @@ namespace QTournament
 
           // step 2: search for "is winner of" or "is loser of"
           // this match
-          QString where = "%1 = %3 OR %2 = %3";
-          where = where.arg(MA_PAIR1_SYMBOLIC_VAL).arg(MA_PAIR2_SYMBOLIC_VAL);
+          Sloppy::estring where = "%1 = %3 OR %2 = %3";
+          where.arg(MA_PAIR1_SYMBOLIC_VAL);
+          where.arg(MA_PAIR2_SYMBOLIC_VAL);
           int symbMatchId = asWinner ? ma.getId() : -(ma.getId());
-          where = where.arg(symbMatchId);
-          if (matchTab->getMatchCountForWhereClause(where.toUtf8().constData()) > 0)
+          where.arg(symbMatchId);
+          if (matchTab.getMatchCountForWhereClause(where) > 0)
           {
             return true;
           }
@@ -326,17 +329,17 @@ namespace QTournament
         {
           if (!(hasFutureMatch(*winner, true)))
           {
-            eraseAllValuesFromVector<PlayerPair>(result, *winner);
+            Sloppy::eraseAllOccurencesFromVector<PlayerPair>(result, *winner);
           }
         }
 
         // check 4: if the loser is still in: is there
-        // a future game in this category for the winner?
+        // a future game in this category for the loser?
         if (!loserOut)
         {
           if (!(hasFutureMatch(*loser, false)))
           {
-            eraseAllValuesFromVector<PlayerPair>(result, *loser);
+            Sloppy::eraseAllOccurencesFromVector<PlayerPair>(result, *loser);
           }
         }
       }
@@ -344,7 +347,7 @@ namespace QTournament
 
     // everyone who has not yet been kicked from the
     // list survives this round
-    if (err != nullptr) *err = OK;
+    Sloppy::assignIfNotNull<ERR>(err, OK);
     return result;
   }
 
@@ -361,10 +364,10 @@ namespace QTournament
     // if the winner's and the loser's match have both not yet been started,
     // we can still change the winner/loser. Otherwise we can only apply
     // cosmetic changes to the score
-    upMatch winnerMatch = getFollowUpMatch(ma, false);
-    upMatch loserMatch = getFollowUpMatch(ma, true);
+    auto winnerMatch = getFollowUpMatch(ma, false);
+    auto loserMatch = getFollowUpMatch(ma, true);
     bool canModWinnerLoser = true;
-    if (winnerMatch != nullptr)
+    if (winnerMatch)
     {
       OBJ_STATE stat = winnerMatch->getState();
       if ((stat == STAT_MA_RUNNING) || (stat == STAT_MA_FINISHED))
@@ -372,7 +375,7 @@ namespace QTournament
         canModWinnerLoser = false;
       }
     }
-    if (loserMatch != nullptr)
+    if (loserMatch)
     {
       OBJ_STATE stat = loserMatch->getState();
       if ((stat == STAT_MA_RUNNING) || (stat == STAT_MA_FINISHED))
@@ -404,81 +407,87 @@ namespace QTournament
 
     // start a new database transaction to ensure
     // consistent modifications
-    bool isDbErr;
-    auto tg = db->acquireTransactionGuard(false, &isDbErr);
-    if (isDbErr) return ModMatchResult::NotPossible;
-
-    // swap winner / loser in the follow-up matches
-    MatchMngr mm{db};
-    if (isWinnerMod)
+    try
     {
-      PlayerPair oldWinner = *(ma.getWinner());
-      PlayerPair oldLoser = *(ma.getLoser());
+      auto trans = db.get().startTransaction();
 
-      upMatch winnerMatch = getFollowUpMatch(ma, false);
-      upMatch loserMatch = getFollowUpMatch(ma, true);
+      // swap winner / loser in the follow-up matches
+      MatchMngr mm{db};
+      if (isWinnerMod)
+      {
+        PlayerPair oldWinner = *(ma.getWinner());
+        PlayerPair oldLoser = *(ma.getLoser());
 
-      if (winnerMatch != nullptr)
-      {
-        ERR e = mm.swapPlayer(*winnerMatch, oldWinner, oldLoser);
-        if (e != OK) return ModMatchResult::NotPossible;   // triggers implicit rollback through tg's dtor
-      }
-      if (loserMatch != nullptr)
-      {
-        ERR e = mm.swapPlayer(*loserMatch, oldLoser, oldWinner);
-        if (e != OK) return ModMatchResult::NotPossible;  // triggers implicit rollback through tg's dtor
+        auto winnerMatch = getFollowUpMatch(ma, false);
+        auto loserMatch = getFollowUpMatch(ma, true);
+
+        if (winnerMatch)
+        {
+          ERR e = mm.swapPlayer(*winnerMatch, oldWinner, oldLoser);
+          if (e != OK) return ModMatchResult::NotPossible;   // triggers implicit rollback
+        }
+        if (loserMatch)
+        {
+          ERR e = mm.swapPlayer(*loserMatch, oldLoser, oldWinner);
+          if (e != OK) return ModMatchResult::NotPossible;  // triggers implicit rollback
+        }
+
+        // delete explicit references to the affected pair in the
+        // bracket visualization
+        auto bvd = BracketVisData::getExisting(ma.getCategory());
+        if (bvd != nullptr)
+        {
+          bvd->clearExplicitPlayerPairReferences(oldWinner);
+          bvd->clearExplicitPlayerPairReferences(oldLoser);
+        }
       }
 
-      // delete explicit references to the affected pair in the
-      // bracket visualization
-      auto bvd = BracketVisData::getExisting(ma.getCategory());
-      if (bvd != nullptr)
+      // update the match score
+      ERR e = mm.updateMatchScore(ma, newScore, (mmr == ModMatchResult::WinnerLoser));
+      if (e != OK)
       {
-        bvd->clearExplicitPlayerPairReferences(oldWinner);
-        bvd->clearExplicitPlayerPairReferences(oldLoser);
+        return ModMatchResult::NotPossible;  // triggers implicit rollback
       }
+
+      // update the ranking entries but skip the assignment of ranks
+      RankingMngr rm{db};
+      e = rm.updateRankingsAfterMatchResultChange(ma, oldScore, true);
+      if (e != OK) return ModMatchResult::NotPossible;  // triggers implicit rollback
+
+      // the previous call did not properly update the assigned
+      // ranks, because ranking in bracket matches works different
+      // than in other match system.
+      // thus, we call a special function that modifies
+      // the ranks directly.
+      //
+      // we only need to do this if we modified a match of a completed
+      // round. otherwise there aren't any RankingEntries to modify at all
+      CatRoundStatus crs = getRoundStatus();
+      if (ma.getMatchGroup().getRound() <= crs.getFinishedRoundsCount())
+      {
+        e = rewriteFinalRankForMultipleRounds(ma.getMatchGroup().getRound());
+        if (e != OK) return ModMatchResult::NotPossible;  // triggers implicit rollback
+      }
+
+      trans.commit();
+
+      return ModMatchResult::ModDone;
     }
-
-    // update the match score
-    ERR e = mm.updateMatchScore(ma, newScore, (mmr == ModMatchResult::WinnerLoser));
-    if (e != OK)
+    catch(...)
     {
-      return ModMatchResult::NotPossible;  // triggers implicit rollback through tg's dtor
+      return ModMatchResult::NotPossible;
     }
-
-    // update the ranking entries but skip the assignment of ranks
-    RankingMngr rm{db};
-    e = rm.updateRankingsAfterMatchResultChange(ma, oldScore, true);
-    if (e != OK) return ModMatchResult::NotPossible;  // triggers implicit rollback through tg's dtor
-
-    // the previous call did not properly update the assigned
-    // ranks, because ranking in bracket matches works different
-    // than in other match system.
-    // thus, we call a special function that directly modifies
-    // the ranks directly.
-    //
-    // we only need to do this if we modified a match of a completed
-    // round. otherwise there aren't any RankingEntries to modify at all
-    CatRoundStatus crs = getRoundStatus();
-    if (ma.getMatchGroup().getRound() <= crs.getFinishedRoundsCount())
-    {
-      e = rewriteFinalRankForMultipleRounds(ma.getMatchGroup().getRound());
-      if (e != OK) return ModMatchResult::NotPossible;  // triggers implicit rollback through tg's dtor
-    }
-
-    bool isOkay = tg ? tg->commit() : true;
-    return isOkay ? ModMatchResult::ModDone : ModMatchResult::NotPossible;
   }
 
   //----------------------------------------------------------------------------
 
   std::optional<Match> EliminationCategory::getFollowUpMatch(const Match& ma, bool searchLoserNotWinner) const
   {
-    if (ma.getCategory().getId() != getId()) return nullptr;
+    if (ma.getCategory().getId() != getId()) return {};
 
     //
     // There are two solutions:
-    // (1) the match has already been finished. In this case we must
+    // (1) the match has already been finished. In this case we must search
     //     for a match in a subsequent round that includes the winner/loser
     //
     // (2) the has not been finished and so we have to search via
@@ -499,27 +508,27 @@ namespace QTournament
       MatchMngr mm{db};
       while (round <= maxRound)
       {
-        upMatch result = mm.getMatchForPlayerPairAndRound(pp, round);
-        if (result != nullptr) return result;
+        auto result = mm.getMatchForPlayerPairAndRound(pp, round);
+        if (result) return result;
         ++round;
       }
-      return nullptr;  // no match found
+      return {};  // no match found
     }
 
     //
     // Case 2: the match has not yet been finished
     //
     int maId = searchLoserNotWinner ? -ma.getId() : ma.getId();
-    DbTab* mTab = db->getTab(TAB_MATCH);
-    auto resultRow = mTab->getSingleRowByColumnValue2(MA_PAIR1_SYMBOLIC_VAL, maId);
-    if (resultRow == nullptr)
+    DbTab mTab{db, TAB_MATCH, false};
+    auto resultRow = mTab.getSingleRowByColumnValue2(MA_PAIR1_SYMBOLIC_VAL, maId);
+    if (!resultRow)
     {
-      resultRow = mTab->getSingleRowByColumnValue2(MA_PAIR2_SYMBOLIC_VAL, maId);
+      resultRow = mTab.getSingleRowByColumnValue2(MA_PAIR2_SYMBOLIC_VAL, maId);
     }
 
-    if (resultRow == nullptr) return nullptr;
+    if (!resultRow) return {};
     MatchMngr mm{db};
-    return mm.getMatch(resultRow->getId());
+    return mm.getMatch(resultRow->id());
   }
 
   //----------------------------------------------------------------------------
@@ -537,7 +546,7 @@ namespace QTournament
     if (maxRound > lastCompletedRound) return INVALID_ROUND;
 
     // start a pretty inefficient algorithm that goes through
-    // all round from "min" to "max" and loop over all
+    // all rounds from "min" to "max" and loop over all
     // round from "1" to "current" in every itegration...
     MatchMngr mm{db};
     RankingMngr rm{db};
@@ -547,9 +556,9 @@ namespace QTournament
 
       for (int r=1; r <= curRound; ++r)
       {
-        for (MatchGroup mg : mm.getMatchGroupsForCat(*this, r))
+        for (const MatchGroup& mg : mm.getMatchGroupsForCat(*this, r))
         {
-          for (Match ma : mg.getMatches())
+          for (const Match& ma : mg.getMatches())
           {
             int winnerRank = ma.getWinnerRank();
             if (winnerRank > 0)
@@ -558,9 +567,9 @@ namespace QTournament
               // so we should always have a winner and an
               // associated (unsorted) ranking entry
               auto w = ma.getWinner();
-              assert(w != nullptr);
+              assert(w);
               auto re = rm.getRankingEntry(*w, curRound);
-              assert(re != nullptr);
+              assert(re);
               rm.forceRank(*re, winnerRank);
               pairsWithRank.push_back(w->getPairId());
             }
@@ -572,9 +581,9 @@ namespace QTournament
               // so we should always have a loser and an
               // associated (unsorted) ranking entry
               auto l = ma.getLoser();
-              assert(l != nullptr);
+              assert(l);
               auto re = rm.getRankingEntry(*l, curRound);
-              assert(re != nullptr);
+              assert(re);
               rm.forceRank(*re, loserRank);
               pairsWithRank.push_back(l->getPairId());
             }
@@ -592,7 +601,7 @@ namespace QTournament
 
         // set the rank to "Not assigned"
         auto re = rm.getRankingEntry(pp, curRound);
-        if (re != nullptr)
+        if (re)
         {
           rm.clearRank(*re);
         }
