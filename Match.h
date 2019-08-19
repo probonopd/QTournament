@@ -72,7 +72,7 @@ namespace QTournament
     std::optional<PlayerPair> getWinner() const;
     std::optional<PlayerPair> getLoser() const;
 
-    std::optional<Court> getCourt(ERR *err=nullptr) const;
+    std::optional<Court> getCourt(ERR *err) const;
     PlayerList determineActualPlayers() const;
 
     int getSymbolicPlayerPair1Name() const;

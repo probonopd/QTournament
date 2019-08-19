@@ -232,17 +232,17 @@ namespace QTournament
 
   std::optional<Court> Match::getCourt(ERR *err) const
   {
-    auto courtEntry = row.getInt2(MA_COURT_REF);
-    if (courtEntry->isNull())
+    auto courtId = row.getInt2(MA_COURT_REF);
+    if (!courtId)
     {
-      if (err != nullptr) *err = NO_COURT_ASSIGNED;
-      return nullptr;
+      Sloppy::assignIfNotNull<ERR>(err, NO_COURT_ASSIGNED);
+      return {};
     }
 
-    int courtId = courtEntry->get();
     CourtMngr cm{db};
-    auto result = cm.getCourtById(courtId);
-    if (err != nullptr) *err = OK;
+    auto result = cm.getCourtById(*courtId);
+    Sloppy::assignIfNotNull<ERR>(err, OK);
+
     return result;
   }
 
