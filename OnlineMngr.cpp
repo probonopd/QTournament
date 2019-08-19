@@ -15,13 +15,14 @@
 #include "MatchMngr.h"
 #include "PlayerMngr.h"
 #include "RankingMngr.h"
+#include "HelperFunc.h"
 
 using namespace std;
 
 namespace QTournament
 {
 
-  OnlineMngr::OnlineMngr(const TournamentDB& _db)
+  OnlineMngr::OnlineMngr(TournamentDB& _db)
     :db{_db}, cryptoLib{Sloppy::Crypto::SodiumLib::getInstance()},
       cfgTab{SqliteOverlay::KeyValueTab{db, TAB_CFG}}, secKeyUnlocked{false},
       syncState{}, lastReqTime_ms{-1}
@@ -50,8 +51,8 @@ namespace QTournament
     body += string{postData.constData()};
 
     // create a detached signature of the body
-    string sig = cryptoLib->crypto_sign_detached(body, secKey);
-    string sigB64 = Sloppy::Crypto::toBase64(sig);
+    auto sig = cryptoLib->sign_detached(body, secKey);
+    string sigB64 = sig.toBase64();
 
     // put the signature in an extra header
     QMap<QString, QString> hdr;
@@ -59,8 +60,8 @@ namespace QTournament
 
     // add version information
     hdr["X-ProtocolVersion"] = QString::fromUtf8(ImplementedProtoVersion);
-    auto _dv = cfgTab->getString2(CFG_KEY_DB_VERSION);
-    string dv = ((_dv != nullptr) && (!(_dv->isNull()))) ? _dv->get() : "unknown";
+    auto _dv = cfgTab.getString2(CFG_KEY_DB_VERSION);
+    string dv = _dv.value_or("unknown");
     QString dbVersion = QString::fromUtf8(dv.c_str());
     hdr["X-DatabaseVersion"] = dbVersion;
 
@@ -85,8 +86,9 @@ namespace QTournament
     // we're compatible, so check the responses signature
     sigB64 = string{re.getHeader("X-Signature").toUtf8().constData()};
     if (sigB64.empty()) return OnlineError::InvalidServerSignature;
-    sig = Sloppy::Crypto::fromBase64(sigB64);
-    bool isOkay = cryptoLib->crypto_sign_verify_detached(re.data.constData(), sig, srvPubKey);
+    sig.fillFromBase64(sigB64);
+    Sloppy::MemView respDataView{re.data.constData(), static_cast<size_t>(re.data.size())};
+    bool isOkay = cryptoLib->sign_verify_detached(respDataView, sig, srvPubKey);
     if (!isOkay) return OnlineError::InvalidServerSignature;
 
     // the response should be preceeded by a 10-character nonce
@@ -107,11 +109,11 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  bool OnlineMngr::hasSecretInDatabase() const
+  bool OnlineMngr::hasSecretInDatabase()
   {
-    if (!(cfgTab->hasKey(CFG_KEY_KEYSTORE))) return false;
+    if (!(cfgTab.hasKey(CFG_KEY_KEYSTORE))) return false;
 
-    const string& encData = cfgTab->operator [](CFG_KEY_KEYSTORE);
+    const string encData = cfgTab[CFG_KEY_KEYSTORE];
     return (!(encData.empty()));
   }
 
@@ -139,7 +141,7 @@ namespace QTournament
 
     // initialize a PasswordProtectedSecret from the
     // encrypted data and try the provided password
-    const string& encData = cfgTab->operator [](CFG_KEY_KEYSTORE);
+    const string encData = cfgTab[CFG_KEY_KEYSTORE];
     SecretBox box(encData, true);
     bool isOkay = box.setPassword(oldPassword.toUtf8().constData());
     if (!isOkay) return OnlineError::InvalidPassword;
@@ -151,10 +153,8 @@ namespace QTournament
     // store the new encrypted data in the database
     string cipher = box.asString(true);
     if (cipher.empty()) return OnlineError::InvalidPassword;
-    int err;
-    cfgTab->set(CFG_KEY_KEYSTORE, cipher, &err);
-    if (err != SQLITE_DONE) return OnlineError::LocalDatabaseError;
-    const string& readBack = cfgTab->operator [](CFG_KEY_KEYSTORE);
+    cfgTab.set(CFG_KEY_KEYSTORE, cipher);
+    const string& readBack = cfgTab[CFG_KEY_KEYSTORE];
     if (readBack != cipher) return OnlineError::LocalDatabaseError;
 
     return OnlineError::Okay;
@@ -162,13 +162,13 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  OnlineError OnlineMngr::isCorrectPassword(const QString& pw) const
+  OnlineError OnlineMngr::isCorrectPassword(const QString& pw)
   {
     if (!(hasSecretInDatabase())) return OnlineError::KeystoreEmpty;
 
     // initialize a PasswordProtectedSecret from the
     // encrypted data and use the built-in password checker
-    const string& encData = cfgTab->operator [](CFG_KEY_KEYSTORE);
+    const string encData = cfgTab[CFG_KEY_KEYSTORE];
     SecretBox box(encData, true);
     bool isValid = box.isValidPassword(pw.toUtf8().constData());
 
@@ -185,7 +185,7 @@ namespace QTournament
 
     // initialize a PasswordProtectedSecret from the
     // encrypted data
-    const string& encData = cfgTab->operator [](CFG_KEY_KEYSTORE);
+    const string encData = cfgTab[CFG_KEY_KEYSTORE];
     SecretBox box(encData, true);
     bool isOkay = box.setPassword(pw.toUtf8().constData());
     if (!isOkay) return OnlineError::WrongPassword;
@@ -206,7 +206,7 @@ namespace QTournament
 
   bool OnlineMngr::hasRegistrationSubmitted() const
   {
-    return cfgTab->hasKey(CFG_KEY_REGISTRATION_TIMESTAMP);
+    return cfgTab.hasKey(CFG_KEY_REGISTRATION_TIMESTAMP);
   }
 
   //----------------------------------------------------------------------------
@@ -236,18 +236,18 @@ namespace QTournament
     // convert the registration data to JSON
     //
     // no error checking here, we leave this to the server
-    Json::Value dic;
+    auto dic = nlohmann::json::object();
     dic["name"] = ord.tnmtName.toUtf8().constData();
     dic["club"] = ord.club.toUtf8().constData();
     dic["owner"] = ord.personName.toUtf8().constData();
     dic["email"] = ord.email.toUtf8().constData();
     dic["first"] = ord.firstDay.year() * 10000 + ord.firstDay.month() * 100 + ord.firstDay.day();
     dic["last"] = ord.lastDay.year() * 10000 + ord.lastDay.month() * 100 + ord.lastDay.day();
-    dic["pubkey"] = Sloppy::Crypto::toBase64(pubKey.copyToString());
+    dic["pubkey"] = pubKey.toBase64();
 
     // do the actual server request
     QByteArray response;
-    OnlineError err = execSignedServerRequest("/registration", false, QByteArray(dic.toStyledString().c_str()), response);
+    OnlineError err = execSignedServerRequest("/registration", false, QByteArray{dic.dump().c_str()}, response);
     if (err != OnlineError::Okay) return err;
 
     // construct the reply
@@ -260,7 +260,7 @@ namespace QTournament
     if (result == OnlineError::Okay)
     {
       UTCTimestamp now;
-      cfgTab->set(CFG_KEY_REGISTRATION_TIMESTAMP, (int)now.getRawTime());
+      cfgTab.set(CFG_KEY_REGISTRATION_TIMESTAMP, &now);
     }
 
     return result;
@@ -279,7 +279,7 @@ namespace QTournament
     }
 
     // do the actual server request
-    string pkB64 = Sloppy::Crypto::toBase64(pubKey.copyToString());
+    string pkB64 = pubKey.toBase64();
     QByteArray response;
     OnlineError err = execSignedServerRequest("/startSession", false, QByteArray(pkB64.c_str()), response);
     if (err != OnlineError::Okay) return err;
@@ -308,7 +308,7 @@ namespace QTournament
       return OnlineError::TransportOkay_AppError;
     }
 
-    db->enableChangeLog(true);
+    db.get().enableChangeLog(true);
     return OnlineError::Okay;
   }
 
@@ -330,7 +330,7 @@ namespace QTournament
 
     QByteArray response;
     OnlineError err = execSignedServerRequest("/terminateSession", true, QByteArray{}, response);
-    db->disableChangeLog(true);
+    db.get().disableChangeLog(true);
     syncState = SyncState{};  // reset all clocks, session keys, etc.
 
     cout << "Terminate Session, server said: " << response.constData() << endl;
@@ -358,7 +358,7 @@ namespace QTournament
     disconnect();
 
     // do the actual request
-    string pkB64 = Sloppy::Crypto::toBase64(pubKey.copyToString());
+    string pkB64 = pubKey.toBase64();
     QByteArray response;
     OnlineError err = execSignedServerRequest("/deleteTournament", false, QByteArray(pkB64.c_str()), response);
     if (err != OnlineError::Okay) return err;
@@ -368,21 +368,28 @@ namespace QTournament
     errCodeOut = QString::fromUtf8(response.constData());
     if (errCodeOut != "OK") return OnlineError::TransportOkay_AppError;
 
-    // prepare to delete everything server-related from the database
-    auto trans = db->startTransaction();
-    if (trans == nullptr) return OnlineError::LocalDatabaseError;
-
-    // do some bad low-level operations on the database,
-    // because the KeyValueTab does not yet allow the deletion
-    // of keys
-    for (const string& keyName : {CFG_KEY_KEYSTORE, CFG_KEY_REGISTRATION_TIMESTAMP,
-                                  CfgKey_CustomServer, CfgKey_CustomServerKey, CfgKey_CustomServerTimeout})
+    try
     {
-      if (!(deleteOptionalConfigKey(keyName))) return OnlineError::LocalDatabaseError;
-    }
+      // prepare to delete everything server-related from the database
+      auto trans = db.get().startTransaction();
 
-    // commit all changes at once
-    if (!(trans->commit())) return OnlineError::LocalDatabaseError;
+      for (const string& keyName : {CFG_KEY_KEYSTORE, CFG_KEY_REGISTRATION_TIMESTAMP,
+                                    CfgKey_CustomServer, CfgKey_CustomServerKey, CfgKey_CustomServerTimeout})
+      {
+        cfgTab.remove(keyName);
+      }
+
+      // commit all changes at once
+      trans.commit();
+    }
+    catch (SqliteOverlay::BusyException&)
+    {
+      return OnlineError::LocalDatabaseError;
+    }
+    catch (SqliteOverlay::GenericSqliteException&)
+    {
+      return OnlineError::LocalDatabaseError;
+    }
 
     // delete all internal state
     secKey = SecSignKey{};
@@ -474,7 +481,7 @@ namespace QTournament
   {
     if (!(syncState.hasSession())) return false;
 
-    size_t logLen = db->getChangeLogLength();
+    size_t logLen = db.get().getChangeLogLength();
     if (logLen == 0) return false;
 
     // check the "inactivity hystersis"
@@ -517,11 +524,10 @@ namespace QTournament
     // basically single-threaded and we don't return to the
     // event loop before we're finished. But better safe than
     // sorry...
-    DbLockHolder lk{db, DatabaseAccessRoles::SyncThread, false};
-    if (!(lk.islocked())) return OnlineError::LocalDatabaseBusy;
+    auto trans = db.get().startTransaction(SqliteOverlay::TransactionType::Exclusive);
 
     // get all recent database changes
-    ChangeLogList log = db->getAllChangesAndClearQueue();
+    auto log = db.get().getAllChangesAndClearQueue();
     if (log.empty()) return OnlineError::Okay;
 
     // remove unnecessary, redundant entries from the log
@@ -573,11 +579,11 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  QString OnlineMngr::getCustomUrl() const
+  QString OnlineMngr::getCustomUrl()
   {
-    if (cfgTab->hasKey(CfgKey_CustomServer))
+    if (cfgTab.hasKey(CfgKey_CustomServer))
     {
-      return QString::fromUtf8(cfgTab->operator [](CfgKey_CustomServer).c_str());
+      return QString::fromUtf8(cfgTab[CfgKey_CustomServer].c_str());
     }
 
     return "";
@@ -587,78 +593,89 @@ namespace QTournament
 
   bool OnlineMngr::setCustomUrl(const QString& url)
   {
-    if (url.isEmpty())
+    try
     {
-      return deleteOptionalConfigKey(CfgKey_CustomServer);
+      if (url.isEmpty())
+      {
+        cfgTab.remove(CfgKey_CustomServer);
+        return true;
+      }
+
+      cfgTab.set(CfgKey_CustomServer, QString2StdString(url));
+
+      apiBaseUrl = url;
+
+      return true;
     }
-
-    int dbErr;
-    cfgTab->set(CfgKey_CustomServer, url.toUtf8().constData(), &dbErr);
-    if (dbErr != SQLITE_DONE) return false;
-
-    apiBaseUrl = url;
-    return true;
+    catch (...)
+    {
+      return false;
+    }
   }
 
   //----------------------------------------------------------------------------
 
-  QString OnlineMngr::getCustomServerKey() const
+  QString OnlineMngr::getCustomServerKey()
   {
-    if (cfgTab->hasKey(CfgKey_CustomServerKey))
-    {
-      return QString::fromUtf8(cfgTab->operator [](CfgKey_CustomServerKey).c_str());
-    }
-
-    return "";
+    return stdString2QString(
+          cfgTab.getString2(CfgKey_CustomServerKey).value_or("")
+          );
   }
 
   //----------------------------------------------------------------------------
 
   bool OnlineMngr::setCustomServerKey(const QString& key)
   {
-    if (key.isEmpty())
+    try
     {
-      return deleteOptionalConfigKey(CfgKey_CustomServerKey);
+      if (key.isEmpty())
+      {
+        cfgTab.remove(CfgKey_CustomServerKey);
+        return true;
+      }
+
+      string sKey = key.toUtf8().constData();
+      PubSignKey testKey;
+      bool isOkay = testKey.fillFromBase64(sKey);
+      if (!isOkay) return false;
+
+      cfgTab.set(CfgKey_CustomServerKey, sKey);
+      return true;
     }
-
-    string sKey = key.toUtf8().constData();
-    PubSignKey testKey;
-    bool isOkay = testKey.fillFromString(Sloppy::Crypto::fromBase64(sKey));
-    if (!isOkay) return false;
-
-    int dbErr;
-    cfgTab->set(CfgKey_CustomServerKey, sKey, &dbErr);
-    return (dbErr == SQLITE_DONE);
+    catch (...)
+    {
+      return false;
+    }
   }
 
   //----------------------------------------------------------------------------
 
-  int OnlineMngr::getCustomTimeout_ms() const
+  int OnlineMngr::getCustomTimeout_ms()
   {
-    if (cfgTab->hasKey(CfgKey_CustomServerTimeout))
-    {
-      return cfgTab->getInt(CfgKey_CustomServerTimeout);
-    }
-
-    return -1;
+    return cfgTab.getInt2(CfgKey_CustomServerTimeout).value_or(-1);
   }
 
   //----------------------------------------------------------------------------
 
   bool OnlineMngr::setCustomTimeout_ms(int newTimeout)
   {
-    if (newTimeout < 0)
+    try
     {
-      return deleteOptionalConfigKey(CfgKey_CustomServerTimeout);
+      if (newTimeout < 0)
+      {
+        cfgTab.remove(CfgKey_CustomServerTimeout);
+        return true;
+      }
+
+      if (newTimeout < 1000) return false;  // invalid range, we want at least one second
+      cfgTab.set(CfgKey_CustomServerTimeout, newTimeout);
+
+      return true;
     }
-
-    if (newTimeout < 1000) return false;  // invalid range, we want at least one second
-
-    int dbErr;
-    cfgTab->set(CfgKey_CustomServerTimeout, newTimeout, &dbErr);
-    if (dbErr != SQLITE_DONE) return false;
-
-    return true;
+    catch (...)
+    {
+      return false;
+    }
   }
 
   //----------------------------------------------------------------------------
@@ -666,17 +683,28 @@ namespace QTournament
   void OnlineMngr::applyCustomServerSettings()
   {
     // do we have a custom server or do we use the default?
-    auto srv = cfgTab->getString2(CfgKey_CustomServer);
-    apiBaseUrl = ((srv != nullptr) && (!(srv->isNull()))) ? "http://" + QString::fromUtf8(srv->get().c_str()) : DefaultApiBaseUrl;
+    auto srv = cfgTab.getString2(CfgKey_CustomServer);
+    if (srv.has_value())
+    {
+      apiBaseUrl = "http://" + stdString2QString(srv.value());
+    } else {
+      apiBaseUrl = DefaultApiBaseUrl;
+    }
 
     // do we have a custom key or do we use the default?
-    auto _pubKey = cfgTab->getString2(CfgKey_CustomServerKey);
-    string pubKey = ((_pubKey != nullptr) && (!(_pubKey->isNull()))) ? _pubKey->get() : ServerPubKey_B64;
-    srvPubKey.fillFromString(Sloppy::Crypto::fromBase64(pubKey));  // no error checking, we check the values before writing to the DB
+    //
+    // no error checking, we check the values before writing to the DB
+    auto pubKey = cfgTab.getString2(CfgKey_CustomServerKey);
+    if (pubKey.has_value())
+    {
+      srvPubKey.fillFromBase64(pubKey.value());
+    } else {
+      srvPubKey.fillFromBase64(ServerPubKey_B64);
+    }
 
     // do we have a custom timeout or do we use the default?
-    auto to = cfgTab->getInt2(CfgKey_CustomServerTimeout);
-    defaultTimeout_ms = ((to != nullptr) && (!(to->isNull()))) ? to->get() : DefaultServerTimeout_ms;
+    auto to = cfgTab.getInt2(CfgKey_CustomServerTimeout);
+    defaultTimeout_ms = to.value_or(DefaultServerTimeout_ms);
   }
 
   //----------------------------------------------------------------------------
@@ -697,23 +725,19 @@ namespace QTournament
     cryptoLib->genAsymSignKeyPair(localPubKey, localSecKey);
 
     // store the secret key in the key box
-    isOkay = box.setSecret(localSecKey);
+    isOkay = box.setSecret(localSecKey.toMemView());
     if (!isOkay) return false;
 
     // store the encrypted key box in our database
     string cipher = box.asString(true);
     if (cipher.empty()) return false;
-    int err;
-    cfgTab->set(CFG_KEY_KEYSTORE, cipher, &err);
-    if (err != SQLITE_DONE) return false;
-    const string& readBack = cfgTab->operator [](CFG_KEY_KEYSTORE);
+    cfgTab.set(CFG_KEY_KEYSTORE, cipher);
+    const string readBack = cfgTab[CFG_KEY_KEYSTORE];
     if (readBack != cipher) return false;
 
     // overwrite the currently used keys
-    //
-    // do NOT use move() here because the local keys sit on stack
-    secKey.fillFromString(localSecKey.copyToString());
-    pubKey.fillFromString(localPubKey.copyToString());
+    secKey = SecSignKey{localSecKey};
+    pubKey = PubSignKey{localPubKey};
     secKeyUnlocked = true;
 
     return true;
@@ -734,16 +758,16 @@ namespace QTournament
     {
       --outerIdx;
 
-      const ChangeLogEntry cle = log[outerIdx];  // do NOT use references here, because content gets shifted in memory when deleted
-      if (cle.action != RowChangeAction::Update) continue;
+      const SqliteOverlay::ChangeLogEntry cle = log[outerIdx];  // do NOT use references here, because content gets shifted in memory when deleted
+      if (cle.action != SqliteOverlay::RowChangeAction::Update) continue;
 
       size_t innerIdx = outerIdx;
       while (innerIdx != 0)
       {
         --innerIdx;
-        const ChangeLogEntry& inner = log.at(innerIdx);
+        const SqliteOverlay::ChangeLogEntry& inner = log.at(innerIdx);
         if ((inner.rowId == cle.rowId) &&
-            (inner.action == RowChangeAction::Update) &&
+            (inner.action == SqliteOverlay::RowChangeAction::Update) &&
             (inner.tabName == cle.tabName))
         {
           log.erase(log.begin() + innerIdx);
@@ -765,21 +789,18 @@ namespace QTournament
     {
       --outerIdx;
 
-      const ChangeLogEntry cle = log[outerIdx];  // do NOT use references here, because content gets shifted in memory when deleted
-      if (cle.action != RowChangeAction::Delete) continue;
+      const SqliteOverlay::ChangeLogEntry cle = log[outerIdx];  // do NOT use references here, because content gets shifted in memory when deleted
+      if (cle.action != SqliteOverlay::RowChangeAction::Delete) continue;
 
       bool foundInsert = false;
       size_t innerIdx = outerIdx;
       while (innerIdx != 0)
       {
         --innerIdx;
-        const ChangeLogEntry& inner = log.at(innerIdx);
+        const SqliteOverlay::ChangeLogEntry& inner = log.at(innerIdx);
         if ((inner.rowId == cle.rowId) && (inner.tabName == cle.tabName))
         {
-          if (inner.action == RowChangeAction::Insert)
-          {
-            foundInsert = true;
-          }
+          foundInsert = (inner.action == SqliteOverlay::RowChangeAction::Insert);
 
           log.erase(log.begin() + innerIdx);
 
@@ -805,13 +826,13 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  string OnlineMngr::log2SyncString(const std::vector<ChangeLogEntry>& log)
+  string OnlineMngr::log2SyncString(const SqliteOverlay::ChangeLogList& log)
   {
     // copy the log
-    ChangeLogList cll = log;
+    SqliteOverlay::ChangeLogList cll = log;
 
     // sort copied entries by table name
-    std::sort(cll.begin(), cll.end(), [](const ChangeLogEntry& e1, const ChangeLogEntry& e2)
+    std::stable_sort(cll.begin(), cll.end(), [](const SqliteOverlay::ChangeLogEntry& e1, const SqliteOverlay::ChangeLogEntry& e2)
     {
       return (e1.tabName < e2.tabName);
     });
@@ -819,15 +840,14 @@ namespace QTournament
     // append a dummy entry at the end that triggers
     // a bogus tablename change in the following algorithm.
     // the dummy entry never makes it to the result string
-    cll.push_back(ChangeLogEntry{RowChangeAction::Delete, "xxx", "___", 42});
+    cll.push_back(SqliteOverlay::ChangeLogEntry{SqliteOverlay::RowChangeAction::Delete, "xxx", "___", 42});
 
     string result;
     string curTabName;
     std::vector<int> idxList;
-    auto it = cll.begin();
-    while (it != cll.end())
+    for (auto it = cll.begin(); it != cll.end(); ++it)
     {
-      const ChangeLogEntry& cle = *it;
+      const auto& cle = *it;
 
       if (cle.tabName != curTabName)
       {
@@ -884,36 +904,17 @@ namespace QTournament
         idxList.clear();
       }
 
-      if (cle.action == RowChangeAction::Delete)
+      if (cle.action == SqliteOverlay::RowChangeAction::Delete)
       {
         idxList.push_back(- cle.rowId);  // negative ID ==> deletion
       } else {
         idxList.push_back(cle.rowId);
       }
-
-      ++it;
     }
 
     return result;
   }
 
   //----------------------------------------------------------------------------
-
-  bool OnlineMngr::deleteOptionalConfigKey(const string& keyName)
-  {
-    // IMPORTANT:
-    // If more than one key should be deleted, the overall
-    // process should be protected by a transaction.
-    //
-    // The transaction is not this function's responsibility!
-    //
-    DbTab* t = db->getTab(TAB_CFG);
-    if (t == nullptr) return false;
-    if (!(cfgTab->hasKey(keyName))) return true;
-
-    int dbErr;
-    t->deleteRowsByColumnValue("K", keyName, &dbErr);
-    return (dbErr == SQLITE_DONE);
-  }
 
 }
