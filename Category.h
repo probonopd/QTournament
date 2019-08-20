@@ -102,7 +102,7 @@ namespace QTournament
     ERR canPairPlayers(const Player& p1, const Player& p2) const;
     ERR canSplitPlayers(const Player& p1, const Player& p2) const;
     bool hasUnpairedPlayers() const;
-    ERR canApplyGroupAssignment(std::vector<PlayerPairList> grpCfg);
+    ERR canApplyGroupAssignment(const std::vector<PlayerPairList>& grpCfg);
     ERR canApplyInitialRanking(PlayerPairList seed);
     bool hasMatchesInState(OBJ_STATE stat, int round=-1) const;
     bool isDrawAllowedInRound(int round) const;
@@ -133,9 +133,9 @@ namespace QTournament
 
   private:
     Category (const TournamentDB& _db, int rowId);
-    Category (const TournamentDB& _db, const SqliteOverlay::TabRow& row);
-    ERR applyGroupAssignment(std::vector<PlayerPairList> grpCfg);
-    ERR applyInitialRanking(PlayerPairList seed);
+    Category (const TournamentDB& _db, const SqliteOverlay::TabRow& _row);
+    ERR applyGroupAssignment(const std::vector<PlayerPairList>& grpCfg);
+    ERR applyInitialRanking(const PlayerPairList& seed);
     ERR generateGroupMatches(const PlayerPairList &grpMembers, int grpNum, int firstRoundNum=1) const;
     ERR generateBracketMatches(int bracketMode, const PlayerPairList& seeding, int firstRoundNum) const;
   };

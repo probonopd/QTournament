@@ -35,6 +35,8 @@
 #include "HelperFunc.h"
 #include "PlayerMngr.h"
 
+using namespace SqliteOverlay;
+
 namespace QTournament
 {
 
@@ -45,8 +47,8 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  Category::Category(const TournamentDB& _db, const SqliteOverlay::TabRow& row)
-  :TournamentDatabaseObject(_db, row)
+  Category::Category(const TournamentDB& _db, const SqliteOverlay::TabRow& _row)
+  :TournamentDatabaseObject(_db, _row)
   {
   }
 
@@ -54,7 +56,7 @@ namespace QTournament
 
   QString Category::getName() const
   {
-    return QString::fromUtf8(row[GENERIC_NAME_FIELD_NAME].data());
+    return stdString2QString(row[GENERIC_NAME_FIELD_NAME]);
   }
 
   //----------------------------------------------------------------------------
@@ -184,7 +186,7 @@ namespace QTournament
     wc.addCol(P2C_PLAYER_REF, p.getId());
     wc.addCol(P2C_CAT_REF, getId());
 
-    return (db->getTab(TAB_P2C)->getMatchCountForWhereClause(wc) > 0);
+    return (DbTab{db, TAB_P2C, false}.getMatchCountForWhereClause(wc) > 0);
   }
 
   //----------------------------------------------------------------------------
@@ -316,25 +318,24 @@ namespace QTournament
     SqliteOverlay::WhereClause wc;
     wc.addCol(PAIRS_CAT_REF, getId());
     if (grp > 0) wc.addCol(PAIRS_GRP_NUM, grp);
-    auto it = db->getTab(TAB_PAIRS)->getRowsByWhereClause(wc);
-    while (!(it.isEnd()))
+
+    for (TabRowIterator it{db, TAB_PAIRS, wc}; it.hasData(); ++it)
     {
-      int id1 = (*it).getInt(PAIRS_PLAYER1_REF);
+      const auto& pairRow = *it;
+
+      int id1 = pairRow.getInt(PAIRS_PLAYER1_REF);
       Player p1 = pmngr.getPlayer(id1);
-      eraseAllValuesFromVector<Player>(singlePlayers, p1);
+      Sloppy::eraseAllOccurencesFromVector<Player>(singlePlayers, p1);
 
       // id2 is sometimes empty, e.g. in singles categories
-      auto _id2 = (*it).getInt2(PAIRS_PLAYER2_REF);
-      if (_id2->isNull()) {
-        result.push_back(PlayerPair(p1, (*it).getId()));
+      auto id2 = pairRow.getInt2(PAIRS_PLAYER2_REF);
+      if (!id2) {
+        result.push_back(PlayerPair(p1, pairRow.id()));
       } else {
-        int id2 = _id2->get();
-        Player p2 = pmngr.getPlayer(id2);
-        result.push_back(PlayerPair(p1, p2, (*it).getId()));
-        eraseAllValuesFromVector<Player>(singlePlayers, p2);
+        Player p2 = pmngr.getPlayer(*id2);
+        result.push_back(PlayerPair(p1, p2, pairRow.id()));
+        Sloppy::eraseAllOccurencesFromVector<Player>(singlePlayers, p2);
       }
-
-      ++it;
     }
 
     // if we have a valid group number, we are not interested in
@@ -342,7 +343,7 @@ namespace QTournament
     //
     // Reason:
     // If we have group numbers assigned, unpaired, non-databased
-    // players can't exists anymore
+    // players can't exist anymore
     if (grp > 0) return result;
 
     // create special entries for un-paired players that do
@@ -364,11 +365,11 @@ namespace QTournament
     // entries exist
     if (getState() == STAT_CAT_CONFIG) return -1;
 
-    DbTab* pairTab = db->getTab(TAB_PAIRS);
+    DbTab pairTab{db, TAB_PAIRS, false};
     SqliteOverlay::WhereClause wc;
     wc.addCol(PAIRS_CAT_REF, getId());
     if (grp > 0) wc.addCol(PAIRS_GRP_NUM, grp);
-    return pairTab->getMatchCountForWhereClause(wc);
+    return pairTab.getMatchCountForWhereClause(wc);
   }
 
   //----------------------------------------------------------------------------
@@ -378,11 +379,10 @@ namespace QTournament
     PlayerList result;
     PlayerMngr pmngr{db};
 
-    auto it = db->getTab(TAB_P2C)->getRowsByColumnValue(P2C_CAT_REF, getId());
-    while (!(it.isEnd()))
+    auto rows = DbTab{db, TAB_P2C, false}.getRowsByColumnValue(P2C_CAT_REF, getId());
+    for (const auto& row : rows)
     {
-      result.push_back(pmngr.getPlayer((*it).getInt(P2C_PLAYER_REF)));
-      ++it;
+      result.push_back(pmngr.getPlayer(row.getInt(P2C_PLAYER_REF)));
     }
 
     return result;
@@ -398,14 +398,15 @@ namespace QTournament
     }
 
     // manually construct a where-clause for an OR-query
-    QString whereClause = "(%1 = %2 OR %3 = %2) AND (%4 = %5)";
-    whereClause = whereClause.arg(PAIRS_PLAYER1_REF).arg(p.getId());
-    whereClause = whereClause.arg(PAIRS_PLAYER2_REF);
-    whereClause = whereClause.arg(PAIRS_CAT_REF).arg(getId());
+    Sloppy::estring where{"(%1 = %2 OR %3 = %2) AND (%4 = %5)"};
+    where.arg(PAIRS_PLAYER1_REF);
+    where.arg(p.getId());
+    where.arg(PAIRS_PLAYER2_REF);
+    where.arg(PAIRS_CAT_REF);
+    where.arg(getId());
 
     // see if we have a row that matches the query
-    SqliteOverlay::DbTab* pairTab = db->getTab(TAB_PAIRS);
-    return (pairTab->getMatchCountForWhereClause(whereClause.toUtf8().constData()) != 0);
+    return (DbTab{db, TAB_PAIRS, false}.getMatchCountForWhereClause(where) != 0);
   }
 
   //----------------------------------------------------------------------------
@@ -451,7 +452,7 @@ namespace QTournament
     {
       if (p1.getSex() == p2.getSex())
       {
-	return INVALID_SEX;
+        return INVALID_SEX;
       }
     }
 
@@ -461,7 +462,7 @@ namespace QTournament
       SEX catSex = getSex();
       if ((p1.getSex() != catSex) || (p2.getSex() != catSex))
       {
-	return INVALID_SEX;
+        return INVALID_SEX;
       }
     }
 
@@ -483,8 +484,8 @@ namespace QTournament
     wc.addCol(PAIRS_CAT_REF, getId());
     wc.addCol(PAIRS_PLAYER1_REF, p1.getId());
     wc.addCol(PAIRS_PLAYER2_REF, p2.getId());
-    SqliteOverlay::DbTab* pairsTab = db->getTab(TAB_PAIRS);
-    if (pairsTab->getMatchCountForWhereClause(wc) != 0)
+    DbTab pairsTab{db, TAB_PAIRS, false};
+    if (pairsTab.getMatchCountForWhereClause(wc) != 0)
     {
       return OK;
     }
@@ -494,7 +495,7 @@ namespace QTournament
     wc.addCol(PAIRS_CAT_REF, getId());
     wc.addCol(PAIRS_PLAYER1_REF, p2.getId());
     wc.addCol(PAIRS_PLAYER2_REF, p1.getId());
-    if (pairsTab->getMatchCountForWhereClause(wc) != 0)
+    if (pairsTab.getMatchCountForWhereClause(wc) != 0)
     {
       return OK;
     }
@@ -512,28 +513,30 @@ namespace QTournament
     }
 
     // manually construct a where-clause for an OR-query
-    QString whereClause = "(%1 = %2 OR %3 = %2) AND (%4 = %5)";
-    whereClause = whereClause.arg(PAIRS_PLAYER1_REF).arg(p.getId());
-    whereClause = whereClause.arg(PAIRS_PLAYER2_REF);
-    whereClause = whereClause.arg(PAIRS_CAT_REF).arg(getId());
+    Sloppy::estring where{"(%1 = %2 OR %3 = %2) AND (%4 = %5)"};
+    where.arg(PAIRS_PLAYER1_REF);
+    where.arg(p.getId());
+    where.arg(PAIRS_PLAYER2_REF);
+    where.arg(PAIRS_CAT_REF);
+    where.arg(getId());
 
     // see if we have a row that matches the query
     int partnerId = -1;
-    SqliteOverlay::DbTab* pairTab = db->getTab(TAB_PAIRS);
-    if (pairTab->getMatchCountForWhereClause(whereClause.toUtf8().constData()) == 0)
+    DbTab pairTab{db, TAB_PAIRS, false};
+    auto row = pairTab.getSingleRowByWhereClause2(where);
+    if (!row)
     {
       throw std::invalid_argument("Player doesn't have a partner");
     }
 
     // check if we have a partner
-    SqliteOverlay::TabRow r = pairTab->getSingleRowByWhereClause(whereClause.toUtf8().constData());
-    auto p2Id = r.getInt2(PAIRS_PLAYER2_REF);
-    if (p2Id->isNull())
+    auto p2Id = row->getInt2(PAIRS_PLAYER2_REF);
+    if (!p2Id)
     {
       throw std::invalid_argument("Player doesn't have a partner");
     }
-    int p1Id = r.getInt(PAIRS_PLAYER1_REF);
-    partnerId = (p1Id == p.getId()) ? p2Id->get() : p1Id;
+    int p1Id = row->getInt(PAIRS_PLAYER1_REF);
+    partnerId = (p1Id == p.getId()) ? *p2Id : p1Id;
 
     PlayerMngr pmngr{db};
     return pmngr.getPlayer(partnerId);
@@ -543,10 +546,9 @@ namespace QTournament
 
   bool Category::hasUnpairedPlayers() const
   {
-    PlayerPairList pp = getPlayerPairs();
-    for (int i=0; i < pp.size(); i++)
+    for (const auto& pp : getPlayerPairs())
     {
-      if (!(pp.at(i).hasPlayer2())) return true;
+      if (!(pp.hasPlayer2())) return true;
     }
 
     return false;
@@ -591,7 +593,7 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  ERR Category::canApplyGroupAssignment(vector<PlayerPairList> grpCfg)
+  ERR Category::canApplyGroupAssignment(const std::vector<PlayerPairList>& grpCfg)
   {
     if (getState() != STAT_CAT_FROZEN) return CATEGORY_NOT_YET_FROZEN;
 
@@ -684,26 +686,22 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  ERR Category::applyGroupAssignment(vector<PlayerPairList> grpCfg)
+  ERR Category::applyGroupAssignment(const std::vector<PlayerPairList>& grpCfg)
   {
     ERR e = canApplyGroupAssignment(grpCfg);
     if (e != OK) return e;
     
-    // lock the database before writing
-    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
-
     // The previous call checked for all possible errors or
     // misconfigurations. So we can safely write directly to the database
-    DbTab* pairTab = db->getTab(TAB_PAIRS);
+    DbTab pairTab{db, TAB_PAIRS, false};
     int grpNum = 0;
-    for (PlayerPairList ppl : grpCfg)
+    for (const PlayerPairList& ppl : grpCfg)
     {
       ++grpNum;   // we start counting groups with "1"
-      for (PlayerPair pp : ppl)
+      for (const PlayerPair& pp : ppl)
       {
         int ppId = pp.getPairId();
-        TabRow r = pairTab->operator [](ppId);
-        r.update(PAIRS_GRP_NUM, grpNum);
+        pairTab[ppId].update(PAIRS_GRP_NUM, grpNum);
       }
     }
     
@@ -712,22 +710,20 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  ERR Category::applyInitialRanking(PlayerPairList seed)
+  ERR Category::applyInitialRanking(const PlayerPairList& seed)
   {
     ERR e = canApplyInitialRanking(seed);
     if (e != OK) return e;
     
-    // lock the database before writing
-    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
-
     // The previous call checked for all possible errors or
     // misconfigurations. So we can safely write directly to the database
-    DbTab* pairTab = db->getTab(TAB_PAIRS);
-    for (int rank = 0; rank < seed.size(); ++rank)
+    DbTab pairTab{db, TAB_PAIRS, false};
+    int rank{1}; // we start counting ranks at "1"
+    for (const auto& pp : seed)
     {
-      int ppId = seed.at(rank).getPairId();
-      TabRow r = pairTab->operator [](ppId);
-      r.update(PAIRS_INITIAL_RANK, rank+1);   // we start counting ranks at "1"
+      int ppId = pp.getPairId();
+      pairTab[ppId].update(PAIRS_INITIAL_RANK, rank);
+      ++rank;
     }
     
     return OK;
@@ -755,47 +751,55 @@ namespace QTournament
 
     RoundRobinGenerator rrg;
     MatchMngr mm{db};
-    int numPlayers = grpMembers.size();
+    int numPlayers = static_cast<int>(grpMembers.size());
     int internalRoundNum = 0;
-    while (true)
+
+    try
     {
-      // create matches for the next round
-      auto matches = rrg(numPlayers, internalRoundNum);
+      // create all or nothing
+      auto trans = db.get().startTransaction();
 
-      // if no new matches were created, we have
-      // covered all necessary rounds and can return
-      if (matches.size() == 0) return OK;
-
-      // create a match group for the new round
-      ERR e;
-      auto mg = mm.createMatchGroup(*this, firstRoundNum + internalRoundNum, grpNum, &e);
-      if (e != OK) return e;
-
-      // assign matches to this group
-      for (auto match : matches)
+      while (true)
       {
-        int pairIndex1 = get<0>(match);
-        int pairIndex2 = get<1>(match);
+        // create matches for the next round
+        auto matches = rrg(numPlayers, internalRoundNum);
 
-        PlayerPair pp1 = grpMembers.at(pairIndex1);
-        PlayerPair pp2 = grpMembers.at(pairIndex2);
+        // if no new matches were created, we have
+        // covered all necessary rounds and can return
+        if (matches.size() == 0)
+        {
+          trans.commit();
+          return OK;
+        }
 
-        auto newMatch = mm.createMatch(*mg, &e);
+        // create a match group for the new round
+        ERR e;
+        auto mg = mm.createMatchGroup(*this, firstRoundNum + internalRoundNum, grpNum, &e);
         if (e != OK) return e;
 
-        e = mm.setPlayerPairsForMatch(*newMatch, pp1, pp2);
-        if (e != OK) return e;
+        // assign matches to this group
+        for (auto [pairIndex1, pairIndex2] : matches)
+        {
+          const PlayerPair& pp1 = grpMembers.at(pairIndex1);
+          const PlayerPair& pp2 = grpMembers.at(pairIndex2);
 
-        if (progressNotificationQueue != nullptr) progressNotificationQueue->step();
+          auto newMatch = mm.createMatch(*mg, &e);
+          if (e != OK) return e;
+
+          e = mm.setPlayerPairsForMatch(*newMatch, pp1, pp2);
+          if (e != OK) return e;
+        }
+
+        // close this group (transition to FROZEN) and potentially promote it further to IDLE
+        mm.closeMatchGroup(*mg);
+
+        ++internalRoundNum;
       }
-
-      // close this group (transition to FROZEN) and potentially promote it further to IDLE
-      mm.closeMatchGroup(*mg);
-
-      ++internalRoundNum;
     }
-
-    return OK;  // should never be reached, but anyway...
+    catch (...)
+    {
+      return DATABASE_ERROR;
+    }
   }
 
   //----------------------------------------------------------------------------
@@ -894,12 +898,6 @@ namespace QTournament
       }
     }
 
-    // prepare the notification queue, if any
-    if (progressNotificationQueue != nullptr)
-    {
-      progressNotificationQueue->reset(bmdl.size() * 2);
-    }
-
     // sort the bracket data so that we have early rounds first
     //
     // std::sort constantly produces memory leaks by reading / writing beyond the end of the list. So I've
@@ -912,9 +910,9 @@ namespace QTournament
     MatchMngr mm{db};
     int curRound = -1;
     int curDepth = -1;
-    std::unique_ptr<MatchGroup> curGroup = nullptr;
+    std::optional<MatchGroup> curGroup{};
     QHash<int, int> bracket2Match;
-    for (BracketMatchData bmd : bmdl)
+    for (const BracketMatchData& bmd : bmdl)
     {
       // skip unused matches
       if (bmd.matchDeleted)
@@ -925,7 +923,7 @@ namespace QTournament
       // do we have to start a new round / group?
       if (bmd.depthInBracket != curDepth)
       {
-        if (curGroup != nullptr)
+        if (curGroup)
         {
           mm.closeMatchGroup(*curGroup);
         }
@@ -955,32 +953,27 @@ namespace QTournament
         ERR err;
         curGroup = mm.createMatchGroup(*this, firstRoundNum+curRound, grpNum, &err);
         assert(err == OK);
-        assert(curGroup != nullptr);
+        assert(curGroup);
       }
 
       // create a new, empty match in this group and map it to the bracket match id
       ERR err;
       auto ma = mm.createMatch(*curGroup, &err);
       assert(err == OK);
-      assert(ma != nullptr);
+      assert(ma);
 
       bracket2Match.insert(bmd.getBracketMatchId(), ma->getId());
-
-      if (progressNotificationQueue != nullptr) progressNotificationQueue->step();
     }
     // close the last open match group (the finals)
-    if (curGroup != nullptr) mm.closeMatchGroup(*curGroup);
+    if (curGroup) mm.closeMatchGroup(*curGroup);
 
     // a little helper function that returns an iterator to a match with
     // a given ID
     auto getMatchById = [&bmdl](int matchId) {
-      BracketMatchDataList::iterator i = bmdl.begin();
-      while (i != bmdl.end())
+      return std::find_if(begin(bmdl), end(bmdl), [matchId](const BracketMatchData& bmd)
       {
-        if ((*i).getBracketMatchId() == matchId) return i;
-        ++i;
-      }
-      return i;
+        return bmd.getBracketMatchId() == matchId;
+      });
     };
 
     // fill the empty matches with the right values
@@ -997,7 +990,7 @@ namespace QTournament
       assert(bmd.initialRank_Player2 != 0);
 
       auto ma = mm.getMatch(bracket2Match.value(bmd.getBracketMatchId()));
-      assert(ma != nullptr);
+      assert(ma);
 
       // case 1: we have "real" players that we can use
       if ((bmd.initialRank_Player1 > 0) && (bmd.initialRank_Player1 <= seeding.size()))
@@ -1019,7 +1012,7 @@ namespace QTournament
 
         int srcDatabaseMatchId = bracket2Match.value(srcBracketMatchId);
         auto srcDatabaseMatch = mm.getMatch(srcDatabaseMatchId);
-        assert(srcDatabaseMatch != nullptr);
+        assert(srcDatabaseMatch);
 
         if (srcBracketMatch.nextMatchForWinner == bmd.getBracketMatchId())  // player 1 of bmd is the winner of srcMatch
         {
@@ -1070,8 +1063,6 @@ namespace QTournament
       {
         mm.setRankForWinnerOrLoser(*ma, false, -(bmd.nextMatchForLoser));
       }
-
-      if (progressNotificationQueue != nullptr) progressNotificationQueue->step();
     }
 
     //
@@ -1084,9 +1075,7 @@ namespace QTournament
       upBracketVisData bvd;
       for (int i=0; i < visDataDef.getNumPages(); ++i)
       {
-        BRACKET_PAGE_ORIENTATION orientation;
-        BRACKET_LABEL_POS lp;
-        tie(orientation, lp) = visDataDef.getPageInfo(i);
+        auto [orientation, lp] = visDataDef.getPageInfo(i);
 
         if (i == 0)
         {
