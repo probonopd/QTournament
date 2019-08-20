@@ -167,7 +167,7 @@ constexpr int MaxRandomizationRounds = 100;    // for group assignments, player 
   
 //----------------------------------------------------------------------------
 
-#define TabMatch_GROUP "MatchGroup"
+#define TabMatchGroup "MatchGroup"
 #define MG_CatRef  "CategoryRefId"
 #define MG_Round  "Round"
 #define MG_GrpNum  "RoundRobinGroupNumber"

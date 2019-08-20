@@ -888,7 +888,7 @@ namespace QTournament
             MatchMngr mngr{db};
             result += mngr.getSyncString(idxList);
           }
-          if (curTabName == TabMatch_GROUP)
+          if (curTabName == TabMatchGroup)
           {
             MatchMngr mngr{db};
             result += mngr.getSyncString_MatchGroups(idxList);

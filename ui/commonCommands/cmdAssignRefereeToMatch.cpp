@@ -39,8 +39,8 @@ ERR cmdAssignRefereeToMatch::exec()
 {
   // do we actually need to assign an umpire?
   RefereeMode refMode = (refAction == REFEREE_ACTION::SWAP) ? ma.get_RAW_RefereeMode() : ma.get_EFFECTIVE_RefereeMode();
-  assert(refMode != RefereeMode::RefereeMode::UseDefault);
-  if ((refMode == RefereeMode::RefereeMode::None) || (refMode == RefereeMode::RefereeMode::HandWritten))
+  assert(refMode != RefereeMode::UseDefault);
+  if ((refMode == RefereeMode::None) || (refMode == RefereeMode::HandWritten))
   {
     return ERR::OK;   // nothing to do for us
   }
@@ -87,7 +87,7 @@ ERR cmdAssignRefereeToMatch::exec()
   MatchMngr mm{db};
   if ((selPlayer == nullptr) && (refAction == REFEREE_ACTION::MATCH_CALL))
   {
-    err = mm.setRefereeMode(ma, RefereeMode::RefereeMode::None);
+    err = mm.setRefereeMode(ma, RefereeMode::None);
     if (err != ERR::OK)
     {
       QString msg = tr("Cannot continue without umpire!");

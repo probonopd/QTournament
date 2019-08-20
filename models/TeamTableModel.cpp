@@ -28,8 +28,8 @@ using namespace SqliteOverlay;
 namespace QTournament
 {
 
-  TeamTableModel::TeamTableModel(TournamentDB* _db)
-  : QAbstractTableModel(0), db(_db), teamTab(db->getTab(TabTeam))
+  TeamTableModel::TeamTableModel(const TournamentDB& _db)
+    : QAbstractTableModel{nullptr}, db{_db}, teamTab{DbTab{db, TabTeam, false}}
   {
     CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
     connect(cse, SIGNAL(beginCreateTeam()), this, SLOT(onBeginCreateTeam()), Qt::DirectConnection);
@@ -41,14 +41,14 @@ namespace QTournament
 
   int TeamTableModel::rowCount(const QModelIndex& parent) const
   {
-    return teamTab->length();
+    return teamTab.length();
   }
 
 //----------------------------------------------------------------------------
 
   int TeamTableModel::columnCount(const QModelIndex& parent) const
   {
-    return COL_COUNT;
+    return ColCount;
   }
 
 //----------------------------------------------------------------------------
@@ -58,7 +58,7 @@ namespace QTournament
     if (!index.isValid())
       return QVariant();
 
-    if (index.row() >= teamTab->length())
+    if (index.row() >= teamTab.length())
       return QVariant();
 
     if (role != Qt::DisplayRole)
@@ -67,17 +67,17 @@ namespace QTournament
     TeamMngr tm{db};
     Team t = tm.getTeamBySeqNum(index.row());
 
-    if (index.column() == NAME_COL_ID)
+    if (index.column() == NameColId)
     {
       return t.getName();
     }
 
-    if (index.column() == MEMBER_COUNT_COL_ID)
+    if (index.column() == MemberCountColId)
     {
       return t.getMemberCount();
     }
 
-    if (index.column() == UNREGISTERED_MEMBER_COUNT_COL_ID)
+    if (index.column() == UnregisteredMemberCountColId)
     {
       int unreg = t.getUnregisteredMemberCount();
       if (unreg > 0) return unreg;
@@ -98,13 +98,13 @@ namespace QTournament
 
     if (orientation == Qt::Horizontal)
     {
-      if (section == NAME_COL_ID) {
+      if (section == NameColId) {
         return tr("Name");
       }
-      if (section == MEMBER_COUNT_COL_ID) {
+      if (section == MemberCountColId) {
         return tr("Size");
       }
-      if (section == UNREGISTERED_MEMBER_COUNT_COL_ID) {
+      if (section == UnregisteredMemberCountColId) {
         return tr("Not reg.");
       }
 
@@ -118,7 +118,7 @@ namespace QTournament
 
   void TeamTableModel::onBeginCreateTeam()
   {
-    int newPos = teamTab->length();
+    int newPos = teamTab.length();
     beginInsertRows(QModelIndex(), newPos, newPos);
   }
 

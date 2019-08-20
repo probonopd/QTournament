@@ -263,12 +263,12 @@ void ResultSheets::printMatchData(upSimpleReport& rep, const Match& ma) const
 
   // print umpire information
   RefereeMode refMode = ma.get_EFFECTIVE_RefereeMode();
-  if (refMode != RefereeMode::RefereeMode::None)
+  if (refMode != RefereeMode::None)
   {
     QString txt = tr("Umpire: ");
     upPlayer referee = ma.getAssignedReferee();
 
-    if ((refMode != RefereeMode::RefereeMode::HandWritten) && (referee != nullptr))
+    if ((refMode != RefereeMode::HandWritten) && (referee != nullptr))
     {
       txt += referee->getDisplayName_FirstNameFirst();
     }

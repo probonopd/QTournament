@@ -25,7 +25,7 @@ namespace QTournament
 {
 
   MatchGroup::MatchGroup(const TournamentDB& _db, int rowId)
-    :TournamentDatabaseObject(_db, TabMatch_GROUP, rowId), matchTab{db, TabMatch, false}
+    :TournamentDatabaseObject(_db, TabMatchGroup, rowId), matchTab{db, TabMatch, false}
   {
   }
 

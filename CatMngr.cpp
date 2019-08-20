@@ -489,7 +489,7 @@ namespace QTournament
     int catId = cat.getId();
     assert(DbTab(db, TabP2C, false).getMatchCountForColumnValue(P2C_CatRef, catId) == 0);
     assert(DbTab(db, TabPairs, false).getMatchCountForColumnValue(Pairs_CatRef, catId) == 0);
-    assert(DbTab(db, TabMatch_GROUP, false).getMatchCountForColumnValue(MG_CatRef, catId) == 0);
+    assert(DbTab(db, TabMatchGroup, false).getMatchCountForColumnValue(MG_CatRef, catId) == 0);
     assert(DbTab(db, TabMatchSystem, false).getMatchCountForColumnValue(RA_CatRef, catId) == 0);
     assert(DbTab(db, TabBracketVis, false).getMatchCountForColumnValue(BV_CatRef, catId) == 0);
 
@@ -567,7 +567,7 @@ namespace QTournament
       // deletion 3a: matches, they are refered to by bracket vis data only
       // deletion 3b: match groups, they are refered to only by ranking data and matches
       t = DbTab{db, TabMatch, false};
-      DbTab mgTab{db, TabMatch_GROUP, false};
+      DbTab mgTab{db, TabMatchGroup, false};
       for (const auto& mg : getObjectsByColumnValue<MatchGroup>(mgTab, MG_CatRef, cat.getId()))
       {
         for (const auto& ma : mg.getMatches())

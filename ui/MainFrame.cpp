@@ -703,7 +703,7 @@ void MainFrame::setupTestScenario(int scenarioID)
   cfg.organizingClub = "SV Whatever";
   cfg.tournamentName = "World Championship";
   cfg.useTeams = true;
-  cfg.refereeMode = RefereeMode::RefereeMode::None;
+  cfg.refereeMode = RefereeMode::None;
   currentDb = TournamentDB::createNew(testFileName, cfg);
   distributeCurrentDatabasePointerToWidgets();
   

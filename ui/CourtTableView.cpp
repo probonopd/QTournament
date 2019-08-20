@@ -198,9 +198,9 @@ void CourtTableView::updateContextMenu(bool isRowClicked)
   if ((ma != nullptr) && isRowClicked)
   {
     RefereeMode refMode = ma->get_RAW_RefereeMode();
-    bool canSwapReferee = ((refMode != RefereeMode::RefereeMode::None) &&
-                          (refMode != RefereeMode::RefereeMode::HandWritten) &&
-                          (refMode != RefereeMode::RefereeMode::UseDefault));
+    bool canSwapReferee = ((refMode != RefereeMode::None) &&
+                          (refMode != RefereeMode::HandWritten) &&
+                          (refMode != RefereeMode::UseDefault));
     actSwapReferee->setEnabled(canSwapReferee);
   } else {
     actSwapReferee->setEnabled(false);

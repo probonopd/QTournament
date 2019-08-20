@@ -157,12 +157,12 @@ namespace QTournament
     tc.addCol(MG_Round, cdt::Integer, cc::NotUsed, cc::Abort);
     tc.addCol(MG_GrpNum, cdt::Integer, cc::NotUsed, cc::Abort);
     tc.addCol(MG_StageSeqNum, cdt::Integer, cc::NotUsed, cc::NotUsed);
-    tc.createTableAndResetCreator(*this, TabMatch_GROUP);
+    tc.createTableAndResetCreator(*this, TabMatchGroup);
 
     // Generate a table for matches
     tc.addCol(GenericStateFieldName, cdt::Integer, cc::NotUsed, cc::Abort);
     tc.addCol(GenericSeqnumFieldName, cdt::Integer, cc::Abort, cc::Abort);
-    tc.addForeignKey(MA_GrpRef, TabMatch_GROUP, ca::Cascade, ca::Cascade, cc::NotUsed, cc::Abort);
+    tc.addForeignKey(MA_GrpRef, TabMatchGroup, ca::Cascade, ca::Cascade, cc::NotUsed, cc::Abort);
     tc.addCol(MA_Num, cdt::Integer, cc::Abort, cc::Abort);
     tc.addForeignKey(MA_Pair1Ref, TabPairs, ca::Cascade, ca::Cascade, cc::NotUsed, cc::Abort);
     tc.addForeignKey(MA_Pair2Ref, TabPairs, ca::Cascade, ca::Cascade, cc::NotUsed, cc::Abort);
@@ -257,10 +257,10 @@ namespace QTournament
     indexCreationHelper(TabPairs, Pairs_Player1Ref);
     indexCreationHelper(TabPairs, Pairs_CatRef);
 
-    indexCreationHelper(TabMatch_GROUP, MG_CatRef);
-    indexCreationHelper(TabMatch_GROUP, MG_GrpNum);
-    indexCreationHelper(TabMatch_GROUP, MG_Round);
-    indexCreationHelper(TabMatch_GROUP, MG_StageSeqNum, true);
+    indexCreationHelper(TabMatchGroup, MG_CatRef);
+    indexCreationHelper(TabMatchGroup, MG_GrpNum);
+    indexCreationHelper(TabMatchGroup, MG_Round);
+    indexCreationHelper(TabMatchGroup, MG_StageSeqNum, true);
 
     indexCreationHelper(TabMatch, MA_GrpRef);
     indexCreationHelper(TabMatch, GenericSeqnumFieldName, true);

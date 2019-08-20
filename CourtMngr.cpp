@@ -302,14 +302,12 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  std::optional<Court> CourtMngr::autoSelectNextUnusedCourt(ERR *err, bool includeManual) const
+  CourtOrError CourtMngr::autoSelectNextUnusedCourt(bool includeManual) const
   {
     // find the next free court that is not subject to manual assignment
     auto nextAutoCourt = getNextUnusedCourt(false);
     if (nextAutoCourt)
     {
-      // okay, we have a regular court
-      Sloppy::assignIfNotNull<ERR>(err, ERR::OK);
       return nextAutoCourt;
     }
 
@@ -318,9 +316,7 @@ namespace QTournament
     auto nextManualCourt = getNextUnusedCourt(true);
     if (nextManualCourt)
     {
-      // okay, there is court available at all
-      Sloppy::assignIfNotNull<ERR>(err, ERR::NoCourtAvail);
-      return {};
+      return ERR::NoCourtAvail;
     }
 
     // great, so there is a free court, but it's for
@@ -328,13 +324,11 @@ namespace QTournament
     // manual courts, everything is fine
     if (includeManual)
     {
-      Sloppy::assignIfNotNull<ERR>(err, ERR::OK);
       return nextManualCourt;
     }
 
     // indicate to the user that there would be a manual court
-    Sloppy::assignIfNotNull<ERR>(err, ERR::OnlyManualCourtAvail);
-    return {};
+    return ERR::OnlyManualCourtAvail;
   }
 
 //----------------------------------------------------------------------------

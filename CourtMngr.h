@@ -56,7 +56,7 @@ namespace QTournament
     int getActiveCourtCount();
 
     std::optional<Court> getNextUnusedCourt(bool includeManual=false) const;
-    std::optional<Court> autoSelectNextUnusedCourt(ERR* err, bool includeManual=false) const;
+    CourtOrError autoSelectNextUnusedCourt(bool includeManual=false) const;
 
     bool acquireCourt(const Court& co);
     bool releaseCourt(const Court& co);

@@ -28,8 +28,8 @@
 using namespace QTournament;
 using namespace SqliteOverlay;
 
-MatchTableModel::MatchTableModel(TournamentDB* _db)
-:QAbstractTableModel(0), db(_db), matchTab((db->getTab(TabMatch))), matchTimePredictor(nullptr)
+MatchTableModel::MatchTableModel(const TournamentDB& _db)
+  :QAbstractTableModel{nullptr}, db{_db}, matchTab{DbTab{db, TabMatch, false}}
 {
   CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
   connect(cse, SIGNAL(beginCreateMatch()), this, SLOT(onBeginCreateMatch()), Qt::DirectConnection);
@@ -42,7 +42,7 @@ MatchTableModel::MatchTableModel(TournamentDB* _db)
   connect(cse, SIGNAL(courtStatusChanged(int,int,ObjState,ObjState)), this, SLOT(recalcPrediction()), Qt::DirectConnection);
 
   // create and initialize a new match time predictor
-  matchTimePredictor = make_unique<MatchTimePredictor>(db);
+  matchTimePredictor = std::make_unique<MatchTimePredictor>(db);
 }
 
 //----------------------------------------------------------------------------
@@ -50,7 +50,7 @@ MatchTableModel::MatchTableModel(TournamentDB* _db)
 int MatchTableModel::rowCount(const QModelIndex& parent) const
 {
   if (parent.isValid()) return 0;
-  return matchTab->length();
+  return matchTab.length();
 }
 
 //----------------------------------------------------------------------------
@@ -58,7 +58,7 @@ int MatchTableModel::rowCount(const QModelIndex& parent) const
 int MatchTableModel::columnCount(const QModelIndex& parent) const
 {
   if (parent.isValid()) return 0;
-  return COLUMN_COUNT;
+  return ColumnCount;
 }
 
 //----------------------------------------------------------------------------
@@ -69,7 +69,7 @@ QVariant MatchTableModel::data(const QModelIndex& index, int role) const
       //return QVariant();
       return QString("Invalid index");
 
-    if (index.row() >= matchTab->length())
+    if (index.row() >= matchTab.length())
       //return QVariant();
       return QString("Invalid row: " + QString::number(index.row()));
 
@@ -81,7 +81,7 @@ QVariant MatchTableModel::data(const QModelIndex& index, int role) const
     auto mg = ma->getMatchGroup();
     
     // first column: match num
-    if (index.column() == ERR::MATCH_NUM_COL_ID)
+    if (index.column() == MatchNumColId)
     {
       return ma->getMatchNumber();
     }
@@ -130,24 +130,24 @@ QVariant MatchTableModel::data(const QModelIndex& index, int role) const
 
     // sixth column: the match state; this column is used for filtering and
     // needs to be hidden in the view
-    if (index.column() == STATE_COL_ID)
+    if (index.column() == StateColId)
     {
       return static_cast<int>(ma->getState());
     }
 
     // seventh column: the referee mode for the match
-    if (index.column() == RefereeMode_COL_ID)
+    if (index.column() == RefereeModeColId)
     {
       RefereeMode mode = ma->get_EFFECTIVE_RefereeMode();
 
       // if there is already a referee assigned, display
       // the referee name
-      if ((mode == RefereeMode::RefereeMode::AllPlayers) ||
-          (mode == RefereeMode::RefereeMode::RecentFinishers) ||
-          (mode == RefereeMode::RefereeMode::SpecialTeam))
+      if ((mode == RefereeMode::AllPlayers) ||
+          (mode == RefereeMode::RecentFinishers) ||
+          (mode == RefereeMode::SpecialTeam))
       {
-        upPlayer referee = ma->getAssignedReferee();
-        if (referee != nullptr)
+        auto referee = ma->getAssignedReferee();
+        if (referee)
         {
           return referee->getDisplayName();
         }
@@ -156,19 +156,19 @@ QVariant MatchTableModel::data(const QModelIndex& index, int role) const
       // in all other cases, display the referee selection mode
       switch (mode)
       {
-      case RefereeMode::RefereeMode::None:
+      case RefereeMode::None:
         return tr("None");
 
-      case RefereeMode::RefereeMode::HandWritten:
+      case RefereeMode::HandWritten:
         return tr("Manual");
 
-      case RefereeMode::RefereeMode::AllPlayers:
+      case RefereeMode::AllPlayers:
         return tr("Pick from all players");
 
-      case RefereeMode::RefereeMode::RecentFinishers:
+      case RefereeMode::RecentFinishers:
         return tr("Pick from finishers");
 
-      case RefereeMode::RefereeMode::SpecialTeam:
+      case RefereeMode::SpecialTeam:
         return tr("Pick from team");
       }
 
@@ -180,7 +180,7 @@ QVariant MatchTableModel::data(const QModelIndex& index, int role) const
     MatchTimePrediction mtp = matchTimePredictor->getPredictionForMatch(*ma);
 
     // the estimated start time
-    if (index.column() == EST_START_COL_ID)
+    if (index.column() == EstStartColId)
     {
       time_t t = mtp.estStartTime__UTC;
       if (t == 0) return "??";
@@ -189,7 +189,7 @@ QVariant MatchTableModel::data(const QModelIndex& index, int role) const
     }
 
     // the estimated finish time
-    if (index.column() == EST_END_COL_ID)
+    if (index.column() == EstEndColId)
     {
       time_t t = mtp.estFinishTime__UTC;
       if (t == 0) return "??";
@@ -198,7 +198,7 @@ QVariant MatchTableModel::data(const QModelIndex& index, int role) const
     }
 
     // the estimated court
-    if (index.column() == EST_COURT_COL_ID)
+    if (index.column() == EstCourtColId)
     {
       if (mtp.estCourtNum < 1) return "??";
       return mtp.estCourtNum;
@@ -223,7 +223,7 @@ QVariant MatchTableModel::headerData(int section, Qt::Orientation orientation, i
   
   if (orientation == Qt::Horizontal)
   {
-    if (section == ERR::MATCH_NUM_COL_ID) {
+    if (section == MatchNumColId) {
       return tr("Number");
     }
     if (section == 1) {
@@ -238,19 +238,19 @@ QVariant MatchTableModel::headerData(int section, Qt::Orientation orientation, i
     if (section == 4) {
       return tr("Group");
     }
-    if (section == STATE_COL_ID) {
+    if (section == StateColId) {
       return tr("State");
     }
-    if (section == RefereeMode_COL_ID) {
+    if (section == RefereeModeColId) {
       return tr("Umpire");
     }
-    if (section == EST_START_COL_ID) {
+    if (section == EstStartColId) {
       return tr("Start");
     }
-    if (section == EST_END_COL_ID) {
+    if (section == EstEndColId) {
       return tr("Finish");
     }
-    if (section == EST_COURT_COL_ID) {
+    if (section == EstCourtColId) {
       return tr("Court");
     }
 
@@ -271,7 +271,7 @@ QModelIndex MatchTableModel::getIndex(int row, int col)
 
 void MatchTableModel::onBeginCreateMatch()
 {
-  int newPos = matchTab->length();
+  int newPos = matchTab.length();
   beginInsertRows(QModelIndex(), newPos, newPos);
 }
 //----------------------------------------------------------------------------
@@ -287,7 +287,7 @@ void MatchTableModel::onEndCreateMatch(int newMatchSeqNum)
 void MatchTableModel::onMatchStatusChanged(int matchId, int matchSeqNum, ObjState fromState, ObjState toState)
 {
   QModelIndex startIdx = createIndex(matchSeqNum, 0);
-  QModelIndex endIdx = createIndex(matchSeqNum, COLUMN_COUNT-1);
+  QModelIndex endIdx = createIndex(matchSeqNum, ColumnCount-1);
   emit dataChanged(startIdx, endIdx);
 
   // no need for recalculation match times here:
@@ -322,8 +322,8 @@ void MatchTableModel::onEndResetModel()
 void MatchTableModel::recalcPrediction()
 {
   matchTimePredictor->updatePrediction();
-  QModelIndex startIdx = createIndex(0, EST_START_COL_ID);
-  QModelIndex endIdx = createIndex(rowCount(), EST_COURT_COL_ID);
+  QModelIndex startIdx = createIndex(0, EstStartColId);
+  QModelIndex endIdx = createIndex(rowCount(), EstCourtColId);
   emit dataChanged(startIdx, endIdx);
 }
 

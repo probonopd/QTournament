@@ -484,20 +484,20 @@ void MatchTableView::initContextMenu()
   contextMenu->addSeparator();
   refereeMode_submenu = contextMenu->addMenu(tr("Set umpire mode"));
   auto newAction = refereeMode_submenu->addAction(tr("None"));
-  newAction->setData(static_cast<int>(RefereeMode::RefereeMode::None));
+  newAction->setData(static_cast<int>(RefereeMode::None));
   refereeMode_submenu->addSeparator();
   newAction = refereeMode_submenu->addAction(tr("Pick from all players"));
-  newAction->setData(static_cast<int>(RefereeMode::RefereeMode::AllPlayers));
+  newAction->setData(static_cast<int>(RefereeMode::AllPlayers));
   newAction = refereeMode_submenu->addAction(tr("Pick from recent finishers"));
-  newAction->setData(static_cast<int>(RefereeMode::RefereeMode::RecentFinishers));
+  newAction->setData(static_cast<int>(RefereeMode::RecentFinishers));
   newAction = refereeMode_submenu->addAction(tr("Pick from special team"));
-  newAction->setData(static_cast<int>(RefereeMode::RefereeMode::SpecialTeam));
+  newAction->setData(static_cast<int>(RefereeMode::SpecialTeam));
   refereeMode_submenu->addSeparator();
   newAction = refereeMode_submenu->addAction(tr("Manual"));
-  newAction->setData(static_cast<int>(RefereeMode::RefereeMode::HandWritten));
+  newAction->setData(static_cast<int>(RefereeMode::HandWritten));
   refereeMode_submenu->addSeparator();
   newAction = refereeMode_submenu->addAction(tr("Use tournament default"));
-  newAction->setData(static_cast<int>(RefereeMode::RefereeMode::UseDefault));
+  newAction->setData(static_cast<int>(RefereeMode::UseDefault));
   actAssignReferee = new QAction(tr("Assign umpire..."), this);
   actRemoveReferee = new QAction(tr("Remove assigned umpire"), this);
   contextMenu->addAction(actAssignReferee);
@@ -678,7 +678,7 @@ void MatchTableView::showMatchBusyReason(const Match& ma)
   // if this match has already an umpire assigned, we need to
   // check the umpire's availability as well
   RefereeMode refMode = ma.get_EFFECTIVE_RefereeMode();
-  if ((refMode != RefereeMode::RefereeMode::None) && (refMode != RefereeMode::RefereeMode::HandWritten))
+  if ((refMode != RefereeMode::None) && (refMode != RefereeMode::HandWritten))
   {
     upPlayer referee = ma.getAssignedReferee();
     if (referee != nullptr)

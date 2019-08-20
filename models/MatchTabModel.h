@@ -37,13 +37,13 @@ namespace QTournament
     Q_OBJECT
 
   public:
-    static constexpr int STATE_COL_ID = 5;  // id of the column with the match state
-    static constexpr int ERR::MATCH_NUM_COL_ID = 0;  // id of the column with the match number
-    static constexpr int RefereeMode_COL_ID = 6;  // id of the column with the referee node
-    static constexpr int EST_START_COL_ID = 7;  // id of the column with the estimated start time
-    static constexpr int EST_END_COL_ID = 8;  // id of the column with the estimated finish time
-    static constexpr int EST_COURT_COL_ID = 9;  // id of the column with the estimated court
-    static constexpr int COLUMN_COUNT = 10;  // number of columns in the model
+    static constexpr int StateColId = 5;  // id of the column with the match state
+    static constexpr int MatchNumColId = 0;  // id of the column with the match number
+    static constexpr int RefereeModeColId = 6;  // id of the column with the referee node
+    static constexpr int EstStartColId = 7;  // id of the column with the estimated start time
+    static constexpr int EstEndColId = 8;  // id of the column with the estimated finish time
+    static constexpr int EstCourtColId = 9;  // id of the column with the estimated court
+    static constexpr int ColumnCount = 10;  // number of columns in the model
 
     MatchTableModel (const QTournament::TournamentDB& _db);
     int rowCount(const QModelIndex & parent = QModelIndex()) const;
@@ -56,7 +56,7 @@ namespace QTournament
   private:
     std::reference_wrapper<const QTournament::TournamentDB> db;
     SqliteOverlay::DbTab matchTab;
-    std::unique_ptr<MatchTimePredictor> matchTimePredictor;
+    std::unique_ptr<MatchTimePredictor> matchTimePredictor{};
     MatchTimePrediction getMatchTimePredictionForMatch(const Match& ma) const;
     
   public slots:

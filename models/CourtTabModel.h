@@ -36,11 +36,11 @@ namespace QTournament
     Q_OBJECT
 
   public:
-    static constexpr int COURT_NUM_COL_ID = 0;  // id of the column with the court number
-    static constexpr int DURATION_COL_ID = 2;  // id of the column with match duration
-    static constexpr int COLUMN_COUNT = 3;  // number of columns in the model
+    static constexpr int CourtNumColId = 0;  // id of the column with the court number
+    static constexpr int DurationColId = 2;  // id of the column with match duration
+    static constexpr int ColumnCount = 3;  // number of columns in the model
 
-    static constexpr int DURATION_UPDATE_PERIOD__MS = 10000;   // update every 10 seconds
+    static constexpr int DurationUpdatePeriod_ms = 10000;   // update every 10 seconds
 
     CourtTableModel (const QTournament::TournamentDB& _db);
     int rowCount(const QModelIndex & parent = QModelIndex()) const;

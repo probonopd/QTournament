@@ -135,8 +135,14 @@ namespace QTournament
       explicit ObjectOrError(const T& obj)
         :std::optional<T>{obj}, e{ERR::OK} {}
 
+      explicit ObjectOrError(const std::optional<T>& obj)
+        :std::optional<T>{obj}, e{ERR::OK} {}
+
+      explicit ObjectOrError(std::optional<T>&& obj)
+        :std::optional<T>(std::forward<std::optional<T>>(obj)), e{ERR::OK} {}
+
       explicit ObjectOrError(T&& obj)
-        :std::optional<T>(std::move(obj)), e{ERR::OK} {}
+        :std::optional<T>(std::forward<T>(obj)), e{ERR::OK} {}
 
       explicit ObjectOrError(ERR errorCode)
         :std::optional<T>{}, e{errorCode}

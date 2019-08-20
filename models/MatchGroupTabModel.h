@@ -35,9 +35,9 @@ namespace QTournament
     Q_OBJECT
 
   public:
-    static constexpr int STATE_COL_ID = 4;  // id of the column with the match group state
-    static constexpr int STAGE_SEQ_COL_ID = 5;  // id of the column with the stage sequence number
-    static constexpr int COLUMN_COUNT = 6;  // number of columns in the model
+    static constexpr int StateColId = 4;  // id of the column with the match group state
+    static constexpr int StageSeqColId = 5;  // id of the column with the stage sequence number
+    static constexpr int ColumnCount = 6;  // number of columns in the model
 
     MatchGroupTableModel (const QTournament::TournamentDB& _db);
     int rowCount(const QModelIndex & parent = QModelIndex()) const;

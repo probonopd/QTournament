@@ -29,8 +29,8 @@
 using namespace QTournament;
 using namespace SqliteOverlay;
 
-CourtTableModel::CourtTableModel(TournamentDB* _db)
-:QAbstractTableModel(0), db(_db), courtTab((db->getTab(TabCourt)))
+CourtTableModel::CourtTableModel(const TournamentDB& _db)
+  :QAbstractTableModel{nullptr}, db{_db}, courtTab{DbTab{db, TabCourt, false}}
 {
   CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
   connect(cse, SIGNAL(beginCreateCourt()), this, SLOT(onBeginCreateCourt()), Qt::DirectConnection);
@@ -40,9 +40,9 @@ CourtTableModel::CourtTableModel(TournamentDB* _db)
   connect(cse, SIGNAL(endDeleteCourt()), this, SLOT(onEndDeleteCourt()), Qt::DirectConnection);
 
   // a timer for updatng the match duration
-  durationUpdateTimer = make_unique<QTimer>(this);
+  durationUpdateTimer = std::make_unique<QTimer>(this);
   connect(durationUpdateTimer.get(), SIGNAL(timeout()), this, SLOT(onDurationUpdateTimerElapsed()));
-  durationUpdateTimer->start(DURATION_UPDATE_PERIOD__MS);
+  durationUpdateTimer->start(DurationUpdatePeriod_ms);
 }
 
 //----------------------------------------------------------------------------
@@ -50,7 +50,7 @@ CourtTableModel::CourtTableModel(TournamentDB* _db)
 int CourtTableModel::rowCount(const QModelIndex& parent) const
 {
   if (parent.isValid()) return 0;
-  return courtTab->length();
+  return courtTab.length();
 }
 
 //----------------------------------------------------------------------------
@@ -58,7 +58,7 @@ int CourtTableModel::rowCount(const QModelIndex& parent) const
 int CourtTableModel::columnCount(const QModelIndex& parent) const
 {
   if (parent.isValid()) return 0;
-  return COLUMN_COUNT;
+  return ColumnCount;
 }
 
 //----------------------------------------------------------------------------
@@ -69,7 +69,7 @@ QVariant CourtTableModel::data(const QModelIndex& index, int role) const
       //return QVariant();
       return QString("Invalid index");
 
-    if (index.row() >= courtTab->length())
+    if (index.row() >= courtTab.length())
       //return QVariant();
       return QString("Invalid row: " + QString::number(index.row()));
 
@@ -80,7 +80,7 @@ QVariant CourtTableModel::data(const QModelIndex& index, int role) const
     auto co = cm.getCourtBySeqNum(index.row());
     
     // first column: court number
-    if (index.column() == COURT_NUM_COL_ID)
+    if (index.column() == CourtNumColId)
     {
       return co->getNumber();
     }
@@ -93,13 +93,13 @@ QVariant CourtTableModel::data(const QModelIndex& index, int role) const
     }
 
     // third column: match duration in minutes
-    if (index.column() == DURATION_COL_ID)
+    if (index.column() == DurationColId)
     {
-      if (co == nullptr) return "??";
+      if (!co) return "??";
 
       MatchMngr mm{db};
-      upMatch ma = mm.getMatchForCourt(*co);
-      if (ma == nullptr) return QString(); // empty court
+      auto ma = mm.getMatchForCourt(*co);
+      if (!ma) return QString(); // empty court
 
       int duration = ma->getMatchDuration();
       if (duration < 0) return "??";
@@ -132,13 +132,13 @@ QVariant CourtTableModel::headerData(int section, Qt::Orientation orientation, i
   
   if (orientation == Qt::Horizontal)
   {
-    if (section == COURT_NUM_COL_ID) {
+    if (section == CourtNumColId) {
       return tr("Court");
     }
     if (section == 1) {
       return tr("Match");
     }
-    if (section == DURATION_COL_ID) {
+    if (section == DurationColId) {
       return tr("Duration");
     }
 
@@ -152,7 +152,7 @@ QVariant CourtTableModel::headerData(int section, Qt::Orientation orientation, i
 
 void CourtTableModel::onBeginCreateCourt()
 {
-  int newPos = courtTab->length();
+  int newPos = courtTab.length();
   beginInsertRows(QModelIndex(), newPos, newPos);
 }
 //----------------------------------------------------------------------------
@@ -167,7 +167,7 @@ void CourtTableModel::onEndCreateCourt(int newCourtSeqNum)
 void CourtTableModel::onCourtStatusChanged(int courtId, int courtSeqNum)
 {
   QModelIndex startIdx = createIndex(courtSeqNum, 0);
-  QModelIndex endIdx = createIndex(courtSeqNum, COLUMN_COUNT-1);
+  QModelIndex endIdx = createIndex(courtSeqNum, ColumnCount-1);
   emit dataChanged(startIdx, endIdx);
 }
 
@@ -175,8 +175,8 @@ void CourtTableModel::onCourtStatusChanged(int courtId, int courtSeqNum)
 
 void CourtTableModel::onDurationUpdateTimerElapsed()
 {
-  QModelIndex startIdx = createIndex(0, DURATION_COL_ID);
-  QModelIndex endIdx = createIndex(rowCount(), DURATION_COL_ID);
+  QModelIndex startIdx = createIndex(0, DurationColId);
+  QModelIndex endIdx = createIndex(rowCount(), DurationColId);
   emit dataChanged(startIdx, endIdx);
 }
 

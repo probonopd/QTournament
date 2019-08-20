@@ -94,11 +94,11 @@ void CourtItemDelegate::paintMatchInfoCell_Selected(QPainter *painter, const QSt
   // draw the third info line with umpire information
   txt = tr("Umpire: ");
   RefereeMode refMode = ma.get_RAW_RefereeMode();
-  if (refMode == RefereeMode::RefereeMode::None)
+  if (refMode == RefereeMode::None)
   {
     txt += tr("none");
   }
-  else if (refMode == RefereeMode::RefereeMode::HandWritten)
+  else if (refMode == RefereeMode::HandWritten)
   {
     txt += tr("manually assigned");
   }

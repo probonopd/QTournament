@@ -143,11 +143,11 @@ void DlgTournamentSettings::fillRefereeComboBox(bool includeSelectHint)
 {
   ui->cbUmpire->clear();
   if (includeSelectHint) ui->cbUmpire->addItem(tr("<Please select>"), -1);
-  ui->cbUmpire->addItem(tr("No umpires"), static_cast<int>(QTournament::RefereeMode::RefereeMode::None));
-  ui->cbUmpire->addItem(tr("Handwritten assignment"), static_cast<int>(QTournament::RefereeMode::RefereeMode::HandWritten));
-  ui->cbUmpire->addItem(tr("Pick from all players"), static_cast<int>(QTournament::RefereeMode::RefereeMode::AllPlayers));
-  ui->cbUmpire->addItem(tr("Pick from recent finishers"), static_cast<int>(QTournament::RefereeMode::RefereeMode::RecentFinishers));
-  ui->cbUmpire->addItem(tr("Pick from special team"), static_cast<int>(QTournament::RefereeMode::RefereeMode::SpecialTeam));
+  ui->cbUmpire->addItem(tr("No umpires"), static_cast<int>(QTournament::RefereeMode::None));
+  ui->cbUmpire->addItem(tr("Handwritten assignment"), static_cast<int>(QTournament::RefereeMode::HandWritten));
+  ui->cbUmpire->addItem(tr("Pick from all players"), static_cast<int>(QTournament::RefereeMode::AllPlayers));
+  ui->cbUmpire->addItem(tr("Pick from recent finishers"), static_cast<int>(QTournament::RefereeMode::RecentFinishers));
+  ui->cbUmpire->addItem(tr("Pick from special team"), static_cast<int>(QTournament::RefereeMode::SpecialTeam));
 }
 
 //----------------------------------------------------------------------------

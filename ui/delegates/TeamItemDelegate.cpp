@@ -72,7 +72,7 @@ void TeamItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
   // paint the cell content and adjust the alignment
   // according to the content
   int align = 0;
-  if (index.column() == TeamTableModel::NAME_COL_ID)
+  if (index.column() == TeamTableModel::NameColId)
   {
     align = Qt::AlignVCenter|Qt::AlignLeft;
 

@@ -37,7 +37,7 @@ using namespace SqliteOverlay;
 namespace QTournament {
 
   MatchMngr::MatchMngr(const TournamentDB& _db)
-    : TournamentDatabaseObjectManager(_db, TabMatch), groupTab{db, TabMatch_GROUP, false}
+    : TournamentDatabaseObjectManager(_db, TabMatch), groupTab{db, TabMatchGroup, false}
   {
   }
 
@@ -833,7 +833,7 @@ namespace QTournament {
   {
     std::vector<Sloppy::estring> cols = {"id", MG_CatRef, GenericStateFieldName, MG_Round, MG_GrpNum};
 
-    return db.get().getSyncStringForTable(TabMatch_GROUP, cols, rows);
+    return db.get().getSyncStringForTable(TabMatchGroup, cols, rows);
   }
 
   //----------------------------------------------------------------------------
@@ -855,7 +855,7 @@ namespace QTournament {
     WhereClause wc;
     wc.addCol(MG_CatRef, cat.getId());
     wc.addCol(GenericStateFieldName, static_cast<int>(ObjState::MG_Scheduled));
-    for (TabRowIterator it{db, TabMatch_GROUP, wc}; it.hasData(); ++it)
+    for (TabRowIterator it{db, TabMatchGroup, wc}; it.hasData(); ++it)
     {
       const MatchGroup mg{db, *it};
 
@@ -880,7 +880,7 @@ namespace QTournament {
     wc.clear();
     wc.addCol(MG_CatRef, cat.getId());
     wc.addCol(GenericStateFieldName, static_cast<int>(ObjState::MG_Frozen));
-    for (TabRowIterator it{db, TabMatch_GROUP, wc}; it.hasData(); ++it)
+    for (TabRowIterator it{db, TabMatchGroup, wc}; it.hasData(); ++it)
     {
       const MatchGroup mg{db, *it};
 
@@ -979,7 +979,7 @@ namespace QTournament {
     // determine the max sequence number
     Sloppy::estring sql{"SELECT max(%1) FROM %2"};
     sql.arg(MG_StageSeqNum);
-    sql.arg(TabMatch_GROUP);
+    sql.arg(TabMatchGroup);
     try
     {
       return db.get().execScalarQueryInt(sql);
@@ -2117,7 +2117,7 @@ namespace QTournament {
     // query the highest used round number
     Sloppy::estring sql = "SELECT max(%1) FROM %2 WHERE %3 = %4";
     sql.arg(MG_Round);
-    sql.arg(TabMatch_GROUP);
+    sql.arg(TabMatchGroup);
     sql.arg(MG_CatRef);
     sql.arg(cat.getId());
 

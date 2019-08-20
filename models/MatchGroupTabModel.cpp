@@ -28,8 +28,8 @@
 using namespace QTournament;
 using namespace SqliteOverlay;
 
-MatchGroupTableModel::MatchGroupTableModel(TournamentDB* _db)
-:QAbstractTableModel(0), db(_db), mgTab((db->getTab(TabMatch_GROUP)))
+MatchGroupTableModel::MatchGroupTableModel(const TournamentDB& _db)
+  :QAbstractTableModel{nullptr}, db{_db}, mgTab{DbTab{db, TabMatchGroup, false}}
 {
   CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
   connect(cse, SIGNAL(beginCreateMatchGroup()), this, SLOT(onBeginCreateMatchGroup()), Qt::DirectConnection);
@@ -44,7 +44,7 @@ MatchGroupTableModel::MatchGroupTableModel(TournamentDB* _db)
 int MatchGroupTableModel::rowCount(const QModelIndex& parent) const
 {
   if (parent.isValid()) return 0;
-  return mgTab->length();
+  return mgTab.length();
 }
 
 //----------------------------------------------------------------------------
@@ -52,7 +52,7 @@ int MatchGroupTableModel::rowCount(const QModelIndex& parent) const
 int MatchGroupTableModel::columnCount(const QModelIndex& parent) const
 {
   if (parent.isValid()) return 0;
-  return COLUMN_COUNT;
+  return ColumnCount;
 }
 
 //----------------------------------------------------------------------------
@@ -63,7 +63,7 @@ QVariant MatchGroupTableModel::data(const QModelIndex& index, int role) const
       //return QVariant();
       return QString("Invalid index");
 
-    if (index.row() >= mgTab->length())
+    if (index.row() >= mgTab.length())
       //return QVariant();
       return QString("Invalid row: " + QString::number(index.row()));
 
@@ -107,7 +107,7 @@ QVariant MatchGroupTableModel::data(const QModelIndex& index, int role) const
 
     // fifth column: current status
     // Used for filtering only and needs to be hidden in the associated view
-    if (index.column() == STATE_COL_ID)
+    if (index.column() == StateColId)
     {
       ObjState stat = mg->getState();
       return static_cast<int>(stat);
@@ -115,7 +115,7 @@ QVariant MatchGroupTableModel::data(const QModelIndex& index, int role) const
 
     // sixth column: stage sequence number
     // Used for sorting in the "Staged Match Groups View" only and needs to be hidden in the associated view
-    if (index.column() == STAGE_SEQ_COL_ID)
+    if (index.column() == StageSeqColId)
     {
       return mg->getStageSequenceNumber();
     }
@@ -151,10 +151,10 @@ QVariant MatchGroupTableModel::headerData(int section, Qt::Orientation orientati
     if (section == 3) {
       return tr("Matches");
     }
-    if (section == STATE_COL_ID) {
+    if (section == StateColId) {
       return tr("State");
     }
-    if (section == STAGE_SEQ_COL_ID) {
+    if (section == StageSeqColId) {
       return tr("StageSeqNum");
     }
 
@@ -168,7 +168,7 @@ QVariant MatchGroupTableModel::headerData(int section, Qt::Orientation orientati
 
 void MatchGroupTableModel::onBeginCreateMatchGroup()
 {
-  int newPos = mgTab->length();
+  int newPos = mgTab.length();
   beginInsertRows(QModelIndex(), newPos, newPos);
 }
 //----------------------------------------------------------------------------
@@ -191,7 +191,7 @@ void MatchGroupTableModel::onEndCreateMatchGroup(int newMatchGroupSeqNum)
 void MatchGroupTableModel::onMatchGroupStatusChanged(int matchGroupId, int matchGroupSeqNum)
 {
   QModelIndex startIdx = createIndex(matchGroupSeqNum, 0);
-  QModelIndex endIdx = createIndex(matchGroupSeqNum, COLUMN_COUNT-1);
+  QModelIndex endIdx = createIndex(matchGroupSeqNum, ColumnCount-1);
   emit dataChanged(startIdx, endIdx);
 }
 

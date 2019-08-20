@@ -36,10 +36,10 @@ namespace QTournament
     Q_OBJECT
 
   public:
-    static constexpr int NAME_COL_ID = 0;
-    static constexpr int MEMBER_COUNT_COL_ID = 1;
-    static constexpr int UNREGISTERED_MEMBER_COUNT_COL_ID = 2;
-    static constexpr int COL_COUNT = 3;
+    static constexpr int NameColId = 0;
+    static constexpr int MemberCountColId = 1;
+    static constexpr int UnregisteredMemberCountColId = 2;
+    static constexpr int ColCount = 3;
 
     TeamTableModel (const QTournament::TournamentDB& _db);
     int rowCount (const QModelIndex &parent = QModelIndex ()) const;
