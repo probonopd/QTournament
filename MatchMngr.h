@@ -135,7 +135,7 @@ namespace QTournament
   signals:
 
   public slots:
-    void onPlayerStatusChanged(int playerId, int playerSeqNum, OBJ_STATE fromState, OBJ_STATE toState);
+    void onPlayerStatusChanged(int playerId, int playerSeqNum, ObjState fromState, ObjState toState);
 } ;
 
 }

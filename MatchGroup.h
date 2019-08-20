@@ -48,8 +48,8 @@ namespace QTournament
     MatchList getMatches() const;
     int getMatchCount() const;
     int getStageSequenceNumber() const;
-    bool hasMatchesInState(OBJ_STATE stat) const;
-    bool hasMatches__NOT__InState(OBJ_STATE stat) const;
+    bool hasMatchesInState(ObjState stat) const;
+    bool hasMatches__NOT__InState(ObjState stat) const;
 
   private:
     SqliteOverlay::DbTab matchTab;

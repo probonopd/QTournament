@@ -288,16 +288,16 @@ namespace QTournament
 
   bool Match::isWalkoverPossible() const
   {
-    OBJ_STATE stat = getState();
-    return ((stat == STAT_MA_READY) || (stat == STAT_MA_RUNNING) || (stat == STAT_MA_BUSY) || (stat == STAT_MA_WAITING));
+    ObjState stat = getState();
+    return ((stat == ObjState::MA_READY) || (stat == ObjState::MA_RUNNING) || (stat == ObjState::MA_BUSY) || (stat == ObjState::MA_WAITING));
   }
 
 //----------------------------------------------------------------------------
 
   bool Match::isWonByWalkover() const
   {
-    OBJ_STATE stat = getState();
-    if (stat != STAT_MA_FINISHED) return false;
+    ObjState stat = getState();
+    if (stat != ObjState::MA_FINISHED) return false;
 
     // if the match is finished but has no starting time, it
     // has been won by a walkover
@@ -372,14 +372,14 @@ namespace QTournament
 
   int Match::getMatchDuration() const
   {
-    OBJ_STATE stat = getState();
-    if ((stat != STAT_MA_FINISHED) && (stat != STAT_MA_RUNNING)) return -1;
+    ObjState stat = getState();
+    if ((stat != ObjState::MA_FINISHED) && (stat != ObjState::MA_RUNNING)) return -1;
 
     auto startTime = row.getInt2(MA_START_TIME);
     if (!startTime) return -1;
 
     int finishTime;
-    if (stat == STAT_MA_FINISHED)
+    if (stat == ObjState::MA_FINISHED)
     {
       auto _finishTime = row.getInt2(MA_FINISH_TIME);
       if (!_finishTime) return -1;
@@ -447,17 +447,17 @@ namespace QTournament
     //
     // ==> match must be (READY) or (BUSY) or (RUNNING and hasRefereeAssigned is true)
     //
-    OBJ_STATE stat = getState();
+    ObjState stat = getState();
     if ((refAction == REFEREE_ACTION::PRE_ASSIGN) || (refAction == REFEREE_ACTION::MATCH_CALL))
     {
-      if (!((stat == STAT_MA_BUSY) || (stat == STAT_MA_READY)))
+      if (!((stat == ObjState::MA_BUSY) || (stat == ObjState::MA_READY)))
       {
         return ERR::MATCH_NOT_CONFIGURALE_ANYMORE;
       }
     }
     else if (refAction == REFEREE_ACTION::SWAP)
     {
-      if (!((stat == STAT_MA_RUNNING) && (hasRefereeAssigned() == true)))
+      if (!((stat == ObjState::MA_RUNNING) && (hasRefereeAssigned() == true)))
       {
         return ERR::MATCH_NOT_CONFIGURALE_ANYMORE;
       }

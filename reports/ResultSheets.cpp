@@ -76,9 +76,9 @@ upSimpleReport ResultSheets::regenerateReport()
     {
       // we can only print result sheet for unfinished
       // matches. For now, let's also acceppt FUZZY and POSTPONED matches...
-      OBJ_STATE stat = ma->getState();
-      if ((stat == STAT_MA_BUSY) || (stat == STAT_MA_FUZZY) || (stat == STAT_MA_RUNNING) ||
-          (stat == STAT_MA_READY) || (stat == STAT_MA_WAITING) || (stat == STAT_MA_POSTPONED))
+      ObjState stat = ma->getState();
+      if ((stat == ObjState::MA_BUSY) || (stat == ObjState::MA_FUZZY) || (stat == ObjState::MA_RUNNING) ||
+          (stat == ObjState::MA_READY) || (stat == ObjState::MA_WAITING) || (stat == ObjState::MA_POSTPONED))
       {
         matchList.append(*ma);
       }

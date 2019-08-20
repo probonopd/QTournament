@@ -250,9 +250,9 @@ upSimpleReport BracketSheet::regenerateReport()
       if (ma != nullptr)
       {
         // print match number or result, if any
-        OBJ_STATE stat = ma->getState();
+        ObjState stat = ma->getState();
         int matchNum = ma->getMatchNumber();
-        if (stat == STAT_MA_FINISHED)
+        if (stat == ObjState::MA_FINISHED)
         {
           QString scTxt;
           if (ma->isWonByWalkover())

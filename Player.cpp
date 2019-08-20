@@ -171,12 +171,12 @@ namespace QTournament
 
   std::optional<Court> Player::getRefereeCourt() const
   {
-    if (getState() != STAT_PL_REFEREE) return {};
+    if (getState() != ObjState::PL_REFEREE) return {};
 
     // find the court on which the player is umpire
     SqliteOverlay::DbTab matchTab{db, TAB_MATCH, false};
     SqliteOverlay::WhereClause wc;
-    wc.addCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_RUNNING));
+    wc.addCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(ObjState::MA_RUNNING));
     wc.addCol(MA_REFEREE_REF, getId());
 
     // do we have a matching match entry?
@@ -194,7 +194,7 @@ namespace QTournament
 
   std::optional<Court> Player::getMatchCourt() const
   {
-    if (getState() != STAT_PL_PLAYING) return {};
+    if (getState() != ObjState::PL_PLAYING) return {};
 
     // find the court on which the player is playing
     //
@@ -204,7 +204,7 @@ namespace QTournament
     CourtMngr cm{db};
     for (const Court& co : cm.getAllCourts())
     {
-      if (co.getState() != STAT_CO_BUSY) continue;
+      if (co.getState() != ObjState::CO_BUSY) continue;
       auto ma = co.getMatch();
       if (!ma) continue;
 

@@ -116,11 +116,11 @@ namespace QTournament
 #define CAT_SEX "Sex"
 #define CAT_SYS "System"
 #define CAT_ACCEPT_DRAW "AcceptDraw"
-#define CAT_WIN_SCORE "WinScore"
-#define CAT_DRAW_SCORE "DrawScore"
-#define CAT_GROUP_CONFIG "GroupConfig"
+#define CAT_CatParameter::WinScore "WinScore"
+#define CAT_CatParameter::DrawScore "DrawScore"
+#define CAT_CatParameter::GroupConfig "GroupConfig"
 #define CAT_BRACKET_VIS_DATA "BracketVisData"
-#define CAT_ROUND_ROBIN_ITERATIONS "RoundRobinIterations"
+#define CAT_CatParameter::RoundRobinIterations "RoundRobinIterations"
 //#define CAT_ ""
 //#define CAT_ ""
 //#define CAT_ ""
@@ -284,12 +284,12 @@ namespace QTournament
   
 //----------------------------------------------------------------------------
 
-  enum CAT_PARAMETER {
-    ALLOW_DRAW,
-    WIN_SCORE,
-    DRAW_SCORE,
-    GROUP_CONFIG,
-    ROUND_ROBIN_ITERATIONS
+  enum class CatParameter {
+    AllowDraw,
+    WinScore,
+    DrawScore,
+    GroupConfig,
+    RoundRobinIterations
     
   };
   
@@ -308,34 +308,34 @@ namespace QTournament
   // IMPORTANT: only append new states AT THE END of the list or otherwise the
   // state IDs change and we break compatibility with older database versions!
   //
-  enum OBJ_STATE {
-    STAT_PL_IDLE,
-    STAT_PL_PLAYING,
-    STAT_PL_WAIT_FOR_REGISTRATION,  // player has to report to match control before considered "ready"
-    STAT_CAT_CONFIG,
-    STAT_CAT_FROZEN,  // intermediate state in which the category can be configured for the first round
-    STAT_CAT_IDLE,
-    STAT_CAT_PLAYING,  // at least one match in this category is currently being played
-    STAT_CAT_FINALIZED, // no more rounds or matches to come
-    STAT_CAT_WAIT_FOR_INTERMEDIATE_SEEDING,  // we need user-controlled seeding / match generation before we can continue
-    STAT_MG_CONFIG,   // Match group has been created, matches can still be added or removed
-    STAT_MG_FROZEN,   // No more adding or removing of matches; match group CANNOT be staged because earlier rounds/groups have to be staged / scheduled first
-    STAT_MG_IDLE,     // No more adding or removing of matches; match group can be staged and waits for being staged
-    STAT_MG_STAGED,     // No more adding or removing of matches; match group is selected to be scheduled and waits for being scheduled
-    STAT_MG_SCHEDULED, // Match numbers have been assigned
-    STAT_MG_FINISHED,  // All matches in this group are finished
-    STAT_MA_INCOMPLETE,   // Match is not yet fully defined (e.g., player names or match number are missing)
-    STAT_MA_FUZZY,        // Player names are defined by symbolic values (e.g., winner of match XYZ); match number is assigned; match cannot be called
-    STAT_MA_WAITING,      // Player names and match number are assigned but match cannot be called because earlier rounds have to be played first
-    STAT_MA_READY,        // Opponents and match number are fully defined and all players are idle; match can be called
-    STAT_MA_BUSY,         // Opponents and match number are fully defined but some players are busy; match cannot be called
-    STAT_MA_RUNNING,      // The match is currently being played
-    STAT_MA_FINISHED,     // The match is finished and the result has been entered
-    STAT_MA_POSTPONED,    // The match is postponed and cannot be called
-    STAT_CO_AVAIL,        // The court is empty and can be assigned to a match
-    STAT_CO_BUSY,         // The court is being used by a match
-    STAT_CO_DISABLED,     // The court cannot be used (temporarily)
-    STAT_PL_REFEREE,      // Player is currently acting as a referee/umpire for a match
+  enum class ObjState {
+    PL_IDLE,
+    PL_PLAYING,
+    PL_WAIT_FOR_REGISTRATION,  // player has to report to match control before considered "ready"
+    CAT_CONFIG,
+    CAT_FROZEN,  // intermediate state in which the category can be configured for the first round
+    CAT_IDLE,
+    CAT_PLAYING,  // at least one match in this category is currently being played
+    CAT_FINALIZED, // no more rounds or matches to come
+    CAT_WAIT_FOR_INTERMEDIATE_SEEDING,  // we need user-controlled seeding / match generation before we can continue
+    MG_CONFIG,   // Match group has been created, matches can still be added or removed
+    MG_FROZEN,   // No more adding or removing of matches; match group CANNOT be staged because earlier rounds/groups have to be staged / scheduled first
+    MG_IDLE,     // No more adding or removing of matches; match group can be staged and waits for being staged
+    MG_STAGED,     // No more adding or removing of matches; match group is selected to be scheduled and waits for being scheduled
+    MG_SCHEDULED, // Match numbers have been assigned
+    MG_FINISHED,  // All matches in this group are finished
+    MA_INCOMPLETE,   // Match is not yet fully defined (e.g., player names or match number are missing)
+    MA_FUZZY,        // Player names are defined by symbolic values (e.g., winner of match XYZ); match number is assigned; match cannot be called
+    MA_WAITING,      // Player names and match number are assigned but match cannot be called because earlier rounds have to be played first
+    MA_READY,        // Opponents and match number are fully defined and all players are idle; match can be called
+    MA_BUSY,         // Opponents and match number are fully defined but some players are busy; match cannot be called
+    MA_RUNNING,      // The match is currently being played
+    MA_FINISHED,     // The match is finished and the result has been entered
+    MA_POSTPONED,    // The match is postponed and cannot be called
+    CO_AVAIL,        // The court is empty and can be assigned to a match
+    CO_BUSY,         // The court is being used by a match
+    CO_DISABLED,     // The court cannot be used (temporarily)
+    PL_REFEREE,      // Player is currently acting as a referee/umpire for a match
   };
   
 //----------------------------------------------------------------------------

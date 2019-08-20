@@ -35,7 +35,7 @@ CourtTableModel::CourtTableModel(TournamentDB* _db)
   CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
   connect(cse, SIGNAL(beginCreateCourt()), this, SLOT(onBeginCreateCourt()), Qt::DirectConnection);
   connect(cse, SIGNAL(endCreateCourt(int)), this, SLOT(onEndCreateCourt(int)), Qt::DirectConnection);
-  connect(cse, SIGNAL(courtStatusChanged(int,int,OBJ_STATE,OBJ_STATE)), this, SLOT(onCourtStatusChanged(int,int)), Qt::DirectConnection);
+  connect(cse, SIGNAL(courtStatusChanged(int,int,ObjState,ObjState)), this, SLOT(onCourtStatusChanged(int,int)), Qt::DirectConnection);
   connect(cse, SIGNAL(beginDeleteCourt(int)), this, SLOT(onBeginDeleteCourt(int)), Qt::DirectConnection);
   connect(cse, SIGNAL(endDeleteCourt()), this, SLOT(onEndDeleteCourt()), Qt::DirectConnection);
 
@@ -88,7 +88,7 @@ QVariant CourtTableModel::data(const QModelIndex& index, int role) const
     // second column: match name
     if (index.column() == 1)
     {
-      if (co->getState() != STAT_CO_BUSY) return "";
+      if (co->getState() != ObjState::CO_BUSY) return "";
       return "(FIX: need to look up match data)";
     }
 

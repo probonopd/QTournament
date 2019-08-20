@@ -21,7 +21,7 @@ public slots:
   void onMatchTimePredictionChanged(int newAvgMatchDuration, time_t newLastMatchFinish);
 
 private:
-  static constexpr int STAT_POLL_TIMER_INTERVAL__MS = 1000;  // update once a second
+  static constexpr int ObjState::POLL_TIMER_INTERVAL__MS = 1000;  // update once a second
   QTournament::TournamentDB* db;
   QString rawStatusString;
   time_t lastMatchFinishTime__UTC;

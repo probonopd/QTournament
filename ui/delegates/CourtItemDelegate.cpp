@@ -166,23 +166,23 @@ void CourtItemDelegate::paintUnselectedCell(QPainter* painter, const QStyleOptio
 void CourtItemDelegate::paintCourtStatus(QPainter* painter, const QStyleOptionViewItem& option, const Court& co, bool isSelected) const
 {
   QString label;
-  OBJ_STATE stat = co.getState();
+  ObjState stat = co.getState();
   bool manual = co.isManualAssignmentOnly();
 
   // set a default color for text items
   QColor txtCol = isSelected ? QColor(Qt::white) : QColor(Qt::darkGray);
 
-  if ((stat == STAT_CO_AVAIL) && !manual)
+  if ((stat == ObjState::CO_AVAIL) && !manual)
   {
     label = tr("(free)");
     txtCol = isSelected ? QColor(Qt::green) : QColor(Qt::darkGreen);
   }
-  else if ((stat == STAT_CO_AVAIL) && manual)
+  else if ((stat == ObjState::CO_AVAIL) && manual)
   {
     label = tr("(free, manual match assignment only)");
     txtCol = isSelected ? QColor(Qt::green) : QColor(Qt::darkGreen);
   }
-  else if (stat == STAT_CO_DISABLED)
+  else if (stat == ObjState::CO_DISABLED)
   {
     label = tr("(disabled)");
     txtCol = QColor(Qt::red);

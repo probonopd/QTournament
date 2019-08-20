@@ -62,7 +62,7 @@ namespace QTournament
   public slots:
     void onBeginCreateMatch();
     void onEndCreateMatch(int newMatchSeqNum);
-    void onMatchStatusChanged(int matchId, int matchSeqNum, OBJ_STATE fromState, OBJ_STATE toState);
+    void onMatchStatusChanged(int matchId, int matchSeqNum, ObjState fromState, ObjState toState);
     void onBeginResetModel();
     void onEndResetModel();
     void recalcPrediction();

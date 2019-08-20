@@ -33,18 +33,18 @@ namespace QTournament
   // THIS FUNCTION WILL FAIL IF THE DATABASE
   // HAS NO "State" COLUMN OR IF THE VALUE IS
   // NOT SET!!!
-  OBJ_STATE TournamentDatabaseObject::getState() const
+  ObjState TournamentDatabaseObject::getState() const
   {
     int stateInt = row.getInt(GENERIC_STATE_FIELD_NAME);
     
-    return static_cast<OBJ_STATE>(stateInt);
+    return static_cast<ObjState>(stateInt);
   }
 
 //----------------------------------------------------------------------------
 
   // THIS FUNCTION WILL FAIL IF THE DATABASE
   // HAS NO "State" COLUMN
-  void TournamentDatabaseObject::setState(OBJ_STATE newState) const
+  void TournamentDatabaseObject::setState(ObjState newState) const
   {
     int stateInt = static_cast<int>(newState);
     row.update(GENERIC_STATE_FIELD_NAME, stateInt);

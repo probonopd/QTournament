@@ -165,8 +165,8 @@ void ResultsAndNextMatches::printNextMatchPart(upSimpleReport& rep) const
   bool isAllScheduled = true;
   for (MatchGroup mg : mgl)
   {
-    OBJ_STATE mgStat = mg.getState();
-    if ((mgStat != STAT_MG_SCHEDULED) && (mgStat != STAT_MG_FINISHED))
+    ObjState mgStat = mg.getState();
+    if ((mgStat != ObjState::MG_SCHEDULED) && (mgStat != ObjState::MG_FINISHED))
     {
       isAllScheduled = false;
       break;

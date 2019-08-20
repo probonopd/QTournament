@@ -24,7 +24,7 @@ TournamentProgressBar::TournamentProgressBar(QWidget* parentWidget)
   // and updates the status bar accordingly
   statPollTimer = make_unique<QTimer>();
   connect(statPollTimer.get(), SIGNAL(timeout()), this, SLOT(updateProgressBar()));
-  statPollTimer->start(STAT_POLL_TIMER_INTERVAL__MS);
+  statPollTimer->start(ObjState::POLL_TIMER_INTERVAL__MS);
 
   // connect to match time prediction updates and match count updates
   CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();

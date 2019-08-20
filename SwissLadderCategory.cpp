@@ -95,7 +95,7 @@ namespace QTournament
       {
         // ignore unfinished matches. However, there
         // shouldn't be any when this function is called
-        if (ma.getState() != STAT_MA_FINISHED)
+        if (ma.getState() != ObjState::MA_FINISHED)
         {
           continue;
         }
@@ -203,7 +203,7 @@ namespace QTournament
     // deletion 3b: match groups for these future matches
     for (const MatchGroup& mg : mm.getMatchGroupsForCat(*this))
     {
-      if (mg.getState() != STAT_MG_FINISHED)
+      if (mg.getState() != ObjState::MG_FINISHED)
       {
         mm.deleteMatchGroupAndMatch(mg);
       }
@@ -228,7 +228,7 @@ namespace QTournament
 
   ERR SwissLadderCategory::canFreezeConfig()
   {
-    if (getState() != STAT_CAT_CONFIG)
+    if (getState() != ObjState::CAT_CONFIG)
     {
       return ERR::CONFIG_ALREADY_FROZEN;
     }
@@ -267,7 +267,7 @@ namespace QTournament
 
   ERR SwissLadderCategory::prepareFirstRound()
   {
-    if (getState() != STAT_CAT_IDLE) return ERR::WRONG_STATE;
+    if (getState() != ObjState::CAT_IDLE) return ERR::WRONG_STATE;
 
     MatchMngr mm{db};
 
@@ -314,8 +314,8 @@ namespace QTournament
 
   int SwissLadderCategory::calcTotalRoundsCount() const
   {
-    OBJ_STATE stat = getState();
-    if ((stat == STAT_CAT_CONFIG) || (stat == STAT_CAT_FROZEN))
+    ObjState stat = getState();
+    if ((stat == ObjState::CAT_CONFIG) || (stat == ObjState::CAT_FROZEN))
     {
       return -1;   // category not yet fully configured; can't calc rounds
     }
@@ -415,7 +415,7 @@ namespace QTournament
   ModMatchResult SwissLadderCategory::canModifyMatchResult(const Match& ma) const
   {
     // the match has to be in FINISHED state
-    if (ma.getState() != STAT_MA_FINISHED) return ModMatchResult::NotPossible;
+    if (ma.getState() != ObjState::MA_FINISHED) return ModMatchResult::NotPossible;
 
     // if this match does not belong to us, we're not responsible
     if (ma.getCategory().getMatchSystem() != SWISS_LADDER) return ModMatchResult::NotPossible;

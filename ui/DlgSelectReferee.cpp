@@ -325,7 +325,7 @@ void DlgSelectReferee::rebuildPlayerList()
     {
       const TaggedPlayer& tp = *it;
       const Player& p = tp.first;
-      if (p.getState() != STAT_PL_IDLE)
+      if (p.getState() != ObjState::PL_IDLE)
       {
         it = pList.erase(it);
       } else {
@@ -363,7 +363,7 @@ TaggedPlayerList DlgSelectReferee::getPlayerList_recentFinishers()
       Player p = pp.getPlayer1();
 
       // if this player is already a referee, skip this player
-      if (p.getState() == STAT_PL_REFEREE) continue;
+      if (p.getState() == ObjState::PL_REFEREE) continue;
 
       // Before we add this player to the result list,
       // make sure that the player is not already in it
@@ -376,7 +376,7 @@ TaggedPlayerList DlgSelectReferee::getPlayerList_recentFinishers()
       if (pp.hasPlayer2())
       {
         p = pp.getPlayer2();
-        if (p.getState() == STAT_PL_REFEREE) continue;
+        if (p.getState() == ObjState::PL_REFEREE) continue;
         if (std::find(purePlayerList.begin(), purePlayerList.end(), p) == purePlayerList.end())
         {
           purePlayerList.push_back(p);
@@ -485,7 +485,7 @@ void RefereeTableWidget::rebuildPlayerList(const TaggedPlayerList& pList, int se
     newItem = new QTableWidgetItem("");
     newItem->setData(Qt::UserRole, p.getId());
     newItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-    setItem(idxRow, STAT_COL_ID, newItem);
+    setItem(idxRow, ObjState::COL_ID, newItem);
 
     // add the offset to the next match for the player
     ma = pm.getNextMatchForPlayer(p);

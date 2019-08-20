@@ -27,7 +27,7 @@ dlgGroupAssignment::dlgGroupAssignment(TournamentDB* _db, QWidget* p, Category& 
     cfg(KO_Config(QUARTER, false)), cat(_cat)    // dummy, just for formal initialization
 {
   ui.setupUi(this);
-  cfg = KO_Config(cat.getParameter(GROUP_CONFIG).toString());
+  cfg = KO_Config(cat.getParameter(CatParameter::GroupConfig).toString());
 
   ui.grpWidget->setDatabase(db);
 

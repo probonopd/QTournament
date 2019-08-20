@@ -50,7 +50,7 @@ namespace QTournament
 
   ERR RoundRobinCategory::canFreezeConfig()
   {
-    if (getState() != STAT_CAT_CONFIG)
+    if (getState() != ObjState::CAT_CONFIG)
     {
       return ERR::CONFIG_ALREADY_FROZEN;
     }
@@ -69,7 +69,7 @@ namespace QTournament
     }
 
     // make sure we have a valid group configuration
-    KO_Config cfg = KO_Config(getParameter_string(GROUP_CONFIG));
+    KO_Config cfg = KO_Config(getParameter_string(CatParameter::GroupConfig));
     if (!(cfg.isValid(pp.size())))
     {
       return ERR::INVALID_KO_CONFIG;
@@ -96,7 +96,7 @@ namespace QTournament
 
   ERR RoundRobinCategory::prepareFirstRound()
   {
-    if (getState() != STAT_CAT_IDLE) return ERR::WRONG_STATE;
+    if (getState() != ObjState::CAT_IDLE) return ERR::WRONG_STATE;
 
     MatchMngr mm{db};
 
@@ -110,7 +110,7 @@ namespace QTournament
 
     // alright, this is a virgin category. Generate group matches
     // for each group
-    KO_Config cfg = KO_Config(getParameter_string(GROUP_CONFIG));
+    KO_Config cfg = KO_Config(getParameter_string(CatParameter::GroupConfig));
     for (int grpIndex = 0; grpIndex < cfg.getNumGroups(); ++grpIndex)
     {
       PlayerPairList grpMembers = getPlayerPairs(grpIndex+1);
@@ -125,15 +125,15 @@ namespace QTournament
 
   int RoundRobinCategory::calcTotalRoundsCount() const
   {
-    OBJ_STATE stat = getState();
-    if ((stat == STAT_CAT_CONFIG) || (stat == STAT_CAT_FROZEN))
+    ObjState stat = getState();
+    if ((stat == ObjState::CAT_CONFIG) || (stat == ObjState::CAT_FROZEN))
     {
       return -1;   // category not yet fully configured; can't calc rounds
     }
 
     // the following call must succeed, since we made it past the
     // configuration point
-    KO_Config cfg = KO_Config(getParameter_string(GROUP_CONFIG));
+    KO_Config cfg = KO_Config(getParameter_string(CatParameter::GroupConfig));
 
     // the number of rounds is
     // (number of group rounds) + (number of KO rounds)
@@ -194,7 +194,7 @@ namespace QTournament
     //
     // The following call must succeed, since we made it past the
     // configuration point
-    KO_Config cfg = KO_Config(getParameter_string(GROUP_CONFIG));
+    KO_Config cfg = KO_Config(getParameter_string(CatParameter::GroupConfig));
     int groupRounds = cfg.getNumRounds();
 
     RankingMngr rm{db};
@@ -282,7 +282,7 @@ namespace QTournament
     }
 
     // the following call must succeed since we finished at least one round
-    KO_Config cfg = KO_Config(getParameter_string(GROUP_CONFIG));
+    KO_Config cfg = KO_Config(getParameter_string(CatParameter::GroupConfig));
     int numGroupRounds = cfg.getNumRounds();
 
     // three cases for the list of remaining players:
@@ -352,7 +352,7 @@ namespace QTournament
 
   PlayerPairList RoundRobinCategory::getPlayerPairsForIntermediateSeeding() const
   {
-    if (getState() != STAT_CAT_WAIT_FOR_INTERMEDIATE_SEEDING)
+    if (getState() != ObjState::CAT_WAIT_FOR_INTERMEDIATE_SEEDING)
     {
       return PlayerPairList();
     }
@@ -364,7 +364,7 @@ namespace QTournament
 
   ERR RoundRobinCategory::resolveIntermediateSeeding(const PlayerPairList& seed) const
   {
-    if (getState() != STAT_CAT_WAIT_FOR_INTERMEDIATE_SEEDING)
+    if (getState() != ObjState::CAT_WAIT_FOR_INTERMEDIATE_SEEDING)
     {
       return ERR::CATEGORY_NEEDS_NO_SEEDING;
     }
@@ -387,7 +387,7 @@ namespace QTournament
 
     // okay, the list is valid. Now lets generate single-KO matches
     // for the second phase of the tournament
-    KO_Config cfg = KO_Config(getParameter_string(GROUP_CONFIG));
+    KO_Config cfg = KO_Config(getParameter_string(CatParameter::GroupConfig));
     int numGroupRounds = cfg.getNumRounds();
     return generateBracketMatches(BracketGenerator::BRACKET_SINGLE_ELIM, seed, numGroupRounds+1);
   }
@@ -398,7 +398,7 @@ namespace QTournament
   {
     // have we finished the round robin phase?
     CatRoundStatus crs = getRoundStatus();
-    KO_Config cfg = KO_Config(getParameter_string(GROUP_CONFIG));
+    KO_Config cfg = KO_Config(getParameter_string(CatParameter::GroupConfig));
     int numGroupRounds = cfg.getNumRounds();
     if (crs.getFinishedRoundsCount() < numGroupRounds)
     {

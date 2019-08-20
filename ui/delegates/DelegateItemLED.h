@@ -35,9 +35,9 @@ public:
   DelegateItemLED();
 
   void operator()(QPainter* painter, QRect itemArea, int margin, int size, QColor fillColor);
-  void operator()(QPainter* painter, QRect itemArea, int margin, int size, QTournament::OBJ_STATE state, QColor defaultColor=Qt::white);
+  void operator()(QPainter* painter, QRect itemArea, int margin, int size, QTournament::ObjState state, QColor defaultColor=Qt::white);
 
-  const static QMap<QTournament::OBJ_STATE, QColor> state2color;
+  const static QMap<QTournament::ObjState, QColor> state2color;
 };
 
 #endif // DELEGATEITEMLED_H

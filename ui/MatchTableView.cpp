@@ -65,8 +65,8 @@ MatchTableView::MatchTableView(QWidget* parent)
   // catch a UI-corner case when undoing match calls.
   // this feels a bit like a bad hack because it SHOULD be
   // handled through the underlying model and the DataChanged()-event
-  connect(CentralSignalEmitter::getInstance(), SIGNAL(matchStatusChanged(int,int,OBJ_STATE,OBJ_STATE)),
-          this, SLOT(onMatchStatusChanged(int,int,OBJ_STATE,OBJ_STATE)));
+  connect(CentralSignalEmitter::getInstance(), SIGNAL(matchStatusChanged(int,int,ObjState,ObjState)),
+          this, SLOT(onMatchStatusChanged(int,int,ObjState,ObjState)));
 
   // handle double clicks on a column header
   connect(horizontalHeader(), SIGNAL(sectionDoubleClicked(int)), this, SLOT(onSectionHeaderDoubleClicked()));
@@ -158,10 +158,10 @@ void MatchTableView::hook_onDatabaseOpened()
 
   // create a regular expression, that matches either the match state
   // READY, BUSY, FUZZY or WAITING
-  QString reString = "^" + QString::number(static_cast<int>(STAT_MA_READY)) + "|";
-  reString += QString::number(static_cast<int>(STAT_MA_BUSY)) + "|";
-  reString += QString::number(static_cast<int>(STAT_MA_FUZZY)) + "|";   // TODO: check if there can be a condition where a match is FUZZY but without assigned match number
-  reString += QString::number(static_cast<int>(STAT_MA_WAITING)) + "$";
+  QString reString = "^" + QString::number(static_cast<int>(ObjState::MA_READY)) + "|";
+  reString += QString::number(static_cast<int>(ObjState::MA_BUSY)) + "|";
+  reString += QString::number(static_cast<int>(ObjState::MA_FUZZY)) + "|";   // TODO: check if there can be a condition where a match is FUZZY but without assigned match number
+  reString += QString::number(static_cast<int>(ObjState::MA_WAITING)) + "$";
 
   // apply the regExp as a filter on the state id column
   sortedModel->setFilterRegExp(reString);
@@ -277,7 +277,7 @@ void MatchTableView::onMatchDoubleClicked(const QModelIndex& index)
 
   // special case: if the match is busy, we show information
   // why the match can't be called
-  if (ma->getState() == STAT_MA_BUSY)
+  if (ma->getState() == ObjState::MA_BUSY)
   {
     showMatchBusyReason(*ma);
     return;  // do not proceed with a match call
@@ -287,7 +287,7 @@ void MatchTableView::onMatchDoubleClicked(const QModelIndex& index)
   MatchMngr mm{db};
 
   // first of all, make sure that the match is eligible for being started
-  if (ma->getState() != STAT_MA_READY)
+  if (ma->getState() != ObjState::MA_READY)
   {
     QString msg = tr("This match cannot be started at this point in time.\n");
     msg += tr("It's probably waiting for all players to become available or \n");
@@ -395,7 +395,7 @@ void MatchTableView::onMatchTimePredictionUpdate()
 
 //----------------------------------------------------------------------------
 
-void MatchTableView::onMatchStatusChanged(int maId, int maSeqNum, OBJ_STATE oldStat, OBJ_STATE newStat)
+void MatchTableView::onMatchStatusChanged(int maId, int maSeqNum, ObjState oldStat, ObjState newStat)
 {
   // a special hack here: if we undo a match call, the match is re-inserted into
   // the match table. Thus we need to update the selection data because otherwise
@@ -403,7 +403,7 @@ void MatchTableView::onMatchStatusChanged(int maId, int maSeqNum, OBJ_STATE oldS
   //
   // Background: when re-inserting the match, the relation between selected row
   // and associated match changes...
-  if ((oldStat == STAT_MA_RUNNING) && (newStat == STAT_MA_READY))
+  if ((oldStat == ObjState::MA_RUNNING) && (newStat == ObjState::MA_READY))
   {
     auto selMatch = getSelectedMatch();
     if (selMatch == nullptr) return;
@@ -421,7 +421,7 @@ void MatchTableView::onMatchStatusChanged(int maId, int maSeqNum, OBJ_STATE oldS
   // the same is true when setting a match to "walkover" straight from the match table.
   // But in this case, a match is REMOVED from the list and thus we need
   // we need to invert the setSelectedRow-logic here
-  if ((oldStat != STAT_MA_RUNNING) && (newStat == STAT_MA_FINISHED))
+  if ((oldStat != ObjState::MA_RUNNING) && (newStat == ObjState::MA_FINISHED))
   {
     updateSelectionAfterDataChange();
   }
@@ -531,7 +531,7 @@ void MatchTableView::updateContextMenu()
   auto ma = getSelectedMatch();
 
   // completely re-build the list of available courts
-  bool isCallPossible = ((ma != nullptr) && (ma->getState() == STAT_MA_READY));
+  bool isCallPossible = ((ma != nullptr) && (ma->getState() == ObjState::MA_READY));
   courtSelectionMenu->setEnabled(isCallPossible);
   if (isCallPossible)
   {
@@ -542,7 +542,7 @@ void MatchTableView::updateContextMenu()
     QStringList availCourtNum;
     for (auto co : cm.getAllCourts())
     {
-      if (co.getState() == STAT_CO_AVAIL)
+      if (co.getState() == ObjState::CO_AVAIL)
       {
         availCourtNum << QString::number(co.getNumber());
       }
@@ -592,7 +592,7 @@ void MatchTableView::execWalkover(int playerNum)
 
 void MatchTableView::showMatchBusyReason(const Match& ma)
 {
-  if (ma.getState() != STAT_MA_BUSY)
+  if (ma.getState() != ObjState::MA_BUSY)
   {
     return;
   }
@@ -605,11 +605,11 @@ void MatchTableView::showMatchBusyReason(const Match& ma)
   // a single player
   auto getBusyReasonForPlayer = [](const Player& pl)
   {
-    OBJ_STATE plStat = pl.getState();
-    if (plStat == STAT_PL_IDLE) return QString();
+    ObjState plStat = pl.getState();
+    if (plStat == ObjState::PL_IDLE) return QString();
 
     // maybe the player is busy in another match
-    if (plStat == STAT_PL_PLAYING)
+    if (plStat == ObjState::PL_PLAYING)
     {
       QString result = tr("%1 is playing");
       result = result.arg(pl.getDisplayName_FirstNameFirst());
@@ -626,7 +626,7 @@ void MatchTableView::showMatchBusyReason(const Match& ma)
     }
 
     // maybe the player is acting as an umpire
-    if (plStat == STAT_PL_REFEREE)
+    if (plStat == ObjState::PL_REFEREE)
     {
       QString result = tr("%1 is umpire");
       result = result.arg(pl.getDisplayName_FirstNameFirst());

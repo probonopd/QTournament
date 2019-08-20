@@ -51,7 +51,7 @@ void RefereeSelectionDelegate::commonPaint(QPainter* painter, const QStyleOption
   auto p = pm.getPlayer2(playerId);
   if (p == nullptr) return;
 
-  OBJ_STATE plStat = p->getState();
+  ObjState plStat = p->getState();
 
   // Fill the first cell with the color that indicates the player state
   int col = index.column();

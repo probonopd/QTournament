@@ -84,8 +84,8 @@ public slots:
   void onPlayerAddedToCategory(const QTournament::Player& p, const QTournament::Category& c);
   void onPlayerRemovedFromCategory(const QTournament::Player& p, const QTournament::Category& c);
   void onPlayerRenamed(const QTournament::Player& p);
-  void onCatStateChanged(const QTournament::Category& c, const QTournament::OBJ_STATE fromState, const QTournament::OBJ_STATE toState);
-  void onPlayerStateChanged(int playerId, int seqNum, const QTournament::OBJ_STATE fromState, const QTournament::OBJ_STATE toState);
+  void onCatStateChanged(const QTournament::Category& c, const QTournament::ObjState fromState, const QTournament::ObjState toState);
+  void onPlayerStateChanged(int playerId, int seqNum, const QTournament::ObjState fromState, const QTournament::ObjState toState);
   void onRemovePlayerFromCat();
   void onBulkRemovePlayersFromCat();
   void onAddPlayerToCat();

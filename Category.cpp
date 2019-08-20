@@ -124,7 +124,7 @@ namespace QTournament
   {
     // For now, you can only add players to a category
     // when it's still in configuration mode
-    return (getState() == STAT_CAT_CONFIG);
+    return (getState() == ObjState::CAT_CONFIG);
 
     // TODO: make more sophisticated tests depending e. g. on
     // the match system. For instance, if we have random
@@ -195,7 +195,7 @@ namespace QTournament
   {
     // For now, you can only delete players from a category
     // when it's still in configuration mode
-    if (getState() != STAT_CAT_CONFIG) return false;
+    if (getState() != ObjState::CAT_CONFIG) return false;
 
     // check whether the player is paired with another player
     if (isPaired(p))
@@ -228,24 +228,24 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  QVariant Category::getParameter(CAT_PARAMETER p) const
+  QVariant Category::getParameter(CatParameter p) const
   {
     switch (p) {
 
-    case ALLOW_DRAW:
+    case CatParameter::AllowDraw:
       return row.getInt(CAT_ACCEPT_DRAW);
 
-    case WIN_SCORE:
-      return row.getInt(CAT_WIN_SCORE);
+    case CatParameter::WinScore:
+      return row.getInt(CAT_CatParameter::WinScore);
 
-    case DRAW_SCORE:
-      return row.getInt(CAT_DRAW_SCORE);
+    case CatParameter::DrawScore:
+      return row.getInt(CAT_CatParameter::DrawScore);
 
-    case GROUP_CONFIG:
-      return QString::fromUtf8(row[CAT_GROUP_CONFIG].data());
+    case CatParameter::GroupConfig:
+      return QString::fromUtf8(row[CAT_CatParameter::GroupConfig].data());
 
-    case ROUND_ROBIN_ITERATIONS:
-      return row.getInt(CAT_ROUND_ROBIN_ITERATIONS);
+    case CatParameter::RoundRobinIterations:
+      return row.getInt(CAT_CatParameter::RoundRobinIterations);
       /*
       case :
 	return row[];
@@ -263,7 +263,7 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  bool Category::setParameter(CAT_PARAMETER p, const QVariant& v)
+  bool Category::setParameter(CatParameter p, const QVariant& v)
   {
     CatMngr cm{db};
     return cm.setCatParameter(*this, p, v);
@@ -271,21 +271,21 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  int Category::getParameter_int(CAT_PARAMETER p) const
+  int Category::getParameter_int(CatParameter p) const
   {
     return getParameter(p).toInt();
   }
 
   //----------------------------------------------------------------------------
 
-  bool Category::getParameter_bool(CAT_PARAMETER p) const
+  bool Category::getParameter_bool(CatParameter p) const
   {
     return getParameter(p).toBool();
   }
 
   //----------------------------------------------------------------------------
 
-  QString Category::getParameter_string(CAT_PARAMETER p) const
+  QString Category::getParameter_string(CatParameter p) const
   {
     return getParameter(p).toString();
   }
@@ -363,7 +363,7 @@ namespace QTournament
     // since we want to count only player pairs in the database,
     // we must be beyond CONFIG to be sure that valid database
     // entries exist
-    if (getState() == STAT_CAT_CONFIG) return -1;
+    if (getState() == ObjState::CAT_CONFIG) return -1;
 
     DbTab pairTab{db, TAB_PAIRS, false};
     SqliteOverlay::WhereClause wc;
@@ -414,7 +414,7 @@ namespace QTournament
   ERR Category::canPairPlayers(const Player& p1, const Player& p2) const
   {
     // we can only create pairs while being in config mode
-    if (getState() != STAT_CAT_CONFIG)
+    if (getState() != ObjState::CAT_CONFIG)
     {
       return ERR::CATEGORY_NOT_CONFIGURALE_ANYMORE;
     }
@@ -474,7 +474,7 @@ namespace QTournament
   ERR Category::canSplitPlayers(const Player& p1, const Player& p2) const
   {
     // we can only split pairs while being in config mode
-    if (getState() != STAT_CAT_CONFIG)
+    if (getState() != ObjState::CAT_CONFIG)
     {
       return ERR::CATEGORY_NOT_CONFIGURALE_ANYMORE;
     }
@@ -595,7 +595,7 @@ namespace QTournament
 
   ERR Category::canApplyGroupAssignment(const std::vector<PlayerPairList>& grpCfg)
   {
-    if (getState() != STAT_CAT_FROZEN) return ERR::CATEGORY_NOT_YET_FROZEN;
+    if (getState() != ObjState::CAT_FROZEN) return ERR::CATEGORY_NOT_YET_FROZEN;
 
     std::unique_ptr<Category> specializedCat = convertToSpecializedObject();
     if (!(specializedCat->needsGroupInitialization()))
@@ -603,7 +603,7 @@ namespace QTournament
       return ERR::CATEGORY_NEEDS_NO_GROUP_ASSIGNMENTS;
     }
 
-    KO_Config cfg = KO_Config(getParameter(GROUP_CONFIG).toString());
+    KO_Config cfg = KO_Config(getParameter(CatParameter::GroupConfig).toString());
     if (!(cfg.isValid())) return ERR::INVALID_KO_CONFIG;
 
     // check if the grpCfg matches the KO_Config
@@ -649,7 +649,7 @@ namespace QTournament
 
   ERR Category::canApplyInitialRanking(PlayerPairList seed)
   {
-    if (getState() != STAT_CAT_FROZEN) return ERR::CATEGORY_NOT_YET_FROZEN;
+    if (getState() != ObjState::CAT_FROZEN) return ERR::CATEGORY_NOT_YET_FROZEN;
 
     std::unique_ptr<Category> specializedCat = convertToSpecializedObject();
     if (!(specializedCat->needsInitialRanking()))
@@ -849,7 +849,7 @@ namespace QTournament
     //
     if (getMatchSystem() == GROUPS_WITH_KO)
     {
-      KO_Config cfg = KO_Config(getParameter_string(GROUP_CONFIG));
+      KO_Config cfg = KO_Config(getParameter_string(CatParameter::GroupConfig));
       if ((cfg.getStartLevel() == FINAL) && (cfg.getSecondSurvives()))
       {
         // we start with finals, which is simply "first vs. second"
@@ -1147,7 +1147,7 @@ namespace QTournament
     // if we made it to this point, we are in KO rounds.
     // so we need the KO-config to decide if there is a previous
     // KO round or if we fall back to round robins
-    KO_Config cfg = KO_Config(getParameter_string(GROUP_CONFIG));
+    KO_Config cfg = KO_Config(getParameter_string(CatParameter::GroupConfig));
     KO_START startLvl = cfg.getStartLevel();
 
     if (startLvl == FINAL) return ANY_PLAYERS_GROUP_NUMBER;
@@ -1195,7 +1195,7 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  bool Category::hasMatchesInState(OBJ_STATE stat, int round) const
+  bool Category::hasMatchesInState(ObjState stat, int round) const
   {
     MatchMngr mm{db};
 
@@ -1264,7 +1264,7 @@ namespace QTournament
   bool Category::isDrawAllowedInRound(int round) const
   {
     // is a draw basically allowed?
-    bool isDrawAllowed = getParameter_bool(ALLOW_DRAW);
+    bool isDrawAllowed = getParameter_bool(CatParameter::AllowDraw);
     if (!isDrawAllowed)
     {
       return false;
@@ -1273,7 +1273,7 @@ namespace QTournament
 
     //
     // everything below this point can only be reached if the
-    // "ALLOW_DRAW" parameter is true
+    // "CatParameter::AllowDraw" parameter is true
     //
 
 
@@ -1298,7 +1298,7 @@ namespace QTournament
       // invalid parameter
       if (round < 1) return false;
 
-      KO_Config cfg = KO_Config(getParameter_string(GROUP_CONFIG));
+      KO_Config cfg = KO_Config(getParameter_string(CatParameter::GroupConfig));
       if (round <= cfg.getNumRounds())
       {
         // if draw is allowed and we're still in the round-robin phase,

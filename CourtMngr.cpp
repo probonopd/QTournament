@@ -57,7 +57,7 @@ namespace QTournament
     cvc.addCol(CO_NUMBER, courtNum);
     cvc.addCol(GENERIC_NAME_FIELD_NAME, QString2StdString(name));
     cvc.addCol(CO_IS_MANUAL_ASSIGNMENT, 0);
-    cvc.addCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_CO_AVAIL));
+    cvc.addCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(ObjState::CO_AVAIL));
     
     // create the new court row
     CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
@@ -172,7 +172,7 @@ namespace QTournament
   int CourtMngr::getActiveCourtCount()
   {
     int allCourts = tab.length();
-    int disabledCourts = tab.getMatchCountForColumnValue(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_CO_DISABLED));
+    int disabledCourts = tab.getMatchCountForColumnValue(GENERIC_STATE_FIELD_NAME, static_cast<int>(ObjState::CO_DISABLED));
 
     return (allCourts - disabledCourts);
   }
@@ -181,7 +181,7 @@ namespace QTournament
 
   std::optional<Court> CourtMngr::getNextUnusedCourt(bool includeManual) const
   {
-    int reqState = static_cast<int>(STAT_CO_AVAIL);
+    int reqState = static_cast<int>(ObjState::CO_AVAIL);
     SqliteOverlay::WhereClause wc;
     wc.addCol(GENERIC_STATE_FIELD_NAME, reqState);
 
@@ -202,13 +202,13 @@ namespace QTournament
 
   bool CourtMngr::acquireCourt(const Court &co)
   {
-    if (co.getState() != STAT_CO_AVAIL)
+    if (co.getState() != ObjState::CO_AVAIL)
     {
       return false;
     }
 
-    co.setState(STAT_CO_BUSY);
-    CentralSignalEmitter::getInstance()->courtStatusChanged(co.getId(), co.getSeqNum(), STAT_CO_AVAIL, STAT_CO_BUSY);
+    co.setState(ObjState::CO_BUSY);
+    CentralSignalEmitter::getInstance()->courtStatusChanged(co.getId(), co.getSeqNum(), ObjState::CO_AVAIL, ObjState::CO_BUSY);
     return true;
   }
 
@@ -216,7 +216,7 @@ namespace QTournament
 
   bool CourtMngr::releaseCourt(const Court &co)
   {
-    if (co.getState() != STAT_CO_BUSY)
+    if (co.getState() != ObjState::CO_BUSY)
     {
       return false;
     }
@@ -224,7 +224,7 @@ namespace QTournament
     // make sure there is no currently running match
     // assigned to this court
     SqliteOverlay::WhereClause wc;
-    wc.addCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_RUNNING));
+    wc.addCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(ObjState::MA_RUNNING));
     wc.addCol(MA_COURT_REF, co.getId());
     DbTab matchTab{db, TAB_MATCH, false};
     if (matchTab.getMatchCountForWhereClause(wc) > 0)
@@ -233,8 +233,8 @@ namespace QTournament
     }
 
     // all fine, we can fall back to AVAIL
-    co.setState(STAT_CO_AVAIL);
-    CentralSignalEmitter::getInstance()->courtStatusChanged(co.getId(), co.getSeqNum(), STAT_CO_BUSY, STAT_CO_AVAIL);
+    co.setState(ObjState::CO_AVAIL);
+    CentralSignalEmitter::getInstance()->courtStatusChanged(co.getId(), co.getSeqNum(), ObjState::CO_BUSY, ObjState::CO_AVAIL);
     return true;
   }
 
@@ -242,16 +242,16 @@ namespace QTournament
 
   ERR CourtMngr::disableCourt(const Court& co)
   {
-    OBJ_STATE stat = co.getState();
+    ObjState stat = co.getState();
 
-    if (stat == STAT_CO_DISABLED) return ERR::OK;   // nothing to do for us
+    if (stat == ObjState::CO_DISABLED) return ERR::OK;   // nothing to do for us
 
     // prohibit a state change if the court is in use
-    if (stat == STAT_CO_BUSY) return ERR::COURT_BUSY;
+    if (stat == ObjState::CO_BUSY) return ERR::COURT_BUSY;
 
     // change the court state and emit a change event
-    co.setState(STAT_CO_DISABLED);
-    CentralSignalEmitter::getInstance()->courtStatusChanged(co.getId(), co.getSeqNum(), stat, STAT_CO_DISABLED);
+    co.setState(ObjState::CO_DISABLED);
+    CentralSignalEmitter::getInstance()->courtStatusChanged(co.getId(), co.getSeqNum(), stat, ObjState::CO_DISABLED);
     return ERR::OK;
   }
 
@@ -259,13 +259,13 @@ namespace QTournament
 
   ERR CourtMngr::enableCourt(const Court& co)
   {
-    OBJ_STATE stat = co.getState();
+    ObjState stat = co.getState();
 
-    if (stat != STAT_CO_DISABLED) return ERR::COURT_NOT_DISABLED;
+    if (stat != ObjState::CO_DISABLED) return ERR::COURT_NOT_DISABLED;
 
     // change the court state and emit a change event
-    co.setState(STAT_CO_AVAIL);
-    CentralSignalEmitter::getInstance()->courtStatusChanged(co.getId(), co.getSeqNum(), STAT_CO_DISABLED, STAT_CO_AVAIL);
+    co.setState(ObjState::CO_AVAIL);
+    CentralSignalEmitter::getInstance()->courtStatusChanged(co.getId(), co.getSeqNum(), ObjState::CO_DISABLED, ObjState::CO_AVAIL);
     return ERR::OK;
   }
 

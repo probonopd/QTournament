@@ -34,7 +34,7 @@ MatchGroupTableModel::MatchGroupTableModel(TournamentDB* _db)
   CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
   connect(cse, SIGNAL(beginCreateMatchGroup()), this, SLOT(onBeginCreateMatchGroup()), Qt::DirectConnection);
   connect(cse, SIGNAL(endCreateMatchGroup(int)), this, SLOT(onEndCreateMatchGroup(int)), Qt::DirectConnection);
-  connect(cse, SIGNAL(matchGroupStatusChanged(int,int,OBJ_STATE,OBJ_STATE)), this, SLOT(onMatchGroupStatusChanged(int,int)), Qt::DirectConnection);
+  connect(cse, SIGNAL(matchGroupStatusChanged(int,int,ObjState,ObjState)), this, SLOT(onMatchGroupStatusChanged(int,int)), Qt::DirectConnection);
   connect(cse, SIGNAL(beginResetAllModels()), this, SLOT(onBeginResetModel()), Qt::DirectConnection);
   connect(cse, SIGNAL(endResetAllModels()), this, SLOT(onEndResetModel()), Qt::DirectConnection);
 }
@@ -109,7 +109,7 @@ QVariant MatchGroupTableModel::data(const QModelIndex& index, int role) const
     // Used for filtering only and needs to be hidden in the associated view
     if (index.column() == STATE_COL_ID)
     {
-      OBJ_STATE stat = mg->getState();
+      ObjState stat = mg->getState();
       return static_cast<int>(stat);
     }
 

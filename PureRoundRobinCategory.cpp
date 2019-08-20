@@ -48,8 +48,8 @@ namespace QTournament
 
   int PureRoundRobinCategory::getRoundCountPerIteration() const
   {
-    OBJ_STATE stat = getState();
-    if ((stat == STAT_CAT_CONFIG) || (stat == STAT_CAT_FROZEN))
+    ObjState stat = getState();
+    if ((stat == ObjState::CAT_CONFIG) || (stat == ObjState::CAT_FROZEN))
     {
       return -1;   // category not yet fully configured; can't calc rounds
     }
@@ -64,7 +64,7 @@ namespace QTournament
 
   int PureRoundRobinCategory::getIterationCount() const
   {
-    return getParameter_int(ROUND_ROBIN_ITERATIONS);  // simple wrapper function
+    return getParameter_int(CatParameter::RoundRobinIterations);  // simple wrapper function
   }
 
   //----------------------------------------------------------------------------
@@ -81,7 +81,7 @@ namespace QTournament
   ModMatchResult PureRoundRobinCategory::canModifyMatchResult(const Match& ma) const
   {
     // the match has to be in FINISHED state
-    if (ma.getState() != STAT_MA_FINISHED) return ModMatchResult::NotPossible;
+    if (ma.getState() != ObjState::MA_FINISHED) return ModMatchResult::NotPossible;
 
     // if this match does not belong to us, we're not responsible
     if (ma.getCategory().getMatchSystem() != ROUND_ROBIN) return ModMatchResult::NotPossible;
@@ -122,7 +122,7 @@ namespace QTournament
 
   ERR PureRoundRobinCategory::canFreezeConfig()
   {
-    if (getState() != STAT_CAT_CONFIG)
+    if (getState() != ObjState::CAT_CONFIG)
     {
       return ERR::CONFIG_ALREADY_FROZEN;
     }
@@ -161,7 +161,7 @@ namespace QTournament
 
   ERR PureRoundRobinCategory::prepareFirstRound()
   {
-    if (getState() != STAT_CAT_IDLE) return ERR::WRONG_STATE;
+    if (getState() != ObjState::CAT_IDLE) return ERR::WRONG_STATE;
 
     MatchMngr mm{db};
 

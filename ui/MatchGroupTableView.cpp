@@ -45,10 +45,10 @@ void MatchGroupTableView::setFilter(FilterType ft)
     return;
   }
 
-  OBJ_STATE stat = STAT_MG_IDLE;
+  ObjState stat = ObjState::MG_IDLE;
   if (ft == FilterType::STAGED)
   {
-    stat = STAT_MG_STAGED;
+    stat = ObjState::MG_STAGED;
   }
 
   int stateId = static_cast<int>(stat);

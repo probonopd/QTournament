@@ -301,7 +301,7 @@ namespace QTournament
 
   ERR RankingMngr::updateRankingsAfterMatchResultChange(const Match& ma, const MatchScore& oldScore, bool skipSorting) const
   {
-    if (ma.getState() != STAT_MA_FINISHED) return ERR::WRONG_STATE;
+    if (ma.getState() != ObjState::MA_FINISHED) return ERR::WRONG_STATE;
 
     Category cat = ma.getCategory();
     int catId = cat.getId();

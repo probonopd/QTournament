@@ -74,8 +74,8 @@ namespace QTournament
     // in all categories
     for (Category cat : cm.getAllCategories())
     {
-      OBJ_STATE catState = cat.getState();
-      if ((catState == STAT_CAT_CONFIG) || (catState == STAT_CAT_FROZEN))
+      ObjState catState = cat.getState();
+      if ((catState == ObjState::CAT_CONFIG) || (catState == ObjState::CAT_FROZEN))
       {
         continue;  // no reports for "unstarted" categories
       }
@@ -114,7 +114,7 @@ namespace QTournament
         result.append(genRepName(REP__MATRIX_AND_STANDINGS, cat, 0));
 
         // a matrix for each finished round of the round-robin phase
-        KO_Config cfg = KO_Config(cat.getParameter_string(GROUP_CONFIG));
+        KO_Config cfg = KO_Config(cat.getParameter_string(CatParameter::GroupConfig));
         int numGroupRounds = cfg.getNumRounds();
         for (int round = 1; ((round <= numGroupRounds) && (round <= numFinishedRounds)); ++round)
         {
@@ -150,8 +150,8 @@ namespace QTournament
     // in all categories
     for (Category cat : cm.getAllCategories())
     {
-      OBJ_STATE catState = cat.getState();
-      if ((catState == STAT_CAT_CONFIG) || (catState == STAT_CAT_FROZEN))
+      ObjState catState = cat.getState();
+      if ((catState == ObjState::CAT_CONFIG) || (catState == ObjState::CAT_FROZEN))
       {
         continue;  // no rankings for "unstarted" categories
       }

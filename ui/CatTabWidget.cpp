@@ -75,9 +75,9 @@ CatTabWidget::CatTabWidget()
   CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
   connect(cse, SIGNAL(playerAddedToCategory(Player,Category)), this, SLOT(onPlayerAddedToCategory(Player,Category)));
   connect(cse, SIGNAL(playerRemovedFromCategory(Player,Category)), this, SLOT(onPlayerRemovedFromCategory(Player,Category)));
-  connect(cse, SIGNAL(categoryStatusChanged(Category,OBJ_STATE,OBJ_STATE)), this, SLOT(onCatStateChanged(Category,OBJ_STATE,OBJ_STATE)));
+  connect(cse, SIGNAL(categoryStatusChanged(Category,ObjState,ObjState)), this, SLOT(onCatStateChanged(Category,ObjState,ObjState)));
   connect(cse, SIGNAL(playerRenamed(Player)), this, SLOT(onPlayerRenamed(Player)));
-  connect(cse, SIGNAL(playerStatusChanged(int,int,OBJ_STATE,OBJ_STATE)), this, SLOT(onPlayerStateChanged(int,int,OBJ_STATE,OBJ_STATE)));
+  connect(cse, SIGNAL(playerStatusChanged(int,int,ObjState,ObjState)), this, SLOT(onPlayerStateChanged(int,int,ObjState,ObjState)));
   connect(cse, SIGNAL(categoryRemovedFromTournament(int,int)), this, SLOT(onCategoryRemoved()));
 
   // tell the list widgets to emit signals if a context menu is requested
@@ -151,7 +151,7 @@ void CatTabWidget::updateControls()
   //
   SEX sex = selectedCat.getSex();
   ERR::MATCH_TYPE mt = selectedCat.getMatchType();
-  bool isEditEnabled = (selectedCat.getState() == STAT_CAT_CONFIG);
+  bool isEditEnabled = (selectedCat.getState() == ObjState::CAT_CONFIG);
 
   ui.gbGeneric->setEnabled(isEditEnabled);
   
@@ -169,7 +169,7 @@ void CatTabWidget::updateControls()
     
     // read the current group settings from the database and
     // copy them to the widget
-    KO_Config cfg = KO_Config(selectedCat.getParameter_string(GROUP_CONFIG));
+    KO_Config cfg = KO_Config(selectedCat.getParameter_string(CatParameter::GroupConfig));
     ui.grpCfgWidget->applyConfig(cfg);
   }
   else if (ms == RANDOMIZE)
@@ -186,7 +186,7 @@ void CatTabWidget::updateControls()
 
     // read the number of iterations that are
     // currently configured for this category
-    int it = selectedCat.getParameter_int(ROUND_ROBIN_ITERATIONS);
+    int it = selectedCat.getParameter_int(CatParameter::RoundRobinIterations);
     ui.cbRoundRobinTwoIterations->setChecked(it > 1);
   }
   else
@@ -229,7 +229,7 @@ void CatTabWidget::updateControls()
   ui.cbDontCare->setChecked(sex == DONT_CARE);
   
   // the "accept draw" checkbox
-  bool allowDraw = selectedCat.getParameter(ALLOW_DRAW).toBool();
+  bool allowDraw = selectedCat.getParameter(CatParameter::AllowDraw).toBool();
   ui.cbDraw->setChecked(allowDraw);
 
   // the checkbox must be disabled under two conditions:
@@ -245,7 +245,7 @@ void CatTabWidget::updateControls()
   }
   if (ms == GROUPS_WITH_KO)
   {
-    KO_Config cfg = KO_Config(selectedCat.getParameter_string(GROUP_CONFIG));
+    KO_Config cfg = KO_Config(selectedCat.getParameter_string(CatParameter::GroupConfig));
     if (cfg.getStartLevel() == FINAL) enableDrawCheckbox = false;
   }
   ui.cbDraw->setEnabled(enableDrawCheckbox);
@@ -255,8 +255,8 @@ void CatTabWidget::updateControls()
   ui.cbDraw->setEnabled(false);
   
   // the score spinboxes
-  int drawScore = selectedCat.getParameter(DRAW_SCORE).toInt();
-  int winScore = selectedCat.getParameter(WIN_SCORE).toInt();
+  int drawScore = selectedCat.getParameter(CatParameter::DrawScore).toInt();
+  int winScore = selectedCat.getParameter(CatParameter::WinScore).toInt();
   ui.sbDrawScore->setValue(drawScore);
   ui.sbWinScore->setValue(winScore);
   if (allowDraw)
@@ -296,14 +296,14 @@ void CatTabWidget::updateControls()
 
   // change the label of the "run" button and enable or
   // disable it
-  OBJ_STATE catState = selectedCat.getState();
-  if (catState == STAT_CAT_WAIT_FOR_INTERMEDIATE_SEEDING)
+  ObjState catState = selectedCat.getState();
+  if (catState == ObjState::CAT_WAIT_FOR_INTERMEDIATE_SEEDING)
   {
     ui.btnRunCategory->setText("Continue");
   } else {
     ui.btnRunCategory->setText("Run");
   }
-  bool enableRunButton = ((catState == STAT_CAT_CONFIG) || (catState == STAT_CAT_WAIT_FOR_INTERMEDIATE_SEEDING));
+  bool enableRunButton = ((catState == ObjState::CAT_CONFIG) || (catState == ObjState::CAT_WAIT_FOR_INTERMEDIATE_SEEDING));
   ui.btnRunCategory->setEnabled(enableRunButton);
 }
 
@@ -312,7 +312,7 @@ void CatTabWidget::updateControls()
 void CatTabWidget::onCbDrawChanged(bool newState)
 {
   Category c = ui.catTableView->getSelectedCategory();
-  c.setParameter(ALLOW_DRAW, newState);
+  c.setParameter(CatParameter::AllowDraw, newState);
   updateControls();
 }
 
@@ -321,7 +321,7 @@ void CatTabWidget::onCbDrawChanged(bool newState)
 void CatTabWidget::onWinScoreChanged(int newVal)
 {
   Category c = ui.catTableView->getSelectedCategory();
-  c.setParameter(WIN_SCORE, newVal);
+  c.setParameter(CatParameter::WinScore, newVal);
   updateControls();
 }
 
@@ -330,7 +330,7 @@ void CatTabWidget::onWinScoreChanged(int newVal)
 void CatTabWidget::onDrawScoreChanged(int newVal)
 {
   Category c = ui.catTableView->getSelectedCategory();
-  c.setParameter(DRAW_SCORE, newVal);
+  c.setParameter(CatParameter::DrawScore, newVal);
   updateControls();
 }
 
@@ -787,7 +787,7 @@ void CatTabWidget::onGroupConfigChanged(const KO_Config& newCfg)
   if (!(ui.catTableView->hasCategorySelected())) return;
   
   Category selectedCat = ui.catTableView->getSelectedCategory();
-  selectedCat.setParameter(GROUP_CONFIG, newCfg.toString());
+  selectedCat.setParameter(CatParameter::GroupConfig, newCfg.toString());
 }
 
 //----------------------------------------------------------------------------
@@ -837,14 +837,14 @@ void CatTabWidget::onBtnRunCatClicked()
   Is being called if the CategoryManager changes the state of a Category. Updates
   the UI accordingsly.
   */
-void CatTabWidget::onCatStateChanged(const Category &c, const OBJ_STATE fromState, const OBJ_STATE toState)
+void CatTabWidget::onCatStateChanged(const Category &c, const ObjState fromState, const ObjState toState)
 {
   updateControls();
 }
 
 //----------------------------------------------------------------------------
 
-void CatTabWidget::onPlayerStateChanged(int playerId, int seqNum, const OBJ_STATE fromState, const OBJ_STATE toState)
+void CatTabWidget::onPlayerStateChanged(int playerId, int seqNum, const ObjState fromState, const ObjState toState)
 {
   // is a category selected?
   if (!(ui.catTableView->hasCategorySelected())) return;
@@ -862,8 +862,8 @@ void CatTabWidget::onPlayerStateChanged(int playerId, int seqNum, const OBJ_STAT
   // if a player changes from/to WAIT_FOR_REGISTRATION, we brute-force rebuild the list widgets
   // because we need to change the item label of the affected players for
   // adding or removing the paranthesis around the player names
-  if (((fromState == STAT_PL_IDLE) && (toState == STAT_PL_WAIT_FOR_REGISTRATION)) ||
-      ((fromState == STAT_PL_WAIT_FOR_REGISTRATION) && (toState == STAT_PL_IDLE)))
+  if (((fromState == ObjState::PL_IDLE) && (toState == ObjState::PL_WAIT_FOR_REGISTRATION)) ||
+      ((fromState == ObjState::PL_WAIT_FOR_REGISTRATION) && (toState == ObjState::PL_IDLE)))
   {
     updatePairs();
   }
@@ -920,7 +920,7 @@ void CatTabWidget::onUnpairedContextMenuRequested(const QPoint& pos)
   // determine if there is an item under the mouse
   auto selItem = ui.lwUnpaired->itemAt(pos);
   upPlayer selPlayer;
-  OBJ_STATE plStat = STAT_CO_DISABLED;   // arbitrary, non player-related, dummy default
+  ObjState plStat = ObjState::CO_DISABLED;   // arbitrary, non player-related, dummy default
   if (selItem != nullptr)
   {
     // clear old selection and select item under the mouse
@@ -948,8 +948,8 @@ void CatTabWidget::onUnpairedContextMenuRequested(const QPoint& pos)
   // enable / disable selection-specific actions
   PlayerMngr pm{db};
   actRemovePlayer->setEnabled(isPlayerClicked);
-  actRegister->setEnabled(plStat == STAT_PL_WAIT_FOR_REGISTRATION);
-  actUnregister->setEnabled(plStat == STAT_PL_IDLE);
+  actRegister->setEnabled(plStat == ObjState::PL_WAIT_FOR_REGISTRATION);
+  actUnregister->setEnabled(plStat == ObjState::PL_IDLE);
   listOfCats_CopyPlayerSubmenu->setEnabled(isPlayerClicked);
   listOfCats_MovePlayerSubmenu->setEnabled(isPlayerClicked);
   actCreateNewPlayerInCat->setEnabled(hasCatSelected && canAddPlayers);
@@ -1162,7 +1162,7 @@ void CatTabWidget::onTwoIterationsChanged()
 
   int it = (ui.cbRoundRobinTwoIterations->isChecked()) ? 2 : 1;
   Category selCat = ui.catTableView->getSelectedCategory();
-  selCat.setParameter(ROUND_ROBIN_ITERATIONS, it);
+  selCat.setParameter(CatParameter::RoundRobinIterations, it);
 }
 
 //----------------------------------------------------------------------------

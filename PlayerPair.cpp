@@ -145,7 +145,7 @@ namespace QTournament {
     QString result;
 
     Player p1 = getPlayer1();
-    OBJ_STATE p1Stat = p1.getState();
+    ObjState p1Stat = p1.getState();
 
     QString p2Name;
     if (hasPlayer2())
@@ -162,25 +162,25 @@ namespace QTournament {
 
       Player p2 = getPlayer2();
       p2Name = p2.getDisplayName(maxLen);
-      OBJ_STATE p2Stat = p2.getState();
+      ObjState p2Stat = p2.getState();
 
       result = "%2 / %1";
       if (unregisteredPlayersInBrackets)
       {
-        if ((p1Stat == STAT_PL_WAIT_FOR_REGISTRATION) && (p2Stat == STAT_PL_WAIT_FOR_REGISTRATION))
+        if ((p1Stat == ObjState::PL_WAIT_FOR_REGISTRATION) && (p2Stat == ObjState::PL_WAIT_FOR_REGISTRATION))
         {
           result = "(%2 / %1)";
-        } else if (p1Stat == STAT_PL_WAIT_FOR_REGISTRATION)
+        } else if (p1Stat == ObjState::PL_WAIT_FOR_REGISTRATION)
         {
           result = "(%2) / %1";
-        } else if (p2Stat == STAT_PL_WAIT_FOR_REGISTRATION)
+        } else if (p2Stat == ObjState::PL_WAIT_FOR_REGISTRATION)
         {
           result = "%2 / (%1)";
         }
       }
       result = result.arg(p2Name);
     } else {
-      result = (unregisteredPlayersInBrackets && (p1Stat == STAT_PL_WAIT_FOR_REGISTRATION)) ? "(%1)" : "%1";
+      result = (unregisteredPlayersInBrackets && (p1Stat == ObjState::PL_WAIT_FOR_REGISTRATION)) ? "(%1)" : "%1";
     }
 
     result = result.arg(p1.getDisplayName(maxLen));
@@ -322,11 +322,11 @@ namespace QTournament {
   bool PlayerPair::areAllPlayersIdle() const
   {
     auto p = getPlayer1();
-    if (p.getState() != STAT_PL_IDLE) return false;
+    if (p.getState() != ObjState::PL_IDLE) return false;
     if (hasPlayer2())
     {
       p = getPlayer2();
-      if (p.getState() != STAT_PL_IDLE) return false;
+      if (p.getState() != ObjState::PL_IDLE) return false;
     }
     return true;
   }

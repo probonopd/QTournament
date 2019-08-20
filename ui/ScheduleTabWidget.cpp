@@ -221,7 +221,7 @@ void ScheduleTabWidget::onRoundCompleted(int catId, int round)
 
     int nRoundsTheory = ((nPairs % 2) == 0) ? nPairs - 1 : nPairs;
     int nRoundsActual = cat.convertToSpecializedObject()->calcTotalRoundsCount();
-    if ((nPairs > 4) && (nRoundsActual < nRoundsTheory) && (cat.getState() == STAT_CAT_FINALIZED))
+    if ((nPairs > 4) && (nRoundsActual < nRoundsTheory) && (cat.getState() == ObjState::CAT_FINALIZED))
     {
       QString msg = tr("<br><center><b><font color=\"red\">SWISS LADDER DEADLOCK</font></b></center><br><br>");
       msg += tr("Unfortuantely, the sequence of matches in past rounds in the category %3 has lead ");
@@ -266,7 +266,7 @@ void ScheduleTabWidget::onBtnHideStagingAreaClicked()
 void ScheduleTabWidget::askAndStoreMatchResult(const Match &ma)
 {
   // only accept results for running matches
-  if (ma.getState() != STAT_MA_RUNNING)
+  if (ma.getState() != ObjState::MA_RUNNING)
   {
     return;
   }

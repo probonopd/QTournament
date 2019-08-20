@@ -130,11 +130,11 @@ namespace QTournament
     tc.addCol(CAT_SEX, cdt::Integer, cc::NotUsed, cc::Abort);
     tc.addCol(CAT_SYS, cdt::Integer, cc::NotUsed, cc::Abort);
     tc.addCol(CAT_ACCEPT_DRAW, cdt::Integer, cc::NotUsed, cc::Abort);
-    tc.addCol(CAT_WIN_SCORE, cdt::Integer, cc::NotUsed, cc::Abort);
-    tc.addCol(CAT_DRAW_SCORE, cdt::Integer, cc::NotUsed, cc::Abort);
-    tc.addCol(CAT_GROUP_CONFIG, cdt::Text, cc::NotUsed, cc::NotUsed);
+    tc.addCol(CAT_CatParameter::WinScore, cdt::Integer, cc::NotUsed, cc::Abort);
+    tc.addCol(CAT_CatParameter::DrawScore, cdt::Integer, cc::NotUsed, cc::Abort);
+    tc.addCol(CAT_CatParameter::GroupConfig, cdt::Text, cc::NotUsed, cc::NotUsed);
     tc.addCol(CAT_BRACKET_VIS_DATA, cdt::Text, cc::NotUsed, cc::NotUsed);
-    tc.addCol(CAT_ROUND_ROBIN_ITERATIONS, cdt::Integer, cc::NotUsed, cc::Abort, 1);
+    tc.addCol(CAT_CatParameter::RoundRobinIterations, cdt::Integer, cc::NotUsed, cc::Abort, 1);
     tc.createTableAndResetCreator(*this, TAB_CATEGORY);
     
     // Generate the table holding the player-to-category mapping

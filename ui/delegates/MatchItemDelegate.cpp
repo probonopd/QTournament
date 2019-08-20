@@ -190,13 +190,13 @@ void MatchItemDelegate::drawMatchStatus(QPainter* painter, const QRectF& r, int 
   if (ma == nullptr) return;
 
   // paint a status LED
-  OBJ_STATE maStat = ma->getState();
+  ObjState maStat = ma->getState();
   DelegateItemLED{}(painter, r.toRect(), ItemMargin, 0.5 * ItemStatusIndicatorSize, maStat, Qt::white);
 
   // add some text, dependend on the match state
   QString txt = tr("Match %1 ");
   txt = txt.arg(matchNum);
-  if (maStat == STAT_MA_RUNNING)
+  if (maStat == ObjState::MA_RUNNING)
   {
     txt += tr(" currently running on court %1 since %2");
     auto co = ma->getCourt();
@@ -208,15 +208,15 @@ void MatchItemDelegate::drawMatchStatus(QPainter* painter, const QRectF& r, int 
     }
     txt = txt.arg(GuiHelpers::qdt2durationString(ma->getStartTime()));
   }
-  if ((maStat == STAT_MA_BUSY) || (maStat == STAT_MA_WAITING))
+  if ((maStat == ObjState::MA_BUSY) || (maStat == ObjState::MA_WAITING))
   {
     txt += tr("is not yet ready to be called.");
   }
-  if (maStat == STAT_MA_READY)
+  if (maStat == ObjState::MA_READY)
   {
     txt += tr("is ready to be called.");
   }
-  if ((maStat == STAT_MA_FUZZY) || (maStat == STAT_MA_INCOMPLETE))
+  if ((maStat == ObjState::MA_FUZZY) || (maStat == ObjState::MA_INCOMPLETE))
   {
     txt += tr("is incomplete and depends on other match results.");
   }

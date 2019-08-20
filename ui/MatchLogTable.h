@@ -40,7 +40,7 @@ public:
   std::optional<QTournament::Match> getSelectedMatch() const;
 
 public slots:
-  void onMatchStatusChanged(int maId, int maSeqNum, QTournament::OBJ_STATE oldStat, QTournament::OBJ_STATE newStat);
+  void onMatchStatusChanged(int maId, int maSeqNum, QTournament::ObjState oldStat, QTournament::ObjState newStat);
   void onCategoryRemoved();
 
 protected slots:

@@ -84,7 +84,7 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  bool MatchGroup::hasMatchesInState(OBJ_STATE stat) const
+  bool MatchGroup::hasMatchesInState(ObjState stat) const
   {
     // for performance reasons, we issue a single SQL-statement here
     // instead of looping through all matches in the group
@@ -97,7 +97,7 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  bool MatchGroup::hasMatches__NOT__InState(OBJ_STATE stat) const
+  bool MatchGroup::hasMatches__NOT__InState(ObjState stat) const
   {
     // for performance reasons, we issue a single SQL-statement here
     // instead of looping through all matches in the group

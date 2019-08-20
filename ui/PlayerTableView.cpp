@@ -105,7 +105,7 @@ void PlayerTableView::onContextMenuRequested(const QPoint& pos)
   // get the player status for enabling / disabling state-dependent actions
   auto selPlayer = getSelectedPlayer();
   bool isPlayerClicked = (selPlayer != nullptr);
-  OBJ_STATE plStat = STAT_CO_DISABLED;   // an arbitrary, dummy default value that has nothing to do with players
+  ObjState plStat = ObjState::CO_DISABLED;   // an arbitrary, dummy default value that has nothing to do with players
   if (isPlayerClicked) plStat = selPlayer->getState();
 
   // if no player is clicked, we may only add a player.
@@ -116,8 +116,8 @@ void PlayerTableView::onContextMenuRequested(const QPoint& pos)
   actShowNextMatchesForPlayer->setEnabled(isPlayerClicked & isRowClicked);
   //actShowNextMatchesForPlayer->setEnabled(false);  // not yet implemented
   actRemovePlayer->setEnabled(isPlayerClicked & isRowClicked);
-  actRegister->setEnabled(isPlayerClicked & (plStat == STAT_PL_WAIT_FOR_REGISTRATION) & isRowClicked);
-  actUnregister->setEnabled(isPlayerClicked & (plStat == STAT_PL_IDLE) & isRowClicked);
+  actRegister->setEnabled(isPlayerClicked & (plStat == ObjState::PL_WAIT_FOR_REGISTRATION) & isRowClicked);
+  actUnregister->setEnabled(isPlayerClicked & (plStat == ObjState::PL_IDLE) & isRowClicked);
 
   PlayerMngr pm{db};
   bool hasExtDb = pm.hasExternalPlayerDatabaseAvailable();

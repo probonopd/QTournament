@@ -42,7 +42,7 @@ MatchMatrix::MatchMatrix(SimpleReportGenerator* _rep, const QString& tabName, co
 
   if (msys == GROUPS_WITH_KO)
   {
-    KO_Config cfg{cat.getParameter_string(GROUP_CONFIG)};
+    KO_Config cfg{cat.getParameter_string(CatParameter::GroupConfig)};
     if (round > cfg.getNumRounds())
     {
       throw invalid_argument("Requested match matrix a non-round-robin round!");
@@ -99,7 +99,7 @@ QRectF MatchMatrix::plot(const QPointF& topLeft)
   ERR::MATCH_SYSTEM msys = cat.getMatchSystem();
   if (msys == GROUPS_WITH_KO)
   {
-    KO_Config cfg = cat.getParameter_string(GROUP_CONFIG);
+    KO_Config cfg = cat.getParameter_string(CatParameter::GroupConfig);
 
     // in group matches, limit the search radius to the
     // group phase, because otherwise we might end up displaying
@@ -350,12 +350,12 @@ tuple<MatchMatrix::CELL_CONTENT_TYPE, QString> MatchMatrix::getCellContent(const
     }
 
     int maRound = ma->getMatchGroup().getRound();
-    OBJ_STATE maStat = ma->getState();
+    ObjState maStat = ma->getState();
 
     // if the match is later than "round", print only
     // the match number. The same applies if the match
     // is not yet finished
-    if ((maRound > round) || (maStat != STAT_MA_FINISHED) || (showMatchNumbersOnly))
+    if ((maRound > round) || (maStat != ObjState::MA_FINISHED) || (showMatchNumbersOnly))
     {
       int maNum = ma->getMatchNumber();
       if (maNum < 0)
@@ -369,7 +369,7 @@ tuple<MatchMatrix::CELL_CONTENT_TYPE, QString> MatchMatrix::getCellContent(const
       return make_tuple(CELL_CONTENT_TYPE::MATCH_NUMBER, txt);
     }
 
-    if ((maRound <= round) && (maStat == STAT_MA_FINISHED))
+    if ((maRound <= round) && (maStat == ObjState::MA_FINISHED))
     {
       // the match is in the correct round range and is finished,
       // so we print the score

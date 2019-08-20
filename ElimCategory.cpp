@@ -72,7 +72,7 @@ namespace QTournament
 
   ERR EliminationCategory::canFreezeConfig()
   {
-    if (getState() != STAT_CAT_CONFIG)
+    if (getState() != ObjState::CAT_CONFIG)
     {
       return ERR::CONFIG_ALREADY_FROZEN;
     }
@@ -122,7 +122,7 @@ namespace QTournament
 
   ERR EliminationCategory::prepareFirstRound()
   {
-    if (getState() != STAT_CAT_IDLE) return ERR::WRONG_STATE;
+    if (getState() != ObjState::CAT_IDLE) return ERR::WRONG_STATE;
 
     MatchMngr mm{db};
 
@@ -145,8 +145,8 @@ namespace QTournament
 
   int EliminationCategory::calcTotalRoundsCount() const
   {
-    OBJ_STATE stat = getState();
-    if ((stat == STAT_CAT_CONFIG) || (stat == STAT_CAT_FROZEN))
+    ObjState stat = getState();
+    if ((stat == ObjState::CAT_CONFIG) || (stat == ObjState::CAT_FROZEN))
     {
       return -1;   // category not yet fully configured; can't calc rounds
     }
@@ -356,7 +356,7 @@ namespace QTournament
   ModMatchResult EliminationCategory::canModifyMatchResult(const Match& ma) const
   {
     // the match has to be in FINISHED state
-    if (ma.getState() != STAT_MA_FINISHED) return ModMatchResult::NotPossible;
+    if (ma.getState() != ObjState::MA_FINISHED) return ModMatchResult::NotPossible;
 
     // if this match does not belong to us, we're not responsible
     if (ma.getCategory().getId() != getId()) return ModMatchResult::NotPossible;
@@ -369,16 +369,16 @@ namespace QTournament
     bool canModWinnerLoser = true;
     if (winnerMatch)
     {
-      OBJ_STATE stat = winnerMatch->getState();
-      if ((stat == STAT_MA_RUNNING) || (stat == STAT_MA_FINISHED))
+      ObjState stat = winnerMatch->getState();
+      if ((stat == ObjState::MA_RUNNING) || (stat == ObjState::MA_FINISHED))
       {
         canModWinnerLoser = false;
       }
     }
     if (loserMatch)
     {
-      OBJ_STATE stat = loserMatch->getState();
-      if ((stat == STAT_MA_RUNNING) || (stat == STAT_MA_FINISHED))
+      ObjState stat = loserMatch->getState();
+      if ((stat == ObjState::MA_RUNNING) || (stat == ObjState::MA_FINISHED))
       {
         canModWinnerLoser = false;
       }
@@ -497,8 +497,8 @@ namespace QTournament
     //
     // Case 1: the match has been finished
     //
-    OBJ_STATE stat = ma.getState();
-    if (stat == STAT_MA_FINISHED)
+    ObjState stat = ma.getState();
+    if (stat == ObjState::MA_FINISHED)
     {
       PlayerPair pp = searchLoserNotWinner ? *(ma.getLoser()) : *(ma.getWinner());
       int round = ma.getMatchGroup().getRound() + 1;

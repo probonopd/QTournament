@@ -75,10 +75,10 @@ namespace QTournament
     cvc.addCol(CAT_SYS, static_cast<int>(GROUPS_WITH_KO));
     cvc.addCol(CAT_MATCH_TYPE, static_cast<int>(SINGLES));
     cvc.addCol(CAT_SEX, static_cast<int>(M));
-    cvc.addCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_CAT_CONFIG));
-    cvc.addCol(CAT_WIN_SCORE, 2);
-    cvc.addCol(CAT_DRAW_SCORE, 1);
-    cvc.addCol(CAT_GROUP_CONFIG, KO_Config(QUARTER, false).toString().toUtf8().constData());
+    cvc.addCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(ObjState::CAT_CONFIG));
+    cvc.addCol(CAT_CatParameter::WinScore, 2);
+    cvc.addCol(CAT_CatParameter::DrawScore, 1);
+    cvc.addCol(CAT_CatParameter::GroupConfig, KO_Config(QUARTER, false).toString().toUtf8().constData());
     
     CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
     cse->beginCreateCategory();
@@ -140,15 +140,15 @@ namespace QTournament
     assert(err == ERR::OK);
     err = clone.setSex(src.getSex());
     assert(err == ERR::OK);
-    bool isOk = setCatParam_AllowDraw(clone, src.getParameter_bool(ALLOW_DRAW));
+    bool isOk = setCatParam_CatParameter::AllowDraw(clone, src.getParameter_bool(CatParameter::AllowDraw));
     assert(isOk);
-    isOk = setCatParam_Score(clone, src.getParameter_int(WIN_SCORE), false);
+    isOk = setCatParam_Score(clone, src.getParameter_int(CatParameter::WinScore), false);
     assert(isOk);
-    setCatParam_Score(clone, src.getParameter_int(DRAW_SCORE), true);  // no assert here; setting draw score may fail if draw is not allowed
-    KO_Config ko{src.getParameter_string(GROUP_CONFIG)};
-    isOk = clone.setParameter(GROUP_CONFIG, ko.toString());
+    setCatParam_Score(clone, src.getParameter_int(CatParameter::DrawScore), true);  // no assert here; setting draw score may fail if draw is not allowed
+    KO_Config ko{src.getParameter_string(CatParameter::GroupConfig)};
+    isOk = clone.setParameter(CatParameter::GroupConfig, ko.toString());
     assert(isOk);
-    setCatParameter(clone, ROUND_ROBIN_ITERATIONS, src.getParameter_int(ROUND_ROBIN_ITERATIONS));
+    setCatParameter(clone, CatParameter::RoundRobinIterations, src.getParameter_int(CatParameter::RoundRobinIterations));
 
     // Do not copy the BracketVisData here, because the clone is still in
     // CONFIG and BracketVisData is created when starting the cat
@@ -233,7 +233,7 @@ namespace QTournament
 
   ERR CatMngr::setMatchSystem(Category& cat, MATCH_SYSTEM newMatchSystem)
   {
-    if (cat.getState() != STAT_CAT_CONFIG)
+    if (cat.getState() != ObjState::CAT_CONFIG)
     {
       return ERR::CATEGORY_NOT_CONFIGURALE_ANYMORE;
     }
@@ -246,7 +246,7 @@ namespace QTournament
     // prevent draw
     if ((newMatchSystem == SINGLE_ELIM) || (newMatchSystem == RANKING))
     {
-      setCatParam_AllowDraw(cat, false);
+      setCatParam_CatParameter::AllowDraw(cat, false);
     }
 
     return ERR::OK;
@@ -257,7 +257,7 @@ namespace QTournament
   ERR CatMngr::setMatchType(Category& cat, MATCH_TYPE newMatchType)
   {
     // we can only change the match type while being in config mode
-    if (cat.getState() != STAT_CAT_CONFIG)
+    if (cat.getState() != ObjState::CAT_CONFIG)
     {
       return ERR::CATEGORY_NOT_CONFIGURALE_ANYMORE;
     }
@@ -319,7 +319,7 @@ namespace QTournament
   ERR CatMngr::setSex(Category& cat, SEX newSex)
   {
     // we can only change the sex while being in config mode
-    if (cat.getState() != STAT_CAT_CONFIG)
+    if (cat.getState() != ObjState::CAT_CONFIG)
     {
       return ERR::CATEGORY_NOT_CONFIGURALE_ANYMORE;
     }
@@ -674,28 +674,28 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  bool CatMngr::setCatParameter(Category& cat, CAT_PARAMETER p, const QVariant& v)
+  bool CatMngr::setCatParameter(Category& cat, CatParameter p, const QVariant& v)
   {
-    if (p == ALLOW_DRAW)
+    if (p == CatParameter::AllowDraw)
     {
-      return setCatParam_AllowDraw(cat, v);
+      return setCatParam_CatParameter::AllowDraw(cat, v);
     }
-    if (p == DRAW_SCORE)
+    if (p == CatParameter::DrawScore)
     {
       return setCatParam_Score(cat, v.toInt(), true);
     }
-    if (p == WIN_SCORE)
+    if (p == CatParameter::WinScore)
     {
       return setCatParam_Score(cat, v.toInt(), false);
     }
-    if (p == GROUP_CONFIG)
+    if (p == CatParameter::GroupConfig)
     {
-      if (cat.getState() != STAT_CAT_CONFIG) return false;
+      if (cat.getState() != ObjState::CAT_CONFIG) return false;
 
-      cat.row.update(CAT_GROUP_CONFIG, v.toString().toUtf8().constData());
+      cat.row.update(CAT_CatParameter::GroupConfig, v.toString().toUtf8().constData());
       return true;
     }
-    if (p == ROUND_ROBIN_ITERATIONS)
+    if (p == CatParameter::RoundRobinIterations)
     {
       bool isOk;
       int iterations = v.toInt(&isOk);
@@ -703,7 +703,7 @@ namespace QTournament
 
       if (iterations <= 0) return false;
 
-      cat.row.update(CAT_ROUND_ROBIN_ITERATIONS, iterations);
+      cat.row.update(CAT_CatParameter::RoundRobinIterations, iterations);
       return true;
     }
     
@@ -712,15 +712,15 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  bool CatMngr::setCatParam_AllowDraw(Category& c, const QVariant& v)
+  bool CatMngr::setCatParam_CatParameter::AllowDraw(Category& c, const QVariant& v)
   {
-    if (c.getState() != STAT_CAT_CONFIG)
+    if (c.getState() != ObjState::CAT_CONFIG)
     {
       return false;
     }
     
     bool allowDraw = v.toBool();
-    bool oldState = c.getParameter(ALLOW_DRAW).toBool();
+    bool oldState = c.getParameter(CatParameter::AllowDraw).toBool();
 
     if (allowDraw == oldState)
     {
@@ -738,18 +738,18 @@ namespace QTournament
     // ensure consistent scoring before accepting draw
     if (allowDraw)
     {
-      int winScore = c.getParameter_int(WIN_SCORE);
-      int drawScore = c.getParameter_int(DRAW_SCORE);
+      int winScore = c.getParameter_int(CatParameter::WinScore);
+      int drawScore = c.getParameter_int(CatParameter::DrawScore);
 
       if (drawScore < 1)
       {
         drawScore = 1;
-        c.row.update(CAT_DRAW_SCORE, 1);
+        c.row.update(CAT_CatParameter::DrawScore, 1);
       }
       if (winScore <= drawScore)
       {
         winScore = drawScore + 1;
-        c.row.update(CAT_WIN_SCORE, winScore);
+        c.row.update(CAT_CatParameter::WinScore, winScore);
       }
     }
 
@@ -762,14 +762,14 @@ namespace QTournament
 
   bool CatMngr::setCatParam_Score(Category& c, int newScore, bool isDraw)
   {
-    if (c.getState() != STAT_CAT_CONFIG)
+    if (c.getState() != ObjState::CAT_CONFIG)
     {
       return false;
     }
     
-    int winScore = c.getParameter_int(WIN_SCORE);
-    int drawScore = c.getParameter_int(DRAW_SCORE);
-    bool allowDraw = c.getParameter_bool(ALLOW_DRAW);
+    int winScore = c.getParameter_int(CatParameter::WinScore);
+    int drawScore = c.getParameter_int(CatParameter::DrawScore);
+    bool allowDraw = c.getParameter_bool(CatParameter::AllowDraw);
     
     // only scores above 0 make sense
     if (newScore < 1)
@@ -790,7 +790,7 @@ namespace QTournament
         return false;
       }
       
-      c.row.update(CAT_DRAW_SCORE, newScore);
+      c.row.update(CAT_CatParameter::DrawScore, newScore);
       return true;
     }
 
@@ -800,7 +800,7 @@ namespace QTournament
       return false;
     }
 
-    c.row.update(CAT_WIN_SCORE, newScore);
+    c.row.update(CAT_CatParameter::WinScore, newScore);
     return true;
   }
 
@@ -921,7 +921,7 @@ namespace QTournament
     // WAIT_FOR_REGISTRATION
     for (const Player& pl : c.getAllPlayersInCategory())
     {
-      if (pl.getState() == STAT_PL_WAIT_FOR_REGISTRATION)
+      if (pl.getState() == ObjState::PL_WAIT_FOR_REGISTRATION)
       {
         return ERR::NOT_ALL_PLAYERS_REGISTERED;
       }
@@ -941,27 +941,27 @@ namespace QTournament
      * IMPORTANT:
      * 
      * The application assumes that no "pairs without a partner" exist in the
-     * database as long as the category is in STAT_CAT_CONFIG.
+     * database as long as the category is in ObjState::CAT_CONFIG.
      * 
      * This assertion has to be met!
      * 
      * Another assertion:
-     * A category can switch back from STAT_CAT_FROZEN to STAT_CAT_CONFIG by
+     * A category can switch back from ObjState::CAT_FROZEN to ObjState::CAT_CONFIG by
      * just removing all "pairs without a partner" from the database. This means
      * in particular that no links / references to PairIDs may be established
-     * while in STAT_CAT_FROZEN.
+     * while in ObjState::CAT_FROZEN.
      * 
      * Links and refs to PairIDs shall be handled in memory only. Only when we transition
-     * from STAT_CAT_FROZEN to STAT_CAT_IDLE the references shall be written to the
+     * from ObjState::CAT_FROZEN to ObjState::CAT_IDLE the references shall be written to the
      * database in one large, "atomic" commit.
      * 
      * Rational:
-     * While in STAT_CAT_FROZEN we can do GUI activities for e. g. initial ranking
+     * While in ObjState::CAT_FROZEN we can do GUI activities for e. g. initial ranking
      * or group assignments. For this, we need PairIDs. So we switch to
-     * STAT_CAT_FROZEN during the GUI activities. If the activities are canceled by
+     * ObjState::CAT_FROZEN during the GUI activities. If the activities are canceled by
      * the user, we switch back to config mode. If the activities are confirmed /
      * committed by the user, we write the results to the DB and make an
-     * non-revertable switch to STAT_CAT_IDLE.
+     * non-revertable switch to ObjState::CAT_IDLE.
      */
     
     PlayerPairList ppList = c.getPlayerPairs();
@@ -986,12 +986,12 @@ namespace QTournament
       }
 
       // update the category state
-      OBJ_STATE oldState = c.getState();  // this MUST be STAT_CAT_CONFIG, ensured by canFreezeConfig
-      c.setState(STAT_CAT_FROZEN);
+      ObjState oldState = c.getState();  // this MUST be ObjState::CAT_CONFIG, ensured by canFreezeConfig
+      c.setState(ObjState::CAT_FROZEN);
 
       trans.commit();
 
-      CentralSignalEmitter::getInstance()->categoryStatusChanged(c, oldState, STAT_CAT_FROZEN);
+      CentralSignalEmitter::getInstance()->categoryStatusChanged(c, oldState, ObjState::CAT_FROZEN);
 
       return ERR::OK;
     }
@@ -1006,14 +1006,14 @@ namespace QTournament
   
   ERR CatMngr::unfreezeConfig(const Category& cat)
   {
-    OBJ_STATE oldState = cat.getState();
+    ObjState oldState = cat.getState();
     
-    if (oldState == STAT_CAT_CONFIG)
+    if (oldState == ObjState::CAT_CONFIG)
     {
       return ERR::CATEGORY_NOT_YET_FROZEN;
     }
     
-    if (oldState != STAT_CAT_FROZEN)
+    if (oldState != ObjState::CAT_FROZEN)
     {
       return ERR::CATEGORY_NOT_UNFREEZEABLE;
     }
@@ -1042,11 +1042,11 @@ namespace QTournament
         pairsTab.deleteRowsByColumnValue("id", ppId);
       }
       // update the category state
-      cat.setState(STAT_CAT_CONFIG);
+      cat.setState(ObjState::CAT_CONFIG);
 
       trans.commit();
 
-      CentralSignalEmitter::getInstance()->categoryStatusChanged(cat, STAT_CAT_FROZEN, STAT_CAT_CONFIG);
+      CentralSignalEmitter::getInstance()->categoryStatusChanged(cat, ObjState::CAT_FROZEN, ObjState::CAT_CONFIG);
 
       return ERR::OK;
     }
@@ -1062,7 +1062,7 @@ namespace QTournament
   ERR CatMngr::startCategory(const Category& cat, const std::vector<PlayerPairList>& grpCfg, const PlayerPairList& seed)
   {
     // we can only transition to "IDLE" if we are "FROZEN"
-    if (cat.getState() != STAT_CAT_FROZEN)
+    if (cat.getState() != ObjState::CAT_FROZEN)
     {
       return ERR::CATEGORY_NOT_YET_FROZEN;
     }
@@ -1101,8 +1101,8 @@ namespace QTournament
     }
 
     // switch the category to IDLE state
-    cat.setState(STAT_CAT_IDLE);
-    CentralSignalEmitter::getInstance()->categoryStatusChanged(cat, STAT_CAT_FROZEN, STAT_CAT_IDLE);
+    cat.setState(ObjState::CAT_IDLE);
+    CentralSignalEmitter::getInstance()->categoryStatusChanged(cat, ObjState::CAT_FROZEN, ObjState::CAT_IDLE);
 
     // do the individual prep of the first round
     ERR result = specializedCat->prepareFirstRound();
@@ -1111,7 +1111,7 @@ namespace QTournament
     // predictions etc.
     //
     // this shouldn't do any harm
-    CentralSignalEmitter::getInstance()->categoryStatusChanged(cat, STAT_CAT_IDLE, STAT_CAT_IDLE);
+    CentralSignalEmitter::getInstance()->categoryStatusChanged(cat, ObjState::CAT_IDLE, ObjState::CAT_IDLE);
 
     return result;
   }
@@ -1126,8 +1126,8 @@ namespace QTournament
    */
   void CatMngr::updateCatStatusFromMatchStatus(const Category &cat)
   {
-    OBJ_STATE curStat = cat.getState();
-    if ((curStat != STAT_CAT_IDLE) && (curStat != STAT_CAT_PLAYING) && (curStat != STAT_CAT_WAIT_FOR_INTERMEDIATE_SEEDING))
+    ObjState curStat = cat.getState();
+    if ((curStat != ObjState::CAT_IDLE) && (curStat != ObjState::CAT_PLAYING) && (curStat != ObjState::CAT_WAIT_FOR_INTERMEDIATE_SEEDING))
     {
       return;  // nothing to do for us
     }
@@ -1140,18 +1140,18 @@ namespace QTournament
     bool hasMatchRunning = false;
     for (auto mg : mm.getMatchGroupsForCat(cat))
     {
-      hasMatchRunning = mg.hasMatchesInState(STAT_MA_RUNNING);
-      //hasUnfinishedMatch = mg.hasMatches__NOT__InState(STAT_MA_FINISHED);
+      hasMatchRunning = mg.hasMatchesInState(ObjState::MA_RUNNING);
+      //hasUnfinishedMatch = mg.hasMatches__NOT__InState(ObjState::MA_FINISHED);
 
       if (hasMatchRunning) break;
     }
 
     // if we're IDLE and at least one match is being played,
     // change state to PLAYING
-    if ((curStat == STAT_CAT_IDLE) && hasMatchRunning)
+    if ((curStat == ObjState::CAT_IDLE) && hasMatchRunning)
     {
-      cat.setState(STAT_CAT_PLAYING);
-      cse->categoryStatusChanged(cat, STAT_CAT_IDLE, STAT_CAT_PLAYING);
+      cat.setState(ObjState::CAT_PLAYING);
+      cse->categoryStatusChanged(cat, ObjState::CAT_IDLE, ObjState::CAT_PLAYING);
       return;
     }
 
@@ -1163,19 +1163,19 @@ namespace QTournament
 
     // if we've finished the last round
     // change state to FINALIZED
-    if ((curStat != STAT_CAT_FINALIZED) && catIsFinished)
+    if ((curStat != ObjState::CAT_FINALIZED) && catIsFinished)
     {
-      cat.setState(STAT_CAT_FINALIZED);
-      cse->categoryStatusChanged(cat, STAT_CAT_PLAYING, STAT_CAT_FINALIZED);
+      cat.setState(ObjState::CAT_FINALIZED);
+      cse->categoryStatusChanged(cat, ObjState::CAT_PLAYING, ObjState::CAT_FINALIZED);
       return;
     }
 
     // if we're PLAYING and were not finished
     // change state back to IDLE
-    if ((curStat == STAT_CAT_PLAYING) && !catIsFinished && !hasMatchRunning)
+    if ((curStat == ObjState::CAT_PLAYING) && !catIsFinished && !hasMatchRunning)
     {
-      cat.setState(STAT_CAT_IDLE);
-      cse->categoryStatusChanged(cat, STAT_CAT_PLAYING, STAT_CAT_IDLE);
+      cat.setState(ObjState::CAT_IDLE);
+      cse->categoryStatusChanged(cat, ObjState::CAT_PLAYING, ObjState::CAT_IDLE);
       return;
     }
   }
@@ -1185,10 +1185,10 @@ namespace QTournament
   bool CatMngr::switchCatToWaitForSeeding(const Category& cat)
   {
     // only switch to SEEDING if no match is currently running
-    if (cat.getState() != STAT_CAT_IDLE) return false;
+    if (cat.getState() != ObjState::CAT_IDLE) return false;
 
-    cat.setState(STAT_CAT_WAIT_FOR_INTERMEDIATE_SEEDING);
-    CentralSignalEmitter::getInstance()->categoryStatusChanged(cat, STAT_CAT_IDLE, STAT_CAT_WAIT_FOR_INTERMEDIATE_SEEDING);
+    cat.setState(ObjState::CAT_WAIT_FOR_INTERMEDIATE_SEEDING);
+    CentralSignalEmitter::getInstance()->categoryStatusChanged(cat, ObjState::CAT_IDLE, ObjState::CAT_WAIT_FOR_INTERMEDIATE_SEEDING);
     return true;
   }
 
@@ -1208,7 +1208,7 @@ namespace QTournament
     // as long as the category is still in configuration, we can't rely
     // on the existence of valid player pairs in the database and thus
     // we'll return an empty list as an error indicator
-    if (cat.getState() == STAT_CAT_CONFIG) return PlayerPairList();
+    if (cat.getState() == ObjState::CAT_CONFIG) return PlayerPairList();
 
     // get the player pairs for the category
     DbTab pairsTab{db, TAB_PAIRS, false};
@@ -1224,7 +1224,7 @@ namespace QTournament
   ERR CatMngr::canDeleteCategory(const Category& cat) const
   {
     // check 1: the category must be in state CONFIG
-    if (cat.getState() != STAT_CAT_CONFIG)
+    if (cat.getState() != ObjState::CAT_CONFIG)
     {
       return ERR::CATEGORY_NOT_CONFIGURALE_ANYMORE;
     }
@@ -1246,7 +1246,7 @@ namespace QTournament
 
   ERR CatMngr::continueWithIntermediateSeeding(const Category& c, const PlayerPairList& seeding)
   {
-    if (c.getState() != STAT_CAT_WAIT_FOR_INTERMEDIATE_SEEDING)
+    if (c.getState() != ObjState::CAT_WAIT_FOR_INTERMEDIATE_SEEDING)
     {
       return ERR::CATEGORY_NEEDS_NO_SEEDING;
     }
@@ -1258,8 +1258,8 @@ namespace QTournament
     // if the previous calls succeeded, we are guaranteed to
     // safely transit to IDLE and continue with new matches,
     // if necessary
-    c.setState(STAT_CAT_IDLE);
-    CentralSignalEmitter::getInstance()->categoryStatusChanged(c, STAT_CAT_WAIT_FOR_INTERMEDIATE_SEEDING, STAT_CAT_IDLE);
+    c.setState(ObjState::CAT_IDLE);
+    CentralSignalEmitter::getInstance()->categoryStatusChanged(c, ObjState::CAT_WAIT_FOR_INTERMEDIATE_SEEDING, ObjState::CAT_IDLE);
 
     return ERR::OK;
   }
@@ -1269,7 +1269,7 @@ namespace QTournament
   std::string CatMngr::getSyncString(const std::vector<int>& rows) const
   {
     std::vector<Sloppy::estring> cols = {"id", GENERIC_NAME_FIELD_NAME, GENERIC_STATE_FIELD_NAME, CAT_MATCH_TYPE, CAT_SEX, CAT_SYS, CAT_ACCEPT_DRAW,
-                          CAT_WIN_SCORE, CAT_DRAW_SCORE, CAT_GROUP_CONFIG, CAT_ROUND_ROBIN_ITERATIONS};
+                          CAT_CatParameter::WinScore, CAT_CatParameter::DrawScore, CAT_CatParameter::GroupConfig, CAT_CatParameter::RoundRobinIterations};
 
     return db.get().getSyncStringForTable(TAB_CATEGORY, cols, rows);
   }

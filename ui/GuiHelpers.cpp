@@ -355,7 +355,7 @@ void GuiHelpers::drawTwoLinePlayerPairNames_Centered(QPainter* painter, const QR
   // determine the colors for the left and the right block
   QColor leftColor{fntColor};
   QColor rightColor{fntColor};
-  if (ma.getState() == QTournament::OBJ_STATE::STAT_MA_FINISHED)
+  if (ma.getState() == QTournament::ObjState::MA_FINISHED)
   {
     auto w = ma.getWinner();
     auto l = ma.getLoser();
@@ -498,10 +498,10 @@ QString GuiHelpers::getStatusSummaryForPlayer(const QTournament::Player& p, cons
 {
   using namespace QTournament;
 
-  QTournament::OBJ_STATE plStat = p.getState();
+  QTournament::ObjState plStat = p.getState();
 
   QString txt;
-  if (plStat == QTournament::OBJ_STATE::STAT_PL_IDLE)
+  if (plStat == QTournament::ObjState::PL_IDLE)
   {
     txt = QObject::tr(" is idle");
 
@@ -515,15 +515,15 @@ QString GuiHelpers::getStatusSummaryForPlayer(const QTournament::Player& p, cons
     }
   }
   std::unique_ptr<Match> ma;
-  if ((plStat == QTournament::OBJ_STATE::STAT_PL_PLAYING) ||
-      (plStat == QTournament::OBJ_STATE::STAT_PL_REFEREE))
+  if ((plStat == QTournament::ObjState::PL_PLAYING) ||
+      (plStat == QTournament::ObjState::PL_REFEREE))
   {
-    if (plStat == QTournament::OBJ_STATE::STAT_PL_PLAYING)
+    if (plStat == QTournament::ObjState::PL_PLAYING)
     {
       txt = QObject::tr(" is playing on court %1 for %2 (match %3, %4, Round %5)");
       ma = pp.getCurrentMatch();
     }
-    if (plStat == QTournament::OBJ_STATE::STAT_PL_REFEREE)
+    if (plStat == QTournament::ObjState::PL_REFEREE)
     {
       txt = QObject::tr(" is umpire on court %1 for %2 (match %3, %4, Round %5)");
       ma = pp.getCurrentUmpireMatch();
@@ -544,7 +544,7 @@ QString GuiHelpers::getStatusSummaryForPlayer(const QTournament::Player& p, cons
       txt = "Waaaaah!!! Database inconsistency!!! Panic!!";
     }
   }
-  if (plStat == QTournament::OBJ_STATE::STAT_PL_WAIT_FOR_REGISTRATION)
+  if (plStat == QTournament::ObjState::PL_WAIT_FOR_REGISTRATION)
   {
     txt = QObject::tr(" has not yet shown up for registration.");
   }

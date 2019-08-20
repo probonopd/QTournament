@@ -220,9 +220,9 @@ void CourtTableView::updateContextMenu(bool isRowClicked)
   // show the enable state
   if ((co != nullptr) && isRowClicked)
   {
-    OBJ_STATE coStat = co->getState();
-    actToggleEnableState->setEnabled(coStat != STAT_CO_BUSY);
-    actToggleEnableState->setChecked(coStat == STAT_CO_DISABLED);
+    ObjState coStat = co->getState();
+    actToggleEnableState->setEnabled(coStat != ObjState::CO_BUSY);
+    actToggleEnableState->setChecked(coStat == ObjState::CO_DISABLED);
   } else {
     actToggleEnableState->setEnabled(false);
     actToggleEnableState->setChecked(false);
@@ -370,7 +370,7 @@ void CourtTableView::onActionToogleEnableStateTriggered()
   if (co == nullptr) return;
 
   CourtMngr cm{db};
-  if (co->getState() == STAT_CO_DISABLED)
+  if (co->getState() == ObjState::CO_DISABLED)
   {
     cm.enableCourt(*co);
   } else {

@@ -75,7 +75,7 @@ namespace QTournament
     cvc.addCol(PL_FNAME, first.toUtf8().constData());
     cvc.addCol(PL_LNAME, last.toUtf8().constData());
     cvc.addCol(PL_SEX, static_cast<int>(sex));
-    cvc.addCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_PL_IDLE));
+    cvc.addCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(ObjState::PL_IDLE));
     
     // set the team reference, if applicable
     auto cfg = SqliteOverlay::KeyValueTab{db.get(), TAB_CFG};
@@ -278,7 +278,7 @@ namespace QTournament
 
     for (Player p : pl)
     {
-      if (p.getState() != STAT_PL_IDLE) return ERR::PLAYER_NOT_IDLE;
+      if (p.getState() != ObjState::PL_IDLE) return ERR::PLAYER_NOT_IDLE;
     }
 
     // check for the referee, if any
@@ -291,7 +291,7 @@ namespace QTournament
       if (!referee.has_value()) return ERR::OK;
 
       // if a referee has been assigned, check its availability
-      if (referee->getState() != STAT_PL_IDLE) return ERR::REFEREE_NOT_IDLE;
+      if (referee->getState() != ObjState::PL_IDLE) return ERR::REFEREE_NOT_IDLE;
     }
 
     return ERR::OK;
@@ -309,9 +309,9 @@ namespace QTournament
 
     for (const Player& p : pl)
     {
-      OBJ_STATE oldStat = p.getState();
-      p.row.update(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_PL_PLAYING));
-      CentralSignalEmitter::getInstance()->playerStatusChanged(p.getId(), p.getSeqNum(), oldStat, STAT_PL_PLAYING);
+      ObjState oldStat = p.getState();
+      p.row.update(GENERIC_STATE_FIELD_NAME, static_cast<int>(ObjState::PL_PLAYING));
+      CentralSignalEmitter::getInstance()->playerStatusChanged(p.getId(), p.getSeqNum(), oldStat, ObjState::PL_PLAYING);
     }
 
     return ERR::OK;
@@ -326,8 +326,8 @@ namespace QTournament
     // update all player states back to idle
     for (const Player& p : pl)
     {
-      p.row.update(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_PL_IDLE));
-      CentralSignalEmitter::getInstance()->playerStatusChanged(p.getId(), p.getSeqNum(), STAT_PL_PLAYING, STAT_PL_IDLE);
+      p.row.update(GENERIC_STATE_FIELD_NAME, static_cast<int>(ObjState::PL_IDLE));
+      CentralSignalEmitter::getInstance()->playerStatusChanged(p.getId(), p.getSeqNum(), ObjState::PL_PLAYING, ObjState::PL_IDLE);
     }
 
     return ERR::OK;
@@ -413,28 +413,28 @@ namespace QTournament
     // in IDLE after calling this method, because we don't change the player state at all if
     // it was in a different state than WAIT_FOR_REGISTRATION (e.g., PLAYING)
 
-    OBJ_STATE plStat = p.getState();
+    ObjState plStat = p.getState();
     CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
 
     // easiest case first: un-set "wait for registration"
     if (waitForPlayerRegistration == false)
     {
       // if the player wasn't in wait state, return directly without error
-      if (plStat != STAT_PL_WAIT_FOR_REGISTRATION) return ERR::OK;
+      if (plStat != ObjState::PL_WAIT_FOR_REGISTRATION) return ERR::OK;
 
       // switch to IDLE
-      p.setState(STAT_PL_IDLE);
-      cse->playerStatusChanged(p.getId(), p.getSeqNum(), STAT_PL_WAIT_FOR_REGISTRATION, STAT_PL_IDLE);
+      p.setState(ObjState::PL_IDLE);
+      cse->playerStatusChanged(p.getId(), p.getSeqNum(), ObjState::PL_WAIT_FOR_REGISTRATION, ObjState::PL_IDLE);
       return ERR::OK;
     }
 
     // second case: enable "wait for registration"
 
     // there is nothing to do for us if the player is already in wait state
-    if (plStat == STAT_PL_WAIT_FOR_REGISTRATION) return ERR::OK;
+    if (plStat == ObjState::PL_WAIT_FOR_REGISTRATION) return ERR::OK;
 
     // if the player isn't IDLE, we can't switch to "wait for registration"
-    if (plStat != STAT_PL_IDLE)
+    if (plStat != ObjState::PL_IDLE)
     {
       return ERR::PLAYER_ALREADY_IN_MATCHES;
     }
@@ -443,16 +443,16 @@ namespace QTournament
     // make sure that all assigned categories are either in CONFIG or FINISHED
     for (const Category& cat : p.getAssignedCategories())
     {
-      OBJ_STATE catStat = cat.getState();
-      if ((catStat != STAT_CAT_CONFIG) && (catStat != STAT_CAT_FINALIZED))
+      ObjState catStat = cat.getState();
+      if ((catStat != ObjState::CAT_CONFIG) && (catStat != ObjState::CAT_FINALIZED))
       {
         return ERR::PLAYER_ALREADY_IN_MATCHES;
       }
     }
 
     // all checks passed ==> we can switch the player to "wait for registration"
-    p.setState(STAT_PL_WAIT_FOR_REGISTRATION);
-    cse->playerStatusChanged(p.getId(), p.getSeqNum(), STAT_PL_IDLE, STAT_PL_WAIT_FOR_REGISTRATION);
+    p.setState(ObjState::PL_WAIT_FOR_REGISTRATION);
+    cse->playerStatusChanged(p.getId(), p.getSeqNum(), ObjState::PL_IDLE, ObjState::PL_WAIT_FOR_REGISTRATION);
 
     return ERR::OK;
   }
@@ -853,7 +853,7 @@ namespace QTournament
     // search for up to maxCnt recently finished matches
     DbTab matchTab{db, TAB_MATCH, false};
     WhereClause wc;
-    wc.addCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_FINISHED));
+    wc.addCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(ObjState::MA_FINISHED));
     wc.setOrderColumn_Desc(MA_FINISH_TIME);
     wc.setLimit(maxCnt);
     MatchList ml = getObjectsByWhereClause<Match>(matchTab, wc);
@@ -928,8 +928,8 @@ namespace QTournament
     // get all scheduled matches
     WhereClause wc;
     wc.addCol(MA_NUM, ">", 0);
-    wc.addCol(GENERIC_STATE_FIELD_NAME, "!=", static_cast<int>(STAT_MA_RUNNING));
-    wc.addCol(GENERIC_STATE_FIELD_NAME, "!=", static_cast<int>(STAT_MA_FINISHED));
+    wc.addCol(GENERIC_STATE_FIELD_NAME, "!=", static_cast<int>(ObjState::MA_RUNNING));
+    wc.addCol(GENERIC_STATE_FIELD_NAME, "!=", static_cast<int>(ObjState::MA_FINISHED));
     wc.setOrderColumn_Asc(MA_NUM);
 
     DbTab matchTab{db, TAB_MATCH, false};

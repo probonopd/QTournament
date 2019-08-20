@@ -342,7 +342,7 @@ unique_ptr<PlayerPair> BracketVisData::getParentPlayerPairForElement(const Brack
   if (ma != nullptr)
   {
     // case 2a: match is not finished, winner and loser are unknown
-    if (ma->getState() != STAT_MA_FINISHED) return nullptr;
+    if (ma->getState() != ObjState::MA_FINISHED) return nullptr;
 
     // case 2b: match is finished, winner and loser are determined
     if (parentElem->getNextBracketElementForWinner() == elemId)

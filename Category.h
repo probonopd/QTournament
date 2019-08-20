@@ -68,10 +68,10 @@ namespace QTournament
     SEX getSex() const;
     CAT_ADD_STATE getAddState(const SEX s) const;
     CAT_ADD_STATE getAddState(const Player& p) const;
-    QVariant getParameter(CAT_PARAMETER) const;
-    int getParameter_int(CAT_PARAMETER) const;
-    bool getParameter_bool(CAT_PARAMETER) const;
-    QString getParameter_string(CAT_PARAMETER) const;
+    QVariant getParameter(CatParameter) const;
+    int getParameter_int(CatParameter) const;
+    bool getParameter_bool(CatParameter) const;
+    QString getParameter_string(CatParameter) const;
     PlayerPairList getPlayerPairs(int grp = GRP_NUM__NOT_ASSIGNED) const;
     int getDatabasePlayerPairCount(int grp = GRP_NUM__NOT_ASSIGNED) const;
     PlayerList getAllPlayersInCategory() const;
@@ -87,7 +87,7 @@ namespace QTournament
     ERR setMatchType(MATCH_TYPE t);
     ERR setMatchSystem(MATCH_SYSTEM s);
     ERR setSex(SEX s);
-    bool setParameter(CAT_PARAMETER p, const QVariant& v);
+    bool setParameter(CatParameter p, const QVariant& v);
 
     // modifications
     ERR rename(const QString& newName);
@@ -104,7 +104,7 @@ namespace QTournament
     bool hasUnpairedPlayers() const;
     ERR canApplyGroupAssignment(const std::vector<PlayerPairList>& grpCfg);
     ERR canApplyInitialRanking(PlayerPairList seed);
-    bool hasMatchesInState(OBJ_STATE stat, int round=-1) const;
+    bool hasMatchesInState(ObjState stat, int round=-1) const;
     bool isDrawAllowedInRound(int round) const;
 
     

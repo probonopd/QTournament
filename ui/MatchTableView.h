@@ -66,7 +66,7 @@ private slots:
   void onRemoveRefereeTriggered();
   void onSectionHeaderDoubleClicked();
   void onMatchTimePredictionUpdate();
-  void onMatchStatusChanged(int maId, int maSeqNum, QTournament::OBJ_STATE oldStat, QTournament::OBJ_STATE newStat);
+  void onMatchStatusChanged(int maId, int maSeqNum, QTournament::ObjState oldStat, QTournament::ObjState newStat);
   void onPrint1Selected();
   void onPrint4Selected();
   void onPrint8Selected();

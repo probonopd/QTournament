@@ -809,7 +809,7 @@ void MainFrame::setupTestScenario(int scenarioID)
     GroupDefList gdl;
     gdl.append(d);
     KO_Config cfg(QUARTER, false, gdl);
-    ls.setParameter(GROUP_CONFIG, cfg.toString());
+    ls.setParameter(CatParameter::GroupConfig, cfg.toString());
   };
 
   // extend scenario 3 to already start category "LS"
@@ -876,7 +876,7 @@ void MainFrame::setupTestScenario(int scenarioID)
     GroupDefList gdl;
     gdl.append(d);
     KO_Config cfg(FINAL, false, gdl);
-    assert(ld.setParameter(GROUP_CONFIG, cfg.toString()) == true);
+    assert(ld.setParameter(CatParameter::GroupConfig, cfg.toString()) == true);
 
     // freeze
     specialCat = ld.convertToSpecializedObject();
@@ -955,14 +955,14 @@ void MainFrame::setupTestScenario(int scenarioID)
       canStageMatchGroups = false;
       for (MatchGroup mg : mm.getMatchGroupsForCat(ls))
       {
-        if (mg.getState() != STAT_MG_IDLE) continue;
+        if (mg.getState() != ObjState::MG_IDLE) continue;
         if (mm.canStageMatchGroup(mg) != ERR::OK) continue;
         mm.stageMatchGroup(mg);
         canStageMatchGroups = true;
       }
       for (MatchGroup mg : mm.getMatchGroupsForCat(ld))
       {
-        if (mg.getState() != STAT_MG_IDLE) continue;
+        if (mg.getState() != ObjState::MG_IDLE) continue;
         if (mm.canStageMatchGroup(mg) != ERR::OK) continue;
         mm.stageMatchGroup(mg);
         canStageMatchGroups = true;

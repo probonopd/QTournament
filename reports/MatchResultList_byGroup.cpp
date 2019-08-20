@@ -92,7 +92,7 @@ upSimpleReport MatchResultList_ByGroup::regenerateReport()
 
     printMatchList(result, maList, PlayerPairList(), tr("Results of round ") + QString::number(round) + tr(" (cont.)"), true, false);
 
-    if (mg.getState() != STAT_MG_FINISHED)
+    if (mg.getState() != ObjState::MG_FINISHED)
     {
       result->skip(1.0);
       result->writeLine(tr("Note: this round is not finished yet; results for this group can be incomplete."));

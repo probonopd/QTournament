@@ -30,8 +30,8 @@
 MatchLogTable::MatchLogTable(QWidget* parent)
   :CommonMatchTableWidget{parent}
 {
-  connect(CentralSignalEmitter::getInstance(), SIGNAL(matchStatusChanged(int,int,OBJ_STATE,OBJ_STATE)),
-          this, SLOT(onMatchStatusChanged(int,int,OBJ_STATE,OBJ_STATE)), Qt::DirectConnection);
+  connect(CentralSignalEmitter::getInstance(), SIGNAL(matchStatusChanged(int,int,ObjState,ObjState)),
+          this, SLOT(onMatchStatusChanged(int,int,ObjState,ObjState)), Qt::DirectConnection);
 
   // handle context menu requests
   setContextMenuPolicy(Qt::CustomContextMenu);
@@ -61,9 +61,9 @@ std::optional<Match> MatchLogTable::getSelectedMatch() const
 
 //----------------------------------------------------------------------------
 
-void MatchLogTable::onMatchStatusChanged(int maId, int maSeqNum, OBJ_STATE oldStat, OBJ_STATE newStat)
+void MatchLogTable::onMatchStatusChanged(int maId, int maSeqNum, ObjState oldStat, ObjState newStat)
 {
-  if (newStat != STAT_MA_FINISHED) return;
+  if (newStat != ObjState::MA_FINISHED) return;
   if (db == nullptr) return;
 
   MatchMngr mm{db};

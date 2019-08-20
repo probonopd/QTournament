@@ -36,7 +36,7 @@ PlayerTableModel::PlayerTableModel(TournamentDB* _db)
   connect(cse, SIGNAL(beginCreatePlayer()), this, SLOT(onBeginCreatePlayer()), Qt::DirectConnection);
   connect(cse, SIGNAL(endCreatePlayer(int)), this, SLOT(onEndCreatePlayer(int)), Qt::DirectConnection);
   connect(cse, SIGNAL(playerRenamed(Player)), this, SLOT(onPlayerRenamed(Player)), Qt::DirectConnection);
-  connect(cse, SIGNAL(playerStatusChanged(int,int,OBJ_STATE,OBJ_STATE)), this, SLOT(onPlayerStatusChanged(int,int)), Qt::DirectConnection);
+  connect(cse, SIGNAL(playerStatusChanged(int,int,ObjState,ObjState)), this, SLOT(onPlayerStatusChanged(int,int)), Qt::DirectConnection);
   connect(cse, SIGNAL(beginDeletePlayer(int)), this, SLOT(onBeginDeletePlayer(int)), Qt::DirectConnection);
   connect(cse, SIGNAL(endDeletePlayer()), this, SLOT(onEndDeletePlayer()), Qt::DirectConnection);
 

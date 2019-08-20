@@ -174,7 +174,7 @@ int Standings::determineBestPossibleRankForPlayerAfterRound(const PlayerPair& pp
   while ((lastMatch == nullptr) && (_r > 0))
   {
     lastMatch = mm.getMatchForPlayerPairAndRound(pp, _r);
-    if ((lastMatch != nullptr) && (lastMatch->getState() != STAT_MA_FINISHED))
+    if ((lastMatch != nullptr) && (lastMatch->getState() != ObjState::MA_FINISHED))
     {
       lastMatch = nullptr;   // skip all matches that are not finished
     }
@@ -218,7 +218,7 @@ int Standings::determineBestPossibleRankForPlayerAfterRound(const PlayerPair& pp
 
     // maybe we already HAVE winner. then we must search for real
     // pair IDs
-    if (ma.getState() == STAT_MA_FINISHED)
+    if (ma.getState() == ObjState::MA_FINISHED)
     {
       auto w = ma.getWinner();
       assert(w != nullptr);

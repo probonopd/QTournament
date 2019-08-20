@@ -77,7 +77,7 @@ class RefereeTableWidget : public GuiHelpers::AutoSizingTableWidget_WithDatabase
   Q_OBJECT
 
 public:
-  static constexpr int STAT_COL_ID = 0;
+  static constexpr int ObjState::COL_ID = 0;
   static constexpr int NAME_COL_ID = 1;
   static constexpr int TEAM_COL_ID = 2;
   static constexpr int REFEREE_COUNT_COL_ID = 3;

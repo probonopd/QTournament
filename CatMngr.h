@@ -65,7 +65,7 @@ namespace QTournament
     ERR setMatchType(Category& cat, MATCH_TYPE newMatchType);
     ERR setMatchSystem(Category& cat, MATCH_SYSTEM newMatchSystem);
     ERR setSex(Category& cat, SEX newSex);
-    bool setCatParameter(Category& cat, CAT_PARAMETER p, const QVariant& v);
+    bool setCatParameter(Category& cat, CatParameter p, const QVariant& v);
 
     // modifications
     ERR renameCategory(Category& cat, const QString& newName);
@@ -90,7 +90,7 @@ namespace QTournament
     std::string getSyncString(const std::vector<int>& rows) const override;
 
   private:
-    bool setCatParam_AllowDraw( Category& c, const QVariant& v);
+    bool setCatParam_CatParameter::AllowDraw( Category& c, const QVariant& v);
     bool setCatParam_Score( Category& c, int newScore, bool isDraw);
   };
 }

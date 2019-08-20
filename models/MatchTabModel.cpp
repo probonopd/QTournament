@@ -34,12 +34,12 @@ MatchTableModel::MatchTableModel(TournamentDB* _db)
   CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
   connect(cse, SIGNAL(beginCreateMatch()), this, SLOT(onBeginCreateMatch()), Qt::DirectConnection);
   connect(cse, SIGNAL(endCreateMatch(int)), this, SLOT(onEndCreateMatch(int)), Qt::DirectConnection);
-  connect(cse, SIGNAL(matchStatusChanged(int,int,OBJ_STATE,OBJ_STATE)), this, SLOT(onMatchStatusChanged(int,int,OBJ_STATE,OBJ_STATE)), Qt::DirectConnection);
+  connect(cse, SIGNAL(matchStatusChanged(int,int,ObjState,ObjState)), this, SLOT(onMatchStatusChanged(int,int,ObjState,ObjState)), Qt::DirectConnection);
   connect(cse, SIGNAL(beginResetAllModels()), this, SLOT(onBeginResetModel()), Qt::DirectConnection);
   connect(cse, SIGNAL(endResetAllModels()), this, SLOT(onEndResetModel()), Qt::DirectConnection);
   connect(cse, SIGNAL(endCreateCourt(int)), this, SLOT(recalcPrediction()), Qt::DirectConnection);
   connect(cse, SIGNAL(endDeleteCourt()), this, SLOT(recalcPrediction()), Qt::DirectConnection);
-  connect(cse, SIGNAL(courtStatusChanged(int,int,OBJ_STATE,OBJ_STATE)), this, SLOT(recalcPrediction()), Qt::DirectConnection);
+  connect(cse, SIGNAL(courtStatusChanged(int,int,ObjState,ObjState)), this, SLOT(recalcPrediction()), Qt::DirectConnection);
 
   // create and initialize a new match time predictor
   matchTimePredictor = make_unique<MatchTimePredictor>(db);
@@ -284,7 +284,7 @@ void MatchTableModel::onEndCreateMatch(int newMatchSeqNum)
 
 //----------------------------------------------------------------------------
 
-void MatchTableModel::onMatchStatusChanged(int matchId, int matchSeqNum, OBJ_STATE fromState, OBJ_STATE toState)
+void MatchTableModel::onMatchStatusChanged(int matchId, int matchSeqNum, ObjState fromState, ObjState toState)
 {
   QModelIndex startIdx = createIndex(matchSeqNum, 0);
   QModelIndex endIdx = createIndex(matchSeqNum, COLUMN_COUNT-1);

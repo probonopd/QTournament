@@ -21,28 +21,28 @@
 #include "DelegateItemLED.h"
 
 
-const QMap<OBJ_STATE, QColor> DelegateItemLED::state2color = {
-  {STAT_CAT_FROZEN, Qt::darkYellow},
-  {STAT_CAT_IDLE, Qt::darkGreen},
-  {STAT_CAT_PLAYING, Qt::green},
-  {STAT_CAT_FINALIZED, Qt::darkRed},
-  {STAT_PL_IDLE, Qt::green},
-  {STAT_PL_PLAYING, Qt::red},
-  {STAT_PL_WAIT_FOR_REGISTRATION, Qt::lightGray},
-  {STAT_PL_REFEREE, Qt::blue},
-  {STAT_MA_READY, Qt::green},
-  {STAT_MA_BUSY, Qt::red},
-  {STAT_MA_WAITING, Qt::yellow},
-  {STAT_CAT_WAIT_FOR_INTERMEDIATE_SEEDING, Qt::yellow},
-//  {STAT_, Qt::},
-//  {STAT_, Qt::},
+const QMap<ObjState, QColor> DelegateItemLED::state2color = {
+  {CAT_FROZEN, Qt::darkYellow},
+  {CAT_IDLE, Qt::darkGreen},
+  {CAT_PLAYING, Qt::green},
+  {CAT_FINALIZED, Qt::darkRed},
+  {PL_IDLE, Qt::green},
+  {PL_PLAYING, Qt::red},
+  {PL_WAIT_FOR_REGISTRATION, Qt::lightGray},
+  {PL_REFEREE, Qt::blue},
+  {MA_READY, Qt::green},
+  {MA_BUSY, Qt::red},
+  {MA_WAITING, Qt::yellow},
+  {CAT_WAIT_FOR_INTERMEDIATE_SEEDING, Qt::yellow},
+//  {, Qt::},
+//  {, Qt::},
 };
 
 DelegateItemLED::DelegateItemLED()
 {
 }
 
-void DelegateItemLED::operator ()(QPainter* painter, QRect itemArea, int margin, int size, OBJ_STATE state, QColor defaultColor)
+void DelegateItemLED::operator ()(QPainter* painter, QRect itemArea, int margin, int size, ObjState state, QColor defaultColor)
 {
   if (state2color.keys().contains(state))
   {

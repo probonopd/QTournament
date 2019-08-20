@@ -53,7 +53,7 @@ MatrixAndStandings::MatrixAndStandings(TournamentDB* _db, const QString& _name, 
   // round-robin-phase
   if (msys == GROUPS_WITH_KO)
   {
-    KO_Config cfg = KO_Config(cat.getParameter_string(GROUP_CONFIG));
+    KO_Config cfg = KO_Config(cat.getParameter_string(CatParameter::GroupConfig));
     int numGroupRounds = cfg.getNumRounds();
     if (round > numGroupRounds)
     {
@@ -130,7 +130,7 @@ upSimpleReport MatrixAndStandings::regenerateReport()
   int nGroups = 1;  // round robin
   if (msys == GROUPS_WITH_KO)
   {
-    KO_Config cfg = cat.getParameter_string(GROUP_CONFIG);
+    KO_Config cfg = cat.getParameter_string(CatParameter::GroupConfig);
     nGroups = cfg.getNumGroups();
   }
 

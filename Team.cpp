@@ -90,7 +90,7 @@ namespace QTournament
   {
     WhereClause wc;
     wc.addCol(PL_TEAM_REF, getId());
-    wc.addCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_PL_WAIT_FOR_REGISTRATION));
+    wc.addCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(ObjState::PL_WAIT_FOR_REGISTRATION));
     DbTab playerTab = DbTab{db.get(), TAB_PLAYER, false};
     return playerTab.getMatchCountForWhereClause(wc);
   }

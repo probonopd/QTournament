@@ -34,7 +34,7 @@ DlgPlayerProfile::~DlgPlayerProfile()
 
 void DlgPlayerProfile::fillLabels()
 {
-  OBJ_STATE plStat = p.getState();
+  ObjState plStat = p.getState();
 
   //
   // set the title
@@ -143,7 +143,7 @@ void DlgPlayerProfile::fillLabels()
   //
   // set the waiting matches count
   //
-  if (plStat == STAT_PL_PLAYING)
+  if (plStat == ObjState::PL_PLAYING)
   {
     txt = tr("%1 further matches scheduled and 1 match currently running");
     txt = txt.arg(pp.getScheduledAndNotFinishedCount() - 1);
@@ -166,7 +166,7 @@ void DlgPlayerProfile::fillLabels()
   txt = tr("%1 services (%2 finished, %3 running, %4 waiting)");
   txt = txt.arg(pp.getMatchesAsUmpire().length());
   txt = txt.arg(pp.getUmpireFinishedCount());
-  if (plStat == STAT_PL_REFEREE)
+  if (plStat == ObjState::PL_REFEREE)
   {
     txt = txt.arg(1);
     txt = txt.arg(pp.getUmpireScheduledAndNotFinishedCount() - 1);

@@ -95,17 +95,17 @@ namespace QTournament
     int nextMatchNum = -1;
     for (const Match& ma : matchesAsUmpire)
     {
-      OBJ_STATE stat = ma.getState();
+      ObjState stat = ma.getState();
 
-      if (stat == STAT_MA_FINISHED) ++umpireFinishedCount;
+      if (stat == ObjState::MA_FINISHED) ++umpireFinishedCount;
 
-      if (ma.getState() == STAT_MA_RUNNING)
+      if (ma.getState() == ObjState::MA_RUNNING)
       {
         currentUmpireMatchId = ma.getId();
         continue;
       }
 
-      if (stat == STAT_MA_FINISHED)
+      if (stat == ObjState::MA_FINISHED)
       {
         QDateTime fTime = ma.getFinishTime();
         if (fTime.isValid())
@@ -134,19 +134,19 @@ namespace QTournament
     nextMatchNum = -1;
     for (const Match& ma : matchesAsPlayer)
     {
-      OBJ_STATE stat = ma.getState();
+      ObjState stat = ma.getState();
       int maNum = ma.getMatchNumber();
 
       // count all scheduled matches
       if (maNum != ERR::MATCH_NUM_NOT_ASSIGNED) ++scheduledCount;
 
-      if (stat == STAT_MA_RUNNING)
+      if (stat == ObjState::MA_RUNNING)
       {
         currentMatchId = ma.getId();
         continue;
       }
 
-      if (stat == STAT_MA_FINISHED)
+      if (stat == ObjState::MA_FINISHED)
       {
         ++finishCount;
         QDateTime fTime = ma.getFinishTime();

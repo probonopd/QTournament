@@ -158,8 +158,8 @@ QStringList InOutList::getReportLocators() const
 bool InOutList::isValidCatRoundCombination(const Category& _cat, int _round)
 {
   // we must be beyond CONFIG for this report to make any sense at all
-  OBJ_STATE catState = _cat.getState();
-  if ((catState == STAT_CAT_CONFIG) || (catState == STAT_CAT_FROZEN))
+  ObjState catState = _cat.getState();
+  if ((catState == ObjState::CAT_CONFIG) || (catState == ObjState::CAT_FROZEN))
   {
     return false;
   }
@@ -176,7 +176,7 @@ bool InOutList::isValidCatRoundCombination(const Category& _cat, int _round)
   ERR::MATCH_SYSTEM mSys = _cat.getMatchSystem();
   if (mSys == GROUPS_WITH_KO)
   {
-    KO_Config cfg = KO_Config(_cat.getParameter_string(GROUP_CONFIG));
+    KO_Config cfg = KO_Config(_cat.getParameter_string(CatParameter::GroupConfig));
     if (_round < cfg.getNumRounds())
     {
       return false;
