@@ -36,13 +36,15 @@
 namespace QTournament
 {
 
+  using CourtOrError = ObjectOrError<Court>;
+
   class CourtMngr : public QObject, public TournamentDatabaseObjectManager
   {
     Q_OBJECT
     
   public:
     CourtMngr (const TournamentDB& _db);
-    std::optional<Court> createNewCourt (const int courtNum, const QString& _name, ERR *err);
+    CourtOrError createNewCourt (const int courtNum, const QString& _name);
     bool hasCourt (const int courtNum);
     int getHighestUnusedCourtNumber() const;
     std::optional<Court> getCourt(const int courtNum);

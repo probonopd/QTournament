@@ -129,16 +129,16 @@ namespace QTournament
      * that "containing an error code other than OK" always means "no object".
      */
     template<typename T>
-    class ErrorOrObject : public std::optional<T>
+    class ObjectOrError : public std::optional<T>
     {
     public:
-      ErrorOrObject(const T& obj)
+      explicit ObjectOrError(const T& obj)
         :std::optional<T>{obj}, e{ERR::OK} {}
 
-      ErrorOrObject(T&& obj)
+      explicit ObjectOrError(T&& obj)
         :std::optional<T>(std::move(obj)), e{ERR::OK} {}
 
-      ErrorOrObject(ERR errorCode)
+      explicit ObjectOrError(ERR errorCode)
         :std::optional<T>{}, e{errorCode}
       {
         if (errorCode == ERR::OK)
@@ -146,6 +146,10 @@ namespace QTournament
           throw std::invalid_argument("ErrorOrObject ctor: initialized with OK but without object");
         }
       }
+
+      template<class... Args>
+      ObjectOrError(Args&&... args)
+        :std::optional<T>{std::in_place, std::forward<Args>(args)...}, e{ERR::OK} {}
 
       constexpr ERR err() const noexcept { return e; }
 

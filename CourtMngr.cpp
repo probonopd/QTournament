@@ -36,20 +36,18 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  std::optional<Court> CourtMngr::createNewCourt(const int courtNum, const QString& _name, ERR *err)
+  CourtOrError CourtMngr::createNewCourt(const int courtNum, const QString& _name)
   {
     QString name = _name.trimmed();
     
     if (name.length() > MaxNameLen)
     {
-      Sloppy::assignIfNotNull<ERR>(err, ERR::InvalidName);
-      return {};
+      return CourtOrError{ERR::InvalidName};
     }
     
     if (hasCourt(courtNum))
     {
-      Sloppy::assignIfNotNull<ERR>(err, ERR::CourtNumberExists);
-      return {};
+      return CourtOrError{ERR::CourtNumberExists};
     }
     
     // prepare a new table row
@@ -68,7 +66,7 @@ namespace QTournament
     
     // create a court object for the new court and return a pointer
     // to this new object
-    return Court{db, newId};
+    return CourtOrError{db, newId};
   }
 
 //----------------------------------------------------------------------------
