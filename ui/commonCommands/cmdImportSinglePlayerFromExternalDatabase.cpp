@@ -84,7 +84,7 @@ ERR cmdImportSinglePlayerFromExternalDatabase::exec()
   // if the player has no valid sex assigned,
   // show a selection dialog
   upExternalPlayerDatabaseEntry finalPlayerData;
-  if (extPlayer->getSex() == DONT_CARE)
+  if (extPlayer->getSex() == Sex::DontCare)
   {
     DlgPickPlayerSex dlgPickSex{parentWidget, extPlayer->getFirstname() + " " + extPlayer->getLastname()};
     if (dlgPickSex.exec() != QDialog::Accepted)
@@ -112,7 +112,7 @@ ERR cmdImportSinglePlayerFromExternalDatabase::exec()
     if (cat == nullptr) preselectedCatId = -1;
 
     // may we add a player of the selected sex to this category?
-    SEX selSex = finalPlayerData->getSex();
+    Sex selSex = finalPlayerData->getSex();
     if (cat->getAddState(selSex) != CatAddState::CanJoin)
     {
       QString msg = tr("%1 cannot be added to this category.");

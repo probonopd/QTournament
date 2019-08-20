@@ -29,7 +29,7 @@ namespace QTournament
 {
 
   TeamTableModel::TeamTableModel(TournamentDB* _db)
-  : QAbstractTableModel(0), db(_db), teamTab(db->getTab(TAB_TEAM))
+  : QAbstractTableModel(0), db(_db), teamTab(db->getTab(TabTeam))
   {
     CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
     connect(cse, SIGNAL(beginCreateTeam()), this, SLOT(onBeginCreateTeam()), Qt::DirectConnection);

@@ -30,7 +30,7 @@ void tstRankingMngr::testCreateUnsortedRanking()
   
   TournamentDB* db = getScenario06(true);
   Tournament t(getSqliteFileName());
-  DbTab rankTab = db->getTab(TAB_MatchSystem);
+  DbTab rankTab = db->getTab(TabMatchSystem);
   RankingMngr* rm = Tournament::getRankingMngr();
   CatMngr* cm = Tournament::getCatMngr();
   MatchMngr* mm = Tournament::getMatchMngr();
@@ -61,27 +61,27 @@ void tstRankingMngr::testCreateUnsortedRanking()
   {
     // Get the match data
     TabRow r = *it;
-    int ppId = r[RA_PAIR_REF].toInt();
+    int ppId = r[RA_PairRef].toInt();
     PlayerPair pp = Tournament::getPlayerMngr()->getPlayerPair(ppId);
     unique_ptr<Match> ma = mm->getMatchForPlayerPairAndRound(pp, 1);
 
     // check correct category assignment
-    CPPUNIT_ASSERT(r[RA_CAT_REF].toInt() == pp.getCategory(db)->getId());
+    CPPUNIT_ASSERT(r[RA_CatRef].toInt() == pp.getCategory(db)->getId());
 
     // make sure that no rank has been assigned yet
-    CPPUNIT_ASSERT(r[RA_RANK].isNull());
+    CPPUNIT_ASSERT(r[RA_Rank].isNull());
 
     // check players with a bye
     if (ma == nullptr)
     {
       // this player hasn't played, to all entries should be zero
-      CPPUNIT_ASSERT(r[RA_MATCHES_LOST].toInt() == 0);
-      CPPUNIT_ASSERT(r[RA_MATCHES_WON].toInt() == 0);
-      CPPUNIT_ASSERT(r[RA_MATCHES_DRAW].toInt() == 0);
-      CPPUNIT_ASSERT(r[RA_GAMES_WON].toInt() == 0);
-      CPPUNIT_ASSERT(r[RA_GAMES_LOST].toInt() == 0);
-      CPPUNIT_ASSERT(r[RA_POINTS_WON].toInt() == 0);
-      CPPUNIT_ASSERT(r[RA_POINTS_LOST].toInt() == 0);
+      CPPUNIT_ASSERT(r[RA_MatchesLost].toInt() == 0);
+      CPPUNIT_ASSERT(r[RA_MatchesWon].toInt() == 0);
+      CPPUNIT_ASSERT(r[RA_MatchesDraw].toInt() == 0);
+      CPPUNIT_ASSERT(r[RA_GamesWon].toInt() == 0);
+      CPPUNIT_ASSERT(r[RA_GamesLost].toInt() == 0);
+      CPPUNIT_ASSERT(r[RA_PointsWon].toInt() == 0);
+      CPPUNIT_ASSERT(r[RA_PointsLost].toInt() == 0);
 
       ++it;
       continue;
@@ -93,13 +93,13 @@ void tstRankingMngr::testCreateUnsortedRanking()
     // check the ranking entries
     if (score->getWinner() == playerNum)
     {
-      CPPUNIT_ASSERT(r[RA_MATCHES_LOST].toInt() == 0);
-      CPPUNIT_ASSERT(r[RA_MATCHES_WON].toInt() == 1);
+      CPPUNIT_ASSERT(r[RA_MatchesLost].toInt() == 0);
+      CPPUNIT_ASSERT(r[RA_MatchesWon].toInt() == 1);
     } else {
-      CPPUNIT_ASSERT(r[RA_MATCHES_LOST].toInt() == 1);
-      CPPUNIT_ASSERT(r[RA_MATCHES_WON].toInt() == 0);
+      CPPUNIT_ASSERT(r[RA_MatchesLost].toInt() == 1);
+      CPPUNIT_ASSERT(r[RA_MatchesWon].toInt() == 0);
     }
-    CPPUNIT_ASSERT(r[RA_MATCHES_DRAW].toInt() == 0);
+    CPPUNIT_ASSERT(r[RA_MatchesDraw].toInt() == 0);
 
     int gamesSum;
     int scoreSum;
@@ -111,10 +111,10 @@ void tstRankingMngr::testCreateUnsortedRanking()
       gamesSum = get<1>(score->getGameSum());
       scoreSum = get<1>(score->getScoreSum());
     }
-    CPPUNIT_ASSERT(r[RA_GAMES_WON].toInt() == gamesSum);
-    CPPUNIT_ASSERT(r[RA_GAMES_LOST].toInt() == (score->getNumGames() - gamesSum));
-    CPPUNIT_ASSERT(r[RA_POINTS_WON].toInt() == scoreSum);
-    CPPUNIT_ASSERT(r[RA_POINTS_LOST].toInt() == (score->getPointsSum() - scoreSum));
+    CPPUNIT_ASSERT(r[RA_GamesWon].toInt() == gamesSum);
+    CPPUNIT_ASSERT(r[RA_GamesLost].toInt() == (score->getNumGames() - gamesSum));
+    CPPUNIT_ASSERT(r[RA_PointsWon].toInt() == scoreSum);
+    CPPUNIT_ASSERT(r[RA_PointsLost].toInt() == (score->getPointsSum() - scoreSum));
 
     ++it;
   }
@@ -122,7 +122,7 @@ void tstRankingMngr::testCreateUnsortedRanking()
   // every player should have exactly one entry
   for (PlayerPair pp : ms.getPlayerPairs())
   {
-    CPPUNIT_ASSERT(rankTab.getMatchCountForColumnValue(RA_PAIR_REF, pp.getPairId()) == 1);
+    CPPUNIT_ASSERT(rankTab.getMatchCountForColumnValue(RA_PairRef, pp.getPairId()) == 1);
   }
   
   delete db;

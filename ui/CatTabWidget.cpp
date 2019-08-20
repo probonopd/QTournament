@@ -149,7 +149,7 @@ void CatTabWidget::updateControls()
   //
   // if we made it to this point, we can be sure to have a valid category selected
   //
-  SEX sex = selectedCat.getSex();
+  Sex sex = selectedCat.getSex();
   ERR::MatchType mt = selectedCat.getMatchType();
   bool isEditEnabled = (selectedCat.getState() == ObjState::CAT_Config);
 
@@ -216,7 +216,7 @@ void CatTabWidget::updateControls()
   // update the applicable sex; this requires an extra hack if the sex is
   // set to "don't care", because in this case, both radio buttons in a
   // radio button group have to be deactivated
-  if (sex == DONT_CARE)
+  if (sex == Sex::DontCare)
   {
     ui.rbgSex->setExclusive(false);
     ui.rbMen->setChecked(false);
@@ -226,7 +226,7 @@ void CatTabWidget::updateControls()
     ui.rbMen->setChecked((sex == M) && (mt != MatchType::Mixed));
     ui.rbLadies->setChecked((sex == F) && (mt != MatchType::Mixed));
   }
-  ui.cbDontCare->setChecked(sex == DONT_CARE);
+  ui.cbDontCare->setChecked(sex == Sex::DontCare);
   
   // the "accept draw" checkbox
   bool allowDraw = selectedCat.getParameter(CatParameter::AllowDraw).toBool();
@@ -684,7 +684,7 @@ void CatTabWidget::onMatchTypeButtonClicked(int btn)
 void CatTabWidget::onSexClicked(int btn)
 {
   // the new sex must be either M or F
-  SEX newSex = M;
+  Sex newSex = M;
   if (ui.rbLadies->isChecked()) newSex = F;
   
   // in any case, we can de-select the "don't care" box
@@ -725,7 +725,7 @@ void CatTabWidget::onDontCareClicked()
     return;
   }
   
-  SEX newSex = DONT_CARE;
+  Sex newSex = Sex::DontCare;
   
   // if we are in a mixed category, allow simple de-activation of "Don't care"
   if (!newState && (selCat.getMatchType() == MatchType::Mixed))

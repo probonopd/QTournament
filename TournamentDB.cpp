@@ -97,35 +97,35 @@ namespace QTournament
     SqliteOverlay::TableCreator tc;
     
     // Generate the key-value-table with the tournament config
-    createNewKeyValueTab(TAB_CFG);
+    createNewKeyValueTab(TabCfg);
     
     // Generate the table for the courts
-    tc.addCol(GENERIC_NAME_FIELD_NAME, cdt::Text, cc::Abort, cc::Abort);
-    tc.addCol(GENERIC_STATE_FIELD_NAME, cdt::Integer, cc::NotUsed, cc::Abort);
-    tc.addCol(GENERIC_SEQNUM_FIELD_NAME, cdt::Integer, cc::Abort, cc::Abort);
-    tc.addCol(CO_NUMBER, cdt::Integer, cc::Abort, cc::Abort);
-    tc.addCol(CO_IS_MANUAL_ASSIGNMENT, cdt::Integer, cc::Abort, cc::Abort);
-    tc.createTableAndResetCreator(*this, TAB_COURT);
+    tc.addCol(GenericNameFieldName, cdt::Text, cc::Abort, cc::Abort);
+    tc.addCol(GenericStateFieldName, cdt::Integer, cc::NotUsed, cc::Abort);
+    tc.addCol(GenericSeqnumFieldName, cdt::Integer, cc::Abort, cc::Abort);
+    tc.addCol(CO_Number, cdt::Integer, cc::Abort, cc::Abort);
+    tc.addCol(CO_IsManualAssignment, cdt::Integer, cc::Abort, cc::Abort);
+    tc.createTableAndResetCreator(*this, TabCourt);
     
     // Generate the table holding the teams
-    tc.addCol(GENERIC_NAME_FIELD_NAME, cdt::Text, cc::Abort, cc::Abort);
-    tc.addCol(GENERIC_SEQNUM_FIELD_NAME, cdt::Integer, cc::Abort, cc::Abort);
-    tc.createTableAndResetCreator(*this, TAB_TEAM);
+    tc.addCol(GenericNameFieldName, cdt::Text, cc::Abort, cc::Abort);
+    tc.addCol(GenericSeqnumFieldName, cdt::Integer, cc::Abort, cc::Abort);
+    tc.createTableAndResetCreator(*this, TabTeam);
     
     // Generate the table hosting the players
-    tc.addCol(PL_FNAME, cdt::Text, cc::NotUsed, cc::Abort);
-    tc.addCol(PL_LNAME, cdt::Text, cc::NotUsed, cc::Abort);
-    tc.addCol(GENERIC_STATE_FIELD_NAME, cdt::Integer, cc::NotUsed, cc::Abort);
-    tc.addCol(PL_SEX, cdt::Integer, cc::NotUsed, cc::Abort);
-    tc.addCol(GENERIC_SEQNUM_FIELD_NAME, cdt::Integer, cc::Abort, cc::Abort);
-    tc.addCol(PL_Referee_COUNT, cdt::Integer, cc::NotUsed, cc::Abort, 0);
-    tc.addForeignKey(PL_TEAM_REF, TAB_TEAM, ca::Cascade, ca::Cascade, cc::NotUsed, cc::Abort);
-    tc.createTableAndResetCreator(*this, TAB_PLAYER);
+    tc.addCol(PL_Fname, cdt::Text, cc::NotUsed, cc::Abort);
+    tc.addCol(PL_Lname, cdt::Text, cc::NotUsed, cc::Abort);
+    tc.addCol(GenericStateFieldName, cdt::Integer, cc::NotUsed, cc::Abort);
+    tc.addCol(PL_Sex, cdt::Integer, cc::NotUsed, cc::Abort);
+    tc.addCol(GenericSeqnumFieldName, cdt::Integer, cc::Abort, cc::Abort);
+    tc.addCol(PL_RefereeCount, cdt::Integer, cc::NotUsed, cc::Abort, 0);
+    tc.addForeignKey(PL_TeamRef, TabTeam, ca::Cascade, ca::Cascade, cc::NotUsed, cc::Abort);
+    tc.createTableAndResetCreator(*this, TabPlayer);
     
     // Generate the table holding the category data
-    tc.addCol(GENERIC_NAME_FIELD_NAME, cdt::Text, cc::Abort, cc::Abort);
-    tc.addCol(GENERIC_STATE_FIELD_NAME, cdt::Integer, cc::NotUsed, cc::Abort);
-    tc.addCol(GENERIC_SEQNUM_FIELD_NAME, cdt::Integer, cc::Abort, cc::Abort);
+    tc.addCol(GenericNameFieldName, cdt::Text, cc::Abort, cc::Abort);
+    tc.addCol(GenericStateFieldName, cdt::Integer, cc::NotUsed, cc::Abort);
+    tc.addCol(GenericSeqnumFieldName, cdt::Integer, cc::Abort, cc::Abort);
     tc.addCol(CAT_MatchType, cdt::Integer, cc::NotUsed, cc::Abort);
     tc.addCol(CAT_Sex, cdt::Integer, cc::NotUsed, cc::Abort);
     tc.addCol(CAT_Sys, cdt::Integer, cc::NotUsed, cc::Abort);
@@ -135,91 +135,91 @@ namespace QTournament
     tc.addCol(CAT_GroupConfig, cdt::Text, cc::NotUsed, cc::NotUsed);
     tc.addCol(CAT_BracketVisData, cdt::Text, cc::NotUsed, cc::NotUsed);
     tc.addCol(CAT_RoundRobinIterations, cdt::Integer, cc::NotUsed, cc::Abort, 1);
-    tc.createTableAndResetCreator(*this, TAB_CATEGORY);
+    tc.createTableAndResetCreator(*this, TabCategory);
     
     // Generate the table holding the player-to-category mapping
-    tc.addForeignKey(P2C_PLAYER_REF, TAB_PLAYER, ca::Cascade, ca::Cascade, cc::NotUsed, cc::Abort);
-    tc.addForeignKey(P2C_CAT_REF, TAB_CATEGORY, ca::Cascade, ca::Cascade, cc::NotUsed, cc::Abort);
-    tc.createTableAndResetCreator(*this, TAB_P2C);
+    tc.addForeignKey(P2C_PlayerRef, TabPlayer, ca::Cascade, ca::Cascade, cc::NotUsed, cc::Abort);
+    tc.addForeignKey(P2C_CatRef, TabCategory, ca::Cascade, ca::Cascade, cc::NotUsed, cc::Abort);
+    tc.createTableAndResetCreator(*this, TabP2C);
     
     // Generate the table holding the player pairs
-    tc.addForeignKey(PAIRS_PLAYER1_REF, TAB_PLAYER, ca::Cascade, ca::Cascade, cc::NotUsed, cc::Abort);
-    tc.addForeignKey(PAIRS_PLAYER2_REF, TAB_PLAYER, ca::Cascade, ca::Cascade, cc::NotUsed, cc::NotUsed);
-    tc.addForeignKey(PAIRS_CONFIGREF, TAB_CATEGORY, ca::Cascade, ca::Cascade, cc::NotUsed, cc::Abort);
-    tc.addCol(PAIRS_GRP_NUM, cdt::Integer, cc::NotUsed, cc::Abort);
-    tc.addCol(PAIRS_INITIAL_RANK, cdt::Integer, cc::NotUsed, cc::Abort);
-    tc.createTableAndResetCreator(*this, TAB_PAIRS);
+    tc.addForeignKey(Pairs_Player1Ref, TabPlayer, ca::Cascade, ca::Cascade, cc::NotUsed, cc::Abort);
+    tc.addForeignKey(Pairs_Player2Ref, TabPlayer, ca::Cascade, ca::Cascade, cc::NotUsed, cc::NotUsed);
+    tc.addForeignKey(Pairs_CatRef, TabCategory, ca::Cascade, ca::Cascade, cc::NotUsed, cc::Abort);
+    tc.addCol(Pairs_GrpNum, cdt::Integer, cc::NotUsed, cc::Abort);
+    tc.addCol(Pairs_InitialRank, cdt::Integer, cc::NotUsed, cc::Abort);
+    tc.createTableAndResetCreator(*this, TabPairs);
     
     // Generate a table for the match groups
-    tc.addForeignKey(MG_CAT_REF, TAB_CATEGORY, ca::Cascade, ca::Cascade, cc::NotUsed, cc::Abort);
-    tc.addCol(GENERIC_STATE_FIELD_NAME, cdt::Integer, cc::NotUsed, cc::Abort);
-    tc.addCol(GENERIC_SEQNUM_FIELD_NAME, cdt::Integer, cc::Abort, cc::Abort);
-    tc.addCol(MG_ROUND, cdt::Integer, cc::NotUsed, cc::Abort);
-    tc.addCol(MG_GRP_NUM, cdt::Integer, cc::NotUsed, cc::Abort);
-    tc.addCol(MG_STAGE_SEQ_NUM, cdt::Integer, cc::NotUsed, cc::NotUsed);
-    tc.createTableAndResetCreator(*this, TAB_MATCH_GROUP);
+    tc.addForeignKey(MG_CatRef, TabCategory, ca::Cascade, ca::Cascade, cc::NotUsed, cc::Abort);
+    tc.addCol(GenericStateFieldName, cdt::Integer, cc::NotUsed, cc::Abort);
+    tc.addCol(GenericSeqnumFieldName, cdt::Integer, cc::Abort, cc::Abort);
+    tc.addCol(MG_Round, cdt::Integer, cc::NotUsed, cc::Abort);
+    tc.addCol(MG_GrpNum, cdt::Integer, cc::NotUsed, cc::Abort);
+    tc.addCol(MG_StageSeqNum, cdt::Integer, cc::NotUsed, cc::NotUsed);
+    tc.createTableAndResetCreator(*this, TabMatch_GROUP);
 
     // Generate a table for matches
-    tc.addCol(GENERIC_STATE_FIELD_NAME, cdt::Integer, cc::NotUsed, cc::Abort);
-    tc.addCol(GENERIC_SEQNUM_FIELD_NAME, cdt::Integer, cc::Abort, cc::Abort);
-    tc.addForeignKey(MA_GRP_REF, TAB_MATCH_GROUP, ca::Cascade, ca::Cascade, cc::NotUsed, cc::Abort);
-    tc.addCol(MA_NUM, cdt::Integer, cc::Abort, cc::Abort);
-    tc.addForeignKey(MA_PAIR1_REF, TAB_PAIRS, ca::Cascade, ca::Cascade, cc::NotUsed, cc::Abort);
-    tc.addForeignKey(MA_PAIR2_REF, TAB_PAIRS, ca::Cascade, ca::Cascade, cc::NotUsed, cc::Abort);
-    tc.addForeignKey(MA_ACTUAL_PLAYER1A_REF, TAB_PLAYER, ca::Cascade, ca::Cascade, cc::NotUsed, cc::NotUsed);
-    tc.addForeignKey(MA_ACTUAL_PLAYER1B_REF, TAB_PLAYER, ca::Cascade, ca::Cascade, cc::NotUsed, cc::NotUsed);
-    tc.addForeignKey(MA_ACTUAL_PLAYER2A_REF, TAB_PLAYER, ca::Cascade, ca::Cascade, cc::NotUsed, cc::NotUsed);
-    tc.addForeignKey(MA_ACTUAL_PLAYER2B_REF, TAB_PLAYER, ca::Cascade, ca::Cascade, cc::NotUsed, cc::NotUsed);
-    tc.addCol(MA_RESULT, cdt::Text, cc::NotUsed, cc::NotUsed);
-    tc.addForeignKey(MA_COURT_REF, TAB_COURT, ca::Cascade, ca::Cascade, cc::NotUsed, cc::Abort);
-    tc.addCol(MA_START_TIME, cdt::Text, cc::NotUsed, cc::NotUsed);
-    tc.addCol(MA_ADDITIONAL_CALL_TIMES, cdt::Text, cc::NotUsed, cc::NotUsed);  // up 3 times in seconds since epoch as string
-    tc.addCol(MA_FINISH_TIME, cdt::Text, cc::NotUsed, cc::NotUsed);
-    tc.addCol(MA_PAIR1_SYMBOLIC_VAL, cdt::Integer, cc::NotUsed, cc::NotUsed);
-    tc.addCol(MA_PAIR2_SYMBOLIC_VAL, cdt::Integer, cc::NotUsed, cc::NotUsed);
-    tc.addCol(MA_WINNER_RANK, cdt::Integer, cc::NotUsed, cc::NotUsed);
-    tc.addCol(MA_LOSER_RANK, cdt::Integer, cc::NotUsed, cc::NotUsed);
+    tc.addCol(GenericStateFieldName, cdt::Integer, cc::NotUsed, cc::Abort);
+    tc.addCol(GenericSeqnumFieldName, cdt::Integer, cc::Abort, cc::Abort);
+    tc.addForeignKey(MA_GrpRef, TabMatch_GROUP, ca::Cascade, ca::Cascade, cc::NotUsed, cc::Abort);
+    tc.addCol(MA_Num, cdt::Integer, cc::Abort, cc::Abort);
+    tc.addForeignKey(MA_Pair1Ref, TabPairs, ca::Cascade, ca::Cascade, cc::NotUsed, cc::Abort);
+    tc.addForeignKey(MA_Pair2Ref, TabPairs, ca::Cascade, ca::Cascade, cc::NotUsed, cc::Abort);
+    tc.addForeignKey(MA_ActualPlayer1aRef, TabPlayer, ca::Cascade, ca::Cascade, cc::NotUsed, cc::NotUsed);
+    tc.addForeignKey(MA_ActualPlayer1bRef, TabPlayer, ca::Cascade, ca::Cascade, cc::NotUsed, cc::NotUsed);
+    tc.addForeignKey(MA_ActualPlayer2aRef, TabPlayer, ca::Cascade, ca::Cascade, cc::NotUsed, cc::NotUsed);
+    tc.addForeignKey(MA_ActualPlayer2bRef, TabPlayer, ca::Cascade, ca::Cascade, cc::NotUsed, cc::NotUsed);
+    tc.addCol(MA_Result, cdt::Text, cc::NotUsed, cc::NotUsed);
+    tc.addForeignKey(MA_CourtRef, TabCourt, ca::Cascade, ca::Cascade, cc::NotUsed, cc::Abort);
+    tc.addCol(MA_StartTime, cdt::Text, cc::NotUsed, cc::NotUsed);
+    tc.addCol(MA_AdditionalCallTimes, cdt::Text, cc::NotUsed, cc::NotUsed);  // up 3 times in seconds since epoch as string
+    tc.addCol(MA_FinishTime, cdt::Text, cc::NotUsed, cc::NotUsed);
+    tc.addCol(MA_Pair1SymbolicVal, cdt::Integer, cc::NotUsed, cc::NotUsed);
+    tc.addCol(MA_Pair2SymbolicVal, cdt::Integer, cc::NotUsed, cc::NotUsed);
+    tc.addCol(MA_WinnerRank, cdt::Integer, cc::NotUsed, cc::NotUsed);
+    tc.addCol(MA_LoserRank, cdt::Integer, cc::NotUsed, cc::NotUsed);
     tc.addCol(MA_RefereeMode, cdt::Integer, cc::NotUsed, cc::Abort, -1);
-    tc.addForeignKey(MA_REFEREE_REF, TAB_PLAYER, ca::Cascade, ca::Cascade, cc::NotUsed, cc::NotUsed);
-    tc.createTableAndResetCreator(*this, TAB_MATCH);
+    tc.addForeignKey(MA_RefereeRef, TabPlayer, ca::Cascade, ca::Cascade, cc::NotUsed, cc::NotUsed);
+    tc.createTableAndResetCreator(*this, TabMatch);
 
     // Generate a table with ranking information
-    tc.addCol(RA_ROUND, cdt::Integer, cc::NotUsed, cc::Abort);
-    tc.addForeignKey(RA_PAIR_REF, TAB_PAIRS, ca::Cascade, ca::Cascade, cc::NotUsed, cc::Abort);
-    tc.addForeignKey(RA_CAT_REF, TAB_CATEGORY, ca::Cascade, ca::Cascade, cc::NotUsed, cc::Abort); // this eases searching in the tab. theoretically, the category could be derived from the player pair
-    tc.addCol(RA_GRP_NUM, cdt::Integer, cc::NotUsed, cc::Abort); // this eases searching in the tab. theoretically, the group number could be derived from the player pair
-    tc.addCol(RA_GAMES_WON, cdt::Integer, cc::NotUsed, cc::Abort);
-    tc.addCol(RA_GAMES_LOST, cdt::Integer, cc::NotUsed, cc::Abort);
-    tc.addCol(RA_MATCHES_WON, cdt::Integer, cc::NotUsed, cc::Abort);
-    tc.addCol(RA_MATCHES_LOST, cdt::Integer, cc::NotUsed, cc::Abort);
-    tc.addCol(RA_MATCHES_DRAW, cdt::Integer, cc::NotUsed, cc::Abort);
-    tc.addCol(RA_POINTS_WON, cdt::Integer, cc::NotUsed, cc::Abort);
-    tc.addCol(RA_POINTS_LOST, cdt::Integer, cc::NotUsed, cc::Abort);
-    tc.addCol(RA_RANK, cdt::Integer, cc::NotUsed, cc::Abort);
-    tc.createTableAndResetCreator(*this, TAB_MatchSystem);
+    tc.addCol(RA_Round, cdt::Integer, cc::NotUsed, cc::Abort);
+    tc.addForeignKey(RA_PairRef, TabPairs, ca::Cascade, ca::Cascade, cc::NotUsed, cc::Abort);
+    tc.addForeignKey(RA_CatRef, TabCategory, ca::Cascade, ca::Cascade, cc::NotUsed, cc::Abort); // this eases searching in the tab. theoretically, the category could be derived from the player pair
+    tc.addCol(RA_GrpNum, cdt::Integer, cc::NotUsed, cc::Abort); // this eases searching in the tab. theoretically, the group number could be derived from the player pair
+    tc.addCol(RA_GamesWon, cdt::Integer, cc::NotUsed, cc::Abort);
+    tc.addCol(RA_GamesLost, cdt::Integer, cc::NotUsed, cc::Abort);
+    tc.addCol(RA_MatchesWon, cdt::Integer, cc::NotUsed, cc::Abort);
+    tc.addCol(RA_MatchesLost, cdt::Integer, cc::NotUsed, cc::Abort);
+    tc.addCol(RA_MatchesDraw, cdt::Integer, cc::NotUsed, cc::Abort);
+    tc.addCol(RA_PointsWon, cdt::Integer, cc::NotUsed, cc::Abort);
+    tc.addCol(RA_PointsLost, cdt::Integer, cc::NotUsed, cc::Abort);
+    tc.addCol(RA_Rank, cdt::Integer, cc::NotUsed, cc::Abort);
+    tc.createTableAndResetCreator(*this, TabMatchSystem);
 
     // Generate a table with bracket visualization data
-    tc.addForeignKey(BV_MATCH_REF, TAB_MATCH, ca::Cascade, ca::Cascade, cc::Abort, cc::Abort);
-    tc.addForeignKey(BV_CONFIGREF, TAB_CATEGORY, ca::Cascade, ca::Cascade, cc::NotUsed, cc::Abort);
-    tc.addCol(BV_PAGE, cdt::Integer, cc::NotUsed, cc::Abort);
-    tc.addCol(BV_GRID_X0, cdt::Integer, cc::NotUsed, cc::Abort);
-    tc.addCol(BV_GRID_Y0, cdt::Integer, cc::NotUsed, cc::Abort);
-    tc.addCol(BV_SPAN_Y, cdt::Integer, cc::NotUsed, cc::Abort);
-    tc.addCol(BV_ORIENTATION, cdt::Integer, cc::NotUsed, cc::Abort);
-    tc.addCol(BV_TERMINATOR, cdt::Integer, cc::NotUsed, cc::Abort);
-    tc.addCol(BV_INITIAL_RANK1, cdt::Integer, cc::NotUsed, cc::Abort);
-    tc.addCol(BV_INITIAL_RANK2, cdt::Integer, cc::NotUsed, cc::Abort);
-    tc.addCol(BV_Y_PAGEBREAK_SPAN, cdt::Integer, cc::NotUsed, cc::Abort);
-    tc.addCol(BV_NEXT_PAGE_NUM, cdt::Integer, cc::NotUsed, cc::Abort);
-    tc.addCol(BV_TERMINATOR_OFFSET_Y, cdt::Integer, cc::NotUsed, cc::Abort);
-    tc.addCol(BV_ELEMENT_ID, cdt::Integer, cc::NotUsed, cc::Abort);
-    tc.addCol(BV_NEXT_MATCH_POS_FOR_WINNER, cdt::Integer, cc::NotUsed, cc::Abort);
-    tc.addCol(BV_NEXT_MATCH_POS_FOR_LOSER, cdt::Integer, cc::NotUsed, cc::Abort);
-    tc.addCol(BV_NEXT_LOSER_MATCH, cdt::Integer, cc::NotUsed, cc::Abort);
-    tc.addCol(BV_NEXT_WINNER_MATCH, cdt::Integer, cc::NotUsed, cc::Abort);
-    tc.addForeignKey(BV_PAIR1_REF, TAB_PAIRS, ca::Cascade, ca::Cascade, cc::NotUsed, cc::Abort);
-    tc.addForeignKey(BV_PAIR2_REF, TAB_PAIRS, ca::Cascade, ca::Cascade, cc::NotUsed, cc::Abort);
-    tc.createTableAndResetCreator(*this, TAB_BRACKET_VIS);
+    tc.addForeignKey(BV_MatchRef, TabMatch, ca::Cascade, ca::Cascade, cc::Abort, cc::Abort);
+    tc.addForeignKey(BV_CatRef, TabCategory, ca::Cascade, ca::Cascade, cc::NotUsed, cc::Abort);
+    tc.addCol(BV_Page, cdt::Integer, cc::NotUsed, cc::Abort);
+    tc.addCol(BV_GridX0, cdt::Integer, cc::NotUsed, cc::Abort);
+    tc.addCol(BV_GridY0, cdt::Integer, cc::NotUsed, cc::Abort);
+    tc.addCol(BV_SpanY, cdt::Integer, cc::NotUsed, cc::Abort);
+    tc.addCol(BV_Orientation, cdt::Integer, cc::NotUsed, cc::Abort);
+    tc.addCol(BV_Terminator, cdt::Integer, cc::NotUsed, cc::Abort);
+    tc.addCol(BV_InitialRank1, cdt::Integer, cc::NotUsed, cc::Abort);
+    tc.addCol(BV_InitialRank2, cdt::Integer, cc::NotUsed, cc::Abort);
+    tc.addCol(BV_YPagebreakSpan, cdt::Integer, cc::NotUsed, cc::Abort);
+    tc.addCol(BV_NextPageNum, cdt::Integer, cc::NotUsed, cc::Abort);
+    tc.addCol(BV_Terminator_OFFSET_Y, cdt::Integer, cc::NotUsed, cc::Abort);
+    tc.addCol(BV_ElementId, cdt::Integer, cc::NotUsed, cc::Abort);
+    tc.addCol(BV_NextMatchPosForWinner, cdt::Integer, cc::NotUsed, cc::Abort);
+    tc.addCol(BV_NextMatchPosForLoser, cdt::Integer, cc::NotUsed, cc::Abort);
+    tc.addCol(BV_NextLoserMatch, cdt::Integer, cc::NotUsed, cc::Abort);
+    tc.addCol(BV_NextWinnerMatch, cdt::Integer, cc::NotUsed, cc::Abort);
+    tc.addForeignKey(BV_Pair1Ref, TabPairs, ca::Cascade, ca::Cascade, cc::NotUsed, cc::Abort);
+    tc.addForeignKey(BV_Pair2Ref, TabPairs, ca::Cascade, ca::Cascade, cc::NotUsed, cc::Abort);
+    tc.createTableAndResetCreator(*this, TabBracketVis);
   }
 
   //----------------------------------------------------------------------------
@@ -233,49 +233,49 @@ namespace QTournament
 
   void TournamentDB::createIndices()
   {
-    indexCreationHelper(TAB_COURT, GENERIC_NAME_FIELD_NAME);
-    indexCreationHelper(TAB_COURT, GENERIC_SEQNUM_FIELD_NAME, true);
+    indexCreationHelper(TabCourt, GenericNameFieldName);
+    indexCreationHelper(TabCourt, GenericSeqnumFieldName, true);
 
-    indexCreationHelper(TAB_TEAM, GENERIC_NAME_FIELD_NAME, true);
-    indexCreationHelper(TAB_TEAM, GENERIC_SEQNUM_FIELD_NAME, true);
+    indexCreationHelper(TabTeam, GenericNameFieldName, true);
+    indexCreationHelper(TabTeam, GenericSeqnumFieldName, true);
 
-    Sloppy::StringList colList{PL_LNAME, PL_FNAME};
-    indexCreationHelper(TAB_PLAYER, GENERIC_SEQNUM_FIELD_NAME, true);
-    indexCreationHelper(TAB_PLAYER, GENERIC_STATE_FIELD_NAME);
-    indexCreationHelper(TAB_PLAYER, PL_FNAME);
-    indexCreationHelper(TAB_PLAYER, PL_LNAME);
-    indexCreationHelper(TAB_PLAYER, "Player_CombinedNames", colList, true);
+    Sloppy::StringList colList{PL_Lname, PL_Fname};
+    indexCreationHelper(TabPlayer, GenericSeqnumFieldName, true);
+    indexCreationHelper(TabPlayer, GenericStateFieldName);
+    indexCreationHelper(TabPlayer, PL_Fname);
+    indexCreationHelper(TabPlayer, PL_Lname);
+    indexCreationHelper(TabPlayer, "Player_CombinedNames", colList, true);
 
-    indexCreationHelper(TAB_CATEGORY, GENERIC_NAME_FIELD_NAME, true);
-    indexCreationHelper(TAB_CATEGORY, GENERIC_SEQNUM_FIELD_NAME, true);
-    indexCreationHelper(TAB_CATEGORY, GENERIC_STATE_FIELD_NAME);
+    indexCreationHelper(TabCategory, GenericNameFieldName, true);
+    indexCreationHelper(TabCategory, GenericSeqnumFieldName, true);
+    indexCreationHelper(TabCategory, GenericStateFieldName);
 
-    indexCreationHelper(TAB_P2C, P2C_CAT_REF);
-    indexCreationHelper(TAB_P2C, P2C_PLAYER_REF);
+    indexCreationHelper(TabP2C, P2C_CatRef);
+    indexCreationHelper(TabP2C, P2C_PlayerRef);
 
-    indexCreationHelper(TAB_PAIRS, PAIRS_PLAYER1_REF);
-    indexCreationHelper(TAB_PAIRS, PAIRS_PLAYER1_REF);
-    indexCreationHelper(TAB_PAIRS, PAIRS_CONFIGREF);
+    indexCreationHelper(TabPairs, Pairs_Player1Ref);
+    indexCreationHelper(TabPairs, Pairs_Player1Ref);
+    indexCreationHelper(TabPairs, Pairs_CatRef);
 
-    indexCreationHelper(TAB_MATCH_GROUP, MG_CAT_REF);
-    indexCreationHelper(TAB_MATCH_GROUP, MG_GRP_NUM);
-    indexCreationHelper(TAB_MATCH_GROUP, MG_ROUND);
-    indexCreationHelper(TAB_MATCH_GROUP, MG_STAGE_SEQ_NUM, true);
+    indexCreationHelper(TabMatch_GROUP, MG_CatRef);
+    indexCreationHelper(TabMatch_GROUP, MG_GrpNum);
+    indexCreationHelper(TabMatch_GROUP, MG_Round);
+    indexCreationHelper(TabMatch_GROUP, MG_StageSeqNum, true);
 
-    indexCreationHelper(TAB_MATCH, MA_GRP_REF);
-    indexCreationHelper(TAB_MATCH, GENERIC_SEQNUM_FIELD_NAME, true);
-    indexCreationHelper(TAB_MATCH, GENERIC_STATE_FIELD_NAME);
-    indexCreationHelper(TAB_MATCH, MA_PAIR1_REF);
-    indexCreationHelper(TAB_MATCH, MA_PAIR2_REF);
+    indexCreationHelper(TabMatch, MA_GrpRef);
+    indexCreationHelper(TabMatch, GenericSeqnumFieldName, true);
+    indexCreationHelper(TabMatch, GenericStateFieldName);
+    indexCreationHelper(TabMatch, MA_Pair1Ref);
+    indexCreationHelper(TabMatch, MA_Pair2Ref);
 
-    indexCreationHelper(TAB_MatchSystem, RA_PAIR_REF);
-    indexCreationHelper(TAB_MatchSystem, RA_CAT_REF);
-    indexCreationHelper(TAB_MatchSystem, RA_ROUND);
+    indexCreationHelper(TabMatchSystem, RA_PairRef);
+    indexCreationHelper(TabMatchSystem, RA_CatRef);
+    indexCreationHelper(TabMatchSystem, RA_Round);
 
-    indexCreationHelper(TAB_BRACKET_VIS, BV_CONFIGREF);
-    indexCreationHelper(TAB_BRACKET_VIS, BV_MATCH_REF);
-    indexCreationHelper(TAB_BRACKET_VIS, BV_PAIR1_REF);
-    indexCreationHelper(TAB_BRACKET_VIS, BV_PAIR2_REF);
+    indexCreationHelper(TabBracketVis, BV_CatRef);
+    indexCreationHelper(TabBracketVis, BV_MatchRef);
+    indexCreationHelper(TabBracketVis, BV_Pair1Ref);
+    indexCreationHelper(TabBracketVis, BV_Pair2Ref);
 
     //indexCreationHelper(TAB_, );
   }
@@ -284,16 +284,16 @@ namespace QTournament
 
   std::tuple<int, int> TournamentDB::getVersion()
   {
-    SqliteOverlay::KeyValueTab cfg{*this, TAB_CFG};
+    SqliteOverlay::KeyValueTab cfg{*this, TabCfg};
 
     // return an error if no version information is stored in the database
-    if (!cfg.hasKey(CFG_KEY_DB_VERSION))
+    if (!cfg.hasKey(CfgKey_DbVersion))
     {
       return make_tuple(-1, -1);
     }
 
     // get the raw version string
-    auto _versionString = cfg.getString2(CFG_KEY_DB_VERSION);
+    auto _versionString = cfg.getString2(CfgKey_DbVersion);
     if (!_versionString.has_value())
     {
       return make_tuple(-1, -1);
@@ -331,7 +331,7 @@ namespace QTournament
     // match the compiled in version and the minor
     // version number must be less or equal to
     // the version at compile time
-    return ((major == DB_VERSION_MAJOR) && (minor >= 0) && (minor <= DB_VERSION_MINOR));
+    return ((major == DbVersionMajor) && (minor >= 0) && (minor <= DbVersionMinor));
   }
 
   //----------------------------------------------------------------------------
@@ -345,7 +345,7 @@ namespace QTournament
     // match the compiled in version and the minor
     // version number must be less then
     // the version at compile time
-    return ((major == DB_VERSION_MAJOR) && (minor >= 0) && (minor < DB_VERSION_MINOR));
+    return ((major == DbVersionMajor) && (minor >= 0) && (minor < DbVersionMinor));
   }
 
   //----------------------------------------------------------------------------
@@ -458,16 +458,16 @@ namespace QTournament
     createIndices();
 
     // initialize the database
-    auto cfgTab = SqliteOverlay::KeyValueTab(*this, TAB_CFG);
+    auto cfgTab = SqliteOverlay::KeyValueTab(*this, TabCfg);
     Sloppy::estring dbVersion = "%1.%2";
-    dbVersion.arg(DB_VERSION_MAJOR);
-    dbVersion.arg(DB_VERSION_MINOR);
-    cfgTab.set(CFG_KEY_DB_VERSION, dbVersion);
-    cfgTab.set(CFG_KEY_TNMT_NAME, QString2StdString(cfg.tournamentName));
-    cfgTab.set(CFG_KEY_TNMT_ORGA, QString2StdString(cfg.organizingClub));
-    cfgTab.set(CFG_KEY_USE_TEAMS, cfg.useTeams);
-    cfgTab.set(CFG_KEY_REFEREE_TEAM_ID, -1);
-    cfgTab.set(CFG_KEY_DEFAULT_RefereeMode, static_cast<int>(cfg.refereeMode));
+    dbVersion.arg(DbVersionMajor);
+    dbVersion.arg(DbVersionMinor);
+    cfgTab.set(CfgKey_DbVersion, dbVersion);
+    cfgTab.set(CfgKey_TnmtName, QString2StdString(cfg.tournamentName));
+    cfgTab.set(CfgKey_TnmtOrga, QString2StdString(cfg.organizingClub));
+    cfgTab.set(CfgKey_UseTeams, cfg.useTeams);
+    cfgTab.set(CfgKey_RefereeTeamId, -1);
+    cfgTab.set(CfgKey_DefaultRefereemode, static_cast<int>(cfg.refereeMode));
   }
 
   //----------------------------------------------------------------------------

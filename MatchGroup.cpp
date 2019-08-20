@@ -25,14 +25,14 @@ namespace QTournament
 {
 
   MatchGroup::MatchGroup(const TournamentDB& _db, int rowId)
-    :TournamentDatabaseObject(_db, TAB_MATCH_GROUP, rowId), matchTab{db, TAB_MATCH, false}
+    :TournamentDatabaseObject(_db, TabMatch_GROUP, rowId), matchTab{db, TabMatch, false}
   {
   }
 
 //----------------------------------------------------------------------------
 
   MatchGroup::MatchGroup(const TournamentDB& _db, const SqliteOverlay::TabRow& _row)
-  :TournamentDatabaseObject(_db, _row), matchTab{db, TAB_MATCH, false}
+  :TournamentDatabaseObject(_db, _row), matchTab{db, TabMatch, false}
   {
   }
 
@@ -40,7 +40,7 @@ namespace QTournament
 
   Category MatchGroup::getCategory() const
   {
-    int catId = row.getInt(MG_CAT_REF);
+    int catId = row.getInt(MG_CatRef);
     CatMngr cm{db};
     return cm.getCategoryById(catId);
   }
@@ -49,14 +49,14 @@ namespace QTournament
 
   int MatchGroup::getGroupNumber() const
   {
-    return row.getInt(MG_GRP_NUM);
+    return row.getInt(MG_GrpNum);
   }
 
 //----------------------------------------------------------------------------
 
   int MatchGroup::getRound() const
   {
-    return row.getInt(MG_ROUND);
+    return row.getInt(MG_Round);
   }  
 
 //----------------------------------------------------------------------------
@@ -71,14 +71,14 @@ namespace QTournament
 
   int MatchGroup::getMatchCount() const
   {
-    return matchTab.getMatchCountForColumnValue(MA_GRP_REF, getId());
+    return matchTab.getMatchCountForColumnValue(MA_GrpRef, getId());
   }
 
 //----------------------------------------------------------------------------
 
   int MatchGroup::getStageSequenceNumber() const
   {
-    auto result = row.getInt2(MG_STAGE_SEQ_NUM);
+    auto result = row.getInt2(MG_StageSeqNum);
     return result.value_or(-1);
   }
 
@@ -89,8 +89,8 @@ namespace QTournament
     // for performance reasons, we issue a single SQL-statement here
     // instead of looping through all matches in the group
     SqliteOverlay::WhereClause wc;
-    wc.addCol(MA_GRP_REF, getId());
-    wc.addCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(stat));
+    wc.addCol(MA_GrpRef, getId());
+    wc.addCol(GenericStateFieldName, static_cast<int>(stat));
 
     return (matchTab.getMatchCountForWhereClause(wc) > 0);
   }
@@ -102,8 +102,8 @@ namespace QTournament
     // for performance reasons, we issue a single SQL-statement here
     // instead of looping through all matches in the group
     SqliteOverlay::WhereClause wc;
-    wc.addCol(MA_GRP_REF, getId());
-    wc.addCol(GENERIC_STATE_FIELD_NAME, "!=", static_cast<int>(stat));
+    wc.addCol(MA_GrpRef, getId());
+    wc.addCol(GenericStateFieldName, "!=", static_cast<int>(stat));
 
     return (matchTab.getMatchCountForWhereClause(wc) > 0);
   }

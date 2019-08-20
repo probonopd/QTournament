@@ -29,7 +29,7 @@ using namespace QTournament;
 using namespace SqliteOverlay;
 
 MatchTableModel::MatchTableModel(TournamentDB* _db)
-:QAbstractTableModel(0), db(_db), matchTab((db->getTab(TAB_MATCH))), matchTimePredictor(nullptr)
+:QAbstractTableModel(0), db(_db), matchTab((db->getTab(TabMatch))), matchTimePredictor(nullptr)
 {
   CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
   connect(cse, SIGNAL(beginCreateMatch()), this, SLOT(onBeginCreateMatch()), Qt::DirectConnection);

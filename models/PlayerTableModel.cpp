@@ -27,8 +27,8 @@ using namespace QTournament;
 using namespace SqliteOverlay;
 
 PlayerTableModel::PlayerTableModel(TournamentDB* _db)
-:QAbstractTableModel(0), db(_db), playerTab(db->getTab(TAB_PLAYER)),
-        teamTab(db->getTab(TAB_TEAM)), catTab((db->getTab(TAB_CATEGORY)))
+:QAbstractTableModel(0), db(_db), playerTab(db->getTab(TabPlayer)),
+        teamTab(db->getTab(TabTeam)), catTab((db->getTab(TabCategory)))
 {
   CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
   connect(cse, SIGNAL(teamRenamed(int)), this, SLOT(onTeamRenamed(int)), Qt::DirectConnection);

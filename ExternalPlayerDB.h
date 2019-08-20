@@ -40,26 +40,26 @@ namespace QTournament
 #define CFG_KEY_EPD_DB_VERSION std::string("DatabaseVersion")
 
 #define TAB_EPD_PLAYER std::string("Player")
-#define EPD_PL_FNAME std::string("FirstName")
-#define EPD_PL_LNAME std::string("LastName")
-#define EPD_PL_SEX std::string("Sex")
+#define EPD_PL_Fname std::string("FirstName")
+#define EPD_PL_Lname std::string("LastName")
+#define EPD_PL_Sex std::string("Sex")
 
   class ExternalPlayerDatabaseEntry
   {
   public:
-    ExternalPlayerDatabaseEntry(int _id, const QString& _fname, const QString& _lname, SEX _sex = DONT_CARE);
-    ExternalPlayerDatabaseEntry(const QString& _fname, const QString& _lname, SEX _sex = DONT_CARE);
+    ExternalPlayerDatabaseEntry(int _id, const QString& _fname, const QString& _lname, Sex _sex = Sex::DontCare);
+    ExternalPlayerDatabaseEntry(const QString& _fname, const QString& _lname, Sex _sex = Sex::DontCare);
     QString getLastname() const;
     QString getFirstname() const;
     QString getDisplayName() const;
     inline int getId() const { return id; }
-    inline SEX getSex() const { return sex; }
+    inline Sex getSex() const { return sex; }
 
   protected:
     int id;
     QString fName;
     QString lName;
-    SEX sex;
+    Sex sex;
     static std::function<bool (ExternalPlayerDatabaseEntry&, ExternalPlayerDatabaseEntry&)> getPlayerSortFunction_byName();
   };
   using opExternalPlayerDatabaseEntry = std::optional<ExternalPlayerDatabaseEntry>;
@@ -83,7 +83,7 @@ namespace QTournament
     opExternalPlayerDatabaseEntry getPlayer(const QString& fname, const QString& lname);
     opExternalPlayerDatabaseEntry storeNewPlayer(const ExternalPlayerDatabaseEntry& newPlayer);
     bool hasPlayer(const QString& fname, const QString& lname);
-    bool updatePlayerSexIfUndefined(int extPlayerId, SEX newSex);
+    bool updatePlayerSexIfUndefined(int extPlayerId, Sex newSex);
     std::tuple<QList<int>, QList<int>, QHash<int, QString>, int> bulkImportCSV(const QString& csv);
 
   private:

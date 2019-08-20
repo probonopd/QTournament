@@ -43,7 +43,7 @@ DlgEditPlayer::DlgEditPlayer(TournamentDB* _db, QWidget* parent, Player* _select
 
 //----------------------------------------------------------------------------
 
-DlgEditPlayer::DlgEditPlayer(TournamentDB* _db, QWidget *parent, SEX _sexPreset, const Category &_catPreset)
+DlgEditPlayer::DlgEditPlayer(TournamentDB* _db, QWidget *parent, Sex _sexPreset, const Category &_catPreset)
 :QDialog(parent), db(_db), _hasNameChange(true), selectedPlayer(nullptr),
   sexPreset(_sexPreset), presetCatId(_catPreset.getId())
 {
@@ -69,7 +69,7 @@ DlgEditPlayer::DlgEditPlayer(TournamentDB* _db, QWidget* parent, const ExternalP
   // apply the preset from the external database
   ui.leFirstName->setText(nameAndSexPreset.getFirstname());
   ui.leLastName->setText(nameAndSexPreset.getLastname());
-  if (nameAndSexPreset.getSex() != DONT_CARE)
+  if (nameAndSexPreset.getSex() != Sex::DontCare)
   {
     ui.rbFemale->setChecked(nameAndSexPreset.getSex() == F);
     ui.rbMale->setChecked(nameAndSexPreset.getSex() == M);
@@ -172,7 +172,7 @@ void DlgEditPlayer::initFromPlayerData()
   ui.leLastName->setText(selectedPlayer->getLastName());
 
   // set the correct sex
-  SEX sex = selectedPlayer->getSex();
+  Sex sex = selectedPlayer->getSex();
   ui.rbMale->setChecked(sex == M);
   ui.rbFemale->setChecked(sex == F);
   
@@ -242,7 +242,7 @@ bool DlgEditPlayer::hasNameChange()
 
 //----------------------------------------------------------------------------
 
-SEX DlgEditPlayer::getSex()
+Sex DlgEditPlayer::getSex()
 {
   return (ui.rbMale->isChecked()) ? M : F;
 }

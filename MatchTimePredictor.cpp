@@ -45,7 +45,7 @@ namespace QTournament {
   {
     // return pure database ("reality") values if we have a sufficiently
     // large number of real matches
-    if (nMatches >= NUM_INITIALLY_ASSUMED_MATCHES)
+    if (nMatches >= NumInitiallyAssumedMatches)
     {
       return totalMatchTime_secs / nMatches;
     }
@@ -53,14 +53,14 @@ namespace QTournament {
     // return the default duration if we have no matches at all
     if (nMatches < 1)
     {
-      return DEFAULT_MATCH_TIME__SECS;
+      return DefaultMatchTime_secs;
     }
 
     // blend default and real duration for the first few matches
     long matchTimeBlended = totalMatchTime_secs + \
-                                     (NUM_INITIALLY_ASSUMED_MATCHES - nMatches) * DEFAULT_MATCH_TIME__SECS;
+                                     (NumInitiallyAssumedMatches - nMatches) * DefaultMatchTime_secs;
 
-    return matchTimeBlended / NUM_INITIALLY_ASSUMED_MATCHES;
+    return matchTimeBlended / NumInitiallyAssumedMatches;
   }
 
   //----------------------------------------------------------------------------
@@ -69,13 +69,13 @@ namespace QTournament {
   {
     int catId = cat.getId();
     auto [cnt, catTime] = catId2MatchTime[catId];
-    if (cnt < NUM_INITIALLY_ASSUMED_MATCHES)
+    if (cnt < NumInitiallyAssumedMatches)
     {
       // blend with the global average if we don't have enough
       // data points in this cat
       int avg = getGlobalAverageMatchDuration__secs();
-      catTime += (NUM_INITIALLY_ASSUMED_MATCHES - cnt) * avg;
-      cnt = NUM_INITIALLY_ASSUMED_MATCHES;
+      catTime += (NumInitiallyAssumedMatches - cnt) * avg;
+      cnt = NumInitiallyAssumedMatches;
     }
 
     return catTime / cnt;
@@ -139,12 +139,12 @@ namespace QTournament {
 
     // find all matches that have been finished since the last update
     SqliteOverlay::WhereClause wc;
-    wc.addCol(MA_FINISH_TIME, ">", lastMatchFinishTime);
-    wc.addCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(ObjState::MA_Finished));
-    wc.setOrderColumn_Asc(MA_FINISH_TIME);
+    wc.addCol(MA_FinishTime, ">", lastMatchFinishTime);
+    wc.addCol(GenericStateFieldName, static_cast<int>(ObjState::MA_Finished));
+    wc.setOrderColumn_Asc(MA_FinishTime);
 
     MatchMngr mm{db};
-    for (SqliteOverlay::TabRowIterator it{db, TAB_MATCH, wc}; it.hasData(); ++it)
+    for (SqliteOverlay::TabRowIterator it{db, TabMatch, wc}; it.hasData(); ++it)
     {
       const SqliteOverlay::TabRow& row = *it;
 
@@ -152,10 +152,10 @@ namespace QTournament {
 
       // check for the existence of the timestamps, because
       // walkovers might not have one
-      auto startTime = row.getInt2(MA_START_TIME);
+      auto startTime = row.getInt2(MA_StartTime);
       if (!startTime) continue;
 
-      auto finishTime = row.getInt2(MA_FINISH_TIME);
+      auto finishTime = row.getInt2(MA_FinishTime);
       if (!finishTime) continue;
 
       // update the accumulated match times
@@ -205,7 +205,7 @@ namespace QTournament {
       int coNum = c.getNumber();
 
       // default value for empty courts
-      int finishTime = now - GRACE_TIME_BETWEEN_MATCHES__SECS;  // will be added again later
+      int finishTime = now - GraceTimeBetweenMatches_secs;  // will be added again later
 
       auto ma = mm.getMatchForCourt(c);
       if (ma)
@@ -227,7 +227,7 @@ namespace QTournament {
           // must be close to its end
           if (finishTime < now)
           {
-            finishTime = now + COURTS_IS_BUSY_AND_PREDICTION_WRONG__CORRECTION_OFFSET__SECS;
+            finishTime = now + CourtIsBusyAndPredictionWrong_CorrectionOffset_secs;
           }
         }
       }
@@ -255,12 +255,12 @@ namespace QTournament {
     // iterate over all queued, not running and not finished
     // matches and assign estimated start and end times
     SqliteOverlay::WhereClause wc;
-    wc.addCol(MA_NUM, ">", 0);   // the match needs to have a match number
-    wc.addCol(GENERIC_STATE_FIELD_NAME, "!=", static_cast<int>(ObjState::MA_Finished));  // the match is not finished
-    wc.addCol(GENERIC_STATE_FIELD_NAME, "!=", static_cast<int>(ObjState::MA_Running));  // the match is not running
-    wc.setOrderColumn_Asc(MA_NUM);
+    wc.addCol(MA_Num, ">", 0);   // the match needs to have a match number
+    wc.addCol(GenericStateFieldName, "!=", static_cast<int>(ObjState::MA_Finished));  // the match is not finished
+    wc.addCol(GenericStateFieldName, "!=", static_cast<int>(ObjState::MA_Running));  // the match is not running
+    wc.setOrderColumn_Asc(MA_Num);
 
-    for (SqliteOverlay::TabRowIterator it{db, TAB_MATCH, wc}; it.hasData(); ++it)
+    for (SqliteOverlay::TabRowIterator it{db, TabMatch, wc}; it.hasData(); ++it)
     {
       const SqliteOverlay::TabRow& matchRow = *it;
 
@@ -275,7 +275,7 @@ namespace QTournament {
       //
       // round start and finish time to full minutes
       // to achieve synchronized / harmonized UI updates
-      time_t start = coFree + GRACE_TIME_BETWEEN_MATCHES__SECS;
+      time_t start = coFree + GraceTimeBetweenMatches_secs;
       time_t finish = start + avgMatchTime;
       start = round(start / 60.0) * 60;
       finish = round(finish / 60.0) * 60;

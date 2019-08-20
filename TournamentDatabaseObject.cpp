@@ -35,7 +35,7 @@ namespace QTournament
   // NOT SET!!!
   ObjState TournamentDatabaseObject::getState() const
   {
-    int stateInt = row.getInt(GENERIC_STATE_FIELD_NAME);
+    int stateInt = row.getInt(GenericStateFieldName);
     
     return static_cast<ObjState>(stateInt);
   }
@@ -47,7 +47,7 @@ namespace QTournament
   void TournamentDatabaseObject::setState(ObjState newState) const
   {
     int stateInt = static_cast<int>(newState);
-    row.update(GENERIC_STATE_FIELD_NAME, stateInt);
+    row.update(GenericStateFieldName, stateInt);
   }
 
 //----------------------------------------------------------------------------
@@ -56,7 +56,7 @@ namespace QTournament
   // HAS NO "SeqNum" COLUMN OR IF THE COLUMN IS NULL
   int TournamentDatabaseObject::getSeqNum() const
   {
-    return row.getInt(GENERIC_SEQNUM_FIELD_NAME);
+    return row.getInt(GenericSeqnumFieldName);
   }
     
 //----------------------------------------------------------------------------

@@ -30,7 +30,7 @@ namespace QTournament
 {
 
   RankingEntry::RankingEntry(const TournamentDB& _db, int rowId)
-  :TournamentDatabaseObject(_db, TAB_MatchSystem, rowId)
+  :TournamentDatabaseObject(_db, TabMatchSystem, rowId)
   {
   }
 
@@ -45,14 +45,14 @@ namespace QTournament
 
   int RankingEntry::getRound() const
   {
-    return row.getInt(RA_ROUND);
+    return row.getInt(RA_Round);
   }
 
 //----------------------------------------------------------------------------
 
   Category RankingEntry::getCategory() const
   {
-    int catId = row.getInt(RA_CAT_REF);
+    int catId = row.getInt(RA_CatRef);
     CatMngr cm{db};
     return cm.getCategoryById(catId);
   }
@@ -61,7 +61,7 @@ namespace QTournament
 
   std::optional<PlayerPair> RankingEntry::getPlayerPair() const
   {
-    auto ppId = row.getInt2(RA_PAIR_REF);
+    auto ppId = row.getInt2(RA_PairRef);
     if (!ppId.has_value()) return std::optional<PlayerPair>{};
 
     return PlayerPair{db, *ppId};
@@ -71,8 +71,8 @@ namespace QTournament
 
   int RankingEntry::getRank() const
   {
-    int rank = row.getInt2(RA_RANK).value_or(-1);
-    if (rank <= 0) return NO_RANK_ASSIGNED;
+    int rank = row.getInt2(RA_Rank).value_or(-1);
+    if (rank <= 0) return NoRankAssigned;
 
     return rank;
   }
@@ -81,16 +81,16 @@ namespace QTournament
 
   int RankingEntry::getGroupNumber() const
   {
-    return row.getInt(RA_GRP_NUM);
+    return row.getInt(RA_GrpNum);
   }
 
 //----------------------------------------------------------------------------
 
   std::tuple<int, int, int, int> RankingEntry::getMatchStats() const
   {
-    int won = row.getInt2(RA_MATCHES_WON).value_or(0);
-    int draw = row.getInt2(RA_MATCHES_DRAW).value_or(0);
-    int lost = row.getInt2(RA_MATCHES_LOST).value_or(0);
+    int won = row.getInt2(RA_MatchesWon).value_or(0);
+    int draw = row.getInt2(RA_MatchesDraw).value_or(0);
+    int lost = row.getInt2(RA_MatchesLost).value_or(0);
 
     return std::tuple{won, draw, lost, won+draw+lost};
   }
@@ -99,8 +99,8 @@ namespace QTournament
 
   std::tuple<int, int, int> RankingEntry::getGameStats() const
   {
-    int won = row.getInt2(RA_GAMES_WON).value_or(0);
-    int lost = row.getInt2(RA_GAMES_LOST).value_or(0);
+    int won = row.getInt2(RA_GamesWon).value_or(0);
+    int lost = row.getInt2(RA_GamesLost).value_or(0);
 
     return std::tuple{won, lost, won+lost};
   }
@@ -109,8 +109,8 @@ namespace QTournament
 
   std::tuple<int, int> RankingEntry::getPointStats() const
   {
-    int won = row.getInt2(RA_POINTS_WON).value_or(0);
-    int lost = row.getInt2(RA_POINTS_LOST).value_or(0);
+    int won = row.getInt2(RA_PointsWon).value_or(0);
+    int lost = row.getInt2(RA_PointsLost).value_or(0);
 
     return std::tuple{won, lost};
   }

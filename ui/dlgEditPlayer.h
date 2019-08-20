@@ -31,13 +31,13 @@ class DlgEditPlayer : public QDialog
   Q_OBJECT
 public:
   DlgEditPlayer (const QTournament::TournamentDB& _db, QWidget *parent, QTournament::Player* _selectedPlayer = nullptr);
-  DlgEditPlayer (const QTournament::TournamentDB& _db, QWidget *parent, QTournament::SEX _sexPreset, const QTournament::Category& _catPreset);
+  DlgEditPlayer (const QTournament::TournamentDB& _db, QWidget *parent, QTournament::Sex _sexPreset, const QTournament::Category& _catPreset);
   DlgEditPlayer (const QTournament::TournamentDB& _db, QWidget *parent, const QTournament::ExternalPlayerDatabaseEntry& nameAndSexPreset, int _presetCatId=-1);
   virtual ~DlgEditPlayer ();
   QString getFirstName();
   QString getLastName();
   bool hasNameChange();
-  QTournament::SEX getSex();
+  QTournament::Sex getSex();
   QTournament::Team getTeam();
   QHash<QTournament::Category, bool> getCategoryCheckState();
   
@@ -50,7 +50,7 @@ private:
   bool _hasNameChange;
   void updateCatList(QHash<QTournament::Category, QTournament::CatAddState> catStatus, int preselectCatId = -1);
 
-  QTournament::SEX sexPreset;
+  QTournament::Sex sexPreset;
   int presetCatId = -1;
 
 public slots:

@@ -33,7 +33,7 @@ namespace QTournament
 {
 
   Player::Player(const TournamentDB& _db, int rowId)
-  :TournamentDatabaseObject(_db, TAB_PLAYER, rowId)
+  :TournamentDatabaseObject(_db, TabPlayer, rowId)
   {
   }
 
@@ -48,8 +48,8 @@ namespace QTournament
 
   QString Player::getDisplayName(int maxLen) const
   {
-    QString first = QString::fromUtf8(row[PL_FNAME].data());
-    QString last = QString::fromUtf8(row[PL_LNAME].data());
+    QString first = QString::fromUtf8(row[PL_Fname].data());
+    QString last = QString::fromUtf8(row[PL_Lname].data());
     
     QString fullName = last + ", " + first;
     
@@ -90,8 +90,8 @@ namespace QTournament
 
   QString Player::getDisplayName_FirstNameFirst() const
   {
-    QString first = QString::fromUtf8(row[PL_FNAME].data());
-    QString last = QString::fromUtf8(row[PL_LNAME].data());
+    QString first = QString::fromUtf8(row[PL_Fname].data());
+    QString last = QString::fromUtf8(row[PL_Lname].data());
 
     return first + " " + last;
   }
@@ -108,29 +108,29 @@ namespace QTournament
 
   QString Player::getFirstName() const
   {
-    return QString::fromUtf8(row[PL_FNAME].data());
+    return QString::fromUtf8(row[PL_Fname].data());
   }
 
 //----------------------------------------------------------------------------
 
   QString Player::getLastName() const
   {
-    return QString::fromUtf8(row[PL_LNAME].data());
+    return QString::fromUtf8(row[PL_Lname].data());
   }
 
 //----------------------------------------------------------------------------
 
-  SEX Player::getSex() const
+  Sex Player::getSex() const
   {
-    int sexInt = row.getInt(PL_SEX);
-    return static_cast<SEX>(sexInt);
+    int sexInt = row.getInt(PL_Sex);
+    return static_cast<Sex>(sexInt);
   }
 
 //----------------------------------------------------------------------------
 
   Team Player::getTeam() const
   {
-    auto teamRef = row.getInt2(PL_TEAM_REF);
+    auto teamRef = row.getInt2(PL_TeamRef);
     
     // if we don't use teams, throw an exception
     if (!teamRef)
@@ -147,13 +147,13 @@ namespace QTournament
   std::vector<Category> Player::getAssignedCategories() const
   {
     SqliteOverlay::WhereClause wc;
-    wc.addCol(P2C_PLAYER_REF, getId());
+    wc.addCol(P2C_PlayerRef, getId());
 
     CategoryList result;
     CatMngr cmngr{db};
-    for (SqliteOverlay::TabRowIterator it{db, TAB_P2C, wc}; it.hasData(); ++it)
+    for (SqliteOverlay::TabRowIterator it{db, TabP2C, wc}; it.hasData(); ++it)
     {
-      int catId = it->getInt(P2C_CAT_REF);
+      int catId = it->getInt(P2C_CatRef);
       result.push_back(cmngr.getCategoryById(catId));
     }
 
@@ -164,7 +164,7 @@ namespace QTournament
 
   int Player::getRefereeCount() const
   {
-    return row.getInt(PL_Referee_COUNT);
+    return row.getInt(PL_RefereeCount);
   }
 
   //----------------------------------------------------------------------------
@@ -174,10 +174,10 @@ namespace QTournament
     if (getState() != ObjState::PL_Referee) return {};
 
     // find the court on which the player is umpire
-    SqliteOverlay::DbTab matchTab{db, TAB_MATCH, false};
+    SqliteOverlay::DbTab matchTab{db, TabMatch, false};
     SqliteOverlay::WhereClause wc;
-    wc.addCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(ObjState::MA_Running));
-    wc.addCol(MA_REFEREE_REF, getId());
+    wc.addCol(GenericStateFieldName, static_cast<int>(ObjState::MA_Running));
+    wc.addCol(MA_RefereeRef, getId());
 
     // do we have a matching match entry?
     auto r = matchTab.getSingleRowByWhereClause2(wc);

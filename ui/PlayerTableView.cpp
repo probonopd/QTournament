@@ -41,7 +41,7 @@ PlayerTableView::PlayerTableView(QWidget* parent)
   :GuiHelpers::AutoSizingTableView_WithDatabase<PlayerTableModel>{
      GuiHelpers::AutosizeColumnDescrList{
         {"", REL_NAME_COL_WIDTH, -1, MAX_NAME_COL_WIDTH},
-        {"", REL_SEX_COL_WIDTH, -1, MAX_SEX_COL_WIDTH},
+        {"", REL_Sex_COL_WIDTH, -1, MAX_Sex_COL_WIDTH},
         {"", REL_TEAM_COL_WIDTH, -1, MAX_TEAM_COL_WIDTH},
         {"", REL_CONFIGCOL_WIDTH, -1, MAX_CONFIGCOL_WIDTH},
         {"", 0, -1, -1}}, true, parent}

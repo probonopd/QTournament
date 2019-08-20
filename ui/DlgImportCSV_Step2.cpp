@@ -216,7 +216,7 @@ void CSVDataTableWidget::createOrUpdateCellItem(int row, int col)
   }
   if (col == CSVFieldsIndex::Sex)
   {
-    if (rec.getSex() != DONT_CARE)
+    if (rec.getSex() != Sex::DontCare)
     {
       txt = (rec.getSex() == M) ? "m" : tr("f");
     }

@@ -53,7 +53,7 @@ namespace QTournament
     QString getFirstName() const;
     QString getLastName() const;
     ERR rename(const QString& newFirst, const QString& newLast);
-    SEX getSex() const;
+    Sex getSex() const;
     Team getTeam() const;
     std::vector<Category> getAssignedCategories() const;
     int getRefereeCount() const;

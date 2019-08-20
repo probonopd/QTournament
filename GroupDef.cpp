@@ -74,7 +74,7 @@ namespace QTournament {
   bool GroupDef::setGroupSize(int newGroupSize)
   {
     if (newGroupSize < 3) return false;
-    if (newGroupSize > MAX_GROUP_SIZE) return false;
+    if (newGroupSize > MaxGroupSize) return false;
     size = newGroupSize;
     return true;
   }
@@ -84,7 +84,7 @@ namespace QTournament {
   bool GroupDef::setNumGroups(int newNumGroups)
   {
     if (newNumGroups < 0) return false;
-    if (newNumGroups > MAX_GROUP_COUNT) return false;
+    if (newNumGroups > MaxGroupCount) return false;
     numOfGroups = newNumGroups;
     return true;
   }

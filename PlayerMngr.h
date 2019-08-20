@@ -49,7 +49,7 @@ namespace QTournament
     PlayerMngr (const TournamentDB& _db);
 
     // player creation
-    ERR createNewPlayer (const QString& firstName, const QString& lastName, SEX sex, const QString& teamName);
+    ERR createNewPlayer (const QString& firstName, const QString& lastName, Sex sex, const QString& teamName);
 
     // getters and (boolean) queries
     bool hasPlayer (const QString& firstName, const QString& lastName);
@@ -106,7 +106,7 @@ namespace QTournament
     void closeExternalPlayerDatabase();
 
     // importing and exporting players
-    //std::optional<Player> importPlayerFromExternalDatabase(ERR* err, int extPlayerId, SEX sexOverride = DONT_CARE);  // never used in the project
+    //std::optional<Player> importPlayerFromExternalDatabase(ERR* err, int extPlayerId, Sex sexOverride = Sex::DontCare);  // never used in the project
     ERR exportPlayerToExternalDatabase(int playerId);
     ERR exportPlayerToExternalDatabase(const Player& p);
     ERR syncAllPlayersToExternalDatabase();

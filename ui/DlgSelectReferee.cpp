@@ -90,8 +90,8 @@ DlgSelectReferee::DlgSelectReferee(TournamentDB* _db, const Match& _ma, REFEREE_
   }
 
   // get the tournament-wide default value for the referee-team, if any
-  auto cfg = SqliteOverlay::KeyValueTab::getTab(db, TAB_CFG);
-  int defaultRefereeTeamId = cfg.getInt(CFG_KEY_REFEREE_TEAM_ID);
+  auto cfg = SqliteOverlay::KeyValueTab::getTab(db, TabCfg);
+  int defaultRefereeTeamId = cfg.getInt(CfgKey_RefereeTeamId);
   initTeamList(defaultRefereeTeamId);
 
 
@@ -181,8 +181,8 @@ void DlgSelectReferee::onBtnSelectClicked()
   if (curFilterMode == RefereeMode::RefereeMode::SpecialTeam)
   {
     int curTeamId = ui->cbTeamSelection->currentData().toInt();
-    auto cfg = SqliteOverlay::KeyValueTab::getTab(db, TAB_CFG);
-    cfg.set(CFG_KEY_REFEREE_TEAM_ID, curTeamId);
+    auto cfg = SqliteOverlay::KeyValueTab::getTab(db, TabCfg);
+    cfg.set(CfgKey_RefereeTeamId, curTeamId);
   }
 
   accept();

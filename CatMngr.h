@@ -55,7 +55,7 @@ namespace QTournament
     Category getCategoryById(int id);
     Category getCategoryBySeqNum(int seqNum);
     CategoryList getAllCategories();
-    QHash<Category, CatAddState> getAllCategoryAddStates(SEX s);
+    QHash<Category, CatAddState> getAllCategoryAddStates(Sex s);
     QHash<Category, CatAddState> getAllCategoryAddStates(const Player& p);
     static std::function<bool (Category&, Category&)> getCategorySortFunction_byName();
     std::vector<PlayerPair> getSeeding(const Category& cat) const;
@@ -64,7 +64,7 @@ namespace QTournament
     // setters
     ERR setMatchType(Category& cat, MatchType newMatchType);
     ERR setMatchSystem(Category& cat, MatchSystem newMatchSystem);
-    ERR setSex(Category& cat, SEX newSex);
+    ERR setSex(Category& cat, Sex newSex);
     bool setCatParameter(Category& cat, CatParameter p, const QVariant& v);
 
     // modifications
@@ -90,7 +90,7 @@ namespace QTournament
     std::string getSyncString(const std::vector<int>& rows) const override;
 
   private:
-    bool setCatParam_CatParameter::AllowDraw( Category& c, const QVariant& v);
+    bool setCatParam_AllowDraw( Category& c, const QVariant& v);
     bool setCatParam_Score( Category& c, int newScore, bool isDraw);
   };
 }

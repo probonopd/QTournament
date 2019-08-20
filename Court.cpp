@@ -30,7 +30,7 @@ namespace QTournament
 {
 
   Court::Court(const TournamentDB& _db, int rowId)
-    :TournamentDatabaseObject(_db, TAB_COURT, rowId)
+    :TournamentDatabaseObject(_db, TabCourt, rowId)
   {
   }
 
@@ -45,7 +45,7 @@ namespace QTournament
 
   QString Court::getName(int maxLen) const
   {
-    auto _result = row.getString2(GENERIC_NAME_FIELD_NAME);
+    auto _result = row.getString2(GenericNameFieldName);
     if (!_result) return QString();  // empty name field
 
     QString result = stdString2QString(*_result);
@@ -70,21 +70,21 @@ namespace QTournament
 
   int Court::getNumber() const
   {
-    return row.getInt(CO_NUMBER);
+    return row.getInt(CO_Number);
   }
 
 //----------------------------------------------------------------------------
 
   bool Court::isManualAssignmentOnly() const
   {
-    return (row.getInt(CO_IS_MANUAL_ASSIGNMENT) == 1);
+    return (row.getInt(CO_IsManualAssignment) == 1);
   }
 
 //----------------------------------------------------------------------------
 
   void Court::setManualAssignment(bool isManual)
   {
-    row.update(CO_IS_MANUAL_ASSIGNMENT, isManual ? 1 : 0);
+    row.update(CO_IsManualAssignment, isManual ? 1 : 0);
   }
 
 //----------------------------------------------------------------------------

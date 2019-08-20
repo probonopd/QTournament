@@ -32,7 +32,7 @@ namespace QTournament
 {
 
   Match::Match(const TournamentDB& _db, int rowId)
-  :TournamentDatabaseObject(_db, TAB_MATCH, rowId)
+  :TournamentDatabaseObject(_db, TabMatch, rowId)
   {
   }
 
@@ -54,7 +54,7 @@ namespace QTournament
 
   MatchGroup Match::getMatchGroup() const
   {
-    int grpId = row.getInt(MA_GRP_REF);
+    int grpId = row.getInt(MA_GrpRef);
     return MatchGroup{db, grpId};
   }
 
@@ -62,14 +62,14 @@ namespace QTournament
 
   bool Match::hasPlayerPair1() const
   {
-    return row.getInt2(MA_PAIR1_REF).has_value();
+    return row.getInt2(MA_Pair1Ref).has_value();
   }
 
 //----------------------------------------------------------------------------
 
   bool Match::hasPlayerPair2() const
   {
-    return row.getInt2(MA_PAIR2_REF).has_value();
+    return row.getInt2(MA_Pair2Ref).has_value();
   }
 
 //----------------------------------------------------------------------------
@@ -83,7 +83,7 @@ namespace QTournament
 
   PlayerPair Match::getPlayerPair1() const
   {
-    auto ppId = row.getInt2(MA_PAIR1_REF);
+    auto ppId = row.getInt2(MA_Pair1Ref);
 
     if (!ppId)
     {
@@ -98,7 +98,7 @@ namespace QTournament
 
   PlayerPair Match::getPlayerPair2() const
   {
-    auto ppId = row.getInt2(MA_PAIR2_REF);
+    auto ppId = row.getInt2(MA_Pair2Ref);
 
     if (!ppId)
     {
@@ -113,7 +113,7 @@ namespace QTournament
 
   int Match::getMatchNumber() const
   {
-    return row.getInt2(MA_NUM).value_or(MatchNumNotAssigned);
+    return row.getInt2(MA_Num).value_or(MatchNumNotAssigned);
   }
 
   //----------------------------------------------------------------------------
@@ -193,7 +193,7 @@ namespace QTournament
 
   std::optional<MatchScore> Match::getScore(ERR *err) const
   {
-    auto scoreEntry = row.getString2(MA_RESULT);
+    auto scoreEntry = row.getString2(MA_Result);
 
     if (!scoreEntry)
     {
@@ -212,7 +212,7 @@ namespace QTournament
       //
       // but if it does, we clear the invalid database entry
       // and return an error
-      row.updateToNull(MA_RESULT);
+      row.updateToNull(MA_Result);
       Sloppy::assignIfNotNull<ERR>(err, ERR::InconsistentMatchResultString);
       return {};
     }
@@ -228,7 +228,7 @@ namespace QTournament
 
   std::optional<Court> Match::getCourt(ERR *err) const
   {
-    auto courtId = row.getInt2(MA_COURT_REF);
+    auto courtId = row.getInt2(MA_CourtRef);
     if (!courtId)
     {
       Sloppy::assignIfNotNull<ERR>(err, ERR::NoCourtAssigned);
@@ -266,7 +266,7 @@ namespace QTournament
 
   int Match::getWinnerRank() const
   {
-    auto _wr = row.getInt2(MA_WINNER_RANK);
+    auto _wr = row.getInt2(MA_WinnerRank);
     if (!_wr) return -1;
 
     int wr = *_wr;
@@ -277,7 +277,7 @@ namespace QTournament
 
   int Match::getLoserRank() const
   {
-    auto _lr = row.getInt2(MA_LOSER_RANK);
+    auto _lr = row.getInt2(MA_LoserRank);
     if (!_lr) return -1;
 
     int lr = *_lr;
@@ -312,7 +312,7 @@ namespace QTournament
 
   QDateTime Match::getStartTime() const
   {
-    auto startTime = row.getInt2(MA_START_TIME);
+    auto startTime = row.getInt2(MA_StartTime);
     if (!startTime) return QDateTime();   // return null-time as error indicator
 
     return QDateTime::fromTime_t(*startTime); // Hmmm... conversion from int to uint... should work until 2035 or something
@@ -322,7 +322,7 @@ namespace QTournament
 
   QDateTime Match::getFinishTime() const
   {
-    auto finishTime = row.getInt2(MA_FINISH_TIME);
+    auto finishTime = row.getInt2(MA_FinishTime);
     if (!finishTime) return QDateTime();   // return null-time as error indicator
 
     return QDateTime::fromTime_t(*finishTime);  // Hmmm... conversion from int to uint... should work until 2035 or something
@@ -333,7 +333,7 @@ namespace QTournament
   void Match::addAddtionalCallTime() const
   {
     std::string callTimes{};
-    auto _callTimes = row.getString2(MA_ADDITIONAL_CALL_TIMES);
+    auto _callTimes = row.getString2(MA_AdditionalCallTimes);
     if (_callTimes)
     {
       callTimes = *_callTimes + ",";
@@ -342,7 +342,7 @@ namespace QTournament
     UTCTimestamp now;
     callTimes += std::to_string(now.getRawTime());
 
-    row.update(MA_ADDITIONAL_CALL_TIMES, callTimes);
+    row.update(MA_AdditionalCallTimes, callTimes);
   }
 
 //----------------------------------------------------------------------------
@@ -351,7 +351,7 @@ namespace QTournament
   {
     QList<QDateTime> result;
 
-    auto _callTimes = row.getString2(MA_ADDITIONAL_CALL_TIMES);
+    auto _callTimes = row.getString2(MA_AdditionalCallTimes);
     if (!_callTimes)
     {
       return result;
@@ -375,13 +375,13 @@ namespace QTournament
     ObjState stat = getState();
     if ((stat != ObjState::MA_Finished) && (stat != ObjState::MA_Running)) return -1;
 
-    auto startTime = row.getInt2(MA_START_TIME);
+    auto startTime = row.getInt2(MA_StartTime);
     if (!startTime) return -1;
 
     int finishTime;
     if (stat == ObjState::MA_Finished)
     {
-      auto _finishTime = row.getInt2(MA_FINISH_TIME);
+      auto _finishTime = row.getInt2(MA_FinishTime);
       if (!_finishTime) return -1;
       finishTime = *_finishTime;
     } else {
@@ -404,14 +404,14 @@ namespace QTournament
   RefereeMode Match::get_EFFECTIVE_RefereeMode() const
   {
     RefereeMode mode = get_RAW_RefereeMode();
-    if (mode == RefereeMode::RefereeMode::UseDefault)
+    if (mode == RefereeMode::UseDefault)
     {
-      auto cfg = SqliteOverlay::KeyValueTab{db.get(), TAB_CFG};
-      int tnmtDefaultRefereeModeId = cfg.getInt(CFG_KEY_DEFAULT_RefereeMode);
+      auto cfg = SqliteOverlay::KeyValueTab{db.get(), TabCfg};
+      int tnmtDefaultRefereeModeId = cfg.getInt(CfgKey_DefaultRefereemode);
       mode = static_cast<RefereeMode>(tnmtDefaultRefereeModeId);
     }
 
-    assert(mode != RefereeMode::RefereeMode::UseDefault);
+    assert(mode != RefereeMode::UseDefault);
 
     return mode;
   }
@@ -420,7 +420,7 @@ namespace QTournament
 
   std::optional<Player> Match::getAssignedReferee() const
   {
-    auto refereeId = row.getInt2(MA_REFEREE_REF);
+    auto refereeId = row.getInt2(MA_RefereeRef);
     if (!refereeId) return {};
 
     PlayerMngr pm{db};
@@ -431,12 +431,12 @@ namespace QTournament
 
   bool Match::hasRefereeAssigned() const
   {
-    return row.getInt2(MA_REFEREE_REF).has_value();
+    return row.getInt2(MA_RefereeRef).has_value();
   }
 
   //----------------------------------------------------------------------------
 
-  ERR Match::canAssignReferee(REFEREE_ACTION refAction) const
+  ERR Match::canAssignReferee(RefereeAction refAction) const
   {
     // only allow changes to the referee assignment
     // if the match is fully defined (all player names determined) and
@@ -448,14 +448,14 @@ namespace QTournament
     // ==> match must be (READY) or (BUSY) or (RUNNING and hasRefereeAssigned is true)
     //
     ObjState stat = getState();
-    if ((refAction == REFEREE_ACTION::PRE_ASSIGN) || (refAction == REFEREE_ACTION::MATCH_CALL))
+    if ((refAction == RefereeAction::PreAssign) || (refAction == RefereeAction::MatchCall))
     {
       if (!((stat == ObjState::MA_Busy) || (stat == ObjState::MA_Ready)))
       {
         return ERR::MatchNotConfiguraleAnymore;
       }
     }
-    else if (refAction == REFEREE_ACTION::SWAP)
+    else if (refAction == RefereeAction::Swap)
     {
       if (!((stat == ObjState::MA_Running) && (hasRefereeAssigned() == true)))
       {
@@ -469,7 +469,7 @@ namespace QTournament
     // don't allow assignments if the mode is set to RefereeMode::None
     // or to RefereeMode::HandWritten
     RefereeMode mod = get_EFFECTIVE_RefereeMode();
-    if ((mod == RefereeMode::RefereeMode::None) || (mod == RefereeMode::RefereeMode::HandWritten))
+    if ((mod == RefereeMode::None) || (mod == RefereeMode::HandWritten))
     {
       return ERR::MatchNeedsNoReferee;
     }
@@ -486,7 +486,7 @@ namespace QTournament
     if ((playerPos == 2) && hasPlayerPair2()) return 0;
 
     // check if we have a symbolic name
-    auto symName = (playerPos == 1) ? row.getInt2(MA_PAIR1_SYMBOLIC_VAL) : row.getInt2(MA_PAIR2_SYMBOLIC_VAL);
+    auto symName = (playerPos == 1) ? row.getInt2(MA_Pair1SymbolicVal) : row.getInt2(MA_Pair2SymbolicVal);
     if (!symName) return 0;
 
     // okay, there is a symbolic name

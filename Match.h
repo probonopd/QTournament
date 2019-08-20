@@ -40,11 +40,11 @@ namespace QTournament
 {
   class MatchGroup;
 
-  enum class REFEREE_ACTION
+  enum class RefereeAction
   {
-    PRE_ASSIGN,
-    MATCH_CALL,
-    SWAP,
+    PreAssign,
+    MatchCall,
+    Swap,
   };
 
   class Match : public TournamentDatabaseObject
@@ -94,7 +94,7 @@ namespace QTournament
     RefereeMode get_EFFECTIVE_RefereeMode() const;
     std::optional<Player> getAssignedReferee() const;
     bool hasRefereeAssigned() const;
-    ERR canAssignReferee(REFEREE_ACTION refAction) const;
+    ERR canAssignReferee(RefereeAction refAction) const;
 
   private:
     Match (const TournamentDB& _db, int rowId);

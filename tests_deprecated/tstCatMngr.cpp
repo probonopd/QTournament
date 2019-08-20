@@ -31,13 +31,13 @@ void tstCatMngr::testCreateNewCategory()
   // try empty or invalid name
   CPPUNIT_ASSERT(cmngr.createNewCategory("") == InvalidName);
   CPPUNIT_ASSERT(cmngr.createNewCategory(QString::null) == InvalidName);
-  CPPUNIT_ASSERT((*db)[TAB_CATEGORY].length() == 0);
+  CPPUNIT_ASSERT((*db)[TabCategory].length() == 0);
   
   // actually create a valid category
   CPPUNIT_ASSERT(cmngr.createNewCategory("c1") == OK);
-  CPPUNIT_ASSERT((*db)[TAB_CATEGORY].length() == 1);
-  TabRow r = (*db)[TAB_CATEGORY][1];
-  CPPUNIT_ASSERT(r[GENERIC_NAME_FIELD_NAME].toString() == "c1");
+  CPPUNIT_ASSERT((*db)[TabCategory].length() == 1);
+  TabRow r = (*db)[TabCategory][1];
+  CPPUNIT_ASSERT(r[GenericNameFieldName].toString() == "c1");
   
   // make sure the default values are set correctly
   Category c = cmngr.getCategory("c1");
@@ -48,7 +48,7 @@ void tstCatMngr::testCreateNewCategory()
   
   // name collision
   CPPUNIT_ASSERT(cmngr.createNewCategory("c1") == NameExists);
-  CPPUNIT_ASSERT((*db)[TAB_CATEGORY].length() == 1);
+  CPPUNIT_ASSERT((*db)[TabCategory].length() == 1);
   
   delete db;
   printEndMsg();
@@ -166,7 +166,7 @@ void tstCatMngr::testAddPlayerToCategory()
   CPPUNIT_ASSERT(cmngr->addPlayerToCategory(f1, ms) == PlayerNotSuitable);
   CPPUNIT_ASSERT(cmngr->addPlayerToCategory(m2, ms) == OK);
   CPPUNIT_ASSERT(ms.hasPlayer(m2));
-  ms.setSex(DONT_CARE);   // relax checks
+  ms.setSex(Sex::DontCare);   // relax checks
   CPPUNIT_ASSERT(cmngr->addPlayerToCategory(f1, ms) == OK);
   CPPUNIT_ASSERT(ms.hasPlayer(f1));
   
@@ -177,7 +177,7 @@ void tstCatMngr::testAddPlayerToCategory()
   CPPUNIT_ASSERT(cmngr->addPlayerToCategory(m1, ld) == PlayerNotSuitable);
   CPPUNIT_ASSERT(cmngr->addPlayerToCategory(f2, ld) == OK);
   CPPUNIT_ASSERT(ld.hasPlayer(f2));
-  ld.setSex(DONT_CARE);   // relax checks
+  ld.setSex(Sex::DontCare);   // relax checks
   CPPUNIT_ASSERT(cmngr->addPlayerToCategory(m1, ld) == OK);
   CPPUNIT_ASSERT(ld.hasPlayer(m1));
   
@@ -189,7 +189,7 @@ void tstCatMngr::testAddPlayerToCategory()
   CPPUNIT_ASSERT(mx.hasPlayer(m1));
   CPPUNIT_ASSERT(cmngr->addPlayerToCategory(f2, mx) == OK);
   CPPUNIT_ASSERT(mx.hasPlayer(f2));
-  mx.setSex(DONT_CARE);   // relax checks
+  mx.setSex(Sex::DontCare);   // relax checks
   CPPUNIT_ASSERT(cmngr->addPlayerToCategory(m2, mx) == OK);
   CPPUNIT_ASSERT(mx.hasPlayer(m2));
   CPPUNIT_ASSERT(cmngr->addPlayerToCategory(f3, mx) == OK);
@@ -279,7 +279,7 @@ void tstCatMngr::testFreezeCategory()
   CPPUNIT_ASSERT(specialObj->canFreezeConfig() == OK);
   
   // some db consistency checks before executing the actual "method under test"
-  DbTab pairTab = (*db)[TAB_PAIRS];
+  DbTab pairTab = (*db)[TabPairs];
   CPPUNIT_ASSERT(pairTab.length() == 0);
   QList<PlayerPair> ppList = ms.getPlayerPairs();
   CPPUNIT_ASSERT(ppList.count() == 40);

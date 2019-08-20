@@ -28,7 +28,7 @@ using namespace QTournament;
 using namespace SqliteOverlay;
 
 CategoryTableModel::CategoryTableModel(TournamentDB* _db)
-:QAbstractTableModel(0), db(_db), catTab((db->getTab(TAB_CATEGORY)))
+:QAbstractTableModel(0), db(_db), catTab((db->getTab(TabCategory)))
 {
   CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
   connect(cse, SIGNAL(beginCreateCategory()), this, SLOT(onBeginCreateCategory()), Qt::DirectConnection);
@@ -80,7 +80,7 @@ QVariant CategoryTableModel::data(const QModelIndex& index, int role) const
     {
       CatRoundStatus crs = c.getRoundStatus();
       int finishedRounds = crs.getFinishedRoundsCount();
-      if (finishedRounds == CatRoundStatus::NO_ROUNDS_FINISHED_YET)
+      if (finishedRounds == CatRoundStatus::NoRoundsFinishedYet)
       {
         return "--";
       }
@@ -94,12 +94,12 @@ QVariant CategoryTableModel::data(const QModelIndex& index, int role) const
       CatRoundStatus crs = c.getRoundStatus();
       int currentRoundNum = crs.getCurrentlyRunningRoundNumber();
 
-      if (currentRoundNum == CatRoundStatus::NO_CURRENTLY_RUNNING_ROUND)
+      if (currentRoundNum == CatRoundStatus::NoCurrentlyRunningRounds)
       {
         return "--";
       }
 
-      if (currentRoundNum == CatRoundStatus::MULTIPLE_ROUNDS_RUNNING)
+      if (currentRoundNum == CatRoundStatus::MultipleRoundsRunning)
       {
         // generate a comma-separated list of currently running rounds
         QList<int> runningRounds = crs.getCurrentlyRunningRoundNumbers();
@@ -120,7 +120,7 @@ QVariant CategoryTableModel::data(const QModelIndex& index, int role) const
       CatRoundStatus crs = c.getRoundStatus();
       auto matchStat = crs.getMatchCountForCurrentRound();
       int total = get<0>(matchStat);
-      if (total == CatRoundStatus::NO_CURRENTLY_RUNNING_ROUND)
+      if (total == CatRoundStatus::NoCurrentlyRunningRounds)
       {
         return "--";
       }
@@ -134,7 +134,7 @@ QVariant CategoryTableModel::data(const QModelIndex& index, int role) const
       CatRoundStatus crs = c.getRoundStatus();
       auto matchStat = crs.getMatchCountForCurrentRound();
       int unfinished = get<1>(matchStat);
-      if (unfinished == CatRoundStatus::NO_CURRENTLY_RUNNING_ROUND)
+      if (unfinished == CatRoundStatus::NoCurrentlyRunningRounds)
       {
         return "--";
       }
@@ -148,7 +148,7 @@ QVariant CategoryTableModel::data(const QModelIndex& index, int role) const
       CatRoundStatus crs = c.getRoundStatus();
       auto matchStat = crs.getMatchCountForCurrentRound();
       int runningMatches = get<2>(matchStat);
-      if (runningMatches == CatRoundStatus::NO_CURRENTLY_RUNNING_ROUND)
+      if (runningMatches == CatRoundStatus::NoCurrentlyRunningRounds)
       {
         return "--";
       }

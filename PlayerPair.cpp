@@ -52,11 +52,11 @@ namespace QTournament {
 
 //----------------------------------------------------------------------------
 
-  // ctor for a PlayerPair constructed from a row in TAB_PAIRS
+  // ctor for a PlayerPair constructed from a row in TabPairs
   PlayerPair::PlayerPair(const TournamentDB& _db, const TabRow& row)
-    :id1(row.getInt(PAIRS_PLAYER1_REF)), id2(-1), pairId(row.id()), db(_db)
+    :id1(row.getInt(Pairs_Player1Ref)), id2(-1), pairId(row.id()), db(_db)
   {
-    auto _id2 = row.getInt2(PAIRS_PLAYER2_REF);
+    auto _id2 = row.getInt2(Pairs_Player2Ref);
     if (_id2.has_value())
     {
       id2 = *_id2;
@@ -66,17 +66,17 @@ namespace QTournament {
 
 //----------------------------------------------------------------------------
 
-  // ctor for a PlayerPair constructed from a row in TAB_PAIRS identified by its ID
+  // ctor for a PlayerPair constructed from a row in TabPairs identified by its ID
   PlayerPair::PlayerPair(const TournamentDB& _db, int ppId)
     :db(_db)
   {
-    TabRow row{db, TAB_PAIRS, ppId};
+    TabRow row{db, TabPairs, ppId};
 
     pairId = ppId;
-    id1 = row.getInt(PAIRS_PLAYER1_REF);
+    id1 = row.getInt(Pairs_Player1Ref);
     id2 = -1;
 
-    auto _id2 = row.getInt2(PAIRS_PLAYER2_REF);
+    auto _id2 = row.getInt2(Pairs_Player2Ref);
     if (_id2.has_value())
     {
       id2 = *_id2;
@@ -95,7 +95,7 @@ namespace QTournament {
     {
       Player p1 = pm.getPlayer(id1);
       Player p2 = pm.getPlayer(id2);
-      if ((p2.getSex() == M) && (p1.getSex() == F))
+      if ((p2.getSex() == Sex::M) && (p1.getSex() == Sex::F))
       {
         id1 = p2.getId();
         id2 = p1.getId();
@@ -278,9 +278,9 @@ namespace QTournament {
   {
     if (pairId <= 0) return {};
 
-    TabRow pairRow{db, TAB_PAIRS, pairId};
+    TabRow pairRow{db, TabPairs, pairId};
     CatMngr cm{db};
-    return cm.getCategoryById(pairRow.getInt(PAIRS_CONFIGREF));
+    return cm.getCategoryById(pairRow.getInt(Pairs_CatRef));
   }
 
 //----------------------------------------------------------------------------
@@ -292,10 +292,10 @@ namespace QTournament {
   {
     if (pairId > 0)
     {
-      TabRow pairRow{db, TAB_PAIRS, pairId};
-      if (pairRow.getInt(PAIRS_PLAYER1_REF) != id1) return false;
+      TabRow pairRow{db, TabPairs, pairId};
+      if (pairRow.getInt(Pairs_Player1Ref) != id1) return false;
 
-      auto p2Id = pairRow.getInt2(PAIRS_PLAYER2_REF);
+      auto p2Id = pairRow.getInt2(Pairs_Player2Ref);
       if (!p2Id.has_value() && (id2 > 0)) return false;
       if ((p2Id.has_value()) && (id2 != *p2Id)) return false;
     }
@@ -313,8 +313,8 @@ namespace QTournament {
       throw std::runtime_error("Queried PlayerPair does not yet exist in the database");
     }
 
-    TabRow pairRow{db, TAB_PAIRS, pairId};
-    return pairRow.getInt(PAIRS_GRP_NUM);
+    TabRow pairRow{db, TabPairs, pairId};
+    return pairRow.getInt(Pairs_GrpNum);
   }
 
 //----------------------------------------------------------------------------

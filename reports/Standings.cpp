@@ -237,10 +237,10 @@ int Standings::determineBestPossibleRankForPlayerAfterRound(const PlayerPair& pp
 
     // the match is not yet finished, so we need to search for symbolic
     // player values. In this case, it is the positive ID of our match
-    QString where = QString("%1 = %2 OR %3 = %4").arg(MA_PAIR1_SYMBOLIC_VAL).arg(ma.getId());
-    where = where.arg(MA_PAIR2_SYMBOLIC_VAL).arg(ma.getId());
+    QString where = QString("%1 = %2 OR %3 = %4").arg(MA_Pair1SymbolicVal).arg(ma.getId());
+    where = where.arg(MA_Pair2SymbolicVal).arg(ma.getId());
 
-    TabRow winnerMatchRow = db->getTab(TAB_MATCH)->getSingleRowByWhereClause(where.toUtf8().constData());  // this query must always yield exactly one match
+    TabRow winnerMatchRow = db->getTab(TabMatch)->getSingleRowByWhereClause(where.toUtf8().constData());  // this query must always yield exactly one match
 
     return mm.getMatch(winnerMatchRow.getId());
   };

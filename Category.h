@@ -65,8 +65,8 @@ namespace QTournament
     QString getName() const;
     MatchType getMatchType() const;
     MatchSystem getMatchSystem() const;
-    SEX getSex() const;
-    CatAddState getAddState(const SEX s) const;
+    Sex getSex() const;
+    CatAddState getAddState(const Sex s) const;
     CatAddState getAddState(const Player& p) const;
     QVariant getParameter(CatParameter) const;
     int getParameter_int(CatParameter) const;
@@ -86,7 +86,7 @@ namespace QTournament
     // setters
     ERR setMatchType(MatchType t);
     ERR setMatchSystem(MatchSystem s);
-    ERR setSex(SEX s);
+    ERR setSex(Sex s);
     bool setParameter(CatParameter p, const QVariant& v);
 
     // modifications

@@ -39,7 +39,7 @@ namespace QTournament
     TOP_RIGHT,
     BOTTOM_LEFT,
     BOTTOM_RIGHT,
-    RefereeMode::None
+    NONE
   };
 
   enum class BRACKET_ORIENTATION
@@ -50,7 +50,7 @@ namespace QTournament
 
   enum class BRACKET_TERMINATOR
   {
-    RefereeMode::None,
+    NONE,
     INWARDS,
     OUTWARDS
   };
@@ -135,28 +135,28 @@ namespace QTournament
 
   public:
     // getters
-    int getPage() const {return row.getInt(BV_PAGE);}
-    int getGridX0() const {return row.getInt(BV_GRID_X0);}
-    int getGridY0() const {return row.getInt(BV_GRID_Y0);}
-    int getSpanY() const {return row.getInt(BV_SPAN_Y);}
-    int getYPageBreakSpan() const {return row.getInt(BV_Y_PAGEBREAK_SPAN);}
-    int getNextPageNum() const {return row.getInt(BV_NEXT_PAGE_NUM);}
+    int getPage() const {return row.getInt(BV_Page);}
+    int getGridX0() const {return row.getInt(BV_GridX0);}
+    int getGridY0() const {return row.getInt(BV_GridY0);}
+    int getSpanY() const {return row.getInt(BV_SpanY);}
+    int getYPageBreakSpan() const {return row.getInt(BV_YPagebreakSpan);}
+    int getNextPageNum() const {return row.getInt(BV_NextPageNum);}
 
-    BRACKET_ORIENTATION getOrientation() const {return static_cast<BRACKET_ORIENTATION>(row.getInt(BV_ORIENTATION));}
-    BRACKET_TERMINATOR getTerminator() const {return  static_cast<BRACKET_TERMINATOR>(row.getInt(BV_TERMINATOR));}
-    int getTerminatorOffset() const {return row.getInt(BV_TERMINATOR_OFFSET_Y);}
+    BRACKET_ORIENTATION getOrientation() const {return static_cast<BRACKET_ORIENTATION>(row.getInt(BV_Orientation));}
+    BRACKET_TERMINATOR getTerminator() const {return  static_cast<BRACKET_TERMINATOR>(row.getInt(BV_Terminator));}
+    int getTerminatorOffset() const {return row.getInt(BV_Terminator_OFFSET_Y);}
 
-    int getInitialRank1() const {return row.getInt(BV_INITIAL_RANK1);}
-    int getInitialRank2() const {return row.getInt(BV_INITIAL_RANK2);}
+    int getInitialRank1() const {return row.getInt(BV_InitialRank1);}
+    int getInitialRank2() const {return row.getInt(BV_InitialRank2);}
 
-    int getNextBracketElementForWinner() const {return row.getInt(BV_NEXT_WINNER_MATCH);}
-    int getNextBracketElementForLoser() const {return row.getInt(BV_NEXT_LOSER_MATCH);}
-    int getNextBracketElementPosForWinner() const {return row.getInt(BV_NEXT_MATCH_POS_FOR_WINNER);}
-    int getNextBracketElementPosForLoser() const {return row.getInt(BV_NEXT_MATCH_POS_FOR_LOSER);}
+    int getNextBracketElementForWinner() const {return row.getInt(BV_NextWinnerMatch);}
+    int getNextBracketElementForLoser() const {return row.getInt(BV_NextLoserMatch);}
+    int getNextBracketElementPosForWinner() const {return row.getInt(BV_NextMatchPosForWinner);}
+    int getNextBracketElementPosForLoser() const {return row.getInt(BV_NextMatchPosForLoser);}
 
-    int getBracketElementId() const {return row.getInt(BV_ELEMENT_ID);}
+    int getBracketElementId() const {return row.getInt(BV_ElementId);}
 
-    int getCategoryId() const {return row.getInt(BV_CONFIGREF);}
+    int getCategoryId() const {return row.getInt(BV_CatRef);}
 
     std::unique_ptr<Match> getLinkedMatch() const;
     Category getLinkedCategory() const;

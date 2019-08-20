@@ -33,7 +33,7 @@ namespace QTournament
 {
 
   TeamMngr::TeamMngr(const TournamentDB& _db)
-    : TournamentDatabaseObjectManager(_db, TAB_TEAM)
+    : TournamentDatabaseObjectManager(_db, TabTeam)
   {
   }
 
@@ -41,9 +41,9 @@ namespace QTournament
 
   ERR TeamMngr::createNewTeam(const QString& tm)
   {
-    auto cfg = SqliteOverlay::KeyValueTab{db.get(), TAB_CFG};
+    auto cfg = SqliteOverlay::KeyValueTab{db.get(), TabCfg};
 
-    if (!(cfg.getBool(CFG_KEY_USE_TEAMS)))
+    if (!(cfg.getBool(CfgKey_UseTeams)))
     {
       return ERR::NotUsingTeams;
     }
@@ -55,7 +55,7 @@ namespace QTournament
       return ERR::InvalidName;
     }
     
-    if (teamName.length() > MAX_NAME_LEN)
+    if (teamName.length() > MaxNameLen)
     {
       return ERR::InvalidName;
     }
@@ -67,7 +67,7 @@ namespace QTournament
     
     // create a new table row
     ColumnValueClause cvc;
-    cvc.addCol(GENERIC_NAME_FIELD_NAME, teamName.toUtf8().constData());
+    cvc.addCol(GenericNameFieldName, teamName.toUtf8().constData());
     
     CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
     cse->beginCreateTeam();
@@ -82,7 +82,7 @@ namespace QTournament
 
   bool TeamMngr::hasTeam(const QString& teamName)
   {
-    return (tab.getMatchCountForColumnValue(GENERIC_NAME_FIELD_NAME, teamName.toUtf8().constData()) > 0);
+    return (tab.getMatchCountForColumnValue(GenericNameFieldName, teamName.toUtf8().constData()) > 0);
   }
 
 //----------------------------------------------------------------------------
@@ -103,7 +103,7 @@ namespace QTournament
       throw std::invalid_argument("The team '" + QString2StdString(name) + "' does not exist");
     }
     
-    TabRow r = tab.getSingleRowByColumnValue(GENERIC_NAME_FIELD_NAME, name.toUtf8().constData());
+    TabRow r = tab.getSingleRowByColumnValue(GenericNameFieldName, name.toUtf8().constData());
     
     return Team{db.get(), r};
   }
@@ -127,7 +127,7 @@ namespace QTournament
     QString newName = nn.trimmed();
     
     // Ensure the new name is valid
-    if ((newName.isEmpty()) || (newName.length() > MAX_NAME_LEN))
+    if ((newName.isEmpty()) || (newName.length() > MaxNameLen))
     {
       return ERR::InvalidName;
     }
@@ -138,7 +138,7 @@ namespace QTournament
       return ERR::NameExists;
     }
     
-    t.row.update(GENERIC_NAME_FIELD_NAME, newName.toUtf8().constData());
+    t.row.update(GenericNameFieldName, newName.toUtf8().constData());
     CentralSignalEmitter::getInstance()->teamRenamed(t.getSeqNum());
     
     return ERR::OK;
@@ -158,7 +158,7 @@ namespace QTournament
   Team TeamMngr::getTeamBySeqNum(int seqNum)
   {
     try {
-      TabRow r = tab.getSingleRowByColumnValue(GENERIC_SEQNUM_FIELD_NAME, seqNum);
+      TabRow r = tab.getSingleRowByColumnValue(GenericSeqnumFieldName, seqNum);
       return Team{db, r};
     }
     catch (SqliteOverlay::NoDataException&)
@@ -171,7 +171,7 @@ namespace QTournament
 
   std::optional<Team> TeamMngr::getTeamBySeqNum2(int seqNum)
   {
-    return getSingleObjectByColumnValue<Team>(GENERIC_SEQNUM_FIELD_NAME, seqNum);
+    return getSingleObjectByColumnValue<Team>(GenericSeqnumFieldName, seqNum);
   }
 
 //----------------------------------------------------------------------------
@@ -192,9 +192,9 @@ namespace QTournament
 
   ERR TeamMngr::changeTeamAssigment(const Player& p, const Team& newTeam)
   {
-    auto cfg = SqliteOverlay::KeyValueTab{db.get(), TAB_CFG};
+    auto cfg = SqliteOverlay::KeyValueTab{db.get(), TabCfg};
 
-    if (!(cfg.getBool(CFG_KEY_USE_TEAMS)))
+    if (!(cfg.getBool(CfgKey_UseTeams)))
     {
       return ERR::NotUsingTeams;
     }
@@ -206,7 +206,7 @@ namespace QTournament
       return ERR::OK;  // no database access necessary
     }
     
-    p.row.update(PL_TEAM_REF, newTeam.getId());
+    p.row.update(PL_TeamRef, newTeam.getId());
     CentralSignalEmitter::getInstance()->teamAssignmentChanged(p, oldTeam, newTeam);
     
     return ERR::OK;
@@ -225,17 +225,17 @@ namespace QTournament
 
   PlayerList TeamMngr::getPlayersForTeam(const Team& t) const
   {
-    DbTab playerTab = DbTab{db.get(), TAB_PLAYER, false};
-    return getObjectsByColumnValue<Player>(playerTab, PL_TEAM_REF, t.getId());
+    DbTab playerTab = DbTab{db.get(), TabPlayer, false};
+    return getObjectsByColumnValue<Player>(playerTab, PL_TeamRef, t.getId());
   }
 
   //----------------------------------------------------------------------------
 
   std::string TeamMngr::getSyncString(const std::vector<int>& rows) const
   {
-    std::vector<Sloppy::estring> cols = {"id", GENERIC_NAME_FIELD_NAME};
+    std::vector<Sloppy::estring> cols = {"id", GenericNameFieldName};
 
-    return db.get().getSyncStringForTable(TAB_TEAM, cols, rows);
+    return db.get().getSyncStringForTable(TabTeam, cols, rows);
   }
 
 //----------------------------------------------------------------------------

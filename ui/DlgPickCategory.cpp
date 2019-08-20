@@ -7,7 +7,7 @@
 using namespace QTournament;
 
 DlgPickCategory::DlgPickCategory(QWidget *parent, QTournament::TournamentDB* _db,
-                                 QTournament::SEX sex) :
+                                 QTournament::Sex sex) :
   QDialog(parent),
   ui(new Ui::DlgPickCategory), db{_db}
 {
@@ -20,7 +20,7 @@ DlgPickCategory::DlgPickCategory(QWidget *parent, QTournament::TournamentDB* _db
   {
     if (cat.canAddPlayers())
     {
-      if (sex != DONT_CARE)
+      if (sex != Sex::DontCare)
       {
         if (cat.getAddState(sex) != CatAddState::CanJoin) continue;
       }

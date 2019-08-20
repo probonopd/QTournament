@@ -43,7 +43,7 @@ namespace QTournament
 {
 
   CatMngr::CatMngr(const TournamentDB& _db)
-  : TournamentDatabaseObjectManager(_db, TAB_CATEGORY)
+  : TournamentDatabaseObjectManager(_db, TabCategory)
   {
   }
 
@@ -58,7 +58,7 @@ namespace QTournament
       return ERR::InvalidName;
     }
     
-    if (catName.length() > MAX_NAME_LEN)
+    if (catName.length() > MaxNameLen)
     {
       return ERR::InvalidName;
     }
@@ -70,12 +70,12 @@ namespace QTournament
     
     // create a new table row and set some arbitrary default data
     ColumnValueClause cvc;
-    cvc.addCol(GENERIC_NAME_FIELD_NAME, QString2StdString(catName));
+    cvc.addCol(GenericNameFieldName, QString2StdString(catName));
     cvc.addCol(CAT_AcceptDraw, false);
     cvc.addCol(CAT_Sys, static_cast<int>(MatchSystem::GroupsWithKO));
     cvc.addCol(CAT_MatchType, static_cast<int>(MatchType::Singles));
-    cvc.addCol(CAT_Sex, static_cast<int>(M));
-    cvc.addCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(ObjState::CAT_Config));
+    cvc.addCol(CAT_Sex, static_cast<int>(Sex::M));
+    cvc.addCol(GenericStateFieldName, static_cast<int>(ObjState::CAT_Config));
     cvc.addCol(CAT_WinScore, 2);
     cvc.addCol(CAT_DrawScore, 1);
     cvc.addCol(CAT_GroupConfig, KO_Config(KO_Start::Quarter, false).toString().toUtf8().constData());
@@ -120,7 +120,7 @@ namespace QTournament
       {
         dstCatName = trimmedSrcCatName + " - " + catNamePostfix + " " + QString::number(cnt);
         trimmedSrcCatName.chop(1);
-      } while (dstCatName.length() > MAX_NAME_LEN);
+      } while (dstCatName.length() > MaxNameLen);
 
       // try to actually create the category
       err = createNewCategory(dstCatName);
@@ -140,7 +140,7 @@ namespace QTournament
     assert(err == ERR::OK);
     err = clone.setSex(src.getSex());
     assert(err == ERR::OK);
-    bool isOk = setCatParam_CatParameter::AllowDraw(clone, src.getParameter_bool(CatParameter::AllowDraw));
+    bool isOk = setCatParam_AllowDraw(clone, src.getParameter_bool(CatParameter::AllowDraw));
     assert(isOk);
     isOk = setCatParam_Score(clone, src.getParameter_int(CatParameter::WinScore), false);
     assert(isOk);
@@ -185,7 +185,7 @@ namespace QTournament
 
   bool CatMngr::hasCategory(const QString& catName) const
   {
-    return (tab.getMatchCountForColumnValue(GENERIC_NAME_FIELD_NAME, QString2StdString(catName)) > 0);
+    return (tab.getMatchCountForColumnValue(GenericNameFieldName, QString2StdString(catName)) > 0);
   }
 
 //----------------------------------------------------------------------------
@@ -201,7 +201,7 @@ namespace QTournament
    */
   Category CatMngr::getCategory(const QString& name)
   {
-    auto cat = getSingleObjectByColumnValue<Category>(GENERIC_NAME_FIELD_NAME, QString2StdString(name));
+    auto cat = getSingleObjectByColumnValue<Category>(GenericNameFieldName, QString2StdString(name));
     if (!cat)
     {
       throw std::invalid_argument("The category '" + QString2StdString(name) + "' does not exist");
@@ -246,7 +246,7 @@ namespace QTournament
     // prevent draw
     if ((newMatchSystem == MatchSystem::SingleElim) || (newMatchSystem == MatchSystem::Ranking))
     {
-      setCatParam_CatParameter::AllowDraw(cat, false);
+      setCatParam_AllowDraw(cat, false);
     }
 
     return ERR::OK;
@@ -294,7 +294,7 @@ namespace QTournament
     MatchType oldType = cat.getMatchType();
     if (oldType == MatchType::Mixed)
     {
-      setSex(cat, DONT_CARE);   // no error checking here, setting "don't care" should always work because it's least restrictive
+      setSex(cat, Sex::DontCare);   // no error checking here, setting "don't care" should always work because it's least restrictive
     }
     
     // change the match type
@@ -316,7 +316,7 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  ERR CatMngr::setSex(Category& cat, SEX newSex)
+  ERR CatMngr::setSex(Category& cat, Sex newSex)
   {
     // we can only change the sex while being in config mode
     if (cat.getState() != ObjState::CAT_Config)
@@ -326,7 +326,7 @@ namespace QTournament
     
     // unless we switch to "don't care", we have to make sure that
     // we can remove the wrong players
-    if ((newSex != DONT_CARE) && (cat.getMatchType() != MatchType::Mixed))
+    if ((newSex != Sex::DontCare) && (cat.getMatchType() != MatchType::Mixed))
     {
       PlayerList allPlayers = cat.getAllPlayersInCategory();
       for (const Player& p : allPlayers)
@@ -355,7 +355,7 @@ namespace QTournament
     
     // if we de-active "don't care" in a mixed category, we have to split
     // all non-compliant pairs. The players itself can remain in the category
-    if ((newSex != DONT_CARE) && (cat.getMatchType() == MatchType::Mixed)) {
+    if ((newSex != Sex::DontCare) && (cat.getMatchType() == MatchType::Mixed)) {
       PlayerPairList allPairs = cat.getPlayerPairs();
       
       for (const PlayerPair& pp : allPairs) {
@@ -416,9 +416,9 @@ namespace QTournament
     
     // actually add the player
     ColumnValueClause cvc;
-    cvc.addCol(P2C_CAT_REF, cat.getId());
-    cvc.addCol(P2C_PLAYER_REF, p.getId());
-    DbTab tabP2C{db, TAB_P2C, false};
+    cvc.addCol(P2C_CatRef, cat.getId());
+    cvc.addCol(P2C_PlayerRef, p.getId());
+    DbTab tabP2C{db, TabP2C, false};
     tabP2C.insertRow(cvc);
     
     CentralSignalEmitter::getInstance()->playerAddedToCategory(p, cat);
@@ -456,9 +456,9 @@ namespace QTournament
     
     // actually delete the assignment
     WhereClause wc;
-    wc.addCol(P2C_CAT_REF, cat.getId());
-    wc.addCol(P2C_PLAYER_REF, p.getId());
-    DbTab tabP2C{db, TAB_P2C, false};
+    wc.addCol(P2C_CatRef, cat.getId());
+    wc.addCol(P2C_PlayerRef, p.getId());
+    DbTab tabP2C{db, TabP2C, false};
     int cnt = tabP2C.deleteRowsByWhereClause(wc);
     assert(cnt == 1);
     
@@ -487,11 +487,11 @@ namespace QTournament
 
     // a few checks for the cowards
     int catId = cat.getId();
-    assert(DbTab(db, TAB_P2C, false).getMatchCountForColumnValue(P2C_CAT_REF, catId) == 0);
-    assert(DbTab(db, TAB_PAIRS, false).getMatchCountForColumnValue(PAIRS_CONFIGREF, catId) == 0);
-    assert(DbTab(db, TAB_MATCH_GROUP, false).getMatchCountForColumnValue(MG_CAT_REF, catId) == 0);
-    assert(DbTab(db, TAB_MatchSystem, false).getMatchCountForColumnValue(RA_CAT_REF, catId) == 0);
-    assert(DbTab(db, TAB_BRACKET_VIS, false).getMatchCountForColumnValue(BV_CONFIGREF, catId) == 0);
+    assert(DbTab(db, TabP2C, false).getMatchCountForColumnValue(P2C_CatRef, catId) == 0);
+    assert(DbTab(db, TabPairs, false).getMatchCountForColumnValue(Pairs_CatRef, catId) == 0);
+    assert(DbTab(db, TabMatch_GROUP, false).getMatchCountForColumnValue(MG_CatRef, catId) == 0);
+    assert(DbTab(db, TabMatchSystem, false).getMatchCountForColumnValue(RA_CatRef, catId) == 0);
+    assert(DbTab(db, TabBracketVis, false).getMatchCountForColumnValue(BV_CatRef, catId) == 0);
 
     // the actual deletion
     int oldSeqNum = cat.getSeqNum();
@@ -557,18 +557,18 @@ namespace QTournament
       int catId = cat.getId();
 
       // deletion 1: bracket vis data, because it has only outgoing refs
-      DbTab t{db, TAB_BRACKET_VIS, false};
-      t.deleteRowsByColumnValue(BV_CONFIGREF, catId);
+      DbTab t{db, TabBracketVis, false};
+      t.deleteRowsByColumnValue(BV_CatRef, catId);
 
       // deletion 2: ranking data, because it has only outgoing refs
-      t = DbTab{db, TAB_MatchSystem, false};
-      t.deleteRowsByColumnValue(RA_CAT_REF, catId);
+      t = DbTab{db, TabMatchSystem, false};
+      t.deleteRowsByColumnValue(RA_CatRef, catId);
 
       // deletion 3a: matches, they are refered to by bracket vis data only
       // deletion 3b: match groups, they are refered to only by ranking data and matches
-      t = DbTab{db, TAB_MATCH, false};
-      DbTab mgTab{db, TAB_MATCH_GROUP, false};
-      for (const auto& mg : getObjectsByColumnValue<MatchGroup>(mgTab, MG_CAT_REF, cat.getId()))
+      t = DbTab{db, TabMatch, false};
+      DbTab mgTab{db, TabMatch_GROUP, false};
+      for (const auto& mg : getObjectsByColumnValue<MatchGroup>(mgTab, MG_CatRef, cat.getId()))
       {
         for (const auto& ma : mg.getMatches())
         {
@@ -585,12 +585,12 @@ namespace QTournament
       }
 
       // deletion 4: player pairs
-      t = DbTab{db, TAB_PAIRS, false};
-      t.deleteRowsByColumnValue(PAIRS_CONFIGREF, catId);
+      t = DbTab{db, TabPairs, false};
+      t.deleteRowsByColumnValue(Pairs_CatRef, catId);
 
       // deletion 5: player to category allocation
-      t = DbTab{db, TAB_P2C, false};
-      t.deleteRowsByColumnValue(P2C_CAT_REF, catId);
+      t = DbTab{db, TabP2C, false};
+      t.deleteRowsByColumnValue(P2C_CatRef, catId);
 
       // final deletion: the category itself
       int deletedSeqNum = cat.getSeqNum();
@@ -633,7 +633,7 @@ namespace QTournament
 
   Category CatMngr::getCategoryBySeqNum(int seqNum)
   {
-    auto cat = getSingleObjectByColumnValue<Category>(GENERIC_SEQNUM_FIELD_NAME, seqNum);
+    auto cat = getSingleObjectByColumnValue<Category>(GenericSeqnumFieldName, seqNum);
     if (!cat)
     {
       throw std::invalid_argument("The category with sequence number " + std::to_string(seqNum) + " does not exist");
@@ -644,7 +644,7 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  QHash<Category, CatAddState> CatMngr::getAllCategoryAddStates(SEX s)
+  QHash<Category, CatAddState> CatMngr::getAllCategoryAddStates(Sex s)
   {
     CategoryList allCat = getAllCategories();
     QHash<Category, CatAddState> result;
@@ -678,7 +678,7 @@ namespace QTournament
   {
     if (p == CatParameter::AllowDraw)
     {
-      return setCatParam_CatParameter::AllowDraw(cat, v);
+      return setCatParam_AllowDraw(cat, v);
     }
     if (p == CatParameter::DrawScore)
     {
@@ -712,7 +712,7 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  bool CatMngr::setCatParam_CatParameter::AllowDraw(Category& c, const QVariant& v)
+  bool CatMngr::setCatParam_AllowDraw(Category& c, const QVariant& v)
   {
     if (c.getState() != ObjState::CAT_Config)
     {
@@ -819,12 +819,12 @@ namespace QTournament
     
     // create the pair
     ColumnValueClause cvc;
-    cvc.addCol(PAIRS_CONFIGREF, c.getId());
-    cvc.addCol(PAIRS_PLAYER1_REF, p1.getId());
-    cvc.addCol(PAIRS_PLAYER2_REF, p2.getId());
-    cvc.addCol(PAIRS_GRP_NUM, GroupNum_NotAssigned);   // Default value: no group
+    cvc.addCol(Pairs_CatRef, c.getId());
+    cvc.addCol(Pairs_Player1Ref, p1.getId());
+    cvc.addCol(Pairs_Player2Ref, p2.getId());
+    cvc.addCol(Pairs_GrpNum, GroupNum_NotAssigned);   // Default value: no group
 
-    DbTab{db, TAB_PAIRS, false}.insertRow(cvc);
+    DbTab{db, TabPairs, false}.insertRow(cvc);
     
     CentralSignalEmitter::getInstance()->playersPaired(c, p1, p2);
     
@@ -846,15 +846,15 @@ namespace QTournament
     
     // delete all combinations of p1/p2 pairs from the database
     WhereClause wc;
-    wc.addCol(PAIRS_CONFIGREF, c.getId());
-    wc.addCol(PAIRS_PLAYER1_REF, p1.getId());
-    wc.addCol(PAIRS_PLAYER2_REF, p2.getId());
-    DbTab pairsTab{db, TAB_PAIRS, false};
+    wc.addCol(Pairs_CatRef, c.getId());
+    wc.addCol(Pairs_Player1Ref, p1.getId());
+    wc.addCol(Pairs_Player2Ref, p2.getId());
+    DbTab pairsTab{db, TabPairs, false};
     pairsTab.deleteRowsByWhereClause(wc);
     wc.clear();
-    wc.addCol(PAIRS_CONFIGREF, c.getId());
-    wc.addCol(PAIRS_PLAYER1_REF, p2.getId());
-    wc.addCol(PAIRS_PLAYER2_REF, p1.getId());
+    wc.addCol(Pairs_CatRef, c.getId());
+    wc.addCol(Pairs_Player1Ref, p2.getId());
+    wc.addCol(Pairs_Player2Ref, p1.getId());
     pairsTab.deleteRowsByWhereClause(wc);
     
     CentralSignalEmitter::getInstance()->playersSplit(c, p1, p2);
@@ -867,12 +867,12 @@ namespace QTournament
 
   ERR CatMngr::splitPlayers(const Category c, int pairId) const
   {
-    DbTab pairsTab{db, TAB_PAIRS, false};
+    DbTab pairsTab{db, TabPairs, false};
     auto row = tab.get2(pairId);
     if (!row) return ERR::InvalidId;
 
-    auto p1Id = row->getInt2(PAIRS_PLAYER1_REF);
-    auto p2Id = row->getInt2(PAIRS_PLAYER2_REF);
+    auto p1Id = row->getInt2(Pairs_Player1Ref);
+    auto p2Id = row->getInt2(Pairs_Player2Ref);
     if (!p1Id || !p2Id)
     {
       return ERR::InvalidId;
@@ -891,7 +891,7 @@ namespace QTournament
     QString newName = nn.trimmed();
     
     // Ensure the new name is valid
-    if ((newName.isEmpty()) || (newName.length() > MAX_NAME_LEN))
+    if ((newName.isEmpty()) || (newName.length() > MaxNameLen))
     {
       return ERR::InvalidName;
     }
@@ -902,7 +902,7 @@ namespace QTournament
       return ERR::NameExists;
     }
     
-    cat.row.update(GENERIC_NAME_FIELD_NAME, QString2StdString(newName));
+    cat.row.update(GenericNameFieldName, QString2StdString(newName));
     
     return ERR::OK;
   }
@@ -966,7 +966,7 @@ namespace QTournament
     
     PlayerPairList ppList = c.getPlayerPairs();
     int catId = c.getId();
-    DbTab pairsTab{db, TAB_PAIRS, false};
+    DbTab pairsTab{db, TabPairs, false};
 
     try
     {
@@ -977,10 +977,10 @@ namespace QTournament
         if (pp.hasPlayer2()) continue;
 
         ColumnValueClause cvc;
-        cvc.addCol(PAIRS_CONFIGREF, catId);
-        cvc.addCol(PAIRS_GRP_NUM, GroupNum_NotAssigned);
-        cvc.addCol(PAIRS_PLAYER1_REF, pp.getPlayer1().getId());
-        cvc.addNullCol(PAIRS_PLAYER2_REF);
+        cvc.addCol(Pairs_CatRef, catId);
+        cvc.addCol(Pairs_GrpNum, GroupNum_NotAssigned);
+        cvc.addCol(Pairs_Player1Ref, pp.getPlayer1().getId());
+        cvc.addNullCol(Pairs_Player2Ref);
 
         pairsTab.insertRow(cvc);
       }
@@ -1021,7 +1021,7 @@ namespace QTournament
     // remove all player pairs without a partner from the official pair list
     // See also the constraints in freezeConfig()
     PlayerPairList ppList = cat.getPlayerPairs();
-    DbTab pairsTab{db, TAB_PAIRS, false};
+    DbTab pairsTab{db, TabPairs, false};
     try
     {
       auto trans = db.get().startTransaction();
@@ -1211,10 +1211,10 @@ namespace QTournament
     if (cat.getState() == ObjState::CAT_Config) return PlayerPairList();
 
     // get the player pairs for the category
-    DbTab pairsTab{db, TAB_PAIRS, false};
+    DbTab pairsTab{db, TabPairs, false};
     WhereClause wc;
-    wc.addCol(PAIRS_CONFIGREF, cat.getId());
-    wc.setOrderColumn_Asc(PAIRS_INITIAL_RANK);
+    wc.addCol(Pairs_CatRef, cat.getId());
+    wc.setOrderColumn_Asc(Pairs_InitialRank);
 
     return getObjectsByWhereClause<PlayerPair>(pairsTab, wc);
   }
@@ -1268,10 +1268,10 @@ namespace QTournament
 
   std::string CatMngr::getSyncString(const std::vector<int>& rows) const
   {
-    std::vector<Sloppy::estring> cols = {"id", GENERIC_NAME_FIELD_NAME, GENERIC_STATE_FIELD_NAME, CAT_MatchType, CAT_Sex, CAT_Sys, CAT_AcceptDraw,
+    std::vector<Sloppy::estring> cols = {"id", GenericNameFieldName, GenericStateFieldName, CAT_MatchType, CAT_Sex, CAT_Sys, CAT_AcceptDraw,
                           CAT_WinScore, CAT_DrawScore, CAT_GroupConfig, CAT_RoundRobinIterations};
 
-    return db.get().getSyncStringForTable(TAB_CATEGORY, cols, rows);
+    return db.get().getSyncStringForTable(TabCategory, cols, rows);
   }
 
 //----------------------------------------------------------------------------

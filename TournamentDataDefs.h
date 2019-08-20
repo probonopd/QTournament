@@ -23,27 +23,27 @@
 
 namespace QTournament
 {
-#define DB_VERSION_MAJOR 3
-#define DB_VERSION_MINOR 0
-#define MIN_REQUIRED_DB_VERSION 3
+  constexpr int DbVersionMajor = 3;
+  constexpr int DbVersionMinor = 0;
+  constexpr int MinRequiredDbVersion = 3;
 
 //----------------------------------------------------------------------------
 
-#define GENERIC_NAME_FIELD_NAME "Name"
-#define MAX_NAME_LEN 50
+#define GenericNameFieldName "Name"
+  constexpr int MaxNameLen = 50;
   
-#define GENERIC_STATE_FIELD_NAME "ObjState"
+#define GenericStateFieldName "ObjState"
   
-#define GENERIC_SEQNUM_FIELD_NAME "SequenceNumber"
+#define GenericSeqnumFieldName "SequenceNumber"
 
 //----------------------------------------------------------------------------
 
-#define MAX_GROUP_SIZE 50
-#define MAX_GROUP_COUNT 50
+  constexpr int MaxGroupSize = 50;
+  constexpr int MaxGroupCount = 50;
   
 //----------------------------------------------------------------------------
 
-#define MAX_RANDOMIZATION_ROUNDS 100    // for group assignments, player pairs, etc.
+constexpr int MaxRandomizationRounds = 100;    // for group assignments, player pairs, etc.
 
 //----------------------------------------------------------------------------
     
@@ -51,30 +51,30 @@ namespace QTournament
 //----------------------------------------------------------------------------
     
     
-#define DB_NULL QVariant::Int
+#define DbNull QVariant::Int
 
 //----------------------------------------------------------------------------
     
-#define TAB_CFG "Config"
-#define CFG_KEY_DB_VERSION "DatabaseVersion"
-#define CFG_KEY_TNMT_NAME "TournamentName"
-#define CFG_KEY_TNMT_ORGA "OrganizingClub"
-#define CFG_KEY_USE_TEAMS "UseTeams"
-#define CFG_KEY_EXT_PLAYER_DB "ExternalPlayerDatabase"
-#define CFG_KEY_DEFAULT_RefereeMode "DefaultRefereeMode"
-#define CFG_KEY_REFEREE_TEAM_ID "RefereeTeamId"
-#define CFG_KEY_KEYSTORE "Keystore"
-#define CFG_KEY_REGISTRATION_TIMESTAMP "RegistrationTimestamp"
+#define TabCfg "Config"
+#define CfgKey_DbVersion "DatabaseVersion"
+#define CfgKey_TnmtName "TournamentName"
+#define CfgKey_TnmtOrga "OrganizingClub"
+#define CfgKey_UseTeams "UseTeams"
+#define CfgKey_ExtPlayerDb "ExternalPlayerDatabase"
+#define CfgKey_DefaultRefereemode "DefaultRefereeMode"
+#define CfgKey_RefereeTeamId "RefereeTeamId"
+#define CfgKey_Keystore "Keystore"
+#define CfgKey_RegistrationTimestamp "RegistrationTimestamp"
 //#define CFG_KEY_ ""
 
 //----------------------------------------------------------------------------
     
-#define TAB_PLAYER "Player"
-#define PL_FNAME "FirstName"
-#define PL_LNAME "LastName"
-#define PL_TEAM_REF "TeamRefId"
-#define PL_SEX "Sex"
-#define PL_Referee_COUNT "RefereeCount"
+#define TabPlayer "Player"
+#define PL_Fname "FirstName"
+#define PL_Lname "LastName"
+#define PL_TeamRef "TeamRefId"
+#define PL_Sex "Sex"
+#define PL_RefereeCount "RefereeCount"
 //#define PLAYING ""
 //#define PLAYING ""
 //#define PLAYING ""
@@ -95,14 +95,14 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
     
-#define TAB_TEAM "Team"
+#define TabTeam "Team"
 //#define TE_ ""
 
 //----------------------------------------------------------------------------
     
-#define TAB_COURT "Court"
-#define CO_NUMBER "Number"
-#define CO_IS_MANUAL_ASSIGNMENT "IsManualAssignment"
+#define TabCourt "Court"
+#define CO_Number "Number"
+#define CO_IsManualAssignment "IsManualAssignment"
 //#define CO_ ""
 //#define CO_ ""
 //#define CO_ ""
@@ -111,7 +111,7 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
     
-#define TAB_CATEGORY "Category"
+#define TabCategory "Category"
 #define CAT_MatchType "MatchType"
 #define CAT_Sex "Sex"
 #define CAT_Sys "System"
@@ -125,41 +125,41 @@ namespace QTournament
   
 //----------------------------------------------------------------------------
 
-#define TAB_P2C "Player2Category"
-#define P2C_PLAYER_REF "PlayerRefId"
-#define P2C_CAT_REF "CategoryRefId"
+#define TabP2C "Player2Category"
+#define P2C_PlayerRef "PlayerRefId"
+#define P2C_CatRef "CategoryRefId"
   
 //----------------------------------------------------------------------------
 
-#define TAB_PAIRS "PlayerPair"
-#define PAIRS_PLAYER1_REF "Player1RefId"
-#define PAIRS_PLAYER2_REF "Player2RefId"
-#define PAIRS_CONFIGREF "CategoryRefId"
-#define PAIRS_GRP_NUM "GroupNumber"
-#define PAIRS_INITIAL_RANK "InitialRank"
+#define TabPairs "PlayerPair"
+#define Pairs_Player1Ref "Player1RefId"
+#define Pairs_Player2Ref "Player2RefId"
+#define Pairs_CatRef "CategoryRefId"
+#define Pairs_GrpNum "GroupNumber"
+#define Pairs_InitialRank "InitialRank"
   
 //----------------------------------------------------------------------------
 
-#define TAB_MATCH "Match"
-#define MA_GRP_REF  "MatchGroupRefId"
-#define MA_NUM  "Number"
-#define MA_PAIR1_REF  "PlayerPair1RefId"
-#define MA_PAIR2_REF  "PlayerPair2RefId"
-#define MA_ACTUAL_PLAYER1A_REF  "ActualPlayer1aRefId"
-#define MA_ACTUAL_PLAYER1B_REF  "ActualPlayer1bRefId"
-#define MA_ACTUAL_PLAYER2A_REF  "ActualPlayer2aRefId"
-#define MA_ACTUAL_PLAYER2B_REF  "ActualPlayer2bRefId"
-#define MA_RESULT  "Result"
-#define MA_COURT_REF  "CourtRefId"
-#define MA_START_TIME  "StartTime"
-#define MA_ADDITIONAL_CALL_TIMES  "CallTimes"
-#define MA_FINISH_TIME  "FinishTime"
-#define MA_PAIR1_SYMBOLIC_VAL  "PlayerPair1SymbolicValue"
-#define MA_PAIR2_SYMBOLIC_VAL  "PlayerPair2SymbolicValue"
-#define MA_WINNER_RANK  "WinnerRank"
-#define MA_LOSER_RANK  "LoserRank"
+#define TabMatch "Match"
+#define MA_GrpRef  "MatchGroupRefId"
+#define MA_Num  "Number"
+#define MA_Pair1Ref  "PlayerPair1RefId"
+#define MA_Pair2Ref  "PlayerPair2RefId"
+#define MA_ActualPlayer1aRef  "ActualPlayer1aRefId"
+#define MA_ActualPlayer1bRef  "ActualPlayer1bRefId"
+#define MA_ActualPlayer2aRef  "ActualPlayer2aRefId"
+#define MA_ActualPlayer2bRef  "ActualPlayer2bRefId"
+#define MA_Result  "Result"
+#define MA_CourtRef  "CourtRefId"
+#define MA_StartTime  "StartTime"
+#define MA_AdditionalCallTimes  "CallTimes"
+#define MA_FinishTime  "FinishTime"
+#define MA_Pair1SymbolicVal  "PlayerPair1SymbolicValue"
+#define MA_Pair2SymbolicVal  "PlayerPair2SymbolicValue"
+#define MA_WinnerRank  "WinnerRank"
+#define MA_LoserRank  "LoserRank"
 #define MA_RefereeMode  "RefereeMode"
-#define MA_REFEREE_REF  "RefereeRefId"
+#define MA_RefereeRef  "RefereeRefId"
 //#define MA_  ""
 //#define MA_  ""
 //#define MA_  ""
@@ -167,11 +167,11 @@ namespace QTournament
   
 //----------------------------------------------------------------------------
 
-#define TAB_MATCH_GROUP "MatchGroup"
-#define MG_CAT_REF  "CategoryRefId"
-#define MG_ROUND  "Round"
-#define MG_GRP_NUM  "RoundRobinGroupNumber"
-#define MG_STAGE_SEQ_NUM  "StageSequenceNumber"
+#define TabMatch_GROUP "MatchGroup"
+#define MG_CatRef  "CategoryRefId"
+#define MG_Round  "Round"
+#define MG_GrpNum  "RoundRobinGroupNumber"
+#define MG_StageSeqNum  "StageSequenceNumber"
 //#define MG_  ""
 //#define MG_  ""
 //#define MG_  ""
@@ -194,46 +194,46 @@ namespace QTournament
   
 //----------------------------------------------------------------------------
 
-#define TAB_MatchSystem "Ranking"
-#define RA_ROUND  "Round"
-#define RA_PAIR_REF  "PlayerPairRef"
-#define RA_GAMES_WON  "GamesWon"
-#define RA_GAMES_LOST  "GamesLost"
-#define RA_MATCHES_WON  "MatchesWon"
-#define RA_MATCHES_LOST  "MatchesLost"
-#define RA_MATCHES_DRAW  "MatchesDraw"
-#define RA_POINTS_WON  "PointsWon"
-#define RA_POINTS_LOST  "PointsLost"
-#define RA_RANK  "Rank"
-#define RA_CAT_REF  "CategoryRef"
-#define RA_GRP_NUM  "MatchGroupNumber"
+#define TabMatchSystem "Ranking"
+#define RA_Round  "Round"
+#define RA_PairRef  "PlayerPairRef"
+#define RA_GamesWon  "GamesWon"
+#define RA_GamesLost  "GamesLost"
+#define RA_MatchesWon  "MatchesWon"
+#define RA_MatchesLost  "MatchesLost"
+#define RA_MatchesDraw  "MatchesDraw"
+#define RA_PointsWon  "PointsWon"
+#define RA_PointsLost  "PointsLost"
+#define RA_Rank  "Rank"
+#define RA_CatRef  "CategoryRef"
+#define RA_GrpNum  "MatchGroupNumber"
 //#define RA_  ""
 //#define RA_  ""
 //#define RA_  ""
 
 //----------------------------------------------------------------------------
 
-#define TAB_BRACKET_VIS "BracketVisualization"
-#define BV_MATCH_REF "MatchRefId"
-#define BV_CONFIGREF "CategoryRefId"
-#define BV_PAGE "PageNumber"
-#define BV_GRID_X0 "GridX0"
-#define BV_GRID_Y0 "GridY0"
-#define BV_SPAN_Y "SpanY"
-#define BV_ORIENTATION "Orientation"
-#define BV_TERMINATOR "Terminator"
-#define BV_INITIAL_RANK1 "InitialRank1"
-#define BV_INITIAL_RANK2 "InitialRank2"
-#define BV_PAIR1_REF "PlayerPair1RefId"
-#define BV_PAIR2_REF "PlayerPair2RefId"
-#define BV_Y_PAGEBREAK_SPAN "PagebreakOffsetY"
-#define BV_NEXT_PAGE_NUM "NextPageNum"
-#define BV_TERMINATOR_OFFSET_Y "TerminatorOffset"
-#define BV_ELEMENT_ID "BracketElementId"
-#define BV_NEXT_WINNER_MATCH "NextWinnerMatch"
-#define BV_NEXT_LOSER_MATCH "NextLoserMatch"
-#define BV_NEXT_MATCH_POS_FOR_WINNER "NextMatchPosForWinner"
-#define BV_NEXT_MATCH_POS_FOR_LOSER "NextMatchPosForLoser"
+#define TabBracketVis "BracketVisualization"
+#define BV_MatchRef "MatchRefId"
+#define BV_CatRef "CategoryRefId"
+#define BV_Page "PageNumber"
+#define BV_GridX0 "GridX0"
+#define BV_GridY0 "GridY0"
+#define BV_SpanY "SpanY"
+#define BV_Orientation "Orientation"
+#define BV_Terminator "Terminator"
+#define BV_InitialRank1 "InitialRank1"
+#define BV_InitialRank2 "InitialRank2"
+#define BV_Pair1Ref "PlayerPair1RefId"
+#define BV_Pair2Ref "PlayerPair2RefId"
+#define BV_YPagebreakSpan "PagebreakOffsetY"
+#define BV_NextPageNum "NextPageNum"
+#define BV_Terminator_OFFSET_Y "TerminatorOffset"
+#define BV_ElementId "BracketElementId"
+#define BV_NextWinnerMatch "NextWinnerMatch"
+#define BV_NextLoserMatch "NextLoserMatch"
+#define BV_NextMatchPosForWinner "NextMatchPosForWinner"
+#define BV_NextMatchPosForLoser "NextMatchPosForLoser"
 //#define BV_ ""
 //#define BV_ ""
 
@@ -338,11 +338,11 @@ namespace QTournament
   };  
   
 //----------------------------------------------------------------------------
-  enum SEX
+  enum class Sex
   {
     M,
     F,
-    DONT_CARE
+    DontCare
   };  
   
 //----------------------------------------------------------------------------

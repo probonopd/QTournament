@@ -19,7 +19,7 @@ class DlgPickCategory : public QDialog
   Q_OBJECT
 
 public:
-  DlgPickCategory(QWidget *parent, const QTournament::TournamentDB& _db, QTournament::SEX sex = QTournament::DONT_CARE);
+  DlgPickCategory(QWidget *parent, const QTournament::TournamentDB& _db, QTournament::Sex sex = QTournament::Sex::DontCare);
   void applyPreselection(const std::vector<QTournament::Category>& preSelection);
   void applyPreselection(const QString& commaSepCatNames);
 

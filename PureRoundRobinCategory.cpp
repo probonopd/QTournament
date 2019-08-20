@@ -71,7 +71,7 @@ namespace QTournament
 
   std::optional<PureRoundRobinCategory> PureRoundRobinCategory::getFromGenericCat(const Category& cat)
   {
-    ERR::MatchSystem msys = cat.getMatchSystem();
+    MatchSystem msys = cat.getMatchSystem();
 
     return (msys == MatchSystem::RoundRobin) ? PureRoundRobinCategory{cat.db, cat.row} : std::optional<PureRoundRobinCategory>{};
   }

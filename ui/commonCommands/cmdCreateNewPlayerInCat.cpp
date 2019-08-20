@@ -51,7 +51,7 @@ ERR cmdCreateNewPlayerInCat::exec()
   {
     return ERR::OK;
   }
-  SEX selectedSex = dlgSex.getSelectedSex();
+  Sex selectedSex = dlgSex.getSelectedSex();
 
   // check if we can add a player of the selected
   // sex to the category

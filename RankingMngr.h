@@ -16,8 +16,8 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MatchSystem::RankingMNGR_H
-#define	MatchSystem::RankingMNGR_H
+#ifndef RANKINGMNGR_H
+#define	RANKINGMNGR_H
 
 #include <memory>
 #include <vector>

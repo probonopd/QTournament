@@ -39,7 +39,7 @@ DlgPickPlayerSex::~DlgPickPlayerSex()
   delete ui;
 }
 
-SEX DlgPickPlayerSex::getSelectedSex()
+Sex DlgPickPlayerSex::getSelectedSex()
 {
   return selectedSex;
 }

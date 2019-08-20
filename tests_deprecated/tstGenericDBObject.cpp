@@ -27,10 +27,10 @@ void tstGenericDBObject::testStateSetGet()
   TournamentDB* db = getScenario01(true);
 
   // fake a player to get a "state" column to play with
-  (*db)[TAB_PLAYER].insertRow();
+  (*db)[TabPlayer].insertRow();
   
   // construct a GenericDatabaseObject from this player
-  TabRow r = (*db)[TAB_PLAYER][1];
+  TabRow r = (*db)[TabPlayer][1];
   GenericDatabaseObject gdo(db, r);
   
   // set a state to initially fill the column

@@ -52,9 +52,9 @@ public slots:
 private:
   Ui::GroupAssignmentListWidget ui;
   QTournament::TournamentDB* db;
-  QListWidget* lwGroup[MAX_GROUP_COUNT];
-  QLabel* laGroup[MAX_GROUP_COUNT];
-  std::unique_ptr<PairItemDelegate> delegate[MAX_GROUP_COUNT];
+  QListWidget* lwGroup[MaxGroupCount];
+  QLabel* laGroup[MaxGroupCount];
+  std::unique_ptr<PairItemDelegate> delegate[MaxGroupCount];
   bool isInitialized;
   int getColCountForGroupCount(int grpCount);
   QQueue<QListWidget*> selectionQueue;

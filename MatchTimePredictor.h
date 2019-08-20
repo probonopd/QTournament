@@ -59,10 +59,10 @@ namespace QTournament
     void resetPrediction();
 
   private:
-    static constexpr int DEFAULT_MATCH_TIME__SECS = 25 * 60;  // 25 minutes
-    static constexpr int GRACE_TIME_BETWEEN_MATCHES__SECS = 60;
-    static constexpr int COURTS_IS_BUSY_AND_PREDICTION_WRONG__CORRECTION_OFFSET__SECS = 5 * 60;
-    static constexpr int NUM_INITIALLY_ASSUMED_MATCHES = 5;
+    static constexpr int DefaultMatchTime_secs = 25 * 60;  // 25 minutes
+    static constexpr int GraceTimeBetweenMatches_secs = 60;
+    static constexpr int CourtIsBusyAndPredictionWrong_CorrectionOffset_secs = 5 * 60;
+    static constexpr int NumInitiallyAssumedMatches = 5;
 
     std::reference_wrapper<const QTournament::TournamentDB> db;
     long totalMatchTime_secs;

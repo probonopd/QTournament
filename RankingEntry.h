@@ -16,8 +16,8 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MatchSystem::RankingENTRY_H
-#define	MatchSystem::RankingENTRY_H
+#ifndef RANKINGENTRY_H
+#define	RANKINGENTRY_H
 
 #include <memory>
 #include <tuple>
@@ -44,8 +44,8 @@ namespace QTournament
     friend class TournamentDatabaseObjectManager;
 
   public:
-    static constexpr int NO_RANK_ASSIGNED = -1;
-    static constexpr int NO_GROUP_ASSIGNED = -999;
+    static constexpr int NoRankAssigned = -1;
+    static constexpr int NoGroupAssigned = -999;
 
     int getRound() const;
     Category getCategory() const;

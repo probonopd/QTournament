@@ -36,11 +36,11 @@ namespace QTournament
    */
   void TournamentDatabaseObjectManager::fixSeqNumberAfterInsert(const SqliteOverlay::DbTab& otherTab) const
   {
-    auto r = otherTab.getSingleRowByColumnValueNull(GENERIC_SEQNUM_FIELD_NAME);
+    auto r = otherTab.getSingleRowByColumnValueNull(GenericSeqnumFieldName);
     
     int newSeqNum = otherTab.length() - 1;
     
-    r.update(GENERIC_SEQNUM_FIELD_NAME, newSeqNum);
+    r.update(GenericSeqnumFieldName, newSeqNum);
   }
 
   //----------------------------------------------------------------------------
@@ -62,8 +62,8 @@ namespace QTournament
   void TournamentDatabaseObjectManager::fixSeqNumberAfterDelete(const SqliteOverlay::DbTab& otherTab, int deletedSeqNum) const
   {
     SqliteOverlay::WhereClause wc;
-    wc.addCol(GENERIC_SEQNUM_FIELD_NAME, ">", deletedSeqNum);
-    wc.setOrderColumn_Asc(GENERIC_SEQNUM_FIELD_NAME);
+    wc.addCol(GenericSeqnumFieldName, ">", deletedSeqNum);
+    wc.setOrderColumn_Asc(GenericSeqnumFieldName);
 
     // make sure we update all rows in a single transaction
     auto trans = db.get().startTransaction(DefaultTransactionType);
@@ -74,7 +74,7 @@ namespace QTournament
     int nextSeqNum = deletedSeqNum;
     for (const auto& row : rows)
     {
-      row.update(GENERIC_SEQNUM_FIELD_NAME, nextSeqNum);
+      row.update(GenericSeqnumFieldName, nextSeqNum);
       ++nextSeqNum;
     }
 

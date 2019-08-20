@@ -28,7 +28,7 @@ namespace QTournament
 {
 
   Team::Team(const TournamentDB& _db, int rowId)
-  :TournamentDatabaseObject(_db, TAB_TEAM, rowId)
+  :TournamentDatabaseObject(_db, TabTeam, rowId)
   {
   }
 
@@ -43,7 +43,7 @@ namespace QTournament
 
   QString Team::getName(int maxLen) const
   {
-    QString fullName = QString::fromUtf8(row[GENERIC_NAME_FIELD_NAME].data());
+    QString fullName = QString::fromUtf8(row[GenericNameFieldName].data());
     
     if (maxLen < 1)
     {
@@ -80,8 +80,8 @@ namespace QTournament
 
   int Team::getMemberCount() const
   {
-    DbTab playerTab = DbTab{db.get(), TAB_PLAYER, false};
-    return playerTab.getMatchCountForColumnValue(PL_TEAM_REF, getId());
+    DbTab playerTab = DbTab{db.get(), TabPlayer, false};
+    return playerTab.getMatchCountForColumnValue(PL_TeamRef, getId());
   }
 
 //----------------------------------------------------------------------------
@@ -89,9 +89,9 @@ namespace QTournament
   int Team::getUnregisteredMemberCount() const
   {
     WhereClause wc;
-    wc.addCol(PL_TEAM_REF, getId());
-    wc.addCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(ObjState::PL_WaitForRegistration));
-    DbTab playerTab = DbTab{db.get(), TAB_PLAYER, false};
+    wc.addCol(PL_TeamRef, getId());
+    wc.addCol(GenericStateFieldName, static_cast<int>(ObjState::PL_WaitForRegistration));
+    DbTab playerTab = DbTab{db.get(), TabPlayer, false};
     return playerTab.getMatchCountForWhereClause(wc);
   }
 

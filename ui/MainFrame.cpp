@@ -635,8 +635,8 @@ void MainFrame::updateWindowTitle()
   if (currentDb != nullptr)
   {
     // determine the tournament title
-    auto cfg = KeyValueTab::getTab(currentDb.get(), TAB_CFG);
-    QString tnmtTitle = QString(cfg.operator[](CFG_KEY_TNMT_NAME).data());
+    auto cfg = KeyValueTab::getTab(currentDb.get(), TabCfg);
+    QString tnmtTitle = QString(cfg.operator[](CfgKey_TnmtName).data());
     title += " - " + tnmtTitle + " (%1)";
 
     // insert the current filename, if any
@@ -973,7 +973,7 @@ void MainFrame::setupTestScenario(int scenarioID)
     // play all scheduled matches
     QDateTime curDateTime = QDateTime::currentDateTimeUtc();
     uint epochSecs = curDateTime.toTime_t();
-    DbTab* matchTab = currentDb->getTab(TAB_MATCH);
+    DbTab* matchTab = currentDb->getTab(TabMatch);
     while (true)
     {
       int nextMacthId;
@@ -994,7 +994,7 @@ void MainFrame::setupTestScenario(int scenarioID)
       // the duration is at least 15 minutes and max 25 minutes
       int fakeDuration = 15 * 60  +  10 * 60 * (qrand() / (RAND_MAX * 1.0));
       TabRow maRow = matchTab->operator [](nextMacthId);
-      maRow.update(MA_FINISH_TIME, to_string(epochSecs + fakeDuration));
+      maRow.update(MA_FinishTime, to_string(epochSecs + fakeDuration));
     }
   };
 
@@ -1417,33 +1417,33 @@ void MainFrame::onEditTournamentSettings()
   // check for changes and apply them.
   //
   // start with the tournament organizer
-  auto cfg = SqliteOverlay::KeyValueTab::getTab(currentDb.get(), TAB_CFG, false);
-  string tmp = (*cfg)[CFG_KEY_TNMT_ORGA];
+  auto cfg = SqliteOverlay::KeyValueTab::getTab(currentDb.get(), TabCfg, false);
+  string tmp = (*cfg)[CfgKey_TnmtOrga];
   QString oldTnmtOrga = QString::fromUtf8(tmp.c_str());
   if (oldTnmtOrga != newSettings->organizingClub)
   {
     tmp = (newSettings->organizingClub).toUtf8().constData();
-    cfg.set(CFG_KEY_TNMT_ORGA, tmp);
+    cfg.set(CfgKey_TnmtOrga, tmp);
   }
 
   // the tournament name
-  tmp = (*cfg)[CFG_KEY_TNMT_NAME];
+  tmp = (*cfg)[CfgKey_TnmtName];
   QString oldTnmtName = QString::fromUtf8(tmp.c_str());
   if (oldTnmtName != newSettings->tournamentName)
   {
     tmp = (newSettings->tournamentName).toUtf8().constData();
-    cfg.set(CFG_KEY_TNMT_NAME, tmp);
+    cfg.set(CfgKey_TnmtName, tmp);
 
     // refresh the window title to show the new name
     updateWindowTitle();
   }
 
   // the umpire mode
-  int oldRefereeModeId = cfg.getInt(CFG_KEY_DEFAULT_RefereeMode);
+  int oldRefereeModeId = cfg.getInt(CfgKey_DefaultRefereemode);
   RefereeMode oldRefereeMode = static_cast<RefereeMode>(oldRefereeModeId);
   if (oldRefereeMode != newSettings->refereeMode)
   {
-    cfg.set(CFG_KEY_DEFAULT_RefereeMode, static_cast<int>(newSettings->refereeMode));
+    cfg.set(CfgKey_DefaultRefereemode, static_cast<int>(newSettings->refereeMode));
     ui.tabSchedule->updateRefereeColumn();
   }
 }

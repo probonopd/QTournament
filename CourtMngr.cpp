@@ -30,7 +30,7 @@ namespace QTournament
 {
 
   CourtMngr::CourtMngr(const TournamentDB& _db)
-  : TournamentDatabaseObjectManager(_db, TAB_COURT)
+  : TournamentDatabaseObjectManager(_db, TabCourt)
   {
   }
 
@@ -40,7 +40,7 @@ namespace QTournament
   {
     QString name = _name.trimmed();
     
-    if (name.length() > MAX_NAME_LEN)
+    if (name.length() > MaxNameLen)
     {
       Sloppy::assignIfNotNull<ERR>(err, ERR::InvalidName);
       return {};
@@ -54,10 +54,10 @@ namespace QTournament
     
     // prepare a new table row
     SqliteOverlay::ColumnValueClause cvc;
-    cvc.addCol(CO_NUMBER, courtNum);
-    cvc.addCol(GENERIC_NAME_FIELD_NAME, QString2StdString(name));
-    cvc.addCol(CO_IS_MANUAL_ASSIGNMENT, 0);
-    cvc.addCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(ObjState::CO_Avail));
+    cvc.addCol(CO_Number, courtNum);
+    cvc.addCol(GenericNameFieldName, QString2StdString(name));
+    cvc.addCol(CO_IsManualAssignment, 0);
+    cvc.addCol(GenericStateFieldName, static_cast<int>(ObjState::CO_Avail));
     
     // create the new court row
     CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
@@ -75,14 +75,14 @@ namespace QTournament
 
   bool CourtMngr::hasCourt(const int courtNum)
   {
-    return (tab.getMatchCountForColumnValue(CO_NUMBER, courtNum) > 0);
+    return (tab.getMatchCountForColumnValue(CO_Number, courtNum) > 0);
   }
 
 //----------------------------------------------------------------------------
 
   int CourtMngr::getHighestUnusedCourtNumber() const
   {
-    static const std::string sql{"SELECT max(" + std::string{CO_NUMBER} + ") FROM " + std::string{TAB_COURT}};
+    static const std::string sql{"SELECT max(" + std::string{CO_Number} + ") FROM " + std::string{TabCourt}};
 
     try
     {
@@ -104,7 +104,7 @@ namespace QTournament
    */
   std::optional<Court> CourtMngr::getCourt(const int courtNum)
   {
-    return getSingleObjectByColumnValue<Court>(CO_NUMBER, courtNum);
+    return getSingleObjectByColumnValue<Court>(CO_Number, courtNum);
   }
 
 //----------------------------------------------------------------------------
@@ -126,12 +126,12 @@ namespace QTournament
     QString newName = _newName.trimmed();
     
     // Ensure the new name is valid
-    if (newName.length() > MAX_NAME_LEN)
+    if (newName.length() > MaxNameLen)
     {
       return ERR::InvalidName;
     }
         
-    c.row.update(GENERIC_NAME_FIELD_NAME, QString2StdString(newName));
+    c.row.update(GenericNameFieldName, QString2StdString(newName));
     
     CentralSignalEmitter::getInstance()->courtRenamed(c);
     
@@ -149,7 +149,7 @@ namespace QTournament
    */
   std::optional<Court> CourtMngr::getCourtBySeqNum(int seqNum)
   {
-    return getSingleObjectByColumnValue<Court>(GENERIC_SEQNUM_FIELD_NAME, seqNum);
+    return getSingleObjectByColumnValue<Court>(GenericSeqnumFieldName, seqNum);
   }
 
 
@@ -172,7 +172,7 @@ namespace QTournament
   int CourtMngr::getActiveCourtCount()
   {
     int allCourts = tab.length();
-    int disabledCourts = tab.getMatchCountForColumnValue(GENERIC_STATE_FIELD_NAME, static_cast<int>(ObjState::CO_Disabled));
+    int disabledCourts = tab.getMatchCountForColumnValue(GenericStateFieldName, static_cast<int>(ObjState::CO_Disabled));
 
     return (allCourts - disabledCourts);
   }
@@ -183,17 +183,17 @@ namespace QTournament
   {
     int reqState = static_cast<int>(ObjState::CO_Avail);
     SqliteOverlay::WhereClause wc;
-    wc.addCol(GENERIC_STATE_FIELD_NAME, reqState);
+    wc.addCol(GenericStateFieldName, reqState);
 
     // further restrict the search criteria if courts for manual
     // match assignment are excluded
     if (!includeManual)
     {
-      wc.addCol(CO_IS_MANUAL_ASSIGNMENT, 0);
+      wc.addCol(CO_IsManualAssignment, 0);
     }
 
     // always get the court with the lowest number first
-    wc.setOrderColumn_Asc(CO_NUMBER);
+    wc.setOrderColumn_Asc(CO_Number);
 
     return getSingleObjectByWhereClause<Court>(wc);
   }
@@ -224,9 +224,9 @@ namespace QTournament
     // make sure there is no currently running match
     // assigned to this court
     SqliteOverlay::WhereClause wc;
-    wc.addCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(ObjState::MA_Running));
-    wc.addCol(MA_COURT_REF, co.getId());
-    DbTab matchTab{db, TAB_MATCH, false};
+    wc.addCol(GenericStateFieldName, static_cast<int>(ObjState::MA_Running));
+    wc.addCol(MA_CourtRef, co.getId());
+    DbTab matchTab{db, TabMatch, false};
     if (matchTab.getMatchCountForWhereClause(wc) > 0)
     {
       return false;   // there is at least one running match assigned to this court
@@ -274,8 +274,8 @@ namespace QTournament
   ERR CourtMngr::deleteCourt(const Court& co)
   {
     // check if the court has already been used in the past
-    DbTab matchTab{db, TAB_MATCH, false};
-    if (matchTab.getMatchCountForColumnValue(MA_COURT_REF, co.getId()) > 0)
+    DbTab matchTab{db, TabMatch, false};
+    if (matchTab.getMatchCountForColumnValue(MA_CourtRef, co.getId()) > 0)
     {
       return ERR::CourtAlreadyUsed;
     }
@@ -297,9 +297,9 @@ namespace QTournament
 
   std::string CourtMngr::getSyncString(const std::vector<int>& rows) const
   {
-    std::vector<Sloppy::estring> cols = {"id", GENERIC_NAME_FIELD_NAME, CO_NUMBER};
+    std::vector<Sloppy::estring> cols = {"id", GenericNameFieldName, CO_Number};
 
-    return db.get().getSyncStringForTable(TAB_COURT, cols, rows);
+    return db.get().getSyncStringForTable(TabCourt, cols, rows);
   }
 
   //----------------------------------------------------------------------------

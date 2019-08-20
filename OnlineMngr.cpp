@@ -24,7 +24,7 @@ namespace QTournament
 
   OnlineMngr::OnlineMngr(TournamentDB& _db)
     :db{_db}, cryptoLib{Sloppy::Crypto::SodiumLib::getInstance()},
-      cfgTab{SqliteOverlay::KeyValueTab{db, TAB_CFG}}, secKeyUnlocked{false},
+      cfgTab{SqliteOverlay::KeyValueTab{db, TabCfg}}, secKeyUnlocked{false},
       syncState{}, lastReqTime_ms{-1}
   {
     applyCustomServerSettings();
@@ -60,7 +60,7 @@ namespace QTournament
 
     // add version information
     hdr["X-ProtocolVersion"] = QString::fromUtf8(ImplementedProtoVersion);
-    auto _dv = cfgTab.getString2(CFG_KEY_DB_VERSION);
+    auto _dv = cfgTab.getString2(CfgKey_DbVersion);
     string dv = _dv.value_or("unknown");
     QString dbVersion = QString::fromUtf8(dv.c_str());
     hdr["X-DatabaseVersion"] = dbVersion;
@@ -111,9 +111,9 @@ namespace QTournament
 
   bool OnlineMngr::hasSecretInDatabase()
   {
-    if (!(cfgTab.hasKey(CFG_KEY_KEYSTORE))) return false;
+    if (!(cfgTab.hasKey(CfgKey_Keystore))) return false;
 
-    const string encData = cfgTab[CFG_KEY_KEYSTORE];
+    const string encData = cfgTab[CfgKey_Keystore];
     return (!(encData.empty()));
   }
 
@@ -141,7 +141,7 @@ namespace QTournament
 
     // initialize a PasswordProtectedSecret from the
     // encrypted data and try the provided password
-    const string encData = cfgTab[CFG_KEY_KEYSTORE];
+    const string encData = cfgTab[CfgKey_Keystore];
     SecretBox box(encData, true);
     bool isOkay = box.setPassword(oldPassword.toUtf8().constData());
     if (!isOkay) return OnlineError::InvalidPassword;
@@ -153,8 +153,8 @@ namespace QTournament
     // store the new encrypted data in the database
     string cipher = box.asString(true);
     if (cipher.empty()) return OnlineError::InvalidPassword;
-    cfgTab.set(CFG_KEY_KEYSTORE, cipher);
-    const string& readBack = cfgTab[CFG_KEY_KEYSTORE];
+    cfgTab.set(CfgKey_Keystore, cipher);
+    const string& readBack = cfgTab[CfgKey_Keystore];
     if (readBack != cipher) return OnlineError::LocalDatabaseError;
 
     return OnlineError::Okay;
@@ -168,7 +168,7 @@ namespace QTournament
 
     // initialize a PasswordProtectedSecret from the
     // encrypted data and use the built-in password checker
-    const string encData = cfgTab[CFG_KEY_KEYSTORE];
+    const string encData = cfgTab[CfgKey_Keystore];
     SecretBox box(encData, true);
     bool isValid = box.isValidPassword(pw.toUtf8().constData());
 
@@ -185,7 +185,7 @@ namespace QTournament
 
     // initialize a PasswordProtectedSecret from the
     // encrypted data
-    const string encData = cfgTab[CFG_KEY_KEYSTORE];
+    const string encData = cfgTab[CfgKey_Keystore];
     SecretBox box(encData, true);
     bool isOkay = box.setPassword(pw.toUtf8().constData());
     if (!isOkay) return OnlineError::WrongPassword;
@@ -206,7 +206,7 @@ namespace QTournament
 
   bool OnlineMngr::hasRegistrationSubmitted() const
   {
-    return cfgTab.hasKey(CFG_KEY_REGISTRATION_TIMESTAMP);
+    return cfgTab.hasKey(CfgKey_RegistrationTimestamp);
   }
 
   //----------------------------------------------------------------------------
@@ -260,7 +260,7 @@ namespace QTournament
     if (result == OnlineError::Okay)
     {
       UTCTimestamp now;
-      cfgTab.set(CFG_KEY_REGISTRATION_TIMESTAMP, &now);
+      cfgTab.set(CfgKey_RegistrationTimestamp, &now);
     }
 
     return result;
@@ -373,7 +373,7 @@ namespace QTournament
       // prepare to delete everything server-related from the database
       auto trans = db.get().startTransaction();
 
-      for (const string& keyName : {CFG_KEY_KEYSTORE, CFG_KEY_REGISTRATION_TIMESTAMP,
+      for (const string& keyName : {CfgKey_Keystore, CfgKey_RegistrationTimestamp,
                                     CfgKey_CustomServer, CfgKey_CustomServerKey, CfgKey_CustomServerTimeout})
       {
         cfgTab.remove(keyName);
@@ -731,8 +731,8 @@ namespace QTournament
     // store the encrypted key box in our database
     string cipher = box.asString(true);
     if (cipher.empty()) return false;
-    cfgTab.set(CFG_KEY_KEYSTORE, cipher);
-    const string readBack = cfgTab[CFG_KEY_KEYSTORE];
+    cfgTab.set(CfgKey_Keystore, cipher);
+    const string readBack = cfgTab[CfgKey_Keystore];
     if (readBack != cipher) return false;
 
     // overwrite the currently used keys
@@ -853,47 +853,47 @@ namespace QTournament
       {
         if (!(idxList.empty()))
         {
-          if (curTabName == TAB_COURT)
+          if (curTabName == TabCourt)
           {
             CourtMngr mngr{db};
             result += mngr.getSyncString(idxList);
           }
-          if (curTabName == TAB_TEAM)
+          if (curTabName == TabTeam)
           {
             TeamMngr mngr{db};
             result += mngr.getSyncString(idxList);
           }
-          if (curTabName == TAB_PLAYER)
+          if (curTabName == TabPlayer)
           {
             PlayerMngr mngr{db};
             result += mngr.getSyncString(idxList);
           }
-          if (curTabName == TAB_P2C)
+          if (curTabName == TabP2C)
           {
             PlayerMngr mngr{db};
             result += mngr.getSyncString_P2C(idxList);
           }
-          if (curTabName == TAB_PAIRS)
+          if (curTabName == TabPairs)
           {
             PlayerMngr mngr{db};
             result += mngr.getSyncString_Pairs(idxList);
           }
-          if (curTabName == TAB_CATEGORY)
+          if (curTabName == TabCategory)
           {
             CatMngr mngr{db};
             result += mngr.getSyncString(idxList);
           }
-          if (curTabName == TAB_MATCH)
+          if (curTabName == TabMatch)
           {
             MatchMngr mngr{db};
             result += mngr.getSyncString(idxList);
           }
-          if (curTabName == TAB_MATCH_GROUP)
+          if (curTabName == TabMatch_GROUP)
           {
             MatchMngr mngr{db};
             result += mngr.getSyncString_MatchGroups(idxList);
           }
-          if (curTabName == TAB_MatchSystem)
+          if (curTabName == TabMatchSystem)
           {
             RankingMngr mngr{db};
             result += mngr.getSyncString(idxList);

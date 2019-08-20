@@ -10,17 +10,17 @@ using namespace std;
 
 namespace QTournament
 {
-  SEX strToSex(const string& s)
+  Sex strToSex(const string& s)
   {
-    if ((s == "m") || (s == "M")) return M;
+    if ((s == "m") || (s == "M")) return Sex::M;
 
     for (const string& permitted : {"f", "F", "w", "W"})
     {
-      if (s == permitted) return F;
+      if (s == permitted) return Sex::F;
     }
 
-    // use "DONT_CARE" as an error indicator
-    return DONT_CARE;
+    // use "Sex::DontCare" as an error indicator
+    return Sex::DontCare;
   }
 
   //----------------------------------------------------------------------------
@@ -226,7 +226,7 @@ namespace QTournament
     {
       sex = strToSex(rawTexts[2]);
     } else {
-      sex = DONT_CARE;
+      sex = Sex::DontCare;
     }
 
     // copy the team name
@@ -379,9 +379,9 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  bool CSVImportRecord::updateSex(SEX newSex)
+  bool CSVImportRecord::updateSex(Sex newSex)
   {
-    if (newSex == DONT_CARE) return false;
+    if (newSex == Sex::DontCare) return false;
     if (hasExistingName()) return false;
 
     sex = newSex;

@@ -80,10 +80,10 @@ int CatRoundStatus::getCurrentlyRunningRoundNumber() const
   QList<int> runningRounds = getCurrentlyRunningRoundNumbers();
   int n = runningRounds.count();
 
-  if (n < 1) return NO_CURRENTLY_RUNNING_ROUND;
+  if (n < 1) return NoCurrentlyRunningRounds;
   if (n == 1) return runningRounds.at(0);
 
-  return MULTIPLE_ROUNDS_RUNNING;  // can happen in group match rounds
+  return MultipleRoundsRunning;  // can happen in group match rounds
 }
 
 //----------------------------------------------------------------------------
@@ -93,7 +93,7 @@ int CatRoundStatus::getFinishedRoundsCount() const
   MatchMngr mm{db};
 
   int roundNum = 1;
-  int lastFinishedRound = NO_ROUNDS_FINISHED_YET;
+  int lastFinishedRound = NoRoundsFinishedYet;
 
   // go through rounds one by one
   while (true)
@@ -135,7 +135,7 @@ std::tuple<int, int, int> CatRoundStatus::getMatchCountForCurrentRound() const
 
   if (runningRounds.count() == 0)
   {
-    int tmp = NO_CURRENTLY_RUNNING_ROUND;
+    int tmp = NoCurrentlyRunningRounds;
     return std::tuple{tmp, tmp, tmp};
   }
 

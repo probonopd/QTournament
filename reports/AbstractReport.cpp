@@ -35,7 +35,7 @@ namespace QTournament
   constexpr char AbstractReport::BOLD_STYLE[];
 
 AbstractReport::AbstractReport(TournamentDB* _db, const QString& _name)
-  :db(_db), name(_name), cfg(KeyValueTab::getTab(db, TAB_CFG))
+  :db(_db), name(_name), cfg(KeyValueTab::getTab(db, TabCfg))
 {
   if (db == nullptr)
   {
@@ -312,8 +312,8 @@ void AbstractReport::printMatchList(upSimpleReport& rep, const MatchList& maList
 
 void AbstractReport::setHeaderAndFooter(upSimpleReport& rep, const QString& reportName) const
 {
-  QString tName = QString::fromUtf8(cfg.operator[](CFG_KEY_TNMT_NAME).data());
-  QString cName = QString::fromUtf8(cfg.operator[](CFG_KEY_TNMT_ORGA).data());
+  QString tName = QString::fromUtf8(cfg.operator[](CfgKey_TnmtName).data());
+  QString cName = QString::fromUtf8(cfg.operator[](CfgKey_TnmtOrga).data());
   rep->setGlobalHeader(cName, tName, SimpleReportLib::HeaderFooterStrings::TOKEN_CURDATE);
 
   QString fl = SimpleReportLib::HeaderFooterStrings::TOKEN_CURTIME;

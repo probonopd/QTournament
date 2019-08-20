@@ -112,7 +112,7 @@ namespace QTournament
 
     // referee/umpire handling
     ERR setRefereeMode(const Match& ma, RefereeMode newMode) const;
-    ERR assignReferee(const Match& ma, const Player& p, REFEREE_ACTION refAction) const;
+    ERR assignReferee(const Match& ma, const Player& p, RefereeAction refAction) const;
     ERR removeReferee(const Match& ma) const;
 
     // swap player between matches if match results are
@@ -130,7 +130,7 @@ namespace QTournament
     bool hasUnfinishedMandatoryPredecessor(const Match& ma) const;
     void resolveSymbolicNamesAfterFinishedMatch(const Match& ma) const;
     void updateMatchStatus(const Match& ma) const;
-    static constexpr int SYMBOLIC_ID_FOR_UNUSED_PLAYER_PAIR_IN_MATCH = 999999;
+    static constexpr int SymbolicIdForUnusedPlayerPairInMatch = 999999;
     
   signals:
 

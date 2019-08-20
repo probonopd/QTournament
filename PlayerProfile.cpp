@@ -120,7 +120,7 @@ namespace QTournament
       }
 
       int maNum = ma.getMatchNumber();
-      if ((maNum != ERR::MatchNumNotAssigned) && ((maNum < nextMatchNum) || (nextMatchNum < 0)))
+      if ((maNum != MatchNumNotAssigned) && ((maNum < nextMatchNum) || (nextMatchNum < 0)))
       {
         nextMatchNum = maNum;
         nextUmpireMatchId = ma.getId();
@@ -138,7 +138,7 @@ namespace QTournament
       int maNum = ma.getMatchNumber();
 
       // count all scheduled matches
-      if (maNum != ERR::MatchNumNotAssigned) ++scheduledCount;
+      if (maNum != MatchNumNotAssigned) ++scheduledCount;
 
       if (stat == ObjState::MA_Running)
       {
@@ -164,7 +164,7 @@ namespace QTournament
         continue;
       }
 
-      if ((maNum != ERR::MatchNumNotAssigned) && ((maNum < nextMatchNum) || (nextMatchNum < 0)))
+      if ((maNum != MatchNumNotAssigned) && ((maNum < nextMatchNum) || (nextMatchNum < 0)))
       {
         nextMatchNum = maNum;
         nextMatchId = ma.getId();
@@ -182,14 +182,14 @@ namespace QTournament
 
     // step 1: search via PlayerPairs
     QString where = "%1=%2 OR %3=%2";
-    where = where.arg(PAIRS_PLAYER1_REF);
+    where = where.arg(Pairs_Player1Ref);
     where = where.arg(p.getId());
-    where = where.arg(PAIRS_PLAYER2_REF);
-    DbTab pairsTab{db, TAB_PAIRS, false};
+    where = where.arg(Pairs_Player2Ref);
+    DbTab pairsTab{db, TabPairs, false};
     auto rows = pairsTab.getRowsByWhereClause(where.toUtf8().constData());
     std::vector<int> matchIdList;
 
-    DbTab matchTab{db, TAB_MATCH, false};
+    DbTab matchTab{db, TabMatch, false};
     MatchMngr mm{db};
     for (const auto& r : rows)
     {
@@ -197,9 +197,9 @@ namespace QTournament
 
       // search for all matches involving this player pair
       where = "%1=%2 OR %3=%2";
-      where = where.arg(MA_PAIR1_REF);
+      where = where.arg(MA_Pair1Ref);
       where = where.arg(ppId);
-      where = where.arg(MA_PAIR2_REF);
+      where = where.arg(MA_Pair2Ref);
       auto matchRows = matchTab.getRowsByWhereClause(where.toUtf8().constData());
       for (const auto& matchRow : matchRows)
       {
@@ -210,11 +210,11 @@ namespace QTournament
 
     // step 2: search via ACTUAL_PLAYER
     where = "%1=%2 OR %3=%2 OR %4=%2 OR %5=%2";
-    where = where.arg(MA_ACTUAL_PLAYER1A_REF);
+    where = where.arg(MA_ActualPlayer1aRef);
     where = where.arg(p.getId());
-    where = where.arg(MA_ACTUAL_PLAYER1B_REF);
-    where = where.arg(MA_ACTUAL_PLAYER2A_REF);
-    where = where.arg(MA_ACTUAL_PLAYER2B_REF);
+    where = where.arg(MA_ActualPlayer1bRef);
+    where = where.arg(MA_ActualPlayer2aRef);
+    where = where.arg(MA_ActualPlayer2bRef);
     auto matchRows = matchTab.getRowsByWhereClause(where.toUtf8().constData());
     for (const auto& matchRow : matchRows)
     {
@@ -240,7 +240,7 @@ namespace QTournament
     // find all matches involving the participant as an UMPIRE
     //
     matchIdList.clear();
-    matchRows = matchTab.getRowsByColumnValue(MA_REFEREE_REF, p.getId());
+    matchRows = matchTab.getRowsByColumnValue(MA_RefereeRef, p.getId());
     for (const auto& matchRow : matchRows)
     {
       int maId = matchRow.id();

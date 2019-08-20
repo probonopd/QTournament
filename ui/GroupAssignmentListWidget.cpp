@@ -29,7 +29,7 @@ GroupAssignmentListWidget::GroupAssignmentListWidget(QWidget* parent)
   ui.setupUi(this);
 
   // clear all list widget pointers
-  for (int i=0; i < MAX_GROUP_COUNT; i++) lwGroup[i] = nullptr;
+  for (int i=0; i < MaxGroupCount; i++) lwGroup[i] = nullptr;
   
   // set a flag that we are not yet fully initialized
   isInitialized = false;
@@ -127,7 +127,7 @@ void GroupAssignmentListWidget::teardown()
   }
   
   // reset the pointer arrays
-  for (int i=0; i < MAX_GROUP_COUNT; i++)
+  for (int i=0; i < MaxGroupCount; i++)
   {
     if (lwGroup[i] == nullptr) continue;  // unused entry
     delete lwGroup[i];  // this should be redundant to the "delete child" above but it works. Weird.
@@ -172,7 +172,7 @@ int GroupAssignmentListWidget::getColCountForGroupCount(int grpCount)
   case 21: return 7;
   }
   
-  if (grpCount <= MAX_GROUP_COUNT) return 8;
+  if (grpCount <= MaxGroupCount) return 8;
   
   return -1;
 }
@@ -253,7 +253,7 @@ vector<PlayerPairList> GroupAssignmentListWidget::getGroupAssignments()
   if (!isInitialized) return result;
 
   PlayerMngr pmngr{db};
-  for (int i=0; i < MAX_GROUP_COUNT; i++)
+  for (int i=0; i < MaxGroupCount; i++)
   {
     if (lwGroup[i] == nullptr) continue;
 

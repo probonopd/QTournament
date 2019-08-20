@@ -30,7 +30,7 @@ using namespace QTournament;
 using namespace SqliteOverlay;
 
 CourtTableModel::CourtTableModel(TournamentDB* _db)
-:QAbstractTableModel(0), db(_db), courtTab((db->getTab(TAB_COURT)))
+:QAbstractTableModel(0), db(_db), courtTab((db->getTab(TabCourt)))
 {
   CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
   connect(cse, SIGNAL(beginCreateCourt()), this, SLOT(onBeginCreateCourt()), Qt::DirectConnection);

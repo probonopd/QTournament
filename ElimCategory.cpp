@@ -43,9 +43,9 @@ namespace QTournament
   EliminationCategory::EliminationCategory(const TournamentDB& _db, int rowId, int eliminationMode)
   : Category(_db, rowId)
   {
-    if ((eliminationMode != BracketGenerator::BRACKET_MatchSystem::SingleElim) &&
-        (eliminationMode != BracketGenerator::BRACKET_DOUBLE_ELIM) &&
-        (eliminationMode != BracketGenerator::BRACKET_MatchSystem::Ranking1))
+    if ((eliminationMode != BracketGenerator::BracketSingleElim) &&
+        (eliminationMode != BracketGenerator::BracketDoubleElim) &&
+        (eliminationMode != BracketGenerator::BracketRanking1))
     {
       throw std::invalid_argument("Invalid elimination mode in ctor of EliminationCategory!");
     }
@@ -58,9 +58,9 @@ namespace QTournament
   EliminationCategory::EliminationCategory(const TournamentDB& _db, const TabRow& _row, int eliminationMode)
   : Category(_db, _row)
   {
-    if ((eliminationMode != BracketGenerator::BRACKET_MatchSystem::SingleElim) &&
-        (eliminationMode != BracketGenerator::BRACKET_DOUBLE_ELIM) &&
-        (eliminationMode != BracketGenerator::BRACKET_MatchSystem::Ranking1))
+    if ((eliminationMode != BracketGenerator::BracketSingleElim) &&
+        (eliminationMode != BracketGenerator::BracketDoubleElim) &&
+        (eliminationMode != BracketGenerator::BracketRanking1))
     {
       throw std::invalid_argument("Invalid elimination mode in ctor of EliminationCategory!");
     }
@@ -96,7 +96,7 @@ namespace QTournament
 
     // for the bracket mode "ranking1" we may not have more
     // than 32 players
-    if ((elimMode == BracketGenerator::BRACKET_MatchSystem::Ranking1) && (numPairs > 32))
+    if ((elimMode == BracketGenerator::BracketRanking1) && (numPairs > 32))
     {
       return ERR::InvalidPlayerCount;
     }
@@ -189,7 +189,7 @@ namespace QTournament
     {
       for (RankingEntry re : rl)
       {
-        if (re.getRank() != RankingEntry::NO_RANK_ASSIGNED)
+        if (re.getRank() != RankingEntry::NoRankAssigned)
         {
           auto pp = re.getPlayerPair();
           assert(pp);
@@ -294,7 +294,7 @@ namespace QTournament
         // Intermezzo: a helper function for searching
         // for future matches of a pair ID
         //
-        DbTab matchTab{db, TAB_MATCH, false};
+        DbTab matchTab{db, TabMatch, false};
         auto hasFutureMatch = [&](const PlayerPair& pp, bool asWinner) {
           // step 1: search by pair
           for (int r=round+1; r <= lastRoundInThisCat; ++r)
@@ -309,8 +309,8 @@ namespace QTournament
           // step 2: search for "is winner of" or "is loser of"
           // this match
           Sloppy::estring where = "%1 = %3 OR %2 = %3";
-          where.arg(MA_PAIR1_SYMBOLIC_VAL);
-          where.arg(MA_PAIR2_SYMBOLIC_VAL);
+          where.arg(MA_Pair1SymbolicVal);
+          where.arg(MA_Pair2SymbolicVal);
           int symbMatchId = asWinner ? ma.getId() : -(ma.getId());
           where.arg(symbMatchId);
           if (matchTab.getMatchCountForWhereClause(where) > 0)
@@ -519,11 +519,11 @@ namespace QTournament
     // Case 2: the match has not yet been finished
     //
     int maId = searchLoserNotWinner ? -ma.getId() : ma.getId();
-    DbTab mTab{db, TAB_MATCH, false};
-    auto resultRow = mTab.getSingleRowByColumnValue2(MA_PAIR1_SYMBOLIC_VAL, maId);
+    DbTab mTab{db, TabMatch, false};
+    auto resultRow = mTab.getSingleRowByColumnValue2(MA_Pair1SymbolicVal, maId);
     if (!resultRow)
     {
-      resultRow = mTab.getSingleRowByColumnValue2(MA_PAIR2_SYMBOLIC_VAL, maId);
+      resultRow = mTab.getSingleRowByColumnValue2(MA_Pair2SymbolicVal, maId);
     }
 
     if (!resultRow) return {};

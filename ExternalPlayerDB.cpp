@@ -36,9 +36,9 @@ namespace QTournament
 
   opExternalPlayerDatabaseEntry ExternalPlayerDB::row2upEntry(const SqliteOverlay::TabRow& r) const
   {
-    auto sexValue = r.getInt2(EPD_PL_SEX);
-    SEX sex = sexValue.has_value() ? static_cast<SEX>(*sexValue) : DONT_CARE;
-    return ExternalPlayerDatabaseEntry{r.id(), stdString2QString(r[EPD_PL_FNAME]), stdString2QString(r[EPD_PL_LNAME]),
+    auto sexValue = r.getInt2(EPD_PL_Sex);
+    Sex sex = sexValue.has_value() ? static_cast<Sex>(*sexValue) : Sex::DontCare;
+    return ExternalPlayerDatabaseEntry{r.id(), stdString2QString(r[EPD_PL_Fname]), stdString2QString(r[EPD_PL_Lname]),
           sex};
 
   }
@@ -109,9 +109,9 @@ namespace QTournament
 
     // Generate the table for the players
     SqliteOverlay::TableCreator tc;
-    tc.addCol(EPD_PL_FNAME, SqliteOverlay::ColumnDataType::Text, SqliteOverlay::ConflictClause::NotUsed, SqliteOverlay::ConflictClause::Abort);
-    tc.addCol(EPD_PL_LNAME, SqliteOverlay::ColumnDataType::Text, SqliteOverlay::ConflictClause::NotUsed, SqliteOverlay::ConflictClause::Abort);
-    tc.addCol(EPD_PL_SEX, SqliteOverlay::ColumnDataType::Integer, SqliteOverlay::ConflictClause::NotUsed, SqliteOverlay::ConflictClause::NotUsed);
+    tc.addCol(EPD_PL_Fname, SqliteOverlay::ColumnDataType::Text, SqliteOverlay::ConflictClause::NotUsed, SqliteOverlay::ConflictClause::Abort);
+    tc.addCol(EPD_PL_Lname, SqliteOverlay::ColumnDataType::Text, SqliteOverlay::ConflictClause::NotUsed, SqliteOverlay::ConflictClause::Abort);
+    tc.addCol(EPD_PL_Sex, SqliteOverlay::ColumnDataType::Integer, SqliteOverlay::ConflictClause::NotUsed, SqliteOverlay::ConflictClause::NotUsed);
     tc.createTableAndResetCreator(*this, TAB_EPD_PLAYER);
   }
 
@@ -132,9 +132,9 @@ namespace QTournament
     // create a specific SQL statement that returns all
     // rows that contain the substring
     const std::string sql = "SELECT id FROM " + TAB_EPD_PLAYER + " WHERE " +
-                            EPD_PL_FNAME + " LIKE ?1 or " +
-                            EPD_PL_LNAME + " LIKE ?2 " +
-                            "ORDER BY " + EPD_PL_LNAME + " ASC, " + EPD_PL_FNAME + " ASC";
+                            EPD_PL_Fname + " LIKE ?1 or " +
+                            EPD_PL_Lname + " LIKE ?2 " +
+                            "ORDER BY " + EPD_PL_Lname + " ASC, " + EPD_PL_Fname + " ASC";
     const std::string pattern = "%" + QString2StdString(substring) + "%";
 
     auto stmt = prepStatement(sql);
@@ -160,8 +160,8 @@ namespace QTournament
     SqliteOverlay::DbTab playerTab{*this, TAB_EPD_PLAYER, false};
     SqliteOverlay::WhereClause wc;
     wc.addCol("id", ">", 0);   // match all rows
-    wc.setOrderColumn_Asc(EPD_PL_LNAME);  // sort by last name first
-    wc.setOrderColumn_Asc(EPD_PL_FNAME);  // then by given name
+    wc.setOrderColumn_Asc(EPD_PL_Lname);  // sort by last name first
+    wc.setOrderColumn_Asc(EPD_PL_Fname);  // then by given name
 
     ExternalPlayerDatabaseEntryList result;
     for (auto it = SqliteOverlay::TabRowIterator{*this, TAB_EPD_PLAYER, wc}; it.hasData(); ++it)
@@ -194,8 +194,8 @@ namespace QTournament
   opExternalPlayerDatabaseEntry ExternalPlayerDB::getPlayer(const QString& fname, const QString& lname)
   {
     SqliteOverlay::WhereClause w;
-    w.addCol(EPD_PL_FNAME, QString2StdString(fname));
-    w.addCol(EPD_PL_LNAME, QString2StdString(lname));
+    w.addCol(EPD_PL_Fname, QString2StdString(fname));
+    w.addCol(EPD_PL_Lname, QString2StdString(lname));
 
     SqliteOverlay::DbTab playerTab{*this, TAB_EPD_PLAYER, false};
     auto r = playerTab.getSingleRowByWhereClause2(w);
@@ -214,12 +214,12 @@ namespace QTournament
     }
 
     SqliteOverlay::ColumnValueClause cvc;
-    cvc.addCol(EPD_PL_FNAME, QString2StdString(newPlayer.getFirstname()));
-    cvc.addCol(EPD_PL_LNAME, QString2StdString(newPlayer.getLastname()));
+    cvc.addCol(EPD_PL_Fname, QString2StdString(newPlayer.getFirstname()));
+    cvc.addCol(EPD_PL_Lname, QString2StdString(newPlayer.getLastname()));
 
-    if (newPlayer.getSex() != DONT_CARE)
+    if (newPlayer.getSex() != Sex::DontCare)
     {
-      cvc.addCol(EPD_PL_SEX, static_cast<int>(newPlayer.getSex()));
+      cvc.addCol(EPD_PL_Sex, static_cast<int>(newPlayer.getSex()));
     }
 
     SqliteOverlay::DbTab playerTab{*this, TAB_EPD_PLAYER, false};
@@ -239,21 +239,21 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  bool ExternalPlayerDB::updatePlayerSexIfUndefined(int extPlayerId, SEX newSex)
+  bool ExternalPlayerDB::updatePlayerSexIfUndefined(int extPlayerId, Sex newSex)
   {
     // only permit updates with a defined sex
-    if (newSex == DONT_CARE) return false;
+    if (newSex == Sex::DontCare) return false;
 
     // check for a valid player ID
     auto pl = getPlayer(extPlayerId);
     if (!pl.has_value()) return false;
 
     // no modification if the player's sex is already defined
-    if (pl->getSex() != DONT_CARE) return false;
+    if (pl->getSex() != Sex::DontCare) return false;
 
     // update the player entry
     SqliteOverlay::DbTab playerTab{*this, TAB_EPD_PLAYER, false};
-    playerTab[extPlayerId].update(EPD_PL_SEX, static_cast<int>(newSex));
+    playerTab[extPlayerId].update(EPD_PL_Sex, static_cast<int>(newSex));
 
     return true;
   }
@@ -291,13 +291,13 @@ namespace QTournament
       }
 
       // get the player's sex, if provided
-      SEX sex = DONT_CARE;
+      Sex sex = Sex::DontCare;
       if (col.length() > 2)
       {
         QString s = col[2].trimmed();
-        if (s.toLower() == "m") sex = M;
-        if (s.toLower() == "f") sex = F;
-        if ((!(s.isEmpty())) && (sex == DONT_CARE))
+        if (s.toLower() == "m") sex = Sex::M;
+        if (s.toLower() == "f") sex = Sex::F;
+        if ((!(s.isEmpty())) && (sex == Sex::DontCare))
         {
           // the provided value couldn't be recognized
           ++errorCnt;
@@ -340,7 +340,7 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  ExternalPlayerDatabaseEntry::ExternalPlayerDatabaseEntry(int _id, const QString& _fname, const QString& _lname, SEX _sex)
+  ExternalPlayerDatabaseEntry::ExternalPlayerDatabaseEntry(int _id, const QString& _fname, const QString& _lname, Sex _sex)
     :id(_id), fName(_fname.trimmed()), lName(_lname.trimmed()), sex(_sex)
   {
     if ((fName.isEmpty()) || (lName.isEmpty()))
@@ -356,7 +356,7 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  ExternalPlayerDatabaseEntry::ExternalPlayerDatabaseEntry(const QString& _fname, const QString& _lname, SEX _sex)
+  ExternalPlayerDatabaseEntry::ExternalPlayerDatabaseEntry(const QString& _fname, const QString& _lname, Sex _sex)
     :id(-1), fName(_fname.trimmed()), lName(_lname.trimmed()), sex(_sex)
   {
     if ((fName.isEmpty()) || (lName.isEmpty()))

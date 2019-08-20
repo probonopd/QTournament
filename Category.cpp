@@ -41,7 +41,7 @@ namespace QTournament
 {
 
   Category::Category(const TournamentDB& _db, int rowId)
-  :TournamentDatabaseObject(_db, TAB_CATEGORY, rowId)
+  :TournamentDatabaseObject(_db, TabCategory, rowId)
   {
   }
 
@@ -56,7 +56,7 @@ namespace QTournament
 
   QString Category::getName() const
   {
-    return stdString2QString(row[GENERIC_NAME_FIELD_NAME]);
+    return stdString2QString(row[GenericNameFieldName]);
   }
 
   //----------------------------------------------------------------------------
@@ -87,11 +87,11 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  SEX Category::getSex() const
+  Sex Category::getSex() const
   {
     int sexInt = row.getInt(CAT_Sex);
 
-    return static_cast<SEX>(sexInt);
+    return static_cast<Sex>(sexInt);
   }
 
   //----------------------------------------------------------------------------
@@ -112,7 +112,7 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  ERR Category::setSex(SEX s)
+  ERR Category::setSex(Sex s)
   {
     CatMngr cm{db};
     return cm.setSex(*this, s);
@@ -133,7 +133,7 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  CatAddState Category::getAddState(const SEX s) const
+  CatAddState Category::getAddState(const Sex s) const
   {
     if (!(canAddPlayers()))
     {
@@ -147,8 +147,8 @@ namespace QTournament
     }
 
     // ok, so we're either in singles or doubles. if the sex
-    // is set to DONT_CARE, then also any player will fit
-    if (getSex() == DONT_CARE)
+    // is set to Sex::DontCare, then also any player will fit
+    if (getSex() == Sex::DontCare)
     {
       return CatAddState::CanJoin;
     }
@@ -183,10 +183,10 @@ namespace QTournament
   bool Category::hasPlayer(const Player& p) const
   {
     SqliteOverlay::WhereClause wc;
-    wc.addCol(P2C_PLAYER_REF, p.getId());
-    wc.addCol(P2C_CAT_REF, getId());
+    wc.addCol(P2C_PlayerRef, p.getId());
+    wc.addCol(P2C_CatRef, getId());
 
-    return (DbTab{db, TAB_P2C, false}.getMatchCountForWhereClause(wc) > 0);
+    return (DbTab{db, TabP2C, false}.getMatchCountForWhereClause(wc) > 0);
   }
 
   //----------------------------------------------------------------------------
@@ -316,19 +316,19 @@ namespace QTournament
     // filter out the players that are paired and have already
     // entries in the database
     SqliteOverlay::WhereClause wc;
-    wc.addCol(PAIRS_CONFIGREF, getId());
-    if (grp > 0) wc.addCol(PAIRS_GRP_NUM, grp);
+    wc.addCol(Pairs_CatRef, getId());
+    if (grp > 0) wc.addCol(Pairs_GrpNum, grp);
 
-    for (TabRowIterator it{db, TAB_PAIRS, wc}; it.hasData(); ++it)
+    for (TabRowIterator it{db, TabPairs, wc}; it.hasData(); ++it)
     {
       const auto& pairRow = *it;
 
-      int id1 = pairRow.getInt(PAIRS_PLAYER1_REF);
+      int id1 = pairRow.getInt(Pairs_Player1Ref);
       Player p1 = pmngr.getPlayer(id1);
       Sloppy::eraseAllOccurencesFromVector<Player>(singlePlayers, p1);
 
       // id2 is sometimes empty, e.g. in singles categories
-      auto id2 = pairRow.getInt2(PAIRS_PLAYER2_REF);
+      auto id2 = pairRow.getInt2(Pairs_Player2Ref);
       if (!id2) {
         result.push_back(PlayerPair(p1, pairRow.id()));
       } else {
@@ -365,10 +365,10 @@ namespace QTournament
     // entries exist
     if (getState() == ObjState::CAT_Config) return -1;
 
-    DbTab pairTab{db, TAB_PAIRS, false};
+    DbTab pairTab{db, TabPairs, false};
     SqliteOverlay::WhereClause wc;
-    wc.addCol(PAIRS_CONFIGREF, getId());
-    if (grp > 0) wc.addCol(PAIRS_GRP_NUM, grp);
+    wc.addCol(Pairs_CatRef, getId());
+    if (grp > 0) wc.addCol(Pairs_GrpNum, grp);
     return pairTab.getMatchCountForWhereClause(wc);
   }
 
@@ -379,10 +379,10 @@ namespace QTournament
     PlayerList result;
     PlayerMngr pmngr{db};
 
-    auto rows = DbTab{db, TAB_P2C, false}.getRowsByColumnValue(P2C_CAT_REF, getId());
+    auto rows = DbTab{db, TabP2C, false}.getRowsByColumnValue(P2C_CatRef, getId());
     for (const auto& row : rows)
     {
-      result.push_back(pmngr.getPlayer(row.getInt(P2C_PLAYER_REF)));
+      result.push_back(pmngr.getPlayer(row.getInt(P2C_PlayerRef)));
     }
 
     return result;
@@ -399,14 +399,14 @@ namespace QTournament
 
     // manually construct a where-clause for an OR-query
     Sloppy::estring where{"(%1 = %2 OR %3 = %2) AND (%4 = %5)"};
-    where.arg(PAIRS_PLAYER1_REF);
+    where.arg(Pairs_Player1Ref);
     where.arg(p.getId());
-    where.arg(PAIRS_PLAYER2_REF);
-    where.arg(PAIRS_CONFIGREF);
+    where.arg(Pairs_Player2Ref);
+    where.arg(Pairs_CatRef);
     where.arg(getId());
 
     // see if we have a row that matches the query
-    return (DbTab{db, TAB_PAIRS, false}.getMatchCountForWhereClause(where) != 0);
+    return (DbTab{db, TabPairs, false}.getMatchCountForWhereClause(where) != 0);
   }
 
   //----------------------------------------------------------------------------
@@ -448,7 +448,7 @@ namespace QTournament
     }
 
     // if this is a mixed category, make sure the sex is right
-    if ((mt == MatchType::Mixed) && (getSex() != DONT_CARE))
+    if ((mt == MatchType::Mixed) && (getSex() != Sex::DontCare))
     {
       if (p1.getSex() == p2.getSex())
       {
@@ -457,9 +457,9 @@ namespace QTournament
     }
 
     // if this is a doubles category, make sure the sex is right
-    if ((mt == MatchType::Doubles) && (getSex() != DONT_CARE))
+    if ((mt == MatchType::Doubles) && (getSex() != Sex::DontCare))
     {
-      SEX catSex = getSex();
+      Sex catSex = getSex();
       if ((p1.getSex() != catSex) || (p2.getSex() != catSex))
       {
         return ERR::InvalidSex;
@@ -481,10 +481,10 @@ namespace QTournament
 
     // check if the two players are paired for this category
     SqliteOverlay::WhereClause wc;
-    wc.addCol(PAIRS_CONFIGREF, getId());
-    wc.addCol(PAIRS_PLAYER1_REF, p1.getId());
-    wc.addCol(PAIRS_PLAYER2_REF, p2.getId());
-    DbTab pairsTab{db, TAB_PAIRS, false};
+    wc.addCol(Pairs_CatRef, getId());
+    wc.addCol(Pairs_Player1Ref, p1.getId());
+    wc.addCol(Pairs_Player2Ref, p2.getId());
+    DbTab pairsTab{db, TabPairs, false};
     if (pairsTab.getMatchCountForWhereClause(wc) != 0)
     {
       return ERR::OK;
@@ -492,9 +492,9 @@ namespace QTournament
 
     // swap player 1 and player 2 and make a new query
     wc.clear();
-    wc.addCol(PAIRS_CONFIGREF, getId());
-    wc.addCol(PAIRS_PLAYER1_REF, p2.getId());
-    wc.addCol(PAIRS_PLAYER2_REF, p1.getId());
+    wc.addCol(Pairs_CatRef, getId());
+    wc.addCol(Pairs_Player1Ref, p2.getId());
+    wc.addCol(Pairs_Player2Ref, p1.getId());
     if (pairsTab.getMatchCountForWhereClause(wc) != 0)
     {
       return ERR::OK;
@@ -514,15 +514,15 @@ namespace QTournament
 
     // manually construct a where-clause for an OR-query
     Sloppy::estring where{"(%1 = %2 OR %3 = %2) AND (%4 = %5)"};
-    where.arg(PAIRS_PLAYER1_REF);
+    where.arg(Pairs_Player1Ref);
     where.arg(p.getId());
-    where.arg(PAIRS_PLAYER2_REF);
-    where.arg(PAIRS_CONFIGREF);
+    where.arg(Pairs_Player2Ref);
+    where.arg(Pairs_CatRef);
     where.arg(getId());
 
     // see if we have a row that matches the query
     int partnerId = -1;
-    DbTab pairTab{db, TAB_PAIRS, false};
+    DbTab pairTab{db, TabPairs, false};
     auto row = pairTab.getSingleRowByWhereClause2(where);
     if (!row)
     {
@@ -530,12 +530,12 @@ namespace QTournament
     }
 
     // check if we have a partner
-    auto p2Id = row->getInt2(PAIRS_PLAYER2_REF);
+    auto p2Id = row->getInt2(Pairs_Player2Ref);
     if (!p2Id)
     {
       throw std::invalid_argument("Player doesn't have a partner");
     }
-    int p1Id = row->getInt(PAIRS_PLAYER1_REF);
+    int p1Id = row->getInt(Pairs_Player1Ref);
     partnerId = (p1Id == p.getId()) ? *p2Id : p1Id;
 
     PlayerMngr pmngr{db};
@@ -566,11 +566,11 @@ namespace QTournament
     }
 
     if (sys == MatchSystem::SingleElim) {
-      return std::unique_ptr<Category>(new EliminationCategory(db, row, BracketGenerator::BRACKET_MatchSystem::SingleElim));
+      return std::unique_ptr<Category>(new EliminationCategory(db, row, BracketGenerator::BracketSingleElim));
     }
 
     if (sys == MatchSystem::Ranking) {
-      return std::unique_ptr<Category>(new EliminationCategory(db, row, BracketGenerator::BRACKET_MatchSystem::Ranking1));
+      return std::unique_ptr<Category>(new EliminationCategory(db, row, BracketGenerator::BracketRanking1));
     }
 
     if (sys == MatchSystem::RoundRobin)
@@ -693,7 +693,7 @@ namespace QTournament
     
     // The previous call checked for all possible errors or
     // misconfigurations. So we can safely write directly to the database
-    DbTab pairTab{db, TAB_PAIRS, false};
+    DbTab pairTab{db, TabPairs, false};
     int grpNum = 0;
     for (const PlayerPairList& ppl : grpCfg)
     {
@@ -701,7 +701,7 @@ namespace QTournament
       for (const PlayerPair& pp : ppl)
       {
         int ppId = pp.getPairId();
-        pairTab[ppId].update(PAIRS_GRP_NUM, grpNum);
+        pairTab[ppId].update(Pairs_GrpNum, grpNum);
       }
     }
     
@@ -717,12 +717,12 @@ namespace QTournament
     
     // The previous call checked for all possible errors or
     // misconfigurations. So we can safely write directly to the database
-    DbTab pairTab{db, TAB_PAIRS, false};
+    DbTab pairTab{db, TabPairs, false};
     int rank{1}; // we start counting ranks at "1"
     for (const auto& pp : seed)
     {
       int ppId = pp.getPairId();
-      pairTab[ppId].update(PAIRS_INITIAL_RANK, rank);
+      pairTab[ppId].update(Pairs_InitialRank, rank);
       ++rank;
     }
     
@@ -1045,11 +1045,11 @@ namespace QTournament
 
       // case 3 (rare): only one player is used and the match does not need to be played,
       // BUT the match contains information about the final rank of the one player
-      if ((bmd.initialRank_Player1 == BracketMatchData::UNUSED_PLAYER) && (bmd.nextMatchForWinner < 0))
+      if ((bmd.initialRank_Player1 == BracketMatchData::UnusedPlayer) && (bmd.nextMatchForWinner < 0))
       {
         mm.setPlayerToUnused(*ma, 1, -(bmd.nextMatchForWinner));
       }
-      if ((bmd.initialRank_Player2 == BracketMatchData::UNUSED_PLAYER) && (bmd.nextMatchForWinner < 0))
+      if ((bmd.initialRank_Player2 == BracketMatchData::UnusedPlayer) && (bmd.nextMatchForWinner < 0))
       {
         mm.setPlayerToUnused(*ma, 2, -(bmd.nextMatchForWinner));
       }

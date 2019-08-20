@@ -258,9 +258,9 @@ std::optional<QTournament::Match> MatchMatrix::getMatchForCell(const PlayerPairL
   TournamentDB* db = cat.getDatabaseHandle();
   MatchMngr mm{db};
   QString where = "(%1 = %2 AND %3 = %4) OR (%1 = %4 AND %3 = %2)";
-  where = where.arg(MA_PAIR1_REF).arg(ppRow.getPairId());
-  where = where.arg(MA_PAIR2_REF).arg(ppCol.getPairId());
-  DbTab* matchTab = db->getTab(TAB_MATCH);
+  where = where.arg(MA_Pair1Ref).arg(ppRow.getPairId());
+  where = where.arg(MA_Pair2Ref).arg(ppCol.getPairId());
+  DbTab* matchTab = db->getTab(TabMatch);
   DbTab::CachingRowIterator it = matchTab->getRowsByWhereClause(where.toUtf8().constData());
   while (!(it.isEnd()))
   {

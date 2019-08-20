@@ -43,7 +43,7 @@ namespace QTournament
     static constexpr int Categories = 4;
   };
 
-  SEX strToSex(const std::string& s);
+  Sex strToSex(const std::string& s);
 
   class CSVImportRecord
   {
@@ -56,13 +56,13 @@ namespace QTournament
     bool hasLastName() const { return !(lName.isEmpty()); }
     bool hasFirstName() const { return !(fName.isEmpty()); }
     bool hasTeamName() const { return !(teamName.isEmpty()); }
-    bool hasValidSex() const { return (sex != DONT_CARE); }
+    bool hasValidSex() const { return (sex != Sex::DontCare); }
     bool hasExistingName() const;
 
     // getters
     std::vector<QString> getCatNames() const { return catNames; }
     QString getCatNames_str() const;
-    SEX getSex() const { return sex; }
+    Sex getSex() const { return sex; }
     QString getLastName() const { return lName; }
     QString getFirstName() const { return fName; }
     QString getTeamName() const { return teamName; }
@@ -73,14 +73,14 @@ namespace QTournament
     bool updateFirstName(const QString& newName);
     bool updateLastName(const QString& newName);
     bool updateTeamName(const QString& newName);
-    bool updateSex(SEX newSex);
+    bool updateSex(Sex newSex);
     bool updateCategories(const std::vector<QString>& catOverwrite);
 
   private:
     std::reference_wrapper<const QTournament::TournamentDB> db;
     QString fName;
     QString lName;
-    SEX sex;
+    Sex sex;
     QString teamName;
     std::vector<QString> catNames;
   };

@@ -44,35 +44,35 @@ void tstCategory::testGetAddState()
   // check player suitability for men's single
   CPPUNIT_ASSERT(ms.getAddState(m1) == CatAddState::CanJoin);
   CPPUNIT_ASSERT(ms.getAddState(f1) == CatAddState::WrongSex);
-  ms.setSex(DONT_CARE);   // disable checking
+  ms.setSex(Sex::DontCare);   // disable checking
   CPPUNIT_ASSERT(ms.getAddState(m1) == CatAddState::CanJoin);
   CPPUNIT_ASSERT(ms.getAddState(f1) == CatAddState::CanJoin);
   
   // check player suitability for men's doubles
   CPPUNIT_ASSERT(md.getAddState(m1) == CatAddState::CanJoin);
   CPPUNIT_ASSERT(md.getAddState(f1) == CatAddState::WrongSex);
-  md.setSex(DONT_CARE);   // disable checking
+  md.setSex(Sex::DontCare);   // disable checking
   CPPUNIT_ASSERT(md.getAddState(m1) == CatAddState::CanJoin);
   CPPUNIT_ASSERT(md.getAddState(f1) == CatAddState::CanJoin);
   
   // check player suitability for ladies' single
   CPPUNIT_ASSERT(ls.getAddState(m1) == CatAddState::WrongSex);
   CPPUNIT_ASSERT(ls.getAddState(f1) == CatAddState::CanJoin);
-  ls.setSex(DONT_CARE);   // disable checking
+  ls.setSex(Sex::DontCare);   // disable checking
   CPPUNIT_ASSERT(ls.getAddState(m1) == CatAddState::CanJoin);
   CPPUNIT_ASSERT(ls.getAddState(f1) == CatAddState::CanJoin);
   
   // check player suitability for ladies' doubles
   CPPUNIT_ASSERT(ld.getAddState(m1) == CatAddState::WrongSex);
   CPPUNIT_ASSERT(ld.getAddState(f1) == CatAddState::CanJoin);
-  ld.setSex(DONT_CARE);   // disable checking
+  ld.setSex(Sex::DontCare);   // disable checking
   CPPUNIT_ASSERT(ld.getAddState(m1) == CatAddState::CanJoin);
   CPPUNIT_ASSERT(ld.getAddState(f1) == CatAddState::CanJoin);
   
   // check player suitability for mixed doubles
   CPPUNIT_ASSERT(mx.getAddState(m1) == CatAddState::CanJoin);
   CPPUNIT_ASSERT(mx.getAddState(f1) == CatAddState::CanJoin);
-  mx.setSex(DONT_CARE);   // disable checking
+  mx.setSex(Sex::DontCare);   // disable checking
   CPPUNIT_ASSERT(mx.getAddState(m1) == CatAddState::CanJoin);
   CPPUNIT_ASSERT(mx.getAddState(f1) == CatAddState::CanJoin);
   
@@ -158,7 +158,7 @@ void tstCategory::testCanPair()
   
   // try to pair same-sex players in mixed categories
   // after setting it to "Don't care"
-  cmngr->setSex(mx, DONT_CARE);
+  cmngr->setSex(mx, Sex::DontCare);
   CPPUNIT_ASSERT(mx.canPairPlayers(m1, m2) == OK);
   CPPUNIT_ASSERT(mx.canPairPlayers(f1, f2) == OK);
   
@@ -199,7 +199,7 @@ void tstCategory::testCanSplit()
   Category md = cmngr->getCategory("MD");
   Category ms = cmngr->getCategory("MS");
   Category mx = cmngr->getCategory("MX");
-  mx.setSex(DONT_CARE);
+  mx.setSex(Sex::DontCare);
   
   // create a valid player pair and an identical pair in another
   // category

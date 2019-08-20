@@ -352,8 +352,8 @@ void DatabaseTestScenario::prepScenario04(bool useTeams)
 
   // fake a valid category state
   TournamentDB db{getSqliteFileName(), false};
-  TabRow catRow = db[TAB_CATEGORY][5];
-  catRow.update(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_CAT_Idle));
+  TabRow catRow = db[TabCategory][5];
+  catRow.update(GenericStateFieldName, static_cast<int>(STAT_CAT_Idle));
   CPPUNIT_ASSERT(mx.getState() == STAT_CAT_Idle);
 
   // create a match group in mixed doubles

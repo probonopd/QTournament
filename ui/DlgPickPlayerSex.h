@@ -16,8 +16,8 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef DLGPICKPLAYERSEX_H
-#define DLGPICKPLAYERSEX_H
+#ifndef DLGPICKPLAYERSex_H
+#define DLGPICKPLAYERSex_H
 
 #include <QDialog>
 
@@ -34,7 +34,7 @@ class DlgPickPlayerSex : public QDialog
 public:
   explicit DlgPickPlayerSex(QWidget *parent, const QString& playerName);
   ~DlgPickPlayerSex();
-  QTournament::SEX getSelectedSex();
+  QTournament::Sex getSelectedSex();
 
 private slots:
   void onBtnMaleClicked();
@@ -42,8 +42,8 @@ private slots:
 
 private:
   Ui::DlgPickPlayerSex *ui;
-  QTournament::SEX selectedSex = QTournament::SEX::M;
+  QTournament::Sex selectedSex = QTournament::Sex::M;
 
 };
 
-#endif // DLGPICKPLAYERSEX_H
+#endif // DLGPICKPLAYERSex_H

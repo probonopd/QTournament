@@ -43,12 +43,12 @@ DlgTournamentSettings::DlgTournamentSettings(TournamentDB* _db, QWidget* parent)
   fillRefereeComboBox(false);
 
   // initialize the controls with the existing values
-  auto cfg = SqliteOverlay::KeyValueTab::getTab(db, TAB_CFG, false);
-  string tmp = (*cfg)[CFG_KEY_TNMT_ORGA];
+  auto cfg = SqliteOverlay::KeyValueTab::getTab(db, TabCfg, false);
+  string tmp = (*cfg)[CfgKey_TnmtOrga];
   ui->leOrgaClub->setText(QString::fromUtf8(tmp.c_str()));
-  tmp = (*cfg)[CFG_KEY_TNMT_NAME];
+  tmp = (*cfg)[CfgKey_TnmtName];
   ui->leTournamentName->setText(QString::fromUtf8(tmp.c_str()));
-  int tnmtDefaultRefereeModeId = cfg.getInt(CFG_KEY_DEFAULT_RefereeMode);
+  int tnmtDefaultRefereeModeId = cfg.getInt(CfgKey_DefaultRefereemode);
   int idx = ui->cbUmpire->findData(tnmtDefaultRefereeModeId);
   ui->cbUmpire->setCurrentIndex(idx);
 

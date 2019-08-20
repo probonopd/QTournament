@@ -30,13 +30,13 @@ class cmdAssignRefereeToMatch : public QObject, AbstractCommand
   Q_OBJECT
 
 public:
-  cmdAssignRefereeToMatch(QWidget* p, const QTournament::Match& _ma, QTournament::REFEREE_ACTION _refAction);
+  cmdAssignRefereeToMatch(QWidget* p, const QTournament::Match& _ma, QTournament::RefereeAction _refAction);
   virtual QTournament::ERR exec() override;
   virtual ~cmdAssignRefereeToMatch() {}
 
 protected:
   QTournament::Match ma;
-  QTournament::REFEREE_ACTION refAction;
+  QTournament::RefereeAction refAction;
 };
 
 #endif // CMDASSIGNREFEREETOMATCH_H

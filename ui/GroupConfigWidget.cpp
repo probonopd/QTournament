@@ -46,12 +46,12 @@ GroupConfigWidget::GroupConfigWidget(QWidget* parent)
   for (int i=0; i<3; i++)
   {
     spGroupSize[i]->setMinimum(3);
-    spGroupSize[i]->setMaximum(MAX_GROUP_SIZE);
+    spGroupSize[i]->setMaximum(MaxGroupSize);
     spGroupSize[i]->setValue(i+3);
     oldGroupSize[i] = i+3;
     
     spGroupCount[i]->setMinimum(0);
-    spGroupCount[i]->setMaximum(MAX_GROUP_COUNT);
+    spGroupCount[i]->setMaximum(MaxGroupCount);
   }
     
   rangeControlEnabled = true;
@@ -275,7 +275,7 @@ void GroupConfigWidget::onSpinBoxGroupCountChanged(int spinBoxIndex, int newVal)
   QSpinBox* sb = spGroupCount[spinBoxIndex];
   
   if (newVal < 0) sb->setValue(0);
-  if (newVal > MAX_GROUP_COUNT) sb->setValue(MAX_GROUP_COUNT);
+  if (newVal > MaxGroupCount) sb->setValue(MaxGroupCount);
   updateLabels();
   emit groupConfigChanged(getConfig());
 }
@@ -307,7 +307,7 @@ void GroupConfigWidget::onSpinBoxGroupSizeChanged(int spinBoxIndex, int newVal)
   }
   
   // avoid too small or too large values
-  if ((newVal < 3) || (newVal > MAX_GROUP_SIZE))
+  if ((newVal < 3) || (newVal > MaxGroupSize))
   {
     sb->setValue(oldGroupSize[spinBoxIndex]);
     return;

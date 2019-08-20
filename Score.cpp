@@ -534,7 +534,7 @@ int MatchScore::getNumGames() const
 int MatchScore::getPointsSum() const
 {
   auto scoreSum = getScoreSum();
-  return (get<0>(scoreSum) + get<1>(scoreSum));
+  return (std::get<0>(scoreSum) + std::get<1>(scoreSum));
 }
 
 //----------------------------------------------------------------------------
