@@ -41,15 +41,15 @@ namespace QTournament
   
   public:
     TeamMngr (const TournamentDB& _db);
-    ERR createNewTeam (const QString& teamName);
+    Error createNewTeam (const QString& teamName);
     bool hasTeam (const QString& teamName);
     Team getTeam (const QString& name);
     std::vector<Team> getAllTeams();
-    ERR renameTeam (const Team& t, const QString& nn);
+    Error renameTeam (const Team& t, const QString& nn);
     Team getTeamBySeqNum (int seqNum);
     std::optional<Team> getTeamBySeqNum2(int seqNum);
     Team getTeamById (int id);
-    ERR changeTeamAssigment(const Player& p, const Team& newTeam);
+    Error changeTeamAssigment(const Player& p, const Team& newTeam);
 
     PlayerList getPlayersForTeam(const Team& t) const;
 

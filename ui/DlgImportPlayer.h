@@ -34,7 +34,7 @@ class DlgImportPlayer : public QDialog
 
 public:
   explicit DlgImportPlayer(QWidget *parent = nullptr, QTournament::ExternalPlayerDB* _extDb = nullptr);
-  ~DlgImportPlayer();
+  ~DlgImportPlayer() override;
 
   int getSelectedExternalPlayerId();
 

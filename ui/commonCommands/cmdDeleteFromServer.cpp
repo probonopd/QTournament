@@ -41,7 +41,7 @@ cmdDeleteFromServer::cmdDeleteFromServer(QWidget* p, TournamentDB* _db)
 
 //----------------------------------------------------------------------------
 
-ERR cmdDeleteFromServer::exec()
+Error cmdDeleteFromServer::exec()
 {
   OnlineMngr* om = db->getOnlineManager();
 
@@ -52,14 +52,14 @@ ERR cmdDeleteFromServer::exec()
   // we quit without error message
   if (!(om->hasRegistrationSubmitted()))
   {
-    return ERR::WrongState;  // dummy value
+    return Error::WrongState;  // dummy value
   }
 
   // ask for confirmation
   QString msg = tr("<p>Do you really want to delete the tournament from the server?</p>");
   msg += tr("<p>The deletion <b>cannot be undone</b> and is effective immediately.</p>");
   int rc = QMessageBox::question(parentWidget, tr("Delete tournament from server"), msg);
-  if (rc != QMessageBox::Yes) return ERR::OK;
+  if (rc != QMessageBox::Yes) return Error::OK;
 
   // check whether the server is online and whether we
   // have a network connection
@@ -75,7 +75,7 @@ ERR cmdDeleteFromServer::exec()
   {
     QString msg = tr("The tournament server is currently not available or there is no working internet connection.\n\nPlease try again later.");
     QMessageBox::information(parentWidget, tr("Remove tournament from server"), msg);
-    return ERR::WrongState;  // dummy error code; will not be evaluated by caller
+    return Error::WrongState;  // dummy error code; will not be evaluated by caller
   }
 
   // if the secret signing key has not yet been unlocked, ask the
@@ -83,8 +83,8 @@ ERR cmdDeleteFromServer::exec()
   if (!(om->isUnlocked()))
   {
     cmdUnlockKeystore cmd{parentWidget, db};
-    ERR err = cmd.exec();
-    if (err != ERR::OK) return err;
+    Error err = cmd.exec();
+    if (err != Error::OK) return err;
   }
 
   QString errTxt;
@@ -122,7 +122,7 @@ ERR cmdDeleteFromServer::exec()
     }
 
     QMessageBox::warning(parentWidget, tr("Connection failed"), msg);
-    return ERR::WrongState; // dummy value
+    return Error::WrongState; // dummy value
   }
 
   // at this point, the data exchange with the server was successful (HTTP and Signatures).
@@ -132,7 +132,7 @@ ERR cmdDeleteFromServer::exec()
   {
     QMessageBox::information(parentWidget, tr("Deletion successful"), tr("The tournament has been successfully deleted from the server!"));
 
-    return ERR::OK;
+    return Error::OK;
   }
 
   if (errTxt == "DatabaseError")
@@ -147,7 +147,7 @@ ERR cmdDeleteFromServer::exec()
   }
 
   QMessageBox::warning(parentWidget, tr("Connection failed"), msg);
-  return ERR::WrongState; // dummy value
+  return Error::WrongState; // dummy value
 
 }
 

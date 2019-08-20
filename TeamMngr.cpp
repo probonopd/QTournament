@@ -39,30 +39,30 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  ERR TeamMngr::createNewTeam(const QString& tm)
+  Error TeamMngr::createNewTeam(const QString& tm)
   {
     auto cfg = SqliteOverlay::KeyValueTab{db.get(), TabCfg};
 
     if (!(cfg.getBool(CfgKey_UseTeams)))
     {
-      return ERR::NotUsingTeams;
+      return Error::NotUsingTeams;
     }
     
     QString teamName = tm.trimmed();
     
     if (teamName.isEmpty())
     {
-      return ERR::InvalidName;
+      return Error::InvalidName;
     }
     
     if (teamName.length() > MaxNameLen)
     {
-      return ERR::InvalidName;
+      return Error::InvalidName;
     }
     
     if (hasTeam(teamName))
     {
-      return ERR::NameExists;
+      return Error::NameExists;
     }
     
     // create a new table row
@@ -75,7 +75,7 @@ namespace QTournament
     fixSeqNumberAfterInsert();
     cse->endCreateTeam(tab.length() - 1);  // the new sequence number is always the greatest
     
-    return ERR::OK;
+    return Error::OK;
   }
 
 //----------------------------------------------------------------------------
@@ -122,26 +122,26 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  ERR TeamMngr::renameTeam(const Team& t, const QString& nn)
+  Error TeamMngr::renameTeam(const Team& t, const QString& nn)
   {
     QString newName = nn.trimmed();
     
     // Ensure the new name is valid
     if ((newName.isEmpty()) || (newName.length() > MaxNameLen))
     {
-      return ERR::InvalidName;
+      return Error::InvalidName;
     }
     
     // make sure the new name doesn't exist yet
     if (hasTeam(newName))
     {
-      return ERR::NameExists;
+      return Error::NameExists;
     }
     
     t.row.update(GenericNameFieldName, newName.toUtf8().constData());
     CentralSignalEmitter::getInstance()->teamRenamed(t.getSeqNum());
     
-    return ERR::OK;
+    return Error::OK;
   }
 
 //----------------------------------------------------------------------------
@@ -190,26 +190,26 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  ERR TeamMngr::changeTeamAssigment(const Player& p, const Team& newTeam)
+  Error TeamMngr::changeTeamAssigment(const Player& p, const Team& newTeam)
   {
     auto cfg = SqliteOverlay::KeyValueTab{db.get(), TabCfg};
 
     if (!(cfg.getBool(CfgKey_UseTeams)))
     {
-      return ERR::NotUsingTeams;
+      return Error::NotUsingTeams;
     }
     
     Team oldTeam = p.getTeam();
     
     if (oldTeam.getId() == newTeam.getId())
     {
-      return ERR::OK;  // no database access necessary
+      return Error::OK;  // no database access necessary
     }
     
     p.row.update(PL_TeamRef, newTeam.getId());
     CentralSignalEmitter::getInstance()->teamAssignmentChanged(p, oldTeam, newTeam);
     
-    return ERR::OK;
+    return Error::OK;
   }
 
 //----------------------------------------------------------------------------

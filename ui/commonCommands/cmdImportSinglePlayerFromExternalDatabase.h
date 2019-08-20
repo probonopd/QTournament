@@ -31,7 +31,7 @@ class cmdImportSinglePlayerFromExternalDatabase : public QObject, AbstractComman
 
 public:
   cmdImportSinglePlayerFromExternalDatabase(const QTournament::TournamentDB& _db, QWidget* p, int _preselectedCatId=-1);
-  virtual QTournament::ERR exec() override;
+  virtual QTournament::Error exec() override;
   virtual ~cmdImportSinglePlayerFromExternalDatabase() {}
 
 protected:

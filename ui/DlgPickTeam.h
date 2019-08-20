@@ -49,9 +49,9 @@ protected slots:
 
 private:
   Ui::DlgPickTeam *ui;
-  std::reference_wrapper<const QTournament::TournamentDB> db;
-  int selectedTeamId;
-  bool leShowsHelpText;
+  const QTournament::TournamentDB& db;
+  int selectedTeamId{-1};
+  bool leShowsHelpText{true};
 };
 
 #endif // DLGPICKTEAM_H

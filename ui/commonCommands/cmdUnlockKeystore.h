@@ -31,7 +31,7 @@ class cmdUnlockKeystore : public QObject, AbstractCommand
 
 public:
   cmdUnlockKeystore(QWidget* p, const QTournament::TournamentDB& _db);
-  virtual QTournament::ERR exec() override;
+  virtual QTournament::Error exec() override;
   virtual ~cmdUnlockKeystore() {}
 
 };

@@ -36,7 +36,7 @@ cmdCallMatch::cmdCallMatch(QWidget* p, const QTournament::Match &_ma, const Cour
 
 //----------------------------------------------------------------------------
 
-ERR cmdCallMatch::exec()
+Error cmdCallMatch::exec()
 {
   MatchMngr mm{db};
 
@@ -45,24 +45,24 @@ ERR cmdCallMatch::exec()
   bool callStartedWithUnassignedReferee = false;
 
   // check if we need to ask the user for a referee
-  ERR err = mm.canAssignMatchToCourt(ma, co);
-  if (err == ERR::MatchNeedsReferee)
+  Error err = mm.canAssignMatchToCourt(ma, co);
+  if (err == Error::MatchNeedsReferee)
   {
     callStartedWithUnassignedReferee = true;
     cmdAssignRefereeToMatch cmd{parentWidget, ma, REFEREE_ACTION::MATCH_CALL};
     err = cmd.exec();
-    if (err != ERR::OK) return err;
+    if (err != Error::OK) return err;
 
     // if the match still needs a referee, the user
     // has canceled the selection dialog
     err = mm.canAssignMatchToCourt(ma, co);
-    if (err == ERR::MatchNeedsReferee) return ERR::OK;
+    if (err == Error::MatchNeedsReferee) return Error::OK;
   }
 
   // all necessary pre-checks should have been performed before
   // so that the following call should always yield "ok"
   err = mm.canAssignMatchToCourt(ma, co);
-  if (err != ERR::OK)
+  if (err != Error::OK)
   {
     QString msg = tr("An unexpected error occured.\n");
     msg += tr("Sorry, this shouldn't happen.\n");
@@ -87,7 +87,7 @@ ERR cmdCallMatch::exec()
     // after all the checks before, the following call
     // should always yield "ok"
     err = mm.assignMatchToCourt(ma, co);
-    if (err != ERR::OK)
+    if (err != Error::OK)
     {
       QString msg = tr("An unexpected error occured.\n");
       msg += tr("Sorry, this shouldn't happen.\n");
@@ -103,7 +103,7 @@ ERR cmdCallMatch::exec()
       return err;
     }
 
-    return ERR::OK;
+    return Error::OK;
   }
 
   // the user hit cancel.
@@ -114,6 +114,6 @@ ERR cmdCallMatch::exec()
   }
 
   QMessageBox::information(parentWidget, tr("Assign match to court"), tr("Call cancled, match not started"));
-  return ERR::OK;
+  return Error::OK;
 }
 

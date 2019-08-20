@@ -195,7 +195,7 @@ void MatchTableView::onContextMenuRequested(const QPoint& pos)
 
   // enable / disable the action for assigning umpires, depending
   // on the current umpire mode and match state
-  actAssignReferee->setEnabled(ma->canAssignReferee(REFEREE_ACTION::PRE_ASSIGN) == ERR::OK);
+  actAssignReferee->setEnabled(ma->canAssignReferee(REFEREE_ACTION::PRE_ASSIGN) == Error::OK);
   actRemoveReferee->setEnabled(ma->hasRefereeAssigned());
 
   // show the context menu
@@ -219,7 +219,7 @@ void MatchTableView::onContextMenuRequested(const QPoint& pos)
 
     // call the match on the selected court
     cmdCallMatch cmd{this, *ma, *co};
-    if (cmd.exec() == ERR::OK)
+    if (cmd.exec() == Error::OK)
     {
       updateSelectionAfterDataChange();
     }
@@ -236,8 +236,8 @@ void MatchTableView::onContextMenuRequested(const QPoint& pos)
     RefereeMode refMode = static_cast<RefereeMode>(modeId);
 
     MatchMngr mm{db};
-    ERR e = mm.setRefereeMode(*ma, refMode);
-    if (e != ERR::OK)
+    Error e = mm.setRefereeMode(*ma, refMode);
+    if (e != Error::OK)
     {
       QMessageBox::warning(this, tr("Set umpire mode"),
                            tr("The mode can't be set for this match."));
@@ -297,7 +297,7 @@ void MatchTableView::onMatchDoubleClicked(const QModelIndex& index)
   }
 
   // check if there is a court available
-  ERR err;
+  Error err;
   auto nextCourt = cm.autoSelectNextUnusedCourt(&err, false);
   if (err == OnlyManualCourtAvail)
   {
@@ -331,10 +331,10 @@ void MatchTableView::onMatchDoubleClicked(const QModelIndex& index)
 
   // if we made it to this point and nextCourt is not null and err is OK,
   // we may try to assign the match
-  if ((err == ERR::OK) && (nextCourt != nullptr))
+  if ((err == Error::OK) && (nextCourt != nullptr))
   {
     cmdCallMatch cmd{this, *ma, *nextCourt};
-    if (cmd.exec() == ERR::OK)
+    if (cmd.exec() == Error::OK)
     {
       updateSelectionAfterDataChange();
     }
@@ -367,8 +367,8 @@ void MatchTableView::onRemoveRefereeTriggered()
 
   // try to remove the assignment
   MatchMngr mm{db};
-  ERR e = mm.removeReferee(*ma);
-  if (e != ERR::OK)
+  Error e = mm.removeReferee(*ma);
+  if (e != Error::OK)
   {
     QString msg = tr("Could not remove umpire assignment from match.\n");
     msg += tr("Some unexpected error occured.");

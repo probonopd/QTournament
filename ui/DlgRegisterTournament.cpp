@@ -4,13 +4,13 @@
 #include <QCalendarWidget>
 #include <QMessageBox>
 
-#include <Sloppy/libSloppy.h>
-
 #include "DlgRegisterTournament.h"
 #include "ui_DlgRegisterTournament.h"
 #include "OnlineMngr.h"
 
-DlgRegisterTournament::DlgRegisterTournament(QWidget *parent, const QString& tnmtName, const QString club) :
+using namespace QTournament;
+
+DlgRegisterTournament::DlgRegisterTournament(QWidget *parent, const QString& tnmtName, const QString& club) :
   QDialog(parent),
   ui(new Ui::DlgRegisterTournament)
 {

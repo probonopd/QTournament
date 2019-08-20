@@ -31,7 +31,7 @@ class cmdCreateNewPlayerInCat : public QObject, AbstractCommand
 
 public:
   cmdCreateNewPlayerInCat(QWidget* p, const QTournament::Category& _cat);
-  virtual QTournament::ERR exec() override;
+  virtual QTournament::Error exec() override;
   virtual ~cmdCreateNewPlayerInCat() {}
 
 protected:

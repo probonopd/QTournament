@@ -31,7 +31,7 @@ class cmdAssignRefereeToMatch : public QObject, AbstractCommand
 
 public:
   cmdAssignRefereeToMatch(QWidget* p, const QTournament::Match& _ma, QTournament::RefereeAction _refAction);
-  virtual QTournament::ERR exec() override;
+  virtual QTournament::Error exec() override;
   virtual ~cmdAssignRefereeToMatch() {}
 
 protected:

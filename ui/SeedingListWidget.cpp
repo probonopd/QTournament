@@ -191,7 +191,7 @@ void SeedingListWidget::clearListAndFillFromSeed(const PlayerPairList& seed)
 
 //----------------------------------------------------------------------------
 
-void SeedingListWidget::setDatabase(TournamentDB* _db)
+void SeedingListWidget::setDatabase(const QTournament::TournamentDB* _db)
 {
   db = _db;
 

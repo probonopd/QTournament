@@ -23,8 +23,10 @@
 #include "GroupAssignmentListWidget.h"
 #include "PlayerMngr.h"
 
+using namespace QTournament;
+
 GroupAssignmentListWidget::GroupAssignmentListWidget(QWidget* parent)
-:QWidget(parent), db(nullptr)
+:QWidget(parent)
 {
   ui.setupUi(this);
 
@@ -48,9 +50,8 @@ GroupAssignmentListWidget::~GroupAssignmentListWidget()
 
 //----------------------------------------------------------------------------
 
-void GroupAssignmentListWidget::setup(TournamentDB* _db, QList<PlayerPairList> ppListList)
+void GroupAssignmentListWidget::setup(const TournamentDB* _db, const QList<QTournament::PlayerPairList>& ppListList)
 {
-  // store the database handle for later
   db = _db;
 
   int grpCount = ppListList.count();
@@ -70,7 +71,7 @@ void GroupAssignmentListWidget::setup(TournamentDB* _db, QList<PlayerPairList> p
     
     // create the list widget itself
     QListWidget* lw = new QListWidget(this);
-    lw->setMinimumWidth(MIN_PLAYER_LIST_WIDTH);
+    lw->setMinimumWidth(MinPlayerListWidth);
     
     // create a label
     QLabel* la = new QLabel(tr("Group ")+QString::number(i+1)+":", this);
@@ -82,17 +83,17 @@ void GroupAssignmentListWidget::setup(TournamentDB* _db, QList<PlayerPairList> p
     laGroup[i] = la;
     
     // fill the newly created widget
-    PlayerPairList ppList = ppListList.at(i);
-    for (int cnt=0; cnt < ppList.size(); cnt++)
+    const PlayerPairList& ppList = ppListList.at(i);
+    for (const auto& pp : ppList)
     {
       QListWidgetItem* lwi = new QListWidgetItem(lw);
-      lwi->setData(Qt::UserRole, ppList.at(cnt).getPairId());
-      lwi->setData(Qt::DisplayRole, ppList.at(cnt).getDisplayName());
+      lwi->setData(Qt::UserRole, pp.getPairId());
+      lwi->setData(Qt::DisplayRole, pp.getDisplayName());
     }
     
     // assign a delegate to the list widget for drawing the entries
     QAbstractItemDelegate* oldDefaultDelegate = lw->itemDelegate();
-    delegate[i] = make_unique<PairItemDelegate>(db);
+    delegate[i] = std::make_unique<PairItemDelegate>(db);
     lw->setItemDelegate(delegate[i].get());
     delete oldDefaultDelegate;   // will never be restored, because the complete widget will be deleted when a new database is activated
     
@@ -121,7 +122,7 @@ void GroupAssignmentListWidget::teardown()
   
   // delete everything from the grid
   QLayoutItem *child;
-  while ((child = ui.grid->takeAt(0)) != 0)
+  while ((child = ui.grid->takeAt(0)) != nullptr)
   {
     delete child;
   }
@@ -215,7 +216,7 @@ PlayerPairList GroupAssignmentListWidget::getSelectedPlayerPairs()
     int id1 = selectionQueue.first()->selectedItems()[0]->data(Qt::UserRole).toInt();
     int id2 = selectionQueue.last()->selectedItems()[0]->data(Qt::UserRole).toInt();
     
-    PlayerMngr pm{db};
+    PlayerMngr pm{*db};
     result.push_back(pm.getPlayerPair(id1));
     result.push_back(pm.getPlayerPair(id2));
   }
@@ -247,12 +248,12 @@ void GroupAssignmentListWidget::swapSelectedPlayers()
 
 //----------------------------------------------------------------------------
 
-vector<PlayerPairList> GroupAssignmentListWidget::getGroupAssignments()
+std::vector<PlayerPairList> GroupAssignmentListWidget::getGroupAssignments()
 {
   std::vector<PlayerPairList> result;
   if (!isInitialized) return result;
 
-  PlayerMngr pmngr{db};
+  PlayerMngr pmngr{*db};
   for (int i=0; i < MaxGroupCount; i++)
   {
     if (lwGroup[i] == nullptr) continue;
@@ -275,18 +276,10 @@ vector<PlayerPairList> GroupAssignmentListWidget::getGroupAssignments()
 
 //----------------------------------------------------------------------------
 
-void GroupAssignmentListWidget::setDatabase(TournamentDB* _db)
+void GroupAssignmentListWidget::setDatabase(const TournamentDB* _db)
 {
-  // delete all existing content before changing the database
-  teardown();
-
-  // set a new database
   db = _db;
-  setEnabled(db != nullptr);
 }
-
-//----------------------------------------------------------------------------
-    
 
 //----------------------------------------------------------------------------
     

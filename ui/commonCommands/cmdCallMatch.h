@@ -32,7 +32,7 @@ class cmdCallMatch : public QObject, AbstractCommand
 
 public:
   cmdCallMatch(QWidget* p, const QTournament::Match& _ma, const QTournament::Court& _co);
-  virtual QTournament::ERR exec() override;
+  virtual QTournament::Error exec() override;
   virtual ~cmdCallMatch() {}
 
 protected:

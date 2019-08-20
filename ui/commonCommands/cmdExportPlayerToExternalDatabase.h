@@ -31,7 +31,7 @@ class cmdExportPlayerToExternalDatabase : public QObject, AbstractCommand
 
 public:
   cmdExportPlayerToExternalDatabase(QWidget* p, const QTournament::Player& _pl);
-  virtual QTournament::ERR exec() override;
+  virtual QTournament::Error exec() override;
   virtual ~cmdExportPlayerToExternalDatabase() {}
 
 protected:

@@ -37,7 +37,7 @@ cmdFullSync::cmdFullSync(QWidget* p, TournamentDB* _db)
 
 //----------------------------------------------------------------------------
 
-ERR cmdFullSync::exec()
+Error cmdFullSync::exec()
 {
   OnlineMngr* om = db->getOnlineManager();
 
@@ -64,7 +64,7 @@ ERR cmdFullSync::exec()
     }
 
     QMessageBox::warning(parentWidget, tr("Full sync failed"), msg);
-    return ERR::WrongState; // dummy value
+    return Error::WrongState; // dummy value
   }
 
   // at this point, the data exchange with the server was successful (HTTP and Signatures).
@@ -89,11 +89,11 @@ ERR cmdFullSync::exec()
   if (!(msg.isEmpty()))
   {
     QMessageBox::warning(parentWidget, tr("Full sync failed"), msg);
-    return ERR::WrongState; // dummy value
+    return Error::WrongState; // dummy value
   }
 
   QMessageBox::information(parentWidget, tr("Full sync successful"),
                            tr("The server is now in sync with your local tournament file!"));
-  return ERR::OK;
+  return Error::OK;
 }
 

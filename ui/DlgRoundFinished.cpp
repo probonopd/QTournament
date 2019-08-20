@@ -16,17 +16,19 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <optional>
+
 #include "CatRoundStatus.h"
 
 #include "DlgRoundFinished.h"
 #include "ui_DlgRoundFinished.h"
 
+using namespace QTournament;
+
 DlgRoundFinished::DlgRoundFinished(QWidget *parent, const QTournament::Category& _cat, int _round) :
   QDialog(parent),
   ui(new Ui::DlgRoundFinished),
-  db{_cat.getDatabaseHandle()}, cat{_cat}, round{_round},
-  upBracket{nullptr}, upInOut{nullptr}, upResults{nullptr},
-  upMatrix{nullptr}, upStandings{nullptr}
+  db{_cat.getDatabaseHandle()}, cat{_cat}, round{_round}
 {
   ui->setupUi(this);
 
@@ -52,38 +54,43 @@ DlgRoundFinished::DlgRoundFinished(QWidget *parent, const QTournament::Category&
   // decide which reports to offer
   try
   {
-    upBracket = make_unique<BracketSheet>(db, "dummy", cat);
+    optBracket.reset();
+    optBracket.emplace(db, "dummy", cat);
   }
   catch (...) {}
-  ui->btnBracket->setVisible(upBracket != nullptr);
+  ui->btnBracket->setVisible(optBracket.has_value());
 
   try
   {
-    upInOut = make_unique<InOutList>(db, "dummy", cat, round);
+    optInOut.reset();
+    optInOut.emplace(db, "dummy", cat, round);
   }
   catch (...) {}
-  ui->btnInOut->setVisible(upInOut != nullptr);
+  ui->btnInOut->setVisible(optInOut.has_value());
 
   try
   {
-    upMatrix = make_unique<MartixAndStandings>(db, "dummy", cat, round);
+    optMatrix.reset();
+    optMatrix.emplace(db, "dummy", cat, round);
   }
   catch (...) {}
-  ui->btnMatrix->setVisible(upMatrix != nullptr);
+  ui->btnMatrix->setVisible(optMatrix.has_value());
 
   try
   {
-    upResults = make_unique<ResultsAndNextMatches>(db, "dummy", cat, round);
+    optResults.reset();
+    optResults.emplace(db, "dummy", cat, round);
   }
   catch (...) {}
-  ui->btnResults->setVisible(upResults != nullptr);
+  ui->btnResults->setVisible(optResults.has_value());
 
   try
   {
-    upStandings = make_unique<Standings>(db, "dummy", cat, round);
+    optStandings.reset();
+    optStandings.emplace(db, "dummy", cat, round);
   }
   catch (...) {}
-  ui->btnStandings->setVisible(upStandings != nullptr);
+  ui->btnStandings->setVisible(optStandings.has_value());
 
   // manually wire the buttons to the slots.
   // that's easier than fiddling with the designer...
@@ -121,35 +128,35 @@ void DlgRoundFinished::printReport(AbstractReport* rep)
 
 void DlgRoundFinished::onBtnBracketClicked()
 {
-  printReport(upBracket.get());
+  printReport(&(*optBracket));
 }
 
 //----------------------------------------------------------------------------
 
 void DlgRoundFinished::onBtnInOutClicked()
 {
-  printReport(upInOut.get());
+  printReport(&(*optInOut));
 }
 
 //----------------------------------------------------------------------------
 
 void DlgRoundFinished::onBtnResultsClicked()
 {
-  printReport(upResults.get());
+  printReport(&(*optResults));
 }
 
 //----------------------------------------------------------------------------
 
 void DlgRoundFinished::onBtnMatrixClicked()
 {
-  printReport(upMatrix.get());
+  printReport(&(*optMatrix));
 }
 
 //----------------------------------------------------------------------------
 
 void DlgRoundFinished::onBtnStandingsClicked()
 {
-  printReport(upStandings.get());
+  printReport(&(*optStandings));
 }
 
 //----------------------------------------------------------------------------

@@ -32,7 +32,7 @@ cmdMoveOrCopyPairToCategory::cmdMoveOrCopyPairToCategory(QWidget* p, const Playe
 
 //----------------------------------------------------------------------------
 
-ERR cmdMoveOrCopyPairToCategory::exec()
+Error cmdMoveOrCopyPairToCategory::exec()
 {
   CatMngr cm{db};
 
@@ -53,13 +53,13 @@ ERR cmdMoveOrCopyPairToCategory::exec()
   {
     QString msg = tr("The provided player pair is invalid.");
     QMessageBox::warning(parentWidget, tr("Copy or move player pair"), msg);
-    return ERR::InvalidPlayerPair;
+    return Error::InvalidPlayerPair;
   }
   if (srcCat != (*ppCat))
   {
     QString msg = tr("The pair is not assigned to the source category of this operation.");
     QMessageBox::warning(parentWidget, tr("Move or copy player pair"), msg);
-    return ERR::InvalidPlayerPair;
+    return Error::InvalidPlayerPair;
   }
 
   // check if the target category is singles category
@@ -74,7 +74,7 @@ ERR cmdMoveOrCopyPairToCategory::exec()
   // the pair from the source category
   if (isMove)
   {
-    bool splitFails = (srcCat.canSplitPlayers(p1, p2) != ERR::OK);
+    bool splitFails = (srcCat.canSplitPlayers(p1, p2) != Error::OK);
     bool removeP1Fails = (srcCat.canRemovePlayer(p1) == false);
     bool removeP2Fails = (srcCat.canRemovePlayer(p2) == false);
 
@@ -82,7 +82,7 @@ ERR cmdMoveOrCopyPairToCategory::exec()
     {
       QString msg = tr("The pair cannot be removed from the source category of this operation.");
       QMessageBox::warning(parentWidget, tr("Move player pair"), msg);
-      return ERR::InvalidPlayerPair;
+      return Error::InvalidPlayerPair;
     }
   }
 
@@ -91,16 +91,16 @@ ERR cmdMoveOrCopyPairToCategory::exec()
   {
     QString msg = tr("Cannot add one or both players to the target category.");
     QMessageBox::warning(parentWidget, tr("Move or copy player pair"), msg);
-    return ERR::InvalidPlayerPair;
+    return Error::InvalidPlayerPair;
   }
 
   // transfer the two players in two separate operations
   cmdMoveOrCopyPlayerToCategory cmd1{parentWidget, p1, srcCat, dstCat, isMove};
-  ERR err = cmd1.exec();
-  if (err != ERR::OK) return err;   // after all previous checks, this shouldn't happen
+  Error err = cmd1.exec();
+  if (err != Error::OK) return err;   // after all previous checks, this shouldn't happen
   cmdMoveOrCopyPlayerToCategory cmd2{parentWidget, p2, srcCat, dstCat, isMove};
   err = cmd2.exec();
-  if (err != ERR::OK) return err;   // after all previous checks, this shouldn't happen
+  if (err != Error::OK) return err;   // after all previous checks, this shouldn't happen
 
 
   //
@@ -119,7 +119,7 @@ ERR cmdMoveOrCopyPairToCategory::exec()
     if (result == QMessageBox::No)
     {
       // nothing more to do for us
-      return ERR::OK;
+      return Error::OK;
     }
   }
 
@@ -128,43 +128,43 @@ ERR cmdMoveOrCopyPairToCategory::exec()
     Player p1Partner = dstCat.getPartner(p1);
     if (p1Partner == p2)   // lucky coincidence: both are already existing and partnered
     {
-      return ERR::OK;
+      return Error::OK;
     }
 
-    if (dstCat.canSplitPlayers(p1, p1Partner) != ERR::OK)
+    if (dstCat.canSplitPlayers(p1, p1Partner) != Error::OK)
     {
       QString msg = tr("Cannot replace the partner of %1\n");
       msg += tr("in the target category. The players have been\n");
       msg += tr("moved / copied but they are not paired.");
       msg = msg.arg(p1.getDisplayName_FirstNameFirst());
       QMessageBox::warning(parentWidget, tr("Move or copy player pair"), msg);
-      return ERR::OK;   // no error indication in this case
+      return Error::OK;   // no error indication in this case
     }
 
     err = cm.splitPlayers(dstCat, p1, p1Partner);
-    if (err != ERR::OK) return err;    // shouldn't happen after the previous check
+    if (err != Error::OK) return err;    // shouldn't happen after the previous check
   }
 
   if (p2IsPaired)
   {
     Player p2Partner = dstCat.getPartner(p2);
 
-    if (dstCat.canSplitPlayers(p2, p2Partner) != ERR::OK)
+    if (dstCat.canSplitPlayers(p2, p2Partner) != Error::OK)
     {
       QString msg = tr("Cannot replace the partner of %1\n");
       msg += tr("in the target category. The players have been\n");
       msg += tr("moved / copied but they are not paired.");
       msg = msg.arg(p2.getDisplayName_FirstNameFirst());
       QMessageBox::warning(parentWidget, tr("Move or copy player pair"), msg);
-      return ERR::OK;   // no error indication in this case
+      return Error::OK;   // no error indication in this case
     }
     err = cm.splitPlayers(dstCat, p2, p2Partner);
-    if (err != ERR::OK) return err;    // shouldn't happen after the previous check
+    if (err != Error::OK) return err;    // shouldn't happen after the previous check
   }
 
   // At this point, the two players are free to be paired
 
-  if (cm.pairPlayers(dstCat, p1, p2) != ERR::OK)
+  if (cm.pairPlayers(dstCat, p1, p2) != Error::OK)
   {
     QString msg = tr("Cannot pair both players in the target category.");
     msg += tr("The players have been moved / copied but they are not paired.");
@@ -173,6 +173,6 @@ ERR cmdMoveOrCopyPairToCategory::exec()
     return err;
   }
 
-  return ERR::OK;
+  return Error::OK;
 }
 

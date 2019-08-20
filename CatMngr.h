@@ -43,8 +43,8 @@ namespace QTournament
     CatMngr (const TournamentDB& _db);
 
     // creation of categories
-    ERR createNewCategory (const QString& catName);
-    ERR cloneCategory(const Category& src, const QString& catNamePostfix);
+    Error createNewCategory (const QString& catName);
+    Error cloneCategory(const Category& src, const QString& catNamePostfix);
 
     // boolean queries
     bool hasCategory (const QString& catName) const;
@@ -59,33 +59,33 @@ namespace QTournament
     QHash<Category, CatAddState> getAllCategoryAddStates(const Player& p);
     static std::function<bool (Category&, Category&)> getCategorySortFunction_byName();
     std::vector<PlayerPair> getSeeding(const Category& cat) const;
-    ERR canDeleteCategory(const Category& cat) const;
+    Error canDeleteCategory(const Category& cat) const;
 
     // setters
-    ERR setMatchType(Category& cat, MatchType newMatchType);
-    ERR setMatchSystem(Category& cat, MatchSystem newMatchSystem);
-    ERR setSex(Category& cat, Sex newSex);
+    Error setMatchType(Category& cat, MatchType newMatchType);
+    Error setMatchSystem(Category& cat, MatchSystem newMatchSystem);
+    Error setSex(Category& cat, Sex newSex);
     bool setCatParameter(Category& cat, CatParameter p, const QVariant& v);
 
     // modifications
-    ERR renameCategory(Category& cat, const QString& newName);
-    ERR addPlayerToCategory(const Player& p, const Category& cat);
-    ERR removePlayerFromCategory(const Player& p, const Category& cat) const;
-    ERR deleteCategory(const Category& cat) const;
-    ERR deleteRunningCategory(const Category& cat) const;
+    Error renameCategory(Category& cat, const QString& newName);
+    Error addPlayerToCategory(const Player& p, const Category& cat);
+    Error removePlayerFromCategory(const Player& p, const Category& cat) const;
+    Error deleteCategory(const Category& cat) const;
+    Error deleteRunningCategory(const Category& cat) const;
 
     // pairing
-    ERR pairPlayers(const Category c, const Player& p1, const Player& p2);
-    ERR splitPlayers(const Category c, const Player& p1, const Player& p2) const;
-    ERR splitPlayers(const Category c, int pairId) const;
+    Error pairPlayers(const Category c, const Player& p1, const Player& p2);
+    Error splitPlayers(const Category c, const Player& p1, const Player& p2) const;
+    Error splitPlayers(const Category c, int pairId) const;
 
     // freezing, starting, updating while running
-    ERR freezeConfig(const Category& c);
-    ERR unfreezeConfig(const Category& c);
-    ERR startCategory(const Category& c, const std::vector<PlayerPairList>& grpCfg, const PlayerPairList& seed);
+    Error freezeConfig(const Category& c);
+    Error unfreezeConfig(const Category& c);
+    Error startCategory(const Category& c, const std::vector<PlayerPairList>& grpCfg, const PlayerPairList& seed);
     void updateCatStatusFromMatchStatus(const Category& cat);
     bool switchCatToWaitForSeeding(const Category& cat);
-    ERR continueWithIntermediateSeeding(const Category& c, const PlayerPairList& seeding);
+    Error continueWithIntermediateSeeding(const Category& c, const PlayerPairList& seeding);
 
     std::string getSyncString(const std::vector<int>& rows) const override;
 

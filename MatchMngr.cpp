@@ -43,7 +43,7 @@ namespace QTournament {
 
   //----------------------------------------------------------------------------
 
-  std::optional<MatchGroup> MatchMngr::createMatchGroup(const Category& cat, const int round, const int grpNum, ERR *err)
+  std::optional<MatchGroup> MatchMngr::createMatchGroup(const Category& cat, const int round, const int grpNum, Error *err)
   {
     assert(err != nullptr);
 
@@ -52,7 +52,7 @@ namespace QTournament {
     ObjState catState = cat.getState();
     if ((catState == ObjState::CAT_Config) || (catState == ObjState::CAT_Frozen))
     {
-      *err = ERR::CategoryStillConfigurable;
+      *err = Error::CategoryStillConfigurable;
       return {};
     }
 
@@ -65,14 +65,14 @@ namespace QTournament {
           && (grpNum != GroupNum_L16)
           && (grpNum != GroupNum_Iteration))
       {
-        *err = ERR::InvalidGroupNum;
+        *err = Error::InvalidGroupNum;
         return {};
       }
     }
 
     if (round <= 0)
     {
-      *err = ERR::InvalidRound;
+      *err = Error::InvalidRound;
       return {};
     }
 
@@ -84,7 +84,7 @@ namespace QTournament {
       const auto otherGroups = getMatchGroupsForCat(cat, round);
       if (!otherGroups.empty())
       {
-        *err = ERR::InvalidGroupNum;
+        *err = Error::InvalidGroupNum;
         return {};
       }
     }
@@ -99,20 +99,20 @@ namespace QTournament {
       int nOtherGroups = groupTab.getMatchCountForWhereClause(wc);
       if (nOtherGroups != 0)
       {
-        *err = ERR::InvalidGroupNum;
+        *err = Error::InvalidGroupNum;
         return {};
       }
     }
 
     // make sure the match group doesn't already exist
-    ERR e;
+    Error e;
     auto mg = getMatchGroup(cat, round, grpNum, &e);
-    if (e == ERR::OK)    // match group exists
+    if (e == Error::OK)    // match group exists
     {
-      *err = ERR::MatchGroupExists;
+      *err = Error::MatchGroupExists;
       return {};
     }
-    if (e != ERR::NoSuchMatchGroup)   // catch any other error except "no such group"
+    if (e != Error::NoSuchMatchGroup)   // catch any other error except "no such group"
     {
       *err = e;
       return {};
@@ -170,14 +170,14 @@ namespace QTournament {
 
   //----------------------------------------------------------------------------
 
-  std::optional<MatchGroup> MatchMngr::getMatchGroup(const Category& cat, const int round, const int grpNum, ERR *err)
+  std::optional<MatchGroup> MatchMngr::getMatchGroup(const Category& cat, const int round, const int grpNum, Error *err)
   {
     assert(err != nullptr);
 
     // check round parameter for validity
     if (round <= 0)
     {
-      *err = ERR::InvalidRound;
+      *err = Error::InvalidRound;
       return {};
     }
     
@@ -190,7 +190,7 @@ namespace QTournament {
           && (grpNum != GroupNum_L16)
           && (grpNum != GroupNum_Iteration))
       {
-        *err = ERR::InvalidGroupNum;
+        *err = Error::InvalidGroupNum;
         return {};
       }
     }
@@ -204,27 +204,27 @@ namespace QTournament {
 
     if (!r)
     {
-      *err = ERR::NoSuchMatchGroup;
+      *err = Error::NoSuchMatchGroup;
       return {};
     }
 
-    *err = ERR::OK;
+    *err = Error::OK;
     return MatchGroup{db, *r};
   }
 
   //----------------------------------------------------------------------------
 
-  bool MatchMngr::hasMatchGroup(const Category& cat, const int round, const int grpNum, ERR* err)
+  bool MatchMngr::hasMatchGroup(const Category& cat, const int round, const int grpNum, Error* err)
   {
-    ERR e;
+    Error e;
     auto mg = getMatchGroup(cat, round, grpNum, &e);
-    Sloppy::assignIfNotNull<ERR>(err, e);
+    Sloppy::assignIfNotNull<Error>(err, e);
     return mg.has_value();
   }
 
   //----------------------------------------------------------------------------
 
-  std::optional<Match> MatchMngr::createMatch(const MatchGroup &grp, ERR* err)
+  std::optional<Match> MatchMngr::createMatch(const MatchGroup &grp, Error* err)
   {
     assert(err != nullptr);
 
@@ -232,7 +232,7 @@ namespace QTournament {
     // is in the config state
     if (grp.getState() != ObjState::MG_Config)
     {
-      *err = ERR::MatchGroupNotConfiguraleAnymore;
+      *err = Error::MatchGroupNotConfiguraleAnymore;
       return {};
     }
 
@@ -294,7 +294,7 @@ namespace QTournament {
 
   //----------------------------------------------------------------------------
 
-  ERR MatchMngr::setPlayerPairsForMatch(const Match &ma, const PlayerPair &pp1, const PlayerPair &pp2)
+  Error MatchMngr::setPlayerPairsForMatch(const Match &ma, const PlayerPair &pp1, const PlayerPair &pp2)
   {
     //
     // Initial note: we do not solve this function here by simply calling
@@ -306,19 +306,19 @@ namespace QTournament {
 
 
     // make sure the player pair is valid (has a database entry)
-    if (pp1.getPairId() < 1) return ERR::InvalidPlayerPair;
-    if (pp2.getPairId() < 1) return ERR::InvalidPlayerPair;
+    if (pp1.getPairId() < 1) return Error::InvalidPlayerPair;
+    if (pp2.getPairId() < 1) return Error::InvalidPlayerPair;
 
     // check if an assignment of the player pairs is okay
-    ERR e = canAssignPlayerPairToMatch(ma, pp1);
-    if (e != ERR::OK) return e;
+    Error e = canAssignPlayerPairToMatch(ma, pp1);
+    if (e != Error::OK) return e;
     e = canAssignPlayerPairToMatch(ma, pp2);
-    if (e != ERR::OK) return e;
+    if (e != Error::OK) return e;
 
     // make sure that both pairs are not identical
     if (pp1.getPairId() == pp2.getPairId())
     {
-      return ERR::PlayersIdentical;
+      return Error::PlayersIdentical;
     }
 
     // assign the player pairs
@@ -329,40 +329,40 @@ namespace QTournament {
     // to actually promote the match to e.g., WAITING
     updateMatchStatus(ma);
 
-    return ERR::OK;
+    return Error::OK;
   }
 
   //----------------------------------------------------------------------------
 
-  ERR MatchMngr::setPlayerPairForMatch(const Match& ma, const PlayerPair& pp, int ppPos) const
+  Error MatchMngr::setPlayerPairForMatch(const Match& ma, const PlayerPair& pp, int ppPos) const
   {
     // make sure the player pair is valid (has a database entry)
-    if (pp.getPairId() < 1) return ERR::InvalidPlayerPair;
+    if (pp.getPairId() < 1) return Error::InvalidPlayerPair;
 
     // check if an assignment of the player pairs is okay
-    ERR e = canAssignPlayerPairToMatch(ma, pp);
-    if (e != ERR::OK) return e;
+    Error e = canAssignPlayerPairToMatch(ma, pp);
+    if (e != Error::OK) return e;
 
     // assign the player pair
     if (ppPos == 1) ma.row.update(MA_Pair1Ref, pp.getPairId());
     if (ppPos == 2) ma.row.update(MA_Pair2Ref, pp.getPairId());
 
-    return ERR::OK;
+    return Error::OK;
   }
 
   //----------------------------------------------------------------------------
 
-  ERR MatchMngr::setSymbolicPlayerForMatch(const Match& fromMatch, const Match& toMatch, bool asWinner, int dstPlayerPosInMatch) const
+  Error MatchMngr::setSymbolicPlayerForMatch(const Match& fromMatch, const Match& toMatch, bool asWinner, int dstPlayerPosInMatch) const
   {
     // Only allow changing / setting players if we not yet fully configured
-    if (toMatch.getState() != ObjState::MA_Incomplete) return ERR::MatchNotConfiguraleAnymore;
+    if (toMatch.getState() != ObjState::MA_Incomplete) return Error::MatchNotConfiguraleAnymore;
 
     // fromMatch and toMatch must be in the same category
     int fromMatchCatId = fromMatch.getCategory().getId();
     int toMatchCatId = toMatch.getCategory().getId();
     if (fromMatchCatId != toMatchCatId)
     {
-      return ERR::InvalidMatchLink;
+      return Error::InvalidMatchLink;
     }
 
     // toMatch must be in a later round than fromMatch
@@ -370,7 +370,7 @@ namespace QTournament {
     MatchGroup toGroup = toMatch.getMatchGroup();
     if (toGroup.getRound() <= fromGroup.getRound())
     {
-      return ERR::InvalidMatchLink;
+      return Error::InvalidMatchLink;
     }
 
     // okay, the link is valid
@@ -387,15 +387,15 @@ namespace QTournament {
       toMatch.row.updateToNull(MA_Pair2Ref);
     }
 
-    return ERR::OK;
+    return Error::OK;
   }
 
   //----------------------------------------------------------------------------
 
-  ERR MatchMngr::setPlayerToUnused(const Match& ma, int unusedPlayerPos, int winnerRank) const
+  Error MatchMngr::setPlayerToUnused(const Match& ma, int unusedPlayerPos, int winnerRank) const
   {
     // Only allow changing / setting player pairs if we not yet fully configured
-    if (ma.getState() != ObjState::MA_Incomplete) return ERR::MatchNotConfiguraleAnymore;
+    if (ma.getState() != ObjState::MA_Incomplete) return Error::MatchNotConfiguraleAnymore;
 
     if (unusedPlayerPos == 1)
     {
@@ -409,15 +409,15 @@ namespace QTournament {
     }
     ma.row.update(MA_WinnerRank, winnerRank);
 
-    return ERR::OK;
+    return Error::OK;
   }
 
   //----------------------------------------------------------------------------
 
-  ERR MatchMngr::setRankForWinnerOrLoser(const Match& ma, bool isWinner, int rank) const
+  Error MatchMngr::setRankForWinnerOrLoser(const Match& ma, bool isWinner, int rank) const
   {
     // Only allow changing / setting match data if we not yet fully configured
-    if (ma.getState() != ObjState::MA_Incomplete) return ERR::MatchNotConfiguraleAnymore;
+    if (ma.getState() != ObjState::MA_Incomplete) return Error::MatchNotConfiguraleAnymore;
 
     // TODO: check if rank is really valid
 
@@ -428,21 +428,21 @@ namespace QTournament {
       ma.row.update(MA_LoserRank, rank);
     }
 
-    return ERR::OK;
+    return Error::OK;
   }
 
   //----------------------------------------------------------------------------
 
-  ERR MatchMngr::canAssignPlayerPairToMatch(const Match &ma, const PlayerPair &pp) const
+  Error MatchMngr::canAssignPlayerPairToMatch(const Match &ma, const PlayerPair &pp) const
   {
     // Only allow changing / setting player pairs if we not yet fully configured
     ObjState stat = ma.getState();
-    if ((stat != ObjState::MA_Incomplete) && (stat != ObjState::MA_Fuzzy)) return ERR::MatchNotConfiguraleAnymore;
+    if ((stat != ObjState::MA_Incomplete) && (stat != ObjState::MA_Fuzzy)) return Error::MatchNotConfiguraleAnymore;
 
     // make sure the player pair and the match belong to the same category
     Category requiredCat = ma.getCategory();
     auto ppCat = pp.getCategory(db);
-    if (*ppCat != requiredCat) return ERR::PlayerNotInCategory;
+    if (*ppCat != requiredCat) return Error::PlayerNotInCategory;
 
     // in case we're using group matches, make sure that the player's group
     // and the match's group are identical
@@ -462,7 +462,7 @@ namespace QTournament {
     int mgGroupNumber = mg.getGroupNumber();
     if ((mgGroupNumber > 0) && (pp.getPairsGroupNum() != mgGroupNumber))
     {
-      return ERR::GroupNumberMismatch;
+      return Error::GroupNumberMismatch;
     }
 
     // make sure the player pair has not already been assigned
@@ -481,19 +481,19 @@ namespace QTournament {
         if (otherMatch.hasPlayerPair1())
         {
           int otherPairId = otherMatch.getPlayerPair1().getPairId();
-          if (otherPairId == pp.getPairId()) return ERR::PlayerAlreadyAssignedToOtherMatchInTheSameRoundAndCategory;
+          if (otherPairId == pp.getPairId()) return Error::PlayerAlreadyAssignedToOtherMatchInTheSameRoundAndCategory;
         }
 
         // check the second  player pair of this match, if existing
         if (otherMatch.hasPlayerPair2())
         {
           int otherPairId = otherMatch.getPlayerPair2().getPairId();
-          if (otherPairId == pp.getPairId()) return ERR::PlayerAlreadyAssignedToOtherMatchInTheSameRoundAndCategory;
+          if (otherPairId == pp.getPairId()) return Error::PlayerAlreadyAssignedToOtherMatchInTheSameRoundAndCategory;
         }
       }
     }
 
-    return ERR::OK;
+    return Error::OK;
   }
 
   //----------------------------------------------------------------------------
@@ -509,13 +509,13 @@ namespace QTournament {
 
     \return error code
     */
-  ERR MatchMngr::closeMatchGroup(const MatchGroup &grp)
+  Error MatchMngr::closeMatchGroup(const MatchGroup &grp)
   {
     // we can only close match groups that are in state CONFIG
-    if (grp.getState() != ObjState::MG_Config) return ERR::MatchGroupAlreadyClosed;
+    if (grp.getState() != ObjState::MG_Config) return Error::MatchGroupAlreadyClosed;
 
     // the match group should contain at least one match
-    if (grp.getMatchCount() < 1) return ERR::MatchGroupEmpty;
+    if (grp.getMatchCount() < 1) return Error::MatchGroupEmpty;
 
     // we can close the group unconditionally
     grp.setState(ObjState::MG_Frozen);
@@ -525,24 +525,24 @@ namespace QTournament {
     // to idle (which enables the group the be scheduled)
     updateAllMatchGroupStates(grp.getCategory());
 
-    return ERR::OK;
+    return Error::OK;
   }
 
   //----------------------------------------------------------------------------
 
-  ERR MatchMngr::setRefereeMode(const Match& ma, RefereeMode newMode) const
+  Error MatchMngr::setRefereeMode(const Match& ma, RefereeMode newMode) const
   {
     // get the old mode
     RefereeMode oldMode = ma.get_RAW_RefereeMode();
 
     // is there anything to do at all?
-    if (oldMode == newMode) return ERR::OK;
+    if (oldMode == newMode) return Error::OK;
 
     // only allow changes to the referee mode before the match has been called
     ObjState stat = ma.getState();
     if ((stat == ObjState::MA_Running) || (stat == ObjState::MA_Finished))
     {
-      return ERR::MatchNotConfiguraleAnymore;
+      return Error::MatchNotConfiguraleAnymore;
     }
 
     // set the new mode
@@ -558,15 +558,15 @@ namespace QTournament {
     // fake a match-changed-event in order to trigger UI updates
     CentralSignalEmitter::getInstance()->matchStatusChanged(ma.getId(), ma.getSeqNum(), stat, stat);
 
-    return ERR::OK;
+    return Error::OK;
   }
 
   //----------------------------------------------------------------------------
 
-  ERR MatchMngr::assignReferee(const Match& ma, const Player& p, RefereeAction refAction) const
+  Error MatchMngr::assignReferee(const Match& ma, const Player& p, RefereeAction refAction) const
   {
-    ERR e = ma.canAssignReferee(refAction);
-    if (e != ERR::OK) return e;
+    Error e = ma.canAssignReferee(refAction);
+    if (e != Error::OK) return e;
 
     // don't allow assignments of players that actually
     // take part in the match
@@ -574,26 +574,26 @@ namespace QTournament {
     PlayerPair pp2 = ma.getPlayerPair2();
     if (pp1.getPlayer1() == p)
     {
-      return ERR::PlayerNotSuitable;
+      return Error::PlayerNotSuitable;
     }
     if (pp1.hasPlayer2() && (pp1.getPlayer2() == p))
     {
-      return ERR::PlayerNotSuitable;
+      return Error::PlayerNotSuitable;
     }
     if (pp2.getPlayer1() == p)
     {
-      return ERR::PlayerNotSuitable;
+      return Error::PlayerNotSuitable;
     }
     if (pp2.hasPlayer2() && (pp2.getPlayer2() == p))
     {
-      return ERR::PlayerNotSuitable;
+      return Error::PlayerNotSuitable;
     }
 
     // ensure that the player is IDLE when calling a match or
     // swapping the umpire
     if ((refAction != RefereeAction::PreAssign) && (p.getState() != ObjState::PL_Idle))
     {
-      return ERR::PlayerNotSuitable;
+      return Error::PlayerNotSuitable;
     }
 
     // store the currently assigned referee
@@ -654,17 +654,17 @@ namespace QTournament {
       }
     }
 
-    return ERR::OK;
+    return Error::OK;
   }
 
   //----------------------------------------------------------------------------
 
-  ERR MatchMngr::removeReferee(const Match& ma) const
+  Error MatchMngr::removeReferee(const Match& ma) const
   {
     ObjState stat = ma.getState();
     if ((stat == ObjState::MA_Running) || (stat == ObjState::MA_Finished))
     {
-      return ERR::MatchNotConfiguraleAnymore;
+      return Error::MatchNotConfiguraleAnymore;
     }
 
     ma.row.updateToNull(MA_RefereeRef);
@@ -676,24 +676,24 @@ namespace QTournament {
     // fake a match-changed-event in order to trigger UI updates
     CentralSignalEmitter::getInstance()->matchStatusChanged(ma.getId(), ma.getSeqNum(), stat, stat);
 
-    return ERR::OK;
+    return Error::OK;
   }
 
   //----------------------------------------------------------------------------
 
-  ERR MatchMngr::swapPlayer(const Match& ma, const PlayerPair& ppOld, const PlayerPair& ppNew) const
+  Error MatchMngr::swapPlayer(const Match& ma, const PlayerPair& ppOld, const PlayerPair& ppNew) const
   {
     // the matches may not be "running" or "finished"
     ObjState stat = ma.getState();
-    if ((stat == ObjState::MA_Running) || (stat == ObjState::MA_Finished)) return ERR::WrongState;
+    if ((stat == ObjState::MA_Running) || (stat == ObjState::MA_Finished)) return Error::WrongState;
 
     // the new player pair must belong to the
     // same category as the old one
     auto oldPairCat = ppOld.getCategory(db);
-    if (!oldPairCat) return ERR::InvalidPlayerPair;
+    if (!oldPairCat) return Error::InvalidPlayerPair;
     auto newPairCat = ppNew.getCategory(db);
-    if (!newPairCat) return ERR::InvalidPlayerPair;
-    if (oldPairCat->getId() != newPairCat->getId()) return ERR::InvalidPlayerPair;
+    if (!newPairCat) return Error::InvalidPlayerPair;
+    if (oldPairCat->getId() != newPairCat->getId()) return Error::InvalidPlayerPair;
 
     /*
      * 2019-08-19:
@@ -720,11 +720,11 @@ namespace QTournament {
     }
     if (ppPos == 0)
     {
-      return ERR::InvalidPlayerPair;   // ppOld is not part of the match
+      return Error::InvalidPlayerPair;   // ppOld is not part of the match
     }
 
     // if both pairs are identical, we're done
-    if (ppOld.getPairId() == ppNew.getPairId()) return ERR::OK;
+    if (ppOld.getPairId() == ppNew.getPairId()) return Error::OK;
 
     // start a transaction
     try
@@ -754,33 +754,33 @@ namespace QTournament {
       updateMatchStatus(ma);
 
       trans.commit();
-      return ERR::OK;
+      return Error::OK;
     }
     catch (SqliteOverlay::BusyException&)
     {
-      return ERR::DatabaseError;
+      return Error::DatabaseError;
     }
     catch (SqliteOverlay::GenericSqliteException&)
     {
-      return ERR::DatabaseError;
+      return Error::DatabaseError;
     }
   }
 
   //----------------------------------------------------------------------------
 
-  ERR MatchMngr::swapPlayers(const Match& ma1, const PlayerPair& ma1PlayerPair, const Match& ma2, const PlayerPair& ma2PlayerPair) const
+  Error MatchMngr::swapPlayers(const Match& ma1, const PlayerPair& ma1PlayerPair, const Match& ma2, const PlayerPair& ma2PlayerPair) const
   {
     // the matches may not be "running" or "finished"
     for (const Match& m : {ma1, ma2})
     {
       ObjState stat = m.getState();
-      if ((stat == ObjState::MA_Running) || (stat == ObjState::MA_Finished)) return ERR::WrongState;
+      if ((stat == ObjState::MA_Running) || (stat == ObjState::MA_Finished)) return Error::WrongState;
     }
 
     // the matches must belong to the same category
     if (ma1.getCategory() != ma2.getCategory())
     {
-      return ERR::InvalidId;  // not the best matching error code, but anyway...
+      return Error::InvalidId;  // not the best matching error code, but anyway...
     }
 
     try
@@ -788,29 +788,29 @@ namespace QTournament {
       auto trans = db.get().startTransaction();
 
       // swap the players
-      ERR e = swapPlayer(ma1, ma1PlayerPair, ma2PlayerPair);
-      if (e != ERR::OK)
+      Error e = swapPlayer(ma1, ma1PlayerPair, ma2PlayerPair);
+      if (e != Error::OK)
       {
         return e;  // triggers implicit rollback
       }
 
       e = swapPlayer(ma2, ma2PlayerPair, ma1PlayerPair);
-      if (e != ERR::OK)
+      if (e != Error::OK)
       {
         return e;  // triggers implicit rollback
       }
 
       trans.commit();
 
-      return ERR::OK;
+      return Error::OK;
     }
     catch (SqliteOverlay::BusyException&)
     {
-      return ERR::DatabaseError;
+      return Error::DatabaseError;
     }
     catch (SqliteOverlay::GenericSqliteException&)
     {
-      return ERR::DatabaseError;
+      return Error::DatabaseError;
     }
   }
 
@@ -941,10 +941,10 @@ namespace QTournament {
 
     \return error code
     */
-  ERR MatchMngr::stageMatchGroup(const MatchGroup &grp)
+  Error MatchMngr::stageMatchGroup(const MatchGroup &grp)
   {
-    ERR e = canStageMatchGroup(grp);
-    if (e != ERR::OK) return e;
+    Error e = canStageMatchGroup(grp);
+    if (e != Error::OK) return e;
 
     // no further checks necessary. Any IDLE match group can be promoted
 
@@ -957,7 +957,7 @@ namespace QTournament {
     // promote other groups from FROZEN to IDLE, if applicable
     updateAllMatchGroupStates(grp.getCategory());
 
-    return ERR::OK;
+    return Error::OK;
   }
 
   //----------------------------------------------------------------------------
@@ -1002,12 +1002,12 @@ namespace QTournament {
    *
    * @return error code
    */
-  ERR MatchMngr::canUnstageMatchGroup(const MatchGroup &grp)
+  Error MatchMngr::canUnstageMatchGroup(const MatchGroup &grp)
   {
     // first precondition: match group has to be staged
     if (grp.getState() != ObjState::MG_Staged)
     {
-      return ERR::MatchGroupNotUnstageable;
+      return Error::MatchGroupNotUnstageable;
     }
 
     int round = grp.getRound();
@@ -1024,7 +1024,7 @@ namespace QTournament {
       // there is no match group of this category and with a higher
       // round number in the staging area
       // ==> the match group can be demoted
-      return ERR::OK;
+      return Error::OK;
     }
 
     //
@@ -1041,7 +1041,7 @@ namespace QTournament {
       // must be as well. So the fact that there is a group
       // with a higher round number already staged is a no-go for unstaging
       // this group
-      return ERR::MatchGroupNotUnstageable;
+      return Error::MatchGroupNotUnstageable;
     }
 
     // if we made it to this point, at least the current
@@ -1062,18 +1062,18 @@ namespace QTournament {
         // next round is already in KO phase
         //
         // 2019-08-19: FIX, is that correct or too strict?
-        return ERR::MatchGroupNotUnstageable;
+        return Error::MatchGroupNotUnstageable;
       }
 
       // the next round's group belongs to the same
       // players group ==> can't unstage
       if (nextGroupNumber == playersGroup)
       {
-        return ERR::MatchGroupNotUnstageable;
+        return Error::MatchGroupNotUnstageable;
       }
     }
 
-    return ERR::OK;
+    return Error::OK;
   }
 
   //----------------------------------------------------------------------------
@@ -1087,11 +1087,11 @@ namespace QTournament {
    *
    * @return error code
    */
-  ERR MatchMngr::unstageMatchGroup(const MatchGroup &grp)
+  Error MatchMngr::unstageMatchGroup(const MatchGroup &grp)
   {
     // check all preconditions for a demotion
-    ERR e = canUnstageMatchGroup(grp);
-    if (e != ERR::OK) return e;
+    Error e = canUnstageMatchGroup(grp);
+    if (e != Error::OK) return e;
 
     // great, we can safely demote this match group to IDLE
     grp.setState(ObjState::MG_Idle);
@@ -1142,7 +1142,7 @@ namespace QTournament {
       cse->matchGroupStatusChanged(mg.getId(), mg.getSeqNum(), ObjState::MG_Idle, ObjState::MG_Frozen);
     }
 
-    return ERR::OK;
+    return Error::OK;
   }
 
   //----------------------------------------------------------------------------
@@ -1156,9 +1156,9 @@ namespace QTournament {
    *
    * @return error code
    */
-  ERR MatchMngr::canStageMatchGroup(const MatchGroup &grp)
+  Error MatchMngr::canStageMatchGroup(const MatchGroup &grp)
   {
-    return (grp.getState() == ObjState::MG_Idle) ? ERR::OK : ERR::WrongState;
+    return (grp.getState() == ObjState::MG_Idle) ? Error::OK : Error::WrongState;
   }
 
   //----------------------------------------------------------------------------
@@ -1228,7 +1228,7 @@ namespace QTournament {
 
     // from WAITING to READY or BUSY
     PlayerMngr pm{db};
-    bool playersAvail = ((pm.canAcquirePlayerPairsForMatch(ma)) == ERR::OK);
+    bool playersAvail = ((pm.canAcquirePlayerPairsForMatch(ma)) == Error::OK);
 
     bool hasPredecessor = hasUnfinishedMandatoryPredecessor(ma);
     if ((curState == ObjState::MA_Waiting) && (!hasPredecessor))
@@ -1437,7 +1437,7 @@ namespace QTournament {
    *
    * @return the identified match and court number and an error code
    */
-  ERR MatchMngr::getNextViableMatchCourtPair(int *matchId, int *courtId, bool includeManualCourts) const
+  Error MatchMngr::getNextViableMatchCourtPair(int *matchId, int *courtId, bool includeManualCourts) const
   {
     assert(matchId != nullptr);
     assert(courtId != nullptr);
@@ -1454,17 +1454,17 @@ namespace QTournament {
     auto matchRow = tab.get2(wc);
     if (!matchRow)
     {
-      return ERR::NoMatchAvail;
+      return Error::NoMatchAvail;
     }
 
-    ERR err;
+    Error err;
     CourtMngr cm{db};
     auto nextCourt = cm.autoSelectNextUnusedCourt(&err, includeManualCourts);
-    if (err == ERR::OK)
+    if (err == Error::OK)
     {
       *matchId = matchRow->id();
       *courtId = nextCourt->getId();
-      return ERR::OK;
+      return Error::OK;
     }
 
     return err;
@@ -1480,12 +1480,12 @@ namespace QTournament {
    *
    * @return error code
    */
-  ERR MatchMngr::canAssignMatchToCourt(const Match &ma, const Court& court) const
+  Error MatchMngr::canAssignMatchToCourt(const Match &ma, const Court& court) const
   {
     // check the match's state
     if (ma.getState() != ObjState::MA_Ready)
     {
-      return ERR::MatchNotRunnable;
+      return Error::MatchNotRunnable;
     }
 
     //
@@ -1500,8 +1500,8 @@ namespace QTournament {
 
     // check the player's availability
     PlayerMngr pm{db};
-    ERR e = pm.canAcquirePlayerPairsForMatch(ma);
-    if (e != ERR::OK) return e;  // ERR::PlayerNotIdle
+    Error e = pm.canAcquirePlayerPairsForMatch(ma);
+    if (e != Error::OK) return e;  // Error::PlayerNotIdle
 
     // check if we have the necessary umpire, if required
     RefereeMode refMode = ma.get_EFFECTIVE_RefereeMode();
@@ -1509,32 +1509,32 @@ namespace QTournament {
     {
       auto referee = ma.getAssignedReferee();
 
-      if (!referee) return ERR::MatchNeedsReferee;
+      if (!referee) return Error::MatchNeedsReferee;
 
       // check if the assigned referee is available
-      if (referee->getState() != ObjState::PL_Idle) return ERR::RefereeNotIdle;
+      if (referee->getState() != ObjState::PL_Idle) return Error::RefereeNotIdle;
     }
 
     // check the court's availability
     ObjState stat = court.getState();
     if (stat == ObjState::CO_Avail)
     {
-      return ERR::OK;
+      return Error::OK;
     }
     if (stat == ObjState::CO_Disabled)
     {
-      return ERR::CourtDisabled;
+      return Error::CourtDisabled;
     }
 
-    return ERR::CourtBusy;
+    return Error::CourtBusy;
   }
 
   //----------------------------------------------------------------------------
 
-  ERR MatchMngr::assignMatchToCourt(const Match &ma, const Court &court) const
+  Error MatchMngr::assignMatchToCourt(const Match &ma, const Court &court) const
   {
-    ERR e = canAssignMatchToCourt(ma, court);
-    if (e != ERR::OK) return e;
+    Error e = canAssignMatchToCourt(ma, court);
+    if (e != Error::OK) return e;
 
     // NORMALLY, we should first acquire the court and then assign the
     // match to this court. BUT acquiring triggers an update of the
@@ -1591,7 +1591,7 @@ namespace QTournament {
     // update the player's status
     PlayerMngr pm{db};
     e = pm.acquirePlayerPairsForMatch(ma);
-    assert(e == ERR::OK);  // must be, because the condition has been check by canAssignMatchToCourt()
+    assert(e == Error::OK);  // must be, because the condition has been check by canAssignMatchToCourt()
 
     // acquire the referee, if any
     RefereeMode refMode = ma.get_EFFECTIVE_RefereeMode();
@@ -1652,22 +1652,22 @@ namespace QTournament {
 
     trans.commit();
 
-    return ERR::OK;
+    return Error::OK;
   }
 
   //----------------------------------------------------------------------------
 
-  std::optional<Court> MatchMngr::autoAssignMatchToNextAvailCourt(const Match &ma, ERR *err, bool includeManualCourts) const
+  std::optional<Court> MatchMngr::autoAssignMatchToNextAvailCourt(const Match &ma, Error *err, bool includeManualCourts) const
   {
     assert(err != nullptr);
 
-    ERR e;
+    Error e;
     CourtMngr cm{db};
     auto nextCourt = cm.autoSelectNextUnusedCourt(&e, includeManualCourts);
     if (nextCourt)
     {
       *err = assignMatchToCourt(ma, *nextCourt);
-      return (*err == ERR::OK) ? *nextCourt : std::optional<Court>{};
+      return (*err == Error::OK) ? *nextCourt : std::optional<Court>{};
     }
 
     // return the error resulting from the court selection
@@ -1677,17 +1677,17 @@ namespace QTournament {
 
   //----------------------------------------------------------------------------
 
-  ERR MatchMngr::setMatchScoreAndFinalizeMatch(const Match &ma, const MatchScore &score, bool isWalkover) const
+  Error MatchMngr::setMatchScoreAndFinalizeMatch(const Match &ma, const MatchScore &score, bool isWalkover) const
   {
     // check the match's state
     ObjState oldState = ma.getState();
     if ((!isWalkover) && (oldState != ObjState::MA_Running))
     {
-      return ERR::MatchNotRunning;
+      return Error::MatchNotRunning;
     }
     if (isWalkover && (!(ma.isWalkoverPossible())))
     {
-      return ERR::WrongState;
+      return Error::WrongState;
     }
 
     // check if the score is valid for the category settings
@@ -1696,7 +1696,7 @@ namespace QTournament {
     int numWinGames = 2; // TODO: this needs to become a category parameter!
     if (!(score.isValidScore(numWinGames, isDrawAllowed)))
     {
-      return ERR::InvalidMatchResultForCategorySettings;
+      return Error::InvalidMatchResultForCategorySettings;
     }
 
     // conserve the round status BEFORE we finalize the match.
@@ -1754,8 +1754,8 @@ namespace QTournament {
       if (oldState == ObjState::MA_Running)
       {
         // release the players
-        ERR err = pm.releasePlayerPairsAfterMatch(ma);
-        if (err != ERR::OK) return err;
+        Error err = pm.releasePlayerPairsAfterMatch(ma);
+        if (err != Error::OK) return err;
 
         // release the umpire, if any
         auto referee = ma.getAssignedReferee();
@@ -1767,9 +1767,9 @@ namespace QTournament {
 
         // release the court
         auto court = ma.getCourt(&err);
-        if (err != ERR::OK) return err;
+        if (err != Error::OK) return err;
         bool isOkay = cm.releaseCourt(*court);
-        if (!isOkay) return ERR::DatabaseError;
+        if (!isOkay) return Error::DatabaseError;
       }
 
       // update the match group
@@ -1817,21 +1817,21 @@ namespace QTournament {
       // commit all changes
       trans.commit();
 
-      return ERR::OK;
+      return Error::OK;
     }
     catch (BusyException&)
     {
-      return ERR::DatabaseError;
+      return Error::DatabaseError;
     }
     catch (GenericSqliteException&)
     {
-      return ERR::DatabaseError;
+      return Error::DatabaseError;
     }
   }
 
   //----------------------------------------------------------------------------
 
-  ERR MatchMngr::updateMatchScore(const Match& ma, const MatchScore& newScore, bool winnerLoserChangePermitted) const
+  Error MatchMngr::updateMatchScore(const Match& ma, const MatchScore& newScore, bool winnerLoserChangePermitted) const
   {
     //
     // IMPORTANT:
@@ -1842,7 +1842,7 @@ namespace QTournament {
     //
 
     // only modify finished matches
-    if (ma.getState() != ObjState::MA_Finished) return ERR::WrongState;
+    if (ma.getState() != ObjState::MA_Finished) return Error::WrongState;
 
     // make sure the score itself is valid
     Category cat = ma.getCategory();
@@ -1850,7 +1850,7 @@ namespace QTournament {
     int numWinGames = 2; // TODO: this needs to become a category parameter!
     if (!(newScore.isValidScore(numWinGames, isDrawAllowed)))
     {
-      return ERR::InvalidMatchResultForCategorySettings;
+      return Error::InvalidMatchResultForCategorySettings;
     }
 
     // if no change of the winner/loser is permitted, compare
@@ -1862,7 +1862,7 @@ namespace QTournament {
       if (oldScore->getWinner() != newScore.getWinner())
       {
         // well, the error code doesn't match exactly... but we just take what's there
-        return ERR::InconsistentMatchResultString;
+        return Error::InconsistentMatchResultString;
       }
     }
 
@@ -1872,23 +1872,23 @@ namespace QTournament {
     CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
     cse->matchResultUpdated(ma.getId(), ma.getSeqNum());
 
-    return ERR::OK;
+    return Error::OK;
   }
 
   //----------------------------------------------------------------------------
 
-  ERR MatchMngr::walkover(const Match& ma, int winningPlayerNum) const
+  Error MatchMngr::walkover(const Match& ma, int winningPlayerNum) const
   {
     // for a walkover, the match must be in READY, WAITING, RUNNING or BUSY
     if (!(ma.isWalkoverPossible()))
     {
-      return ERR::WrongState;
+      return Error::WrongState;
     }
 
     // the playerNum must be either 1 or 2
     if ((winningPlayerNum != 1) && (winningPlayerNum != 2))
     {
-      return ERR::InvalidPlayerPair;
+      return Error::InvalidPlayerPair;
     }
 
     // determine the game results
@@ -1910,11 +1910,11 @@ namespace QTournament {
 
   //----------------------------------------------------------------------------
 
-  ERR MatchMngr::undoMatchCall(const Match& ma) const
+  Error MatchMngr::undoMatchCall(const Match& ma) const
   {
     if (ma.getState() != ObjState::MA_Running)
     {
-      return ERR::MatchNotRunning;
+      return Error::MatchNotRunning;
     }
 
     // release the players first, because we need the entries
@@ -1930,9 +1930,9 @@ namespace QTournament {
     }
 
     // store the court the match is running on
-    ERR e;
+    Error e;
     auto court = ma.getCourt(&e);
-    assert(e == ERR::OK);
+    assert(e == Error::OK);
 
     // reset the references to the court and the actual players
     ColumnValueClause cvc;
@@ -1973,7 +1973,7 @@ namespace QTournament {
       updateMatchStatus(otherMatch);
     }
 
-    return ERR::OK;
+    return Error::OK;
   }
 
   //----------------------------------------------------------------------------
@@ -2061,7 +2061,7 @@ namespace QTournament {
       PlayerMngr pm{db};
       for (Match ma : getObjectsByColumnValue<Match>(GenericStateFieldName, static_cast<int>(ObjState::MA_Busy)))
       {
-        if (pm.canAcquirePlayerPairsForMatch(ma) == ERR::OK)
+        if (pm.canAcquirePlayerPairsForMatch(ma) == Error::OK)
         {
           ma.row.update(GenericStateFieldName, static_cast<int>(ObjState::MA_Ready));
           cse->matchStatusChanged(ma.getId(), ma.getSeqNum(), ObjState::MA_Busy, ObjState::MA_Ready);

@@ -106,7 +106,7 @@ namespace QTournament
       }
 
       // generate matrix-and-result sheets for all round-robin and group matches
-      ERR::MatchSystem msys = cat.getMatchSystem();
+      MatchSystem msys = cat.getMatchSystem();
       int numFinishedRounds = crs.getFinishedRoundsCount();
       if (msys == MatchSystem::GroupsWithKO)
       {

@@ -49,7 +49,7 @@ namespace QTournament
     PlayerMngr (const TournamentDB& _db);
 
     // player creation
-    ERR createNewPlayer (const QString& firstName, const QString& lastName, Sex sex, const QString& teamName);
+    Error createNewPlayer (const QString& firstName, const QString& lastName, Sex sex, const QString& teamName);
 
     // getters and (boolean) queries
     bool hasPlayer (const QString& firstName, const QString& lastName);
@@ -62,7 +62,7 @@ namespace QTournament
     PlayerPair getPlayerPair(int id);
     std::optional<PlayerPair> getPlayerPair2(int pairId) const;
     PlayerList determineActualPlayersForMatch(const Match& ma) const;
-    ERR canDeletePlayer(const Player& p) const;
+    Error canDeletePlayer(const Player& p) const;
     int getTotalPlayerCount() const;
     void getRecentFinishers(int maxCnt, PlayerPairList& winners_out, PlayerPairList& losers_out, PlayerPairList& draw_out) const;
     std::optional<Match> getLastFinishedMatchForPlayer(const Player& p);
@@ -73,16 +73,16 @@ namespace QTournament
     void increaseRefereeCountForPlayer(const Player& p);
 
     // player modification
-    ERR renamePlayer (const Player& p, const QString& newFirst, const QString& newLast);
-    ERR deletePlayer(const Player& p) const;
+    Error renamePlayer (const Player& p, const QString& newFirst, const QString& newLast);
+    Error deletePlayer(const Player& p) const;
 
     // allocating and releasing players for matches
-    ERR canAcquirePlayerPairsForMatch(const Match& ma);
-    ERR acquirePlayerPairsForMatch(const Match& ma);
-    ERR releasePlayerPairsAfterMatch(const Match& ma);
+    Error canAcquirePlayerPairsForMatch(const Match& ma);
+    Error acquirePlayerPairsForMatch(const Match& ma);
+    Error releasePlayerPairsAfterMatch(const Match& ma);
 
     // handling of "Wait for registration"
-    ERR setWaitForRegistration(const Player& p, bool waitForPlayerRegistration) const;
+    Error setWaitForRegistration(const Player& p, bool waitForPlayerRegistration) const;
 
     // sort functions
     static std::function<bool (Player&, Player&)> getPlayerSortFunction_byName();
@@ -101,15 +101,15 @@ namespace QTournament
     QString getExternalDatabaseName() const;
 
     // creation, opening, closing
-    ERR setExternalPlayerDatabase(const QString& fname, bool createNew);
-    ERR openConfiguredExternalPlayerDatabase();
+    Error setExternalPlayerDatabase(const QString& fname, bool createNew);
+    Error openConfiguredExternalPlayerDatabase();
     void closeExternalPlayerDatabase();
 
     // importing and exporting players
     //std::optional<Player> importPlayerFromExternalDatabase(ERR* err, int extPlayerId, Sex sexOverride = Sex::DontCare);  // never used in the project
-    ERR exportPlayerToExternalDatabase(int playerId);
-    ERR exportPlayerToExternalDatabase(const Player& p);
-    ERR syncAllPlayersToExternalDatabase();
+    Error exportPlayerToExternalDatabase(int playerId);
+    Error exportPlayerToExternalDatabase(const Player& p);
+    Error syncAllPlayersToExternalDatabase();
 
     std::string getSyncString(const std::vector<int>& rows) const override;
     std::string getSyncString_P2C(std::vector<int> rows) const;

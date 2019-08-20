@@ -36,17 +36,17 @@ class DlgSelectPlayer : public QDialog
   Q_OBJECT
 
 public:
-  enum class DLG_CONTEXT
+  enum class DlgContext
   {
-    ADD_TO_CATEGORY,
-    REMOVE_FROM_CATEGORY,
-    RefereeMode::None
+    AddToCategory,
+    RemoveFromCategory,
+    None
   };
 
   explicit DlgSelectPlayer(const QTournament::TournamentDB& _db, QWidget *parent = nullptr,
-                           DLG_CONTEXT _ctxt = DLG_CONTEXT::RefereeMode::None,
+                           DlgContext _ctxt = DlgContext::None,
                            std::optional<QTournament::Category> _cat = {});
-  ~DlgSelectPlayer();
+  ~DlgSelectPlayer() override;
   QTournament::PlayerList getSelectedPlayers() const;
 
 public slots:
@@ -54,8 +54,8 @@ public slots:
 
 private:
   Ui::DlgSelectPlayer *ui;
-  std::reference_wrapper<const QTournament::TournamentDB> db;
-  DLG_CONTEXT ctxt;
+  const QTournament::TournamentDB& db;
+  DlgContext ctxt;
   std::optional<QTournament::Category> cat;
 
 private slots:

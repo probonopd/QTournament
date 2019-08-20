@@ -70,7 +70,7 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  ERR Team::rename(const QString& nn)
+  Error Team::rename(const QString& nn)
   {
     TeamMngr tm{db};
     return tm.renameTeam(*this, nn);

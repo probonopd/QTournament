@@ -31,7 +31,7 @@ class cmdUnregisterPlayer : public QObject, AbstractCommand
 
 public:
   cmdUnregisterPlayer(QWidget* p, const QTournament::Player& _pl);
-  virtual QTournament::ERR exec() override;
+  virtual QTournament::Error exec() override;
   virtual ~cmdUnregisterPlayer() {}
 
 protected:

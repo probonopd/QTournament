@@ -31,7 +31,7 @@ class cmdSetOrChangePassword : public QObject, AbstractCommand
 
 public:
   cmdSetOrChangePassword(QWidget* p, const QTournament::TournamentDB& _db);
-  virtual QTournament::ERR exec() override;
+  virtual QTournament::Error exec() override;
   virtual ~cmdSetOrChangePassword() {}
 
 };

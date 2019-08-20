@@ -35,19 +35,19 @@ cmdAssignRefereeToMatch::cmdAssignRefereeToMatch(QWidget* p, const QTournament::
 
 //----------------------------------------------------------------------------
 
-ERR cmdAssignRefereeToMatch::exec()
+Error cmdAssignRefereeToMatch::exec()
 {
   // do we actually need to assign an umpire?
   RefereeMode refMode = (refAction == REFEREE_ACTION::SWAP) ? ma.get_RAW_RefereeMode() : ma.get_EFFECTIVE_RefereeMode();
   assert(refMode != RefereeMode::UseDefault);
   if ((refMode == RefereeMode::None) || (refMode == RefereeMode::HandWritten))
   {
-    return ERR::OK;   // nothing to do for us
+    return Error::OK;   // nothing to do for us
   }
 
   // make sure we can assign a referee
-  ERR err = ma.canAssignReferee(refAction);
-  if (err != ERR::OK)
+  Error err = ma.canAssignReferee(refAction);
+  if (err != Error::OK)
   {
     QString msg;
 
@@ -78,7 +78,7 @@ ERR cmdAssignRefereeToMatch::exec()
   int result = dlg.exec();
   if (result != QDialog::Accepted)
   {
-    return ERR::OK;
+    return Error::OK;
   }
   upPlayer selPlayer = dlg.getFinalPlayerSelection();
 
@@ -88,20 +88,20 @@ ERR cmdAssignRefereeToMatch::exec()
   if ((selPlayer == nullptr) && (refAction == REFEREE_ACTION::MATCH_CALL))
   {
     err = mm.setRefereeMode(ma, RefereeMode::None);
-    if (err != ERR::OK)
+    if (err != Error::OK)
     {
       QString msg = tr("Cannot continue without umpire!");
       QMessageBox::warning(parentWidget, tr("Umpire assignment failed"), msg);
       return err;
     }
     err = mm.removeReferee(ma);
-    if (err != ERR::OK)
+    if (err != Error::OK)
     {
       QString msg = tr("Cannot continue without umpire!");
       QMessageBox::warning(parentWidget, tr("Umpire assignment failed"), msg);
       return err;
     }
-    return ERR::OK;
+    return Error::OK;
   }
 
   // in all other cases, selPlayer shouldn't be null
@@ -109,7 +109,7 @@ ERR cmdAssignRefereeToMatch::exec()
 
   // actually do the assignment
   err = mm.assignReferee(ma, *selPlayer, refAction);
-  if (err != ERR::OK)
+  if (err != Error::OK)
   {
     QString msg = tr("Could not assign umpire to match.\n");
     msg += tr("Maybe you tried to assign one of the players as umpire?");
@@ -140,6 +140,6 @@ ERR cmdAssignRefereeToMatch::exec()
     }
   }
 
-  return ERR::OK;
+  return Error::OK;
 }
 

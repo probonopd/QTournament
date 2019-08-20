@@ -16,7 +16,7 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef ERR::MATCH_H
+#ifndef Error::MATCH_H
 #define	MATCH_H
 
 #include <memory>
@@ -68,11 +68,11 @@ namespace QTournament
                                  QString& row1Right_out, QString& row2Right_out) const;
     QString getDisplayName(const QString& localWinnerName, const QString& localLoserName) const;
 
-    std::optional<MatchScore> getScore(ERR *err=nullptr) const;
+    std::optional<MatchScore> getScore(Error *err=nullptr) const;
     std::optional<PlayerPair> getWinner() const;
     std::optional<PlayerPair> getLoser() const;
 
-    std::optional<Court> getCourt(ERR *err) const;
+    std::optional<Court> getCourt(Error *err) const;
     PlayerList determineActualPlayers() const;
 
     int getSymbolicPlayerPair1Name() const;
@@ -94,7 +94,7 @@ namespace QTournament
     RefereeMode get_EFFECTIVE_RefereeMode() const;
     std::optional<Player> getAssignedReferee() const;
     bool hasRefereeAssigned() const;
-    ERR canAssignReferee(RefereeAction refAction) const;
+    Error canAssignReferee(RefereeAction refAction) const;
 
   private:
     Match (const TournamentDB& _db, int rowId);
@@ -105,5 +105,5 @@ namespace QTournament
 
   using MatchList = std::vector<Match>;
 }
-#endif	/* ERR::MATCH_H */
+#endif	/* Error::MATCH_H */
 

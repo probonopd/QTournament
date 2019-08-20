@@ -6,7 +6,7 @@
 
 using namespace QTournament;
 
-DlgPickCategory::DlgPickCategory(QWidget *parent, QTournament::TournamentDB* _db,
+DlgPickCategory::DlgPickCategory(QWidget *parent, const QTournament::TournamentDB& _db,
                                  QTournament::Sex sex) :
   QDialog(parent),
   ui(new Ui::DlgPickCategory), db{_db}
@@ -104,7 +104,7 @@ QString DlgPickCategory::getSelection_CommaSep() const
 
 //----------------------------------------------------------------------------
 
-vector<int> DlgPickCategory::getSelection_Id() const
+std::vector<int> DlgPickCategory::getSelection_Id() const
 {
   std::vector<int> result;
 
@@ -122,7 +122,7 @@ vector<int> DlgPickCategory::getSelection_Id() const
 
 //----------------------------------------------------------------------------
 
-vector<QString> DlgPickCategory::getSelection_strVec() const
+std::vector<QString> DlgPickCategory::getSelection_strVec() const
 {
   CatMngr cm{db};
   std::vector<QString> result;
@@ -142,7 +142,7 @@ vector<QString> DlgPickCategory::getSelection_strVec() const
 
 //----------------------------------------------------------------------------
 
-vector<Category> DlgPickCategory::getSelection() const
+std::vector<Category> DlgPickCategory::getSelection() const
 {
   CatMngr cm{db};
   std::vector<Category> result;

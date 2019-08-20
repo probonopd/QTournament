@@ -16,7 +16,7 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef ERR::PLAYER_H
+#ifndef Error::PLAYER_H
 #define	PLAYER_H
 
 #include <memory>
@@ -52,7 +52,7 @@ namespace QTournament
     QString getDisplayName_FirstNameFirst() const;
     QString getFirstName() const;
     QString getLastName() const;
-    ERR rename(const QString& newFirst, const QString& newLast);
+    Error rename(const QString& newFirst, const QString& newLast);
     Sex getSex() const;
     Team getTeam() const;
     std::vector<Category> getAssignedCategories() const;

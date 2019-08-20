@@ -79,31 +79,31 @@ namespace QTournament
     std::unique_ptr<Category> convertToSpecializedObject() const;
     int getGroupNumForPredecessorRound(const int grpNum) const;
     CatRoundStatus getRoundStatus() const;
-    PlayerPairList getEliminatedPlayersAfterRound(int round, ERR *err) const;
+    PlayerPairList getEliminatedPlayersAfterRound(int round, Error *err) const;
     int getMaxNumGamesInRound(int round) const;
     QString getBracketVisDataString() const;
 
     // setters
-    ERR setMatchType(MatchType t);
-    ERR setMatchSystem(MatchSystem s);
-    ERR setSex(Sex s);
+    Error setMatchType(MatchType t);
+    Error setMatchSystem(MatchSystem s);
+    Error setSex(Sex s);
     bool setParameter(CatParameter p, const QVariant& v);
 
     // modifications
-    ERR rename(const QString& newName);
-    ERR addPlayer(const Player& p);
-    ERR removePlayer(const Player& p);
+    Error rename(const QString& newName);
+    Error addPlayer(const Player& p);
+    Error removePlayer(const Player& p);
 
     // boolean and other queries
     bool canAddPlayers() const;
     bool hasPlayer(const Player& p) const;
     bool canRemovePlayer(const Player& p) const;
     bool isPaired(const Player& p) const;
-    ERR canPairPlayers(const Player& p1, const Player& p2) const;
-    ERR canSplitPlayers(const Player& p1, const Player& p2) const;
+    Error canPairPlayers(const Player& p1, const Player& p2) const;
+    Error canSplitPlayers(const Player& p1, const Player& p2) const;
     bool hasUnpairedPlayers() const;
-    ERR canApplyGroupAssignment(const std::vector<PlayerPairList>& grpCfg);
-    ERR canApplyInitialRanking(PlayerPairList seed);
+    Error canApplyGroupAssignment(const std::vector<PlayerPairList>& grpCfg);
+    Error canApplyInitialRanking(PlayerPairList seed);
     bool hasMatchesInState(ObjState stat, int round=-1) const;
     bool isDrawAllowedInRound(int round) const;
 
@@ -113,16 +113,16 @@ namespace QTournament
     //
     // The following methods MUST be overwritten by derived classes for a specific match system
     //
-    virtual ERR canFreezeConfig();
+    virtual Error canFreezeConfig();
     virtual bool needsInitialRanking();
     virtual bool needsGroupInitialization();
-    virtual ERR prepareFirstRound();
+    virtual Error prepareFirstRound();
     virtual int calcTotalRoundsCount() const;
-    virtual ERR onRoundCompleted(int round);
+    virtual Error onRoundCompleted(int round);
     virtual std::function<bool (RankingEntry&, RankingEntry&)> getLessThanFunction();
-    virtual PlayerPairList getRemainingPlayersAfterRound(int round, ERR *err) const;
+    virtual PlayerPairList getRemainingPlayersAfterRound(int round, Error *err) const;
     virtual PlayerPairList getPlayerPairsForIntermediateSeeding() const;
-    virtual ERR resolveIntermediateSeeding(const PlayerPairList& seed) const;
+    virtual Error resolveIntermediateSeeding(const PlayerPairList& seed) const;
 
     //
     // The following methods CAN be overwritten to extend the
@@ -134,10 +134,10 @@ namespace QTournament
   private:
     Category (const TournamentDB& _db, int rowId);
     Category (const TournamentDB& _db, const SqliteOverlay::TabRow& _row);
-    ERR applyGroupAssignment(const std::vector<PlayerPairList>& grpCfg);
-    ERR applyInitialRanking(const PlayerPairList& seed);
-    ERR generateGroupMatches(const PlayerPairList &grpMembers, int grpNum, int firstRoundNum=1) const;
-    ERR generateBracketMatches(int bracketMode, const PlayerPairList& seeding, int firstRoundNum) const;
+    Error applyGroupAssignment(const std::vector<PlayerPairList>& grpCfg);
+    Error applyInitialRanking(const PlayerPairList& seed);
+    Error generateGroupMatches(const PlayerPairList &grpMembers, int grpNum, int firstRoundNum=1) const;
+    Error generateBracketMatches(int bracketMode, const PlayerPairList& seeding, int firstRoundNum) const;
   };
 
   // we need this to have a category object in a QHash

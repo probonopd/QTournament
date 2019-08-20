@@ -30,17 +30,17 @@ cmdRemovePlayerFromCategory::cmdRemovePlayerFromCategory(QWidget* p, const Playe
 
 //----------------------------------------------------------------------------
 
-ERR cmdRemovePlayerFromCategory::exec()
+Error cmdRemovePlayerFromCategory::exec()
 {
-  ERR err;
+  Error err;
   CatMngr cm{db};
 
   err = cm.removePlayerFromCategory(pl, cat);
 
-  if (err == ERR::OK) return ERR::OK;
+  if (err == Error::OK) return Error::OK;
 
   QString msg;
-  if (err == ERR::PlayerNotRemovableFromCategory)
+  if (err == Error::PlayerNotRemovableFromCategory)
   {
     msg = tr("The player cannot be removed from the category anymore,\n");
     msg += tr("e.g., because the category has already been started");

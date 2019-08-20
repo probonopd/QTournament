@@ -76,7 +76,7 @@ upSimpleReport Standings::regenerateReport()
     MatchMngr mm{db};
     MatchGroupList mgl = mm.getMatchGroupsForCat(cat, round);
     int matchGroupNumber = mgl.at(0).getGroupNumber();
-    ERR::MatchSystem mSys = cat.getMatchSystem();
+    MatchSystem mSys = cat.getMatchSystem();
     if ((matchGroupNumber < 0) && (matchGroupNumber != GroupNum_Iteration) &&
         ((mSys == MatchSystem::GroupsWithKO) || (mSys == MatchSystem::SingleElim)))
     {

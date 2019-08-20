@@ -33,7 +33,7 @@ cmdCreateNewPlayerInCat::cmdCreateNewPlayerInCat(QWidget* p, const Category& _ca
 
 //----------------------------------------------------------------------------
 
-ERR cmdCreateNewPlayerInCat::exec()
+Error cmdCreateNewPlayerInCat::exec()
 {
   // check if can add more players anyway
   if (!(cat.canAddPlayers()))
@@ -49,7 +49,7 @@ ERR cmdCreateNewPlayerInCat::exec()
   DlgPickPlayerSex dlgSex{parentWidget, QString()};
   if (dlgSex.exec() != QDialog::Accepted)
   {
-    return ERR::OK;
+    return Error::OK;
   }
   Sex selectedSex = dlgSex.getSelectedSex();
 
@@ -61,7 +61,7 @@ ERR cmdCreateNewPlayerInCat::exec()
     msg = msg.arg((selectedSex == M) ? tr("male player") : tr("female player"));
     QMessageBox::warning(parentWidget, tr("Create new player in category"), msg);
 
-    return ERR::InvalidSex;
+    return Error::InvalidSex;
   }
 
   // prepare a dialog for creating a new player

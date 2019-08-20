@@ -30,7 +30,7 @@ class AbstractCommand
 
 public:
   AbstractCommand(const QTournament::TournamentDB& _db, QWidget* _parent = nullptr);
-  virtual QTournament::ERR exec() = 0;
+  virtual QTournament::Error exec() = 0;
   virtual ~AbstractCommand() {}
 
 protected:

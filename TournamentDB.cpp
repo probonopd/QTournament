@@ -76,7 +76,7 @@ namespace QTournament
       throw TournamentException{
         "TournamentDB::openExisting()",
         "file " + fName + " is incompatible with this version of QTournament",
-        ERR::IncompatibleFileFormat
+        Error::IncompatibleFileFormat
       };
     }
 
@@ -480,9 +480,9 @@ namespace QTournament
     {
       return TournamentDB{stdName, cfg};
     } catch (std::invalid_argument) {
-      throw TournamentException{"TournamentDB::createNew()", "file " + stdName + " already exists", ERR::FileAlreadyExists};
+      throw TournamentException{"TournamentDB::createNew()", "file " + stdName + " already exists", Error::FileAlreadyExists};
     } catch (...) {
-      throw TournamentException{"TournamentDB::createNew()", "Error when instantiating the new database object", ERR::DatabaseError};
+      throw TournamentException{"TournamentDB::createNew()", "Error when instantiating the new database object", Error::DatabaseError};
     }
   }
 
@@ -496,11 +496,11 @@ namespace QTournament
     {
       return TournamentDB{stdName};
     } catch (std::invalid_argument) {
-      throw TournamentException{"TournamentDB::openExisting()", "file " + stdName + " does not exist", ERR::FileNotExisting};
+      throw TournamentException{"TournamentDB::openExisting()", "file " + stdName + " does not exist", Error::FileNotExisting};
     } catch (TournamentException) {
       throw;
     } catch (...) {
-      throw TournamentException{"TournamentDB::openExisting()", "Error when instantiating the new database object", ERR::DatabaseError};
+      throw TournamentException{"TournamentDB::openExisting()", "Error when instantiating the new database object", Error::DatabaseError};
     }
   }
 

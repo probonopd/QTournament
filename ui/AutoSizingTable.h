@@ -185,7 +185,7 @@ namespace GuiHelpers
 
     virtual ~AutoSizingTable_WithDatabase() {}
 
-    void setDatabase(QTournament::TournamentDB* _db)
+    void setDatabase(const QTournament::TournamentDB* _db)
     {
       if (_db == db) return;
       db = _db;
@@ -215,7 +215,7 @@ namespace GuiHelpers
     }
 
   protected:
-    QTournament::TournamentDB* db;
+    const QTournament::TournamentDB* db;
 
     virtual void hook_onDatabaseOpened() {}
     virtual void hook_onDatabaseClosed() {}

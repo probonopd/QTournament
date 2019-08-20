@@ -31,7 +31,7 @@ class cmdBulkAddPlayerToCategory : public QObject, AbstractCommand
 
 public:
   cmdBulkAddPlayerToCategory(QWidget* p, const QTournament::Category& _cat);
-  virtual QTournament::ERR exec() override;
+  virtual QTournament::Error exec() override;
   virtual ~cmdBulkAddPlayerToCategory() {}
 
 protected:

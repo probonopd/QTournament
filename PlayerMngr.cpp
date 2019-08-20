@@ -45,29 +45,29 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  ERR PlayerMngr::createNewPlayer(const QString& firstName, const QString& lastName, Sex sex, const QString& teamName)
+  Error PlayerMngr::createNewPlayer(const QString& firstName, const QString& lastName, Sex sex, const QString& teamName)
   {
     QString first = firstName.trimmed();
     QString last = lastName.trimmed();
     
     if (first.isEmpty() || last.isEmpty())
     {
-      return ERR::InvalidName;
+      return Error::InvalidName;
     }
     
     if ((first.length() > MaxNameLen) || (last.length() > MaxNameLen))
     {
-      return ERR::InvalidName;
+      return Error::InvalidName;
     }
     
     if (hasPlayer(first, last))
     {
-      return ERR::NameExists;
+      return Error::NameExists;
     }
     
     if (sex == Sex::DontCare)
     {
-      return ERR::InvalidSex;
+      return Error::InvalidSex;
     }
     
     // prepare a new table row
@@ -83,13 +83,13 @@ namespace QTournament
     {
       if (teamName.isEmpty())
       {
-        return ERR::InvalidTeam;
+        return Error::InvalidTeam;
       }
       
       TeamMngr tm{db};
       if (!(tm.hasTeam(teamName)))
       {
-        return ERR::InvalidTeam;
+        return Error::InvalidTeam;
       }
       
       Team t = tm.getTeam(teamName);
@@ -103,7 +103,7 @@ namespace QTournament
     fixSeqNumberAfterInsert();
     cse->endCreatePlayer(tab.length() - 1); // the new sequence number is always the greatest
     
-    return ERR::OK;
+    return Error::OK;
   }
 
 //----------------------------------------------------------------------------
@@ -158,7 +158,7 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  ERR PlayerMngr::renamePlayer(const Player& p, const QString& nf, const QString& nl)
+  Error PlayerMngr::renamePlayer(const Player& p, const QString& nf, const QString& nl)
   {
     QString newFirst = nf.trimmed();
     QString newLast = nl.trimmed();
@@ -166,11 +166,11 @@ namespace QTournament
     // Ensure the new name is valid
     if ((newFirst.isEmpty()) && (newLast.isEmpty()))
     {
-      return ERR::InvalidName;
+      return Error::InvalidName;
     }
     if ((newFirst.length() > MaxNameLen) || (newLast.length() > MaxNameLen))
     {
-      return ERR::InvalidName;
+      return Error::InvalidName;
     }
     
     // combine the new name from old and new values
@@ -186,7 +186,7 @@ namespace QTournament
     // make sure the new name doesn't exist yet
     if (hasPlayer(newFirst, newLast))
     {
-      return ERR::NameExists;
+      return Error::NameExists;
     }
     
     ColumnValueClause cvc;
@@ -197,7 +197,7 @@ namespace QTournament
     
     CentralSignalEmitter::getInstance()->playerRenamed(p);
     
-    return ERR::OK;
+    return Error::OK;
   }
 
 //----------------------------------------------------------------------------
@@ -272,13 +272,13 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  ERR PlayerMngr::canAcquirePlayerPairsForMatch(const Match& ma)
+  Error PlayerMngr::canAcquirePlayerPairsForMatch(const Match& ma)
   {
     PlayerList pl = determineActualPlayersForMatch(ma);
 
     for (Player p : pl)
     {
-      if (p.getState() != ObjState::PL_Idle) return ERR::PlayerNotIdle;
+      if (p.getState() != ObjState::PL_Idle) return Error::PlayerNotIdle;
     }
 
     // check for the referee, if any
@@ -288,21 +288,21 @@ namespace QTournament
       auto referee = ma.getAssignedReferee();
 
       // maybe no referee has been assigned yet. That's okay for now.
-      if (!referee.has_value()) return ERR::OK;
+      if (!referee.has_value()) return Error::OK;
 
       // if a referee has been assigned, check its availability
-      if (referee->getState() != ObjState::PL_Idle) return ERR::RefereeNotIdle;
+      if (referee->getState() != ObjState::PL_Idle) return Error::RefereeNotIdle;
     }
 
-    return ERR::OK;
+    return Error::OK;
   }
 
 //----------------------------------------------------------------------------
 
-  ERR PlayerMngr::acquirePlayerPairsForMatch(const Match& ma)
+  Error PlayerMngr::acquirePlayerPairsForMatch(const Match& ma)
   {
-    ERR e = canAcquirePlayerPairsForMatch(ma);
-    if (e != ERR::OK) return e;
+    Error e = canAcquirePlayerPairsForMatch(ma);
+    if (e != Error::OK) return e;
 
     // update the status of all players to PLAYING
     PlayerList pl = determineActualPlayersForMatch(ma);
@@ -314,12 +314,12 @@ namespace QTournament
       CentralSignalEmitter::getInstance()->playerStatusChanged(p.getId(), p.getSeqNum(), oldStat, ObjState::PL_Playing);
     }
 
-    return ERR::OK;
+    return Error::OK;
   }
 
 //----------------------------------------------------------------------------
 
-  ERR PlayerMngr::releasePlayerPairsAfterMatch(const Match& ma)
+  Error PlayerMngr::releasePlayerPairsAfterMatch(const Match& ma)
   {
     PlayerList pl = determineActualPlayersForMatch(ma);
 
@@ -330,7 +330,7 @@ namespace QTournament
       CentralSignalEmitter::getInstance()->playerStatusChanged(p.getId(), p.getSeqNum(), ObjState::PL_Playing, ObjState::PL_Idle);
     }
 
-    return ERR::OK;
+    return Error::OK;
   }
 
 //----------------------------------------------------------------------------
@@ -402,7 +402,7 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  ERR PlayerMngr::setWaitForRegistration(const Player& p, bool waitForPlayerRegistration) const
+  Error PlayerMngr::setWaitForRegistration(const Player& p, bool waitForPlayerRegistration) const
   {
     // A player can be set to "Wait For Registration" if and only if:
     //  * The player is currently idle; and
@@ -420,23 +420,23 @@ namespace QTournament
     if (waitForPlayerRegistration == false)
     {
       // if the player wasn't in wait state, return directly without error
-      if (plStat != ObjState::PL_WaitForRegistration) return ERR::OK;
+      if (plStat != ObjState::PL_WaitForRegistration) return Error::OK;
 
       // switch to IDLE
       p.setState(ObjState::PL_Idle);
       cse->playerStatusChanged(p.getId(), p.getSeqNum(), ObjState::PL_WaitForRegistration, ObjState::PL_Idle);
-      return ERR::OK;
+      return Error::OK;
     }
 
     // second case: enable "wait for registration"
 
     // there is nothing to do for us if the player is already in wait state
-    if (plStat == ObjState::PL_WaitForRegistration) return ERR::OK;
+    if (plStat == ObjState::PL_WaitForRegistration) return Error::OK;
 
     // if the player isn't IDLE, we can't switch to "wait for registration"
     if (plStat != ObjState::PL_Idle)
     {
-      return ERR::PlayerAlreadyInMatches;
+      return Error::PlayerAlreadyInMatches;
     }
 
     // okay, the player is idle and shall be switched to "wait state".
@@ -446,7 +446,7 @@ namespace QTournament
       ObjState catStat = cat.getState();
       if ((catStat != ObjState::CAT_Config) && (catStat != ObjState::CAT_Finalized))
       {
-        return ERR::PlayerAlreadyInMatches;
+        return Error::PlayerAlreadyInMatches;
       }
     }
 
@@ -454,7 +454,7 @@ namespace QTournament
     p.setState(ObjState::PL_WaitForRegistration);
     cse->playerStatusChanged(p.getId(), p.getSeqNum(), ObjState::PL_Idle, ObjState::PL_WaitForRegistration);
 
-    return ERR::OK;
+    return Error::OK;
   }
 
   //----------------------------------------------------------------------------
@@ -533,23 +533,23 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  ERR PlayerMngr::setExternalPlayerDatabase(const QString& fname, bool createNew)
+  Error PlayerMngr::setExternalPlayerDatabase(const QString& fname, bool createNew)
   {
     std::optional<ExternalPlayerDB> extDb{};
 
-    if (fname.isEmpty()) return ERR::EPD_InvalidDatabaseName;
+    if (fname.isEmpty()) return Error::EPD_InvalidDatabaseName;
 
     // try to create the new database
     if (createNew)
     {
       extDb = ExternalPlayerDB::createNew(fname);
-      if (!extDb) return ERR::EPD_CreationFailed;
+      if (!extDb) return Error::EPD_CreationFailed;
     }
     // try to open an existing database
     else
     {
       extDb = ExternalPlayerDB::openExisting(fname);
-      if (!extDb) return ERR::EPD_NotFound;
+      if (!extDb) return Error::EPD_NotFound;
     }
 
     // close the old database, if open
@@ -571,16 +571,16 @@ namespace QTournament
 
     CentralSignalEmitter::getInstance()->externalPlayerDatabaseChanged();
 
-    return ERR::OK;
+    return Error::OK;
   }
 
   //----------------------------------------------------------------------------
 
-  ERR PlayerMngr::openConfiguredExternalPlayerDatabase()
+  Error PlayerMngr::openConfiguredExternalPlayerDatabase()
   {
     if (!(hasExternalPlayerDatabaseConfigured()))
     {
-      return ERR::EPD_NotConfigured;
+      return Error::EPD_NotConfigured;
     }
 
     auto cfg = SqliteOverlay::KeyValueTab{db.get(), TabCfg};
@@ -615,8 +615,8 @@ namespace QTournament
     // try to open the database
     if (!extPlayerDb)
     {
-      ERR e = openConfiguredExternalPlayerDatabase();
-      if (e != ERR::OK)
+      Error e = openConfiguredExternalPlayerDatabase();
+      if (e != Error::OK)
       {
         Sloppy::assignIfNotNull<ERR>(err, e);
         return std::optional<Player>{};
@@ -627,7 +627,7 @@ namespace QTournament
     auto extPlayer = extPlayerDb->getPlayer(extPlayerId);
     if (!extPlayer)
     {
-      Sloppy::assignIfNotNull<ERR>(err, ERR::InvalidId);
+      Sloppy::assignIfNotNull<ERR>(err, Error::InvalidId);
       return std::optional<Player>{};
     }
 
@@ -640,12 +640,12 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  ERR PlayerMngr::exportPlayerToExternalDatabase(int playerId)
+  Error PlayerMngr::exportPlayerToExternalDatabase(int playerId)
   {
     auto p = getPlayer2(playerId);
     if (!p.has_value())
     {
-      return ERR::InvalidId;
+      return Error::InvalidId;
     }
 
     return exportPlayerToExternalDatabase(*p);
@@ -653,14 +653,14 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  ERR PlayerMngr::exportPlayerToExternalDatabase(const Player& p)
+  Error PlayerMngr::exportPlayerToExternalDatabase(const Player& p)
   {
     // if no player database has been opened by this instance of the PlayerMngr,
     // try to open the database
     if (!extPlayerDb)
     {
-      ERR err = openConfiguredExternalPlayerDatabase();
-      if (err != ERR::OK)
+      Error err = openConfiguredExternalPlayerDatabase();
+      if (err != Error::OK)
       {
         return err;
       }
@@ -673,7 +673,7 @@ namespace QTournament
       ExternalPlayerDatabaseEntry entry{p.getFirstName(), p.getLastName(), p.getSex()};
       auto newPlayer = extPlayerDb->storeNewPlayer(entry);
 
-      return (!newPlayer) ? ERR::EPD_CreationFailed : ERR::OK;
+      return (!newPlayer) ? Error::EPD_CreationFailed : Error::OK;
     }
 
     // update existing player, if applicable
@@ -682,19 +682,19 @@ namespace QTournament
       extPlayerDb->updatePlayerSexIfUndefined(extPlayer->getId(), p.getSex());
     }
 
-    return ERR::OK;
+    return Error::OK;
   }
 
   //----------------------------------------------------------------------------
 
-  ERR PlayerMngr::syncAllPlayersToExternalDatabase()
+  Error PlayerMngr::syncAllPlayersToExternalDatabase()
   {
     // if no player database has been opened by this instance of the PlayerMngr,
     // try to open the database
     if (!extPlayerDb)
     {
-      ERR err = openConfiguredExternalPlayerDatabase();
-      if (err != ERR::OK)
+      Error err = openConfiguredExternalPlayerDatabase();
+      if (err != Error::OK)
       {
         return err;
       }
@@ -705,7 +705,7 @@ namespace QTournament
       exportPlayerToExternalDatabase(p);
     }
 
-    return ERR::OK;
+    return Error::OK;
   }
 
   //----------------------------------------------------------------------------
@@ -737,7 +737,7 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  ERR PlayerMngr::canDeletePlayer(const Player &p) const
+  Error PlayerMngr::canDeletePlayer(const Player &p) const
   {
     // first check: see if we can remove the player from all categories
     auto assignedCats = p.getAssignedCategories();
@@ -745,7 +745,7 @@ namespace QTournament
     {
       if (!(c.canRemovePlayer(p)))
       {
-        return ERR::PlayerNotRemovableFromCategory;
+        return Error::PlayerNotRemovableFromCategory;
       }
     }
 
@@ -773,7 +773,7 @@ namespace QTournament
       int cnt = matchTab.getMatchCountForWhereClause(where);
       if (cnt != 0)
       {
-        return ERR::PlayerAlreadyInMatches;
+        return Error::PlayerAlreadyInMatches;
       }
     }
 
@@ -788,7 +788,7 @@ namespace QTournament
     int cnt = matchTab.getMatchCountForWhereClause(where);
     if (cnt != 0)
     {
-      return ERR::PlayerAlreadyInMatches;
+      return Error::PlayerAlreadyInMatches;
     }
 
     // at this point, we have pairs but no matches yet. this means
@@ -796,18 +796,18 @@ namespace QTournament
     // not yet started category
     if (!(assignedPairs.empty()))
     {
-      return ERR::PlayerAlreadyPaired;
+      return Error::PlayerAlreadyPaired;
     }
 
-    return ERR::OK;
+    return Error::OK;
   }
 
   //----------------------------------------------------------------------------
 
-  ERR PlayerMngr::deletePlayer(const Player &p) const
+  Error PlayerMngr::deletePlayer(const Player &p) const
   {
-    ERR e = canDeletePlayer(p);
-    if (e != ERR::OK)
+    Error e = canDeletePlayer(p);
+    if (e != Error::OK)
     {
       return e;
     }
@@ -817,7 +817,7 @@ namespace QTournament
     for (Category c : assignedCats)
     {
       e = c.removePlayer(p);
-      if (e != ERR::OK)
+      if (e != Error::OK)
       {
         return e;   // after the checks before, this shoudln't happen
       }
@@ -834,7 +834,7 @@ namespace QTournament
     fixSeqNumberAfterDelete(tab, oldSeqNum);
     cse->endDeletePlayer();
 
-    return ERR::OK;
+    return Error::OK;
   }
 
   //----------------------------------------------------------------------------

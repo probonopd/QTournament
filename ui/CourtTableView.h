@@ -37,13 +37,12 @@ class CourtTableView : public GuiHelpers::AutoSizingTableView_WithDatabase<QTour
   
 public:
   CourtTableView (QWidget* parent);
-  virtual ~CourtTableView ();
   std::optional<QTournament::Court> getSelectedCourt() const;
   std::optional<QTournament::Match> getSelectedMatch() const;
 
 protected:
-  static constexpr int ABS_COURT_COL_WIDTH = 40;
-  static constexpr int ABS_DURATION_COL_WIDTH = 60;
+  static constexpr int AbsCourtColWidth = 40;
+  static constexpr int AbsDurationColWidth = 60;
 
   void hook_onDatabaseOpened() override;
 
@@ -63,7 +62,7 @@ private slots:
   void onReprintResultSheetTriggered();
 
 private:
-  static constexpr int MAX_NUM_ADD_CALL = 3;
+  static constexpr int MaxNumAdditionalCalls = 3;
   CourtItemDelegate* courtItemDelegate;
 
   std::unique_ptr<QMenu> contextMenu;

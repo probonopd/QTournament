@@ -25,26 +25,26 @@
 #include "CatMngr.h"
 #include "TeamMngr.h"
 
-DlgEditPlayer::DlgEditPlayer(TournamentDB* _db, QWidget* parent, Player* _selectedPlayer)
-  :QDialog(parent), db(_db), sexPreset(M), presetCatId(-1)
+using namespace QTournament;
+
+DlgEditPlayer::DlgEditPlayer(const TournamentDB& _db, QWidget* parent, std::optional<Player> _selectedPlayer)
+  :QDialog(parent), db(_db), selectedPlayer{_selectedPlayer}, sexPreset(Sex::M), presetCatId(-1)
 {
   ui.setupUi(this);
-  selectedPlayer = (_selectedPlayer != NULL) ? _selectedPlayer : NULL;
   _hasNameChange = true;
   
   initTeamList();
   
   if (selectedPlayer)
   {
-    selectedPlayer = _selectedPlayer;
     initFromPlayerData();
   }
 }
 
 //----------------------------------------------------------------------------
 
-DlgEditPlayer::DlgEditPlayer(TournamentDB* _db, QWidget *parent, Sex _sexPreset, const Category &_catPreset)
-:QDialog(parent), db(_db), _hasNameChange(true), selectedPlayer(nullptr),
+DlgEditPlayer::DlgEditPlayer(const TournamentDB& _db, QWidget *parent, Sex _sexPreset, const Category &_catPreset)
+:QDialog(parent), db(_db), _hasNameChange(true),
   sexPreset(_sexPreset), presetCatId(_catPreset.getId())
 {
   ui.setupUi(this);
@@ -52,15 +52,15 @@ DlgEditPlayer::DlgEditPlayer(TournamentDB* _db, QWidget *parent, Sex _sexPreset,
   initTeamList();
 
   // apply the presets
-  ui.rbFemale->setChecked(sexPreset == F);
-  ui.rbMale->setChecked(sexPreset == M);
+  ui.rbFemale->setChecked(sexPreset == Sex::F);
+  ui.rbMale->setChecked(sexPreset == Sex::M);
   onSexSelectionChanged(presetCatId);
 }
 
 //----------------------------------------------------------------------------
 
-DlgEditPlayer::DlgEditPlayer(TournamentDB* _db, QWidget* parent, const ExternalPlayerDatabaseEntry& nameAndSexPreset, int _presetCatId)
-  :QDialog(parent), db(_db), _hasNameChange(true), selectedPlayer(nullptr), sexPreset(M), presetCatId(_presetCatId)
+DlgEditPlayer::DlgEditPlayer(const TournamentDB& _db, QWidget* parent, const ExternalPlayerDatabaseEntry& nameAndSexPreset, int _presetCatId)
+  :QDialog(parent), db(_db), _hasNameChange(true), sexPreset(Sex::M), presetCatId(_presetCatId)
 {
   ui.setupUi(this);
 
@@ -71,8 +71,8 @@ DlgEditPlayer::DlgEditPlayer(TournamentDB* _db, QWidget* parent, const ExternalP
   ui.leLastName->setText(nameAndSexPreset.getLastname());
   if (nameAndSexPreset.getSex() != Sex::DontCare)
   {
-    ui.rbFemale->setChecked(nameAndSexPreset.getSex() == F);
-    ui.rbMale->setChecked(nameAndSexPreset.getSex() == M);
+    ui.rbFemale->setChecked(nameAndSexPreset.getSex() == Sex::F);
+    ui.rbMale->setChecked(nameAndSexPreset.getSex() == Sex::M);
     onSexSelectionChanged(presetCatId);
   }
 }
@@ -162,7 +162,7 @@ void DlgEditPlayer::done(int result)
 
 void DlgEditPlayer::initFromPlayerData()
 {
-  if (selectedPlayer == NULL)
+  if (!selectedPlayer)
   {
     return;
   }
@@ -173,8 +173,8 @@ void DlgEditPlayer::initFromPlayerData()
 
   // set the correct sex
   Sex sex = selectedPlayer->getSex();
-  ui.rbMale->setChecked(sex == M);
-  ui.rbFemale->setChecked(sex == F);
+  ui.rbMale->setChecked(sex == Sex::M);
+  ui.rbFemale->setChecked(sex == Sex::F);
   
   // disable the radio buttons, because we don't
   // support changing a player's sex right now
@@ -208,14 +208,14 @@ void DlgEditPlayer::initTeamList()
   
   // add a "please select"-entry if we have no
   // pre-selected player. Read: if we have a new player
-  if (selectedPlayer == NULL)
+  if (!selectedPlayer)
   {
     ui.cbTeams->addItem(tr("<Please select>"), -1);
   }
   
-  for (int i=0; i < allTeams.size(); i++)
+  for (const auto& team : allTeams)
   {
-    ui.cbTeams->addItem(allTeams.at(i).getName(), allTeams.at(i).getId());
+    ui.cbTeams->addItem(team.getName(), team.getId());
   }
 }
 
@@ -244,7 +244,7 @@ bool DlgEditPlayer::hasNameChange()
 
 Sex DlgEditPlayer::getSex()
 {
-  return (ui.rbMale->isChecked()) ? M : F;
+  return (ui.rbMale->isChecked()) ? Sex::M : Sex::F;
 }
 
 //----------------------------------------------------------------------------
@@ -283,8 +283,10 @@ void DlgEditPlayer::updateCatList(QHash<Category,CatAddState> catStatus, int pre
   for (it = catStatus.begin(); it != catStatus.end(); ++it)
   {
     CatAddState stat = (*it);
-    QListWidgetItem* item = new QListWidgetItem(it.key().getName());
-    int catId = it.key().getId();
+    const Category& cat = it.key();
+    int catId = cat.getId();
+
+    QListWidgetItem* item = new QListWidgetItem(cat.getName());
     item->setData(Qt::UserRole, catId);
     
     if (stat == CatAddState::CanJoin)
@@ -293,7 +295,7 @@ void DlgEditPlayer::updateCatList(QHash<Category,CatAddState> catStatus, int pre
       //item->setCheckState(Qt::Unchecked);
       item->setCheckState((catId == preselectCatId) ? Qt::Checked : Qt::Unchecked);
     }
-    if (stat == ERR::CatAddState::WrongSex)
+    if (stat == CatAddState::WrongSex)
     {
       delete item;
       continue;
@@ -306,9 +308,9 @@ void DlgEditPlayer::updateCatList(QHash<Category,CatAddState> catStatus, int pre
       // do we edit an existing player and could this player possibly be
       // removed from the category?
       // If not, deactivate the item
-      if ((selectedPlayer != NULL) && (!(it.key().canRemovePlayer(*selectedPlayer)))) {
-	item->setFlags(item->flags() & !Qt::ItemIsEditable & !Qt::ItemIsSelectable);
-	item->setForeground(Qt::gray);
+      if ((selectedPlayer.has_value()) && (!(cat.canRemovePlayer(*selectedPlayer)))) {
+        item->setFlags(item->flags() & !Qt::ItemIsEditable & !Qt::ItemIsSelectable);
+        item->setForeground(Qt::gray);
       }
     }
     if (stat == CatAddState::CatClosed)

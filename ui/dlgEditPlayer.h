@@ -16,8 +16,8 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _DLGEDITPLAYER_H
-#define	_DLGEDITPLAYER_H
+#ifndef DLGEDITPLAYER_H
+#define	DLGEDITPLAYER_H
 
 #include "ui_dlgEditPlayer.h"
 
@@ -30,7 +30,7 @@ class DlgEditPlayer : public QDialog
 {
   Q_OBJECT
 public:
-  DlgEditPlayer (const QTournament::TournamentDB& _db, QWidget *parent, QTournament::Player* _selectedPlayer = nullptr);
+  DlgEditPlayer (const QTournament::TournamentDB& _db, QWidget *parent, std::optional<QTournament::Player> _selectedPlayer = {});
   DlgEditPlayer (const QTournament::TournamentDB& _db, QWidget *parent, QTournament::Sex _sexPreset, const QTournament::Category& _catPreset);
   DlgEditPlayer (const QTournament::TournamentDB& _db, QWidget *parent, const QTournament::ExternalPlayerDatabaseEntry& nameAndSexPreset, int _presetCatId=-1);
   virtual ~DlgEditPlayer ();
@@ -44,7 +44,7 @@ public:
 private:
   Ui::dlgEditPlayer ui;
   std::reference_wrapper<const QTournament::TournamentDB> db;
-  QTournament::Player* selectedPlayer;
+  std::optional<QTournament::Player> selectedPlayer{};
   void initFromPlayerData();
   void initTeamList();
   bool _hasNameChange;

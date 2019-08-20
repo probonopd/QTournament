@@ -41,7 +41,7 @@ class DlgSelectReferee : public QDialog
   Q_OBJECT
 
 public:
-  static constexpr int MAX_NUM_LOSERS = 30;
+  static constexpr int MaxNumLosers = 30;
   explicit DlgSelectReferee(const QTournament::TournamentDB& _db, const QTournament::Match& _ma, QTournament::RefereeAction _refAction, QWidget *parent = nullptr);
   ~DlgSelectReferee();
   std::optional<QTournament::Player> getFinalPlayerSelection();
@@ -56,8 +56,8 @@ public slots:
 
 private:
   Ui::DlgSelectReferee *ui;
-  std::reference_wrapper<const QTournament::TournamentDB> db;
-  QTournament::Match ma;
+  const QTournament::TournamentDB& db;
+  const QTournament::Match& ma;
   QTournament::RefereeAction refAction;
   void updateControls();
 
@@ -77,12 +77,12 @@ class RefereeTableWidget : public GuiHelpers::AutoSizingTableWidget_WithDatabase
   Q_OBJECT
 
 public:
-  static constexpr int ObjState::COL_ID = 0;
-  static constexpr int NAME_COL_ID = 1;
-  static constexpr int TEAM_COL_ID = 2;
-  static constexpr int REFEREE_COUNT_COL_ID = 3;
-  static constexpr int LAST_FINISH_TIME_COL_ID = 4;
-  static constexpr int NEXT_MATCH_DIST_COL_ID = 5;
+  static constexpr int StateColId = 0;
+  static constexpr int NameColId = 1;
+  static constexpr int TeamColId = 2;
+  static constexpr int RefereeCountColId = 3;
+  static constexpr int LastFinishTimeColId = 4;
+  static constexpr int NextMatchDistColId = 5;
   RefereeTableWidget(QWidget* parent=0);
   virtual ~RefereeTableWidget() {}
 
@@ -91,11 +91,11 @@ public:
   bool hasPlayerSelected();
 
 protected:
-  static constexpr int REL_WIDTH_NAME = 25;
-  static constexpr int REL_WIDTH_TEAM = 25;
-  static constexpr int REL_WIDTH_OTHER = 10;
-  static constexpr int REL_WIDTH_STATE = 1;
-  static constexpr int MAX_OTHER_COL_WIDTH = 90;
+  static constexpr int RelWidthNameCol = 25;
+  static constexpr int RelWidthTeamCol = 25;
+  static constexpr int RelWidthOtherCol = 10;
+  static constexpr int RelWidthStateCol = 1;
+  static constexpr int MaxOtherColWidth = 90;
 
   void hook_onDatabaseOpened() override;
 

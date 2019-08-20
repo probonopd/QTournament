@@ -48,8 +48,8 @@ namespace QTournament
     MatchMngr(const TournamentDB& _db);
 
     // creators
-    std::optional<MatchGroup> createMatchGroup(const Category& cat, const int round, const int grpNum, ERR* err);
-    std::optional<Match> createMatch(const MatchGroup& grp, ERR* err);
+    std::optional<MatchGroup> createMatchGroup(const Category& cat, const int round, const int grpNum, Error* err);
+    std::optional<Match> createMatch(const MatchGroup& grp, Error* err);
 
     // deletion
     void deleteMatchGroupAndMatch(const MatchGroup& mg) const;
@@ -71,19 +71,19 @@ namespace QTournament
     // retrievers / enumerators for MATCH GROUPS
     MatchGroupList getMatchGroupsForCat(const Category& cat, int round=-1) const;
     MatchGroupList getAllMatchGroups() const;
-    std::optional<MatchGroup> getMatchGroup(const Category& cat, const int round, const int grpNum,  ERR* err);
+    std::optional<MatchGroup> getMatchGroup(const Category& cat, const int round, const int grpNum,  Error* err);
     std::optional<MatchGroup> getMatchGroupBySeqNum(int mgSeqNum);
     MatchGroupList getStagedMatchGroupsOrderedBySequence() const;
 
     // boolean hasXXXXX functions for MATCH GROUPS
-    bool hasMatchGroup(const Category& cat, const int round, const int grpNum, ERR* err=nullptr);
+    bool hasMatchGroup(const Category& cat, const int round, const int grpNum, Error* err=nullptr);
 
     // staging of match groups
-    ERR stageMatchGroup(const MatchGroup& grp);
+    Error stageMatchGroup(const MatchGroup& grp);
     int getMaxStageSeqNum() const;
-    ERR canUnstageMatchGroup(const MatchGroup& grp);
-    ERR canStageMatchGroup(const MatchGroup& grp);
-    ERR unstageMatchGroup(const MatchGroup& grp);
+    Error canUnstageMatchGroup(const MatchGroup& grp);
+    Error canStageMatchGroup(const MatchGroup& grp);
+    Error unstageMatchGroup(const MatchGroup& grp);
 
     // scheduling of match groups
     int getMaxMatchNum() const;
@@ -91,34 +91,34 @@ namespace QTournament
     int getHighestUsedRoundNumberInCategory(const Category& cat) const;
 
     // starting / finishing matches
-    ERR canAssignPlayerPairToMatch(const Match& ma, const PlayerPair& pp) const;
-    ERR setPlayerPairsForMatch(const Match& ma, const PlayerPair& pp1, const PlayerPair& pp2);
-    ERR setPlayerPairForMatch(const Match& ma, const PlayerPair& pp, int ppPos) const;
-    ERR setSymbolicPlayerForMatch(const Match& fromMatch, const Match& toMatch, bool asWinner, int dstPlayerPosInMatch) const;
-    ERR setPlayerToUnused(const Match& ma, int unusedPlayerPos, int winnerRank) const;   // use only if this is the last match for the winner!
-    ERR setRankForWinnerOrLoser(const Match& ma, bool isWinner, int rank) const;
-    ERR getNextViableMatchCourtPair(int* matchId, int* courtId, bool includeManualCourts=false) const;
-    ERR canAssignMatchToCourt(const Match& ma, const Court &court) const;
-    ERR assignMatchToCourt(const Match& ma, const Court& court) const;
-    std::optional<Court> autoAssignMatchToNextAvailCourt(const Match& ma, ERR* err, bool includeManualCourts=false) const;
-    ERR setMatchScoreAndFinalizeMatch(const Match& ma, const MatchScore& score, bool isWalkover=false) const;
-    ERR updateMatchScore(const Match& ma, const MatchScore& newScore, bool winnerLoserChangePermitted) const;
-    ERR setNextMatchForWinner(const Match& fromMatch, const Match& toMatch, int playerNum) const;
-    ERR setNextMatchForLoser(const Match& fromMatch, const Match& toMatch, int playerNum) const;
-    ERR walkover(const Match& ma, int winningPlayerNum) const;
-    ERR undoMatchCall(const Match& ma) const;
+    Error canAssignPlayerPairToMatch(const Match& ma, const PlayerPair& pp) const;
+    Error setPlayerPairsForMatch(const Match& ma, const PlayerPair& pp1, const PlayerPair& pp2);
+    Error setPlayerPairForMatch(const Match& ma, const PlayerPair& pp, int ppPos) const;
+    Error setSymbolicPlayerForMatch(const Match& fromMatch, const Match& toMatch, bool asWinner, int dstPlayerPosInMatch) const;
+    Error setPlayerToUnused(const Match& ma, int unusedPlayerPos, int winnerRank) const;   // use only if this is the last match for the winner!
+    Error setRankForWinnerOrLoser(const Match& ma, bool isWinner, int rank) const;
+    Error getNextViableMatchCourtPair(int* matchId, int* courtId, bool includeManualCourts=false) const;
+    Error canAssignMatchToCourt(const Match& ma, const Court &court) const;
+    Error assignMatchToCourt(const Match& ma, const Court& court) const;
+    std::optional<Court> autoAssignMatchToNextAvailCourt(const Match& ma, Error* err, bool includeManualCourts=false) const;
+    Error setMatchScoreAndFinalizeMatch(const Match& ma, const MatchScore& score, bool isWalkover=false) const;
+    Error updateMatchScore(const Match& ma, const MatchScore& newScore, bool winnerLoserChangePermitted) const;
+    Error setNextMatchForWinner(const Match& fromMatch, const Match& toMatch, int playerNum) const;
+    Error setNextMatchForLoser(const Match& fromMatch, const Match& toMatch, int playerNum) const;
+    Error walkover(const Match& ma, int winningPlayerNum) const;
+    Error undoMatchCall(const Match& ma) const;
     // configuration of MATCH GROUPS
-    ERR closeMatchGroup(const MatchGroup& grp);
+    Error closeMatchGroup(const MatchGroup& grp);
 
     // referee/umpire handling
-    ERR setRefereeMode(const Match& ma, RefereeMode newMode) const;
-    ERR assignReferee(const Match& ma, const Player& p, RefereeAction refAction) const;
-    ERR removeReferee(const Match& ma) const;
+    Error setRefereeMode(const Match& ma, RefereeMode newMode) const;
+    Error assignReferee(const Match& ma, const Player& p, RefereeAction refAction) const;
+    Error removeReferee(const Match& ma) const;
 
     // swap player between matches if match results are
     // changed after a match has finished
-    ERR swapPlayer(const Match& ma, const PlayerPair& ppOld, const PlayerPair& ppNew) const;
-    ERR swapPlayers(const Match& ma1, const PlayerPair& ma1PlayerPair,
+    Error swapPlayer(const Match& ma, const PlayerPair& ppOld, const PlayerPair& ppNew) const;
+    Error swapPlayers(const Match& ma1, const PlayerPair& ma1PlayerPair,
                     const Match& ma2, const PlayerPair& ma2PlayerPair) const;
 
     std::string getSyncString(const std::vector<int>& rows) const override;

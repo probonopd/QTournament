@@ -38,7 +38,7 @@ cmdConnectionSetting::cmdConnectionSetting(QWidget* p, TournamentDB* _db)
 
 //----------------------------------------------------------------------------
 
-ERR cmdConnectionSetting::exec()
+Error cmdConnectionSetting::exec()
 {
   OnlineMngr* om = db->getOnlineManager();
   SyncState sy = om->getSyncState();
@@ -46,7 +46,7 @@ ERR cmdConnectionSetting::exec()
   {
     QString msg = tr("Please disconnect before changing the server settings!");
     QMessageBox::information(parentWidget, tr("Edit Connection Settings"), msg);
-    return ERR::WrongState; // Dummy
+    return Error::WrongState; // Dummy
   }
 
   QString customUrlBefore = om->getCustomUrl();
@@ -54,7 +54,7 @@ ERR cmdConnectionSetting::exec()
   int customTimeoutBefore = om->getCustomTimeout_ms();
   DlgConnectionSettings dlg{parentWidget, customUrlBefore, customKeyBefore, customTimeoutBefore};
   int rc = dlg.exec();
-  if (rc != QDialog::Accepted) return ERR::WrongState;  // Dummy
+  if (rc != QDialog::Accepted) return Error::WrongState;  // Dummy
 
   QString customUrlAfter = dlg.getCustomUrl();
   QString customKeyAfter = dlg.getCustomPubKey();
@@ -66,7 +66,7 @@ ERR cmdConnectionSetting::exec()
   {
     QString msg = tr("A local database error occured and thus settings can't be applied!");
     QMessageBox::warning(parentWidget, tr("Edit Connection Settings"), msg);
-    return ERR::WrongState; // Dummy
+    return Error::WrongState; // Dummy
   }
 
   // update the URL, if necessary
@@ -79,7 +79,7 @@ ERR cmdConnectionSetting::exec()
       msg += "\n\n";
       msg += tr("All connection settings remain untouched!");
       QMessageBox::warning(parentWidget, tr("Edit Connection Settings"), msg);
-      return ERR::WrongState; // Dummy
+      return Error::WrongState; // Dummy
     }
   }
 
@@ -93,7 +93,7 @@ ERR cmdConnectionSetting::exec()
       msg += "\n\n";
       msg += tr("All connection settings remain untouched!");
       QMessageBox::warning(parentWidget, tr("Edit Connection Settings"), msg);
-      return ERR::WrongState; // Dummy
+      return Error::WrongState; // Dummy
     }
   }
 
@@ -107,7 +107,7 @@ ERR cmdConnectionSetting::exec()
       msg += "\n\n";
       msg += tr("All connection settings remain untouched!");
       QMessageBox::warning(parentWidget, tr("Edit Connection Settings"), msg);
-      return ERR::WrongState; // Dummy
+      return Error::WrongState; // Dummy
     }
   }
 
@@ -116,11 +116,11 @@ ERR cmdConnectionSetting::exec()
   {
     QString msg = tr("A local database error occured and thus settings can't be applied!");
     QMessageBox::warning(parentWidget, tr("Edit Connection Settings"), msg);
-    return ERR::WrongState; // Dummy
+    return Error::WrongState; // Dummy
   }
 
   // apply all potential changes
   om->applyCustomServerSettings();
-  return ERR::OK;
+  return Error::OK;
 }
 

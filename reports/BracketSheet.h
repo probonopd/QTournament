@@ -43,7 +43,7 @@ namespace QTournament
       INITIAL_RANK1,
       INITIAL_RANK2,
       SCORE,
-      ERR::MATCH_NUM,
+      Error::MATCH_NUM,
       WINNER_RANK,
       TERMINATOR_NAME
     };

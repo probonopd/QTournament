@@ -33,7 +33,7 @@ cmdUnlockKeystore::cmdUnlockKeystore(QWidget* p, TournamentDB* _db)
 
 //----------------------------------------------------------------------------
 
-ERR cmdUnlockKeystore::exec()
+Error cmdUnlockKeystore::exec()
 {
   OnlineMngr* om = db->getOnlineManager();
 
@@ -41,14 +41,14 @@ ERR cmdUnlockKeystore::exec()
   // there's nothing we can unlock
   if (!(om->hasSecretInDatabase()))
   {
-    return ERR::WrongState;  // dummy value
+    return Error::WrongState;  // dummy value
   }
 
   // if the keystore is already unlocked,
   // we're done
   if (om->isUnlocked())
   {
-    return ERR::OK;
+    return Error::OK;
   }
 
   // ask for a password and try to unlock the keystore
@@ -61,7 +61,7 @@ ERR cmdUnlockKeystore::exec()
     pwDlg.setTextEchoMode(QLineEdit::Password);
     pwDlg.setLabelText(tr("Please enter your tournament password:"));
     int rc = pwDlg.exec();
-    if (rc != QDialog::Accepted) return ERR::WrongState; // dummy
+    if (rc != QDialog::Accepted) return Error::WrongState; // dummy
     pw = pwDlg.textValue().trimmed();
 
     if (pw.isEmpty())
@@ -80,7 +80,7 @@ ERR cmdUnlockKeystore::exec()
       continue;
     }
 
-    return ERR::OK;
+    return Error::OK;
   }
 }
 

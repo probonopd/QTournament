@@ -48,34 +48,34 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  ERR RoundRobinCategory::canFreezeConfig()
+  Error RoundRobinCategory::canFreezeConfig()
   {
     if (getState() != ObjState::CAT_Config)
     {
-      return ERR::ConfigAlreadyFrozen;
+      return Error::ConfigAlreadyFrozen;
     }
     
     // make sure there no unpaired players in singles or doubles
     if ((getMatchType() != MatchType::Singles) && (hasUnpairedPlayers()))
     {
-      return ERR::UnpairedPlayers;
+      return Error::UnpairedPlayers;
     }
     
     // make sure we have at least three players
     PlayerPairList pp = getPlayerPairs();
     if (pp.size() < 3)
     {
-      return ERR::InvalidPlayerCount;
+      return Error::InvalidPlayerCount;
     }
 
     // make sure we have a valid group configuration
     KO_Config cfg = KO_Config(getParameter_string(CatParameter::GroupConfig));
     if (!(cfg.isValid(pp.size())))
     {
-      return ERR::InvalidKoConfig;
+      return Error::InvalidKoConfig;
     }
     
-    return ERR::OK;
+    return Error::OK;
   }
 
 //----------------------------------------------------------------------------
@@ -94,9 +94,9 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  ERR RoundRobinCategory::prepareFirstRound()
+  Error RoundRobinCategory::prepareFirstRound()
   {
-    if (getState() != ObjState::CAT_Idle) return ERR::WrongState;
+    if (getState() != ObjState::CAT_Idle) return Error::WrongState;
 
     MatchMngr mm{db};
 
@@ -106,7 +106,7 @@ namespace QTournament
     // do not return an error here, because obviously we have been
     // called successfully before and we only want to avoid
     // double initialization
-    if (allGrp.size() != 0) return ERR::OK;
+    if (allGrp.size() != 0) return Error::OK;
 
     // alright, this is a virgin category. Generate group matches
     // for each group
@@ -114,11 +114,11 @@ namespace QTournament
     for (int grpIndex = 0; grpIndex < cfg.getNumGroups(); ++grpIndex)
     {
       PlayerPairList grpMembers = getPlayerPairs(grpIndex+1);
-      ERR e = generateGroupMatches(grpMembers, grpIndex+1, 1);
-      if (e != ERR::OK) return e;
+      Error e = generateGroupMatches(grpMembers, grpIndex+1, 1);
+      if (e != Error::OK) return e;
     }
 
-    return ERR::OK;
+    return Error::OK;
   }
 
 //----------------------------------------------------------------------------
@@ -188,7 +188,7 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  ERR RoundRobinCategory::onRoundCompleted(int round)
+  Error RoundRobinCategory::onRoundCompleted(int round)
   {
     // determine the number of group rounds.
     //
@@ -198,7 +198,7 @@ namespace QTournament
     int groupRounds = cfg.getNumRounds();
 
     RankingMngr rm{db};
-    ERR err;
+    Error err;
 
     // if we are still in group rounds, simply calculate the
     // new ranking
@@ -208,9 +208,9 @@ namespace QTournament
       // even if some players or complete groups haven't played in this
       // round at all (happens with different group sizes in one category)
       rm.createUnsortedRankingEntriesForLastRound(*this, &err, getPlayerPairs());
-      if (err != ERR::OK) return err;  // shouldn't happen
+      if (err != Error::OK) return err;  // shouldn't happen
       rm.sortRankingEntriesForLastRound(*this, &err);
-      if (err != ERR::OK) return err;  // shouldn't happen
+      if (err != Error::OK) return err;  // shouldn't happen
     }
 
     // if this was the last round in group rounds,
@@ -229,9 +229,9 @@ namespace QTournament
       // this is only to get the accumulated values for the finalists right
       PlayerPairList ppList;
       ppList = this->getRemainingPlayersAfterRound(round - 1, &err);
-      if (err != ERR::OK) return err;
+      if (err != Error::OK) return err;
       rm.createUnsortedRankingEntriesForLastRound(*this, &err, ppList);
-      if (err != ERR::OK) return err;
+      if (err != Error::OK) return err;
 
       // there's nothing to do for us except after the last round.
       // after the last roound, we have to create final ranking entries
@@ -239,7 +239,7 @@ namespace QTournament
       int lastFinishedRound = crs.getFinishedRoundsCount();
       if (lastFinishedRound != calcTotalRoundsCount())
       {
-        return ERR::OK;
+        return Error::OK;
       }
 
       // set the ranks for the winner / losers of the finals
@@ -266,18 +266,18 @@ namespace QTournament
         }
       }
     }
-    return ERR::OK;
+    return Error::OK;
   }
 
 //----------------------------------------------------------------------------
 
-  PlayerPairList RoundRobinCategory::getRemainingPlayersAfterRound(int round, ERR* err) const
+  PlayerPairList RoundRobinCategory::getRemainingPlayersAfterRound(int round, Error* err) const
   {
     // we can only determine remaining players after completed rounds
     CatRoundStatus crs = getRoundStatus();
     if (round > crs.getFinishedRoundsCount())
     {
-      if (err != nullptr) *err = ERR::InvalidRound;
+      if (err != nullptr) *err = Error::InvalidRound;
       return PlayerPairList();
     }
 
@@ -292,13 +292,13 @@ namespace QTournament
 
     if (round < numGroupRounds)
     {
-      if (err != nullptr) *err = ERR::OK;
+      if (err != nullptr) *err = Error::OK;
       return getPlayerPairs();
     }
 
     if (round == numGroupRounds)
     {
-      if (err != nullptr) *err = ERR::OK;
+      if (err != nullptr) *err = Error::OK;
       return getQualifiedPlayersAfterRoundRobin_sorted();
     }
 
@@ -310,11 +310,11 @@ namespace QTournament
 
       // get the list for the previous round
       PlayerPairList result;
-      ERR e;
+      Error e;
       result = this->getRemainingPlayersAfterRound(round-1, &e);
-      if (e != ERR::OK)
+      if (e != Error::OK)
       {
-        if (err != nullptr) *err = ERR::InvalidRound;
+        if (err != nullptr) *err = Error::InvalidRound;
         return PlayerPairList();
       }
 
@@ -325,7 +325,7 @@ namespace QTournament
       // match for 3rd place
       if (round == (calcTotalRoundsCount() - 1))  // semi-finals
       {
-        if (err != nullptr) *err = ERR::OK;
+        if (err != nullptr) *err = Error::OK;
         return result;
       }
       MatchMngr mm{db};
@@ -339,12 +339,12 @@ namespace QTournament
         }
       }
 
-      if (err != nullptr) *err = ERR::OK;
+      if (err != nullptr) *err = Error::OK;
       return result;
     }
 
     // we should never reach this point
-    if (err != nullptr) *err = ERR::InvalidRound;
+    if (err != nullptr) *err = Error::InvalidRound;
     return PlayerPairList();
   }
 
@@ -362,11 +362,11 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  ERR RoundRobinCategory::resolveIntermediateSeeding(const PlayerPairList& seed) const
+  Error RoundRobinCategory::resolveIntermediateSeeding(const PlayerPairList& seed) const
   {
     if (getState() != ObjState::CAT_WaitForIntermediateSeeding)
     {
-      return ERR::CategoryNeedsNoSeeding;
+      return Error::CategoryNeedsNoSeeding;
     }
 
     // make sure that the required player pairs and the
@@ -376,13 +376,13 @@ namespace QTournament
     {
       if (std::find(controlList.begin(), controlList.end(), pp) == controlList.end())
       {
-        return ERR::InvalidSeedingList;
+        return Error::InvalidSeedingList;
       }
       Sloppy::eraseAllOccurencesFromVector<PlayerPair>(controlList, pp);
     }
     if (!(controlList.empty()))
     {
-      return ERR::InvalidSeedingList;
+      return Error::InvalidSeedingList;
     }
 
     // okay, the list is valid. Now lets generate single-KO matches

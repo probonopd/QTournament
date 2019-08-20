@@ -21,12 +21,13 @@
 #include "DlgSeedingEditor.h"
 #include "ui_DlgSeedingEditor.h"
 
-DlgSeedingEditor::DlgSeedingEditor(TournamentDB* _db, QWidget *parent) :
-  QDialog(parent), db(_db), positionInput(0),
-  ui(new Ui::DlgSeedingEditor)
+using namespace QTournament;
+
+DlgSeedingEditor::DlgSeedingEditor(const QTournament::TournamentDB& _db, QWidget *parent) :
+  QDialog(parent), ui(new Ui::DlgSeedingEditor), db(_db)
 {
   ui->setupUi(this);
-  ui->lwSeeding->setDatabase(db);
+  ui->lwSeeding->setDatabase(&db);
 
   // set the window title
   setWindowTitle(tr("Define seeding"));
@@ -45,7 +46,7 @@ DlgSeedingEditor::DlgSeedingEditor(TournamentDB* _db, QWidget *parent) :
   // combine subsequent keypresses into one number; for this we
   // need a timer
   keypressTimer = new QTimer();
-  keypressTimer->setInterval(SUBSEQUENT_KEYPRESS_TIMEOUT__MS);
+  keypressTimer->setInterval(SubsequentKeypressTimeout_ms);
   keypressTimer->setSingleShot(true);
   connect(keypressTimer, SIGNAL(timeout()), this, SLOT(onKeypressTimerElapsed()));
 }

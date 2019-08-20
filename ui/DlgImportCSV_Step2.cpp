@@ -15,6 +15,7 @@
 #include "CatMngr.h"
 #include "ui/DlgPickCategory.h"
 #include "CSVImporter.h"
+#include "HelperFunc.h"
 
 using namespace QTournament;
 
@@ -25,7 +26,7 @@ DlgImportCSV_Step2::DlgImportCSV_Step2(QWidget *parent, const TournamentDB& _db,
   ui->setupUi(this);
 
   connect(ui->tab, SIGNAL(warnCountChanged(int,int,int)), this, SLOT(onWarnCountChanged(int,int,int)), Qt::DirectConnection);
-  ui->tab->setData(db, initialData);
+  ui->tab->setData(&db, initialData);
 
   // connect actions for the add / delete buttons
   connect(ui->btnDelete, SIGNAL(clicked(bool)), ui->tab, SLOT(onBtnDelRowClicked()));
@@ -41,7 +42,7 @@ DlgImportCSV_Step2::~DlgImportCSV_Step2()
 
 //----------------------------------------------------------------------------
 
-vector<CSVImportRecord> DlgImportCSV_Step2::getRecords() const
+std::vector<CSVImportRecord> DlgImportCSV_Step2::getRecords() const
 {
   return ui->tab->getRecords();
 }
@@ -87,7 +88,7 @@ CSVDataTableWidget::CSVDataTableWidget(QWidget* parent)
 {tr("Sex"), 1},
 {tr("Team"), 4},
 {tr("Categories"), 4},
-                                     }, parent}, db{nullptr}
+                                     }, parent}
 {
   setRubberBandCol(4);
 
@@ -104,14 +105,14 @@ CSVDataTableWidget::CSVDataTableWidget(QWidget* parent)
 
 //----------------------------------------------------------------------------
 
-void CSVDataTableWidget::setData(const TournamentDB& _db, const std::vector<CSVImportRecord>& initialData)
+void CSVDataTableWidget::setData(const TournamentDB* _db, const std::vector<CSVImportRecord>& initialData)
 {
   db = _db;
   records = initialData;
 
   // prepare a list of categories than still
   // accept new players
-  CatMngr cm{db};
+  CatMngr cm{*db};
   for (const Category& cat : cm.getAllCategories())
   {
     if (cat.canAddPlayers()) availCategories.push_back(cat);
@@ -124,7 +125,7 @@ void CSVDataTableWidget::setData(const TournamentDB& _db, const std::vector<CSVI
   // also store a list of category names
   for (const Category& cat : availCategories)
   {
-    availCatNames.push_back(string{cat.getName().toUtf8().constData()});
+    availCatNames.push_back(std::string{cat.getName().toUtf8().constData()});
   }
 
   rebuildContents();
@@ -151,7 +152,7 @@ void CSVDataTableWidget::rebuildContents()
 
 void CSVDataTableWidget::updateWarnings()
 {
-  errList = analyseCSV(db, records);
+  errList = analyseCSV(*db, records);
   int cntFatal = 0;
 
   // reset all warnings and errors
@@ -163,7 +164,7 @@ void CSVDataTableWidget::updateWarnings()
       if (i == nullptr) continue;
       i->setData(Qt::UserRole, 0);
       i->setData(Qt::UserRole + 1, false);
-      i->setBackgroundColor(Qt::white);
+      i->setBackground(Qt::white);
       i->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
     }
   }
@@ -192,7 +193,7 @@ void CSVDataTableWidget::updateWarnings()
       QTableWidgetItem* i = item(err.row, 2);
       if (i == nullptr) continue;
       i->setData(Qt::UserRole + 1, true);
-      i->setFlags(0);
+      i->setFlags(nullptr);
     }
   }
 
@@ -218,7 +219,7 @@ void CSVDataTableWidget::createOrUpdateCellItem(int row, int col)
   {
     if (rec.getSex() != Sex::DontCare)
     {
-      txt = (rec.getSex() == M) ? "m" : tr("f");
+      txt = (rec.getSex() == Sex::M) ? "m" : tr("f");
     }
   }
   if (col == CSVFieldsIndex::Team)
@@ -374,21 +375,21 @@ void CSVDataTableWidget::onCellDoubleClicked(int row, int col)
     int rc = dlg.exec();
     if (rc != QDialog::Accepted) return;
 
-    newVal = (dlg.getSelectedSex() == M) ? "m" : tr("f");
+    newVal = (dlg.getSelectedSex() == Sex::M) ? "m" : tr("f");
     hasUpdate = rec.updateSex(dlg.getSelectedSex());
   }
 
   // change the player's team
   if (col == CSVFieldsIndex::Team)
   {
-    DlgPickTeam dlg{this, db};
+    DlgPickTeam dlg{this, *db};
     int rc = dlg.exec();
     if (rc != QDialog::Accepted) return;
 
     int teamId = dlg.getSelectedTeamId();
     if (teamId < 0) return;  // should not happen
 
-    TeamMngr tm{db};
+    TeamMngr tm{*db};
     Team t = tm.getTeamById(teamId);
     newVal = t.getName();
     hasUpdate = rec.updateTeamName(newVal);
@@ -397,7 +398,7 @@ void CSVDataTableWidget::onCellDoubleClicked(int row, int col)
   // change the category selection
   if (col == CSVFieldsIndex::Categories)
   {
-    DlgPickCategory dlg{this, db, rec.getSex()};
+    DlgPickCategory dlg{this, *db, rec.getSex()};
     QString catList = rec.getCatNames_str();
     dlg.applyPreselection(catList);
 
@@ -440,9 +441,9 @@ void CSVDataTableWidget::onBtnDelRowClicked()
 
 void CSVDataTableWidget::onBtnAddRowClicked()
 {
-  string l{tr("New").toUtf8().constData()};
-  string f{tr("Player").toUtf8().constData()};
-  CSVImportRecord newRec{db, {l, f, "", "", ""}};
+  std::string l{QString2StdString(tr("New"))};
+  std::string f{QString2StdString(tr("Player"))};
+  CSVImportRecord newRec{*db, {l, f, "", "", ""}};
 
   if (records.size() == 0)
   {

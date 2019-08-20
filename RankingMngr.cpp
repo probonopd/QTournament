@@ -41,14 +41,14 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  RankingEntryList RankingMngr::createUnsortedRankingEntriesForLastRound(const Category &cat, ERR *err, const PlayerPairList& _ppList, bool reset)
+  RankingEntryList RankingMngr::createUnsortedRankingEntriesForLastRound(const Category &cat, Error *err, const PlayerPairList& _ppList, bool reset)
   {
     // determine the round we should create the entries for
     CatRoundStatus crs = cat.getRoundStatus();
     int lastRound = crs.getFinishedRoundsCount();
     if (lastRound < 1)
     {
-      if (err != nullptr) *err = ERR::RoundNotFinished;
+      if (err != nullptr) *err = Error::RoundNotFinished;
       return RankingEntryList();
     }
 
@@ -73,16 +73,16 @@ namespace QTournament
       auto ma = mm.getMatchForPlayerPairAndRound(pp, lastRound);
       if (ma.has_value())
       {
-        ERR e;
+        Error e;
         auto score = ma->getScore(&e);
-        if (e != ERR::OK)
+        if (e != Error::OK)
         {
           if (err != nullptr) *err = e;
           return RankingEntryList();
         }
         if (!score.has_value())
         {
-          if (err != nullptr) *err = ERR::NoMatchResultSet;
+          if (err != nullptr) *err = Error::NoMatchResultSet;
           return RankingEntryList();
         }
       }
@@ -117,7 +117,7 @@ namespace QTournament
         int playerNum = (pp1Id == pp.getPairId()) ? 1 : 2;
 
         // create column values for match data
-        ERR e;
+        Error e;
         auto score = ma->getScore(&e);
         assert(score.has_value());
         wonMatches = (score->getWinner() == playerNum) ? 1 : 0;
@@ -211,7 +211,7 @@ namespace QTournament
       result.push_back(RankingEntry(db, newId));
     }
 
-    if (err != nullptr) *err = ERR::OK;
+    if (err != nullptr) *err = Error::OK;
     return result;
   }
 
@@ -299,9 +299,9 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  ERR RankingMngr::updateRankingsAfterMatchResultChange(const Match& ma, const MatchScore& oldScore, bool skipSorting) const
+  Error RankingMngr::updateRankingsAfterMatchResultChange(const Match& ma, const MatchScore& oldScore, bool skipSorting) const
   {
-    if (ma.getState() != ObjState::MA_Finished) return ERR::WrongState;
+    if (ma.getState() != ObjState::MA_Finished) return Error::WrongState;
 
     Category cat = ma.getCategory();
     int catId = cat.getId();
@@ -388,7 +388,7 @@ namespace QTournament
     w.addCol(RA_PairRef, pp1Id);
     w.addCol(RA_Round, firstRoundToModify);
     auto re = getSingleObjectByWhereClause<RankingEntry>(w);
-    if (!re.has_value()) return ERR::OK;  // no ranking entries yet
+    if (!re.has_value()) return Error::OK;  // no ranking entries yet
     int grpNum = re->getGroupNumber();
 
     //
@@ -481,18 +481,18 @@ namespace QTournament
     }
     catch (SqliteOverlay::BusyException&)
     {
-      return ERR::DatabaseError;
+      return Error::DatabaseError;
     }
     catch (SqliteOverlay::GenericSqliteException&)
     {
-      return ERR::DatabaseError;
+      return Error::DatabaseError;
     }
     catch (...)
     {
       throw;
     }
 
-    return ERR::OK;
+    return Error::OK;
   }
 
   //----------------------------------------------------------------------------
@@ -507,14 +507,14 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  RankingEntryListList RankingMngr::sortRankingEntriesForLastRound(const Category& cat, ERR* err) const
+  RankingEntryListList RankingMngr::sortRankingEntriesForLastRound(const Category& cat, Error* err) const
   {
     // determine the round we should create the entries for
     CatRoundStatus crs = cat.getRoundStatus();
     int lastRound = crs.getFinishedRoundsCount();
     if (lastRound < 1)
     {
-      if (err != nullptr) *err = ERR::RoundNotFinished;
+      if (err != nullptr) *err = Error::RoundNotFinished;
       return RankingEntryListList();
     }
 
@@ -525,7 +525,7 @@ namespace QTournament
     RankingEntryList rel = getObjectsByWhereClause<RankingEntry>(wc);
     if (rel.empty())
     {
-      if (err != nullptr) *err = ERR::MissingRankingEntries;
+      if (err != nullptr) *err = Error::MissingRankingEntries;
       return RankingEntryListList();
     }
 
@@ -582,28 +582,28 @@ namespace QTournament
       result.push_back(rankList);
     }
 
-    if (err != nullptr) *err = ERR::OK;
+    if (err != nullptr) *err = Error::OK;
     return result;
   }
 
 //----------------------------------------------------------------------------
 
-  ERR RankingMngr::forceRank(const RankingEntry& re, int rank) const
+  Error RankingMngr::forceRank(const RankingEntry& re, int rank) const
   {
-    if (rank < 1) return ERR::InvalidRank;
+    if (rank < 1) return Error::InvalidRank;
 
     re.row.update(RA_Rank, rank);
 
-    return ERR::OK;
+    return Error::OK;
   }
 
   //----------------------------------------------------------------------------
 
-  ERR RankingMngr::clearRank(const RankingEntry& re) const
+  Error RankingMngr::clearRank(const RankingEntry& re) const
   {
     re.row.updateToNull(RA_Rank);
 
-    return ERR::OK;
+    return Error::OK;
   }
 
 //----------------------------------------------------------------------------

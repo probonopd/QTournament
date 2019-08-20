@@ -31,7 +31,7 @@ cmdBulkAddPlayerToCategory::cmdBulkAddPlayerToCategory(QWidget* p, const Categor
 
 //----------------------------------------------------------------------------
 
-ERR cmdBulkAddPlayerToCategory::exec()
+Error cmdBulkAddPlayerToCategory::exec()
 {
   // check if can add more players anyway
   if (!(cat.canAddPlayers()))
@@ -44,19 +44,19 @@ ERR cmdBulkAddPlayerToCategory::exec()
   }
 
   // show a dialog for selecting the players
-  DlgSelectPlayer dlg{db, parentWidget, DlgSelectPlayer::DLG_CONTEXT::ADD_TO_CATEGORY, &cat};
+  DlgSelectPlayer dlg{db, parentWidget, DlgSelectPlayer::DlgContext::AddToCategory, &cat};
   if (dlg.exec() != QDialog::Accepted)
   {
-    return ERR::OK;
+    return Error::OK;
   }
 
   // add all selected players to the category
   CatMngr cm{db};
   for (const Player& pl : dlg.getSelectedPlayers())
   {
-    ERR err = cm.addPlayerToCategory(pl, cat);
+    Error err = cm.addPlayerToCategory(pl, cat);
 
-    if (err != ERR::OK)
+    if (err != Error::OK)
     {
       QString msg = tr("Could not add player\n\n");
       msg += "     " + pl.getDisplayName_FirstNameFirst() + "\n\n";
@@ -65,6 +65,6 @@ ERR cmdBulkAddPlayerToCategory::exec()
     }
   }
 
-  return ERR::OK;
+  return Error::OK;
 }
 

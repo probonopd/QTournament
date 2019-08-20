@@ -98,7 +98,7 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  ERR Player::rename(const QString& newFirst, const QString& newLast)
+  Error Player::rename(const QString& newFirst, const QString& newLast)
   {
     PlayerMngr pm{db};
     return pm.renamePlayer(*this, newFirst, newLast);

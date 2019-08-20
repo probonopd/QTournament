@@ -34,7 +34,7 @@ public:
   cmdMoveOrCopyPairToCategory(QWidget* p, const QTournament::PlayerPair& _pp,
                               const QTournament::Category& _srcCat, const QTournament::Category& _dstCat,
                               bool _isMove=false);
-  virtual QTournament::ERR exec() override;
+  virtual QTournament::Error exec() override;
   virtual ~cmdMoveOrCopyPairToCategory() {}
 
 protected:

@@ -191,13 +191,13 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  std::optional<MatchScore> Match::getScore(ERR *err) const
+  std::optional<MatchScore> Match::getScore(Error *err) const
   {
     auto scoreEntry = row.getString2(MA_Result);
 
     if (!scoreEntry)
     {
-      Sloppy::assignIfNotNull<ERR>(err, ERR::NoMatchResultSet);
+      Sloppy::assignIfNotNull<Error>(err, Error::NoMatchResultSet);
       return {};
     }
 
@@ -213,11 +213,11 @@ namespace QTournament
       // but if it does, we clear the invalid database entry
       // and return an error
       row.updateToNull(MA_Result);
-      Sloppy::assignIfNotNull<ERR>(err, ERR::InconsistentMatchResultString);
+      Sloppy::assignIfNotNull<Error>(err, Error::InconsistentMatchResultString);
       return {};
     }
 
-    Sloppy::assignIfNotNull<ERR>(err, ERR::OK);
+    Sloppy::assignIfNotNull<Error>(err, Error::OK);
     return result;
   }
 
@@ -226,18 +226,18 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  std::optional<Court> Match::getCourt(ERR *err) const
+  std::optional<Court> Match::getCourt(Error *err) const
   {
     auto courtId = row.getInt2(MA_CourtRef);
     if (!courtId)
     {
-      Sloppy::assignIfNotNull<ERR>(err, ERR::NoCourtAssigned);
+      Sloppy::assignIfNotNull<Error>(err, Error::NoCourtAssigned);
       return {};
     }
 
     CourtMngr cm{db};
     auto result = cm.getCourtById(*courtId);
-    Sloppy::assignIfNotNull<ERR>(err, ERR::OK);
+    Sloppy::assignIfNotNull<Error>(err, Error::OK);
 
     return result;
   }
@@ -436,7 +436,7 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  ERR Match::canAssignReferee(RefereeAction refAction) const
+  Error Match::canAssignReferee(RefereeAction refAction) const
   {
     // only allow changes to the referee assignment
     // if the match is fully defined (all player names determined) and
@@ -452,18 +452,18 @@ namespace QTournament
     {
       if (!((stat == ObjState::MA_Busy) || (stat == ObjState::MA_Ready)))
       {
-        return ERR::MatchNotConfiguraleAnymore;
+        return Error::MatchNotConfiguraleAnymore;
       }
     }
     else if (refAction == RefereeAction::Swap)
     {
       if (!((stat == ObjState::MA_Running) && (hasRefereeAssigned() == true)))
       {
-        return ERR::MatchNotConfiguraleAnymore;
+        return Error::MatchNotConfiguraleAnymore;
       }
     } else {
       // default
-      return ERR::MatchNotConfiguraleAnymore;
+      return Error::MatchNotConfiguraleAnymore;
     }
 
     // don't allow assignments if the mode is set to RefereeMode::None
@@ -471,10 +471,10 @@ namespace QTournament
     RefereeMode mod = get_EFFECTIVE_RefereeMode();
     if ((mod == RefereeMode::None) || (mod == RefereeMode::HandWritten))
     {
-      return ERR::MatchNeedsNoReferee;
+      return Error::MatchNeedsNoReferee;
     }
 
-    return ERR::OK;
+    return Error::OK;
   }
 
   //----------------------------------------------------------------------------

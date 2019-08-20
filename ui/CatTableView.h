@@ -37,7 +37,6 @@ class CategoryTableView : public GuiHelpers::AutoSizingTableView_WithDatabase<QT
   
 public:
   CategoryTableView (QWidget* parent);
-  virtual ~CategoryTableView () {}
   QTournament::Category getSelectedCategory();
   bool hasCategorySelected();
 
@@ -77,7 +76,7 @@ private:
   void initContextMenu();
 
   void handleIntermediateSeedingForSelectedCat();
-  bool unfreezeAndCleanup(std::unique_ptr<QTournament::Category> selectedCat);
+  bool unfreezeAndCleanup(const QTournament::Category& selectedCat);
 
 };
 

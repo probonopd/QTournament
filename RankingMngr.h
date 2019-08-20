@@ -48,10 +48,10 @@ namespace QTournament
     
   public:
     RankingMngr (const TournamentDB& _db);
-    RankingEntryList createUnsortedRankingEntriesForLastRound(const Category &cat, ERR *err=nullptr, const PlayerPairList& _ppList={}, bool reset=false);
-    RankingEntryListList sortRankingEntriesForLastRound(const Category &cat, ERR *err=nullptr) const;
-    ERR forceRank(const RankingEntry& re, int rank) const;
-    ERR clearRank(const RankingEntry& re) const;
+    RankingEntryList createUnsortedRankingEntriesForLastRound(const Category &cat, Error *err=nullptr, const PlayerPairList& _ppList={}, bool reset=false);
+    RankingEntryListList sortRankingEntriesForLastRound(const Category &cat, Error *err=nullptr) const;
+    Error forceRank(const RankingEntry& re, int rank) const;
+    Error clearRank(const RankingEntry& re) const;
     void fillRankGaps(const Category& cat, int round, int maxRank);
 
     std::optional<RankingEntry> getRankingEntry(const PlayerPair &pp, int round) const;
@@ -60,7 +60,7 @@ namespace QTournament
 
     int getHighestRoundWithRankingEntryForPlayerPair(const Category &cat, const PlayerPair &pp) const;
 
-    ERR updateRankingsAfterMatchResultChange(const Match& ma, const MatchScore& oldScore, bool skipSorting=false) const;
+    Error updateRankingsAfterMatchResultChange(const Match& ma, const MatchScore& oldScore, bool skipSorting=false) const;
 
     std::string getSyncString(const std::vector<int>& rows) const override;
 

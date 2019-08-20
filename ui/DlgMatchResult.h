@@ -47,7 +47,7 @@ private slots:
 
 private:
   Ui::DlgMatchResult *ui;
-  QTournament::Match ma;
+  const QTournament::Match& ma;
   void updateControls();
   bool isGame3Necessary() const;
   bool hasValidResult() const;

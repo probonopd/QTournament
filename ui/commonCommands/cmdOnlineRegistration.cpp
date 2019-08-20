@@ -41,7 +41,7 @@ cmdOnlineRegistration::cmdOnlineRegistration(QWidget* p, TournamentDB* _db)
 
 //----------------------------------------------------------------------------
 
-ERR cmdOnlineRegistration::exec()
+Error cmdOnlineRegistration::exec()
 {
   OnlineMngr* om = db->getOnlineManager();
 
@@ -50,8 +50,8 @@ ERR cmdOnlineRegistration::exec()
   if (!(om->hasSecretInDatabase()))
   {
     cmdSetOrChangePassword cmd{parentWidget, db};
-    ERR e = cmd.exec();
-    if (e != ERR::OK) return ERR::WrongState;  // dummy value
+    Error e = cmd.exec();
+    if (e != Error::OK) return Error::WrongState;  // dummy value
   }
 
   // check whether the server is online and whether we
@@ -68,7 +68,7 @@ ERR cmdOnlineRegistration::exec()
   {
     QString msg = tr("The tournament server is currently not available or there is no working internet connection.\n\nPlease try again later.");
     QMessageBox::information(parentWidget, tr("Online registration"), msg);
-    return ERR::WrongState;  // dummy error code; will not be evaluated by caller
+    return Error::WrongState;  // dummy error code; will not be evaluated by caller
   }
 
   // if the secret signing key has not yet been unlocked, ask the
@@ -76,8 +76,8 @@ ERR cmdOnlineRegistration::exec()
   if (!(om->isUnlocked()))
   {
     cmdUnlockKeystore cmd{parentWidget, db};
-    ERR err = cmd.exec();
-    if (err != ERR::OK) return err;
+    Error err = cmd.exec();
+    if (err != Error::OK) return err;
   }
 
   // show the registration form
@@ -86,7 +86,7 @@ ERR cmdOnlineRegistration::exec()
   string club = cfg.operator [](CfgKey_TnmtOrga);
   DlgRegisterTournament dlg{parentWidget, QString::fromUtf8(tName.c_str()), QString::fromUtf8(club.c_str())};
   int rc = dlg.exec();
-  if (rc != QDialog::Accepted) return ERR::WrongState;  // dummy error code; will not be evaluated by caller
+  if (rc != QDialog::Accepted) return Error::WrongState;  // dummy error code; will not be evaluated by caller
 
   // show a consent form, either in English or German
   bool isGerman = QLocale().name().startsWith("de", Qt::CaseInsensitive);
@@ -98,7 +98,7 @@ ERR cmdOnlineRegistration::exec()
   dlgConsent.setDefaultButton(QMessageBox::Yes);
   dlgConsent.setWindowTitle(tr("Please read carefully"));
   rc = dlgConsent.exec();
-  if (rc != QMessageBox::Yes) return ERR::WrongState;  // dummy error code; will not be evaluated by caller
+  if (rc != QMessageBox::Yes) return Error::WrongState;  // dummy error code; will not be evaluated by caller
 
   // do the actual registration
   //
@@ -134,7 +134,7 @@ ERR cmdOnlineRegistration::exec()
     }
 
     QMessageBox::warning(parentWidget, tr("Online Registration FAILED"), msg);
-    return ERR::WrongState; // dummy value
+    return Error::WrongState; // dummy value
   }
 
   // at this point, the data exchange with the server was successful (HTTP and Signatures).
@@ -147,7 +147,7 @@ ERR cmdOnlineRegistration::exec()
     msg += tr("Please click on the link in the email to complete your registration.");
     QMessageBox::information(parentWidget, tr("Online registration"), msg);
 
-    return ERR::OK;
+    return Error::OK;
   }
 
   //
@@ -188,6 +188,6 @@ ERR cmdOnlineRegistration::exec()
 
   QMessageBox::warning(parentWidget, tr("Online Registration FAILED"), msg);
 
-  return ERR::WrongState; // dummy value
+  return Error::WrongState; // dummy value
 }
 

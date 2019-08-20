@@ -25,7 +25,7 @@ public:
 
 protected:
   QTournament::Player p;
-  std::reference_wrapper<const QTournament::TournamentDB> db;
+  const QTournament::TournamentDB& db;
   QTournament::PlayerProfile pp;
 
   void fillLabels();

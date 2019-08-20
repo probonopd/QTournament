@@ -60,7 +60,7 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  ERR Court::rename(const QString &newName)
+  Error Court::rename(const QString &newName)
   {
     CourtMngr cm{db};
     return cm.renameCourt(*this, newName);

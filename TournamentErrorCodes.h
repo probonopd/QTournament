@@ -25,7 +25,7 @@
 
 namespace QTournament
 {
-    enum class ERR {
+    enum class Error {
         OK = 0,
         InvalidName = -10000,
         NameExists,
@@ -110,16 +110,16 @@ namespace QTournament
     class TournamentException : public Sloppy::BasicException
     {
     public:
-      TournamentException(const std::string& sender, const std::string& context, ERR errorCode)
+      TournamentException(const std::string& sender, const std::string& context, Error errorCode)
         :Sloppy::BasicException{
            "QTournament logic exception", sender, context,
            "Error code = " + std::to_string(static_cast<int>(errorCode))},
          err{errorCode} {}
 
-      ERR error() const { return err; }
+      Error error() const { return err; }
 
     private:
-      ERR err;
+      Error err;
     };
 
     //----------------------------------------------------------------------------
@@ -133,21 +133,21 @@ namespace QTournament
     {
     public:
       explicit ObjectOrError(const T& obj)
-        :std::optional<T>{obj}, e{ERR::OK} {}
+        :std::optional<T>{obj}, e{Error::OK} {}
 
       explicit ObjectOrError(const std::optional<T>& obj)
-        :std::optional<T>{obj}, e{ERR::OK} {}
+        :std::optional<T>{obj}, e{Error::OK} {}
 
       explicit ObjectOrError(std::optional<T>&& obj)
-        :std::optional<T>(std::forward<std::optional<T>>(obj)), e{ERR::OK} {}
+        :std::optional<T>(std::forward<std::optional<T>>(obj)), e{Error::OK} {}
 
       explicit ObjectOrError(T&& obj)
-        :std::optional<T>(std::forward<T>(obj)), e{ERR::OK} {}
+        :std::optional<T>(std::forward<T>(obj)), e{Error::OK} {}
 
-      explicit ObjectOrError(ERR errorCode)
+      explicit ObjectOrError(Error errorCode)
         :std::optional<T>{}, e{errorCode}
       {
-        if (errorCode == ERR::OK)
+        if (errorCode == Error::OK)
         {
           throw std::invalid_argument("ErrorOrObject ctor: initialized with OK but without object");
         }
@@ -155,12 +155,12 @@ namespace QTournament
 
       template<class... Args>
       ObjectOrError(Args&&... args)
-        :std::optional<T>{std::in_place, std::forward<Args>(args)...}, e{ERR::OK} {}
+        :std::optional<T>{std::in_place, std::forward<Args>(args)...}, e{Error::OK} {}
 
-      constexpr ERR err() const noexcept { return e; }
+      constexpr Error err() const noexcept { return e; }
 
     private:
-      ERR e;
+      Error e;
     };
 }
 

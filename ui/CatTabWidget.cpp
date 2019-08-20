@@ -41,6 +41,7 @@
 #include "CentralSignalEmitter.h"
 
 using namespace std;
+using namespace QTournament;
 
 CatTabWidget::CatTabWidget()
   :db(nullptr)
@@ -150,7 +151,7 @@ void CatTabWidget::updateControls()
   // if we made it to this point, we can be sure to have a valid category selected
   //
   Sex sex = selectedCat.getSex();
-  ERR::MatchType mt = selectedCat.getMatchType();
+  MatchType mt = selectedCat.getMatchType();
   bool isEditEnabled = (selectedCat.getState() == ObjState::CAT_Config);
 
   ui.gbGeneric->setEnabled(isEditEnabled);
@@ -160,7 +161,7 @@ void CatTabWidget::updateControls()
   ui.cbMatchSystem->setCurrentIndex(ui.cbMatchSystem->findData(matchSysId, Qt::UserRole));
   
   // activate the applicable group with the special settings
-  ERR::MatchSystem ms = selectedCat.getMatchSystem();
+  MatchSystem ms = selectedCat.getMatchSystem();
   if (ms == MatchSystem::GroupsWithKO)
   {
     ui.gbGroups->show();
@@ -223,8 +224,8 @@ void CatTabWidget::updateControls()
     ui.rbLadies->setChecked(false);
     ui.rbgSex->setExclusive(true);
   } else {
-    ui.rbMen->setChecked((sex == M) && (mt != MatchType::Mixed));
-    ui.rbLadies->setChecked((sex == F) && (mt != MatchType::Mixed));
+    ui.rbMen->setChecked((sex == Sex::M) && (mt != MatchType::Mixed));
+    ui.rbLadies->setChecked((sex == Sex::F) && (mt != MatchType::Mixed));
   }
   ui.cbDontCare->setChecked(sex == Sex::DontCare);
   
@@ -359,10 +360,8 @@ void CatTabWidget::updatePairs()
   Category selCat = ui.catTableView->getSelectedCategory();
   PlayerPairList pairList = selCat.getPlayerPairs();
   
-  for (int i=0; i < pairList.size(); i++)
-  {
-    PlayerPair pp = pairList.at(i);
-    
+  for (const auto& pp : pairList)
+  {    
     if (pp.hasPlayer2())
     {
       QListWidgetItem* item = new QListWidgetItem(pp.getDisplayName(0, true));
@@ -458,13 +457,13 @@ std::optional<Player> CatTabWidget::lwUnpaired_getSelectedPlayer() const
   // we can only handle exactly one selected item
   if (ui.lwUnpaired->selectedItems().length() != 1)
   {
-    return nullptr;
+    return {};
   }
 
   auto selItem = ui.lwUnpaired->selectedItems().at(0);
   int playerId = selItem->data(Qt::UserRole).toInt();
 
-  PlayerMngr pm{db};
+  PlayerMngr pm{*db};
   return pm.getPlayer2(playerId);
 }
 
@@ -475,14 +474,14 @@ std::optional<QTournament::PlayerPair> CatTabWidget::lwPaired_getSelectedPair() 
   // we can only handle exactly one selected item
   if (ui.lwPaired->selectedItems().length() != 1)
   {
-    return nullptr;
+    return {};
   }
 
   auto selItem = ui.lwPaired->selectedItems().at(0);
   int pairId = selItem->data(Qt::UserRole).toInt();
 
-  PlayerMngr pm{db};
-  return pm.getPlayerPair_up(pairId);
+  PlayerMngr pm{*db};
+  return pm.getPlayerPair(pairId);
 }
 
 //----------------------------------------------------------------------------
@@ -565,14 +564,14 @@ void CatTabWidget::onUnpairedPlayersSelectionChanged()
   
   // update the "pair" button, if necessary
   bool canPair = false;
-  PlayerMngr pm{db};
+  PlayerMngr pm{*db};
   if ((unpairedPlayerId1 > 0) && (unpairedPlayerId2 > 0))
   {
     Player p1 = pm.getPlayer(unpairedPlayerId1);
     Player p2 = pm.getPlayer(unpairedPlayerId2);
     
     Category c = ui.catTableView->getSelectedCategory();
-    canPair = (c.canPairPlayers(p1, p2) == ERR::OK);
+    canPair = (c.canPairPlayers(p1, p2) == Error::OK);
   }
   ui.btnPair->setEnabled(canPair);
 }
@@ -594,24 +593,28 @@ void CatTabWidget::onBtnPairClicked()
     return;
   }
   
-  PlayerMngr pm{db};
+  PlayerMngr pm{*db};
   int id1 = selPlayers.at(0)->data(Qt::UserRole).toInt();
   int id2 = selPlayers.at(1)->data(Qt::UserRole).toInt();
   Category c = ui.catTableView->getSelectedCategory();
   Player p1 = pm.getPlayer(id1);
   Player p2 = pm.getPlayer(id2);
-  if (c.canPairPlayers(p1, p2) != ERR::OK)
+  if (c.canPairPlayers(p1, p2) != Error::OK)
   {
     QMessageBox::warning(this, tr("These two players can't be paired for this category!"), tr("Pairing impossible"));
     updatePairs();
     return;
   }
   
-  CatMngr cm{db};
-  ERR e = cm.pairPlayers(c, p1, p2);
-  if (e != ERR::OK)
+  CatMngr cm{*db};
+  Error e = cm.pairPlayers(c, p1, p2);
+  if (e != Error::OK)
   {
-    QMessageBox::warning(this, tr("Something went wrong during pairing. This shouldn't happen. For the records: Error code = ") + e, tr("Pairing impossible"));
+    QMessageBox::warning(
+          this,
+          tr("Something went wrong during pairing. This shouldn't happen. For the records: Error code = ") + QString::number(static_cast<int>(e)),
+          tr("Pairing impossible")
+          );
   }
   
   updatePairs();
@@ -632,15 +635,19 @@ void CatTabWidget::onBtnSplitClicked()
 {
   QList<QListWidgetItem *> selPairs = ui.lwPaired->selectedItems();
   Category c = ui.catTableView->getSelectedCategory();
-  CatMngr cmngr{db};
+  CatMngr cmngr{*db};
   
   for (int i=0; i < selPairs.count(); i++)
   {
     int pairId = selPairs.at(i)->data(Qt::UserRole).toInt();
-    ERR e = cmngr.splitPlayers(c, pairId);
-    if (e != ERR::OK)
+    Error e = cmngr.splitPlayers(c, pairId);
+    if (e != Error::OK)
     {
-      QMessageBox::warning(this, tr("Something went wrong during splitting. This shouldn't happen. For the records: Error code = ") + e, tr("Splitting impossible"));
+      QMessageBox::warning(
+            this,
+            tr("Something went wrong during splitting. This shouldn't happen. For the records: Error code = ") + QString::number(static_cast<int>(e)),
+            tr("Splitting impossible")
+            );
     }
   }
   
@@ -653,9 +660,9 @@ void CatTabWidget::onMatchTypeButtonClicked(int btn)
 {
   Category selCat = ui.catTableView->getSelectedCategory();
   
-  ERR::MatchType oldType = selCat.getMatchType();
+  MatchType oldType = selCat.getMatchType();
   
-  ERR::MatchType newType = MatchType::Singles;
+  MatchType newType = MatchType::Singles;
   if (ui.rbDoubles->isChecked()) newType = MatchType::Doubles;
   if (ui.rbMixed->isChecked()) newType = MatchType::Mixed;
   
@@ -666,10 +673,14 @@ void CatTabWidget::onMatchTypeButtonClicked(int btn)
   }
   
   // change the type
-  ERR e = selCat.setMatchType(newType);
-  if (e != ERR::OK)
+  Error e = selCat.setMatchType(newType);
+  if (e != Error::OK)
   {
-    QMessageBox::warning(this, tr("Error"), tr("Could change match type. Error number = ") + e);
+    QMessageBox::warning(
+          this,
+          tr("Error"),
+          tr("Could change match type. Error number = ") + QString::number(static_cast<int>(e))
+          );
   }
   
   // in case the change wasn't successful, restore the old, correct type;
@@ -684,18 +695,21 @@ void CatTabWidget::onMatchTypeButtonClicked(int btn)
 void CatTabWidget::onSexClicked(int btn)
 {
   // the new sex must be either M or F
-  Sex newSex = M;
-  if (ui.rbLadies->isChecked()) newSex = F;
+  Sex newSex = (ui.rbLadies->isChecked()) ? Sex::F : Sex::M;
   
   // in any case, we can de-select the "don't care" box
   ui.cbDontCare->setChecked(false);
   
   // actually change the sex
   Category selCat = ui.catTableView->getSelectedCategory();
-  ERR e = selCat.setSex(newSex);
-  if (e != ERR::OK)
+  Error e = selCat.setSex(newSex);
+  if (e != Error::OK)
   {
-    QMessageBox::warning(this, tr("Error"), tr("Could change sex. Error number = ") + e);
+    QMessageBox::warning(
+          this,
+          tr("Error"),
+          tr("Could change sex. Error number = ") + QString::number(static_cast<int>(e))
+          );
   }
   
   // in case the change wasn't successful, restore the old, correct type;
@@ -731,7 +745,7 @@ void CatTabWidget::onDontCareClicked()
   if (!newState && (selCat.getMatchType() == MatchType::Mixed))
   {
     // set a dummy default value that is not "Don't care"
-    newSex = M;
+    newSex = Sex::M;
   }
   
   // un-check "Men" and "Ladies" if "Don't care" was activated
@@ -744,10 +758,14 @@ void CatTabWidget::onDontCareClicked()
   }
   
   // set the new value
-  ERR e = selCat.setSex(newSex);
-  if (e != ERR::OK)
+  Error e = selCat.setSex(newSex);
+  if (e != Error::OK)
   {
-    QMessageBox::warning(this, tr("Error"), tr("Could change sex. Error number = ") + e);
+    QMessageBox::warning(
+          this,
+          tr("Error"),
+          tr("Could change sex. Error number = ") + QString::number(static_cast<int>(e))
+          );
   }
   
   // in case the change wasn't successful, restore the old, correct type;
@@ -770,12 +788,12 @@ void CatTabWidget::onMatchSystemChanged(int newIndex)
 {
   // get the new match system
   int msId = ui.cbMatchSystem->itemData(newIndex, Qt::UserRole).toInt();
-  ERR::MatchSystem ms = static_cast<MatchSystem>(msId);
+  MatchSystem ms = static_cast<MatchSystem>(msId);
   
   if (!(ui.catTableView->hasCategorySelected())) return;
   
   Category selectedCat = ui.catTableView->getSelectedCategory();
-  CatMngr cm{db};
+  CatMngr cm{*db};
   cm.setMatchSystem(selectedCat, ms);
   updateControls();
 }
@@ -852,7 +870,7 @@ void CatTabWidget::onPlayerStateChanged(int playerId, int seqNum, const ObjState
   // is the affected player in the currently selected category?
   // if not, there is nothing to do for us
   auto selectedCat = ui.catTableView->getSelectedCategory();
-  PlayerMngr pm{db};
+  PlayerMngr pm{*db};
   Player pl = pm.getPlayer(playerId);
   if (!(selectedCat.hasPlayer(pl))) return;
 
@@ -874,7 +892,7 @@ void CatTabWidget::onPlayerStateChanged(int playerId, int seqNum, const ObjState
 void CatTabWidget::onRemovePlayerFromCat()
 {
   auto selPlayer = lwUnpaired_getSelectedPlayer();
-  if (selPlayer == nullptr) return;
+  if (!selPlayer) return;
 
   // the following call must always succeed... if no category
   // was selected there was no player to trigger the context menu on
@@ -919,8 +937,8 @@ void CatTabWidget::onUnpairedContextMenuRequested(const QPoint& pos)
 
   // determine if there is an item under the mouse
   auto selItem = ui.lwUnpaired->itemAt(pos);
-  upPlayer selPlayer;
   ObjState plStat = ObjState::CO_Disabled;   // arbitrary, non player-related, dummy default
+  std::optional<Player> selPlayer;
   if (selItem != nullptr)
   {
     // clear old selection and select item under the mouse
@@ -931,7 +949,7 @@ void CatTabWidget::onUnpairedContextMenuRequested(const QPoint& pos)
     plStat = selPlayer->getState();
   }
 
-  bool isPlayerClicked = (selPlayer != nullptr);
+  bool isPlayerClicked = (selPlayer.has_value());
 
   bool hasCatSelected = ui.catTableView->hasCategorySelected();
   bool canAddPlayers = false;
@@ -942,11 +960,11 @@ void CatTabWidget::onUnpairedContextMenuRequested(const QPoint& pos)
   }
 
   // rebuild dynamic submenus
-  MenuGenerator::allCategories(db, listOfCats_CopyPlayerSubmenu.get());
-  MenuGenerator::allCategories(db, listOfCats_MovePlayerSubmenu.get());
+  MenuGenerator::allCategories(*db, listOfCats_CopyPlayerSubmenu.get());
+  MenuGenerator::allCategories(*db, listOfCats_MovePlayerSubmenu.get());
 
   // enable / disable selection-specific actions
-  PlayerMngr pm{db};
+  PlayerMngr pm{*db};
   actRemovePlayer->setEnabled(isPlayerClicked);
   actRegister->setEnabled(plStat == ObjState::PL_WaitForRegistration);
   actUnregister->setEnabled(plStat == ObjState::PL_Idle);
@@ -991,7 +1009,7 @@ void CatTabWidget::onPairedContextMenuRequested(const QPoint& pos)
 
   // determine if there is an item under the mouse
   auto selItem = ui.lwPaired->itemAt(pos);
-  upPlayerPair selPair;
+  std::optional<PlayerPair> selPair;
   if (selItem != nullptr)
   {
     // clear old selection and select item under the mouse
@@ -999,13 +1017,13 @@ void CatTabWidget::onPairedContextMenuRequested(const QPoint& pos)
     selItem->setSelected(true);
 
     int selPairId = selItem->data(Qt::UserRole).toInt();
-    PlayerMngr pm{db};
-    selPair = pm.getPlayerPair_up(selPairId);
+    PlayerMngr pm{*db};
+    selPair = pm.getPlayerPair(selPairId);
   }
 
   // we have no actions that are useful without a selected
   // pair. So if nothing is selected, we can quit here
-  if (selPair == nullptr)
+  if (!selPair)
   {
     return;
   }
@@ -1014,7 +1032,7 @@ void CatTabWidget::onPairedContextMenuRequested(const QPoint& pos)
   //
   // Only doubles or mixed categories are suitable targets for
   // copying or moving player pairs
-  CatMngr cm{db};
+  CatMngr cm{*db};
   CategoryList targetCats;
   auto selCat = ui.catTableView->getSelectedCategory();  // this MUST succeed; a category MUST be selected at his point
   for (const Category& cat : cm.getAllCategories())
@@ -1037,8 +1055,8 @@ void CatTabWidget::onPairedContextMenuRequested(const QPoint& pos)
   } else {
     listOfCats_CopyPairSubmenu->setEnabled(true);
     listOfCats_MovePairSubmenu->setEnabled(true);
-    MenuGenerator::fromCategoryList(db, targetCats, listOfCats_CopyPairSubmenu.get());
-    MenuGenerator::fromCategoryList(db, targetCats, listOfCats_MovePairSubmenu.get());
+    MenuGenerator::fromCategoryList(*db, targetCats, listOfCats_CopyPairSubmenu.get());
+    MenuGenerator::fromCategoryList(*db, targetCats, listOfCats_MovePairSubmenu.get());
   }
 
   // show the context menu
@@ -1071,7 +1089,7 @@ void CatTabWidget::onPairedContextMenuRequested(const QPoint& pos)
 void CatTabWidget::onRegisterPlayer()
 {
   auto selPlayer = lwUnpaired_getSelectedPlayer();
-  if (selPlayer == nullptr) return;
+  if (!selPlayer) return;
 
   cmdRegisterPlayer cmd{this, *selPlayer};
   cmd.exec();
@@ -1082,7 +1100,7 @@ void CatTabWidget::onRegisterPlayer()
 void CatTabWidget::onUnregisterPlayer()
 {
   auto selPlayer = lwUnpaired_getSelectedPlayer();
-  if (selPlayer == nullptr) return;
+  if (!selPlayer) return;
 
   cmdUnregisterPlayer cmd{this, *selPlayer};
   cmd.exec();
@@ -1093,14 +1111,14 @@ void CatTabWidget::onUnregisterPlayer()
 void CatTabWidget::onCopyOrMovePlayer(int targetCatId, bool isMove)
 {
   auto selPlayer = lwUnpaired_getSelectedPlayer();
-  if (selPlayer == nullptr) return;
+  if (!selPlayer) return;
 
   if (!(ui.catTableView->hasCategorySelected()))
   {
     return;
   }
 
-  CatMngr cm{db};
+  CatMngr cm{*db};
   auto targetCat = cm.getCategoryById(targetCatId);
 
   cmdMoveOrCopyPlayerToCategory cmd{this, *selPlayer,
@@ -1119,7 +1137,7 @@ void CatTabWidget::onCopyOrMovePair(const PlayerPair& selPair, int targetCatId, 
     return;
   }
 
-  CatMngr cm{db};
+  CatMngr cm{*db};
   auto targetCat = cm.getCategoryById(targetCatId);
 
   cmdMoveOrCopyPairToCategory cmd{this, selPair,

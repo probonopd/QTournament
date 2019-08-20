@@ -19,6 +19,8 @@
 #ifndef DLGROUNDFINISHED_H
 #define DLGROUNDFINISHED_H
 
+#include <optional>
+
 #include <QDialog>
 
 #include <SimpleReportGeneratorLib/SimpleReportViewer.h>
@@ -56,15 +58,15 @@ public slots:
 
 private:
   Ui::DlgRoundFinished *ui;
-  std::reference_wrapper<const QTournament::TournamentDB> db;
+  const QTournament::TournamentDB& db;
   const QTournament::Category& cat;
   int round;
 
-  std::optional<QTournament::BracketSheet> upBracket;
-  std::optional<QTournament::InOutList> upInOut;
-  std::optional<QTournament::ResultsAndNextMatches> upResults;
-  std::optional<QTournament::MatrixAndStandings> upMatrix;
-  std::optional<QTournament::Standings> upStandings;
+  std::optional<QTournament::BracketSheet> optBracket;
+  std::optional<QTournament::InOutList> optInOut;
+  std::optional<QTournament::ResultsAndNextMatches> optResults;
+  std::optional<QTournament::MatrixAndStandings> optMatrix;
+  std::optional<QTournament::Standings> optStandings;
 };
 
 #endif // DLGROUNDFINISHED_H

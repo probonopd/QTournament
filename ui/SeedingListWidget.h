@@ -48,10 +48,10 @@ public:
   void warpSelectedPlayerTo(int targetRow);
   QTournament::PlayerPairList getSeedList() const;
   void clearListAndFillFromSeed(const QTournament::PlayerPairList& seed);
-  void setDatabase(QTournament::TournamentDB* _db);
+  void setDatabase(const QTournament::TournamentDB* _db);
 
 private:
-  QTournament::TournamentDB* db;
+  const QTournament::TournamentDB* db;
   std::unique_ptr<PairItemDelegate> pairDelegate;
   QAbstractItemDelegate* defaultDelegate;
   QQueue<QListWidgetItem*> selectionQueue;

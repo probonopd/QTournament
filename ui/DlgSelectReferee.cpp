@@ -35,7 +35,9 @@
 #include "delegates/DelegateItemLED.h"
 #include "DlgPlayerProfile.h"
 
-DlgSelectReferee::DlgSelectReferee(TournamentDB* _db, const Match& _ma, REFEREE_ACTION _refAction, QWidget *parent) :
+using namespace QTournament;
+
+DlgSelectReferee::DlgSelectReferee(const TournamentDB& _db, const Match& _ma, RefereeAction _refAction, QWidget *parent) :
   QDialog(parent),
   ui(new Ui::DlgSelectReferee), db(_db), ma(_ma), refAction(_refAction)
 {
@@ -90,14 +92,14 @@ DlgSelectReferee::DlgSelectReferee(TournamentDB* _db, const Match& _ma, REFEREE_
   }
 
   // get the tournament-wide default value for the referee-team, if any
-  auto cfg = SqliteOverlay::KeyValueTab::getTab(db, TabCfg);
+  SqliteOverlay::KeyValueTab cfg{db, TabCfg};
   int defaultRefereeTeamId = cfg.getInt(CfgKey_RefereeTeamId);
   initTeamList(defaultRefereeTeamId);
 
 
   // if the dialog is executed when the match is NOT BEING CALLED (--> we have a "pre-assignment)
   // then continuing without an umpire is no option
-  ui->btnNone->setHidden(refAction != REFEREE_ACTION::MATCH_CALL);
+  ui->btnNone->setHidden(refAction != RefereeAction::MatchCall);
 
   // fill the player table
   rebuildPlayerList();
@@ -107,17 +109,17 @@ DlgSelectReferee::DlgSelectReferee(TournamentDB* _db, const Match& _ma, REFEREE_
   QString style = "QLabel { color : %1; };";
   switch (refAction)
   {
-  case REFEREE_ACTION::PRE_ASSIGN:
+  case RefereeAction::PreAssign:
     hdr = tr("Pre-assignment");
     style = style.arg("green");
     break;
 
-  case REFEREE_ACTION::MATCH_CALL:
+  case RefereeAction::MatchCall:
     hdr = tr("!! Match call !!");
     style = style.arg("red");
     break;
 
-  case REFEREE_ACTION::SWAP:
+  case RefereeAction::Swap:
     hdr = tr("Umpire swap");
     style = style.arg("green");
     break;
@@ -181,7 +183,7 @@ void DlgSelectReferee::onBtnSelectClicked()
   if (curFilterMode == RefereeMode::SpecialTeam)
   {
     int curTeamId = ui->cbTeamSelection->currentData().toInt();
-    auto cfg = SqliteOverlay::KeyValueTab::getTab(db, TabCfg);
+    SqliteOverlay::KeyValueTab cfg{db, TabCfg};
     cfg.set(CfgKey_RefereeTeamId, curTeamId);
   }
 
@@ -192,7 +194,7 @@ void DlgSelectReferee::onBtnSelectClicked()
 
 void DlgSelectReferee::onBtnNoneClicked()
 {
-  finalPlayerSelection = nullptr;
+  finalPlayerSelection.reset();
   accept();
 }
 
@@ -207,7 +209,7 @@ void DlgSelectReferee::onPlayerDoubleClicked()
   if (QGuiApplication::keyboardModifiers() != Qt::NoModifier)
   {
     auto selPlayer = ui->tabPlayers->getSelectedPlayer();
-    if (selPlayer == nullptr) return;
+    if (!selPlayer) return;
     DlgPlayerProfile dlg{*selPlayer};
     dlg.exec();
     return;
@@ -253,10 +255,12 @@ void DlgSelectReferee::initTeamList(int defaultTeamId)
     ui->cbTeamSelection->addItem(tr("<Please select>"), -1);
   }
 
-  for (int i=0; i < allTeams.size(); i++)
+  int i{0};
+  for (const auto& team : allTeams)
   {
-    ui->cbTeamSelection->addItem(allTeams.at(i).getName(), allTeams.at(i).getId());
-    if (allTeams.at(i).getId() == defaultTeamId) ui->cbTeamSelection->setCurrentIndex(i);
+    ui->cbTeamSelection->addItem(team.getName(), team.getId());
+    if (team.getId() == defaultTeamId) ui->cbTeamSelection->setCurrentIndex(i);
+    ++i;
   }
 }
 
@@ -293,7 +297,7 @@ void DlgSelectReferee::rebuildPlayerList()
     // convert to a tagged player list with all tags set to NEUTRAL
     for (const Player& p : purePlayerList)
     {
-      pList.push_back(make_pair(p, RefereeSelectionDelegate::NeutralTag));
+      pList.push_back(std::make_pair(p, RefereeSelectionDelegate::NeutralTag));
     }
   }
   if (curFilterMode == RefereeMode::SpecialTeam)
@@ -308,7 +312,7 @@ void DlgSelectReferee::rebuildPlayerList()
     // convert to a tagged player list with all tags set to NEUTRAL
     for (const Player& p : purePlayerList)
     {
-      pList.push_back(make_pair(p, RefereeSelectionDelegate::NeutralTag));
+      pList.push_back(std::make_pair(p, RefereeSelectionDelegate::NeutralTag));
     }
   }
   if (curFilterMode == RefereeMode::RecentFinishers)
@@ -318,7 +322,7 @@ void DlgSelectReferee::rebuildPlayerList()
 
   // if we currently calling the match or swapping the umpire, only players in state IDLE
   // may be selected
-  if (refAction != REFEREE_ACTION::PRE_ASSIGN)
+  if (refAction != RefereeAction::PreAssign)
   {
     auto it = pList.begin();
     while (it != pList.end())
@@ -346,16 +350,16 @@ TaggedPlayerList DlgSelectReferee::getPlayerList_recentFinishers()
   PlayerPairList winners;
   PlayerPairList losers;
   PlayerPairList draws;
-  pm.getRecentFinishers(MAX_NUM_LOSERS, winners, losers, draws);
+  pm.getRecentFinishers(MaxNumLosers, winners, losers, draws);
 
   // process winners, losers and draws
-  std::vector<pair<PlayerPairList&, int>> allLists = {
+  std::vector<std::pair<PlayerPairList&, int>> allLists = {
     {winners, RefereeSelectionDelegate::WinnerTag},
     {losers, RefereeSelectionDelegate::LoserTag},
     {draws, RefereeSelectionDelegate::NeutralTag},
   };
   TaggedPlayerList result;
-  for (pair<PlayerPairList&, int> listDef : allLists)
+  for (std::pair<PlayerPairList&, int> listDef : allLists)
   {
     PlayerList purePlayerList;
     for (const PlayerPair& pp : listDef.first)
@@ -388,7 +392,7 @@ TaggedPlayerList DlgSelectReferee::getPlayerList_recentFinishers()
     // with the tag set to the appropriate value
     for (const Player& p : purePlayerList)
     {
-      result.push_back(make_pair(p, listDef.second));
+      result.push_back(std::make_pair(p, listDef.second));
     }
   }
 
@@ -403,15 +407,15 @@ TaggedPlayerList DlgSelectReferee::getPlayerList_recentFinishers()
 RefereeTableWidget::RefereeTableWidget(QWidget* parent)
   :GuiHelpers::AutoSizingTableWidget_WithDatabase{
      GuiHelpers::AutosizeColumnDescrList{
-       {"", REL_WIDTH_STATE, -1, -1},
-       {tr("Player name"), REL_WIDTH_NAME, -1, -1},
-       {tr("Team"), REL_WIDTH_TEAM, -1, -1},
-       {tr("Uses"), REL_WIDTH_OTHER, -1, MAX_OTHER_COL_WIDTH},
-       {tr("Last match finished"), REL_WIDTH_OTHER, -1, MAX_OTHER_COL_WIDTH},
-       {tr("Next match"), REL_WIDTH_OTHER, -1, MAX_OTHER_COL_WIDTH}
+       {"", RelWidthStateCol, -1, -1},
+       {tr("Player name"), RelWidthNameCol, -1, -1},
+       {tr("Team"), RelWidthTeamCol, -1, -1},
+       {tr("Uses"), RelWidthOtherCol, -1, MaxOtherColWidth},
+       {tr("Last match finished"), RelWidthOtherCol, -1, MaxOtherColWidth},
+       {tr("Next match"), RelWidthOtherCol, -1, MaxOtherColWidth}
      }, parent}
 {
-  setRubberBandCol(NAME_COL_ID);
+  setRubberBandCol(NameColId);
 }
 
 //----------------------------------------------------------------------------
@@ -433,14 +437,14 @@ void RefereeTableWidget::rebuildPlayerList(const TaggedPlayerList& pList, int se
     setDatabase(nullptr);
     return;
   } else {
-    setDatabase(pList.at(0).first.getDatabaseHandle());
+    setDatabase(&(pList.at(0).first.getDatabaseHandle()));
   }
 
   // disable sorting while we're modifying the table
   setSortingEnabled(false);
 
   // populate the table rows
-  PlayerMngr pm{db};
+  PlayerMngr pm{*db};
   setRowCount(pList.size());
   int idxRow = 0;
   for (const TaggedPlayer& tp : pList)
@@ -452,25 +456,25 @@ void RefereeTableWidget::rebuildPlayerList(const TaggedPlayerList& pList, int se
     newItem->setData(Qt::UserRole, p.getId());
     newItem->setData(Qt::UserRole + 1, tp.second);  // set the tag
     newItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-    setItem(idxRow, NAME_COL_ID, newItem);
+    setItem(idxRow, NameColId, newItem);
 
     // add the player's team
     newItem = new QTableWidgetItem(p.getTeam().getName());
     newItem->setData(Qt::UserRole, p.getId());
     newItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-    setItem(idxRow, TEAM_COL_ID, newItem);
+    setItem(idxRow, TeamColId, newItem);
 
     // add the player's referee count
     int refereeCount = p.getRefereeCount();
     newItem = new QTableWidgetItem(QString::number(refereeCount));
     newItem->setData(Qt::UserRole, p.getId());
     newItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-    setItem(idxRow, REFEREE_COUNT_COL_ID, newItem);
+    setItem(idxRow, RefereeCountColId, newItem);
 
     // add the time of the last finished match
     auto ma = pm.getLastFinishedMatchForPlayer(p);
     QString txt = "--";
-    if (ma != nullptr)
+    if (ma)
     {
       QDateTime finishTime = ma->getFinishTime();
       txt = finishTime.toString("HH:mm");
@@ -478,19 +482,19 @@ void RefereeTableWidget::rebuildPlayerList(const TaggedPlayerList& pList, int se
     newItem = new QTableWidgetItem(txt);
     newItem->setData(Qt::UserRole, p.getId());
     newItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-    setItem(idxRow, LAST_FINISH_TIME_COL_ID, newItem);
+    setItem(idxRow, LastFinishTimeColId, newItem);
 
     // add the player's status as a color indication in
     // the first column
     newItem = new QTableWidgetItem("");
     newItem->setData(Qt::UserRole, p.getId());
     newItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-    setItem(idxRow, ObjState::COL_ID, newItem);
+    setItem(idxRow, StateColId, newItem);
 
     // add the offset to the next match for the player
     ma = pm.getNextMatchForPlayer(p);
     txt = "--";
-    if (ma != nullptr)
+    if (ma)
     {
       int matchNumOffset = ma->getMatchNumber() - selectedMatchNumer;
 
@@ -505,7 +509,7 @@ void RefereeTableWidget::rebuildPlayerList(const TaggedPlayerList& pList, int se
     newItem = new QTableWidgetItem(txt);
     newItem->setData(Qt::UserRole, p.getId());
     newItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-    setItem(idxRow, NEXT_MATCH_DIST_COL_ID, newItem);
+    setItem(idxRow, NextMatchDistColId, newItem);
 
     idxRow++;
   }
@@ -513,10 +517,10 @@ void RefereeTableWidget::rebuildPlayerList(const TaggedPlayerList& pList, int se
   // set the right sorting mode
   if (refMode == RefereeMode::RecentFinishers)
   {
-    sortByColumn(LAST_FINISH_TIME_COL_ID, Qt::DescendingOrder);
+    sortByColumn(LastFinishTimeColId, Qt::DescendingOrder);
   } else {
     // Default: sort by name
-    sortByColumn(NAME_COL_ID, Qt::AscendingOrder);
+    sortByColumn(NameColId, Qt::AscendingOrder);
   }
   setSortingEnabled(true);
 }
@@ -527,20 +531,20 @@ std::optional<QTournament::Player> RefereeTableWidget::getSelectedPlayer()
 {
   // could we ever store a database handle? If not,
   // we can't determine the player
-  if (db == nullptr) return nullptr;
+  if (db == nullptr) return {};
 
   // is something selected?
-  if (!(hasPlayerSelected())) return nullptr;
+  if (!(hasPlayerSelected())) return {};
 
   // get the player item for the selected row
-  QTableWidgetItem* playerItem = item(currentRow(), NAME_COL_ID);
-  if (playerItem == nullptr) return nullptr;
+  QTableWidgetItem* playerItem = item(currentRow(), NameColId);
+  if (playerItem == nullptr) return {};
 
   // the user data of the player item contains the player id
   int playerId = playerItem->data(Qt::UserRole).toInt();
 
   // return the associated player
-  PlayerMngr pm{db};
+  PlayerMngr pm{*db};
   return pm.getPlayer2(playerId);
 }
 
@@ -555,7 +559,7 @@ bool RefereeTableWidget::hasPlayerSelected()
 
 void RefereeTableWidget::hook_onDatabaseOpened()
 {
-  setCustomDelegate(new RefereeSelectionDelegate(db, this));
+  setCustomDelegate(new RefereeSelectionDelegate(*db, this));
 }
 
 //----------------------------------------------------------------------------

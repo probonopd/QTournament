@@ -42,12 +42,12 @@ namespace QTournament
     
     if (name.length() > MaxNameLen)
     {
-      return CourtOrError{ERR::InvalidName};
+      return CourtOrError{Error::InvalidName};
     }
     
     if (hasCourt(courtNum))
     {
-      return CourtOrError{ERR::CourtNumberExists};
+      return CourtOrError{Error::CourtNumberExists};
     }
     
     // prepare a new table row
@@ -119,21 +119,21 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  ERR CourtMngr::renameCourt(Court& c, const QString& _newName)
+  Error CourtMngr::renameCourt(Court& c, const QString& _newName)
   {
     QString newName = _newName.trimmed();
     
     // Ensure the new name is valid
     if (newName.length() > MaxNameLen)
     {
-      return ERR::InvalidName;
+      return Error::InvalidName;
     }
         
     c.row.update(GenericNameFieldName, QString2StdString(newName));
     
     CentralSignalEmitter::getInstance()->courtRenamed(c);
     
-    return ERR::OK;
+    return Error::OK;
   }
 
 //----------------------------------------------------------------------------
@@ -238,44 +238,44 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  ERR CourtMngr::disableCourt(const Court& co)
+  Error CourtMngr::disableCourt(const Court& co)
   {
     ObjState stat = co.getState();
 
-    if (stat == ObjState::CO_Disabled) return ERR::OK;   // nothing to do for us
+    if (stat == ObjState::CO_Disabled) return Error::OK;   // nothing to do for us
 
     // prohibit a state change if the court is in use
-    if (stat == ObjState::CO_Busy) return ERR::CourtBusy;
+    if (stat == ObjState::CO_Busy) return Error::CourtBusy;
 
     // change the court state and emit a change event
     co.setState(ObjState::CO_Disabled);
     CentralSignalEmitter::getInstance()->courtStatusChanged(co.getId(), co.getSeqNum(), stat, ObjState::CO_Disabled);
-    return ERR::OK;
+    return Error::OK;
   }
 
   //----------------------------------------------------------------------------
 
-  ERR CourtMngr::enableCourt(const Court& co)
+  Error CourtMngr::enableCourt(const Court& co)
   {
     ObjState stat = co.getState();
 
-    if (stat != ObjState::CO_Disabled) return ERR::CourtNotDisabled;
+    if (stat != ObjState::CO_Disabled) return Error::CourtNotDisabled;
 
     // change the court state and emit a change event
     co.setState(ObjState::CO_Avail);
     CentralSignalEmitter::getInstance()->courtStatusChanged(co.getId(), co.getSeqNum(), ObjState::CO_Disabled, ObjState::CO_Avail);
-    return ERR::OK;
+    return Error::OK;
   }
 
   //----------------------------------------------------------------------------
 
-  ERR CourtMngr::deleteCourt(const Court& co)
+  Error CourtMngr::deleteCourt(const Court& co)
   {
     // check if the court has already been used in the past
     DbTab matchTab{db, TabMatch, false};
     if (matchTab.getMatchCountForColumnValue(MA_CourtRef, co.getId()) > 0)
     {
-      return ERR::CourtAlreadyUsed;
+      return Error::CourtAlreadyUsed;
     }
 
     // after this check it is safe to delete to court because we won't
@@ -288,7 +288,7 @@ namespace QTournament
     fixSeqNumberAfterDelete(tab, oldSeqNum);
     cse->endDeleteCourt();
 
-    return ERR::OK;
+    return Error::OK;
   }
 
   //----------------------------------------------------------------------------
@@ -316,7 +316,7 @@ namespace QTournament
     auto nextManualCourt = getNextUnusedCourt(true);
     if (nextManualCourt)
     {
-      return ERR::NoCourtAvail;
+      return Error::NoCourtAvail;
     }
 
     // great, so there is a free court, but it's for
@@ -328,7 +328,7 @@ namespace QTournament
     }
 
     // indicate to the user that there would be a manual court
-    return ERR::OnlyManualCourtAvail;
+    return Error::OnlyManualCourtAvail;
   }
 
 //----------------------------------------------------------------------------

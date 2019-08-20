@@ -10,14 +10,15 @@
 #include "ui_DlgPlayerProfile.h"
 #include "GuiHelpers.h"
 
+using namespace QTournament;
 
 DlgPlayerProfile::DlgPlayerProfile(const Player& _p, QWidget *parent) :
   QDialog(parent), p{_p}, db{p.getDatabaseHandle()}, pp{p},
   ui(new Ui::DlgPlayerProfile)
 {
   ui->setupUi(this);
-  ui->playerTab->setDatabase(db);
-  ui->umpireTab->setDatabase(db);
+  ui->playerTab->setDatabase(&db);
+  ui->umpireTab->setDatabase(&db);
 
   fillTables();
   fillLabels();
@@ -58,10 +59,9 @@ void DlgPlayerProfile::fillLabels()
   //
   // set the next match
   //
-  std::unique_ptr<Match> ma;
-  ma = pp.getNextMatch();
+  std::optional<Match> ma = pp.getNextMatch();
   txt.clear();
-  if (ma != nullptr)
+  if (ma)
   {
     txt = tr("#%1: %2 (%3, Round %4)");
     txt = txt.arg(ma->getMatchNumber());
@@ -78,7 +78,7 @@ void DlgPlayerProfile::fillLabels()
   //
   ma = pp.getNextUmpireMatch();
   txt.clear();
-  if (ma != nullptr)
+  if (ma)
   {
     txt = tr("#%1: %2 (%3, Round %4)");
     txt = txt.arg(ma->getMatchNumber());
@@ -191,12 +191,12 @@ void DlgPlayerProfile::fillTables()
   auto maList = pp.getMatchesAsPlayer();
   for (const Match& ma : maList)
   {
-    if (ma.getMatchNumber() == ERR::MatchNumNotAssigned) continue;
+    if (ma.getMatchNumber() == MatchNumNotAssigned) continue;
     ui->playerTab->appendMatch(ma);
   }
   for (const Match& ma : maList)
   {
-    if (ma.getMatchNumber() != ERR::MatchNumNotAssigned) continue;
+    if (ma.getMatchNumber() != MatchNumNotAssigned) continue;
     ui->playerTab->appendMatch(ma);
   }
 }

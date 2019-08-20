@@ -28,12 +28,14 @@
 #include "reports/ResultSheets.h"
 #include <SimpleReportGeneratorLib/SimpleReportViewer.h>
 
+using namespace QTournament;
+
 CourtTableView::CourtTableView(QWidget* parent)
   :GuiHelpers::AutoSizingTableView_WithDatabase<CourtTableModel>{
      GuiHelpers::AutosizeColumnDescrList{
-       {"", 1, ABS_COURT_COL_WIDTH, ABS_COURT_COL_WIDTH},
+       {"", 1, AbsCourtColWidth, AbsCourtColWidth},
        {"", 1, -1, -1},
-       {"", 1, ABS_DURATION_COL_WIDTH, ABS_DURATION_COL_WIDTH}
+       {"", 1, AbsDurationColWidth, AbsDurationColWidth}
      }, true, parent}
 {
   setRubberBandCol(1);
@@ -57,18 +59,12 @@ CourtTableView::CourtTableView(QWidget* parent)
 
 //----------------------------------------------------------------------------
     
-CourtTableView::~CourtTableView()
-{
-}
-
-//----------------------------------------------------------------------------
-    
 std::optional<Court> CourtTableView::getSelectedCourt() const
 {
   int srcRow = getSelectedSourceRow();
-  if (srcRow < 0) return nullptr;
+  if (srcRow < 0) return {};
 
-  CourtMngr cm{db};
+  CourtMngr cm{*db};
   return cm.getCourtBySeqNum(srcRow);
 }
 
@@ -77,7 +73,7 @@ std::optional<Court> CourtTableView::getSelectedCourt() const
 std::optional<QTournament::Match> CourtTableView::getSelectedMatch() const
 {
   auto co = getSelectedCourt();
-  if (co == nullptr) return nullptr;
+  if (!co) return {};
 
   return co->getMatch();
 }
@@ -89,7 +85,7 @@ void CourtTableView::hook_onDatabaseOpened()
   AutoSizingTableView_WithDatabase::hook_onDatabaseOpened();
 
   // set a new delegate
-  courtItemDelegate = new CourtItemDelegate(db, this);
+  courtItemDelegate = new CourtItemDelegate(*db, this);
   courtItemDelegate->setProxy(sortedModel.get());
   setCustomDelegate(courtItemDelegate);   // Takes ownership
 }
@@ -171,31 +167,31 @@ void CourtTableView::updateContextMenu(bool isRowClicked)
 {
   // disable / enable actions that depend on a selected match
   auto ma = getSelectedMatch();
-  bool isMatchClicked = (isRowClicked && (ma != nullptr));
+  bool isMatchClicked = (isRowClicked && (ma.has_value()));
   actUndoCall->setEnabled(isMatchClicked);
   walkoverSelectionMenu->setEnabled(isMatchClicked);
   actFinishMatch->setEnabled(isMatchClicked);
 
   QList<QDateTime> callTimes;
-  if (ma != nullptr)
+  if (ma)
   {
     callTimes = ma->getAdditionalCallTimes();
   }
-  actAddCall->setEnabled(isMatchClicked && (callTimes.size() < MAX_NUM_ADD_CALL));
+  actAddCall->setEnabled(isMatchClicked && (callTimes.size() < MaxNumAdditionalCalls));
 
   // enable / disable actions that depend on a selected row
   actAddCourt->setEnabled(!isRowClicked);
   actDelCourt->setEnabled(isRowClicked);
 
   // update the player pair names for the walkover menu
-  if (ma != nullptr)
+  if (ma)
   {
     actWalkoverP1->setText(ma->getPlayerPair1().getDisplayName());
     actWalkoverP2->setText(ma->getPlayerPair2().getDisplayName());
   }
 
   // disable "swap umpire" if we have no umpire in the match
-  if ((ma != nullptr) && isRowClicked)
+  if ((ma.has_value()) && isRowClicked)
   {
     RefereeMode refMode = ma->get_RAW_RefereeMode();
     bool canSwapReferee = ((refMode != RefereeMode::None) &&
@@ -210,15 +206,15 @@ void CourtTableView::updateContextMenu(bool isRowClicked)
   actReprintResultSheet->setEnabled(isMatchClicked);
 
   // show the state of the "manual assignment"
-  std::unique_ptr<Court> co = getSelectedCourt();
+  auto co = getSelectedCourt();
   actToggleAssignmentMode->setEnabled(isRowClicked);
-  if (co != nullptr)
+  if (co)
   {
     actToggleAssignmentMode->setChecked(co->isManualAssignmentOnly());
   }
 
   // show the enable state
-  if ((co != nullptr) && isRowClicked)
+  if ((co.has_value()) && isRowClicked)
   {
     ObjState coStat = co->getState();
     actToggleEnableState->setEnabled(coStat != ObjState::CO_Busy);
@@ -234,7 +230,7 @@ void CourtTableView::updateContextMenu(bool isRowClicked)
 void CourtTableView::execWalkover(int playerNum)
 {
   auto ma = getSelectedMatch();
-  if (ma == nullptr) return;
+  if (!ma) return;
   if ((playerNum != 1) && (playerNum != 2)) return; // shouldn't happen
   GuiHelpers::execWalkover(this, *ma, playerNum);
 }
@@ -265,17 +261,16 @@ void CourtTableView::onContextMenuRequested(const QPoint& pos)
 
 void CourtTableView::onActionAddCourtTriggered()
 {
-  CourtMngr cm{db};
+  CourtMngr cm{*db};
 
   int nextCourtNum = cm.getHighestUnusedCourtNumber();
 
-  ERR err;
-  cm.createNewCourt(nextCourtNum, QString::number(nextCourtNum), &err);
+  auto co = cm.createNewCourt(nextCourtNum, QString::number(nextCourtNum));
 
-  if (err != ERR::OK)
+  if (!co)
   {
     QMessageBox::warning(this, tr("Add court"),
-                         tr("Something went wrong, error code = ") + QString::number(static_cast<int>(err)));
+                         tr("Something went wrong, error code = ") + QString::number(static_cast<int>(co.err())));
   }
 }
 
@@ -298,9 +293,9 @@ void CourtTableView::onWalkoverP2Triggered()
 void CourtTableView::onActionUndoCallTriggered()
 {
   auto ma = getSelectedMatch();
-  if (ma == nullptr) return;
+  if (!ma) return;
 
-  MatchMngr mm{db};
+  MatchMngr mm{*db};
   mm.undoMatchCall(*ma);
 }
 
@@ -309,13 +304,13 @@ void CourtTableView::onActionUndoCallTriggered()
 void CourtTableView::onActionAddCallTriggered()
 {
   auto ma = getSelectedMatch();
-  if (ma == nullptr) return;
+  if (!ma) return;
 
   QList<QDateTime> callTimes = ma->getAdditionalCallTimes();
-  if (callTimes.size() > MAX_NUM_ADD_CALL) return;
+  if (callTimes.size() > MaxNumAdditionalCalls) return;
 
-  auto co = ma->getCourt();
-  assert(co != nullptr);
+  auto co = ma->getCourt(nullptr);
+  assert(co);
 
   QString callText = GuiHelpers::prepCall(*ma, *co, callTimes.size() + 1);
 
@@ -334,13 +329,13 @@ void CourtTableView::onActionAddCallTriggered()
 void CourtTableView::onActionSwapRefereeTriggered()
 {
   auto ma = getSelectedMatch();
-  if (ma == nullptr) return;
+  if (!ma) return;
 
   // see if we can assign a new referee
-  if (ma->canAssignReferee(REFEREE_ACTION::SWAP) != ERR::OK) return;
+  if (ma->canAssignReferee(RefereeAction::Swap) != Error::OK) return;
 
   // trigger the assign-umpire-procedure
-  cmdAssignRefereeToMatch cmd{this, *ma, REFEREE_ACTION::SWAP};
+  cmdAssignRefereeToMatch cmd{this, *ma, RefereeAction::Swap};
   cmd.exec();
 }
 
@@ -355,8 +350,8 @@ void CourtTableView::onSectionHeaderDoubleClicked()
 
 void CourtTableView::onActionToggleMatchAssignmentModeTriggered()
 {
-  std::unique_ptr<Court> co = getSelectedCourt();
-  if (co == nullptr) return;
+  auto co = getSelectedCourt();
+  if (!co) return;
 
   bool isManual = co->isManualAssignmentOnly();
   co->setManualAssignment(!isManual);
@@ -366,10 +361,10 @@ void CourtTableView::onActionToggleMatchAssignmentModeTriggered()
 
 void CourtTableView::onActionToogleEnableStateTriggered()
 {
-  std::unique_ptr<Court> co = getSelectedCourt();
-  if (co == nullptr) return;
+  auto co = getSelectedCourt();
+  if (!co) return;
 
-  CourtMngr cm{db};
+  CourtMngr cm{*db};
   if (co->getState() == ObjState::CO_Disabled)
   {
     cm.enableCourt(*co);
@@ -382,8 +377,8 @@ void CourtTableView::onActionToogleEnableStateTriggered()
 
 void CourtTableView::onActionDeleteCourtTriggered()
 {
-  std::unique_ptr<Court> co = getSelectedCourt();
-  if (co == nullptr) return;
+  auto co = getSelectedCourt();
+  if (!co) return;
 
   // ask a safety question
   QString msg = tr("You are about to delete\n\n");
@@ -393,10 +388,10 @@ void CourtTableView::onActionDeleteCourtTriggered()
   int result = QMessageBox::question(this, tr("Delete court"), msg);
   if (result !=  QMessageBox::Yes) return;
 
-  CourtMngr cm{db};
-  ERR e = cm.deleteCourt(*co);
+  CourtMngr cm{*db};
+  Error e = cm.deleteCourt(*co);
 
-  if (e == CourtAlreadyUsed)
+  if (e == Error::CourtAlreadyUsed)
   {
     QString msg = tr("The court has already been used for matches and thus\n");
     msg += tr("it can't be deleted for technical reasons.\n\n");
@@ -406,7 +401,7 @@ void CourtTableView::onActionDeleteCourtTriggered()
     return;
   }
 
-  if (e == ERR::DatabaseError)
+  if (e == Error::DatabaseError)
   {
     QString msg = tr("A database error occured when trying to delete the court.\n");
     msg += tr("The court can't be deleted.\n\n");
@@ -416,7 +411,7 @@ void CourtTableView::onActionDeleteCourtTriggered()
     return;
   }
 
-  if (e != ERR::OK)
+  if (e != Error::OK)
   {
     QString msg = tr("Some error occured when trying to delete the court.\n\n");
     msg += tr("The court can't be deleted.\n\n");
@@ -431,7 +426,7 @@ void CourtTableView::onActionDeleteCourtTriggered()
 void CourtTableView::onReprintResultSheetTriggered()
 {
   auto curMatch = getSelectedMatch();
-  if (curMatch == nullptr) return;
+  if (!curMatch) return;
 
   // try to create the result sheet report with the
   // requested number of matches

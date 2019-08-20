@@ -49,7 +49,7 @@ namespace QTournament
     int getHighestUnusedCourtNumber() const;
     std::optional<Court> getCourt(const int courtNum);
     std::vector<Court> getAllCourts();
-    ERR renameCourt (Court& c, const QString& _newName);
+    Error renameCourt (Court& c, const QString& _newName);
     std::optional<Court> getCourtBySeqNum(int seqNum);
     bool hasCourtById(int id);
     std::optional<Court> getCourtById(int id);
@@ -61,10 +61,10 @@ namespace QTournament
     bool acquireCourt(const Court& co);
     bool releaseCourt(const Court& co);
 
-    ERR disableCourt(const Court& co);
-    ERR enableCourt(const Court& co);
+    Error disableCourt(const Court& co);
+    Error enableCourt(const Court& co);
 
-    ERR deleteCourt(const Court& co);
+    Error deleteCourt(const Court& co);
 
     std::string getSyncString(const std::vector<int>& rows) const override;
 

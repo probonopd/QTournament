@@ -31,14 +31,14 @@ namespace QTournament
     friend class Category;
 
   public:
-    virtual ERR canFreezeConfig() override;
+    virtual Error canFreezeConfig() override;
     virtual bool needsInitialRanking() override;
     virtual bool needsGroupInitialization() override;
-    virtual ERR prepareFirstRound() override;
+    virtual Error prepareFirstRound() override;
     virtual int calcTotalRoundsCount() const override;
     virtual std::function<bool(RankingEntry& a, RankingEntry& b)> getLessThanFunction() override;
-    virtual ERR onRoundCompleted(int round) override;
-    virtual PlayerPairList getRemainingPlayersAfterRound(int round, ERR *err) const override;
+    virtual Error onRoundCompleted(int round) override;
+    virtual PlayerPairList getRemainingPlayersAfterRound(int round, Error *err) const override;
     int getRoundCountPerIteration() const;
     int getIterationCount() const;
     static std::optional<PureRoundRobinCategory> getFromGenericCat(const Category& cat);

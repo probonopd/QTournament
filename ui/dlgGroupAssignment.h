@@ -31,14 +31,14 @@ class dlgGroupAssignment : public QDialog
 {
   Q_OBJECT
 public:
-  dlgGroupAssignment(const QTournament::TournamentDB& _db, QWidget* p, QTournament::Category& _cat);
+  dlgGroupAssignment(const QTournament::TournamentDB& _db, QWidget* p, const QTournament::Category& _cat);
   virtual ~dlgGroupAssignment();
   std::vector<QTournament::PlayerPairList> getGroupAssignments();
 
 private:
   Ui::dlgGroupAssignment ui;
-  std::reference_wrapper<const QTournament::TournamentDB> db;
-  QTournament::Category& cat;
+  const QTournament::TournamentDB& db;
+  const QTournament::Category& cat;
   QTournament::KO_Config cfg;
   
   QList<QTournament::PlayerPairList> getRandomizedPlayerPairListList();

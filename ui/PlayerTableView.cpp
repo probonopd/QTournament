@@ -171,9 +171,9 @@ void PlayerTableView::onEditPlayerTriggered()
   // name changes
   if (dlg.hasNameChange())
   {
-    ERR e = selectedPlayer->rename(dlg.getFirstName(), dlg.getLastName());
+    Error e = selectedPlayer->rename(dlg.getFirstName(), dlg.getLastName());
 
-    if (e != ERR::OK)
+    if (e != Error::OK)
     {
       QString msg = tr("Something went wrong when renaming the player. This shouldn't happen.");
       msg += tr("For the records: error code = ") + QString::number(static_cast<int> (e));
@@ -192,9 +192,9 @@ void PlayerTableView::onEditPlayerTriggered()
     bool isCatSelected = it.value();
 
     if (isAlreadyInCat && !isCatSelected) {    // remove player from category
-      ERR e = cmngr.removePlayerFromCategory(*selectedPlayer, cat);
+      Error e = cmngr.removePlayerFromCategory(*selectedPlayer, cat);
 
-      if (e != ERR::OK) {
+      if (e != Error::OK) {
         QString msg = tr("Something went wrong when removing the player from a category. This shouldn't happen.");
         msg += tr("For the records: error code = ") + QString::number(static_cast<int> (e));
         QMessageBox::warning(this, tr("WTF??"), msg);
@@ -202,9 +202,9 @@ void PlayerTableView::onEditPlayerTriggered()
     }
 
     if (!isAlreadyInCat && isCatSelected) {    // add player to category
-      ERR e = cmngr.addPlayerToCategory(*selectedPlayer, cat);
+      Error e = cmngr.addPlayerToCategory(*selectedPlayer, cat);
 
-      if (e != ERR::OK) {
+      if (e != Error::OK) {
         QString msg = tr("Something went wrong when adding the player to a category. This shouldn't happen.");
         msg += tr("For the records: error code = ") + QString::number(static_cast<int> (e));
         QMessageBox::warning(this, tr("WTF??"), msg);
@@ -218,9 +218,9 @@ void PlayerTableView::onEditPlayerTriggered()
   Team newTeam = dlg.getTeam();
   if (newTeam != selectedPlayer->getTeam())
   {
-    ERR e = tmngr.changeTeamAssigment(*selectedPlayer, newTeam);
+    Error e = tmngr.changeTeamAssigment(*selectedPlayer, newTeam);
 
-    if (e != ERR::OK) {
+    if (e != Error::OK) {
       QString msg = tr("Something went wrong when changing the player's team assignment. This shouldn't happen.");
       msg += tr("For the records: error code = ") + QString::number(static_cast<int> (e));
       QMessageBox::warning(this, tr("WTF??"), msg);
@@ -280,11 +280,11 @@ void PlayerTableView::onRemovePlayerTriggered()
   PlayerMngr pm{db};
 
   // can the player be deleted at all?
-  ERR err = pm.canDeletePlayer(*p);
+  Error err = pm.canDeletePlayer(*p);
 
   // player is still paired in a not-yet-started
   // category
-  if (err == ERR::PlayerAlreadyPaired)
+  if (err == Error::PlayerAlreadyPaired)
   {
     QString msg = tr("The player can't be removed from all categories.\n");
     msg += tr("Please make sure that the player is not assigned to any\n");
@@ -294,7 +294,7 @@ void PlayerTableView::onRemovePlayerTriggered()
   }
 
   // player in started category
-  if ((err != ERR::OK) && (err != ERR::PlayerAlreadyPaired))
+  if ((err != Error::OK) && (err != Error::PlayerAlreadyPaired))
   {
     QString msg = tr("The player can't be deleted anymore. The player is\n");
     msg += tr("most likely already involved/scheduled in matches.");
@@ -312,7 +312,7 @@ void PlayerTableView::onRemovePlayerTriggered()
 
   // we can actually delete the player. Let's go!
   err = pm.deletePlayer(*p);
-  if (err != ERR::OK) {
+  if (err != Error::OK) {
     QString msg = tr("Something went wrong when deleting the player. This shouldn't happen.\n\n");
     msg += tr("For the records: error code = ") + QString::number(static_cast<int> (err));
     QMessageBox::warning(this, tr("WTF??"), msg);
@@ -411,7 +411,7 @@ void PlayerTableView::onExportToExtDatabase()
   }
 
   cmdExportPlayerToExternalDatabase cmd{this, *selPlayer};
-  if (cmd.exec() == ERR::OK)
+  if (cmd.exec() == Error::OK)
   {
     QMessageBox::information(this, tr("Export player"), tr("Player data successfully exported."));
   }
@@ -423,8 +423,8 @@ void PlayerTableView::onSyncAllToExtDatabase()
 {
   PlayerMngr pm{db};
 
-  ERR err = pm.syncAllPlayersToExternalDatabase();
-  if (err != ERR::OK)
+  Error err = pm.syncAllPlayersToExternalDatabase();
+  if (err != Error::OK)
   {
     QMessageBox::warning(this, tr("Sync players"), tr("No database open!"));
     return;

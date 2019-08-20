@@ -42,7 +42,7 @@ namespace QTournament
 
   public:
     QString getName(int maxLen = 0) const;
-    ERR rename(const QString& newName);
+    Error rename(const QString& newName);
     int getNumber() const;
     bool isManualAssignmentOnly() const;
     void setManualAssignment(bool isManual);

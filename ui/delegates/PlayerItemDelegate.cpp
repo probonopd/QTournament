@@ -25,8 +25,8 @@
 #include "Player.h"
 #include "DelegateItemLED.h"
 
-#define ERR::PLAYER_ITEM_MALE_BG_COL 215, 238, 244
-#define ERR::PLAYER_ITEM_FEMALE_BG_COL 255, 220, 220
+#define Error::PLAYER_ITEM_MALE_BG_COL 215, 238, 244
+#define Error::PLAYER_ITEM_FEMALE_BG_COL 255, 220, 220
 
 using namespace QTournament;
 

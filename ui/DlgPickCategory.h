@@ -32,7 +32,7 @@ public:
 
 private:
   Ui::DlgPickCategory *ui;
-  std::reference_wrapper<const QTournament::TournamentDB> db;
+  const QTournament::TournamentDB& db;
 };
 
 #endif // DLGPICKCATEGORY_H

@@ -111,7 +111,7 @@ void ScheduleTabWidget::onBtnStageClicked()
   if (mg == nullptr) return;
 
   MatchMngr mm{db};
-  if (mm.canStageMatchGroup(*mg) != ERR::OK) return;
+  if (mm.canStageMatchGroup(*mg) != Error::OK) return;
 
   mm.stageMatchGroup(*mg);
 }
@@ -125,7 +125,7 @@ void ScheduleTabWidget::onBtnUnstageClicked()
   if (mg == nullptr) return;
 
   MatchMngr mm{db};
-  if (mm.canUnstageMatchGroup(*mg) != ERR::OK) return;
+  if (mm.canUnstageMatchGroup(*mg) != Error::OK) return;
 
   mm.unstageMatchGroup(*mg);
 }
@@ -164,7 +164,7 @@ void ScheduleTabWidget::updateButtons()
 
   // update the "stage"-button
   auto mg = ui->mgIdleView->getSelectedMatchGroup();
-  if ((mg != nullptr) && (mm.canStageMatchGroup(*mg) == ERR::OK))
+  if ((mg != nullptr) && (mm.canStageMatchGroup(*mg) == Error::OK))
   {
     ui->btnStage->setEnabled(true);
   } else {
@@ -173,7 +173,7 @@ void ScheduleTabWidget::updateButtons()
 
   // update the "unstage"-button
   mg = ui->mgStagedView->getSelectedMatchGroup();
-  if ((mg != nullptr) && (mm.canUnstageMatchGroup(*mg) == ERR::OK))
+  if ((mg != nullptr) && (mm.canUnstageMatchGroup(*mg) == Error::OK))
   {
     ui->btnUnstage->setEnabled(true);
   } else {
@@ -318,8 +318,8 @@ void ScheduleTabWidget::askAndStoreMatchResult(const Match &ma)
 
   // actually store the data and update the internal object states
   MatchMngr mm{db};
-  ERR err = mm.setMatchScoreAndFinalizeMatch(ma, *matchResult);
-  if (err != ERR::OK)
+  Error err = mm.setMatchScoreAndFinalizeMatch(ma, *matchResult);
+  if (err != Error::OK)
   {
     QString msg = tr("A dabase error occurred. The match result has not been stored.");
     QMessageBox::critical(this, tr("Store match result"), msg);
@@ -338,7 +338,7 @@ void ScheduleTabWidget::askAndStoreMatchResult(const Match &ma)
   // first of all, check if there is a next match available
   int nextMatchId;
   int nextCourtId;
-  ERR e = mm.getNextViableMatchCourtPair(&nextMatchId, &nextCourtId, true);
+  Error e = mm.getNextViableMatchCourtPair(&nextMatchId, &nextCourtId, true);
   if ((e == NoMatchAvail) || (nextMatchId < 1))
   {
     return;

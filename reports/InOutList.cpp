@@ -53,16 +53,16 @@ upSimpleReport InOutList::regenerateReport()
   setHeaderAndHeadline(result.get(), repName);
 
   // retrieve the "in and out" lists
-  ERR err;
+  Error err;
   auto specialCat = cat.convertToSpecializedObject();
   PlayerPairList inList = specialCat->getRemainingPlayersAfterRound(round, &err);
-  if (err != ERR::OK)
+  if (err != Error::OK)
   {
     result->writeLine(tr("An error occurred during report generation."));
     return result;
   }
   PlayerPairList outList = specialCat->getEliminatedPlayersAfterRound(round, &err);
-  if (err != ERR::OK)
+  if (err != Error::OK)
   {
     result->writeLine(tr("An error occurred during report generation."));
     return result;
@@ -173,7 +173,7 @@ bool InOutList::isValidCatRoundCombination(const Category& _cat, int _round)
 
   // if we're in match system "round robin with KO rounds", this report
   // makes only sense after the last round robin round
-  ERR::MatchSystem mSys = _cat.getMatchSystem();
+  MatchSystem mSys = _cat.getMatchSystem();
   if (mSys == MatchSystem::GroupsWithKO)
   {
     KO_Config cfg = KO_Config(_cat.getParameter_string(CatParameter::GroupConfig));

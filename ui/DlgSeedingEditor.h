@@ -51,12 +51,12 @@ private slots:
   void onKeypressTimerElapsed();
 
 private:
-  static constexpr int SUBSEQUENT_KEYPRESS_TIMEOUT__MS = 1000;
+  static constexpr int SubsequentKeypressTimeout_ms = 1000;
   Ui::DlgSeedingEditor *ui;
-  std::reference_wrapper<const QTournament::TournamentDB> db;
+  const QTournament::TournamentDB& db;
   void updateButtons();
   bool eventFilter(QObject *target, QEvent *event);
-  int positionInput;
+  int positionInput{0};
   QTimer* keypressTimer;
 };
 

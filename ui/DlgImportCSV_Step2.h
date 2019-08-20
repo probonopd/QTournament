@@ -23,7 +23,7 @@ class CSVDataTableWidget : public GuiHelpers::AutoSizingTableWidget
 
 public:
   CSVDataTableWidget(QWidget* parent = nullptr);
-  void setData(const QTournament::TournamentDB& _db, const std::vector<QTournament::CSVImportRecord>& initialData);
+  void setData(const QTournament::TournamentDB* _db, const std::vector<QTournament::CSVImportRecord>& initialData);
   QString getErrMsg(int row, int col);
   std::vector<QTournament::CSVImportRecord> getRecords() const {return records; }
   size_t getNumRecords() const { return records.size(); }
@@ -44,7 +44,7 @@ protected:
   void createOrUpdateCellItem(int row);
 
 private:
-  std::reference_wrapper<const QTournament::TournamentDB> db;
+  const QTournament::TournamentDB* db{nullptr};
   std::vector<QTournament::CSVImportRecord> records;
   std::vector<QTournament::CSVError> errList;
   std::vector<QTournament::Category> availCategories;
@@ -74,7 +74,7 @@ protected slots:
 
 private:
   Ui::DlgImportCSV_Step2 *ui;
-  std::reference_wrapper<const QTournament::TournamentDB> db;
+  const QTournament::TournamentDB& db;
 };
 
 #endif // DLGIMPORTCSV_STEP2_H
