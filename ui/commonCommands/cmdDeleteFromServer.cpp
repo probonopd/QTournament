@@ -52,7 +52,7 @@ ERR cmdDeleteFromServer::exec()
   // we quit without error message
   if (!(om->hasRegistrationSubmitted()))
   {
-    return ERR::WRONG_STATE;  // dummy value
+    return ERR::WrongState;  // dummy value
   }
 
   // ask for confirmation
@@ -75,7 +75,7 @@ ERR cmdDeleteFromServer::exec()
   {
     QString msg = tr("The tournament server is currently not available or there is no working internet connection.\n\nPlease try again later.");
     QMessageBox::information(parentWidget, tr("Remove tournament from server"), msg);
-    return ERR::WRONG_STATE;  // dummy error code; will not be evaluated by caller
+    return ERR::WrongState;  // dummy error code; will not be evaluated by caller
   }
 
   // if the secret signing key has not yet been unlocked, ask the
@@ -122,7 +122,7 @@ ERR cmdDeleteFromServer::exec()
     }
 
     QMessageBox::warning(parentWidget, tr("Connection failed"), msg);
-    return ERR::WRONG_STATE; // dummy value
+    return ERR::WrongState; // dummy value
   }
 
   // at this point, the data exchange with the server was successful (HTTP and Signatures).
@@ -147,7 +147,7 @@ ERR cmdDeleteFromServer::exec()
   }
 
   QMessageBox::warning(parentWidget, tr("Connection failed"), msg);
-  return ERR::WRONG_STATE; // dummy value
+  return ERR::WrongState; // dummy value
 
 }
 

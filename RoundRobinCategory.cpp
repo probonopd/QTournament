@@ -52,27 +52,27 @@ namespace QTournament
   {
     if (getState() != ObjState::CAT_Config)
     {
-      return ERR::CONFIG_ALREADY_FROZEN;
+      return ERR::ConfigAlreadyFrozen;
     }
     
     // make sure there no unpaired players in singles or doubles
     if ((getMatchType() != MatchType::Singles) && (hasUnpairedPlayers()))
     {
-      return ERR::UNPAIRED_PLAYERS;
+      return ERR::UnpairedPlayers;
     }
     
     // make sure we have at least three players
     PlayerPairList pp = getPlayerPairs();
     if (pp.size() < 3)
     {
-      return ERR::INVALID_PLAYER_COUNT;
+      return ERR::InvalidPlayerCount;
     }
 
     // make sure we have a valid group configuration
     KO_Config cfg = KO_Config(getParameter_string(CatParameter::GroupConfig));
     if (!(cfg.isValid(pp.size())))
     {
-      return ERR::INVALID_KO_CONFIG;
+      return ERR::InvalidKoConfig;
     }
     
     return ERR::OK;
@@ -96,7 +96,7 @@ namespace QTournament
 
   ERR RoundRobinCategory::prepareFirstRound()
   {
-    if (getState() != ObjState::CAT_Idle) return ERR::WRONG_STATE;
+    if (getState() != ObjState::CAT_Idle) return ERR::WrongState;
 
     MatchMngr mm{db};
 
@@ -277,7 +277,7 @@ namespace QTournament
     CatRoundStatus crs = getRoundStatus();
     if (round > crs.getFinishedRoundsCount())
     {
-      if (err != nullptr) *err = ERR::INVALID_ROUND;
+      if (err != nullptr) *err = ERR::InvalidRound;
       return PlayerPairList();
     }
 
@@ -314,7 +314,7 @@ namespace QTournament
       result = this->getRemainingPlayersAfterRound(round-1, &e);
       if (e != ERR::OK)
       {
-        if (err != nullptr) *err = ERR::INVALID_ROUND;
+        if (err != nullptr) *err = ERR::InvalidRound;
         return PlayerPairList();
       }
 
@@ -344,7 +344,7 @@ namespace QTournament
     }
 
     // we should never reach this point
-    if (err != nullptr) *err = ERR::INVALID_ROUND;
+    if (err != nullptr) *err = ERR::InvalidRound;
     return PlayerPairList();
   }
 
@@ -366,7 +366,7 @@ namespace QTournament
   {
     if (getState() != ObjState::CAT_WaitForIntermediateSeeding)
     {
-      return ERR::CATEGORY_NEEDS_NO_SEEDING;
+      return ERR::CategoryNeedsNoSeeding;
     }
 
     // make sure that the required player pairs and the
@@ -376,13 +376,13 @@ namespace QTournament
     {
       if (std::find(controlList.begin(), controlList.end(), pp) == controlList.end())
       {
-        return ERR::INVALID_SEEDING_LIST;
+        return ERR::InvalidSeedingList;
       }
       Sloppy::eraseAllOccurencesFromVector<PlayerPair>(controlList, pp);
     }
     if (!(controlList.empty()))
     {
-      return ERR::INVALID_SEEDING_LIST;
+      return ERR::InvalidSeedingList;
     }
 
     // okay, the list is valid. Now lets generate single-KO matches

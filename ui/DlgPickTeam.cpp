@@ -90,7 +90,7 @@ void DlgPickTeam::onFinishedRequested()
   QString msg;
   if (e != ERR::OK)
   {
-    if (e == NAME_EXISTS)
+    if (e == NameExists)
     {
       msg = tr("A team of that name already exists!");
     } else {

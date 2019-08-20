@@ -893,7 +893,7 @@ namespace QTournament
             MatchMngr mngr{db};
             result += mngr.getSyncString_MatchGroups(idxList);
           }
-          if (curTabName == TAB_MatchSystem::Ranking)
+          if (curTabName == TAB_MatchSystem)
           {
             RankingMngr mngr{db};
             result += mngr.getSyncString(idxList);

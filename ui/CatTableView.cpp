@@ -132,14 +132,14 @@ void CategoryTableView::onCategoryDoubleClicked(const QModelIndex& index)
     newName = newName.trimmed();
     ERR e = cm.renameCategory(selectedCat, newName);
 
-    if (e == ERR::INVALID_NAME)
+    if (e == ERR::InvalidName)
     {
       QMessageBox::critical(this, tr("Rename category"), tr("The name you entered is invalid (e.g., too long)"));
       isOk = false;
       continue;
     }
 
-    if (e == NAME_EXISTS)
+    if (e == NameExists)
     {
       QMessageBox::critical(this, tr("Rename category"), tr("A category of this name already exists"));
       isOk = false;
@@ -154,7 +154,7 @@ void CategoryTableView::onAddCategory()
 {
   // try to create new categories using a
   // canonical name until it finally succeeds
-  ERR e = NAME_EXISTS;
+  ERR e = NameExists;
   int cnt = 0;
   while (e != ERR::OK)
   {
@@ -211,7 +211,7 @@ void CategoryTableView::onRemoveCategory()
     return;
   }
 
-  if (err == ERR::PLAYER_NOT_REMOVABLE_FROM_CATEGORY)
+  if (err == ERR::PlayerNotRemovableFromCategory)
   {
     QString msg = tr("Cannot remove all players from the category.\n");
     msg += tr("The category cannot be deleted.");
@@ -263,22 +263,22 @@ void CategoryTableView::onRunCategory()
 
   // pre-test category-specific conditions
   ERR e = selectedCat->canFreezeConfig();
-  if (e == CONFIG_ALREADY_FROZEN)
+  if (e == ConfigAlreadyFrozen)
   {
     QMessageBox::critical(this, tr("Run Category"),
       tr("This category has already been started (STAT != Config)"));
   }
-  else if (e == UNPAIRED_PLAYERS)
+  else if (e == UnpairedPlayers)
   {
     QMessageBox::critical(this, tr("Run Category"),
       tr("This category has unpaired players!\nPlease pair all players before starting the matches."));
   }
-  else if (e == ERR::INVALID_PLAYER_COUNT)
+  else if (e == ERR::InvalidPlayerCount)
   {
     QMessageBox::critical(this, tr("Run Category"),
       tr("The number of players / player pairs in this category is not sufficient\nto start the category."));
   }
-  else if (e == ERR::INVALID_KO_CONFIG)
+  else if (e == ERR::InvalidKoConfig)
   {
     QMessageBox::critical(this, tr("Run Category"),
       tr("The setup for the round robin phase and the KO rounds are invalid!"));
@@ -293,7 +293,7 @@ void CategoryTableView::onRunCategory()
   CatMngr cm{db};
   e = cm.freezeConfig(*selectedCat);
   // after we checked for category-specific errors above, we can only see general errors here
-  if (e == NOT_ALL_PLAYERS_REGISTERED)
+  if (e == NotAllPlayersRegistered)
   {
     QMessageBox::critical(this, tr("Run Category"),
       tr("Some players in this category have not yet registered."));
@@ -374,27 +374,27 @@ void CategoryTableView::onRunCategory()
     if (e != ERR::OK)
     {
       QString msg = tr("Something is wrong with the group assignment. This shouldn't happen.\nFault:");
-      if (e == CATEGORY_NOT_YET_FROZEN)
+      if (e == CategoryNotYetFrozen)
       {
         msg += tr("Category state not valid for group assignments (STAT != FROZEN)");
       }
-      else if (e == CATEGORY_NEEDS_NO_GROUP_ASSIGNMENTS)
+      else if (e == CategoryNeedsNoGroupAssignments)
       {
         msg += tr("This category needs no group assignments");
       }
-      else if (e == ERR::INVALID_KO_CONFIG)
+      else if (e == ERR::InvalidKoConfig)
       {
         msg += tr("The configuration of the groups and the KO rounds is invalid.");
       }
-      else if (e == ERR::INVALID_GROUP_NUM)
+      else if (e == ERR::InvalidGroupNum)
       {
         msg += tr("The number of assigned groups doesn't match the number of required groups.");
       }
-      else if (e == ERR::INVALID_PLAYER_COUNT)
+      else if (e == ERR::InvalidPlayerCount)
       {
         msg += tr("The number of assigned players doesn't match the number of players in the category.");
       }
-      else if (e == ERR::PLAYER_ALREADY_IN_CATEGORY)
+      else if (e == ERR::PlayerAlreadyInCategory)
       {
         msg += tr("There are invalid players in the group assignments.");
       }
@@ -415,19 +415,19 @@ void CategoryTableView::onRunCategory()
     if (e != ERR::OK)
     {
       QString msg = tr("Something is wrong with the initial ranking. This shouldn't happen.\nFault:");
-      if (e == CATEGORY_NOT_YET_FROZEN)
+      if (e == CategoryNotYetFrozen)
       {
         msg += tr("Category state not valid for setting the initial ranking (STAT != FROZEN)");
       }
-      else if (e == CATEGORY_NEEDS_NO_SEEDING)
+      else if (e == CategoryNeedsNoSeeding)
       {
         msg += tr("This category needs no initial ranking.");
       }
-      else if (e == ERR::INVALID_PLAYER_COUNT)
+      else if (e == ERR::InvalidPlayerCount)
       {
         msg += tr("The number of player in the initial ranking doesn't match the number of players in the category.");
       }
-      else if (e == ERR::PLAYER_ALREADY_IN_CATEGORY)
+      else if (e == ERR::PlayerAlreadyInCategory)
       {
         msg += tr("There are invalid players in the initial ranking.");
       }
@@ -469,7 +469,7 @@ void CategoryTableView::onCloneCategory()
   ERR err = cm.cloneCategory(cat, tr("Clone"));
   if (err == ERR::OK) return;
 
-  if ((err == ERR::INVALID_NAME) || (err == NAME_EXISTS))
+  if ((err == ERR::InvalidName) || (err == NameExists))
   {
     QString msg = tr("Cloning the category failed due to\n");
     msg += tr("issues defining the clone's name.\n\n");

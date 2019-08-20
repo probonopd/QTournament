@@ -299,7 +299,7 @@ void MatchTableView::onMatchDoubleClicked(const QModelIndex& index)
   // check if there is a court available
   ERR err;
   auto nextCourt = cm.autoSelectNextUnusedCourt(&err, false);
-  if (err == ONLY_MANUAL_COURT_AVAIL)
+  if (err == OnlyManualCourtAvail)
   {
     QString msg = tr("There are no free courts for automatic match assignment available right now.\n");
     msg += tr("However, there is at least one free court for manual match assignment.\n\n");
@@ -321,7 +321,7 @@ void MatchTableView::onMatchDoubleClicked(const QModelIndex& index)
     }
   }
 
-  if (err == NO_COURT_AVAIL)
+  if (err == NoCourtAvail)
   {
     QString msg = tr("The match cannot be started since there is no\n");
     msg += tr("free court available right now.");

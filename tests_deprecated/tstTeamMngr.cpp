@@ -29,8 +29,8 @@ void tstTeamMngr::testCreateNewTeam()
   TeamMngr tmngr(db);
   
   // try empty or invalid name
-  CPPUNIT_ASSERT(tmngr.createNewTeam("") == INVALID_NAME);
-  CPPUNIT_ASSERT(tmngr.createNewTeam(QString::null) == INVALID_NAME);
+  CPPUNIT_ASSERT(tmngr.createNewTeam("") == InvalidName);
+  CPPUNIT_ASSERT(tmngr.createNewTeam(QString::null) == InvalidName);
   CPPUNIT_ASSERT((*db)[TAB_TEAM].length() == 0);
   
   // actually create a valid team
@@ -40,7 +40,7 @@ void tstTeamMngr::testCreateNewTeam()
   CPPUNIT_ASSERT(r[GENERIC_NAME_FIELD_NAME].toString() == "t1");
   
   // name collision
-  CPPUNIT_ASSERT(tmngr.createNewTeam("t1") == NAME_EXISTS);
+  CPPUNIT_ASSERT(tmngr.createNewTeam("t1") == NameExists);
   CPPUNIT_ASSERT((*db)[TAB_TEAM].length() == 1);
   
   delete db;
@@ -58,12 +58,12 @@ void tstTeamMngr::testCreateNewTeam2()
   TeamMngr tmngr(db);
   
   // try empty or invalid name
-  CPPUNIT_ASSERT(tmngr.createNewTeam("") == NOT_USING_TEAMS);
-  CPPUNIT_ASSERT(tmngr.createNewTeam(QString::null) == NOT_USING_TEAMS);
+  CPPUNIT_ASSERT(tmngr.createNewTeam("") == NotUsingTeams);
+  CPPUNIT_ASSERT(tmngr.createNewTeam(QString::null) == NotUsingTeams);
   CPPUNIT_ASSERT((*db)[TAB_TEAM].length() == 0);
   
   // actually create a valid team
-  CPPUNIT_ASSERT(tmngr.createNewTeam("t1") == NOT_USING_TEAMS);
+  CPPUNIT_ASSERT(tmngr.createNewTeam("t1") == NotUsingTeams);
   CPPUNIT_ASSERT((*db)[TAB_TEAM].length() == 0);
   
   delete db;

@@ -64,7 +64,7 @@ ERR cmdFullSync::exec()
     }
 
     QMessageBox::warning(parentWidget, tr("Full sync failed"), msg);
-    return ERR::WRONG_STATE; // dummy value
+    return ERR::WrongState; // dummy value
   }
 
   // at this point, the data exchange with the server was successful (HTTP and Signatures).
@@ -89,7 +89,7 @@ ERR cmdFullSync::exec()
   if (!(msg.isEmpty()))
   {
     QMessageBox::warning(parentWidget, tr("Full sync failed"), msg);
-    return ERR::WRONG_STATE; // dummy value
+    return ERR::WrongState; // dummy value
   }
 
   QMessageBox::information(parentWidget, tr("Full sync successful"),

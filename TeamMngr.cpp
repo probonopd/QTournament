@@ -45,24 +45,24 @@ namespace QTournament
 
     if (!(cfg.getBool(CFG_KEY_USE_TEAMS)))
     {
-      return ERR::NOT_USING_TEAMS;
+      return ERR::NotUsingTeams;
     }
     
     QString teamName = tm.trimmed();
     
     if (teamName.isEmpty())
     {
-      return ERR::INVALID_NAME;
+      return ERR::InvalidName;
     }
     
     if (teamName.length() > MAX_NAME_LEN)
     {
-      return ERR::INVALID_NAME;
+      return ERR::InvalidName;
     }
     
     if (hasTeam(teamName))
     {
-      return ERR::NAME_EXISTS;
+      return ERR::NameExists;
     }
     
     // create a new table row
@@ -129,13 +129,13 @@ namespace QTournament
     // Ensure the new name is valid
     if ((newName.isEmpty()) || (newName.length() > MAX_NAME_LEN))
     {
-      return ERR::INVALID_NAME;
+      return ERR::InvalidName;
     }
     
     // make sure the new name doesn't exist yet
     if (hasTeam(newName))
     {
-      return ERR::NAME_EXISTS;
+      return ERR::NameExists;
     }
     
     t.row.update(GENERIC_NAME_FIELD_NAME, newName.toUtf8().constData());
@@ -196,7 +196,7 @@ namespace QTournament
 
     if (!(cfg.getBool(CFG_KEY_USE_TEAMS)))
     {
-      return ERR::NOT_USING_TEAMS;
+      return ERR::NotUsingTeams;
     }
     
     Team oldTeam = p.getTeam();
@@ -206,7 +206,7 @@ namespace QTournament
       return ERR::OK;  // no database access necessary
     }
     
-    p.row.update(PLAYINGTEAM_REF, newTeam.getId());
+    p.row.update(PL_TEAM_REF, newTeam.getId());
     CentralSignalEmitter::getInstance()->teamAssignmentChanged(p, oldTeam, newTeam);
     
     return ERR::OK;
@@ -226,7 +226,7 @@ namespace QTournament
   PlayerList TeamMngr::getPlayersForTeam(const Team& t) const
   {
     DbTab playerTab = DbTab{db.get(), TAB_PLAYER, false};
-    return getObjectsByColumnValue<Player>(playerTab, PLAYINGTEAM_REF, t.getId());
+    return getObjectsByColumnValue<Player>(playerTab, PL_TEAM_REF, t.getId());
   }
 
   //----------------------------------------------------------------------------

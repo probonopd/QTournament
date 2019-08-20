@@ -55,17 +55,17 @@ namespace QTournament
     
     if (catName.isEmpty())
     {
-      return ERR::INVALID_NAME;
+      return ERR::InvalidName;
     }
     
     if (catName.length() > MAX_NAME_LEN)
     {
-      return ERR::INVALID_NAME;
+      return ERR::InvalidName;
     }
     
     if (hasCategory(catName))
     {
-      return ERR::NAME_EXISTS;
+      return ERR::NameExists;
     }
     
     // create a new table row and set some arbitrary default data
@@ -95,13 +95,13 @@ namespace QTournament
   {
     if (catNamePostfix.isEmpty())
     {
-      return ERR::INVALID_NAME;
+      return ERR::InvalidName;
     }
 
     // set an arbitrarily chosen maximum of 10 characters for the postfix
     if (catNamePostfix.length() > 10)
     {
-      return ERR::INVALID_NAME;
+      return ERR::InvalidName;
     }
 
     // try create a new category until we've found a valid name
@@ -124,7 +124,7 @@ namespace QTournament
 
       // try to actually create the category
       err = createNewCategory(dstCatName);
-    } while ((err == ERR::NAME_EXISTS) && (cnt < 100));   // a maximum limit of 100 retries
+    } while ((err == ERR::NameExists) && (cnt < 100));   // a maximum limit of 100 retries
 
     // did we succeed?
     if (err != ERR::OK)
@@ -235,7 +235,7 @@ namespace QTournament
   {
     if (cat.getState() != ObjState::CAT_Config)
     {
-      return ERR::CATEGORY_NOT_CONFIGURALE_ANYMORE;
+      return ERR::CategoryNotConfiguraleAnymore;
     }
 
     // TODO: implement checks, updates to other tables etc
@@ -259,7 +259,7 @@ namespace QTournament
     // we can only change the match type while being in config mode
     if (cat.getState() != ObjState::CAT_Config)
     {
-      return ERR::CATEGORY_NOT_CONFIGURALE_ANYMORE;
+      return ERR::CategoryNotConfiguraleAnymore;
     }
     
     // temporarily store all existing player pairs
@@ -278,7 +278,7 @@ namespace QTournament
     }
     if (!canSplit)
     {
-      return ERR::INVALID_RECONFIG;  // if only one pair can't be split, refuse to change the match type
+      return ERR::InvalidReconfig;  // if only one pair can't be split, refuse to change the match type
     }
     
     // actually split all pairs
@@ -321,7 +321,7 @@ namespace QTournament
     // we can only change the sex while being in config mode
     if (cat.getState() != ObjState::CAT_Config)
     {
-      return ERR::CATEGORY_NOT_CONFIGURALE_ANYMORE;
+      return ERR::CategoryNotConfiguraleAnymore;
     }
     
     // unless we switch to "don't care", we have to make sure that
@@ -337,7 +337,7 @@ namespace QTournament
         // for all other players, check if we can remove them
         if (!(cat.canRemovePlayer(p)))
         {
-          return ERR::INVALID_RECONFIG;
+          return ERR::InvalidReconfig;
         }
       }
       
@@ -368,7 +368,7 @@ namespace QTournament
 
         // check if we can split "false" mixed pairs (= same sex pairs)
         if (cat.canSplitPlayers(pp.getPlayer1(), pp.getPlayer2()) != ERR::OK) {
-          return ERR::INVALID_RECONFIG;
+          return ERR::InvalidReconfig;
         }
       }
       
@@ -399,24 +399,24 @@ namespace QTournament
   {
     if (!(cat.canAddPlayers()))
     {
-      return ERR::CATEGORY_CLOSED_FOR_MORE_PLAYERS;
+      return ERR::CategoryClosedForMorePlayers;
     }
     
     if (cat.hasPlayer(p))
     {
-      return ERR::PLAYER_ALREADY_IN_CATEGORY;
+      return ERR::PlayerAlreadyInCategory;
     }
     
     if (cat.getAddState(p) != CatAddState::CanJoin)
     {
-      return ERR::PLAYER_NOT_SUITABLE;
+      return ERR::PlayerNotSuitable;
     }
     
     // TODO: check that player is not permanently disabled
     
     // actually add the player
     ColumnValueClause cvc;
-    cvc.addCol(P2C_CONFIGREF, cat.getId());
+    cvc.addCol(P2C_CAT_REF, cat.getId());
     cvc.addCol(P2C_PLAYER_REF, p.getId());
     DbTab tabP2C{db, TAB_P2C, false};
     tabP2C.insertRow(cvc);
@@ -432,12 +432,12 @@ namespace QTournament
   {
     if (!(cat.canRemovePlayer(p)))
     {
-      return ERR::PLAYER_NOT_REMOVABLE_FROM_CATEGORY;
+      return ERR::PlayerNotRemovableFromCategory;
     }
     
     if (!(cat.hasPlayer(p)))
     {
-      return ERR::PLAYER_NOT_IN_CATEGORY;
+      return ERR::PlayerNotInCategory;
     }
     
     if (cat.isPaired(p))
@@ -456,7 +456,7 @@ namespace QTournament
     
     // actually delete the assignment
     WhereClause wc;
-    wc.addCol(P2C_CONFIGREF, cat.getId());
+    wc.addCol(P2C_CAT_REF, cat.getId());
     wc.addCol(P2C_PLAYER_REF, p.getId());
     DbTab tabP2C{db, TAB_P2C, false};
     int cnt = tabP2C.deleteRowsByWhereClause(wc);
@@ -487,10 +487,10 @@ namespace QTournament
 
     // a few checks for the cowards
     int catId = cat.getId();
-    assert(DbTab(db, TAB_P2C, false).getMatchCountForColumnValue(P2C_CONFIGREF, catId) == 0);
+    assert(DbTab(db, TAB_P2C, false).getMatchCountForColumnValue(P2C_CAT_REF, catId) == 0);
     assert(DbTab(db, TAB_PAIRS, false).getMatchCountForColumnValue(PAIRS_CONFIGREF, catId) == 0);
-    assert(DbTab(db, TAB_MATCH_GROUP, false).getMatchCountForColumnValue(MG_ConfigREF, catId) == 0);
-    assert(DbTab(db, TAB_MatchSystem::Ranking, false).getMatchCountForColumnValue(RA_CONFIGREF, catId) == 0);
+    assert(DbTab(db, TAB_MATCH_GROUP, false).getMatchCountForColumnValue(MG_CAT_REF, catId) == 0);
+    assert(DbTab(db, TAB_MatchSystem, false).getMatchCountForColumnValue(RA_CAT_REF, catId) == 0);
     assert(DbTab(db, TAB_BRACKET_VIS, false).getMatchCountForColumnValue(BV_CONFIGREF, catId) == 0);
 
     // the actual deletion
@@ -561,14 +561,14 @@ namespace QTournament
       t.deleteRowsByColumnValue(BV_CONFIGREF, catId);
 
       // deletion 2: ranking data, because it has only outgoing refs
-      t = DbTab{db, TAB_MatchSystem::Ranking, false};
-      t.deleteRowsByColumnValue(RA_CONFIGREF, catId);
+      t = DbTab{db, TAB_MatchSystem, false};
+      t.deleteRowsByColumnValue(RA_CAT_REF, catId);
 
       // deletion 3a: matches, they are refered to by bracket vis data only
       // deletion 3b: match groups, they are refered to only by ranking data and matches
       t = DbTab{db, TAB_MATCH, false};
       DbTab mgTab{db, TAB_MATCH_GROUP, false};
-      for (const auto& mg : getObjectsByColumnValue<MatchGroup>(mgTab, MG_ConfigREF, cat.getId()))
+      for (const auto& mg : getObjectsByColumnValue<MatchGroup>(mgTab, MG_CAT_REF, cat.getId()))
       {
         for (const auto& ma : mg.getMatches())
         {
@@ -590,7 +590,7 @@ namespace QTournament
 
       // deletion 5: player to category allocation
       t = DbTab{db, TAB_P2C, false};
-      t.deleteRowsByColumnValue(P2C_CONFIGREF, catId);
+      t.deleteRowsByColumnValue(P2C_CAT_REF, catId);
 
       // final deletion: the category itself
       int deletedSeqNum = cat.getSeqNum();
@@ -612,7 +612,7 @@ namespace QTournament
     }
     catch (...)
     {
-      return ERR::DATABASE_ERROR;
+      return ERR::DatabaseError;
     }
   }
 
@@ -869,13 +869,13 @@ namespace QTournament
   {
     DbTab pairsTab{db, TAB_PAIRS, false};
     auto row = tab.get2(pairId);
-    if (!row) return ERR::INVALID_ID;
+    if (!row) return ERR::InvalidId;
 
     auto p1Id = row->getInt2(PAIRS_PLAYER1_REF);
     auto p2Id = row->getInt2(PAIRS_PLAYER2_REF);
     if (!p1Id || !p2Id)
     {
-      return ERR::INVALID_ID;
+      return ERR::InvalidId;
     }
 
     PlayerMngr pmngr{db};
@@ -893,13 +893,13 @@ namespace QTournament
     // Ensure the new name is valid
     if ((newName.isEmpty()) || (newName.length() > MAX_NAME_LEN))
     {
-      return ERR::INVALID_NAME;
+      return ERR::InvalidName;
     }
     
     // make sure the new name doesn't exist yet
     if (hasCategory(newName))
     {
-      return ERR::NAME_EXISTS;
+      return ERR::NameExists;
     }
     
     cat.row.update(GENERIC_NAME_FIELD_NAME, QString2StdString(newName));
@@ -923,7 +923,7 @@ namespace QTournament
     {
       if (pl.getState() == ObjState::PL_WaitForRegistration)
       {
-        return ERR::NOT_ALL_PLAYERS_REGISTERED;
+        return ERR::NotAllPlayersRegistered;
       }
     }
     
@@ -997,7 +997,7 @@ namespace QTournament
     }
     catch (...)
     {
-      return ERR::DATABASE_ERROR;
+      return ERR::DatabaseError;
     }
   }
 
@@ -1010,12 +1010,12 @@ namespace QTournament
     
     if (oldState == ObjState::CAT_Config)
     {
-      return ERR::CATEGORY_NOT_YET_FROZEN;
+      return ERR::CategoryNotYetFrozen;
     }
     
     if (oldState != ObjState::CAT_Frozen)
     {
-      return ERR::CATEGORY_NOT_UNFREEZEABLE;
+      return ERR::CategoryNotUnfreezeable;
     }
     
     // remove all player pairs without a partner from the official pair list
@@ -1052,7 +1052,7 @@ namespace QTournament
     }
     catch (...)
     {
-      return ERR::DATABASE_ERROR;
+      return ERR::DatabaseError;
     }
   }
 
@@ -1064,7 +1064,7 @@ namespace QTournament
     // we can only transition to "IDLE" if we are "FROZEN"
     if (cat.getState() != ObjState::CAT_Frozen)
     {
-      return ERR::CATEGORY_NOT_YET_FROZEN;
+      return ERR::CategoryNotYetFrozen;
     }
 
     // let's check if we have all the data we need
@@ -1226,7 +1226,7 @@ namespace QTournament
     // check 1: the category must be in state CONFIG
     if (cat.getState() != ObjState::CAT_Config)
     {
-      return ERR::CATEGORY_NOT_CONFIGURALE_ANYMORE;
+      return ERR::CategoryNotConfiguraleAnymore;
     }
 
     // check 2: all players must be removable from this category
@@ -1234,7 +1234,7 @@ namespace QTournament
     {
       if (!(cat.canRemovePlayer(pl)))
       {
-        return ERR::PLAYER_NOT_REMOVABLE_FROM_CATEGORY;
+        return ERR::PlayerNotRemovableFromCategory;
       }
     }
 
@@ -1248,7 +1248,7 @@ namespace QTournament
   {
     if (c.getState() != ObjState::CAT_WaitForIntermediateSeeding)
     {
-      return ERR::CATEGORY_NEEDS_NO_SEEDING;
+      return ERR::CategoryNeedsNoSeeding;
     }
 
     auto specialCat = c.convertToSpecializedObject();

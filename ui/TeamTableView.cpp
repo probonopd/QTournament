@@ -197,14 +197,14 @@ void TeamTableView::onTeamDoubleClicked(const QModelIndex& index)
     TeamMngr tm{db};
     ERR e = tm.renameTeam(*selectedTeam, newName);
 
-    if (e == ERR::INVALID_NAME)
+    if (e == ERR::InvalidName)
     {
       QMessageBox::critical(this, tr("Rename team"), tr("The name you entered is invalid (e.g., too long)"));
       isOk = false;
       continue;
     }
 
-    if (e == NAME_EXISTS)
+    if (e == NameExists)
     {
       QMessageBox::critical(this, tr("Rename team"), tr("A team of this name already exists"));
       isOk = false;

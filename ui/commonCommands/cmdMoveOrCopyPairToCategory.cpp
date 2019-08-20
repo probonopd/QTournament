@@ -53,13 +53,13 @@ ERR cmdMoveOrCopyPairToCategory::exec()
   {
     QString msg = tr("The provided player pair is invalid.");
     QMessageBox::warning(parentWidget, tr("Copy or move player pair"), msg);
-    return ERR::INVALID_PLAYER_PAIR;
+    return ERR::InvalidPlayerPair;
   }
   if (srcCat != (*ppCat))
   {
     QString msg = tr("The pair is not assigned to the source category of this operation.");
     QMessageBox::warning(parentWidget, tr("Move or copy player pair"), msg);
-    return ERR::INVALID_PLAYER_PAIR;
+    return ERR::InvalidPlayerPair;
   }
 
   // check if the target category is singles category
@@ -67,7 +67,7 @@ ERR cmdMoveOrCopyPairToCategory::exec()
   {
     QString msg = tr("Cannot move or copy pair to a singles category");
     QMessageBox::warning(parentWidget, tr("Move or copy player pair"), msg);
-    return NO_CATEGORY_FOR_PAIRING;
+    return NoCategoryForPairing;
   }
 
   // if this is a move operation: make sure we can actually delete
@@ -82,7 +82,7 @@ ERR cmdMoveOrCopyPairToCategory::exec()
     {
       QString msg = tr("The pair cannot be removed from the source category of this operation.");
       QMessageBox::warning(parentWidget, tr("Move player pair"), msg);
-      return ERR::INVALID_PLAYER_PAIR;
+      return ERR::InvalidPlayerPair;
     }
   }
 
@@ -91,7 +91,7 @@ ERR cmdMoveOrCopyPairToCategory::exec()
   {
     QString msg = tr("Cannot add one or both players to the target category.");
     QMessageBox::warning(parentWidget, tr("Move or copy player pair"), msg);
-    return ERR::INVALID_PLAYER_PAIR;
+    return ERR::InvalidPlayerPair;
   }
 
   // transfer the two players in two separate operations

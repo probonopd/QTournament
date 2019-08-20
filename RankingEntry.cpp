@@ -30,7 +30,7 @@ namespace QTournament
 {
 
   RankingEntry::RankingEntry(const TournamentDB& _db, int rowId)
-  :TournamentDatabaseObject(_db, TAB_MatchSystem::Ranking, rowId)
+  :TournamentDatabaseObject(_db, TAB_MatchSystem, rowId)
   {
   }
 
@@ -52,7 +52,7 @@ namespace QTournament
 
   Category RankingEntry::getCategory() const
   {
-    int catId = row.getInt(RA_CONFIGREF);
+    int catId = row.getInt(RA_CAT_REF);
     CatMngr cm{db};
     return cm.getCategoryById(catId);
   }

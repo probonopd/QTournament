@@ -46,7 +46,7 @@ ERR cmdCallMatch::exec()
 
   // check if we need to ask the user for a referee
   ERR err = mm.canAssignMatchToCourt(ma, co);
-  if (err == ERR::MATCH_NEEDS_REFEREE)
+  if (err == ERR::MatchNeedsReferee)
   {
     callStartedWithUnassignedReferee = true;
     cmdAssignRefereeToMatch cmd{parentWidget, ma, REFEREE_ACTION::MATCH_CALL};
@@ -56,7 +56,7 @@ ERR cmdCallMatch::exec()
     // if the match still needs a referee, the user
     // has canceled the selection dialog
     err = mm.canAssignMatchToCourt(ma, co);
-    if (err == ERR::MATCH_NEEDS_REFEREE) return ERR::OK;
+    if (err == ERR::MatchNeedsReferee) return ERR::OK;
   }
 
   // all necessary pre-checks should have been performed before

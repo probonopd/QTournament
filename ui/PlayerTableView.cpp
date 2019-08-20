@@ -284,7 +284,7 @@ void PlayerTableView::onRemovePlayerTriggered()
 
   // player is still paired in a not-yet-started
   // category
-  if (err == ERR::PLAYER_ALREADY_PAIRED)
+  if (err == ERR::PlayerAlreadyPaired)
   {
     QString msg = tr("The player can't be removed from all categories.\n");
     msg += tr("Please make sure that the player is not assigned to any\n");
@@ -294,7 +294,7 @@ void PlayerTableView::onRemovePlayerTriggered()
   }
 
   // player in started category
-  if ((err != ERR::OK) && (err != ERR::PLAYER_ALREADY_PAIRED))
+  if ((err != ERR::OK) && (err != ERR::PlayerAlreadyPaired))
   {
     QString msg = tr("The player can't be deleted anymore. The player is\n");
     msg += tr("most likely already involved/scheduled in matches.");

@@ -52,29 +52,29 @@ namespace QTournament
     
     if (first.isEmpty() || last.isEmpty())
     {
-      return ERR::INVALID_NAME;
+      return ERR::InvalidName;
     }
     
     if ((first.length() > MAX_NAME_LEN) || (last.length() > MAX_NAME_LEN))
     {
-      return ERR::INVALID_NAME;
+      return ERR::InvalidName;
     }
     
     if (hasPlayer(first, last))
     {
-      return ERR::NAME_EXISTS;
+      return ERR::NameExists;
     }
     
     if (sex == DONT_CARE)
     {
-      return ERR::INVALID_SEX;
+      return ERR::InvalidSex;
     }
     
     // prepare a new table row
     ColumnValueClause cvc;
-    cvc.addCol(PLAYINGFNAME, first.toUtf8().constData());
-    cvc.addCol(PLAYINGLNAME, last.toUtf8().constData());
-    cvc.addCol(PLAYINGSEX, static_cast<int>(sex));
+    cvc.addCol(PL_FNAME, first.toUtf8().constData());
+    cvc.addCol(PL_LNAME, last.toUtf8().constData());
+    cvc.addCol(PL_SEX, static_cast<int>(sex));
     cvc.addCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(ObjState::PL_Idle));
     
     // set the team reference, if applicable
@@ -83,17 +83,17 @@ namespace QTournament
     {
       if (teamName.isEmpty())
       {
-        return ERR::INVALID_TEAM;
+        return ERR::InvalidTeam;
       }
       
       TeamMngr tm{db};
       if (!(tm.hasTeam(teamName)))
       {
-        return ERR::INVALID_TEAM;
+        return ERR::InvalidTeam;
       }
       
       Team t = tm.getTeam(teamName);
-      cvc.addCol(PLAYINGTEAM_REF, t.getId());
+      cvc.addCol(PL_TEAM_REF, t.getId());
     }
     
     // create the new player row
@@ -111,8 +111,8 @@ namespace QTournament
   bool PlayerMngr::hasPlayer(const QString& firstName, const QString& lastName)
   {
     WhereClause wc;
-    wc.addCol(PLAYINGFNAME, firstName.toUtf8().constData());
-    wc.addCol(PLAYINGLNAME, lastName.toUtf8().constData());
+    wc.addCol(PL_FNAME, firstName.toUtf8().constData());
+    wc.addCol(PL_LNAME, lastName.toUtf8().constData());
     
     return (tab.getMatchCountForWhereClause(wc) > 0);
   }
@@ -132,8 +132,8 @@ namespace QTournament
   Player PlayerMngr::getPlayer(const QString& firstName, const QString& lastName)
   {
     WhereClause wc;
-    wc.addCol(PLAYINGFNAME, firstName.toUtf8().constData());
-    wc.addCol(PLAYINGLNAME, lastName.toUtf8().constData());
+    wc.addCol(PL_FNAME, firstName.toUtf8().constData());
+    wc.addCol(PL_LNAME, lastName.toUtf8().constData());
     auto r = tab.getSingleRowByWhereClause2(wc);
 
     if (!r.has_value())
@@ -166,11 +166,11 @@ namespace QTournament
     // Ensure the new name is valid
     if ((newFirst.isEmpty()) && (newLast.isEmpty()))
     {
-      return ERR::INVALID_NAME;
+      return ERR::InvalidName;
     }
     if ((newFirst.length() > MAX_NAME_LEN) || (newLast.length() > MAX_NAME_LEN))
     {
-      return ERR::INVALID_NAME;
+      return ERR::InvalidName;
     }
     
     // combine the new name from old and new values
@@ -186,12 +186,12 @@ namespace QTournament
     // make sure the new name doesn't exist yet
     if (hasPlayer(newFirst, newLast))
     {
-      return ERR::NAME_EXISTS;
+      return ERR::NameExists;
     }
     
     ColumnValueClause cvc;
-    cvc.addCol(PLAYINGFNAME, newFirst.toUtf8().constData());
-    cvc.addCol(PLAYINGLNAME, newLast.toUtf8().constData());
+    cvc.addCol(PL_FNAME, newFirst.toUtf8().constData());
+    cvc.addCol(PL_LNAME, newLast.toUtf8().constData());
 
     p.row.update(cvc);
     
@@ -278,12 +278,12 @@ namespace QTournament
 
     for (Player p : pl)
     {
-      if (p.getState() != ObjState::PL_Idle) return ERR::PLAYER_NOT_IDLE;
+      if (p.getState() != ObjState::PL_Idle) return ERR::PlayerNotIdle;
     }
 
     // check for the referee, if any
     RefereeMode refMode = ma.get_EFFECTIVE_RefereeMode();
-    if ((refMode != RefereeMode::RefereeMode::None) && (refMode != RefereeMode::RefereeMode::HandWritten))
+    if ((refMode != RefereeMode::None) && (refMode != RefereeMode::HandWritten))
     {
       auto referee = ma.getAssignedReferee();
 
@@ -291,7 +291,7 @@ namespace QTournament
       if (!referee.has_value()) return ERR::OK;
 
       // if a referee has been assigned, check its availability
-      if (referee->getState() != ObjState::PL_Idle) return ERR::REFEREE_NOT_IDLE;
+      if (referee->getState() != ObjState::PL_Idle) return ERR::RefereeNotIdle;
     }
 
     return ERR::OK;
@@ -436,7 +436,7 @@ namespace QTournament
     // if the player isn't IDLE, we can't switch to "wait for registration"
     if (plStat != ObjState::PL_Idle)
     {
-      return ERR::PLAYER_ALREADY_IN_MATCHES;
+      return ERR::PlayerAlreadyInMatches;
     }
 
     // okay, the player is idle and shall be switched to "wait state".
@@ -446,7 +446,7 @@ namespace QTournament
       ObjState catStat = cat.getState();
       if ((catStat != ObjState::CAT_Config) && (catStat != ObjState::CAT_Finalized))
       {
-        return ERR::PLAYER_ALREADY_IN_MATCHES;
+        return ERR::PlayerAlreadyInMatches;
       }
     }
 
@@ -537,19 +537,19 @@ namespace QTournament
   {
     std::optional<ExternalPlayerDB> extDb{};
 
-    if (fname.isEmpty()) return ERR::EPD__INVALID_DATABASE_NAME;
+    if (fname.isEmpty()) return ERR::EPD_InvalidDatabaseName;
 
     // try to create the new database
     if (createNew)
     {
       extDb = ExternalPlayerDB::createNew(fname);
-      if (!extDb) return ERR::EPD__CREATION_FAILED;
+      if (!extDb) return ERR::EPD_CreationFailed;
     }
     // try to open an existing database
     else
     {
       extDb = ExternalPlayerDB::openExisting(fname);
-      if (!extDb) return ERR::EPD__NOT_FOUND;
+      if (!extDb) return ERR::EPD_NotFound;
     }
 
     // close the old database, if open
@@ -580,7 +580,7 @@ namespace QTournament
   {
     if (!(hasExternalPlayerDatabaseConfigured()))
     {
-      return ERR::EPD__NOT_CONFIGURED;
+      return ERR::EPD_NotConfigured;
     }
 
     auto cfg = SqliteOverlay::KeyValueTab{db.get(), TAB_CFG};
@@ -627,7 +627,7 @@ namespace QTournament
     auto extPlayer = extPlayerDb->getPlayer(extPlayerId);
     if (!extPlayer)
     {
-      Sloppy::assignIfNotNull<ERR>(err, ERR::INVALID_ID);
+      Sloppy::assignIfNotNull<ERR>(err, ERR::InvalidId);
       return std::optional<Player>{};
     }
 
@@ -645,7 +645,7 @@ namespace QTournament
     auto p = getPlayer2(playerId);
     if (!p.has_value())
     {
-      return ERR::INVALID_ID;
+      return ERR::InvalidId;
     }
 
     return exportPlayerToExternalDatabase(*p);
@@ -673,7 +673,7 @@ namespace QTournament
       ExternalPlayerDatabaseEntry entry{p.getFirstName(), p.getLastName(), p.getSex()};
       auto newPlayer = extPlayerDb->storeNewPlayer(entry);
 
-      return (!newPlayer) ? ERR::EPD__CREATION_FAILED : ERR::OK;
+      return (!newPlayer) ? ERR::EPD_CreationFailed : ERR::OK;
     }
 
     // update existing player, if applicable
@@ -712,7 +712,7 @@ namespace QTournament
 
   std::string PlayerMngr::getSyncString(const std::vector<int>& rows) const
   {
-    std::vector<Sloppy::estring> cols = {"id", PLAYINGFNAME, PLAYINGLNAME, GENERIC_STATE_FIELD_NAME, PLAYINGSEX, PL_Referee_COUNT, PLAYINGTEAM_REF};
+    std::vector<Sloppy::estring> cols = {"id", PL_FNAME, PL_LNAME, GENERIC_STATE_FIELD_NAME, PL_SEX, PL_Referee_COUNT, PL_TEAM_REF};
 
     return db.get().getSyncStringForTable(TAB_PLAYER, cols, rows);
   }
@@ -721,7 +721,7 @@ namespace QTournament
 
   std::string PlayerMngr::getSyncString_P2C(std::vector<int> rows) const
   {
-    std::vector<Sloppy::estring> cols = {"id", P2C_PLAYER_REF, P2C_CONFIGREF};
+    std::vector<Sloppy::estring> cols = {"id", P2C_PLAYER_REF, P2C_CAT_REF};
 
     return db.get().getSyncStringForTable(TAB_P2C, cols, rows);
   }
@@ -745,7 +745,7 @@ namespace QTournament
     {
       if (!(c.canRemovePlayer(p)))
       {
-        return ERR::PLAYER_NOT_REMOVABLE_FROM_CATEGORY;
+        return ERR::PlayerNotRemovableFromCategory;
       }
     }
 
@@ -773,7 +773,7 @@ namespace QTournament
       int cnt = matchTab.getMatchCountForWhereClause(where);
       if (cnt != 0)
       {
-        return ERR::PLAYER_ALREADY_IN_MATCHES;
+        return ERR::PlayerAlreadyInMatches;
       }
     }
 
@@ -788,7 +788,7 @@ namespace QTournament
     int cnt = matchTab.getMatchCountForWhereClause(where);
     if (cnt != 0)
     {
-      return ERR::PLAYER_ALREADY_IN_MATCHES;
+      return ERR::PlayerAlreadyInMatches;
     }
 
     // at this point, we have pairs but no matches yet. this means
@@ -796,7 +796,7 @@ namespace QTournament
     // not yet started category
     if (!(assignedPairs.empty()))
     {
-      return ERR::PLAYER_ALREADY_PAIRED;
+      return ERR::PlayerAlreadyPaired;
     }
 
     return ERR::OK;

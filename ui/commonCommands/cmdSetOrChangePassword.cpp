@@ -45,7 +45,7 @@ ERR cmdSetOrChangePassword::exec()
   {
     DlgPassword dlg{parentWidget, DlgPassword::DlgMode_ChangePassword};
     int rc = dlg.exec();
-    if (rc != QDialog::Accepted) return ERR::WRONG_STATE;  // dummy return value
+    if (rc != QDialog::Accepted) return ERR::WrongState;  // dummy return value
 
     oe = om->setPassword(dlg.getNewPassword(), dlg.getCurrentPassword());
 
@@ -53,7 +53,7 @@ ERR cmdSetOrChangePassword::exec()
 
     DlgPassword dlg{parentWidget, DlgPassword::DlgMode_SetNewPassword};
     int rc = dlg.exec();
-    if (rc != QDialog::Accepted) return ERR::WRONG_STATE;  // dummy return value;
+    if (rc != QDialog::Accepted) return ERR::WrongState;  // dummy return value;
 
     oe = om->setPassword(dlg.getNewPassword());
   }
@@ -62,7 +62,7 @@ ERR cmdSetOrChangePassword::exec()
   {
     QString msg{tr("An error occurred an the password could not be stored.")};
     QMessageBox::warning(parentWidget, tr("Set password"), msg);
-    return ERR::WRONG_STATE;  // dummy return value;
+    return ERR::WrongState;  // dummy return value;
   }
 
   QString msg{tr("The password has been set successfully!")};

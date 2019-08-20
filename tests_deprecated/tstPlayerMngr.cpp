@@ -33,20 +33,20 @@ void tstPlayerMngr::testCreateNewPlayer()
   PlayerMngr* pmngr = Tournament::getPlayerMngr();
   
   // try empty or invalid name
-  CPPUNIT_ASSERT(pmngr->createNewPlayer("", "", M, "xxx") == INVALID_NAME);
-  CPPUNIT_ASSERT(pmngr->createNewPlayer("", "abcd", M, "xxx") == INVALID_NAME);
-  CPPUNIT_ASSERT(pmngr->createNewPlayer("abcd", "", M, "xxx") == INVALID_NAME);
-  CPPUNIT_ASSERT(pmngr->createNewPlayer(QString::null, QString::null, M, "xxx") == INVALID_NAME);
-  CPPUNIT_ASSERT(pmngr->createNewPlayer(QString::null, "abcd", M, "xxx") == INVALID_NAME);
-  CPPUNIT_ASSERT(pmngr->createNewPlayer("abcd", QString::null, M, "xxx") == INVALID_NAME);
+  CPPUNIT_ASSERT(pmngr->createNewPlayer("", "", M, "xxx") == InvalidName);
+  CPPUNIT_ASSERT(pmngr->createNewPlayer("", "abcd", M, "xxx") == InvalidName);
+  CPPUNIT_ASSERT(pmngr->createNewPlayer("abcd", "", M, "xxx") == InvalidName);
+  CPPUNIT_ASSERT(pmngr->createNewPlayer(QString::null, QString::null, M, "xxx") == InvalidName);
+  CPPUNIT_ASSERT(pmngr->createNewPlayer(QString::null, "abcd", M, "xxx") == InvalidName);
+  CPPUNIT_ASSERT(pmngr->createNewPlayer("abcd", QString::null, M, "xxx") == InvalidName);
   
   // try invalid sex
-  CPPUNIT_ASSERT(pmngr->createNewPlayer("abc", "def", DONT_CARE, "xxx") == INVALID_SEX);
+  CPPUNIT_ASSERT(pmngr->createNewPlayer("abc", "def", DONT_CARE, "xxx") == InvalidSex);
   
   // try invalid team reference
-  CPPUNIT_ASSERT(pmngr->createNewPlayer("abc", "def", M, "xxx") == INVALID_TEAM);
-  CPPUNIT_ASSERT(pmngr->createNewPlayer("abc", "def", M, "") == INVALID_TEAM);
-  CPPUNIT_ASSERT(pmngr->createNewPlayer("abc", "def", M, QString::null) == INVALID_TEAM);
+  CPPUNIT_ASSERT(pmngr->createNewPlayer("abc", "def", M, "xxx") == InvalidTeam);
+  CPPUNIT_ASSERT(pmngr->createNewPlayer("abc", "def", M, "") == InvalidTeam);
+  CPPUNIT_ASSERT(pmngr->createNewPlayer("abc", "def", M, QString::null) == InvalidTeam);
   
   // make sure nothing has been inserted so far
   CPPUNIT_ASSERT((*db)[TAB_PLAYER].length() == 0);
@@ -58,14 +58,14 @@ void tstPlayerMngr::testCreateNewPlayer()
   // insert a valid player
   CPPUNIT_ASSERT(pmngr->createNewPlayer("abc", "def", M, "t1") == OK);
   CPPUNIT_ASSERT((*db)[TAB_PLAYER].length() == 1);
-  CPPUNIT_ASSERT((*db)[TAB_PLAYER][1][PLAYINGFNAME].toString() == "abc");
-  CPPUNIT_ASSERT((*db)[TAB_PLAYER][1][PLAYINGLNAME].toString() == "def");
-  CPPUNIT_ASSERT((*db)[TAB_PLAYER][1][PLAYINGSEX].toInt() == 0);
-  CPPUNIT_ASSERT((*db)[TAB_PLAYER][1][PLAYINGTEAM_REF].toInt() == 1);
+  CPPUNIT_ASSERT((*db)[TAB_PLAYER][1][PL_FNAME].toString() == "abc");
+  CPPUNIT_ASSERT((*db)[TAB_PLAYER][1][PL_LNAME].toString() == "def");
+  CPPUNIT_ASSERT((*db)[TAB_PLAYER][1][PL_SEX].toInt() == 0);
+  CPPUNIT_ASSERT((*db)[TAB_PLAYER][1][PL_TEAM_REF].toInt() == 1);
   CPPUNIT_ASSERT((*db)[TAB_PLAYER][1][GENERIC_STATE_FIELD_NAME].toInt() == static_cast<int>(STAT_PL_Idle));
   
   // try to insert the same player again
-  CPPUNIT_ASSERT(pmngr->createNewPlayer("abc", "def", M, "t1") == NAME_EXISTS);
+  CPPUNIT_ASSERT(pmngr->createNewPlayer("abc", "def", M, "t1") == NameExists);
   CPPUNIT_ASSERT((*db)[TAB_PLAYER].length() == 1);
   
   // Fake the database to become a tournament without teams
@@ -77,9 +77,9 @@ void tstPlayerMngr::testCreateNewPlayer()
   CPPUNIT_ASSERT(pmngr->createNewPlayer("f2", "def", M, "sdklfjlsdf") == OK);
   CPPUNIT_ASSERT(pmngr->createNewPlayer("f3", "def", M, QString::null) == OK);
   CPPUNIT_ASSERT((*db)[TAB_PLAYER].length() == 4);
-  CPPUNIT_ASSERT((*db)[TAB_PLAYER][2][PLAYINGTEAM_REF].isNull());
-  CPPUNIT_ASSERT((*db)[TAB_PLAYER][3][PLAYINGTEAM_REF].isNull());
-  CPPUNIT_ASSERT((*db)[TAB_PLAYER][4][PLAYINGTEAM_REF].isNull());
+  CPPUNIT_ASSERT((*db)[TAB_PLAYER][2][PL_TEAM_REF].isNull());
+  CPPUNIT_ASSERT((*db)[TAB_PLAYER][3][PL_TEAM_REF].isNull());
+  CPPUNIT_ASSERT((*db)[TAB_PLAYER][4][PL_TEAM_REF].isNull());
   
   delete db;
   printEndMsg();
@@ -211,14 +211,14 @@ void tstPlayerMngr::testRenamePlayer()
   CPPUNIT_ASSERT(p.getDisplayName() == "l2, f2");
   
   // rename to invalid name
-  CPPUNIT_ASSERT(pmngr->renamePlayer(p, "", "") == INVALID_NAME);
-  CPPUNIT_ASSERT(pmngr->renamePlayer(p, QString::null, "") == INVALID_NAME);
-  CPPUNIT_ASSERT(pmngr->renamePlayer(p, "", QString::null) == INVALID_NAME);
-  CPPUNIT_ASSERT(pmngr->renamePlayer(p, QString::null, "") == INVALID_NAME);
+  CPPUNIT_ASSERT(pmngr->renamePlayer(p, "", "") == InvalidName);
+  CPPUNIT_ASSERT(pmngr->renamePlayer(p, QString::null, "") == InvalidName);
+  CPPUNIT_ASSERT(pmngr->renamePlayer(p, "", QString::null) == InvalidName);
+  CPPUNIT_ASSERT(pmngr->renamePlayer(p, QString::null, "") == InvalidName);
   CPPUNIT_ASSERT(p.getDisplayName() == "l2, f2");
   
   // rename to existing name
-  CPPUNIT_ASSERT(pmngr->renamePlayer(p, "f1", "l1") == NAME_EXISTS);
+  CPPUNIT_ASSERT(pmngr->renamePlayer(p, "f1", "l1") == NameExists);
   CPPUNIT_ASSERT(p.getDisplayName() == "l2, f2");
   
   // partial rename

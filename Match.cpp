@@ -197,7 +197,7 @@ namespace QTournament
 
     if (!scoreEntry)
     {
-      Sloppy::assignIfNotNull<ERR>(err, ERR::NO_MATCH_RESULT_SET);
+      Sloppy::assignIfNotNull<ERR>(err, ERR::NoMatchResultSet);
       return {};
     }
 
@@ -213,7 +213,7 @@ namespace QTournament
       // but if it does, we clear the invalid database entry
       // and return an error
       row.updateToNull(MA_RESULT);
-      Sloppy::assignIfNotNull<ERR>(err, ERR::INCONSISTENT_MATCH_RESULT_STRING);
+      Sloppy::assignIfNotNull<ERR>(err, ERR::InconsistentMatchResultString);
       return {};
     }
 
@@ -231,7 +231,7 @@ namespace QTournament
     auto courtId = row.getInt2(MA_COURT_REF);
     if (!courtId)
     {
-      Sloppy::assignIfNotNull<ERR>(err, ERR::NO_COURT_ASSIGNED);
+      Sloppy::assignIfNotNull<ERR>(err, ERR::NoCourtAssigned);
       return {};
     }
 
@@ -452,18 +452,18 @@ namespace QTournament
     {
       if (!((stat == ObjState::MA_Busy) || (stat == ObjState::MA_Ready)))
       {
-        return ERR::MATCH_NOT_CONFIGURALE_ANYMORE;
+        return ERR::MatchNotConfiguraleAnymore;
       }
     }
     else if (refAction == REFEREE_ACTION::SWAP)
     {
       if (!((stat == ObjState::MA_Running) && (hasRefereeAssigned() == true)))
       {
-        return ERR::MATCH_NOT_CONFIGURALE_ANYMORE;
+        return ERR::MatchNotConfiguraleAnymore;
       }
     } else {
       // default
-      return ERR::MATCH_NOT_CONFIGURALE_ANYMORE;
+      return ERR::MatchNotConfiguraleAnymore;
     }
 
     // don't allow assignments if the mode is set to RefereeMode::None
@@ -471,7 +471,7 @@ namespace QTournament
     RefereeMode mod = get_EFFECTIVE_RefereeMode();
     if ((mod == RefereeMode::RefereeMode::None) || (mod == RefereeMode::RefereeMode::HandWritten))
     {
-      return ERR::MATCH_NEEDS_NO_REFEREE;
+      return ERR::MatchNeedsNoReferee;
     }
 
     return ERR::OK;

@@ -42,13 +42,13 @@ namespace QTournament
     
     if (name.length() > MAX_NAME_LEN)
     {
-      Sloppy::assignIfNotNull<ERR>(err, ERR::INVALID_NAME);
+      Sloppy::assignIfNotNull<ERR>(err, ERR::InvalidName);
       return {};
     }
     
     if (hasCourt(courtNum))
     {
-      Sloppy::assignIfNotNull<ERR>(err, ERR::COURT_NUMBER_EXISTS);
+      Sloppy::assignIfNotNull<ERR>(err, ERR::CourtNumberExists);
       return {};
     }
     
@@ -128,7 +128,7 @@ namespace QTournament
     // Ensure the new name is valid
     if (newName.length() > MAX_NAME_LEN)
     {
-      return ERR::INVALID_NAME;
+      return ERR::InvalidName;
     }
         
     c.row.update(GENERIC_NAME_FIELD_NAME, QString2StdString(newName));
@@ -247,7 +247,7 @@ namespace QTournament
     if (stat == ObjState::CO_Disabled) return ERR::OK;   // nothing to do for us
 
     // prohibit a state change if the court is in use
-    if (stat == ObjState::CO_Busy) return ERR::COURT_BUSY;
+    if (stat == ObjState::CO_Busy) return ERR::CourtBusy;
 
     // change the court state and emit a change event
     co.setState(ObjState::CO_Disabled);
@@ -261,7 +261,7 @@ namespace QTournament
   {
     ObjState stat = co.getState();
 
-    if (stat != ObjState::CO_Disabled) return ERR::COURT_NOT_DISABLED;
+    if (stat != ObjState::CO_Disabled) return ERR::CourtNotDisabled;
 
     // change the court state and emit a change event
     co.setState(ObjState::CO_Avail);
@@ -277,7 +277,7 @@ namespace QTournament
     DbTab matchTab{db, TAB_MATCH, false};
     if (matchTab.getMatchCountForColumnValue(MA_COURT_REF, co.getId()) > 0)
     {
-      return ERR::COURT_ALREADY_USED;
+      return ERR::CourtAlreadyUsed;
     }
 
     // after this check it is safe to delete to court because we won't
@@ -321,7 +321,7 @@ namespace QTournament
     if (nextManualCourt)
     {
       // okay, there is court available at all
-      Sloppy::assignIfNotNull<ERR>(err, ERR::NO_COURT_AVAIL);
+      Sloppy::assignIfNotNull<ERR>(err, ERR::NoCourtAvail);
       return {};
     }
 
@@ -335,7 +335,7 @@ namespace QTournament
     }
 
     // indicate to the user that there would be a manual court
-    Sloppy::assignIfNotNull<ERR>(err, ERR::ONLY_MANUAL_COURT_AVAIL);
+    Sloppy::assignIfNotNull<ERR>(err, ERR::OnlyManualCourtAvail);
     return {};
   }
 

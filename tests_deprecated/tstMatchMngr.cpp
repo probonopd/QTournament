@@ -35,13 +35,13 @@ void tstMatchMngr::testCreateNewGroup()
   ERR e;
   CPPUNIT_ASSERT(ms.getState() == STAT_CAT_Config);
   auto mg = mm->createMatchGroup(ms, 2, 3, &e);
-  CPPUNIT_ASSERT(e == CATEGORY_STILL_CONFIGURABLE);
+  CPPUNIT_ASSERT(e == CategoryStillConfigurable);
   CPPUNIT_ASSERT(mg == nullptr);
   TabRow catRow = (*db)[TAB_CATEGORY][1];
   catRow.update(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_CAT_Frozen));
   CPPUNIT_ASSERT(ms.getState() == STAT_CAT_Frozen);
   mg = mm->createMatchGroup(ms, 2, 3, &e);
-  CPPUNIT_ASSERT(e == CATEGORY_STILL_CONFIGURABLE);
+  CPPUNIT_ASSERT(e == CategoryStillConfigurable);
   CPPUNIT_ASSERT(mg == nullptr);
 
   // fake a valid category state
@@ -50,19 +50,19 @@ void tstMatchMngr::testCreateNewGroup()
 
   // try empty or invalid parameters
   mg = mm->createMatchGroup(ms, -5, 1, &e);
-  CPPUNIT_ASSERT(e == INVALID_ROUND);
+  CPPUNIT_ASSERT(e == InvalidRound);
   CPPUNIT_ASSERT(mg == nullptr);
 
   mg = mm->createMatchGroup(ms, 0, 1, &e);
-  CPPUNIT_ASSERT(e == INVALID_ROUND);
+  CPPUNIT_ASSERT(e == InvalidRound);
   CPPUNIT_ASSERT(mg == nullptr);
 
   mg = mm->createMatchGroup(ms, 1, -42, &e);
-  CPPUNIT_ASSERT(e == INVALID_GROUP_NUM);
+  CPPUNIT_ASSERT(e == InvalidGroupNum);
   CPPUNIT_ASSERT(mg == nullptr);
 
   mg = mm->createMatchGroup(ms, 1, 0, &e);
-  CPPUNIT_ASSERT(e == INVALID_GROUP_NUM);
+  CPPUNIT_ASSERT(e == InvalidGroupNum);
   CPPUNIT_ASSERT(mg == nullptr);
   
   // make sure nothing has been inserted so far
@@ -75,12 +75,12 @@ void tstMatchMngr::testCreateNewGroup()
   
   // create the same group twice
   auto mg2 = mm->createMatchGroup(ms, 2, 3, &e);
-  CPPUNIT_ASSERT(e == MATCH_GROUP_EXISTS);
+  CPPUNIT_ASSERT(e == MatchGroupExists);
   CPPUNIT_ASSERT(mg2 == nullptr);
   
   // check database entries
   CPPUNIT_ASSERT((*db)[TAB_MATCH_GROUP].length() == 1);
-  CPPUNIT_ASSERT((*db)[TAB_MATCH_GROUP][1][MG_ConfigREF].toInt() == 1);
+  CPPUNIT_ASSERT((*db)[TAB_MATCH_GROUP][1][MG_CAT_REF].toInt() == 1);
   CPPUNIT_ASSERT((*db)[TAB_MATCH_GROUP][1][MG_ROUND].toInt() == 2);
   CPPUNIT_ASSERT((*db)[TAB_MATCH_GROUP][1][MG_GRP_NUM].toInt() == 3);
   CPPUNIT_ASSERT(mg->getState() == STAT_MG_Config);
@@ -90,7 +90,7 @@ void tstMatchMngr::testCreateNewGroup()
   CPPUNIT_ASSERT(e == OK);
   CPPUNIT_ASSERT(mg2 != 0);
   CPPUNIT_ASSERT((*db)[TAB_MATCH_GROUP].length() == 2);
-  CPPUNIT_ASSERT((*db)[TAB_MATCH_GROUP][2][MG_ConfigREF].toInt() == 1);
+  CPPUNIT_ASSERT((*db)[TAB_MATCH_GROUP][2][MG_CAT_REF].toInt() == 1);
   CPPUNIT_ASSERT((*db)[TAB_MATCH_GROUP][2][MG_ROUND].toInt() == 4);
   CPPUNIT_ASSERT((*db)[TAB_MATCH_GROUP][2][MG_GRP_NUM].toInt() == -8);
   CPPUNIT_ASSERT(mg2->getState() == STAT_MG_Config);
@@ -113,16 +113,16 @@ void tstMatchMngr::testHasGroup()
   Category ms = Tournament::getCatMngr()->getCategoryById(1);
   ERR e;
   CPPUNIT_ASSERT(mm->hasMatchGroup(ms, -5, 1, &e) == false);
-  CPPUNIT_ASSERT(e == INVALID_ROUND);
+  CPPUNIT_ASSERT(e == InvalidRound);
 
   CPPUNIT_ASSERT(mm->hasMatchGroup(ms, 0, 1, &e) == false);
-  CPPUNIT_ASSERT(e == INVALID_ROUND);
+  CPPUNIT_ASSERT(e == InvalidRound);
 
   CPPUNIT_ASSERT(mm->hasMatchGroup(ms, 1, -42, &e) == false);
-  CPPUNIT_ASSERT(e == INVALID_GROUP_NUM);
+  CPPUNIT_ASSERT(e == InvalidGroupNum);
 
   CPPUNIT_ASSERT(mm->hasMatchGroup(ms, 1, 0, &e) == false);
-  CPPUNIT_ASSERT(e == INVALID_GROUP_NUM);
+  CPPUNIT_ASSERT(e == InvalidGroupNum);
   
   // try empty or invalid parameters without
   // pointer to an error code
@@ -148,7 +148,7 @@ void tstMatchMngr::testHasGroup()
   
   // look up a non-existing group with valid parameters
   CPPUNIT_ASSERT(mm->hasMatchGroup(ms, 3, 3, &e) == false);
-  CPPUNIT_ASSERT(e == NO_SUCH_MATCH_GROUP);
+  CPPUNIT_ASSERT(e == NoSuchMatchGroup);
   CPPUNIT_ASSERT(mm->hasMatchGroup(ms, 3, 3) == false);
   
   delete db;
@@ -190,7 +190,7 @@ void tstMatchMngr::testGetGroup()
   
   CPPUNIT_ASSERT(mg2 != nullptr);
   mg2 = mm->getMatchGroup(ms, 3, 3, &e);
-  CPPUNIT_ASSERT(e == NO_SUCH_MATCH_GROUP);
+  CPPUNIT_ASSERT(e == NoSuchMatchGroup);
   CPPUNIT_ASSERT(mg2 == nullptr);
   
   delete db;
@@ -235,7 +235,7 @@ void tstMatchMngr::testCreateNewMatch()
 
   // try to create a new match in a frozen match group
   auto ma2 = mm->createMatch(*grp, &e);
-  CPPUNIT_ASSERT(e == MATCH_GROUP_NOT_CONFIGURALE_ANYMORE);
+  CPPUNIT_ASSERT(e == MatchGroupNotConfiguraleAnymore);
   CPPUNIT_ASSERT(ma2 == nullptr);
 
   delete db;
@@ -341,7 +341,7 @@ void tstMatchMngr::testCanAssignPlayerPairToMatch()
   {
     tabMatch[m.getId()].update(GENERIC_STATE_FIELD_NAME, static_cast<int>(stat));
     CPPUNIT_ASSERT(m.getState() == stat);
-    CPPUNIT_ASSERT(mm->canAssignPlayerPairToMatch(m, msPair1) == MATCH_NOT_CONFIGURALE_ANYMORE);
+    CPPUNIT_ASSERT(mm->canAssignPlayerPairToMatch(m, msPair1) == MatchNotConfiguraleAnymore);
   }
 
   // reset match state
@@ -349,14 +349,14 @@ void tstMatchMngr::testCanAssignPlayerPairToMatch()
   CPPUNIT_ASSERT(m.getState() == STAT_MA_Incomplete);
 
   // try to assign a player pair from the wrong category
-  CPPUNIT_ASSERT(mm->canAssignPlayerPairToMatch(m, lsPair1) == PLAYER_NOT_IN_CATEGORY);
-  CPPUNIT_ASSERT(mm->canAssignPlayerPairToMatch(m, weirdPair) == PLAYER_NOT_IN_CATEGORY);  // single male, also in MS, but this pair is not in MS
+  CPPUNIT_ASSERT(mm->canAssignPlayerPairToMatch(m, lsPair1) == PlayerNotInCategory);
+  CPPUNIT_ASSERT(mm->canAssignPlayerPairToMatch(m, weirdPair) == PlayerNotInCategory);  // single male, also in MS, but this pair is not in MS
 
   // "m" is a match in round 3, group 1
   //
   // try to assign a pair with "unassigned group number" or with a group number != 1
-  CPPUNIT_ASSERT(mm->canAssignPlayerPairToMatch(m, msPair2) == GROUP_NUMBER_MISMATCH);  // unassigned number for pair2
-  CPPUNIT_ASSERT(mm->canAssignPlayerPairToMatch(m, msPair1) == GROUP_NUMBER_MISMATCH);  // group num 3 for pair 1
+  CPPUNIT_ASSERT(mm->canAssignPlayerPairToMatch(m, msPair2) == GroupNumberMismatch);  // unassigned number for pair2
+  CPPUNIT_ASSERT(mm->canAssignPlayerPairToMatch(m, msPair1) == GroupNumberMismatch);  // group num 3 for pair 1
 
   // switch to a match in round 1, group 3
   mg = mm->getMatchGroupsForCat(ms, 1).at(2);
@@ -377,12 +377,12 @@ void tstMatchMngr::testCanAssignPlayerPairToMatch()
   CPPUNIT_ASSERT(matchRow[MA_PAIR2_REF].toInt() == msPair3.getPairId());
 
   // try to use the same pair in the same round and group twice
-  CPPUNIT_ASSERT(mm->canAssignPlayerPairToMatch(ma2, msPair1) == PLAYER_ALREADY_ASSIGNED_TO_OTHER_MATCH_IN_THE_SAME_ROUND_AND_CATEGORY);
-  CPPUNIT_ASSERT(mm->canAssignPlayerPairToMatch(ma2, msPair3) == PLAYER_ALREADY_ASSIGNED_TO_OTHER_MATCH_IN_THE_SAME_ROUND_AND_CATEGORY);
+  CPPUNIT_ASSERT(mm->canAssignPlayerPairToMatch(ma2, msPair1) == PlayerAlreadyAssignedToOtherMatchInTheSameRoundAndCategory);
+  CPPUNIT_ASSERT(mm->canAssignPlayerPairToMatch(ma2, msPair3) == PlayerAlreadyAssignedToOtherMatchInTheSameRoundAndCategory);
 
   // try to use the same pair in the same round but a different group
-  CPPUNIT_ASSERT(mm->canAssignPlayerPairToMatch(ma3, msPair1) == GROUP_NUMBER_MISMATCH);
-  CPPUNIT_ASSERT(mm->canAssignPlayerPairToMatch(ma3, msPair3) == GROUP_NUMBER_MISMATCH);
+  CPPUNIT_ASSERT(mm->canAssignPlayerPairToMatch(ma3, msPair1) == GroupNumberMismatch);
+  CPPUNIT_ASSERT(mm->canAssignPlayerPairToMatch(ma3, msPair3) == GroupNumberMismatch);
 
   // re-assigning the player to the same match should work
   CPPUNIT_ASSERT(mm->canAssignPlayerPairToMatch(m, msPair1) == OK);
@@ -390,7 +390,7 @@ void tstMatchMngr::testCanAssignPlayerPairToMatch()
   CPPUNIT_ASSERT(mm->setPlayerPairsForMatch(m, msPair1, msPair3) == OK);
 
   // assigning the same player pair to the same match for both opponent roles must fail
-  CPPUNIT_ASSERT(mm->setPlayerPairsForMatch(m, msPair1, msPair1) == PLAYERS_IDENTICAL);
+  CPPUNIT_ASSERT(mm->setPlayerPairsForMatch(m, msPair1, msPair1) == PlayersIdentical);
 
   delete db;
   printEndMsg();
@@ -419,7 +419,7 @@ void tstMatchMngr::testStageAndUnstageMatchGroup()
   CPPUNIT_ASSERT(mg1_2->getStageSequenceNumber() == -1);
 
   // try to stage this group
-  CPPUNIT_ASSERT(mm->stageMatchGroup(*mg1_2) == WRONG_STATE);
+  CPPUNIT_ASSERT(mm->stageMatchGroup(*mg1_2) == WrongState);
   CPPUNIT_ASSERT(mg1_2->getState() == STAT_MG_Frozen);
   CPPUNIT_ASSERT(mg1_2->getStageSequenceNumber() == -1);
 
@@ -502,8 +502,8 @@ void tstMatchMngr::testStageAndUnstageMatchGroup()
 
   // "mg1_1 is round 1; since round 2 is staged, it should not
   // be unstageable
-  CPPUNIT_ASSERT(mm->canUnstageMatchGroup(*mg1_1) == MATCH_GROUP_NOT_UNSTAGEABLE);
-  CPPUNIT_ASSERT(mm->unstageMatchGroup(*mg1_1)  == MATCH_GROUP_NOT_UNSTAGEABLE);
+  CPPUNIT_ASSERT(mm->canUnstageMatchGroup(*mg1_1) == MatchGroupNotUnstageable);
+  CPPUNIT_ASSERT(mm->unstageMatchGroup(*mg1_1)  == MatchGroupNotUnstageable);
   CPPUNIT_ASSERT(mg1_1->getState() == STAT_MG_Staged);
   CPPUNIT_ASSERT(mg1_1->getStageSequenceNumber() == 1);
 

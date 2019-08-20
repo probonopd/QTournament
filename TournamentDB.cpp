@@ -45,7 +45,7 @@ namespace QTournament
   TournamentDB::TournamentDB()
     :SqliteOverlay::SqliteDatabase()
   {
-    TournamentSettings cfg{"-----", "-----", RefereeMode::RefereeMode::None, true};
+    TournamentSettings cfg{"-----", "-----", RefereeMode::None, true};
     initBlankDb(cfg);
 
     // initialize the internal instance of the online manager
@@ -76,7 +76,7 @@ namespace QTournament
       throw TournamentException{
         "TournamentDB::openExisting()",
         "file " + fName + " is incompatible with this version of QTournament",
-        ERR::INCOMPATIBLE_FILE_FORMAT
+        ERR::IncompatibleFileFormat
       };
     }
 
@@ -113,13 +113,13 @@ namespace QTournament
     tc.createTableAndResetCreator(*this, TAB_TEAM);
     
     // Generate the table hosting the players
-    tc.addCol(PLAYINGFNAME, cdt::Text, cc::NotUsed, cc::Abort);
-    tc.addCol(PLAYINGLNAME, cdt::Text, cc::NotUsed, cc::Abort);
+    tc.addCol(PL_FNAME, cdt::Text, cc::NotUsed, cc::Abort);
+    tc.addCol(PL_LNAME, cdt::Text, cc::NotUsed, cc::Abort);
     tc.addCol(GENERIC_STATE_FIELD_NAME, cdt::Integer, cc::NotUsed, cc::Abort);
-    tc.addCol(PLAYINGSEX, cdt::Integer, cc::NotUsed, cc::Abort);
+    tc.addCol(PL_SEX, cdt::Integer, cc::NotUsed, cc::Abort);
     tc.addCol(GENERIC_SEQNUM_FIELD_NAME, cdt::Integer, cc::Abort, cc::Abort);
     tc.addCol(PL_Referee_COUNT, cdt::Integer, cc::NotUsed, cc::Abort, 0);
-    tc.addForeignKey(PLAYINGTEAM_REF, TAB_TEAM, ca::Cascade, ca::Cascade, cc::NotUsed, cc::Abort);
+    tc.addForeignKey(PL_TEAM_REF, TAB_TEAM, ca::Cascade, ca::Cascade, cc::NotUsed, cc::Abort);
     tc.createTableAndResetCreator(*this, TAB_PLAYER);
     
     // Generate the table holding the category data
@@ -139,7 +139,7 @@ namespace QTournament
     
     // Generate the table holding the player-to-category mapping
     tc.addForeignKey(P2C_PLAYER_REF, TAB_PLAYER, ca::Cascade, ca::Cascade, cc::NotUsed, cc::Abort);
-    tc.addForeignKey(P2C_CONFIGREF, TAB_CATEGORY, ca::Cascade, ca::Cascade, cc::NotUsed, cc::Abort);
+    tc.addForeignKey(P2C_CAT_REF, TAB_CATEGORY, ca::Cascade, ca::Cascade, cc::NotUsed, cc::Abort);
     tc.createTableAndResetCreator(*this, TAB_P2C);
     
     // Generate the table holding the player pairs
@@ -151,7 +151,7 @@ namespace QTournament
     tc.createTableAndResetCreator(*this, TAB_PAIRS);
     
     // Generate a table for the match groups
-    tc.addForeignKey(MG_ConfigREF, TAB_CATEGORY, ca::Cascade, ca::Cascade, cc::NotUsed, cc::Abort);
+    tc.addForeignKey(MG_CAT_REF, TAB_CATEGORY, ca::Cascade, ca::Cascade, cc::NotUsed, cc::Abort);
     tc.addCol(GENERIC_STATE_FIELD_NAME, cdt::Integer, cc::NotUsed, cc::Abort);
     tc.addCol(GENERIC_SEQNUM_FIELD_NAME, cdt::Integer, cc::Abort, cc::Abort);
     tc.addCol(MG_ROUND, cdt::Integer, cc::NotUsed, cc::Abort);
@@ -186,7 +186,7 @@ namespace QTournament
     // Generate a table with ranking information
     tc.addCol(RA_ROUND, cdt::Integer, cc::NotUsed, cc::Abort);
     tc.addForeignKey(RA_PAIR_REF, TAB_PAIRS, ca::Cascade, ca::Cascade, cc::NotUsed, cc::Abort);
-    tc.addForeignKey(RA_CONFIGREF, TAB_CATEGORY, ca::Cascade, ca::Cascade, cc::NotUsed, cc::Abort); // this eases searching in the tab. theoretically, the category could be derived from the player pair
+    tc.addForeignKey(RA_CAT_REF, TAB_CATEGORY, ca::Cascade, ca::Cascade, cc::NotUsed, cc::Abort); // this eases searching in the tab. theoretically, the category could be derived from the player pair
     tc.addCol(RA_GRP_NUM, cdt::Integer, cc::NotUsed, cc::Abort); // this eases searching in the tab. theoretically, the group number could be derived from the player pair
     tc.addCol(RA_GAMES_WON, cdt::Integer, cc::NotUsed, cc::Abort);
     tc.addCol(RA_GAMES_LOST, cdt::Integer, cc::NotUsed, cc::Abort);
@@ -196,7 +196,7 @@ namespace QTournament
     tc.addCol(RA_POINTS_WON, cdt::Integer, cc::NotUsed, cc::Abort);
     tc.addCol(RA_POINTS_LOST, cdt::Integer, cc::NotUsed, cc::Abort);
     tc.addCol(RA_RANK, cdt::Integer, cc::NotUsed, cc::Abort);
-    tc.createTableAndResetCreator(*this, TAB_MatchSystem::Ranking);
+    tc.createTableAndResetCreator(*this, TAB_MatchSystem);
 
     // Generate a table with bracket visualization data
     tc.addForeignKey(BV_MATCH_REF, TAB_MATCH, ca::Cascade, ca::Cascade, cc::Abort, cc::Abort);
@@ -239,25 +239,25 @@ namespace QTournament
     indexCreationHelper(TAB_TEAM, GENERIC_NAME_FIELD_NAME, true);
     indexCreationHelper(TAB_TEAM, GENERIC_SEQNUM_FIELD_NAME, true);
 
-    Sloppy::StringList colList{PLAYINGLNAME, PLAYINGFNAME};
+    Sloppy::StringList colList{PL_LNAME, PL_FNAME};
     indexCreationHelper(TAB_PLAYER, GENERIC_SEQNUM_FIELD_NAME, true);
     indexCreationHelper(TAB_PLAYER, GENERIC_STATE_FIELD_NAME);
-    indexCreationHelper(TAB_PLAYER, PLAYINGFNAME);
-    indexCreationHelper(TAB_PLAYER, PLAYINGLNAME);
+    indexCreationHelper(TAB_PLAYER, PL_FNAME);
+    indexCreationHelper(TAB_PLAYER, PL_LNAME);
     indexCreationHelper(TAB_PLAYER, "Player_CombinedNames", colList, true);
 
     indexCreationHelper(TAB_CATEGORY, GENERIC_NAME_FIELD_NAME, true);
     indexCreationHelper(TAB_CATEGORY, GENERIC_SEQNUM_FIELD_NAME, true);
     indexCreationHelper(TAB_CATEGORY, GENERIC_STATE_FIELD_NAME);
 
-    indexCreationHelper(TAB_P2C, P2C_CONFIGREF);
+    indexCreationHelper(TAB_P2C, P2C_CAT_REF);
     indexCreationHelper(TAB_P2C, P2C_PLAYER_REF);
 
     indexCreationHelper(TAB_PAIRS, PAIRS_PLAYER1_REF);
     indexCreationHelper(TAB_PAIRS, PAIRS_PLAYER1_REF);
     indexCreationHelper(TAB_PAIRS, PAIRS_CONFIGREF);
 
-    indexCreationHelper(TAB_MATCH_GROUP, MG_ConfigREF);
+    indexCreationHelper(TAB_MATCH_GROUP, MG_CAT_REF);
     indexCreationHelper(TAB_MATCH_GROUP, MG_GRP_NUM);
     indexCreationHelper(TAB_MATCH_GROUP, MG_ROUND);
     indexCreationHelper(TAB_MATCH_GROUP, MG_STAGE_SEQ_NUM, true);
@@ -268,9 +268,9 @@ namespace QTournament
     indexCreationHelper(TAB_MATCH, MA_PAIR1_REF);
     indexCreationHelper(TAB_MATCH, MA_PAIR2_REF);
 
-    indexCreationHelper(TAB_MatchSystem::Ranking, RA_PAIR_REF);
-    indexCreationHelper(TAB_MatchSystem::Ranking, RA_CONFIGREF);
-    indexCreationHelper(TAB_MatchSystem::Ranking, RA_ROUND);
+    indexCreationHelper(TAB_MatchSystem, RA_PAIR_REF);
+    indexCreationHelper(TAB_MatchSystem, RA_CAT_REF);
+    indexCreationHelper(TAB_MatchSystem, RA_ROUND);
 
     indexCreationHelper(TAB_BRACKET_VIS, BV_CONFIGREF);
     indexCreationHelper(TAB_BRACKET_VIS, BV_MATCH_REF);
@@ -480,9 +480,9 @@ namespace QTournament
     {
       return TournamentDB{stdName, cfg};
     } catch (std::invalid_argument) {
-      throw TournamentException{"TournamentDB::createNew()", "file " + stdName + " already exists", ERR::FILE_ALREADY_EXISTS};
+      throw TournamentException{"TournamentDB::createNew()", "file " + stdName + " already exists", ERR::FileAlreadyExists};
     } catch (...) {
-      throw TournamentException{"TournamentDB::createNew()", "Error when instantiating the new database object", ERR::DATABASE_ERROR};
+      throw TournamentException{"TournamentDB::createNew()", "Error when instantiating the new database object", ERR::DatabaseError};
     }
   }
 
@@ -496,11 +496,11 @@ namespace QTournament
     {
       return TournamentDB{stdName};
     } catch (std::invalid_argument) {
-      throw TournamentException{"TournamentDB::openExisting()", "file " + stdName + " does not exist", ERR::FILE_NOT_EXISTING};
+      throw TournamentException{"TournamentDB::openExisting()", "file " + stdName + " does not exist", ERR::FileNotExisting};
     } catch (TournamentException) {
       throw;
     } catch (...) {
-      throw TournamentException{"TournamentDB::openExisting()", "Error when instantiating the new database object", ERR::DATABASE_ERROR};
+      throw TournamentException{"TournamentDB::openExisting()", "Error when instantiating the new database object", ERR::DatabaseError};
     }
   }
 

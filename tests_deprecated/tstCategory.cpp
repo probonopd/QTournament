@@ -143,18 +143,18 @@ void tstCategory::testCanPair()
   Category mx = cmngr->getCategory("MX");
   
   // try to pair players in a non-pairable category
-  CPPUNIT_ASSERT(ms.canPairPlayers(m1, m2) == NO_CATEGORY_FOR_PAIRING);
+  CPPUNIT_ASSERT(ms.canPairPlayers(m1, m2) == NoCategoryForPairing);
   
   // try to pair with a player not in the category
-  CPPUNIT_ASSERT(md.canPairPlayers(m1, m3) == PLAYER_NOT_IN_CATEGORY);
-  CPPUNIT_ASSERT(md.canPairPlayers(m3, m1) == PLAYER_NOT_IN_CATEGORY);
+  CPPUNIT_ASSERT(md.canPairPlayers(m1, m3) == PlayerNotInCategory);
+  CPPUNIT_ASSERT(md.canPairPlayers(m3, m1) == PlayerNotInCategory);
   
   // try identical players
-  CPPUNIT_ASSERT(md.canPairPlayers(m1, m1) == PLAYERS_IDENTICAL);
+  CPPUNIT_ASSERT(md.canPairPlayers(m1, m1) == PlayersIdentical);
   
   // try to pair same-sex players in mixed categories
-  CPPUNIT_ASSERT(mx.canPairPlayers(m1, m2) == INVALID_SEX);
-  CPPUNIT_ASSERT(mx.canPairPlayers(f1, f2) == INVALID_SEX);
+  CPPUNIT_ASSERT(mx.canPairPlayers(m1, m2) == InvalidSex);
+  CPPUNIT_ASSERT(mx.canPairPlayers(f1, f2) == InvalidSex);
   
   // try to pair same-sex players in mixed categories
   // after setting it to "Don't care"
@@ -167,12 +167,12 @@ void tstCategory::testCanPair()
   
   // make sure existing pairs can't be paired again
   CPPUNIT_ASSERT(cmngr->pairPlayers(md, m1,m2) == OK);
-  CPPUNIT_ASSERT(md.canPairPlayers(m1, m2) == PLAYER_ALREADY_PAIRED);
+  CPPUNIT_ASSERT(md.canPairPlayers(m1, m2) == PlayerAlreadyPaired);
   CPPUNIT_ASSERT(cmngr->addPlayerToCategory(m3, md) == OK);
-  CPPUNIT_ASSERT(md.canPairPlayers(m1, m3) == PLAYER_ALREADY_PAIRED);
-  CPPUNIT_ASSERT(md.canPairPlayers(m3, m1) == PLAYER_ALREADY_PAIRED);
-  CPPUNIT_ASSERT(md.canPairPlayers(m2, m3) == PLAYER_ALREADY_PAIRED);
-  CPPUNIT_ASSERT(md.canPairPlayers(m3, m2) == PLAYER_ALREADY_PAIRED);
+  CPPUNIT_ASSERT(md.canPairPlayers(m1, m3) == PlayerAlreadyPaired);
+  CPPUNIT_ASSERT(md.canPairPlayers(m3, m1) == PlayerAlreadyPaired);
+  CPPUNIT_ASSERT(md.canPairPlayers(m2, m3) == PlayerAlreadyPaired);
+  CPPUNIT_ASSERT(md.canPairPlayers(m3, m2) == PlayerAlreadyPaired);
   
   delete db;
   printEndMsg();
@@ -206,17 +206,17 @@ void tstCategory::testCanSplit()
   CPPUNIT_ASSERT(cmngr->pairPlayers(md, m1,m2) == OK);
   
   // try to split non-paired players
-  CPPUNIT_ASSERT(cmngr->splitPlayers(md, m1, m3) == PLAYERS_NOT_A_PAIR);
-  CPPUNIT_ASSERT(cmngr->splitPlayers(md, m3, m1) == PLAYERS_NOT_A_PAIR);
+  CPPUNIT_ASSERT(cmngr->splitPlayers(md, m1, m3) == PlayersNotAPair);
+  CPPUNIT_ASSERT(cmngr->splitPlayers(md, m3, m1) == PlayersNotAPair);
   
   // try to split identical players
-  CPPUNIT_ASSERT(cmngr->splitPlayers(md, m1, m1) == PLAYERS_NOT_A_PAIR);
+  CPPUNIT_ASSERT(cmngr->splitPlayers(md, m1, m1) == PlayersNotAPair);
   
   // valid request
   CPPUNIT_ASSERT(cmngr->splitPlayers(md, m1, m2) == OK);
 
   // similar request, but for another category  
-  CPPUNIT_ASSERT(cmngr->splitPlayers(mx, m1, m2) == PLAYERS_NOT_A_PAIR);
+  CPPUNIT_ASSERT(cmngr->splitPlayers(mx, m1, m2) == PlayersNotAPair);
   
   delete db;
   printEndMsg();

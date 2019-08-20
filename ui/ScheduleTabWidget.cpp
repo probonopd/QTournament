@@ -339,7 +339,7 @@ void ScheduleTabWidget::askAndStoreMatchResult(const Match &ma)
   int nextMatchId;
   int nextCourtId;
   ERR e = mm.getNextViableMatchCourtPair(&nextMatchId, &nextCourtId, true);
-  if ((e == NO_MATCH_AVAIL) || (nextMatchId < 1))
+  if ((e == NoMatchAvail) || (nextMatchId < 1))
   {
     return;
   }

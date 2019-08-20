@@ -40,7 +40,7 @@ namespace QTournament
 
   Category MatchGroup::getCategory() const
   {
-    int catId = row.getInt(MG_ConfigREF);
+    int catId = row.getInt(MG_CAT_REF);
     CatMngr cm{db};
     return cm.getCategoryById(catId);
   }

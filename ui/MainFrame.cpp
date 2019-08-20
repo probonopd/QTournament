@@ -192,14 +192,14 @@ void MainFrame::openTournament()
   auto newDb = TournamentDB::openExisting(filename, &err);
 
   // check for errors
-  if (err == INCOMPATIBLE_FILE_FORMAT)
+  if (err == IncompatibleFileFormat)
   {
     QString msg = tr("The file has been created with an incompatible\n");
     msg += tr("version of QTournament and can't be opened.");
     QMessageBox::critical(this, tr("Open tournament"), msg);
     return;
   }
-  if (err == FILE_NOT_EXISTING)   // shouldn't happen after the previous checks
+  if (err == FileNotExisting)   // shouldn't happen after the previous checks
   {
     QString msg = tr("Couldn't open ") + filename;
     QMessageBox::critical(this, tr("Open tournament"), msg);
@@ -311,7 +311,7 @@ void MainFrame::openTournament()
     QString msg;
     switch (err)
     {
-    case ERR::EPD__NOT_FOUND:
+    case ERR::EPD_NotFound:
       msg = tr("Could not find the player database\n\n");
       msg += pm.getExternalDatabaseName() + "\n\n";
       msg += tr("Please make sure the file exists and is valid.");

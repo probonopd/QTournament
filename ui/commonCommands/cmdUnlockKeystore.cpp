@@ -41,7 +41,7 @@ ERR cmdUnlockKeystore::exec()
   // there's nothing we can unlock
   if (!(om->hasSecretInDatabase()))
   {
-    return ERR::WRONG_STATE;  // dummy value
+    return ERR::WrongState;  // dummy value
   }
 
   // if the keystore is already unlocked,
@@ -61,7 +61,7 @@ ERR cmdUnlockKeystore::exec()
     pwDlg.setTextEchoMode(QLineEdit::Password);
     pwDlg.setLabelText(tr("Please enter your tournament password:"));
     int rc = pwDlg.exec();
-    if (rc != QDialog::Accepted) return ERR::WRONG_STATE; // dummy
+    if (rc != QDialog::Accepted) return ERR::WrongState; // dummy
     pw = pwDlg.textValue().trimmed();
 
     if (pw.isEmpty())

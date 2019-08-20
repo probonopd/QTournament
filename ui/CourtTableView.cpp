@@ -396,7 +396,7 @@ void CourtTableView::onActionDeleteCourtTriggered()
   CourtMngr cm{db};
   ERR e = cm.deleteCourt(*co);
 
-  if (e == COURT_ALREADY_USED)
+  if (e == CourtAlreadyUsed)
   {
     QString msg = tr("The court has already been used for matches and thus\n");
     msg += tr("it can't be deleted for technical reasons.\n\n");
@@ -406,7 +406,7 @@ void CourtTableView::onActionDeleteCourtTriggered()
     return;
   }
 
-  if (e == ERR::DATABASE_ERROR)
+  if (e == ERR::DatabaseError)
   {
     QString msg = tr("A database error occured when trying to delete the court.\n");
     msg += tr("The court can't be deleted.\n\n");

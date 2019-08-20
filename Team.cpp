@@ -81,7 +81,7 @@ namespace QTournament
   int Team::getMemberCount() const
   {
     DbTab playerTab = DbTab{db.get(), TAB_PLAYER, false};
-    return playerTab.getMatchCountForColumnValue(PLAYINGTEAM_REF, getId());
+    return playerTab.getMatchCountForColumnValue(PL_TEAM_REF, getId());
   }
 
 //----------------------------------------------------------------------------
@@ -89,7 +89,7 @@ namespace QTournament
   int Team::getUnregisteredMemberCount() const
   {
     WhereClause wc;
-    wc.addCol(PLAYINGTEAM_REF, getId());
+    wc.addCol(PL_TEAM_REF, getId());
     wc.addCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(ObjState::PL_WaitForRegistration));
     DbTab playerTab = DbTab{db.get(), TAB_PLAYER, false};
     return playerTab.getMatchCountForWhereClause(wc);

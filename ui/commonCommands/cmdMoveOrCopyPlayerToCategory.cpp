@@ -40,7 +40,7 @@ ERR cmdMoveOrCopyPlayerToCategory::exec()
   {
     QString msg = tr("The player is not assigned to the source category of this operation.");
     QMessageBox::warning(parentWidget, tr("Move or copy player"), msg);
-    return ERR::PLAYER_NOT_IN_CATEGORY;
+    return ERR::PlayerNotInCategory;
   }
 
   // if this is a move operation: make sure we can actually delete
@@ -49,7 +49,7 @@ ERR cmdMoveOrCopyPlayerToCategory::exec()
   {
     QString msg = tr("The player cannot be removed from the source category of this operation.");
     QMessageBox::warning(parentWidget, tr("Move player"), msg);
-    return ERR::PLAYER_NOT_REMOVABLE_FROM_CATEGORY;
+    return ERR::PlayerNotRemovableFromCategory;
   }
 
   // if this is a copy operation and the player is already in

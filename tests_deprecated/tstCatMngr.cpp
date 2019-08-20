@@ -29,8 +29,8 @@ void tstCatMngr::testCreateNewCategory()
   CatMngr cmngr(db);
   
   // try empty or invalid name
-  CPPUNIT_ASSERT(cmngr.createNewCategory("") == INVALID_NAME);
-  CPPUNIT_ASSERT(cmngr.createNewCategory(QString::null) == INVALID_NAME);
+  CPPUNIT_ASSERT(cmngr.createNewCategory("") == InvalidName);
+  CPPUNIT_ASSERT(cmngr.createNewCategory(QString::null) == InvalidName);
   CPPUNIT_ASSERT((*db)[TAB_CATEGORY].length() == 0);
   
   // actually create a valid category
@@ -47,7 +47,7 @@ void tstCatMngr::testCreateNewCategory()
   CPPUNIT_ASSERT(c.getSex() == M);
   
   // name collision
-  CPPUNIT_ASSERT(cmngr.createNewCategory("c1") == NAME_EXISTS);
+  CPPUNIT_ASSERT(cmngr.createNewCategory("c1") == NameExists);
   CPPUNIT_ASSERT((*db)[TAB_CATEGORY].length() == 1);
   
   delete db;
@@ -162,8 +162,8 @@ void tstCatMngr::testAddPlayerToCategory()
   // add players to men's singles
   CPPUNIT_ASSERT(cmngr->addPlayerToCategory(m1, ms) == OK);
   CPPUNIT_ASSERT(ms.hasPlayer(m1));
-  CPPUNIT_ASSERT(cmngr->addPlayerToCategory(m1, ms) == PLAYER_ALREADY_IN_CATEGORY);
-  CPPUNIT_ASSERT(cmngr->addPlayerToCategory(f1, ms) == PLAYER_NOT_SUITABLE);
+  CPPUNIT_ASSERT(cmngr->addPlayerToCategory(m1, ms) == PlayerAlreadyInCategory);
+  CPPUNIT_ASSERT(cmngr->addPlayerToCategory(f1, ms) == PlayerNotSuitable);
   CPPUNIT_ASSERT(cmngr->addPlayerToCategory(m2, ms) == OK);
   CPPUNIT_ASSERT(ms.hasPlayer(m2));
   ms.setSex(DONT_CARE);   // relax checks
@@ -173,8 +173,8 @@ void tstCatMngr::testAddPlayerToCategory()
   // add players to ladies' doubles
   CPPUNIT_ASSERT(cmngr->addPlayerToCategory(f1, ld) == OK);
   CPPUNIT_ASSERT(ld.hasPlayer(f1));
-  CPPUNIT_ASSERT(cmngr->addPlayerToCategory(f1, ld) == PLAYER_ALREADY_IN_CATEGORY);
-  CPPUNIT_ASSERT(cmngr->addPlayerToCategory(m1, ld) == PLAYER_NOT_SUITABLE);
+  CPPUNIT_ASSERT(cmngr->addPlayerToCategory(f1, ld) == PlayerAlreadyInCategory);
+  CPPUNIT_ASSERT(cmngr->addPlayerToCategory(m1, ld) == PlayerNotSuitable);
   CPPUNIT_ASSERT(cmngr->addPlayerToCategory(f2, ld) == OK);
   CPPUNIT_ASSERT(ld.hasPlayer(f2));
   ld.setSex(DONT_CARE);   // relax checks
@@ -184,7 +184,7 @@ void tstCatMngr::testAddPlayerToCategory()
   // add players to mixed doubles
   CPPUNIT_ASSERT(cmngr->addPlayerToCategory(f1, mx) == OK);
   CPPUNIT_ASSERT(mx.hasPlayer(f1));
-  CPPUNIT_ASSERT(cmngr->addPlayerToCategory(f1, mx) == PLAYER_ALREADY_IN_CATEGORY);
+  CPPUNIT_ASSERT(cmngr->addPlayerToCategory(f1, mx) == PlayerAlreadyInCategory);
   CPPUNIT_ASSERT(cmngr->addPlayerToCategory(m1, mx) == OK);
   CPPUNIT_ASSERT(mx.hasPlayer(m1));
   CPPUNIT_ASSERT(cmngr->addPlayerToCategory(f2, mx) == OK);
@@ -228,8 +228,8 @@ void tstCatMngr::testRemovePlayerFromCategory()
   CPPUNIT_ASSERT(ls.hasPlayer(f2));
   
   // try to remove not-added players
-  CPPUNIT_ASSERT(cmngr->removePlayerFromCategory(f3, ls) == PLAYER_NOT_IN_CATEGORY);
-  CPPUNIT_ASSERT(cmngr->removePlayerFromCategory(m1, ls) == PLAYER_NOT_IN_CATEGORY);
+  CPPUNIT_ASSERT(cmngr->removePlayerFromCategory(f3, ls) == PlayerNotInCategory);
+  CPPUNIT_ASSERT(cmngr->removePlayerFromCategory(m1, ls) == PlayerNotInCategory);
   CPPUNIT_ASSERT(ls.hasPlayer(f1));
   CPPUNIT_ASSERT(ls.hasPlayer(f2));
   

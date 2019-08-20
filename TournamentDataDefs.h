@@ -70,10 +70,10 @@ namespace QTournament
 //----------------------------------------------------------------------------
     
 #define TAB_PLAYER "Player"
-#define PLAYINGFNAME "FirstName"
-#define PLAYINGLNAME "LastName"
-#define PLAYINGTEAM_REF "TeamRefId"
-#define PLAYINGSEX "Sex"
+#define PL_FNAME "FirstName"
+#define PL_LNAME "LastName"
+#define PL_TEAM_REF "TeamRefId"
+#define PL_SEX "Sex"
 #define PL_Referee_COUNT "RefereeCount"
 //#define PLAYING ""
 //#define PLAYING ""
@@ -127,7 +127,7 @@ namespace QTournament
 
 #define TAB_P2C "Player2Category"
 #define P2C_PLAYER_REF "PlayerRefId"
-#define P2C_CONFIGREF "CategoryRefId"
+#define P2C_CAT_REF "CategoryRefId"
   
 //----------------------------------------------------------------------------
 
@@ -168,7 +168,7 @@ namespace QTournament
 //----------------------------------------------------------------------------
 
 #define TAB_MATCH_GROUP "MatchGroup"
-#define MG_ConfigREF  "CategoryRefId"
+#define MG_CAT_REF  "CategoryRefId"
 #define MG_ROUND  "Round"
 #define MG_GRP_NUM  "RoundRobinGroupNumber"
 #define MG_STAGE_SEQ_NUM  "StageSequenceNumber"
@@ -194,7 +194,7 @@ namespace QTournament
   
 //----------------------------------------------------------------------------
 
-#define TAB_MatchSystem::Ranking "Ranking"
+#define TAB_MatchSystem "Ranking"
 #define RA_ROUND  "Round"
 #define RA_PAIR_REF  "PlayerPairRef"
 #define RA_GAMES_WON  "GamesWon"
@@ -205,7 +205,7 @@ namespace QTournament
 #define RA_POINTS_WON  "PointsWon"
 #define RA_POINTS_LOST  "PointsLost"
 #define RA_RANK  "Rank"
-#define RA_CONFIGREF  "CategoryRef"
+#define RA_CAT_REF  "CategoryRef"
 #define RA_GRP_NUM  "MatchGroupNumber"
 //#define RA_  ""
 //#define RA_  ""

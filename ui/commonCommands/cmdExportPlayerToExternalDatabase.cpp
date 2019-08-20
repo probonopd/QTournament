@@ -39,14 +39,14 @@ ERR cmdExportPlayerToExternalDatabase::exec()
     QString msg = tr("No valid database for player export available.\n\n");
     msg +=tr("Is the database configured and the file existing?");
     QMessageBox::warning(parentWidget, tr("Export player"), msg);
-    return ERR::EPD__NOT_OPENED;
+    return ERR::EPD_NotOpened;
   }
   ERR e = pm.openConfiguredExternalPlayerDatabase();
   if (!(pm.hasExternalPlayerDatabaseOpen()) || (e != ERR::OK))
   {
     QString msg = tr("Could not open database for player export!");
     QMessageBox::warning(parentWidget, tr("Export player"), msg);
-    return ERR::EPD__NOT_OPENED;
+    return ERR::EPD_NotOpened;
   }
 
   ERR err = pm.exportPlayerToExternalDatabase(pl);
@@ -55,7 +55,7 @@ ERR cmdExportPlayerToExternalDatabase::exec()
   QString msg;
   switch (err)
   {
-  case ERR::EPD__CREATION_FAILED:
+  case ERR::EPD_CreationFailed:
     msg = tr("Could not export the player data to the database.");
     break;
 

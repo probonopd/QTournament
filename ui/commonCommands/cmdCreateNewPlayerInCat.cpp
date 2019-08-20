@@ -42,7 +42,7 @@ ERR cmdCreateNewPlayerInCat::exec()
     msg += tr("full or already started.");
     QMessageBox::warning(parentWidget, tr("Create new player in category"), msg);
 
-    return CATEGORY_CLOSED_FOR_MORE_PLAYERS;
+    return CategoryClosedForMorePlayers;
   }
 
   // show a dialog for selecting the new player's sex
@@ -61,7 +61,7 @@ ERR cmdCreateNewPlayerInCat::exec()
     msg = msg.arg((selectedSex == M) ? tr("male player") : tr("female player"));
     QMessageBox::warning(parentWidget, tr("Create new player in category"), msg);
 
-    return ERR::INVALID_SEX;
+    return ERR::InvalidSex;
   }
 
   // prepare a dialog for creating a new player

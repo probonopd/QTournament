@@ -44,14 +44,14 @@ ERR cmdImportSinglePlayerFromExternalDatabase::exec()
     QString msg = tr("No valid database for player export available.\n\n");
     msg +=tr("Is the database configured and the file existing?");
     QMessageBox::warning(parentWidget, tr("Export player"), msg);
-    return ERR::EPD__NOT_OPENED;
+    return ERR::EPD_NotOpened;
   }
   ERR e = pm.openConfiguredExternalPlayerDatabase();
   if (!(pm.hasExternalPlayerDatabaseOpen()) || (e != ERR::OK))
   {
     QString msg = tr("Could not open database for player export!");
     QMessageBox::warning(parentWidget, tr("Export player"), msg);
-    return ERR::EPD__NOT_OPENED;
+    return ERR::EPD_NotOpened;
   }
 
   ExternalPlayerDB* extDb = pm.getExternalPlayerDatabaseHandle();
@@ -69,7 +69,7 @@ ERR cmdImportSinglePlayerFromExternalDatabase::exec()
   {
     QString msg = tr("No valid player selection found");
     QMessageBox::warning(parentWidget, tr("Import player"), msg);
-    return ERR::INVALID_ID;
+    return ERR::InvalidId;
   }
 
   // get the selected player from the database
@@ -78,7 +78,7 @@ ERR cmdImportSinglePlayerFromExternalDatabase::exec()
   {
     QString msg = tr("No valid player selection found");
     QMessageBox::warning(parentWidget, tr("Import player"), msg);
-    return ERR::INVALID_ID;
+    return ERR::InvalidId;
   }
 
   // if the player has no valid sex assigned,
@@ -118,7 +118,7 @@ ERR cmdImportSinglePlayerFromExternalDatabase::exec()
       QString msg = tr("%1 cannot be added to this category.");
       msg = msg.arg((selSex == M) ? tr("A male player") : tr("A female player"));
       QMessageBox::warning(parentWidget, tr("Import player"), msg);
-      return ERR::INVALID_SEX;
+      return ERR::InvalidSex;
     }
   }
 

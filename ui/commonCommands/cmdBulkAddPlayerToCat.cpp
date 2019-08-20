@@ -40,7 +40,7 @@ ERR cmdBulkAddPlayerToCategory::exec()
     msg += tr("full or already started.");
     QMessageBox::warning(parentWidget, tr("Add players to category"), msg);
 
-    return CATEGORY_CLOSED_FOR_MORE_PLAYERS;
+    return CategoryClosedForMorePlayers;
   }
 
   // show a dialog for selecting the players

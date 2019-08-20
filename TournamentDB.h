@@ -87,9 +87,9 @@ namespace QTournament
 
   /** \brief Creates a new, empty tournament database with a given file name
    *
-   * \throws TournamentException with error code FILE_ALREADY_EXISTS if a file of the provided name already exists
+   * \throws TournamentException with error code FileAlreadyExists if a file of the provided name already exists
    *
-   * \throws TournamentException with error code ERR::DATABASE_ERROR if the new database could not be created
+   * \throws TournamentException with error code ERR::DatabaseError if the new database could not be created
    *
    * \returns the newly created database
    */
@@ -97,9 +97,9 @@ namespace QTournament
 
   /** \brief Opens an existing tournament database with a given file name
    *
-   * \throws TournamentException with error code FILE_NOT_EXISTING if there is no such file
+   * \throws TournamentException with error code FileNotExisting if there is no such file
    *
-   * \throws TournamentException with error code INCOMPATIBLE_FILE_FORMAT if the valid is invalid or incompatible
+   * \throws TournamentException with error code IncompatibleFileFormat if the valid is invalid or incompatible
    *
    * \returns a handle for the database file
    */

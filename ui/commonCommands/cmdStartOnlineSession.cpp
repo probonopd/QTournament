@@ -52,7 +52,7 @@ ERR cmdStartOnlineSession::exec()
   {
     QString msg = tr("You haven't registered the tournament yet and thus you can't start a server session!");
     QMessageBox::critical(parentWidget, "Start session", msg);
-    return ERR::WRONG_STATE;  // dummy value
+    return ERR::WrongState;  // dummy value
   }
 
   // check whether the server is online and whether we
@@ -69,7 +69,7 @@ ERR cmdStartOnlineSession::exec()
   {
     QString msg = tr("The tournament server is currently not available or there is no working internet connection.\n\nPlease try again later.");
     QMessageBox::information(parentWidget, tr("Start session"), msg);
-    return ERR::WRONG_STATE;  // dummy error code; will not be evaluated by caller
+    return ERR::WrongState;  // dummy error code; will not be evaluated by caller
   }
 
   // if the secret signing key has not yet been unlocked, ask the
@@ -110,7 +110,7 @@ ERR cmdStartOnlineSession::exec()
     }
 
     QMessageBox::warning(parentWidget, tr("Connection failed"), msg);
-    return ERR::WRONG_STATE; // dummy value
+    return ERR::WrongState; // dummy value
   }
 
   // at this point, the data exchange with the server was successful (HTTP and Signatures).
@@ -139,7 +139,7 @@ ERR cmdStartOnlineSession::exec()
   if (!(msg.isEmpty()))
   {
     QMessageBox::warning(parentWidget, tr("Connection failed"), msg);
-    return ERR::WRONG_STATE; // dummy value
+    return ERR::WrongState; // dummy value
   }
 
   QMessageBox::information(parentWidget, tr("Connection successful"), tr("You are now connected to and in sync with the server!"));

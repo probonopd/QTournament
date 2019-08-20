@@ -184,7 +184,7 @@ namespace QTournament
   {
     SqliteOverlay::WhereClause wc;
     wc.addCol(P2C_PLAYER_REF, p.getId());
-    wc.addCol(P2C_CONFIGREF, getId());
+    wc.addCol(P2C_CAT_REF, getId());
 
     return (DbTab{db, TAB_P2C, false}.getMatchCountForWhereClause(wc) > 0);
   }
@@ -379,7 +379,7 @@ namespace QTournament
     PlayerList result;
     PlayerMngr pmngr{db};
 
-    auto rows = DbTab{db, TAB_P2C, false}.getRowsByColumnValue(P2C_CONFIGREF, getId());
+    auto rows = DbTab{db, TAB_P2C, false}.getRowsByColumnValue(P2C_CAT_REF, getId());
     for (const auto& row : rows)
     {
       result.push_back(pmngr.getPlayer(row.getInt(P2C_PLAYER_REF)));
@@ -416,7 +416,7 @@ namespace QTournament
     // we can only create pairs while being in config mode
     if (getState() != ObjState::CAT_Config)
     {
-      return ERR::CATEGORY_NOT_CONFIGURALE_ANYMORE;
+      return ERR::CategoryNotConfiguraleAnymore;
     }
 
     // in singles, we don't need pairs. The same is true if we're using
@@ -424,7 +424,7 @@ namespace QTournament
     MatchType mt = getMatchType();
     if (mt == MatchType::Singles)
     {
-      return ERR::NO_CATEGORY_FOR_PAIRING;
+      return ERR::NoCategoryForPairing;
     }
     // TODO: check for "random" with "random partners"
 
@@ -432,19 +432,19 @@ namespace QTournament
     // make sure that both players are actually listed in this category
     if ((!(hasPlayer(p1))) || (!(hasPlayer(p2))))
     {
-      return ERR::PLAYER_NOT_IN_CATEGORY;
+      return ERR::PlayerNotInCategory;
     }
 
     // make sure that both players are not yet paired in this category
     if ((isPaired(p1)) || (isPaired(p2)))
     {
-      return ERR::PLAYER_ALREADY_PAIRED;
+      return ERR::PlayerAlreadyPaired;
     }
 
     // make sure that the players are not identical
     if (p1 == p2)
     {
-      return ERR::PLAYERS_IDENTICAL;
+      return ERR::PlayersIdentical;
     }
 
     // if this is a mixed category, make sure the sex is right
@@ -452,7 +452,7 @@ namespace QTournament
     {
       if (p1.getSex() == p2.getSex())
       {
-        return ERR::INVALID_SEX;
+        return ERR::InvalidSex;
       }
     }
 
@@ -462,7 +462,7 @@ namespace QTournament
       SEX catSex = getSex();
       if ((p1.getSex() != catSex) || (p2.getSex() != catSex))
       {
-        return ERR::INVALID_SEX;
+        return ERR::InvalidSex;
       }
     }
 
@@ -476,7 +476,7 @@ namespace QTournament
     // we can only split pairs while being in config mode
     if (getState() != ObjState::CAT_Config)
     {
-      return ERR::CATEGORY_NOT_CONFIGURALE_ANYMORE;
+      return ERR::CategoryNotConfiguraleAnymore;
     }
 
     // check if the two players are paired for this category
@@ -500,7 +500,7 @@ namespace QTournament
       return ERR::OK;
     }
 
-    return ERR::PLAYERS_NOT_A_PAIR;
+    return ERR::PlayersNotAPair;
   }
 
   //----------------------------------------------------------------------------
@@ -595,26 +595,26 @@ namespace QTournament
 
   ERR Category::canApplyGroupAssignment(const std::vector<PlayerPairList>& grpCfg)
   {
-    if (getState() != ObjState::CAT_Frozen) return ERR::CATEGORY_NOT_YET_FROZEN;
+    if (getState() != ObjState::CAT_Frozen) return ERR::CategoryNotYetFrozen;
 
     std::unique_ptr<Category> specializedCat = convertToSpecializedObject();
     if (!(specializedCat->needsGroupInitialization()))
     {
-      return ERR::CATEGORY_NEEDS_NO_GROUP_ASSIGNMENTS;
+      return ERR::CategoryNeedsNoGroupAssignments;
     }
 
     KO_Config cfg = KO_Config(getParameter(CatParameter::GroupConfig).toString());
-    if (!(cfg.isValid())) return ERR::INVALID_KO_CONFIG;
+    if (!(cfg.isValid())) return ERR::InvalidKoConfig;
 
     // check if the grpCfg matches the KO_Config
-    if (grpCfg.size() != cfg.getNumGroups()) return ERR::INVALID_GROUP_NUM;
+    if (grpCfg.size() != cfg.getNumGroups()) return ERR::InvalidGroupNum;
     int pairsInGrpCfg = 0;
     for (int i=0; i<grpCfg.size(); i++)
     {
       pairsInGrpCfg += grpCfg.at(i).size();
     }
     int pairsInCategory = getPlayerPairs().size();
-    if (pairsInCategory != pairsInGrpCfg) return ERR::INVALID_PLAYER_COUNT;
+    if (pairsInCategory != pairsInGrpCfg) return ERR::InvalidPlayerCount;
 
     // make sure we only have player pairs that actually belong to this category
     PlayerPairList allPairs = getPlayerPairs();
@@ -637,7 +637,7 @@ namespace QTournament
           }
         }
 
-        if (!isValid) return ERR::PLAYER_NOT_IN_CATEGORY;
+        if (!isValid) return ERR::PlayerNotInCategory;
       }
     }
 
@@ -649,16 +649,16 @@ namespace QTournament
 
   ERR Category::canApplyInitialRanking(PlayerPairList seed)
   {
-    if (getState() != ObjState::CAT_Frozen) return ERR::CATEGORY_NOT_YET_FROZEN;
+    if (getState() != ObjState::CAT_Frozen) return ERR::CategoryNotYetFrozen;
 
     std::unique_ptr<Category> specializedCat = convertToSpecializedObject();
     if (!(specializedCat->needsInitialRanking()))
     {
-      return ERR::CATEGORY_NEEDS_NO_SEEDING;
+      return ERR::CategoryNeedsNoSeeding;
     }
 
     int pairsInCategory = getPlayerPairs().size();
-    if (pairsInCategory != seed.size()) return ERR::INVALID_PLAYER_COUNT;
+    if (pairsInCategory != seed.size()) return ERR::InvalidPlayerCount;
 
     // make sure we only have player pairs that actually belong to this category
     PlayerPairList allPairs = getPlayerPairs();
@@ -677,7 +677,7 @@ namespace QTournament
         }
       }
 
-      if (!isValid) return ERR::PLAYER_NOT_IN_CATEGORY;
+      if (!isValid) return ERR::PlayerNotInCategory;
     }
 
     // okay, we're good to go!
@@ -747,7 +747,7 @@ namespace QTournament
     */
   ERR Category::generateGroupMatches(const PlayerPairList& grpMembers, int grpNum, int firstRoundNum) const
   {
-    if ((grpNum < 1) && (grpNum != GroupNum_Iteration)) return ERR::INVALID_GROUP_NUM;
+    if ((grpNum < 1) && (grpNum != GroupNum_Iteration)) return ERR::InvalidGroupNum;
 
     RoundRobinGenerator rrg;
     MatchMngr mm{db};
@@ -798,7 +798,7 @@ namespace QTournament
     }
     catch (...)
     {
-      return ERR::DATABASE_ERROR;
+      return ERR::DatabaseError;
     }
   }
 
@@ -821,7 +821,7 @@ namespace QTournament
   ERR Category::generateBracketMatches(int bracketMode, const PlayerPairList& seeding, int firstRoundNum) const
   {
     CatRoundStatus crs = getRoundStatus();
-    if (firstRoundNum <= crs.getHighestGeneratedMatchRound()) return ERR::INVALID_ROUND;
+    if (firstRoundNum <= crs.getHighestGeneratedMatchRound()) return ERR::InvalidRound;
 
     // generate the bracket data for the player list
     BracketGenerator gen{bracketMode};

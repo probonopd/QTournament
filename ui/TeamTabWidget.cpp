@@ -52,7 +52,7 @@ void TeamTabWidget::onCreateTeamClicked()
   
   // try to create new teams using a
   // canonical name until it finally succeeds
-  ERR e = NAME_EXISTS;
+  ERR e = NameExists;
   while (e != ERR::OK)
   {
     QString teamName = tr("New Team ") + QString::number(cnt);

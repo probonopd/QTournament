@@ -40,9 +40,9 @@ namespace QTournament
 #define CFG_KEY_EPD_DB_VERSION std::string("DatabaseVersion")
 
 #define TAB_EPD_PLAYER std::string("Player")
-#define EPD_PLAYINGFNAME std::string("FirstName")
-#define EPD_PLAYINGLNAME std::string("LastName")
-#define EPD_PLAYINGSEX std::string("Sex")
+#define EPD_PL_FNAME std::string("FirstName")
+#define EPD_PL_LNAME std::string("LastName")
+#define EPD_PL_SEX std::string("Sex")
 
   class ExternalPlayerDatabaseEntry
   {

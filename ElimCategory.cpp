@@ -74,13 +74,13 @@ namespace QTournament
   {
     if (getState() != ObjState::CAT_Config)
     {
-      return ERR::CONFIG_ALREADY_FROZEN;
+      return ERR::ConfigAlreadyFrozen;
     }
     
     // make sure there no unpaired players in singles or doubles
     if ((getMatchType() != MatchType::Singles) && (hasUnpairedPlayers()))
     {
-      return ERR::UNPAIRED_PLAYERS;
+      return ERR::UnpairedPlayers;
     }
 
     // we should have at least two players / pairs
@@ -91,14 +91,14 @@ namespace QTournament
     }
     if (numPairs < 2)
     {
-      return ERR::INVALID_PLAYER_COUNT;
+      return ERR::InvalidPlayerCount;
     }
 
     // for the bracket mode "ranking1" we may not have more
     // than 32 players
     if ((elimMode == BracketGenerator::BRACKET_MatchSystem::Ranking1) && (numPairs > 32))
     {
-      return ERR::INVALID_PLAYER_COUNT;
+      return ERR::InvalidPlayerCount;
     }
 
     return ERR::OK;
@@ -122,7 +122,7 @@ namespace QTournament
 
   ERR EliminationCategory::prepareFirstRound()
   {
-    if (getState() != ObjState::CAT_Idle) return ERR::WRONG_STATE;
+    if (getState() != ObjState::CAT_Idle) return ERR::WrongState;
 
     MatchMngr mm{db};
 
@@ -229,7 +229,7 @@ namespace QTournament
     CatRoundStatus crs = getRoundStatus();
     if (round > crs.getFinishedRoundsCount())
     {
-      if (err != nullptr) *err = ERR::INVALID_ROUND;
+      if (err != nullptr) *err = ERR::InvalidRound;
       return PlayerPairList();
     }
 
@@ -241,7 +241,7 @@ namespace QTournament
       result = this->getRemainingPlayersAfterRound(round-1, &e);
       if (e != ERR::OK)
       {
-        if (err != nullptr) *err = ERR::INVALID_ROUND;
+        if (err != nullptr) *err = ERR::InvalidRound;
         return PlayerPairList();
       }
     } else {
@@ -536,14 +536,14 @@ namespace QTournament
   ERR EliminationCategory::rewriteFinalRankForMultipleRounds(int minRound, int maxRound) const
   {
     // some boundary checks
-    if (minRound < 1) return ERR::INVALID_ROUND;
+    if (minRound < 1) return ERR::InvalidRound;
     CatRoundStatus crs = getRoundStatus();
     int lastCompletedRound = crs.getFinishedRoundsCount();
-    if (lastCompletedRound < 1) return ERR::INVALID_ROUND;
-    if (minRound > lastCompletedRound) return ERR::INVALID_ROUND;
+    if (lastCompletedRound < 1) return ERR::InvalidRound;
+    if (minRound > lastCompletedRound) return ERR::InvalidRound;
     if (maxRound < 1) maxRound = lastCompletedRound;
-    if (maxRound < minRound) return ERR::INVALID_ROUND;
-    if (maxRound > lastCompletedRound) return ERR::INVALID_ROUND;
+    if (maxRound < minRound) return ERR::InvalidRound;
+    if (maxRound > lastCompletedRound) return ERR::InvalidRound;
 
     // start a pretty inefficient algorithm that goes through
     // all rounds from "min" to "max" and loop over all

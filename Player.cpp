@@ -48,8 +48,8 @@ namespace QTournament
 
   QString Player::getDisplayName(int maxLen) const
   {
-    QString first = QString::fromUtf8(row[PLAYINGFNAME].data());
-    QString last = QString::fromUtf8(row[PLAYINGLNAME].data());
+    QString first = QString::fromUtf8(row[PL_FNAME].data());
+    QString last = QString::fromUtf8(row[PL_LNAME].data());
     
     QString fullName = last + ", " + first;
     
@@ -90,8 +90,8 @@ namespace QTournament
 
   QString Player::getDisplayName_FirstNameFirst() const
   {
-    QString first = QString::fromUtf8(row[PLAYINGFNAME].data());
-    QString last = QString::fromUtf8(row[PLAYINGLNAME].data());
+    QString first = QString::fromUtf8(row[PL_FNAME].data());
+    QString last = QString::fromUtf8(row[PL_LNAME].data());
 
     return first + " " + last;
   }
@@ -108,21 +108,21 @@ namespace QTournament
 
   QString Player::getFirstName() const
   {
-    return QString::fromUtf8(row[PLAYINGFNAME].data());
+    return QString::fromUtf8(row[PL_FNAME].data());
   }
 
 //----------------------------------------------------------------------------
 
   QString Player::getLastName() const
   {
-    return QString::fromUtf8(row[PLAYINGLNAME].data());
+    return QString::fromUtf8(row[PL_LNAME].data());
   }
 
 //----------------------------------------------------------------------------
 
   SEX Player::getSex() const
   {
-    int sexInt = row.getInt(PLAYINGSEX);
+    int sexInt = row.getInt(PL_SEX);
     return static_cast<SEX>(sexInt);
   }
 
@@ -130,7 +130,7 @@ namespace QTournament
 
   Team Player::getTeam() const
   {
-    auto teamRef = row.getInt2(PLAYINGTEAM_REF);
+    auto teamRef = row.getInt2(PL_TEAM_REF);
     
     // if we don't use teams, throw an exception
     if (!teamRef)
@@ -153,7 +153,7 @@ namespace QTournament
     CatMngr cmngr{db};
     for (SqliteOverlay::TabRowIterator it{db, TAB_P2C, wc}; it.hasData(); ++it)
     {
-      int catId = it->getInt(P2C_CONFIGREF);
+      int catId = it->getInt(P2C_CAT_REF);
       result.push_back(cmngr.getCategoryById(catId));
     }
 

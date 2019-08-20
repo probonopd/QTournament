@@ -124,20 +124,20 @@ namespace QTournament
   {
     if (getState() != ObjState::CAT_Config)
     {
-      return ERR::CONFIG_ALREADY_FROZEN;
+      return ERR::ConfigAlreadyFrozen;
     }
     
     // make sure there no unpaired players in singles or doubles
     if ((getMatchType() != MatchType::Singles) && (hasUnpairedPlayers()))
     {
-      return ERR::UNPAIRED_PLAYERS;
+      return ERR::UnpairedPlayers;
     }
     
     // make sure we have at least three players
     PlayerPairList pp = getPlayerPairs();
     if (pp.size() < 3)
     {
-      return ERR::INVALID_PLAYER_COUNT;
+      return ERR::InvalidPlayerCount;
     }
     
     return ERR::OK;
@@ -161,7 +161,7 @@ namespace QTournament
 
   ERR PureRoundRobinCategory::prepareFirstRound()
   {
-    if (getState() != ObjState::CAT_Idle) return ERR::WRONG_STATE;
+    if (getState() != ObjState::CAT_Idle) return ERR::WrongState;
 
     MatchMngr mm{db};
 
