@@ -44,11 +44,11 @@ protected:
   static constexpr int REL_NAME_COL_WIDTH = 10;
   static constexpr int REL_SEX_COL_WIDTH = 1;
   static constexpr int REL_TEAM_COL_WIDTH = 10;
-  static constexpr int REL_CAT_COL_WIDTH = 7;
+  static constexpr int REL_CONFIGCOL_WIDTH = 7;
   static constexpr int MAX_NAME_COL_WIDTH = 350;
   static constexpr int MAX_SEX_COL_WIDTH = 30;
   static constexpr int MAX_TEAM_COL_WIDTH = 300;
-  static constexpr int MAX_CAT_COL_WIDTH = 300;
+  static constexpr int MAX_CONFIGCOL_WIDTH = 300;
   void hook_onDatabaseOpened() override;
 
 public slots:

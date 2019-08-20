@@ -16,8 +16,8 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CMDCREATENEWPLAYERINCAT_H
-#define CMDCREATENEWPLAYERINCAT_H
+#ifndef CMDCREATENEWPLAYERINCONFIGH
+#define CMDCREATENEWPLAYERINCONFIGH
 
 #include <QObject>
 

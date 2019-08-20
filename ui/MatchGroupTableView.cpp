@@ -29,7 +29,7 @@ MatchGroupTableView::MatchGroupTableView(QWidget* parent)
        {"", REL_NUMERIC_COL_WIDTH, -1, -1},
        {"", REL_NUMERIC_COL_WIDTH, -1, -1},
        {"", REL_NUMERIC_COL_WIDTH, -1, -1}}, true, parent},
-    currentFilter{FilterType::NONE}
+    currentFilter{FilterType::RefereeMode::None}
 {
 }
 
@@ -39,16 +39,16 @@ void MatchGroupTableView::setFilter(FilterType ft)
 {
   currentFilter = ft;
 
-  if (ft == FilterType::NONE)
+  if (ft == FilterType::RefereeMode::None)
   {
     sortedModel->setFilterFixedString("");
     return;
   }
 
-  ObjState stat = ObjState::MG_IDLE;
+  ObjState stat = ObjState::MG_Idle;
   if (ft == FilterType::STAGED)
   {
-    stat = ObjState::MG_STAGED;
+    stat = ObjState::MG_Staged;
   }
 
   int stateId = static_cast<int>(stat);
@@ -60,14 +60,14 @@ void MatchGroupTableView::setFilter(FilterType ft)
 
 void MatchGroupTableView::clearFilter()
 {
-  setFilter(FilterType::NONE);
+  setFilter(FilterType::RefereeMode::None);
 }
 
 //----------------------------------------------------------------------------
 
 void MatchGroupTableView::onFilterUpdateTriggered()
 {
-  if (currentFilter != FilterType::NONE) setFilter(currentFilter);
+  if (currentFilter != FilterType::RefereeMode::None) setFilter(currentFilter);
 }
 
 //----------------------------------------------------------------------------

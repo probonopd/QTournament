@@ -113,7 +113,7 @@ namespace QTournament
 
   int Match::getMatchNumber() const
   {
-    return row.getInt2(MA_NUM).value_or(MATCH_NUM_NOT_ASSIGNED);
+    return row.getInt2(MA_NUM).value_or(MatchNumNotAssigned);
   }
 
   //----------------------------------------------------------------------------
@@ -289,7 +289,7 @@ namespace QTournament
   bool Match::isWalkoverPossible() const
   {
     ObjState stat = getState();
-    return ((stat == ObjState::MA_READY) || (stat == ObjState::MA_RUNNING) || (stat == ObjState::MA_BUSY) || (stat == ObjState::MA_WAITING));
+    return ((stat == ObjState::MA_Ready) || (stat == ObjState::MA_Running) || (stat == ObjState::MA_Busy) || (stat == ObjState::MA_Waiting));
   }
 
 //----------------------------------------------------------------------------
@@ -297,7 +297,7 @@ namespace QTournament
   bool Match::isWonByWalkover() const
   {
     ObjState stat = getState();
-    if (stat != ObjState::MA_FINISHED) return false;
+    if (stat != ObjState::MA_Finished) return false;
 
     // if the match is finished but has no starting time, it
     // has been won by a walkover
@@ -373,13 +373,13 @@ namespace QTournament
   int Match::getMatchDuration() const
   {
     ObjState stat = getState();
-    if ((stat != ObjState::MA_FINISHED) && (stat != ObjState::MA_RUNNING)) return -1;
+    if ((stat != ObjState::MA_Finished) && (stat != ObjState::MA_Running)) return -1;
 
     auto startTime = row.getInt2(MA_START_TIME);
     if (!startTime) return -1;
 
     int finishTime;
-    if (stat == ObjState::MA_FINISHED)
+    if (stat == ObjState::MA_Finished)
     {
       auto _finishTime = row.getInt2(MA_FINISH_TIME);
       if (!_finishTime) return -1;
@@ -393,25 +393,25 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  REFEREE_MODE Match::get_RAW_RefereeMode() const
+  RefereeMode Match::get_RAW_RefereeMode() const
   {
-    int modeId = row.getInt(MA_REFEREE_MODE);
-    return static_cast<REFEREE_MODE>(modeId);
+    int modeId = row.getInt(MA_RefereeMode);
+    return static_cast<RefereeMode>(modeId);
   }
 
   //----------------------------------------------------------------------------
 
-  REFEREE_MODE Match::get_EFFECTIVE_RefereeMode() const
+  RefereeMode Match::get_EFFECTIVE_RefereeMode() const
   {
-    REFEREE_MODE mode = get_RAW_RefereeMode();
-    if (mode == REFEREE_MODE::USE_DEFAULT)
+    RefereeMode mode = get_RAW_RefereeMode();
+    if (mode == RefereeMode::RefereeMode::UseDefault)
     {
       auto cfg = SqliteOverlay::KeyValueTab{db.get(), TAB_CFG};
-      int tnmtDefaultRefereeModeId = cfg.getInt(CFG_KEY_DEFAULT_REFEREE_MODE);
-      mode = static_cast<REFEREE_MODE>(tnmtDefaultRefereeModeId);
+      int tnmtDefaultRefereeModeId = cfg.getInt(CFG_KEY_DEFAULT_RefereeMode);
+      mode = static_cast<RefereeMode>(tnmtDefaultRefereeModeId);
     }
 
-    assert(mode != REFEREE_MODE::USE_DEFAULT);
+    assert(mode != RefereeMode::RefereeMode::UseDefault);
 
     return mode;
   }
@@ -450,14 +450,14 @@ namespace QTournament
     ObjState stat = getState();
     if ((refAction == REFEREE_ACTION::PRE_ASSIGN) || (refAction == REFEREE_ACTION::MATCH_CALL))
     {
-      if (!((stat == ObjState::MA_BUSY) || (stat == ObjState::MA_READY)))
+      if (!((stat == ObjState::MA_Busy) || (stat == ObjState::MA_Ready)))
       {
         return ERR::MATCH_NOT_CONFIGURALE_ANYMORE;
       }
     }
     else if (refAction == REFEREE_ACTION::SWAP)
     {
-      if (!((stat == ObjState::MA_RUNNING) && (hasRefereeAssigned() == true)))
+      if (!((stat == ObjState::MA_Running) && (hasRefereeAssigned() == true)))
       {
         return ERR::MATCH_NOT_CONFIGURALE_ANYMORE;
       }
@@ -466,10 +466,10 @@ namespace QTournament
       return ERR::MATCH_NOT_CONFIGURALE_ANYMORE;
     }
 
-    // don't allow assignments if the mode is set to NONE
-    // or to HANDWRITTEN
-    REFEREE_MODE mod = get_EFFECTIVE_RefereeMode();
-    if ((mod == REFEREE_MODE::NONE) || (mod == REFEREE_MODE::HANDWRITTEN))
+    // don't allow assignments if the mode is set to RefereeMode::None
+    // or to RefereeMode::HandWritten
+    RefereeMode mod = get_EFFECTIVE_RefereeMode();
+    if ((mod == RefereeMode::RefereeMode::None) || (mod == RefereeMode::RefereeMode::HandWritten))
     {
       return ERR::MATCH_NEEDS_NO_REFEREE;
     }
@@ -499,7 +499,7 @@ namespace QTournament
     MatchMngr mm{db};
     auto ma = mm.getMatch(matchRef);
     int matchNumber = ma->getMatchNumber();
-    if (matchNumber == MATCH_NUM_NOT_ASSIGNED) return 0;
+    if (matchNumber == MatchNumNotAssigned) return 0;
 
     return isWinner ? matchNumber : -matchNumber;
   }

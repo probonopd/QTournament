@@ -16,8 +16,8 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CMDMOVEORCOPYPAIRTOCAT_H
-#define CMDMOVEORCOPYPAIRTOCAT_H
+#ifndef CMDMOVEORCOPYPAIRTOCONFIGH
+#define CMDMOVEORCOPYPAIRTOCONFIGH
 
 #include <QObject>
 

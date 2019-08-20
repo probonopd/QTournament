@@ -41,9 +41,9 @@ void tstCatMngr::testCreateNewCategory()
   
   // make sure the default values are set correctly
   Category c = cmngr.getCategory("c1");
-  CPPUNIT_ASSERT(c.getState() == STAT_CAT_CONFIG);
-  CPPUNIT_ASSERT(c.getMatchSystem() == GROUPS_WITH_KO);
-  CPPUNIT_ASSERT(c.getMatchType() == SINGLES);
+  CPPUNIT_ASSERT(c.getState() == STAT_CAT_Config);
+  CPPUNIT_ASSERT(c.getMatchSystem() == MatchSystem::GroupsWithKO);
+  CPPUNIT_ASSERT(c.getMatchType() == MatchType::Singles);
   CPPUNIT_ASSERT(c.getSex() == M);
   
   // name collision
@@ -265,12 +265,12 @@ void tstCatMngr::testFreezeCategory()
   }
 
   // set a valid match system and a valid configuration
-  CPPUNIT_ASSERT(ms.setMatchSystem(GROUPS_WITH_KO) == OK);
-  CPPUNIT_ASSERT(ms.setMatchType(SINGLES) == OK);
+  CPPUNIT_ASSERT(ms.setMatchSystem(MatchSystem::GroupsWithKO) == OK);
+  CPPUNIT_ASSERT(ms.setMatchType(MatchType::Singles) == OK);
   GroupDef gd = GroupDef(4, 10); // 10 groups of four players each
   GroupDefList gdl;
   gdl.append(gd);
-  KO_Config cfg = KO_Config(L16, false, gdl);
+  KO_Config cfg = KO_Config(KO_Start::L16, false, gdl);
   CPPUNIT_ASSERT(cfg.isValid(40));
   CPPUNIT_ASSERT(ms.setParameter(GROUP_CONFIG, cfg.toString()) == true);
   
@@ -291,7 +291,7 @@ void tstCatMngr::testFreezeCategory()
     CPPUNIT_ASSERT(pp.hasPlayer2() == false);
   }
   
-  CPPUNIT_ASSERT(ms.getState() == STAT_CAT_CONFIG);
+  CPPUNIT_ASSERT(ms.getState() == STAT_CAT_Config);
   
   // do the freeze
   CPPUNIT_ASSERT(cmngr->freezeConfig(ms) == OK);
@@ -309,7 +309,7 @@ void tstCatMngr::testFreezeCategory()
   }
   
   // check the actual state transition
-  CPPUNIT_ASSERT(ms.getState() == STAT_CAT_FROZEN);
+  CPPUNIT_ASSERT(ms.getState() == STAT_CAT_Frozen);
   
   delete db;
   printEndMsg();

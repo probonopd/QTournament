@@ -34,7 +34,7 @@ class MatchGroupTableView : public GuiHelpers::AutoSizingTableView_WithDatabase<
   Q_OBJECT
   
 public:
-  enum class FilterType : std::int8_t { IDLE = 1, STAGED = 2, NONE = 0 };
+  enum class FilterType : std::int8_t { IDLE = 1, STAGED = 2, RefereeMode::None = 0 };
 
   MatchGroupTableView (QWidget* parent);
   virtual ~MatchGroupTableView () {}

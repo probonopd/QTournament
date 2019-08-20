@@ -28,19 +28,19 @@
 MatchMatrix::MatchMatrix(SimpleReportGenerator* _rep, const QString& tabName, const Category& _cat, int _round, int _grpNum)
   :AbstractReportElement(_rep), tableName(tabName), cat(_cat), round(_round), grpNum(_grpNum), showMatchNumbersOnly(round <= 0)
 {
-  ERR::MATCH_SYSTEM msys = cat.getMatchSystem();
+  ERR::MatchSystem msys = cat.getMatchSystem();
 
-  if ((msys != ROUND_ROBIN) && (round < 0))
+  if ((msys != MatchSystem::RoundRobin) && (round < 0))
   {
     throw invalid_argument("Requested match matrix for invalid round number (too low)");
   }
 
-  if ((msys != ROUND_ROBIN) && (msys != GROUPS_WITH_KO))
+  if ((msys != MatchSystem::RoundRobin) && (msys != MatchSystem::GroupsWithKO))
   {
     throw invalid_argument("Requested match matrix for invalid category (wrong match system)");
   }
 
-  if (msys == GROUPS_WITH_KO)
+  if (msys == MatchSystem::GroupsWithKO)
   {
     KO_Config cfg{cat.getParameter_string(CatParameter::GroupConfig)};
     if (round > cfg.getNumRounds())
@@ -61,7 +61,7 @@ MatchMatrix::MatchMatrix(SimpleReportGenerator* _rep, const QString& tabName, co
 
   if (round <= 0)
   {
-    if (msys != ROUND_ROBIN)
+    if (msys != MatchSystem::RoundRobin)
     {
       round = 0;    // just a caveat, should actually never be reached
     }
@@ -96,8 +96,8 @@ QRectF MatchMatrix::plot(const QPointF& topLeft)
   // determine the maximum round number up to
   // which will be searched for matches
   int maxRoundNum = 99999;  // default: search in whole category
-  ERR::MATCH_SYSTEM msys = cat.getMatchSystem();
-  if (msys == GROUPS_WITH_KO)
+  ERR::MatchSystem msys = cat.getMatchSystem();
+  if (msys == MatchSystem::GroupsWithKO)
   {
     KO_Config cfg = cat.getParameter_string(CatParameter::GroupConfig);
 
@@ -113,7 +113,7 @@ QRectF MatchMatrix::plot(const QPointF& topLeft)
   //
   // also update maxRoundNum as the upper limit of the search radius
   int minRoundNum = 1;
-  if (msys == ROUND_ROBIN)
+  if (msys == MatchSystem::RoundRobin)
   {
     std::unique_ptr<PureRoundRobinCategory> rrCat = PureRoundRobinCategory::getFromGenericCat(cat);
     if ((rrCat != nullptr) && (round > 0))
@@ -355,7 +355,7 @@ tuple<MatchMatrix::CELL_CONTENT_TYPE, QString> MatchMatrix::getCellContent(const
     // if the match is later than "round", print only
     // the match number. The same applies if the match
     // is not yet finished
-    if ((maRound > round) || (maStat != ObjState::MA_FINISHED) || (showMatchNumbersOnly))
+    if ((maRound > round) || (maStat != ObjState::MA_Finished) || (showMatchNumbersOnly))
     {
       int maNum = ma->getMatchNumber();
       if (maNum < 0)
@@ -369,7 +369,7 @@ tuple<MatchMatrix::CELL_CONTENT_TYPE, QString> MatchMatrix::getCellContent(const
       return make_tuple(CELL_CONTENT_TYPE::MATCH_NUMBER, txt);
     }
 
-    if ((maRound <= round) && (maStat == ObjState::MA_FINISHED))
+    if ((maRound <= round) && (maStat == ObjState::MA_Finished))
     {
       // the match is in the correct round range and is finished,
       // so we print the score

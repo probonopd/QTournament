@@ -703,7 +703,7 @@ void MainFrame::setupTestScenario(int scenarioID)
   cfg.organizingClub = "SV Whatever";
   cfg.tournamentName = "World Championship";
   cfg.useTeams = true;
-  cfg.refereeMode = REFEREE_MODE::NONE;
+  cfg.refereeMode = RefereeMode::RefereeMode::None;
   currentDb = TournamentDB::createNew(testFileName, cfg);
   distributeCurrentDatabasePointerToWidgets();
   
@@ -734,27 +734,27 @@ void MainFrame::setupTestScenario(int scenarioID)
     // create one category of every kind
     cmngr.createNewCategory("MS");
     Category ms = cmngr.getCategory("MS");
-    ms.setMatchType(SINGLES);
+    ms.setMatchType(MatchType::Singles);
     ms.setSex(M);
 
     cmngr.createNewCategory("MD");
     Category md = cmngr.getCategory("MD");
-    md.setMatchType(DOUBLES);
+    md.setMatchType(MatchType::Doubles);
     md.setSex(M);
 
     cmngr.createNewCategory("LS");
     Category ls = cmngr.getCategory("LS");
-    ls.setMatchType(SINGLES);
+    ls.setMatchType(MatchType::Singles);
     ls.setSex(F);
 
     cmngr.createNewCategory("LD");
     Category ld = cmngr.getCategory("LD");
-    ld.setMatchType(DOUBLES);
+    ld.setMatchType(MatchType::Doubles);
     ld.setSex(F);
 
     cmngr.createNewCategory("MX");
     Category mx = cmngr.getCategory("MX");
-    mx.setMatchType(MIXED);
+    mx.setMatchType(MatchType::Mixed);
     mx.setSex(M); // shouldn't matter at all
   };
   
@@ -808,7 +808,7 @@ void MainFrame::setupTestScenario(int scenarioID)
     GroupDef d = GroupDef(5, 8);
     GroupDefList gdl;
     gdl.append(d);
-    KO_Config cfg(QUARTER, false, gdl);
+    KO_Config cfg(KO_Start::Quarter, false, gdl);
     ls.setParameter(CatParameter::GroupConfig, cfg.toString());
   };
 
@@ -875,7 +875,7 @@ void MainFrame::setupTestScenario(int scenarioID)
     GroupDef d = GroupDef(4, 2);
     GroupDefList gdl;
     gdl.append(d);
-    KO_Config cfg(FINAL, false, gdl);
+    KO_Config cfg(KO_Start::Final, false, gdl);
     assert(ld.setParameter(CatParameter::GroupConfig, cfg.toString()) == true);
 
     // freeze
@@ -955,14 +955,14 @@ void MainFrame::setupTestScenario(int scenarioID)
       canStageMatchGroups = false;
       for (MatchGroup mg : mm.getMatchGroupsForCat(ls))
       {
-        if (mg.getState() != ObjState::MG_IDLE) continue;
+        if (mg.getState() != ObjState::MG_Idle) continue;
         if (mm.canStageMatchGroup(mg) != ERR::OK) continue;
         mm.stageMatchGroup(mg);
         canStageMatchGroups = true;
       }
       for (MatchGroup mg : mm.getMatchGroupsForCat(ld))
       {
-        if (mg.getState() != ObjState::MG_IDLE) continue;
+        if (mg.getState() != ObjState::MG_Idle) continue;
         if (mm.canStageMatchGroup(mg) != ERR::OK) continue;
         mm.stageMatchGroup(mg);
         canStageMatchGroups = true;
@@ -1007,7 +1007,7 @@ void MainFrame::setupTestScenario(int scenarioID)
     Category ls = cmngr.getCategory("LS");
 
     // set the match system to Single Elimination
-    ERR e = ls.setMatchSystem(SINGLE_ELIM) ;
+    ERR e = ls.setMatchSystem(MatchSystem::SingleElim) ;
     assert(e == ERR::OK);
 
     // run the category
@@ -1026,22 +1026,22 @@ void MainFrame::setupTestScenario(int scenarioID)
     assert(e == ERR::OK);
 
     // stage all match groups
-    auto mg = mm.getMatchGroup(ls, 1, GROUP_NUM__ITERATION, &e);  // round 1
+    auto mg = mm.getMatchGroup(ls, 1, GroupNum_Iteration, &e);  // round 1
     assert(e == ERR::OK);
     mm.stageMatchGroup(*mg);
-    mg = mm.getMatchGroup(ls, 2, GROUP_NUM__ITERATION, &e);  // round 2
+    mg = mm.getMatchGroup(ls, 2, GroupNum_Iteration, &e);  // round 2
     assert(e == ERR::OK);
     mm.stageMatchGroup(*mg);
-    mg = mm.getMatchGroup(ls, 3, GROUP_NUM__L16, &e);  // round 3
+    mg = mm.getMatchGroup(ls, 3, GroupNum_L16, &e);  // round 3
     assert(e == ERR::OK);
     mm.stageMatchGroup(*mg);
-    mg = mm.getMatchGroup(ls, 4, GROUP_NUM__QUARTERFINAL, &e);  // round 4
+    mg = mm.getMatchGroup(ls, 4, GroupNum_Quarter, &e);  // round 4
     assert(e == ERR::OK);
     mm.stageMatchGroup(*mg);
-    mg = mm.getMatchGroup(ls, 5, GROUP_NUM__SEMIFINAL, &e);  // round 5
+    mg = mm.getMatchGroup(ls, 5, GroupNum_Semi, &e);  // round 5
     assert(e == ERR::OK);
     mm.stageMatchGroup(*mg);
-    mg = mm.getMatchGroup(ls, 6, GROUP_NUM__FINAL, &e);  // round 6
+    mg = mm.getMatchGroup(ls, 6, GroupNum_Final, &e);  // round 6
     assert(e == ERR::OK);
     mm.stageMatchGroup(*mg);
     mm.scheduleAllStagedMatchGroups();
@@ -1100,8 +1100,8 @@ void MainFrame::setupTestScenario(int scenarioID)
       }
     }
 
-    ls.setMatchSystem(MATCH_SYSTEM::RANKING);
-    ld.setMatchSystem(MATCH_SYSTEM::RANKING);
+    ls.setMatchSystem(MatchSystem::MatchSystem::Ranking);
+    ld.setMatchSystem(MatchSystem::MatchSystem::Ranking);
 
     // freeze the LS category
     ERR e = cmngr.freezeConfig(ls);
@@ -1439,11 +1439,11 @@ void MainFrame::onEditTournamentSettings()
   }
 
   // the umpire mode
-  int oldRefereeModeId = cfg.getInt(CFG_KEY_DEFAULT_REFEREE_MODE);
-  REFEREE_MODE oldRefereeMode = static_cast<REFEREE_MODE>(oldRefereeModeId);
+  int oldRefereeModeId = cfg.getInt(CFG_KEY_DEFAULT_RefereeMode);
+  RefereeMode oldRefereeMode = static_cast<RefereeMode>(oldRefereeModeId);
   if (oldRefereeMode != newSettings->refereeMode)
   {
-    cfg.set(CFG_KEY_DEFAULT_REFEREE_MODE, static_cast<int>(newSettings->refereeMode));
+    cfg.set(CFG_KEY_DEFAULT_RefereeMode, static_cast<int>(newSettings->refereeMode));
     ui.tabSchedule->updateRefereeColumn();
   }
 }

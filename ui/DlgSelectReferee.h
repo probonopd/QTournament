@@ -86,7 +86,7 @@ public:
   RefereeTableWidget(QWidget* parent=0);
   virtual ~RefereeTableWidget() {}
 
-  void rebuildPlayerList(const TaggedPlayerList& pList, int selectedMatchNumer, QTournament::REFEREE_MODE _refMode);
+  void rebuildPlayerList(const TaggedPlayerList& pList, int selectedMatchNumer, QTournament::RefereeMode _refMode);
   std::optional<QTournament::Player> getSelectedPlayer();
   bool hasPlayerSelected();
 
@@ -99,7 +99,7 @@ protected:
 
   void hook_onDatabaseOpened() override;
 
-  QTournament::REFEREE_MODE refMode;
+  QTournament::RefereeMode refMode;
 };
 
 #endif // DLGSELECTREFEREE_H

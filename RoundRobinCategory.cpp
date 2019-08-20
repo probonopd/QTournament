@@ -50,13 +50,13 @@ namespace QTournament
 
   ERR RoundRobinCategory::canFreezeConfig()
   {
-    if (getState() != ObjState::CAT_CONFIG)
+    if (getState() != ObjState::CAT_Config)
     {
       return ERR::CONFIG_ALREADY_FROZEN;
     }
     
     // make sure there no unpaired players in singles or doubles
-    if ((getMatchType() != SINGLES) && (hasUnpairedPlayers()))
+    if ((getMatchType() != MatchType::Singles) && (hasUnpairedPlayers()))
     {
       return ERR::UNPAIRED_PLAYERS;
     }
@@ -96,7 +96,7 @@ namespace QTournament
 
   ERR RoundRobinCategory::prepareFirstRound()
   {
-    if (getState() != ObjState::CAT_IDLE) return ERR::WRONG_STATE;
+    if (getState() != ObjState::CAT_Idle) return ERR::WRONG_STATE;
 
     MatchMngr mm{db};
 
@@ -126,7 +126,7 @@ namespace QTournament
   int RoundRobinCategory::calcTotalRoundsCount() const
   {
     ObjState stat = getState();
-    if ((stat == ObjState::CAT_CONFIG) || (stat == ObjState::CAT_FROZEN))
+    if ((stat == ObjState::CAT_Config) || (stat == ObjState::CAT_Frozen))
     {
       return -1;   // category not yet fully configured; can't calc rounds
     }
@@ -139,11 +139,11 @@ namespace QTournament
     // (number of group rounds) + (number of KO rounds)
     int groupRounds = cfg.getNumRounds();
 
-    KO_START startLevel = cfg.getStartLevel();
+    KO_Start startLevel = cfg.getStartLevel();
     int eliminationRounds = 1;  // finals
-    if (startLevel != FINAL) ++eliminationRounds; // semi-finals for all, except we dive straight into finals
-    if ((startLevel == QUARTER) || (startLevel == L16)) ++eliminationRounds;  // QF and last 16
-    if (startLevel == L16) ++eliminationRounds;  // round of last 16
+    if (startLevel != KO_Start::Final) ++eliminationRounds; // semi-finals for all, except we dive straight into finals
+    if ((startLevel == KO_Start::Quarter) || (startLevel == KO_Start::L16)) ++eliminationRounds;  // QF and last 16
+    if (startLevel == KO_Start::L16) ++eliminationRounds;  // round of last 16
 
     return groupRounds + eliminationRounds;
   }
@@ -352,7 +352,7 @@ namespace QTournament
 
   PlayerPairList RoundRobinCategory::getPlayerPairsForIntermediateSeeding() const
   {
-    if (getState() != ObjState::CAT_WAIT_FOR_INTERMEDIATE_SEEDING)
+    if (getState() != ObjState::CAT_WaitForIntermediateSeeding)
     {
       return PlayerPairList();
     }
@@ -364,7 +364,7 @@ namespace QTournament
 
   ERR RoundRobinCategory::resolveIntermediateSeeding(const PlayerPairList& seed) const
   {
-    if (getState() != ObjState::CAT_WAIT_FOR_INTERMEDIATE_SEEDING)
+    if (getState() != ObjState::CAT_WaitForIntermediateSeeding)
     {
       return ERR::CATEGORY_NEEDS_NO_SEEDING;
     }
@@ -389,7 +389,7 @@ namespace QTournament
     // for the second phase of the tournament
     KO_Config cfg = KO_Config(getParameter_string(CatParameter::GroupConfig));
     int numGroupRounds = cfg.getNumRounds();
-    return generateBracketMatches(BracketGenerator::BRACKET_SINGLE_ELIM, seed, numGroupRounds+1);
+    return generateBracketMatches(BracketGenerator::BRACKET_MatchSystem::SingleElim, seed, numGroupRounds+1);
   }
 
 //----------------------------------------------------------------------------

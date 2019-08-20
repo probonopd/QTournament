@@ -66,7 +66,7 @@ void BasicTestFixture::getScenario01(unique_ptr<TournamentDB>& result) const
   cfg.organizingClub = "SV Whatever";
   cfg.tournamentName = "World Championship";
   cfg.useTeams = true;
-  cfg.refereeMode = REFEREE_MODE::NONE;
+  cfg.refereeMode = RefereeMode::RefereeMode::None;
   result = std::move(TournamentDB::createNew(":memory:", cfg));
   ASSERT_TRUE(result != nullptr);
 }
@@ -95,9 +95,9 @@ void BasicTestFixture::getScenario02(unique_ptr<TournamentDB>& result) const
 
   // configure categories
   cm.setSex(ld, F);
-  cm.setMatchType(ld, DOUBLES);
-  cm.setMatchType(mx, MIXED);
-  cm.setMatchSystem(rr, ROUND_ROBIN);
+  cm.setMatchType(ld, MatchType::Doubles);
+  cm.setMatchType(mx, MatchType::Mixed);
+  cm.setMatchSystem(rr, MatchSystem::RoundRobin);
 
   // an empty team
   TeamMngr tm{result.get()};

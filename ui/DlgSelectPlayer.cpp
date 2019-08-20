@@ -33,8 +33,8 @@ DlgSelectPlayer::DlgSelectPlayer(TournamentDB* _db, QWidget *parent, DLG_CONTEXT
   ui->setupUi(this);
 
   // we always need a valid cat ref, unless
-  // our context is NONE
-  if ((ctxt != DLG_CONTEXT::NONE) && (cat == nullptr))
+  // our context is RefereeMode::None
+  if ((ctxt != DLG_CONTEXT::RefereeMode::None) && (cat == nullptr))
   {
     throw std::invalid_argument("Received empty category reference for player selection dialog!");
   }
@@ -43,7 +43,7 @@ DlgSelectPlayer::DlgSelectPlayer(TournamentDB* _db, QWidget *parent, DLG_CONTEXT
 
   // define the set of players that should be available for selection
   PlayerList applicablePlayers;
-  if (ctxt == DLG_CONTEXT::NONE)
+  if (ctxt == DLG_CONTEXT::RefereeMode::None)
   {
     applicablePlayers = pm.getAllPlayers();
   }
@@ -53,7 +53,7 @@ DlgSelectPlayer::DlgSelectPlayer(TournamentDB* _db, QWidget *parent, DLG_CONTEXT
     {
       if (cat->hasPlayer(pl)) continue;
 
-      if (cat->getAddState(pl.getSex()) == CAN_JOIN)
+      if (cat->getAddState(pl.getSex()) == CatAddState::CanJoin)
       {
         applicablePlayers.push_back(pl);
       }

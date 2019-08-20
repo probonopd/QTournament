@@ -43,8 +43,8 @@ unique_ptr<Match> tstMatch::initMatchGroup()
 
   // fake a valid category state
   TabRow catRow = db[TAB_CATEGORY][1];
-  catRow.update(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_CAT_IDLE));
-  CPPUNIT_ASSERT(ms.getState() == STAT_CAT_IDLE);
+  catRow.update(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_CAT_Idle));
+  CPPUNIT_ASSERT(ms.getState() == STAT_CAT_Idle);
 
   // create a new match group
   ERR e;

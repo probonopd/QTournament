@@ -16,8 +16,8 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CMDBULKADDPLAYERTOCAT_H
-#define CMDBULKADDPLAYERTOCAT_H
+#ifndef CMDBULKADDPLAYERTOCONFIGH
+#define CMDBULKADDPLAYERTOCONFIGH
 
 #include <QObject>
 

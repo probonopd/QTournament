@@ -206,7 +206,7 @@ namespace QTournament
       return ERR::OK;  // no database access necessary
     }
     
-    p.row.update(PL_TEAM_REF, newTeam.getId());
+    p.row.update(PLAYINGTEAM_REF, newTeam.getId());
     CentralSignalEmitter::getInstance()->teamAssignmentChanged(p, oldTeam, newTeam);
     
     return ERR::OK;
@@ -226,7 +226,7 @@ namespace QTournament
   PlayerList TeamMngr::getPlayersForTeam(const Team& t) const
   {
     DbTab playerTab = DbTab{db.get(), TAB_PLAYER, false};
-    return getObjectsByColumnValue<Player>(playerTab, PL_TEAM_REF, t.getId());
+    return getObjectsByColumnValue<Player>(playerTab, PLAYINGTEAM_REF, t.getId());
   }
 
   //----------------------------------------------------------------------------

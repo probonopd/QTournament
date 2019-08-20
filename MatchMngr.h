@@ -111,7 +111,7 @@ namespace QTournament
     ERR closeMatchGroup(const MatchGroup& grp);
 
     // referee/umpire handling
-    ERR setRefereeMode(const Match& ma, REFEREE_MODE newMode) const;
+    ERR setRefereeMode(const Match& ma, RefereeMode newMode) const;
     ERR assignReferee(const Match& ma, const Player& p, REFEREE_ACTION refAction) const;
     ERR removeReferee(const Match& ma) const;
 

@@ -48,7 +48,7 @@ private:
   void initFromPlayerData();
   void initTeamList();
   bool _hasNameChange;
-  void updateCatList(QHash<QTournament::Category, QTournament::CAT_ADD_STATE> catStatus, int preselectCatId = -1);
+  void updateCatList(QHash<QTournament::Category, QTournament::CatAddState> catStatus, int preselectCatId = -1);
 
   QTournament::SEX sexPreset;
   int presetCatId = -1;

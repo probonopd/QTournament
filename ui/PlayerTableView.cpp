@@ -43,7 +43,7 @@ PlayerTableView::PlayerTableView(QWidget* parent)
         {"", REL_NAME_COL_WIDTH, -1, MAX_NAME_COL_WIDTH},
         {"", REL_SEX_COL_WIDTH, -1, MAX_SEX_COL_WIDTH},
         {"", REL_TEAM_COL_WIDTH, -1, MAX_TEAM_COL_WIDTH},
-        {"", REL_CAT_COL_WIDTH, -1, MAX_CAT_COL_WIDTH},
+        {"", REL_CONFIGCOL_WIDTH, -1, MAX_CONFIGCOL_WIDTH},
         {"", 0, -1, -1}}, true, parent}
 {
   setRubberBandCol(PlayerTableModel::FILL_COL);
@@ -105,7 +105,7 @@ void PlayerTableView::onContextMenuRequested(const QPoint& pos)
   // get the player status for enabling / disabling state-dependent actions
   auto selPlayer = getSelectedPlayer();
   bool isPlayerClicked = (selPlayer != nullptr);
-  ObjState plStat = ObjState::CO_DISABLED;   // an arbitrary, dummy default value that has nothing to do with players
+  ObjState plStat = ObjState::CO_Disabled;   // an arbitrary, dummy default value that has nothing to do with players
   if (isPlayerClicked) plStat = selPlayer->getState();
 
   // if no player is clicked, we may only add a player.
@@ -116,8 +116,8 @@ void PlayerTableView::onContextMenuRequested(const QPoint& pos)
   actShowNextMatchesForPlayer->setEnabled(isPlayerClicked & isRowClicked);
   //actShowNextMatchesForPlayer->setEnabled(false);  // not yet implemented
   actRemovePlayer->setEnabled(isPlayerClicked & isRowClicked);
-  actRegister->setEnabled(isPlayerClicked & (plStat == ObjState::PL_WAIT_FOR_REGISTRATION) & isRowClicked);
-  actUnregister->setEnabled(isPlayerClicked & (plStat == ObjState::PL_IDLE) & isRowClicked);
+  actRegister->setEnabled(isPlayerClicked & (plStat == ObjState::PL_WaitForRegistration) & isRowClicked);
+  actUnregister->setEnabled(isPlayerClicked & (plStat == ObjState::PL_Idle) & isRowClicked);
 
   PlayerMngr pm{db};
   bool hasExtDb = pm.hasExternalPlayerDatabaseAvailable();

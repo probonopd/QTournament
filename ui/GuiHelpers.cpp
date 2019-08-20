@@ -38,15 +38,15 @@ QString GuiHelpers::groupNumToString(int grpNum)
 
   switch (grpNum)
   {
-  case GROUP_NUM__ITERATION:
+  case GroupNum_Iteration:
     return "--";
-  case GROUP_NUM__L16:
-    return QObject::tr("L16");
-  case GROUP_NUM__QUARTERFINAL:
+  case GroupNum_L16:
+    return QObject::tr("KO_Start::L16");
+  case GroupNum_Quarter:
     return QObject::tr("QF");
-  case GROUP_NUM__SEMIFINAL:
+  case GroupNum_Semi:
     return QObject::tr("SF");
-  case GROUP_NUM__FINAL:
+  case GroupNum_Final:
     return QObject::tr("FI");
   }
 
@@ -62,15 +62,15 @@ QString GuiHelpers::groupNumToLongString(int grpNum)
 
   switch (grpNum)
   {
-  case GROUP_NUM__ITERATION:
+  case GroupNum_Iteration:
     return "--";
-  case GROUP_NUM__L16:
+  case GroupNum_L16:
     return QObject::tr("Round of Last 16");
-  case GROUP_NUM__QUARTERFINAL:
+  case GroupNum_Quarter:
     return QObject::tr("Quarter Finals");
-  case GROUP_NUM__SEMIFINAL:
+  case GroupNum_Semi:
     return QObject::tr("Semi Finals");
-  case GROUP_NUM__FINAL:
+  case GroupNum_Final:
     return QObject::tr("Finals");
   }
 
@@ -123,7 +123,7 @@ QString GuiHelpers::prepCall(const QTournament::Match &ma, const QTournament::Co
     call += "<font color=\"darkRed\">";
     if (winnerRank == 1)
     {
-      call += QObject::tr("FINAL");
+      call += QObject::tr("KO_Start::Final");
     } else {
       call += QObject::tr("MATCH FOR PLACE %1");
       call = call.arg(winnerRank);
@@ -142,8 +142,8 @@ QString GuiHelpers::prepCall(const QTournament::Match &ma, const QTournament::Co
   call += ".";
 
   // add the umpire's name, if necessary
-  QTournament::REFEREE_MODE refMode = ma.get_EFFECTIVE_RefereeMode();
-  if ((refMode != QTournament::REFEREE_MODE::NONE) && ((refMode != QTournament::REFEREE_MODE::HANDWRITTEN)))
+  QTournament::RefereeMode refMode = ma.get_EFFECTIVE_RefereeMode();
+  if ((refMode != QTournament::RefereeMode::RefereeMode::None) && ((refMode != QTournament::RefereeMode::RefereeMode::HandWritten)))
   {
     QTournament::upPlayer referee = ma.getAssignedReferee();
     if (referee != nullptr)
@@ -355,7 +355,7 @@ void GuiHelpers::drawTwoLinePlayerPairNames_Centered(QPainter* painter, const QR
   // determine the colors for the left and the right block
   QColor leftColor{fntColor};
   QColor rightColor{fntColor};
-  if (ma.getState() == QTournament::ObjState::MA_FINISHED)
+  if (ma.getState() == QTournament::ObjState::MA_Finished)
   {
     auto w = ma.getWinner();
     auto l = ma.getLoser();
@@ -501,7 +501,7 @@ QString GuiHelpers::getStatusSummaryForPlayer(const QTournament::Player& p, cons
   QTournament::ObjState plStat = p.getState();
 
   QString txt;
-  if (plStat == QTournament::ObjState::PL_IDLE)
+  if (plStat == QTournament::ObjState::PL_Idle)
   {
     txt = QObject::tr(" is idle");
 
@@ -515,15 +515,15 @@ QString GuiHelpers::getStatusSummaryForPlayer(const QTournament::Player& p, cons
     }
   }
   std::unique_ptr<Match> ma;
-  if ((plStat == QTournament::ObjState::PL_PLAYING) ||
-      (plStat == QTournament::ObjState::PL_REFEREE))
+  if ((plStat == QTournament::ObjState::PL_Playing) ||
+      (plStat == QTournament::ObjState::PL_Referee))
   {
-    if (plStat == QTournament::ObjState::PL_PLAYING)
+    if (plStat == QTournament::ObjState::PL_Playing)
     {
       txt = QObject::tr(" is playing on court %1 for %2 (match %3, %4, Round %5)");
       ma = pp.getCurrentMatch();
     }
-    if (plStat == QTournament::ObjState::PL_REFEREE)
+    if (plStat == QTournament::ObjState::PL_Referee)
     {
       txt = QObject::tr(" is umpire on court %1 for %2 (match %3, %4, Round %5)");
       ma = pp.getCurrentUmpireMatch();
@@ -544,7 +544,7 @@ QString GuiHelpers::getStatusSummaryForPlayer(const QTournament::Player& p, cons
       txt = "Waaaaah!!! Database inconsistency!!! Panic!!";
     }
   }
-  if (plStat == QTournament::ObjState::PL_WAIT_FOR_REGISTRATION)
+  if (plStat == QTournament::ObjState::PL_WaitForRegistration)
   {
     txt = QObject::tr(" has not yet shown up for registration.");
   }

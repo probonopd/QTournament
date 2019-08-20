@@ -68,9 +68,9 @@ upSimpleReport ResultsAndNextMatches::regenerateReport()
   if (mgl.size() == 1)
   {
     int grpNum = mgl.at(0).getGroupNumber();
-    ERR::MATCH_SYSTEM mSys = cat.getMatchSystem();
-    if ((grpNum < 0) && (grpNum >= GROUP_NUM__L16) &&
-        ((mSys == GROUPS_WITH_KO) || (mSys == SINGLE_ELIM)))
+    ERR::MatchSystem mSys = cat.getMatchSystem();
+    if ((grpNum < 0) && (grpNum >= GroupNum_L16) &&
+        ((mSys == MatchSystem::GroupsWithKO) || (mSys == MatchSystem::SingleElim)))
     {
       subHeader = GuiHelpers::groupNumToLongString(mgl.at(0).getGroupNumber());
     }
@@ -166,7 +166,7 @@ void ResultsAndNextMatches::printNextMatchPart(upSimpleReport& rep) const
   for (MatchGroup mg : mgl)
   {
     ObjState mgStat = mg.getState();
-    if ((mgStat != ObjState::MG_SCHEDULED) && (mgStat != ObjState::MG_FINISHED))
+    if ((mgStat != ObjState::MG_Scheduled) && (mgStat != ObjState::MG_Finished))
     {
       isAllScheduled = false;
       break;

@@ -22,7 +22,7 @@ DlgPickCategory::DlgPickCategory(QWidget *parent, QTournament::TournamentDB* _db
     {
       if (sex != DONT_CARE)
       {
-        if (cat.getAddState(sex) != CAN_JOIN) continue;
+        if (cat.getAddState(sex) != CatAddState::CanJoin) continue;
       }
 
       availCats.push_back(cat);

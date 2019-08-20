@@ -55,15 +55,15 @@ namespace QTournament
     Category getCategoryById(int id);
     Category getCategoryBySeqNum(int seqNum);
     CategoryList getAllCategories();
-    QHash<Category, CAT_ADD_STATE> getAllCategoryAddStates(SEX s);
-    QHash<Category, CAT_ADD_STATE> getAllCategoryAddStates(const Player& p);
+    QHash<Category, CatAddState> getAllCategoryAddStates(SEX s);
+    QHash<Category, CatAddState> getAllCategoryAddStates(const Player& p);
     static std::function<bool (Category&, Category&)> getCategorySortFunction_byName();
     std::vector<PlayerPair> getSeeding(const Category& cat) const;
     ERR canDeleteCategory(const Category& cat) const;
 
     // setters
-    ERR setMatchType(Category& cat, MATCH_TYPE newMatchType);
-    ERR setMatchSystem(Category& cat, MATCH_SYSTEM newMatchSystem);
+    ERR setMatchType(Category& cat, MatchType newMatchType);
+    ERR setMatchSystem(Category& cat, MatchSystem newMatchSystem);
     ERR setSex(Category& cat, SEX newSex);
     bool setCatParameter(Category& cat, CatParameter p, const QVariant& v);
 

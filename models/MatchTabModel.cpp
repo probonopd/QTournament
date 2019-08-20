@@ -122,7 +122,7 @@ QVariant MatchTableModel::data(const QModelIndex& index, int role) const
       // or "FI" do not really make sense. So we display
       // nothing instead
       Category c = mg.getCategory();
-      if (c.getMatchSystem() == RANKING) return "--";
+      if (c.getMatchSystem() == MatchSystem::Ranking) return "--";
 
       // in all other cases, try to print a group number
       return GuiHelpers::groupNumToString(mg.getGroupNumber());
@@ -136,15 +136,15 @@ QVariant MatchTableModel::data(const QModelIndex& index, int role) const
     }
 
     // seventh column: the referee mode for the match
-    if (index.column() == REFEREE_MODE_COL_ID)
+    if (index.column() == RefereeMode_COL_ID)
     {
-      REFEREE_MODE mode = ma->get_EFFECTIVE_RefereeMode();
+      RefereeMode mode = ma->get_EFFECTIVE_RefereeMode();
 
       // if there is already a referee assigned, display
       // the referee name
-      if ((mode == REFEREE_MODE::ALL_PLAYERS) ||
-          (mode == REFEREE_MODE::RECENT_FINISHERS) ||
-          (mode == REFEREE_MODE::SPECIAL_TEAM))
+      if ((mode == RefereeMode::RefereeMode::AllPlayers) ||
+          (mode == RefereeMode::RefereeMode::RecentFinishers) ||
+          (mode == RefereeMode::RefereeMode::SpecialTeam))
       {
         upPlayer referee = ma->getAssignedReferee();
         if (referee != nullptr)
@@ -156,19 +156,19 @@ QVariant MatchTableModel::data(const QModelIndex& index, int role) const
       // in all other cases, display the referee selection mode
       switch (mode)
       {
-      case REFEREE_MODE::NONE:
+      case RefereeMode::RefereeMode::None:
         return tr("None");
 
-      case REFEREE_MODE::HANDWRITTEN:
+      case RefereeMode::RefereeMode::HandWritten:
         return tr("Manual");
 
-      case REFEREE_MODE::ALL_PLAYERS:
+      case RefereeMode::RefereeMode::AllPlayers:
         return tr("Pick from all players");
 
-      case REFEREE_MODE::RECENT_FINISHERS:
+      case RefereeMode::RefereeMode::RecentFinishers:
         return tr("Pick from finishers");
 
-      case REFEREE_MODE::SPECIAL_TEAM:
+      case RefereeMode::RefereeMode::SpecialTeam:
         return tr("Pick from team");
       }
 
@@ -241,7 +241,7 @@ QVariant MatchTableModel::headerData(int section, Qt::Orientation orientation, i
     if (section == STATE_COL_ID) {
       return tr("State");
     }
-    if (section == REFEREE_MODE_COL_ID) {
+    if (section == RefereeMode_COL_ID) {
       return tr("Umpire");
     }
     if (section == EST_START_COL_ID) {

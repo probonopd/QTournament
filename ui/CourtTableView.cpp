@@ -197,10 +197,10 @@ void CourtTableView::updateContextMenu(bool isRowClicked)
   // disable "swap umpire" if we have no umpire in the match
   if ((ma != nullptr) && isRowClicked)
   {
-    REFEREE_MODE refMode = ma->get_RAW_RefereeMode();
-    bool canSwapReferee = ((refMode != REFEREE_MODE::NONE) &&
-                          (refMode != REFEREE_MODE::HANDWRITTEN) &&
-                          (refMode != REFEREE_MODE::USE_DEFAULT));
+    RefereeMode refMode = ma->get_RAW_RefereeMode();
+    bool canSwapReferee = ((refMode != RefereeMode::RefereeMode::None) &&
+                          (refMode != RefereeMode::RefereeMode::HandWritten) &&
+                          (refMode != RefereeMode::RefereeMode::UseDefault));
     actSwapReferee->setEnabled(canSwapReferee);
   } else {
     actSwapReferee->setEnabled(false);
@@ -221,8 +221,8 @@ void CourtTableView::updateContextMenu(bool isRowClicked)
   if ((co != nullptr) && isRowClicked)
   {
     ObjState coStat = co->getState();
-    actToggleEnableState->setEnabled(coStat != ObjState::CO_BUSY);
-    actToggleEnableState->setChecked(coStat == ObjState::CO_DISABLED);
+    actToggleEnableState->setEnabled(coStat != ObjState::CO_Busy);
+    actToggleEnableState->setChecked(coStat == ObjState::CO_Disabled);
   } else {
     actToggleEnableState->setEnabled(false);
     actToggleEnableState->setChecked(false);
@@ -370,7 +370,7 @@ void CourtTableView::onActionToogleEnableStateTriggered()
   if (co == nullptr) return;
 
   CourtMngr cm{db};
-  if (co->getState() == ObjState::CO_DISABLED)
+  if (co->getState() == ObjState::CO_Disabled)
   {
     cm.enableCourt(*co);
   } else {

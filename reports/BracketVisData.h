@@ -39,7 +39,7 @@ namespace QTournament
     TOP_RIGHT,
     BOTTOM_LEFT,
     BOTTOM_RIGHT,
-    NONE
+    RefereeMode::None
   };
 
   enum class BRACKET_ORIENTATION
@@ -50,7 +50,7 @@ namespace QTournament
 
   enum class BRACKET_TERMINATOR
   {
-    NONE,
+    RefereeMode::None,
     INWARDS,
     OUTWARDS
   };
@@ -156,7 +156,7 @@ namespace QTournament
 
     int getBracketElementId() const {return row.getInt(BV_ELEMENT_ID);}
 
-    int getCategoryId() const {return row.getInt(BV_CAT_REF);}
+    int getCategoryId() const {return row.getInt(BV_CONFIGREF);}
 
     std::unique_ptr<Match> getLinkedMatch() const;
     Category getLinkedCategory() const;

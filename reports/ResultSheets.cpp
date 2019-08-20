@@ -77,8 +77,8 @@ upSimpleReport ResultSheets::regenerateReport()
       // we can only print result sheet for unfinished
       // matches. For now, let's also acceppt FUZZY and POSTPONED matches...
       ObjState stat = ma->getState();
-      if ((stat == ObjState::MA_BUSY) || (stat == ObjState::MA_FUZZY) || (stat == ObjState::MA_RUNNING) ||
-          (stat == ObjState::MA_READY) || (stat == ObjState::MA_WAITING) || (stat == ObjState::MA_POSTPONED))
+      if ((stat == ObjState::MA_Busy) || (stat == ObjState::MA_Fuzzy) || (stat == ObjState::MA_Running) ||
+          (stat == ObjState::MA_Ready) || (stat == ObjState::MA_Waiting) || (stat == ObjState::MA_Postponed))
       {
         matchList.append(*ma);
       }
@@ -262,13 +262,13 @@ void ResultSheets::printMatchData(upSimpleReport& rep, const Match& ma) const
   }
 
   // print umpire information
-  REFEREE_MODE refMode = ma.get_EFFECTIVE_RefereeMode();
-  if (refMode != REFEREE_MODE::NONE)
+  RefereeMode refMode = ma.get_EFFECTIVE_RefereeMode();
+  if (refMode != RefereeMode::RefereeMode::None)
   {
     QString txt = tr("Umpire: ");
     upPlayer referee = ma.getAssignedReferee();
 
-    if ((refMode != REFEREE_MODE::HANDWRITTEN) && (referee != nullptr))
+    if ((refMode != RefereeMode::RefereeMode::HandWritten) && (referee != nullptr))
     {
       txt += referee->getDisplayName_FirstNameFirst();
     }

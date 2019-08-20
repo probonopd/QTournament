@@ -29,7 +29,7 @@ namespace QTournament
 {
 
   BracketGenerator::BracketGenerator()
-    : bracketType(BRACKET_SINGLE_ELIM)
+    : bracketType(BRACKET_MatchSystem::SingleElim)
   {
   }
 
@@ -37,9 +37,9 @@ namespace QTournament
 
   BracketGenerator::BracketGenerator(int type)
   {
-    if ((type != BRACKET_SINGLE_ELIM) &&
+    if ((type != BRACKET_MatchSystem::SingleElim) &&
         (type != BRACKET_DOUBLE_ELIM) &&
-        (type != BRACKET_RANKING1))
+        (type != BRACKET_MatchSystem::Ranking1))
     {
       throw std::runtime_error("Request for an invalid bracket type");
     }
@@ -487,8 +487,8 @@ namespace QTournament
     } else {
       // prepare the container for the visualization data
       bvdd__out.addPage(BRACKET_PAGE_ORIENTATION::LANDSCAPE, BRACKET_LABEL_POS::TOP_LEFT);
-      bvdd__out.addPage(BRACKET_PAGE_ORIENTATION::LANDSCAPE, BRACKET_LABEL_POS::NONE);
-      bvdd__out.addPage(BRACKET_PAGE_ORIENTATION::LANDSCAPE, BRACKET_LABEL_POS::NONE);
+      bvdd__out.addPage(BRACKET_PAGE_ORIENTATION::LANDSCAPE, BRACKET_LABEL_POS::RefereeMode::None);
+      bvdd__out.addPage(BRACKET_PAGE_ORIENTATION::LANDSCAPE, BRACKET_LABEL_POS::RefereeMode::None);
 
       for (int i=0; i < 92; ++i)
       {
@@ -533,10 +533,10 @@ namespace QTournament
 
     switch (bracketType)
     {
-    case BRACKET_SINGLE_ELIM:
+    case BRACKET_MatchSystem::SingleElim:
       genBracket__SingleElim(numPlayers, bmdl__out, bvdd__out);
       break;
-    case BRACKET_RANKING1:
+    case BRACKET_MatchSystem::Ranking1:
       genBracket__Ranking1(numPlayers, bmdl__out, bvdd__out);
       break;
     default:
@@ -906,7 +906,7 @@ namespace QTournament
     // three-point-something which is then rounded up to 4
     //
     // Thus I use a stupid loop here to count up the rounds
-    if (bracketType != BracketGenerator::BRACKET_RANKING1)
+    if (bracketType != BracketGenerator::BRACKET_MatchSystem::Ranking1)
     {
       int nRounds = 1;
       int n = 2;
@@ -917,9 +917,9 @@ namespace QTournament
       }
       return nRounds;
     }
-    if (bracketType == BracketGenerator::BRACKET_RANKING1)
+    if (bracketType == BracketGenerator::BRACKET_MatchSystem::Ranking1)
     {
-      // hard-coded values RANKING1
+      // hard-coded values MatchSystem::Ranking1
       if (numPlayers > 16) return 7;
       if (numPlayers > 8) return 5;
       if (numPlayers > 4) return 3;

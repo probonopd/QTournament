@@ -24,7 +24,7 @@
 
 dlgGroupAssignment::dlgGroupAssignment(TournamentDB* _db, QWidget* p, Category& _cat)
   :QDialog(p), db(_db),
-    cfg(KO_Config(QUARTER, false)), cat(_cat)    // dummy, just for formal initialization
+    cfg(KO_Config(KO_Start::Quarter, false)), cat(_cat)    // dummy, just for formal initialization
 {
   ui.setupUi(this);
   cfg = KO_Config(cat.getParameter(CatParameter::GroupConfig).toString());

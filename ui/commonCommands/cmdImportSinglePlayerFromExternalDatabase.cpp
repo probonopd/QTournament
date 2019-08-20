@@ -113,7 +113,7 @@ ERR cmdImportSinglePlayerFromExternalDatabase::exec()
 
     // may we add a player of the selected sex to this category?
     SEX selSex = finalPlayerData->getSex();
-    if (cat->getAddState(selSex) != CAN_JOIN)
+    if (cat->getAddState(selSex) != CatAddState::CanJoin)
     {
       QString msg = tr("%1 cannot be added to this category.");
       msg = msg.arg((selSex == M) ? tr("A male player") : tr("A female player"));

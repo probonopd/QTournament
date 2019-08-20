@@ -182,8 +182,8 @@ namespace QTournament
           Category cat = cm.getCategory(cName);
           if (cat.canAddPlayers())
           {
-            CAT_ADD_STATE as = cat.getAddState(rec.getSex());
-            if (as != CAN_JOIN)
+            CatAddState as = cat.getAddState(rec.getSex());
+            if (as != CatAddState::CanJoin)
             {
               CSVError err{row, CSVFieldsIndex::Categories, CSVErrCode::CategoryNotSuitable, cName, false};
               result.push_back(err);

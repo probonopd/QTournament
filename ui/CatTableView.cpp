@@ -254,8 +254,8 @@ void CategoryTableView::onRunCategory()
   }
 
   // branch here to another function if the action was triggered to
-  // continue a category that's waiting in state ObjState::CAT_WAIT_FOR_INTERMEDIATE_SEEDING
-  if (selectedCat->getState() == ObjState::CAT_WAIT_FOR_INTERMEDIATE_SEEDING)
+  // continue a category that's waiting in state ObjState::CAT_WaitForIntermediateSeeding
+  if (selectedCat->getState() == ObjState::CAT_WaitForIntermediateSeeding)
   {
     handleIntermediateSeedingForSelectedCat();
     return;
@@ -546,7 +546,7 @@ void CategoryTableView::handleIntermediateSeedingForSelectedCat()
   std::unique_ptr<Category> selectedCat = getSelectedCategory().convertToSpecializedObject();
   if (selectedCat == nullptr) return;
 
-  if (selectedCat->getState() != ObjState::CAT_WAIT_FOR_INTERMEDIATE_SEEDING)
+  if (selectedCat->getState() != ObjState::CAT_WaitForIntermediateSeeding)
   {
     return;
   }
@@ -594,7 +594,7 @@ void CategoryTableView::handleIntermediateSeedingForSelectedCat()
 bool CategoryTableView::unfreezeAndCleanup(unique_ptr<Category> selectedCat)
 {
   if (selectedCat == 0) return false;
-  if (selectedCat->getState() != ObjState::CAT_FROZEN) return false;
+  if (selectedCat->getState() != ObjState::CAT_Frozen) return false;
 
   // undo all database changes that happened during freezing
   CatMngr cm{db};
@@ -623,7 +623,7 @@ void CategoryTableView::onContextMenuRequested(const QPoint& pos)
 
   // check if we have a valid category selection and
   // determine the state of the selected category
-  ObjState catState = ObjState::CO_DISABLED;   // an arbitrary, dummy default... not related to categories
+  ObjState catState = ObjState::CO_Disabled;   // an arbitrary, dummy default... not related to categories
   bool canAddPlayers = false;
   if (hasCategorySelected())
   {
@@ -634,7 +634,7 @@ void CategoryTableView::onContextMenuRequested(const QPoint& pos)
 
   // set the label of the "run" action depending
   // on the category state
-  if (catState == ObjState::CAT_WAIT_FOR_INTERMEDIATE_SEEDING)
+  if (catState == ObjState::CAT_WaitForIntermediateSeeding)
   {
     actRunCategory->setText(tr("Continue..."));
   } else {
@@ -646,7 +646,7 @@ void CategoryTableView::onContextMenuRequested(const QPoint& pos)
   // enable / disable selection-specific actions
   actAddCategory->setEnabled(true);   // always possible
   actRunCategory->setEnabled(isCellClicked &&
-                             ((catState == ObjState::CAT_CONFIG) || (catState == ObjState::CAT_WAIT_FOR_INTERMEDIATE_SEEDING)));
+                             ((catState == ObjState::CAT_Config) || (catState == ObjState::CAT_WaitForIntermediateSeeding)));
   actRemoveCategory->setEnabled(isCellClicked);
   actCloneCategory->setEnabled(isCellClicked);
   actAddPlayer->setEnabled(canAddPlayers);

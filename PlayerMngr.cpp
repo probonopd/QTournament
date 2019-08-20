@@ -72,10 +72,10 @@ namespace QTournament
     
     // prepare a new table row
     ColumnValueClause cvc;
-    cvc.addCol(PL_FNAME, first.toUtf8().constData());
-    cvc.addCol(PL_LNAME, last.toUtf8().constData());
-    cvc.addCol(PL_SEX, static_cast<int>(sex));
-    cvc.addCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(ObjState::PL_IDLE));
+    cvc.addCol(PLAYINGFNAME, first.toUtf8().constData());
+    cvc.addCol(PLAYINGLNAME, last.toUtf8().constData());
+    cvc.addCol(PLAYINGSEX, static_cast<int>(sex));
+    cvc.addCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(ObjState::PL_Idle));
     
     // set the team reference, if applicable
     auto cfg = SqliteOverlay::KeyValueTab{db.get(), TAB_CFG};
@@ -93,7 +93,7 @@ namespace QTournament
       }
       
       Team t = tm.getTeam(teamName);
-      cvc.addCol(PL_TEAM_REF, t.getId());
+      cvc.addCol(PLAYINGTEAM_REF, t.getId());
     }
     
     // create the new player row
@@ -111,8 +111,8 @@ namespace QTournament
   bool PlayerMngr::hasPlayer(const QString& firstName, const QString& lastName)
   {
     WhereClause wc;
-    wc.addCol(PL_FNAME, firstName.toUtf8().constData());
-    wc.addCol(PL_LNAME, lastName.toUtf8().constData());
+    wc.addCol(PLAYINGFNAME, firstName.toUtf8().constData());
+    wc.addCol(PLAYINGLNAME, lastName.toUtf8().constData());
     
     return (tab.getMatchCountForWhereClause(wc) > 0);
   }
@@ -132,8 +132,8 @@ namespace QTournament
   Player PlayerMngr::getPlayer(const QString& firstName, const QString& lastName)
   {
     WhereClause wc;
-    wc.addCol(PL_FNAME, firstName.toUtf8().constData());
-    wc.addCol(PL_LNAME, lastName.toUtf8().constData());
+    wc.addCol(PLAYINGFNAME, firstName.toUtf8().constData());
+    wc.addCol(PLAYINGLNAME, lastName.toUtf8().constData());
     auto r = tab.getSingleRowByWhereClause2(wc);
 
     if (!r.has_value())
@@ -190,8 +190,8 @@ namespace QTournament
     }
     
     ColumnValueClause cvc;
-    cvc.addCol(PL_FNAME, newFirst.toUtf8().constData());
-    cvc.addCol(PL_LNAME, newLast.toUtf8().constData());
+    cvc.addCol(PLAYINGFNAME, newFirst.toUtf8().constData());
+    cvc.addCol(PLAYINGLNAME, newLast.toUtf8().constData());
 
     p.row.update(cvc);
     
@@ -278,12 +278,12 @@ namespace QTournament
 
     for (Player p : pl)
     {
-      if (p.getState() != ObjState::PL_IDLE) return ERR::PLAYER_NOT_IDLE;
+      if (p.getState() != ObjState::PL_Idle) return ERR::PLAYER_NOT_IDLE;
     }
 
     // check for the referee, if any
-    REFEREE_MODE refMode = ma.get_EFFECTIVE_RefereeMode();
-    if ((refMode != REFEREE_MODE::NONE) && (refMode != REFEREE_MODE::HANDWRITTEN))
+    RefereeMode refMode = ma.get_EFFECTIVE_RefereeMode();
+    if ((refMode != RefereeMode::RefereeMode::None) && (refMode != RefereeMode::RefereeMode::HandWritten))
     {
       auto referee = ma.getAssignedReferee();
 
@@ -291,7 +291,7 @@ namespace QTournament
       if (!referee.has_value()) return ERR::OK;
 
       // if a referee has been assigned, check its availability
-      if (referee->getState() != ObjState::PL_IDLE) return ERR::REFEREE_NOT_IDLE;
+      if (referee->getState() != ObjState::PL_Idle) return ERR::REFEREE_NOT_IDLE;
     }
 
     return ERR::OK;
@@ -310,8 +310,8 @@ namespace QTournament
     for (const Player& p : pl)
     {
       ObjState oldStat = p.getState();
-      p.row.update(GENERIC_STATE_FIELD_NAME, static_cast<int>(ObjState::PL_PLAYING));
-      CentralSignalEmitter::getInstance()->playerStatusChanged(p.getId(), p.getSeqNum(), oldStat, ObjState::PL_PLAYING);
+      p.row.update(GENERIC_STATE_FIELD_NAME, static_cast<int>(ObjState::PL_Playing));
+      CentralSignalEmitter::getInstance()->playerStatusChanged(p.getId(), p.getSeqNum(), oldStat, ObjState::PL_Playing);
     }
 
     return ERR::OK;
@@ -326,8 +326,8 @@ namespace QTournament
     // update all player states back to idle
     for (const Player& p : pl)
     {
-      p.row.update(GENERIC_STATE_FIELD_NAME, static_cast<int>(ObjState::PL_IDLE));
-      CentralSignalEmitter::getInstance()->playerStatusChanged(p.getId(), p.getSeqNum(), ObjState::PL_PLAYING, ObjState::PL_IDLE);
+      p.row.update(GENERIC_STATE_FIELD_NAME, static_cast<int>(ObjState::PL_Idle));
+      CentralSignalEmitter::getInstance()->playerStatusChanged(p.getId(), p.getSeqNum(), ObjState::PL_Playing, ObjState::PL_Idle);
     }
 
     return ERR::OK;
@@ -420,21 +420,21 @@ namespace QTournament
     if (waitForPlayerRegistration == false)
     {
       // if the player wasn't in wait state, return directly without error
-      if (plStat != ObjState::PL_WAIT_FOR_REGISTRATION) return ERR::OK;
+      if (plStat != ObjState::PL_WaitForRegistration) return ERR::OK;
 
       // switch to IDLE
-      p.setState(ObjState::PL_IDLE);
-      cse->playerStatusChanged(p.getId(), p.getSeqNum(), ObjState::PL_WAIT_FOR_REGISTRATION, ObjState::PL_IDLE);
+      p.setState(ObjState::PL_Idle);
+      cse->playerStatusChanged(p.getId(), p.getSeqNum(), ObjState::PL_WaitForRegistration, ObjState::PL_Idle);
       return ERR::OK;
     }
 
     // second case: enable "wait for registration"
 
     // there is nothing to do for us if the player is already in wait state
-    if (plStat == ObjState::PL_WAIT_FOR_REGISTRATION) return ERR::OK;
+    if (plStat == ObjState::PL_WaitForRegistration) return ERR::OK;
 
     // if the player isn't IDLE, we can't switch to "wait for registration"
-    if (plStat != ObjState::PL_IDLE)
+    if (plStat != ObjState::PL_Idle)
     {
       return ERR::PLAYER_ALREADY_IN_MATCHES;
     }
@@ -444,15 +444,15 @@ namespace QTournament
     for (const Category& cat : p.getAssignedCategories())
     {
       ObjState catStat = cat.getState();
-      if ((catStat != ObjState::CAT_CONFIG) && (catStat != ObjState::CAT_FINALIZED))
+      if ((catStat != ObjState::CAT_Config) && (catStat != ObjState::CAT_Finalized))
       {
         return ERR::PLAYER_ALREADY_IN_MATCHES;
       }
     }
 
     // all checks passed ==> we can switch the player to "wait for registration"
-    p.setState(ObjState::PL_WAIT_FOR_REGISTRATION);
-    cse->playerStatusChanged(p.getId(), p.getSeqNum(), ObjState::PL_IDLE, ObjState::PL_WAIT_FOR_REGISTRATION);
+    p.setState(ObjState::PL_WaitForRegistration);
+    cse->playerStatusChanged(p.getId(), p.getSeqNum(), ObjState::PL_Idle, ObjState::PL_WaitForRegistration);
 
     return ERR::OK;
   }
@@ -712,7 +712,7 @@ namespace QTournament
 
   std::string PlayerMngr::getSyncString(const std::vector<int>& rows) const
   {
-    std::vector<Sloppy::estring> cols = {"id", PL_FNAME, PL_LNAME, GENERIC_STATE_FIELD_NAME, PL_SEX, PL_REFEREE_COUNT, PL_TEAM_REF};
+    std::vector<Sloppy::estring> cols = {"id", PLAYINGFNAME, PLAYINGLNAME, GENERIC_STATE_FIELD_NAME, PLAYINGSEX, PL_Referee_COUNT, PLAYINGTEAM_REF};
 
     return db.get().getSyncStringForTable(TAB_PLAYER, cols, rows);
   }
@@ -721,7 +721,7 @@ namespace QTournament
 
   std::string PlayerMngr::getSyncString_P2C(std::vector<int> rows) const
   {
-    std::vector<Sloppy::estring> cols = {"id", P2C_PLAYER_REF, P2C_CAT_REF};
+    std::vector<Sloppy::estring> cols = {"id", P2C_PLAYER_REF, P2C_CONFIGREF};
 
     return db.get().getSyncStringForTable(TAB_P2C, cols, rows);
   }
@@ -730,7 +730,7 @@ namespace QTournament
 
   std::string PlayerMngr::getSyncString_Pairs(std::vector<int> rows) const
   {
-    std::vector<Sloppy::estring> cols = {"id", PAIRS_PLAYER1_REF, PAIRS_PLAYER2_REF, PAIRS_CAT_REF, PAIRS_GRP_NUM, PAIRS_INITIAL_RANK};
+    std::vector<Sloppy::estring> cols = {"id", PAIRS_PLAYER1_REF, PAIRS_PLAYER2_REF, PAIRS_CONFIGREF, PAIRS_GRP_NUM, PAIRS_INITIAL_RANK};
 
     return db.get().getSyncStringForTable(TAB_PAIRS, cols, rows);
   }
@@ -853,7 +853,7 @@ namespace QTournament
     // search for up to maxCnt recently finished matches
     DbTab matchTab{db, TAB_MATCH, false};
     WhereClause wc;
-    wc.addCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(ObjState::MA_FINISHED));
+    wc.addCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(ObjState::MA_Finished));
     wc.setOrderColumn_Desc(MA_FINISH_TIME);
     wc.setLimit(maxCnt);
     MatchList ml = getObjectsByWhereClause<Match>(matchTab, wc);
@@ -928,8 +928,8 @@ namespace QTournament
     // get all scheduled matches
     WhereClause wc;
     wc.addCol(MA_NUM, ">", 0);
-    wc.addCol(GENERIC_STATE_FIELD_NAME, "!=", static_cast<int>(ObjState::MA_RUNNING));
-    wc.addCol(GENERIC_STATE_FIELD_NAME, "!=", static_cast<int>(ObjState::MA_FINISHED));
+    wc.addCol(GENERIC_STATE_FIELD_NAME, "!=", static_cast<int>(ObjState::MA_Running));
+    wc.addCol(GENERIC_STATE_FIELD_NAME, "!=", static_cast<int>(ObjState::MA_Finished));
     wc.setOrderColumn_Asc(MA_NUM);
 
     DbTab matchTab{db, TAB_MATCH, false};
@@ -987,7 +987,7 @@ namespace QTournament
   {
     int oldCount = p.getRefereeCount();
 
-    p.row.update(PL_REFEREE_COUNT, oldCount + 1);
+    p.row.update(PL_Referee_COUNT, oldCount + 1);
   }
 
   //----------------------------------------------------------------------------

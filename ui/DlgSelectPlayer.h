@@ -40,11 +40,11 @@ public:
   {
     ADD_TO_CATEGORY,
     REMOVE_FROM_CATEGORY,
-    NONE
+    RefereeMode::None
   };
 
   explicit DlgSelectPlayer(const QTournament::TournamentDB& _db, QWidget *parent = nullptr,
-                           DLG_CONTEXT _ctxt = DLG_CONTEXT::NONE,
+                           DLG_CONTEXT _ctxt = DLG_CONTEXT::RefereeMode::None,
                            std::optional<QTournament::Category> _cat = {});
   ~DlgSelectPlayer();
   QTournament::PlayerList getSelectedPlayers() const;

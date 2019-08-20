@@ -25,7 +25,7 @@
 
 namespace QTournament {
 
-  KO_Config::KO_Config(KO_START _startLevel, bool _secondSurvives, GroupDefList grps)
+  KO_Config::KO_Config(KO_Start _startLevel, bool _secondSurvives, GroupDefList grps)
   {
     startLvl = _startLevel;
     secondSurvives = _secondSurvives;
@@ -37,7 +37,7 @@ namespace QTournament {
     
     // If we dive directly into the finals, then we always need the second
     // of each group for the match for 3rd place
-    if (startLvl == FINAL) secondSurvives = true;
+    if (startLvl == KO_Start::Final) secondSurvives = true;
   }
 
 //----------------------------------------------------------------------------
@@ -88,9 +88,9 @@ namespace QTournament {
   int KO_Config::getNumMatches() const
   {
     int n = 2;  // Final plus match for third place
-    if (startLvl == SEMI) n += 2;   // two semi-finals
-    if (startLvl == QUARTER) n += 2 + 4; // semi-finals plus four quarter finals
-    if (startLvl == L16) n += 2 + 4 + 8; // ... plus eight matches of the last 16
+    if (startLvl == KO_Start::Semi) n += 2;   // two semi-finals
+    if (startLvl == KO_Start::Quarter) n += 2 + 4; // semi-finals plus four quarter finals
+    if (startLvl == KO_Start::L16) n += 2 + 4 + 8; // ... plus eight matches of the last 16
     
     n += grpDefs.getTotalMatchCount();
     
@@ -132,7 +132,7 @@ namespace QTournament {
 
 //----------------------------------------------------------------------------
 
-  KO_START KO_Config::getStartLevel() const
+  KO_Start KO_Config::getStartLevel() const
   {
     return startLvl;
   }
@@ -141,11 +141,11 @@ namespace QTournament {
 
   QString KO_Config::toString() const
   {
-    QString result = "L16";
+    QString result = "KO_Start::L16";
     
-    if (startLvl == SEMI) result = "S";
-    else if (startLvl == QUARTER) result = "Q";
-    else if (startLvl == FINAL) result = "F";
+    if (startLvl == KO_Start::Semi) result = "S";
+    else if (startLvl == KO_Start::Quarter) result = "Q";
+    else if (startLvl == KO_Start::Final) result = "F";
     
     result += ";";
     
@@ -189,10 +189,10 @@ namespace QTournament {
       throw std::invalid_argument("Initialization string is invalid (empty start level)!");
     }
     
-    if (lvl == "L16") startLvl = L16;
-    else if (lvl == "Q") startLvl = QUARTER;
-    else if (lvl == "S") startLvl = SEMI;
-    else if (lvl == "F") startLvl = FINAL;
+    if (lvl == "KO_Start::L16") startLvl = KO_Start::L16;
+    else if (lvl == "Q") startLvl = KO_Start::Quarter;
+    else if (lvl == "S") startLvl = KO_Start::Semi;
+    else if (lvl == "F") startLvl = KO_Start::Final;
     else
     {
       throw std::invalid_argument("Initialization string is invalid (wrong start level)!");
@@ -239,7 +239,7 @@ namespace QTournament {
 
 //----------------------------------------------------------------------------
 
-  void KO_Config::setStartLevel(KO_START newLvl)
+  void KO_Config::setStartLevel(KO_Start newLvl)
   {
     startLvl = newLvl;
   }
@@ -249,7 +249,7 @@ namespace QTournament {
   void KO_Config::setSecondSurvives(bool newSurvive)
   {
     secondSurvives = newSurvive;
-    if (startLvl == FINAL) secondSurvives = true;
+    if (startLvl == KO_Start::Final) secondSurvives = true;
   }
 
 //----------------------------------------------------------------------------
@@ -259,15 +259,15 @@ namespace QTournament {
     // calculate the number of required groups,
     // based on the start configuration of the KO rounds
     int reqGroups = 16;
-    if (startLvl == FINAL)
+    if (startLvl == KO_Start::Final)
     {
       reqGroups = 2;
     }
-    if (startLvl == SEMI)
+    if (startLvl == KO_Start::Semi)
     {
       reqGroups = 4;
     }
-    else if (startLvl == QUARTER)
+    else if (startLvl == KO_Start::Quarter)
     {
       reqGroups = 8;
     }
@@ -275,7 +275,7 @@ namespace QTournament {
     // if also the second-placed player of each group
     // qualifies for the KO rounds, we only need half
     // as many groups
-    if ((secondSurvives) && (startLvl != FINAL))
+    if ((secondSurvives) && (startLvl != KO_Start::Final))
     {
       reqGroups = reqGroups / 2;
     }

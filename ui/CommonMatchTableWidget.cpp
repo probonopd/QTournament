@@ -94,7 +94,7 @@ void CommonMatchTableWidget::insertMatch(int beforeRowIdx, const Match& ma)
 
   // add the match number
   int maNum = ma.getMatchNumber();
-  if (maNum != ERR::MATCH_NUM_NOT_ASSIGNED)
+  if (maNum != ERR::MatchNumNotAssigned)
   {
     setCellItem(IDX_MATCH_NUM_COL, QString::number(maNum), matchId);
   } else {
@@ -103,7 +103,7 @@ void CommonMatchTableWidget::insertMatch(int beforeRowIdx, const Match& ma)
 
 
   // add category and round
-  setCellItem(IDX_CAT_COL, ma.getCategory().getName(), matchId);
+  setCellItem(IDX_CONFIGCOL, ma.getCategory().getName(), matchId);
   auto grp = ma.getMatchGroup();
   setCellItem(IDX_ROUND_COL, QString::number(grp.getRound()), matchId);
 

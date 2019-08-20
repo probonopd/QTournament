@@ -16,8 +16,8 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CMDREMOVE_PLAYER_FROM_CAT__H
-#define CMDREMOVE_PLAYER_FROM_CAT__H
+#ifndef CMDREMOVE_PLAYER_FROM_CONFIG_H
+#define CMDREMOVE_PLAYER_FROM_CONFIG_H
 
 #include <QObject>
 

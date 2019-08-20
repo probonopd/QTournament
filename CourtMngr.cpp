@@ -57,7 +57,7 @@ namespace QTournament
     cvc.addCol(CO_NUMBER, courtNum);
     cvc.addCol(GENERIC_NAME_FIELD_NAME, QString2StdString(name));
     cvc.addCol(CO_IS_MANUAL_ASSIGNMENT, 0);
-    cvc.addCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(ObjState::CO_AVAIL));
+    cvc.addCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(ObjState::CO_Avail));
     
     // create the new court row
     CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
@@ -172,7 +172,7 @@ namespace QTournament
   int CourtMngr::getActiveCourtCount()
   {
     int allCourts = tab.length();
-    int disabledCourts = tab.getMatchCountForColumnValue(GENERIC_STATE_FIELD_NAME, static_cast<int>(ObjState::CO_DISABLED));
+    int disabledCourts = tab.getMatchCountForColumnValue(GENERIC_STATE_FIELD_NAME, static_cast<int>(ObjState::CO_Disabled));
 
     return (allCourts - disabledCourts);
   }
@@ -181,7 +181,7 @@ namespace QTournament
 
   std::optional<Court> CourtMngr::getNextUnusedCourt(bool includeManual) const
   {
-    int reqState = static_cast<int>(ObjState::CO_AVAIL);
+    int reqState = static_cast<int>(ObjState::CO_Avail);
     SqliteOverlay::WhereClause wc;
     wc.addCol(GENERIC_STATE_FIELD_NAME, reqState);
 
@@ -202,13 +202,13 @@ namespace QTournament
 
   bool CourtMngr::acquireCourt(const Court &co)
   {
-    if (co.getState() != ObjState::CO_AVAIL)
+    if (co.getState() != ObjState::CO_Avail)
     {
       return false;
     }
 
-    co.setState(ObjState::CO_BUSY);
-    CentralSignalEmitter::getInstance()->courtStatusChanged(co.getId(), co.getSeqNum(), ObjState::CO_AVAIL, ObjState::CO_BUSY);
+    co.setState(ObjState::CO_Busy);
+    CentralSignalEmitter::getInstance()->courtStatusChanged(co.getId(), co.getSeqNum(), ObjState::CO_Avail, ObjState::CO_Busy);
     return true;
   }
 
@@ -216,7 +216,7 @@ namespace QTournament
 
   bool CourtMngr::releaseCourt(const Court &co)
   {
-    if (co.getState() != ObjState::CO_BUSY)
+    if (co.getState() != ObjState::CO_Busy)
     {
       return false;
     }
@@ -224,7 +224,7 @@ namespace QTournament
     // make sure there is no currently running match
     // assigned to this court
     SqliteOverlay::WhereClause wc;
-    wc.addCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(ObjState::MA_RUNNING));
+    wc.addCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(ObjState::MA_Running));
     wc.addCol(MA_COURT_REF, co.getId());
     DbTab matchTab{db, TAB_MATCH, false};
     if (matchTab.getMatchCountForWhereClause(wc) > 0)
@@ -233,8 +233,8 @@ namespace QTournament
     }
 
     // all fine, we can fall back to AVAIL
-    co.setState(ObjState::CO_AVAIL);
-    CentralSignalEmitter::getInstance()->courtStatusChanged(co.getId(), co.getSeqNum(), ObjState::CO_BUSY, ObjState::CO_AVAIL);
+    co.setState(ObjState::CO_Avail);
+    CentralSignalEmitter::getInstance()->courtStatusChanged(co.getId(), co.getSeqNum(), ObjState::CO_Busy, ObjState::CO_Avail);
     return true;
   }
 
@@ -244,14 +244,14 @@ namespace QTournament
   {
     ObjState stat = co.getState();
 
-    if (stat == ObjState::CO_DISABLED) return ERR::OK;   // nothing to do for us
+    if (stat == ObjState::CO_Disabled) return ERR::OK;   // nothing to do for us
 
     // prohibit a state change if the court is in use
-    if (stat == ObjState::CO_BUSY) return ERR::COURT_BUSY;
+    if (stat == ObjState::CO_Busy) return ERR::COURT_BUSY;
 
     // change the court state and emit a change event
-    co.setState(ObjState::CO_DISABLED);
-    CentralSignalEmitter::getInstance()->courtStatusChanged(co.getId(), co.getSeqNum(), stat, ObjState::CO_DISABLED);
+    co.setState(ObjState::CO_Disabled);
+    CentralSignalEmitter::getInstance()->courtStatusChanged(co.getId(), co.getSeqNum(), stat, ObjState::CO_Disabled);
     return ERR::OK;
   }
 
@@ -261,11 +261,11 @@ namespace QTournament
   {
     ObjState stat = co.getState();
 
-    if (stat != ObjState::CO_DISABLED) return ERR::COURT_NOT_DISABLED;
+    if (stat != ObjState::CO_Disabled) return ERR::COURT_NOT_DISABLED;
 
     // change the court state and emit a change event
-    co.setState(ObjState::CO_AVAIL);
-    CentralSignalEmitter::getInstance()->courtStatusChanged(co.getId(), co.getSeqNum(), ObjState::CO_DISABLED, ObjState::CO_AVAIL);
+    co.setState(ObjState::CO_Avail);
+    CentralSignalEmitter::getInstance()->courtStatusChanged(co.getId(), co.getSeqNum(), ObjState::CO_Disabled, ObjState::CO_Avail);
     return ERR::OK;
   }
 

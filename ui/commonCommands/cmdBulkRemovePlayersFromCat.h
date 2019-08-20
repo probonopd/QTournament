@@ -16,8 +16,8 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CMDBULKREMOVEPLAYERSFROMCAT_H
-#define CMDBULKREMOVEPLAYERSFROMCAT_H
+#ifndef CMDBULKREMOVEPLAYERSFROMCONFIGH
+#define CMDBULKREMOVEPLAYERSFROMCONFIGH
 
 #include <QObject>
 

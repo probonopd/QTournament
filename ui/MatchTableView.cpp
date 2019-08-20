@@ -40,7 +40,7 @@ MatchTableView::MatchTableView(QWidget* parent)
   :AutoSizingTableView_WithDatabase<MatchTableModel>{GuiHelpers::AutosizeColumnDescrList{
      {"", REL_NUMERIC_COL_WIDTH, -1, MAX_NUMERIC_COL_WIDTH},   // match number
      {"", REL_MATCH_COL_WIDTH, -1, -1},                        // match descrption
-     {"", REL_CAT_COL_WIDTH, -1, -1},                          // category name
+     {"", REL_CONFIGCOL_WIDTH, -1, -1},                          // category name
      {"", REL_NUMERIC_COL_WIDTH, -1, MAX_NUMERIC_COL_WIDTH},   // round
      {"", REL_NUMERIC_COL_WIDTH, -1, MAX_NUMERIC_COL_WIDTH},   // match group
      {"", 0, -1, -1},                                          // match state, invisible
@@ -143,8 +143,8 @@ void MatchTableView::updateRefereeColumn()
 {
   if (db == nullptr) return;
 
-  QModelIndex topLeft = customDataModel->getIndex(0, MatchTableModel::REFEREE_MODE_COL_ID);
-  QModelIndex bottomRight = customDataModel->getIndex(customDataModel->rowCount(), MatchTableModel::REFEREE_MODE_COL_ID);
+  QModelIndex topLeft = customDataModel->getIndex(0, MatchTableModel::RefereeMode_COL_ID);
+  QModelIndex bottomRight = customDataModel->getIndex(customDataModel->rowCount(), MatchTableModel::RefereeMode_COL_ID);
   dataChanged(topLeft, bottomRight);
 }
 
@@ -158,10 +158,10 @@ void MatchTableView::hook_onDatabaseOpened()
 
   // create a regular expression, that matches either the match state
   // READY, BUSY, FUZZY or WAITING
-  QString reString = "^" + QString::number(static_cast<int>(ObjState::MA_READY)) + "|";
-  reString += QString::number(static_cast<int>(ObjState::MA_BUSY)) + "|";
-  reString += QString::number(static_cast<int>(ObjState::MA_FUZZY)) + "|";   // TODO: check if there can be a condition where a match is FUZZY but without assigned match number
-  reString += QString::number(static_cast<int>(ObjState::MA_WAITING)) + "$";
+  QString reString = "^" + QString::number(static_cast<int>(ObjState::MA_Ready)) + "|";
+  reString += QString::number(static_cast<int>(ObjState::MA_Busy)) + "|";
+  reString += QString::number(static_cast<int>(ObjState::MA_Fuzzy)) + "|";   // TODO: check if there can be a condition where a match is FUZZY but without assigned match number
+  reString += QString::number(static_cast<int>(ObjState::MA_Waiting)) + "$";
 
   // apply the regExp as a filter on the state id column
   sortedModel->setFilterRegExp(reString);
@@ -233,7 +233,7 @@ void MatchTableView::onContextMenuRequested(const QPoint& pos)
   if (!(selectedItem->data().isNull()))
   {
     int modeId = selectedItem->data().toInt();
-    REFEREE_MODE refMode = static_cast<REFEREE_MODE>(modeId);
+    RefereeMode refMode = static_cast<RefereeMode>(modeId);
 
     MatchMngr mm{db};
     ERR e = mm.setRefereeMode(*ma, refMode);
@@ -269,7 +269,7 @@ void MatchTableView::onMatchDoubleClicked(const QModelIndex& index)
   // special case: if the user double-clicked the umpire-column,
   // we do not call the match, but we present the dialog for
   // selecting an umpire, if possible and meaningful
-  if (index.column() == MatchTableModel::REFEREE_MODE_COL_ID)
+  if (index.column() == MatchTableModel::RefereeMode_COL_ID)
   {
     onAssignRefereeTriggered();
     return;  // do not proceed with a match call
@@ -277,7 +277,7 @@ void MatchTableView::onMatchDoubleClicked(const QModelIndex& index)
 
   // special case: if the match is busy, we show information
   // why the match can't be called
-  if (ma->getState() == ObjState::MA_BUSY)
+  if (ma->getState() == ObjState::MA_Busy)
   {
     showMatchBusyReason(*ma);
     return;  // do not proceed with a match call
@@ -287,7 +287,7 @@ void MatchTableView::onMatchDoubleClicked(const QModelIndex& index)
   MatchMngr mm{db};
 
   // first of all, make sure that the match is eligible for being started
-  if (ma->getState() != ObjState::MA_READY)
+  if (ma->getState() != ObjState::MA_Ready)
   {
     QString msg = tr("This match cannot be started at this point in time.\n");
     msg += tr("It's probably waiting for all players to become available or \n");
@@ -403,7 +403,7 @@ void MatchTableView::onMatchStatusChanged(int maId, int maSeqNum, ObjState oldSt
   //
   // Background: when re-inserting the match, the relation between selected row
   // and associated match changes...
-  if ((oldStat == ObjState::MA_RUNNING) && (newStat == ObjState::MA_READY))
+  if ((oldStat == ObjState::MA_Running) && (newStat == ObjState::MA_Ready))
   {
     auto selMatch = getSelectedMatch();
     if (selMatch == nullptr) return;
@@ -421,7 +421,7 @@ void MatchTableView::onMatchStatusChanged(int maId, int maSeqNum, ObjState oldSt
   // the same is true when setting a match to "walkover" straight from the match table.
   // But in this case, a match is REMOVED from the list and thus we need
   // we need to invert the setSelectedRow-logic here
-  if ((oldStat != ObjState::MA_RUNNING) && (newStat == ObjState::MA_FINISHED))
+  if ((oldStat != ObjState::MA_Running) && (newStat == ObjState::MA_Finished))
   {
     updateSelectionAfterDataChange();
   }
@@ -484,20 +484,20 @@ void MatchTableView::initContextMenu()
   contextMenu->addSeparator();
   refereeMode_submenu = contextMenu->addMenu(tr("Set umpire mode"));
   auto newAction = refereeMode_submenu->addAction(tr("None"));
-  newAction->setData(static_cast<int>(REFEREE_MODE::NONE));
+  newAction->setData(static_cast<int>(RefereeMode::RefereeMode::None));
   refereeMode_submenu->addSeparator();
   newAction = refereeMode_submenu->addAction(tr("Pick from all players"));
-  newAction->setData(static_cast<int>(REFEREE_MODE::ALL_PLAYERS));
+  newAction->setData(static_cast<int>(RefereeMode::RefereeMode::AllPlayers));
   newAction = refereeMode_submenu->addAction(tr("Pick from recent finishers"));
-  newAction->setData(static_cast<int>(REFEREE_MODE::RECENT_FINISHERS));
+  newAction->setData(static_cast<int>(RefereeMode::RefereeMode::RecentFinishers));
   newAction = refereeMode_submenu->addAction(tr("Pick from special team"));
-  newAction->setData(static_cast<int>(REFEREE_MODE::SPECIAL_TEAM));
+  newAction->setData(static_cast<int>(RefereeMode::RefereeMode::SpecialTeam));
   refereeMode_submenu->addSeparator();
   newAction = refereeMode_submenu->addAction(tr("Manual"));
-  newAction->setData(static_cast<int>(REFEREE_MODE::HANDWRITTEN));
+  newAction->setData(static_cast<int>(RefereeMode::RefereeMode::HandWritten));
   refereeMode_submenu->addSeparator();
   newAction = refereeMode_submenu->addAction(tr("Use tournament default"));
-  newAction->setData(static_cast<int>(REFEREE_MODE::USE_DEFAULT));
+  newAction->setData(static_cast<int>(RefereeMode::RefereeMode::UseDefault));
   actAssignReferee = new QAction(tr("Assign umpire..."), this);
   actRemoveReferee = new QAction(tr("Remove assigned umpire"), this);
   contextMenu->addAction(actAssignReferee);
@@ -531,7 +531,7 @@ void MatchTableView::updateContextMenu()
   auto ma = getSelectedMatch();
 
   // completely re-build the list of available courts
-  bool isCallPossible = ((ma != nullptr) && (ma->getState() == ObjState::MA_READY));
+  bool isCallPossible = ((ma != nullptr) && (ma->getState() == ObjState::MA_Ready));
   courtSelectionMenu->setEnabled(isCallPossible);
   if (isCallPossible)
   {
@@ -542,7 +542,7 @@ void MatchTableView::updateContextMenu()
     QStringList availCourtNum;
     for (auto co : cm.getAllCourts())
     {
-      if (co.getState() == ObjState::CO_AVAIL)
+      if (co.getState() == ObjState::CO_Avail)
       {
         availCourtNum << QString::number(co.getNumber());
       }
@@ -592,7 +592,7 @@ void MatchTableView::execWalkover(int playerNum)
 
 void MatchTableView::showMatchBusyReason(const Match& ma)
 {
-  if (ma.getState() != ObjState::MA_BUSY)
+  if (ma.getState() != ObjState::MA_Busy)
   {
     return;
   }
@@ -606,10 +606,10 @@ void MatchTableView::showMatchBusyReason(const Match& ma)
   auto getBusyReasonForPlayer = [](const Player& pl)
   {
     ObjState plStat = pl.getState();
-    if (plStat == ObjState::PL_IDLE) return QString();
+    if (plStat == ObjState::PL_Idle) return QString();
 
     // maybe the player is busy in another match
-    if (plStat == ObjState::PL_PLAYING)
+    if (plStat == ObjState::PL_Playing)
     {
       QString result = tr("%1 is playing");
       result = result.arg(pl.getDisplayName_FirstNameFirst());
@@ -626,7 +626,7 @@ void MatchTableView::showMatchBusyReason(const Match& ma)
     }
 
     // maybe the player is acting as an umpire
-    if (plStat == ObjState::PL_REFEREE)
+    if (plStat == ObjState::PL_Referee)
     {
       QString result = tr("%1 is umpire");
       result = result.arg(pl.getDisplayName_FirstNameFirst());
@@ -677,8 +677,8 @@ void MatchTableView::showMatchBusyReason(const Match& ma)
 
   // if this match has already an umpire assigned, we need to
   // check the umpire's availability as well
-  REFEREE_MODE refMode = ma.get_EFFECTIVE_RefereeMode();
-  if ((refMode != REFEREE_MODE::NONE) && (refMode != REFEREE_MODE::HANDWRITTEN))
+  RefereeMode refMode = ma.get_EFFECTIVE_RefereeMode();
+  if ((refMode != RefereeMode::RefereeMode::None) && (refMode != RefereeMode::RefereeMode::HandWritten))
   {
     upPlayer referee = ma.getAssignedReferee();
     if (referee != nullptr)

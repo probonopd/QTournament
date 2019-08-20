@@ -63,7 +63,7 @@ ERR cmdMoveOrCopyPairToCategory::exec()
   }
 
   // check if the target category is singles category
-  if (dstCat.getMatchType() == SINGLES)
+  if (dstCat.getMatchType() == MatchType::Singles)
   {
     QString msg = tr("Cannot move or copy pair to a singles category");
     QMessageBox::warning(parentWidget, tr("Move or copy player pair"), msg);
@@ -87,7 +87,7 @@ ERR cmdMoveOrCopyPairToCategory::exec()
   }
 
   // make sure we can add the two players to the target category
-  if ((dstCat.getAddState(p1.getSex()) != CAN_JOIN) || (dstCat.getAddState(p2.getSex()) != CAN_JOIN))
+  if ((dstCat.getAddState(p1.getSex()) != CatAddState::CanJoin) || (dstCat.getAddState(p2.getSex()) != CatAddState::CanJoin))
   {
     QString msg = tr("Cannot add one or both players to the target category.");
     QMessageBox::warning(parentWidget, tr("Move or copy player pair"), msg);

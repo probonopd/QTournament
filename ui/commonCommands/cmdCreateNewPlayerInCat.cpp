@@ -55,7 +55,7 @@ ERR cmdCreateNewPlayerInCat::exec()
 
   // check if we can add a player of the selected
   // sex to the category
-  if (cat.getAddState(selectedSex) != CAN_JOIN)
+  if (cat.getAddState(selectedSex) != CatAddState::CanJoin)
   {
     QString msg = tr("Can't add a %1 to the category.");
     msg = msg.arg((selectedSex == M) ? tr("male player") : tr("female player"));

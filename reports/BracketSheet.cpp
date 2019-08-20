@@ -252,7 +252,7 @@ upSimpleReport BracketSheet::regenerateReport()
         // print match number or result, if any
         ObjState stat = ma->getState();
         int matchNum = ma->getMatchNumber();
-        if (stat == ObjState::MA_FINISHED)
+        if (stat == ObjState::MA_Finished)
         {
           QString scTxt;
           if (ma->isWonByWalkover())
@@ -296,7 +296,7 @@ upSimpleReport BracketSheet::regenerateReport()
           winnerName = (pp1 != nullptr) ? std::move(pp1) : std::move(pp2);
         }
       }
-      if ((terminator != BRACKET_TERMINATOR::NONE) && (winRank > 0))
+      if ((terminator != BRACKET_TERMINATOR::RefereeMode::None) && (winRank > 0))
       {
         // add an offset to x0 in case we have inwards offsets
         int tmpX0 = x0;
@@ -734,7 +734,7 @@ void BracketSheet::printHeaderAndFooterOnAllPages() const
     BRACKET_LABEL_POS labelPos;
     tie(orientation, labelPos) = bvd->getPageInfo(pg);
 
-    if (labelPos == BRACKET_LABEL_POS::NONE) continue;
+    if (labelPos == BRACKET_LABEL_POS::RefereeMode::None) continue;
 
     rawReport->setActivePage(pg);
 

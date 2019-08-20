@@ -34,7 +34,7 @@ class CommonMatchTableWidget : public GuiHelpers::AutoSizingTableWidget_WithData
 
 public:
   static constexpr int IDX_MATCH_NUM_COL = 0;
-  static constexpr int IDX_CAT_COL = 1;
+  static constexpr int IDX_CONFIGCOL = 1;
   static constexpr int IDX_ROUND_COL = 2;
   static constexpr int IDX_GRP_COL = 3;
   static constexpr int IDX_MATCH_INFO_COL = 4;

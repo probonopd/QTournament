@@ -58,11 +58,11 @@ void tstPlayerMngr::testCreateNewPlayer()
   // insert a valid player
   CPPUNIT_ASSERT(pmngr->createNewPlayer("abc", "def", M, "t1") == OK);
   CPPUNIT_ASSERT((*db)[TAB_PLAYER].length() == 1);
-  CPPUNIT_ASSERT((*db)[TAB_PLAYER][1][PL_FNAME].toString() == "abc");
-  CPPUNIT_ASSERT((*db)[TAB_PLAYER][1][PL_LNAME].toString() == "def");
-  CPPUNIT_ASSERT((*db)[TAB_PLAYER][1][PL_SEX].toInt() == 0);
-  CPPUNIT_ASSERT((*db)[TAB_PLAYER][1][PL_TEAM_REF].toInt() == 1);
-  CPPUNIT_ASSERT((*db)[TAB_PLAYER][1][GENERIC_STATE_FIELD_NAME].toInt() == static_cast<int>(STAT_PL_IDLE));
+  CPPUNIT_ASSERT((*db)[TAB_PLAYER][1][PLAYINGFNAME].toString() == "abc");
+  CPPUNIT_ASSERT((*db)[TAB_PLAYER][1][PLAYINGLNAME].toString() == "def");
+  CPPUNIT_ASSERT((*db)[TAB_PLAYER][1][PLAYINGSEX].toInt() == 0);
+  CPPUNIT_ASSERT((*db)[TAB_PLAYER][1][PLAYINGTEAM_REF].toInt() == 1);
+  CPPUNIT_ASSERT((*db)[TAB_PLAYER][1][GENERIC_STATE_FIELD_NAME].toInt() == static_cast<int>(STAT_PL_Idle));
   
   // try to insert the same player again
   CPPUNIT_ASSERT(pmngr->createNewPlayer("abc", "def", M, "t1") == NAME_EXISTS);
@@ -77,9 +77,9 @@ void tstPlayerMngr::testCreateNewPlayer()
   CPPUNIT_ASSERT(pmngr->createNewPlayer("f2", "def", M, "sdklfjlsdf") == OK);
   CPPUNIT_ASSERT(pmngr->createNewPlayer("f3", "def", M, QString::null) == OK);
   CPPUNIT_ASSERT((*db)[TAB_PLAYER].length() == 4);
-  CPPUNIT_ASSERT((*db)[TAB_PLAYER][2][PL_TEAM_REF].isNull());
-  CPPUNIT_ASSERT((*db)[TAB_PLAYER][3][PL_TEAM_REF].isNull());
-  CPPUNIT_ASSERT((*db)[TAB_PLAYER][4][PL_TEAM_REF].isNull());
+  CPPUNIT_ASSERT((*db)[TAB_PLAYER][2][PLAYINGTEAM_REF].isNull());
+  CPPUNIT_ASSERT((*db)[TAB_PLAYER][3][PLAYINGTEAM_REF].isNull());
+  CPPUNIT_ASSERT((*db)[TAB_PLAYER][4][PLAYINGTEAM_REF].isNull());
   
   delete db;
   printEndMsg();

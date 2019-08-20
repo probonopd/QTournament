@@ -76,9 +76,9 @@ upSimpleReport Standings::regenerateReport()
     MatchMngr mm{db};
     MatchGroupList mgl = mm.getMatchGroupsForCat(cat, round);
     int matchGroupNumber = mgl.at(0).getGroupNumber();
-    ERR::MATCH_SYSTEM mSys = cat.getMatchSystem();
-    if ((matchGroupNumber < 0) && (matchGroupNumber != GROUP_NUM__ITERATION) &&
-        ((mSys == GROUPS_WITH_KO) || (mSys == SINGLE_ELIM)))
+    ERR::MatchSystem mSys = cat.getMatchSystem();
+    if ((matchGroupNumber < 0) && (matchGroupNumber != GroupNum_Iteration) &&
+        ((mSys == MatchSystem::GroupsWithKO) || (mSys == MatchSystem::SingleElim)))
     {
       subHeader = GuiHelpers::groupNumToLongString(mgl.at(0).getGroupNumber());
     }
@@ -108,7 +108,7 @@ upSimpleReport Standings::regenerateReport()
   }
 
   // if we are in ranking matches, print a list of all best-case reachable places
-  if ((cat.getMatchSystem() == RANKING) && (round != cat.getRoundStatus().getTotalRoundsCount()))
+  if ((cat.getMatchSystem() == MatchSystem::Ranking) && (round != cat.getRoundStatus().getTotalRoundsCount()))
   {
     printIntermediateHeader(result, tr("Best case reachable places after this round"));
     printBestCaseList(result);
@@ -140,8 +140,8 @@ QStringList Standings::getReportLocators() const
 int Standings::determineBestPossibleRankForPlayerAfterRound(const PlayerPair& pp, int round) const
 {
   // we can only determine the best possible final rank if we
-  // are in the RANKING match system
-  if (cat.getMatchSystem() != RANKING)
+  // are in the MatchSystem::Ranking match system
+  if (cat.getMatchSystem() != MatchSystem::Ranking)
   {
     return -1;
   }
@@ -174,7 +174,7 @@ int Standings::determineBestPossibleRankForPlayerAfterRound(const PlayerPair& pp
   while ((lastMatch == nullptr) && (_r > 0))
   {
     lastMatch = mm.getMatchForPlayerPairAndRound(pp, _r);
-    if ((lastMatch != nullptr) && (lastMatch->getState() != ObjState::MA_FINISHED))
+    if ((lastMatch != nullptr) && (lastMatch->getState() != ObjState::MA_Finished))
     {
       lastMatch = nullptr;   // skip all matches that are not finished
     }
@@ -218,7 +218,7 @@ int Standings::determineBestPossibleRankForPlayerAfterRound(const PlayerPair& pp
 
     // maybe we already HAVE winner. then we must search for real
     // pair IDs
-    if (ma.getState() == ObjState::MA_FINISHED)
+    if (ma.getState() == ObjState::MA_Finished)
     {
       auto w = ma.getWinner();
       assert(w != nullptr);
@@ -287,7 +287,7 @@ int Standings::determineBestPossibleRankForPlayerAfterRound(const PlayerPair& pp
 
 void Standings::printBestCaseList(upSimpleReport& rep) const
 {
-  if (cat.getMatchSystem() != RANKING)
+  if (cat.getMatchSystem() != MatchSystem::Ranking)
   {
     return;
   }

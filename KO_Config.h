@@ -30,7 +30,7 @@ namespace QTournament
   class KO_Config
   {
   public:
-    KO_Config(KO_START _startLevel, bool _secondSurvives, GroupDefList grps = GroupDefList());
+    KO_Config(KO_Start _startLevel, bool _secondSurvives, GroupDefList grps = GroupDefList());
     KO_Config(QString iniString);
     KO_Config(const KO_Config& orig);
     virtual ~KO_Config();
@@ -39,7 +39,7 @@ namespace QTournament
     int getNumMatches() const;
     int getNumGroupMatches() const;
     QString toString() const;
-    KO_START getStartLevel() const;
+    KO_Start getStartLevel() const;
     bool getSecondSurvives() const;
     int getNumGroupDefs() const;
     GroupDef getGroupDef(int i) const;
@@ -48,11 +48,11 @@ namespace QTournament
     int getNumGroups() const;
     int getNumRounds() const;
     
-    void setStartLevel(KO_START newLvl);
+    void setStartLevel(KO_Start newLvl);
     void setSecondSurvives(bool newSurvive);
     
   private:
-    KO_START startLvl;
+    KO_Start startLvl;
     bool secondSurvives;
     GroupDefList grpDefs;
   } ;

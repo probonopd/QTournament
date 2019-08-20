@@ -86,9 +86,9 @@ namespace QTournament
   class BracketGenerator
   {
   public:
-    static constexpr int BRACKET_SINGLE_ELIM = 1;
+    static constexpr int BRACKET_MatchSystem::SingleElim = 1;
     static constexpr int BRACKET_DOUBLE_ELIM = 2;
-    static constexpr int BRACKET_RANKING1 = 3;
+    static constexpr int BRACKET_MatchSystem::Ranking1 = 3;
 
     BracketGenerator();
     BracketGenerator(int type);

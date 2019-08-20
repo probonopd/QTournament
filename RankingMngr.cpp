@@ -35,7 +35,7 @@ namespace QTournament
 {
 
   RankingMngr::RankingMngr(const TournamentDB& _db)
-  : TournamentDatabaseObjectManager(_db, TAB_RANKING)
+  : TournamentDatabaseObjectManager(_db, TAB_MatchSystem::Ranking)
   {
   }
 
@@ -202,7 +202,7 @@ namespace QTournament
       cvc.addCol(RA_POINTS_LOST, lostPoints);
       cvc.addCol(RA_PAIR_REF, pp.getPairId());
       cvc.addCol(RA_ROUND, lastRound);
-      cvc.addCol(RA_CAT_REF, cat.getId());  // eases searching, but is redundant information
+      cvc.addCol(RA_CONFIGREF, cat.getId());  // eases searching, but is redundant information
       cvc.addCol(RA_GRP_NUM, grpNum); // eases searching, but is redundant information
 
       // create the new entry and add an instance
@@ -220,7 +220,7 @@ namespace QTournament
   std::optional<RankingEntry> RankingMngr::getRankingEntry(const PlayerPair &pp, int round) const
   {
     WhereClause wc;
-    wc.addCol(RA_CAT_REF, pp.getCategory(db)->getId());
+    wc.addCol(RA_CONFIGREF, pp.getCategory(db)->getId());
     wc.addCol(RA_PAIR_REF, pp.getPairId());
     wc.addCol(RA_ROUND, round);
 
@@ -233,7 +233,7 @@ namespace QTournament
   {
     // make sure we have ranking entries
     WhereClause wc;
-    wc.addCol(RA_CAT_REF, cat.getId());
+    wc.addCol(RA_CONFIGREF, cat.getId());
     wc.addCol(RA_ROUND, round);
     RankingEntryList rel = getObjectsByWhereClause<RankingEntry>(wc);
     if (rel.empty())
@@ -270,7 +270,7 @@ namespace QTournament
     for (int grpNum : applicableMatchGroupNumbers)
     {
       WhereClause wc;
-      wc.addCol(RA_CAT_REF, cat.getId());
+      wc.addCol(RA_CONFIGREF, cat.getId());
       wc.addCol(RA_ROUND, round);
       wc.addCol(RA_GRP_NUM, grpNum);
       wc.setOrderColumn_Asc(RA_GRP_NUM);
@@ -287,7 +287,7 @@ namespace QTournament
   int RankingMngr::getHighestRoundWithRankingEntryForPlayerPair(const Category& cat, const PlayerPair& pp) const
   {
     WhereClause wc;
-    wc.addCol(RA_CAT_REF, cat.getId());
+    wc.addCol(RA_CONFIGREF, cat.getId());
     wc.addCol(RA_PAIR_REF, pp.getPairId());
     wc.setOrderColumn_Desc(RA_ROUND);
 
@@ -301,7 +301,7 @@ namespace QTournament
 
   ERR RankingMngr::updateRankingsAfterMatchResultChange(const Match& ma, const MatchScore& oldScore, bool skipSorting) const
   {
-    if (ma.getState() != ObjState::MA_FINISHED) return ERR::WRONG_STATE;
+    if (ma.getState() != ObjState::MA_Finished) return ERR::WRONG_STATE;
 
     Category cat = ma.getCategory();
     int catId = cat.getId();
@@ -384,7 +384,7 @@ namespace QTournament
     // we get the group number from the first entry of the
     // first player pair to be modified
     WhereClause w;
-    w.addCol(RA_CAT_REF, catId);
+    w.addCol(RA_CONFIGREF, catId);
     w.addCol(RA_PAIR_REF, pp1Id);
     w.addCol(RA_ROUND, firstRoundToModify);
     auto re = getSingleObjectByWhereClause<RankingEntry>(w);
@@ -400,7 +400,7 @@ namespace QTournament
       // let's build a where clause that captures all entries
       // to modified
       w.clear();
-      w.addCol(RA_CAT_REF, catId);
+      w.addCol(RA_CONFIGREF, catId);
       w.addCol(RA_PAIR_REF, pairId);
       w.addCol(RA_ROUND, ">=", firstRoundToModify);
       if (grpNum > 0)
@@ -456,7 +456,7 @@ namespace QTournament
         while (true)
         {
           w.clear();
-          w.addCol(RA_CAT_REF, catId);
+          w.addCol(RA_CONFIGREF, catId);
           w.addCol(RA_ROUND, round);
           w.addCol(RA_GRP_NUM, grpNum);
 
@@ -499,10 +499,10 @@ namespace QTournament
 
   std::string RankingMngr::getSyncString(const std::vector<int>& rows) const
   {
-    std::vector<Sloppy::estring> cols = {"id", RA_ROUND, RA_PAIR_REF, RA_CAT_REF, RA_GRP_NUM, RA_GAMES_WON, RA_GAMES_LOST,
+    std::vector<Sloppy::estring> cols = {"id", RA_ROUND, RA_PAIR_REF, RA_CONFIGREF, RA_GRP_NUM, RA_GAMES_WON, RA_GAMES_LOST,
                           RA_MATCHES_WON, RA_MATCHES_LOST, RA_MATCHES_DRAW, RA_POINTS_WON, RA_POINTS_LOST, RA_RANK};
 
-    return db.get().getSyncStringForTable(TAB_RANKING, cols, rows);
+    return db.get().getSyncStringForTable(TAB_MatchSystem::Ranking, cols, rows);
   }
 
 //----------------------------------------------------------------------------
@@ -520,7 +520,7 @@ namespace QTournament
 
     // make sure we have (unsorted) ranking entries
     WhereClause wc;
-    wc.addCol(RA_CAT_REF, cat.getId());
+    wc.addCol(RA_CONFIGREF, cat.getId());
     wc.addCol(RA_ROUND, lastRound);
     RankingEntryList rel = getObjectsByWhereClause<RankingEntry>(wc);
     if (rel.empty())
@@ -624,7 +624,7 @@ namespace QTournament
       cvc.addCol(RA_POINTS_LOST, -1);
       cvc.addNullCol(RA_PAIR_REF);
       cvc.addCol(RA_ROUND, round);
-      cvc.addCol(RA_CAT_REF, catId);
+      cvc.addCol(RA_CONFIGREF, catId);
       cvc.addCol(RA_GRP_NUM, g);
       cvc.addCol(RA_RANK, r);
       tab.insertRow(cvc);
@@ -670,7 +670,7 @@ namespace QTournament
   std::optional<RankingEntry> RankingMngr::getRankingEntry(const Category& cat, int round, int grpNum, int rank) const
   {
     WhereClause wc;
-    wc.addCol(RA_CAT_REF, cat.getId());
+    wc.addCol(RA_CONFIGREF, cat.getId());
     wc.addCol(RA_ROUND, round);
     wc.addCol(RA_GRP_NUM, grpNum);
     wc.addCol(RA_RANK, rank);

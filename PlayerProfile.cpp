@@ -97,15 +97,15 @@ namespace QTournament
     {
       ObjState stat = ma.getState();
 
-      if (stat == ObjState::MA_FINISHED) ++umpireFinishedCount;
+      if (stat == ObjState::MA_Finished) ++umpireFinishedCount;
 
-      if (ma.getState() == ObjState::MA_RUNNING)
+      if (ma.getState() == ObjState::MA_Running)
       {
         currentUmpireMatchId = ma.getId();
         continue;
       }
 
-      if (stat == ObjState::MA_FINISHED)
+      if (stat == ObjState::MA_Finished)
       {
         QDateTime fTime = ma.getFinishTime();
         if (fTime.isValid())
@@ -120,7 +120,7 @@ namespace QTournament
       }
 
       int maNum = ma.getMatchNumber();
-      if ((maNum != ERR::MATCH_NUM_NOT_ASSIGNED) && ((maNum < nextMatchNum) || (nextMatchNum < 0)))
+      if ((maNum != ERR::MatchNumNotAssigned) && ((maNum < nextMatchNum) || (nextMatchNum < 0)))
       {
         nextMatchNum = maNum;
         nextUmpireMatchId = ma.getId();
@@ -138,15 +138,15 @@ namespace QTournament
       int maNum = ma.getMatchNumber();
 
       // count all scheduled matches
-      if (maNum != ERR::MATCH_NUM_NOT_ASSIGNED) ++scheduledCount;
+      if (maNum != ERR::MatchNumNotAssigned) ++scheduledCount;
 
-      if (stat == ObjState::MA_RUNNING)
+      if (stat == ObjState::MA_Running)
       {
         currentMatchId = ma.getId();
         continue;
       }
 
-      if (stat == ObjState::MA_FINISHED)
+      if (stat == ObjState::MA_Finished)
       {
         ++finishCount;
         QDateTime fTime = ma.getFinishTime();
@@ -164,7 +164,7 @@ namespace QTournament
         continue;
       }
 
-      if ((maNum != ERR::MATCH_NUM_NOT_ASSIGNED) && ((maNum < nextMatchNum) || (nextMatchNum < 0)))
+      if ((maNum != ERR::MatchNumNotAssigned) && ((maNum < nextMatchNum) || (nextMatchNum < 0)))
       {
         nextMatchNum = maNum;
         nextMatchId = ma.getId();

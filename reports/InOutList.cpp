@@ -159,7 +159,7 @@ bool InOutList::isValidCatRoundCombination(const Category& _cat, int _round)
 {
   // we must be beyond CONFIG for this report to make any sense at all
   ObjState catState = _cat.getState();
-  if ((catState == ObjState::CAT_CONFIG) || (catState == ObjState::CAT_FROZEN))
+  if ((catState == ObjState::CAT_Config) || (catState == ObjState::CAT_Frozen))
   {
     return false;
   }
@@ -173,8 +173,8 @@ bool InOutList::isValidCatRoundCombination(const Category& _cat, int _round)
 
   // if we're in match system "round robin with KO rounds", this report
   // makes only sense after the last round robin round
-  ERR::MATCH_SYSTEM mSys = _cat.getMatchSystem();
-  if (mSys == GROUPS_WITH_KO)
+  ERR::MatchSystem mSys = _cat.getMatchSystem();
+  if (mSys == MatchSystem::GroupsWithKO)
   {
     KO_Config cfg = KO_Config(_cat.getParameter_string(CatParameter::GroupConfig));
     if (_round < cfg.getNumRounds())
@@ -187,7 +187,7 @@ bool InOutList::isValidCatRoundCombination(const Category& _cat, int _round)
   }
 
   // for elimination contests, we can always generate in-out-lists
-  if (mSys == SINGLE_ELIM)
+  if (mSys == MatchSystem::SingleElim)
   {
     return true;
   }

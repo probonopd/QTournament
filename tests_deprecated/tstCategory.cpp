@@ -42,44 +42,44 @@ void tstCategory::testGetAddState()
   Category mx = cmngr->getCategory("MX");
   
   // check player suitability for men's single
-  CPPUNIT_ASSERT(ms.getAddState(m1) == CAN_JOIN);
-  CPPUNIT_ASSERT(ms.getAddState(f1) == WRONG_SEX);
+  CPPUNIT_ASSERT(ms.getAddState(m1) == CatAddState::CanJoin);
+  CPPUNIT_ASSERT(ms.getAddState(f1) == CatAddState::WrongSex);
   ms.setSex(DONT_CARE);   // disable checking
-  CPPUNIT_ASSERT(ms.getAddState(m1) == CAN_JOIN);
-  CPPUNIT_ASSERT(ms.getAddState(f1) == CAN_JOIN);
+  CPPUNIT_ASSERT(ms.getAddState(m1) == CatAddState::CanJoin);
+  CPPUNIT_ASSERT(ms.getAddState(f1) == CatAddState::CanJoin);
   
   // check player suitability for men's doubles
-  CPPUNIT_ASSERT(md.getAddState(m1) == CAN_JOIN);
-  CPPUNIT_ASSERT(md.getAddState(f1) == WRONG_SEX);
+  CPPUNIT_ASSERT(md.getAddState(m1) == CatAddState::CanJoin);
+  CPPUNIT_ASSERT(md.getAddState(f1) == CatAddState::WrongSex);
   md.setSex(DONT_CARE);   // disable checking
-  CPPUNIT_ASSERT(md.getAddState(m1) == CAN_JOIN);
-  CPPUNIT_ASSERT(md.getAddState(f1) == CAN_JOIN);
+  CPPUNIT_ASSERT(md.getAddState(m1) == CatAddState::CanJoin);
+  CPPUNIT_ASSERT(md.getAddState(f1) == CatAddState::CanJoin);
   
   // check player suitability for ladies' single
-  CPPUNIT_ASSERT(ls.getAddState(m1) == WRONG_SEX);
-  CPPUNIT_ASSERT(ls.getAddState(f1) == CAN_JOIN);
+  CPPUNIT_ASSERT(ls.getAddState(m1) == CatAddState::WrongSex);
+  CPPUNIT_ASSERT(ls.getAddState(f1) == CatAddState::CanJoin);
   ls.setSex(DONT_CARE);   // disable checking
-  CPPUNIT_ASSERT(ls.getAddState(m1) == CAN_JOIN);
-  CPPUNIT_ASSERT(ls.getAddState(f1) == CAN_JOIN);
+  CPPUNIT_ASSERT(ls.getAddState(m1) == CatAddState::CanJoin);
+  CPPUNIT_ASSERT(ls.getAddState(f1) == CatAddState::CanJoin);
   
   // check player suitability for ladies' doubles
-  CPPUNIT_ASSERT(ld.getAddState(m1) == WRONG_SEX);
-  CPPUNIT_ASSERT(ld.getAddState(f1) == CAN_JOIN);
+  CPPUNIT_ASSERT(ld.getAddState(m1) == CatAddState::WrongSex);
+  CPPUNIT_ASSERT(ld.getAddState(f1) == CatAddState::CanJoin);
   ld.setSex(DONT_CARE);   // disable checking
-  CPPUNIT_ASSERT(ld.getAddState(m1) == CAN_JOIN);
-  CPPUNIT_ASSERT(ld.getAddState(f1) == CAN_JOIN);
+  CPPUNIT_ASSERT(ld.getAddState(m1) == CatAddState::CanJoin);
+  CPPUNIT_ASSERT(ld.getAddState(f1) == CatAddState::CanJoin);
   
   // check player suitability for mixed doubles
-  CPPUNIT_ASSERT(mx.getAddState(m1) == CAN_JOIN);
-  CPPUNIT_ASSERT(mx.getAddState(f1) == CAN_JOIN);
+  CPPUNIT_ASSERT(mx.getAddState(m1) == CatAddState::CanJoin);
+  CPPUNIT_ASSERT(mx.getAddState(f1) == CatAddState::CanJoin);
   mx.setSex(DONT_CARE);   // disable checking
-  CPPUNIT_ASSERT(mx.getAddState(m1) == CAN_JOIN);
-  CPPUNIT_ASSERT(mx.getAddState(f1) == CAN_JOIN);
+  CPPUNIT_ASSERT(mx.getAddState(m1) == CatAddState::CanJoin);
+  CPPUNIT_ASSERT(mx.getAddState(f1) == CatAddState::CanJoin);
   
   // TODO:
   // add test cases for when a category is closed
   // or for previously added players
-  // (return values "ALREADY_MEMBER" and "CAT_CLOSED")
+  // (return values "CatAddState::AlreadyMember" and "CatAddState::CatClosed")
   
   delete db;
   printEndMsg();

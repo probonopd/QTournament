@@ -140,7 +140,7 @@ namespace QTournament {
     // find all matches that have been finished since the last update
     SqliteOverlay::WhereClause wc;
     wc.addCol(MA_FINISH_TIME, ">", lastMatchFinishTime);
-    wc.addCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(ObjState::MA_FINISHED));
+    wc.addCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(ObjState::MA_Finished));
     wc.setOrderColumn_Asc(MA_FINISH_TIME);
 
     MatchMngr mm{db};
@@ -180,7 +180,7 @@ namespace QTournament {
     // determine the available, not disabled courts
     CourtMngr cm{db};
     CourtList allCourts = cm.getAllCourts();
-    allCourts.erase(remove_if(allCourts.begin(), allCourts.end(), [](Court& c){ return (c.getState() == ObjState::CO_DISABLED);}),
+    allCourts.erase(remove_if(allCourts.begin(), allCourts.end(), [](Court& c){ return (c.getState() == ObjState::CO_Disabled);}),
         allCourts.end());
 
     // if we don't have any courts at all, we can't make any predictions
@@ -256,8 +256,8 @@ namespace QTournament {
     // matches and assign estimated start and end times
     SqliteOverlay::WhereClause wc;
     wc.addCol(MA_NUM, ">", 0);   // the match needs to have a match number
-    wc.addCol(GENERIC_STATE_FIELD_NAME, "!=", static_cast<int>(ObjState::MA_FINISHED));  // the match is not finished
-    wc.addCol(GENERIC_STATE_FIELD_NAME, "!=", static_cast<int>(ObjState::MA_RUNNING));  // the match is not running
+    wc.addCol(GENERIC_STATE_FIELD_NAME, "!=", static_cast<int>(ObjState::MA_Finished));  // the match is not finished
+    wc.addCol(GENERIC_STATE_FIELD_NAME, "!=", static_cast<int>(ObjState::MA_Running));  // the match is not running
     wc.setOrderColumn_Asc(MA_NUM);
 
     for (SqliteOverlay::TabRowIterator it{db, TAB_MATCH, wc}; it.hasData(); ++it)

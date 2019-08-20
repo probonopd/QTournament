@@ -62,29 +62,29 @@ DlgSelectReferee::DlgSelectReferee(TournamentDB* _db, const Match& _ma, REFEREE_
   }
 
   // initialize the drop box for the selection mode
-  ui->cbFilterMode->addItem(tr("All players"), static_cast<int>(REFEREE_MODE::ALL_PLAYERS));
-  ui->cbFilterMode->addItem(tr("Recent finishers"), static_cast<int>(REFEREE_MODE::RECENT_FINISHERS));
-  ui->cbFilterMode->addItem(tr("Special team member"), static_cast<int>(REFEREE_MODE::SPECIAL_TEAM));
-  REFEREE_MODE curRefMode = ma.get_EFFECTIVE_RefereeMode();
+  ui->cbFilterMode->addItem(tr("All players"), static_cast<int>(RefereeMode::RefereeMode::AllPlayers));
+  ui->cbFilterMode->addItem(tr("Recent finishers"), static_cast<int>(RefereeMode::RefereeMode::RecentFinishers));
+  ui->cbFilterMode->addItem(tr("Special team member"), static_cast<int>(RefereeMode::RefereeMode::SpecialTeam));
+  RefereeMode curRefMode = ma.get_EFFECTIVE_RefereeMode();
   switch (curRefMode)
   {
-  case REFEREE_MODE::ALL_PLAYERS:
+  case RefereeMode::RefereeMode::AllPlayers:
     ui->cbFilterMode->setCurrentIndex(0);
     break;
 
-  case REFEREE_MODE::RECENT_FINISHERS:
+  case RefereeMode::RefereeMode::RecentFinishers:
     ui->cbFilterMode->setCurrentIndex(1);
     break;
 
-  case REFEREE_MODE::SPECIAL_TEAM:
+  case RefereeMode::RefereeMode::SpecialTeam:
     ui->cbFilterMode->setCurrentIndex(2);
     break;
 
-  case REFEREE_MODE::HANDWRITTEN:
+  case RefereeMode::RefereeMode::HandWritten:
     reject();  // nothing to do for us
     break;
 
-  case REFEREE_MODE::NONE:
+  case RefereeMode::RefereeMode::None:
     reject();  // nothing to do for us
     break;
   }
@@ -177,8 +177,8 @@ void DlgSelectReferee::onBtnSelectClicked()
   // if we were in team selection mode, store the selected team as
   // the new default team
   int curFilterModeId = ui->cbFilterMode->currentData().toInt();
-  REFEREE_MODE curFilterMode = static_cast<REFEREE_MODE>(curFilterModeId);
-  if (curFilterMode == REFEREE_MODE::SPECIAL_TEAM)
+  RefereeMode curFilterMode = static_cast<RefereeMode>(curFilterModeId);
+  if (curFilterMode == RefereeMode::RefereeMode::SpecialTeam)
   {
     int curTeamId = ui->cbTeamSelection->currentData().toInt();
     auto cfg = SqliteOverlay::KeyValueTab::getTab(db, TAB_CFG);
@@ -224,9 +224,9 @@ void DlgSelectReferee::updateControls()
   // disable the team selection drop box if the filter
   // type is not "special team"
   int curFilterModeId = ui->cbFilterMode->currentData().toInt();
-  REFEREE_MODE curFilterMode = static_cast<REFEREE_MODE>(curFilterModeId);
-  ui->cbTeamSelection->setHidden(curFilterMode != REFEREE_MODE::SPECIAL_TEAM);
-  ui->laTeamSelection->setHidden(curFilterMode != REFEREE_MODE::SPECIAL_TEAM);
+  RefereeMode curFilterMode = static_cast<RefereeMode>(curFilterModeId);
+  ui->cbTeamSelection->setHidden(curFilterMode != RefereeMode::RefereeMode::SpecialTeam);
+  ui->laTeamSelection->setHidden(curFilterMode != RefereeMode::RefereeMode::SpecialTeam);
 
   // only enable the "select" button if a player is selected
   ui->btnSelect->setEnabled(ui->tabPlayers->hasPlayerSelected());
@@ -266,12 +266,12 @@ void DlgSelectReferee::rebuildPlayerList()
 {
   // determine the current filter and team selection
   int curFilterModeId = ui->cbFilterMode->currentData().toInt();
-  REFEREE_MODE curFilterMode = static_cast<REFEREE_MODE>(curFilterModeId);
+  RefereeMode curFilterMode = static_cast<RefereeMode>(curFilterModeId);
   int curTeamId = ui->cbTeamSelection->currentData().toInt();
 
   // if the current filter is "team" but there is no team selected,
   // stop here
-  if ((curFilterMode == REFEREE_MODE::SPECIAL_TEAM) && (curTeamId < 1))
+  if ((curFilterMode == RefereeMode::RefereeMode::SpecialTeam) && (curTeamId < 1))
   {
     ui->tabPlayers->rebuildPlayerList(TaggedPlayerList(), ma.getMatchNumber(), curFilterMode);
     return;
@@ -281,7 +281,7 @@ void DlgSelectReferee::rebuildPlayerList()
   PlayerMngr pm{db};
   TeamMngr tm{db};
   TaggedPlayerList pList;
-  if (curFilterMode == REFEREE_MODE::ALL_PLAYERS)
+  if (curFilterMode == RefereeMode::RefereeMode::AllPlayers)
   {
     PlayerList purePlayerList = pm.getAllPlayers();
 
@@ -296,7 +296,7 @@ void DlgSelectReferee::rebuildPlayerList()
       pList.push_back(make_pair(p, RefereeSelectionDelegate::NeutralTag));
     }
   }
-  if (curFilterMode == REFEREE_MODE::SPECIAL_TEAM)
+  if (curFilterMode == RefereeMode::RefereeMode::SpecialTeam)
   {
     Team selTeam = tm.getTeamById(curTeamId);
     PlayerList purePlayerList = tm.getPlayersForTeam(selTeam);
@@ -311,7 +311,7 @@ void DlgSelectReferee::rebuildPlayerList()
       pList.push_back(make_pair(p, RefereeSelectionDelegate::NeutralTag));
     }
   }
-  if (curFilterMode == REFEREE_MODE::RECENT_FINISHERS)
+  if (curFilterMode == RefereeMode::RefereeMode::RecentFinishers)
   {
     pList = getPlayerList_recentFinishers();
   }
@@ -325,7 +325,7 @@ void DlgSelectReferee::rebuildPlayerList()
     {
       const TaggedPlayer& tp = *it;
       const Player& p = tp.first;
-      if (p.getState() != ObjState::PL_IDLE)
+      if (p.getState() != ObjState::PL_Idle)
       {
         it = pList.erase(it);
       } else {
@@ -363,7 +363,7 @@ TaggedPlayerList DlgSelectReferee::getPlayerList_recentFinishers()
       Player p = pp.getPlayer1();
 
       // if this player is already a referee, skip this player
-      if (p.getState() == ObjState::PL_REFEREE) continue;
+      if (p.getState() == ObjState::PL_Referee) continue;
 
       // Before we add this player to the result list,
       // make sure that the player is not already in it
@@ -376,7 +376,7 @@ TaggedPlayerList DlgSelectReferee::getPlayerList_recentFinishers()
       if (pp.hasPlayer2())
       {
         p = pp.getPlayer2();
-        if (p.getState() == ObjState::PL_REFEREE) continue;
+        if (p.getState() == ObjState::PL_Referee) continue;
         if (std::find(purePlayerList.begin(), purePlayerList.end(), p) == purePlayerList.end())
         {
           purePlayerList.push_back(p);
@@ -416,7 +416,7 @@ RefereeTableWidget::RefereeTableWidget(QWidget* parent)
 
 //----------------------------------------------------------------------------
 
-void RefereeTableWidget::rebuildPlayerList(const TaggedPlayerList& pList, int selectedMatchNumer, REFEREE_MODE _refMode)
+void RefereeTableWidget::rebuildPlayerList(const TaggedPlayerList& pList, int selectedMatchNumer, RefereeMode _refMode)
 {
   // store the current referee mode. We need this to properly
   // initiate the filtering column
@@ -511,7 +511,7 @@ void RefereeTableWidget::rebuildPlayerList(const TaggedPlayerList& pList, int se
   }
 
   // set the right sorting mode
-  if (refMode == REFEREE_MODE::RECENT_FINISHERS)
+  if (refMode == RefereeMode::RefereeMode::RecentFinishers)
   {
     sortByColumn(LAST_FINISH_TIME_COL_ID, Qt::DescendingOrder);
   } else {

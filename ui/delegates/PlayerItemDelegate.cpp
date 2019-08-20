@@ -67,7 +67,7 @@ void PlayerItemDelegate::commonPaint(QPainter* painter, const QStyleOptionViewIt
   // overwrite the pre-set text color in case we have an
   // unregistered player
   ObjState plStat = p.getState();
-  if (plStat == ObjState::PL_WAIT_FOR_REGISTRATION)
+  if (plStat == ObjState::PL_WaitForRegistration)
   {
     QColor txtCol = (option.state & QStyle::State_Selected) ? Qt::lightGray : Qt::darkGray;
     painter->setPen(txtCol);

@@ -61,7 +61,7 @@ namespace QTournament
 #define CFG_KEY_TNMT_ORGA "OrganizingClub"
 #define CFG_KEY_USE_TEAMS "UseTeams"
 #define CFG_KEY_EXT_PLAYER_DB "ExternalPlayerDatabase"
-#define CFG_KEY_DEFAULT_REFEREE_MODE "DefaultRefereeMode"
+#define CFG_KEY_DEFAULT_RefereeMode "DefaultRefereeMode"
 #define CFG_KEY_REFEREE_TEAM_ID "RefereeTeamId"
 #define CFG_KEY_KEYSTORE "Keystore"
 #define CFG_KEY_REGISTRATION_TIMESTAMP "RegistrationTimestamp"
@@ -70,28 +70,28 @@ namespace QTournament
 //----------------------------------------------------------------------------
     
 #define TAB_PLAYER "Player"
-#define PL_FNAME "FirstName"
-#define PL_LNAME "LastName"
-#define PL_TEAM_REF "TeamRefId"
-#define PL_SEX "Sex"
-#define PL_REFEREE_COUNT "RefereeCount"
-//#define PL_ ""
-//#define PL_ ""
-//#define PL_ ""
-//#define PL_ ""
-//#define PL_ ""
-//#define PL_ ""
-//#define PL_ ""
-//#define PL_ ""
-//#define PL_ ""
-//#define PL_ ""
-//#define PL_ ""
-//#define PL_ ""
-//#define PL_ ""
-//#define PL_ ""
-//#define PL_ ""
-//#define PL_ ""
-//#define PL_ ""
+#define PLAYINGFNAME "FirstName"
+#define PLAYINGLNAME "LastName"
+#define PLAYINGTEAM_REF "TeamRefId"
+#define PLAYINGSEX "Sex"
+#define PL_Referee_COUNT "RefereeCount"
+//#define PLAYING ""
+//#define PLAYING ""
+//#define PLAYING ""
+//#define PLAYING ""
+//#define PLAYING ""
+//#define PLAYING ""
+//#define PLAYING ""
+//#define PLAYING ""
+//#define PLAYING ""
+//#define PLAYING ""
+//#define PLAYING ""
+//#define PLAYING ""
+//#define PLAYING ""
+//#define PLAYING ""
+//#define PLAYING ""
+//#define PLAYING ""
+//#define PLAYING ""
 
 //----------------------------------------------------------------------------
     
@@ -112,38 +112,29 @@ namespace QTournament
 //----------------------------------------------------------------------------
     
 #define TAB_CATEGORY "Category"
-#define CAT_MATCH_TYPE "MatchType"
-#define CAT_SEX "Sex"
-#define CAT_SYS "System"
-#define CAT_ACCEPT_DRAW "AcceptDraw"
-#define CAT_CatParameter::WinScore "WinScore"
-#define CAT_CatParameter::DrawScore "DrawScore"
-#define CAT_CatParameter::GroupConfig "GroupConfig"
-#define CAT_BRACKET_VIS_DATA "BracketVisData"
-#define CAT_CatParameter::RoundRobinIterations "RoundRobinIterations"
-//#define CAT_ ""
-//#define CAT_ ""
-//#define CAT_ ""
-//#define CAT_ ""
-//#define CAT_ ""
-//#define CAT_ ""
-//#define CAT_ ""
-//#define CAT_ ""
-//#define CAT_ ""
+#define CAT_MatchType "MatchType"
+#define CAT_Sex "Sex"
+#define CAT_Sys "System"
+#define CAT_AcceptDraw "AcceptDraw"
+#define CAT_WinScore "WinScore"
+#define CAT_DrawScore "DrawScore"
+#define CAT_GroupConfig "GroupConfig"
+#define CAT_BracketVisData "BracketVisData"
+#define CAT_RoundRobinIterations "RoundRobinIterations"
 //#define CAT_ ""
   
 //----------------------------------------------------------------------------
 
 #define TAB_P2C "Player2Category"
 #define P2C_PLAYER_REF "PlayerRefId"
-#define P2C_CAT_REF "CategoryRefId"
+#define P2C_CONFIGREF "CategoryRefId"
   
 //----------------------------------------------------------------------------
 
 #define TAB_PAIRS "PlayerPair"
 #define PAIRS_PLAYER1_REF "Player1RefId"
 #define PAIRS_PLAYER2_REF "Player2RefId"
-#define PAIRS_CAT_REF "CategoryRefId"
+#define PAIRS_CONFIGREF "CategoryRefId"
 #define PAIRS_GRP_NUM "GroupNumber"
 #define PAIRS_INITIAL_RANK "InitialRank"
   
@@ -167,7 +158,7 @@ namespace QTournament
 #define MA_PAIR2_SYMBOLIC_VAL  "PlayerPair2SymbolicValue"
 #define MA_WINNER_RANK  "WinnerRank"
 #define MA_LOSER_RANK  "LoserRank"
-#define MA_REFEREE_MODE  "RefereeMode"
+#define MA_RefereeMode  "RefereeMode"
 #define MA_REFEREE_REF  "RefereeRefId"
 //#define MA_  ""
 //#define MA_  ""
@@ -177,7 +168,7 @@ namespace QTournament
 //----------------------------------------------------------------------------
 
 #define TAB_MATCH_GROUP "MatchGroup"
-#define MG_CAT_REF  "CategoryRefId"
+#define MG_ConfigREF  "CategoryRefId"
 #define MG_ROUND  "Round"
 #define MG_GRP_NUM  "RoundRobinGroupNumber"
 #define MG_STAGE_SEQ_NUM  "StageSequenceNumber"
@@ -203,7 +194,7 @@ namespace QTournament
   
 //----------------------------------------------------------------------------
 
-#define TAB_RANKING "Ranking"
+#define TAB_MatchSystem::Ranking "Ranking"
 #define RA_ROUND  "Round"
 #define RA_PAIR_REF  "PlayerPairRef"
 #define RA_GAMES_WON  "GamesWon"
@@ -214,7 +205,7 @@ namespace QTournament
 #define RA_POINTS_WON  "PointsWon"
 #define RA_POINTS_LOST  "PointsLost"
 #define RA_RANK  "Rank"
-#define RA_CAT_REF  "CategoryRef"
+#define RA_CONFIGREF  "CategoryRef"
 #define RA_GRP_NUM  "MatchGroupNumber"
 //#define RA_  ""
 //#define RA_  ""
@@ -224,7 +215,7 @@ namespace QTournament
 
 #define TAB_BRACKET_VIS "BracketVisualization"
 #define BV_MATCH_REF "MatchRefId"
-#define BV_CAT_REF "CategoryRefId"
+#define BV_CONFIGREF "CategoryRefId"
 #define BV_PAGE "PageNumber"
 #define BV_GRID_X0 "GridX0"
 #define BV_GRID_Y0 "GridY0"
@@ -295,11 +286,11 @@ namespace QTournament
   
 //----------------------------------------------------------------------------
 
-  enum CAT_ADD_STATE {
-    WRONG_SEX,         // Player may not join because the sex doesn't fit
-    CAN_JOIN,          // Player can join the category now and participate in matches
-    CAT_CLOSED,        // Player WOULD fit, but the category doesn't accept any more players
-    ALREADY_MEMBER     // Player is already assigned to this category
+  enum class CatAddState {
+    WrongSex,         // Player may not join because the sex doesn't fit
+    CanJoin,          // Player can join the category now and participate in matches
+    CatClosed,        // Player WOULD fit, but the category doesn't accept any more players
+    AlreadyMember     // Player is already assigned to this category
   };
   
 //----------------------------------------------------------------------------
@@ -309,41 +300,41 @@ namespace QTournament
   // state IDs change and we break compatibility with older database versions!
   //
   enum class ObjState {
-    PL_IDLE,
-    PL_PLAYING,
-    PL_WAIT_FOR_REGISTRATION,  // player has to report to match control before considered "ready"
-    CAT_CONFIG,
-    CAT_FROZEN,  // intermediate state in which the category can be configured for the first round
-    CAT_IDLE,
-    CAT_PLAYING,  // at least one match in this category is currently being played
-    CAT_FINALIZED, // no more rounds or matches to come
-    CAT_WAIT_FOR_INTERMEDIATE_SEEDING,  // we need user-controlled seeding / match generation before we can continue
-    MG_CONFIG,   // Match group has been created, matches can still be added or removed
-    MG_FROZEN,   // No more adding or removing of matches; match group CANNOT be staged because earlier rounds/groups have to be staged / scheduled first
-    MG_IDLE,     // No more adding or removing of matches; match group can be staged and waits for being staged
-    MG_STAGED,     // No more adding or removing of matches; match group is selected to be scheduled and waits for being scheduled
-    MG_SCHEDULED, // Match numbers have been assigned
-    MG_FINISHED,  // All matches in this group are finished
-    MA_INCOMPLETE,   // Match is not yet fully defined (e.g., player names or match number are missing)
-    MA_FUZZY,        // Player names are defined by symbolic values (e.g., winner of match XYZ); match number is assigned; match cannot be called
-    MA_WAITING,      // Player names and match number are assigned but match cannot be called because earlier rounds have to be played first
-    MA_READY,        // Opponents and match number are fully defined and all players are idle; match can be called
-    MA_BUSY,         // Opponents and match number are fully defined but some players are busy; match cannot be called
-    MA_RUNNING,      // The match is currently being played
-    MA_FINISHED,     // The match is finished and the result has been entered
-    MA_POSTPONED,    // The match is postponed and cannot be called
-    CO_AVAIL,        // The court is empty and can be assigned to a match
-    CO_BUSY,         // The court is being used by a match
-    CO_DISABLED,     // The court cannot be used (temporarily)
-    PL_REFEREE,      // Player is currently acting as a referee/umpire for a match
+    PL_Idle,
+    PL_Playing,
+    PL_WaitForRegistration,  // player has to report to match control before considered "ready"
+    CAT_Config,
+    CAT_Frozen,  // intermediate state in which the category can be configured for the first round
+    CAT_Idle,
+    CAT_Playing,  // at least one match in this category is currently being played
+    CAT_Finalized, // no more rounds or matches to come
+    CAT_WaitForIntermediateSeeding,  // we need user-controlled seeding / match generation before we can continue
+    MG_Config,   // Match group has been created, matches can still be added or removed
+    MG_Frozen,   // No more adding or removing of matches; match group CANNOT be staged because earlier rounds/groups have to be staged / scheduled first
+    MG_Idle,     // No more adding or removing of matches; match group can be staged and waits for being staged
+    MG_Staged,     // No more adding or removing of matches; match group is selected to be scheduled and waits for being scheduled
+    MG_Scheduled, // Match numbers have been assigned
+    MG_Finished,  // All matches in this group are finished
+    MA_Incomplete,   // Match is not yet fully defined (e.g., player names or match number are missing)
+    MA_Fuzzy,        // Player names are defined by symbolic values (e.g., winner of match XYZ); match number is assigned; match cannot be called
+    MA_Waiting,      // Player names and match number are assigned but match cannot be called because earlier rounds have to be played first
+    MA_Ready,        // Opponents and match number are fully defined and all players are idle; match can be called
+    MA_Busy,         // Opponents and match number are fully defined but some players are busy; match cannot be called
+    MA_Running,      // The match is currently being played
+    MA_Finished,     // The match is finished and the result has been entered
+    MA_Postponed,    // The match is postponed and cannot be called
+    CO_Avail,        // The court is empty and can be assigned to a match
+    CO_Busy,         // The court is being used by a match
+    CO_Disabled,     // The court cannot be used (temporarily)
+    PL_Referee,      // Player is currently acting as a referee/umpire for a match
   };
   
 //----------------------------------------------------------------------------
   
-  enum MATCH_TYPE {
-    SINGLES,
-    DOUBLES,
-    MIXED
+  enum class MatchType {
+    Singles,
+    Doubles,
+    Mixed
   };  
   
 //----------------------------------------------------------------------------
@@ -356,24 +347,24 @@ namespace QTournament
   
 //----------------------------------------------------------------------------
     
-  enum MATCH_SYSTEM {
-    SWISS_LADDER,
-    GROUPS_WITH_KO,
-    RANDOMIZE,
-    RANKING,
-    SINGLE_ELIM,
-    ROUND_ROBIN,
+  enum class MatchSystem {
+    SwissLadder,
+    GroupsWithKO,
+    Randomize,
+    Ranking,
+    SingleElim,
+    RoundRobin,
   };
   
 //----------------------------------------------------------------------------
 
-  enum class REFEREE_MODE {
-    NONE = 0,           // no umpire for the match
-    HANDWRITTEN,    // the umpire's name is inserted manually be the user on the match sheet
-    ALL_PLAYERS,    // the umpire is selected upon match start among all players
-    RECENT_FINISHERS,  // the umpire is selected upon match start among the recent match finishers
-    SPECIAL_TEAM,    // the umpire is selected upon match start among the members of a special team (--> dedicated umpires)
-    USE_DEFAULT = -1,  // use the current tournament default
+  enum class RefereeMode {
+    None = 0,           // no umpire for the match
+    HandWritten,    // the umpire's name is inserted manually be the user on the match sheet
+    AllPlayers,    // the umpire is selected upon match start among all players
+    RecentFinishers,  // the umpire is selected upon match start among the recent match finishers
+    SpecialTeam,    // the umpire is selected upon match start among the members of a special team (--> dedicated umpires)
+    UseDefault = -1,  // use the current tournament default
   };
 
 //----------------------------------------------------------------------------
@@ -383,43 +374,43 @@ namespace QTournament
   public:
     QString tournamentName;
     QString organizingClub;
-    REFEREE_MODE refereeMode;
+    RefereeMode refereeMode;
     bool useTeams;
   } ;
 
 //----------------------------------------------------------------------------
 
-  enum KO_START {
-    FINAL,
-    SEMI,
-    QUARTER,
+  enum KO_Start {
+    Final,
+    Semi,
+    Quarter,
     L16
   };
 
 //----------------------------------------------------------------------------
 
-// Special group numbers for MatchGroup objects
-// Positive numbers indicate the number of the round robin group within a category,
-// Negative numbers have a special meaning for MatchGroups of non-round-robin matches
-#define GROUP_NUM__FINAL -1
-#define GROUP_NUM__SEMIFINAL -2
-#define GROUP_NUM__QUARTERFINAL -4
-#define GROUP_NUM__L16 -8
-#define GROUP_NUM__ITERATION -100  // just a normal round in Swiss Ladder, Random Matches, ...
+  // Special group numbers for MatchGroup objects
+  // Positive numbers indicate the number of the round robin group within a category,
+  // Negative numbers have a special meaning for MatchGroups of non-round-robin matches
+  constexpr int GroupNum_Final = -1;
+  constexpr int GroupNum_Semi = -2;
+  constexpr int GroupNum_Quarter = -4;
+  constexpr int GroupNum_L16 = -8;
+  constexpr int GroupNum_Iteration = -100;  // just a normal round in Swiss Ladder, Random Matches, ...
   
-// A special group number indicating that the match is
-// not in any group at all
-#define GRP_NUM__NOT_ASSIGNED -1
+  // A special group number indicating that the match is
+  // not in any group at all
+  constexpr int GroupNum_NotAssigned = -1;
 
-// A special value that matches any players group
-// Is only used for return values of functions
-#define ANY_PLAYERS_GROUP_NUMBER -200
-    
-//----------------------------------------------------------------------------
+  // A special value that matches any players group
+  // Is only used for return values of functions
+  constexpr int AnyPlayersGroupNumber = -200;
 
-// A special match number, indicating that a match number
-// has not yet been assigned
-#define MATCH_NUM_NOT_ASSIGNED -1
+  //----------------------------------------------------------------------------
+
+  // A special match number, indicating that a match number
+  // has not yet been assigned
+  constexpr int MatchNumNotAssigned = -1;
 
 //----------------------------------------------------------------------------
 

@@ -33,7 +33,7 @@ unique_ptr<QTournament::BracketVisData> QTournament::BracketVisData::getExisting
   // check if the requested category has visualization data
   DbTab* catTab = _db->getTab(TAB_CATEGORY);
   TabRow r = catTab->operator [](_cat.getId());
-  auto visData = r.getString2(CAT_BRACKET_VIS_DATA);
+  auto visData = r.getString2(CAT_BracketVisData);
   if (visData->isNull())
   {
     return nullptr;
@@ -103,7 +103,7 @@ tuple<BRACKET_PAGE_ORIENTATION, BRACKET_LABEL_POS> BracketVisData::getPageInfo(i
 QTournament::BracketVisElementList BracketVisData::getVisElements(int idxPage)
 {
   WhereClause wc;
-  wc.addCol(BV_CAT_REF, cat.getId());
+  wc.addCol(BV_CONFIGREF, cat.getId());
   if (idxPage >= 0)
   {
     wc.addCol(BV_PAGE, idxPage);
@@ -116,7 +116,7 @@ QTournament::BracketVisElementList BracketVisData::getVisElements(int idxPage)
 QTournament::upBracketVisElement BracketVisData::getVisElement(int idx) const
 {
   WhereClause wc;
-  wc.addCol(BV_CAT_REF, cat.getId());
+  wc.addCol(BV_CONFIGREF, cat.getId());
   wc.addCol(BV_ELEMENT_ID, idx);
 
   return getSingleObjectByWhereClause<BracketVisElement>(wc);
@@ -134,7 +134,7 @@ void BracketVisData::addPage(BRACKET_PAGE_ORIENTATION pageOrientation, BRACKET_L
   DbTab* catTab = db->getTab(TAB_CATEGORY);
   int catId = cat.getId();
   TabRow visDataRow = catTab->operator [](catId);
-  auto _visData = visDataRow.getString2(CAT_BRACKET_VIS_DATA);
+  auto _visData = visDataRow.getString2(CAT_BracketVisData);
 
   // treat the vis data as a colon-separated list of integers and add a new
   // element, if necessary
@@ -145,7 +145,7 @@ void BracketVisData::addPage(BRACKET_PAGE_ORIENTATION pageOrientation, BRACKET_L
   DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
 
   // write the new string to the database
-  visDataRow.update(CAT_BRACKET_VIS_DATA, visData);
+  visDataRow.update(CAT_BracketVisData, visData);
 }
 
 //----------------------------------------------------------------------------
@@ -154,7 +154,7 @@ void BracketVisData::addElement(int idx, const RawBracketVisElement& el)
 {
   ColumnValueClause cvc;
 
-  cvc.addCol(BV_CAT_REF, cat.getId());
+  cvc.addCol(BV_CONFIGREF, cat.getId());
 
   cvc.addCol(BV_PAGE, el.page);
   cvc.addCol(BV_GRID_X0, el.gridX0);
@@ -206,7 +206,7 @@ void BracketVisData::fillMissingPlayerNames() const
     //
     QString where;
     where = "%1=%2 AND %3 IS NULL AND %4>0 AND %5>0 AND %6 IS NULL AND %7 IS NULL";
-    where = where.arg(BV_CAT_REF);
+    where = where.arg(BV_CONFIGREF);
     where = where.arg(catId);
     where = where.arg(BV_MATCH_REF);
     where = where.arg(BV_INITIAL_RANK1, BV_INITIAL_RANK2);
@@ -231,7 +231,7 @@ void BracketVisData::fillMissingPlayerNames() const
     // Check 2: fill-in names for intermediate matches that lack both player names
     //
     where = "%1=%2 AND %3 IS NULL AND %4<=0 AND %5<=0 AND %6 IS NULL AND %7 IS NULL";
-    where = where.arg(BV_CAT_REF);  // %1
+    where = where.arg(BV_CONFIGREF);  // %1
     where = where.arg(catId);       // %2
     where = where.arg(BV_MATCH_REF);  // %3
     where = where.arg(BV_INITIAL_RANK1, BV_INITIAL_RANK2);  // %4, %5
@@ -285,7 +285,7 @@ void BracketVisData::clearExplicitPlayerPairReferences(const PlayerPair& pp) con
   DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
 
   WhereClause w;
-  w.addCol(BV_CAT_REF, catId);
+  w.addCol(BV_CONFIGREF, catId);
   w.addCol(BV_PAIR1_REF, pp.getPairId());
   DbTab::CachingRowIterator it = tab->getRowsByWhereClause(w);
   while (!(it.isEnd()))
@@ -295,7 +295,7 @@ void BracketVisData::clearExplicitPlayerPairReferences(const PlayerPair& pp) con
   }
 
   w.clear();
-  w.addCol(BV_CAT_REF, catId);
+  w.addCol(BV_CONFIGREF, catId);
   w.addCol(BV_PAIR2_REF, pp.getPairId());
   it = tab->getRowsByWhereClause(w);
   while (!(it.isEnd()))
@@ -324,7 +324,7 @@ unique_ptr<PlayerPair> BracketVisData::getParentPlayerPairForElement(const Brack
 
   // search for a bracket element that uses this element as next winner / loser match
   QString where = "%1=%2 AND ((%3=%4 AND %5=%6) OR (%7=%4 AND %8=%6))";
-  where = where.arg(BV_CAT_REF);                    // %1
+  where = where.arg(BV_CONFIGREF);                    // %1
   where = where.arg(cat.getId());               // %2
   where = where.arg(BV_NEXT_WINNER_MATCH);          // %3
   where = where.arg(elemId);                      // %4
@@ -342,7 +342,7 @@ unique_ptr<PlayerPair> BracketVisData::getParentPlayerPairForElement(const Brack
   if (ma != nullptr)
   {
     // case 2a: match is not finished, winner and loser are unknown
-    if (ma->getState() != ObjState::MA_FINISHED) return nullptr;
+    if (ma->getState() != ObjState::MA_Finished) return nullptr;
 
     // case 2b: match is finished, winner and loser are determined
     if (parentElem->getNextBracketElementForWinner() == elemId)
@@ -439,7 +439,7 @@ unique_ptr<Match> BracketVisElement::getLinkedMatch() const
 
 Category BracketVisElement::getLinkedCategory() const
 {
-  int catId = row.getInt(BV_CAT_REF);
+  int catId = row.getInt(BV_CONFIGREF);
   CatMngr cm{db};
   return cm.getCategoryById(catId);
 }
@@ -551,7 +551,7 @@ RawBracketVisElement::RawBracketVisElement(int visData[9])
     terminator = BRACKET_TERMINATOR::INWARDS;
     break;
   default:
-    terminator = BRACKET_TERMINATOR::NONE;
+    terminator = BRACKET_TERMINATOR::RefereeMode::None;
   }
   terminatorOffsetY = visData[8];
 }

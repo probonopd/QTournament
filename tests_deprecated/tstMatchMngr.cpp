@@ -33,20 +33,20 @@ void tstMatchMngr::testCreateNewGroup()
   // try invalid category states
   Category ms = Tournament::getCatMngr()->getCategoryById(1);
   ERR e;
-  CPPUNIT_ASSERT(ms.getState() == STAT_CAT_CONFIG);
+  CPPUNIT_ASSERT(ms.getState() == STAT_CAT_Config);
   auto mg = mm->createMatchGroup(ms, 2, 3, &e);
   CPPUNIT_ASSERT(e == CATEGORY_STILL_CONFIGURABLE);
   CPPUNIT_ASSERT(mg == nullptr);
   TabRow catRow = (*db)[TAB_CATEGORY][1];
-  catRow.update(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_CAT_FROZEN));
-  CPPUNIT_ASSERT(ms.getState() == STAT_CAT_FROZEN);
+  catRow.update(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_CAT_Frozen));
+  CPPUNIT_ASSERT(ms.getState() == STAT_CAT_Frozen);
   mg = mm->createMatchGroup(ms, 2, 3, &e);
   CPPUNIT_ASSERT(e == CATEGORY_STILL_CONFIGURABLE);
   CPPUNIT_ASSERT(mg == nullptr);
 
   // fake a valid category state
-  catRow.update(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_CAT_IDLE));
-  CPPUNIT_ASSERT(ms.getState() == STAT_CAT_IDLE);
+  catRow.update(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_CAT_Idle));
+  CPPUNIT_ASSERT(ms.getState() == STAT_CAT_Idle);
 
   // try empty or invalid parameters
   mg = mm->createMatchGroup(ms, -5, 1, &e);
@@ -80,20 +80,20 @@ void tstMatchMngr::testCreateNewGroup()
   
   // check database entries
   CPPUNIT_ASSERT((*db)[TAB_MATCH_GROUP].length() == 1);
-  CPPUNIT_ASSERT((*db)[TAB_MATCH_GROUP][1][MG_CAT_REF].toInt() == 1);
+  CPPUNIT_ASSERT((*db)[TAB_MATCH_GROUP][1][MG_ConfigREF].toInt() == 1);
   CPPUNIT_ASSERT((*db)[TAB_MATCH_GROUP][1][MG_ROUND].toInt() == 2);
   CPPUNIT_ASSERT((*db)[TAB_MATCH_GROUP][1][MG_GRP_NUM].toInt() == 3);
-  CPPUNIT_ASSERT(mg->getState() == STAT_MG_CONFIG);
+  CPPUNIT_ASSERT(mg->getState() == STAT_MG_Config);
   
   // create a match group with a special value for the group number
-  mg2 = mm->createMatchGroup(ms, 4, GROUP_NUM__L16, &e);
+  mg2 = mm->createMatchGroup(ms, 4, GroupNum_L16, &e);
   CPPUNIT_ASSERT(e == OK);
   CPPUNIT_ASSERT(mg2 != 0);
   CPPUNIT_ASSERT((*db)[TAB_MATCH_GROUP].length() == 2);
-  CPPUNIT_ASSERT((*db)[TAB_MATCH_GROUP][2][MG_CAT_REF].toInt() == 1);
+  CPPUNIT_ASSERT((*db)[TAB_MATCH_GROUP][2][MG_ConfigREF].toInt() == 1);
   CPPUNIT_ASSERT((*db)[TAB_MATCH_GROUP][2][MG_ROUND].toInt() == 4);
   CPPUNIT_ASSERT((*db)[TAB_MATCH_GROUP][2][MG_GRP_NUM].toInt() == -8);
-  CPPUNIT_ASSERT(mg2->getState() == STAT_MG_CONFIG);
+  CPPUNIT_ASSERT(mg2->getState() == STAT_MG_Config);
   
   delete db;
   printEndMsg();
@@ -133,8 +133,8 @@ void tstMatchMngr::testHasGroup()
   
   // fake a valid category state
   TabRow catRow = (*db)[TAB_CATEGORY][1];
-  catRow.update(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_CAT_IDLE));
-  CPPUNIT_ASSERT(ms.getState() == STAT_CAT_IDLE);
+  catRow.update(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_CAT_Idle));
+  CPPUNIT_ASSERT(ms.getState() == STAT_CAT_Idle);
 
   // create a valid group with a real (positive) group number
   auto mg = mm->createMatchGroup(ms, 2, 3, &e);
@@ -174,8 +174,8 @@ void tstMatchMngr::testGetGroup()
   
   // fake a valid category state
   TabRow catRow = (*db)[TAB_CATEGORY][1];
-  catRow.update(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_CAT_IDLE));
-  CPPUNIT_ASSERT(ms.getState() == STAT_CAT_IDLE);
+  catRow.update(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_CAT_Idle));
+  CPPUNIT_ASSERT(ms.getState() == STAT_CAT_Idle);
 
   // create a valid group with a real (positive) group number
   ERR e;
@@ -210,8 +210,8 @@ void tstMatchMngr::testCreateNewMatch()
 
   // fake a valid category state
   TabRow catRow = (*db)[TAB_CATEGORY][1];
-  catRow.update(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_CAT_IDLE));
-  CPPUNIT_ASSERT(ms.getState() == STAT_CAT_IDLE);
+  catRow.update(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_CAT_Idle));
+  CPPUNIT_ASSERT(ms.getState() == STAT_CAT_Idle);
 
   // create a new match group
   ERR e;
@@ -227,11 +227,11 @@ void tstMatchMngr::testCreateNewMatch()
   // check database entries
   CPPUNIT_ASSERT((*db)[TAB_MATCH].length() == 1);
   CPPUNIT_ASSERT((*db)[TAB_MATCH][1][MA_GRP_REF].toInt() == 1);
-  CPPUNIT_ASSERT(ma->getState() == STAT_MA_INCOMPLETE);
+  CPPUNIT_ASSERT(ma->getState() == STAT_MA_Incomplete);
 
   // fake a new match group state
-  (*db)[TAB_MATCH_GROUP][1].update(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MG_FROZEN));
-  CPPUNIT_ASSERT(grp->getState() == STAT_MG_FROZEN);
+  (*db)[TAB_MATCH_GROUP][1].update(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MG_Frozen));
+  CPPUNIT_ASSERT(grp->getState() == STAT_MG_Frozen);
 
   // try to create a new match in a frozen match group
   auto ma2 = mm->createMatch(*grp, &e);
@@ -268,7 +268,7 @@ void tstMatchMngr::testCanAssignPlayerPairToMatch()
 
   // leave out PAIRS_PLAYER2_REF to assign a NULL value in the database
   QVariantList qvl;
-  qvl << PAIRS_CAT_REF << 1; // ms
+  qvl << PAIRS_CONFIGREF << 1; // ms
   qvl << PAIRS_GRP_NUM << 3;
   qvl << PAIRS_PLAYER1_REF << m1.getId();
   tabPairs.insertRow(qvl);
@@ -276,15 +276,15 @@ void tstMatchMngr::testCanAssignPlayerPairToMatch()
   CPPUNIT_ASSERT(msPair1.isConsistent(db));
 
   qvl.clear();
-  qvl << PAIRS_CAT_REF << 1; // ms
-  qvl << PAIRS_GRP_NUM << GRP_NUM__NOT_ASSIGNED;
+  qvl << PAIRS_CONFIGREF << 1; // ms
+  qvl << PAIRS_GRP_NUM << GroupNum_NotAssigned;
   qvl << PAIRS_PLAYER1_REF << m2.getId();
   tabPairs.insertRow(qvl);
   PlayerPair msPair2{m2, 3};
   CPPUNIT_ASSERT(msPair2.isConsistent(db));
 
   qvl.clear();
-  qvl << PAIRS_CAT_REF << 1; // ms
+  qvl << PAIRS_CONFIGREF << 1; // ms
   qvl << PAIRS_GRP_NUM << 3;
   qvl << PAIRS_PLAYER1_REF << m3.getId();
   tabPairs.insertRow(qvl);
@@ -292,16 +292,16 @@ void tstMatchMngr::testCanAssignPlayerPairToMatch()
   CPPUNIT_ASSERT(msPair3.isConsistent(db));
 
   qvl.clear();
-  qvl << PAIRS_CAT_REF << 3; // ls
-  qvl << PAIRS_GRP_NUM << GRP_NUM__NOT_ASSIGNED;
+  qvl << PAIRS_CONFIGREF << 3; // ls
+  qvl << PAIRS_GRP_NUM << GroupNum_NotAssigned;
   qvl << PAIRS_PLAYER1_REF << f1.getId();
   tabPairs.insertRow(qvl);
   PlayerPair lsPair1{f1, 5};
   CPPUNIT_ASSERT(lsPair1.isConsistent(db));
 
   qvl.clear();
-  qvl << PAIRS_CAT_REF << 3; // ls
-  qvl << PAIRS_GRP_NUM << GRP_NUM__NOT_ASSIGNED;
+  qvl << PAIRS_CONFIGREF << 3; // ls
+  qvl << PAIRS_GRP_NUM << GroupNum_NotAssigned;
   qvl << PAIRS_PLAYER1_REF << m1.getId();  // semantically wrong (male in lady singles), here only for testing
   tabPairs.insertRow(qvl);
   PlayerPair weirdPair{m1, 6};
@@ -309,8 +309,8 @@ void tstMatchMngr::testCanAssignPlayerPairToMatch()
 
   // fake a valid category state
   TabRow catRow = (*db)[TAB_CATEGORY][1];
-  catRow.update(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_CAT_IDLE));
-  CPPUNIT_ASSERT(ms.getState() == STAT_CAT_IDLE);
+  catRow.update(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_CAT_Idle));
+  CPPUNIT_ASSERT(ms.getState() == STAT_CAT_Idle);
 
   // create 3 rounds with 8 groups of 4 matches each
   ERR e;
@@ -337,7 +337,7 @@ void tstMatchMngr::testCanAssignPlayerPairToMatch()
   MatchGroup mg = mm->getMatchGroupsForCat(ms, 3).at(0);
   Match m = mg.getMatches().at(0);
   auto tabMatch = db->getTab(TAB_MATCH);
-  for (auto stat : {STAT_MA_READY, STAT_MA_BUSY, STAT_MA_FINISHED, STAT_MA_FUZZY, STAT_MA_POSTPONED, STAT_MA_READY, STAT_MA_RUNNING})
+  for (auto stat : {STAT_MA_Ready, STAT_MA_Busy, STAT_MA_Finished, STAT_MA_Fuzzy, STAT_MA_Postponed, STAT_MA_Ready, STAT_MA_Running})
   {
     tabMatch[m.getId()].update(GENERIC_STATE_FIELD_NAME, static_cast<int>(stat));
     CPPUNIT_ASSERT(m.getState() == stat);
@@ -345,8 +345,8 @@ void tstMatchMngr::testCanAssignPlayerPairToMatch()
   }
 
   // reset match state
-  tabMatch[m.getId()].update(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_INCOMPLETE));
-  CPPUNIT_ASSERT(m.getState() == STAT_MA_INCOMPLETE);
+  tabMatch[m.getId()].update(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_Incomplete));
+  CPPUNIT_ASSERT(m.getState() == STAT_MA_Incomplete);
 
   // try to assign a player pair from the wrong category
   CPPUNIT_ASSERT(mm->canAssignPlayerPairToMatch(m, lsPair1) == PLAYER_NOT_IN_CATEGORY);
@@ -415,28 +415,28 @@ void tstMatchMngr::testStageAndUnstageMatchGroup()
   auto mg1_2 = mm->getMatchGroup(ms, 2, 1, &e);  // players group 1, round 2
   CPPUNIT_ASSERT(mg1_2 != nullptr);
   CPPUNIT_ASSERT(e == OK);
-  CPPUNIT_ASSERT(mg1_2->getState() == STAT_MG_FROZEN);
+  CPPUNIT_ASSERT(mg1_2->getState() == STAT_MG_Frozen);
   CPPUNIT_ASSERT(mg1_2->getStageSequenceNumber() == -1);
 
   // try to stage this group
   CPPUNIT_ASSERT(mm->stageMatchGroup(*mg1_2) == WRONG_STATE);
-  CPPUNIT_ASSERT(mg1_2->getState() == STAT_MG_FROZEN);
+  CPPUNIT_ASSERT(mg1_2->getState() == STAT_MG_Frozen);
   CPPUNIT_ASSERT(mg1_2->getStageSequenceNumber() == -1);
 
   // get a "stageable" group
   auto mg1_1 = mm->getMatchGroup(ms, 1, 1, &e);  // players group 1, round 1
   CPPUNIT_ASSERT(mg1_1 != nullptr);
   CPPUNIT_ASSERT(e == OK);
-  CPPUNIT_ASSERT(mg1_1->getState() == STAT_MG_IDLE);
+  CPPUNIT_ASSERT(mg1_1->getState() == STAT_MG_Idle);
   CPPUNIT_ASSERT(mg1_1->getStageSequenceNumber() == -1);
 
   // try to stage this group
   CPPUNIT_ASSERT(mm->stageMatchGroup(*mg1_1) == OK);
-  CPPUNIT_ASSERT(mg1_1->getState() == STAT_MG_STAGED);
+  CPPUNIT_ASSERT(mg1_1->getState() == STAT_MG_Staged);
 
   // make sure that the match group for round 2 has been promoted
   // from FROZEN to IDLE
-  CPPUNIT_ASSERT(mg1_2->getState() == STAT_MG_IDLE);
+  CPPUNIT_ASSERT(mg1_2->getState() == STAT_MG_Idle);
   CPPUNIT_ASSERT(mg1_2->getStageSequenceNumber() == -1);
 
   // test getMaxStageSeqNum for a non-empty staging area
@@ -449,7 +449,7 @@ void tstMatchMngr::testStageAndUnstageMatchGroup()
 
   // stage the next round
   CPPUNIT_ASSERT(mm->stageMatchGroup(*mg1_2) == OK);
-  CPPUNIT_ASSERT(mg1_2->getState() == STAT_MG_STAGED);
+  CPPUNIT_ASSERT(mg1_2->getState() == STAT_MG_Staged);
   CPPUNIT_ASSERT(mm->getMaxStageSeqNum() == 2);
   r = (db->getTab(TAB_MATCH_GROUP))[mg1_2->getId()];
   CPPUNIT_ASSERT(r[MG_STAGE_SEQ_NUM].toInt() == 2);
@@ -459,24 +459,24 @@ void tstMatchMngr::testStageAndUnstageMatchGroup()
   auto mg1_3 = mm->getMatchGroup(ms, 3, 1, &e);  // players group 1, round 3
   CPPUNIT_ASSERT(mg1_3 != nullptr);
   CPPUNIT_ASSERT(e == OK);
-  CPPUNIT_ASSERT(mg1_3->getState() == STAT_MG_IDLE);
+  CPPUNIT_ASSERT(mg1_3->getState() == STAT_MG_Idle);
   CPPUNIT_ASSERT(mg1_3->getStageSequenceNumber() == -1);
 
   // add a match round of another players group
   auto mg2_1 = mm->getMatchGroup(ms, 1, 2, &e);  // players group 2, round 1
   CPPUNIT_ASSERT(mg2_1 != nullptr);
   CPPUNIT_ASSERT(e == OK);
-  CPPUNIT_ASSERT(mg2_1->getState() == STAT_MG_IDLE);
+  CPPUNIT_ASSERT(mg2_1->getState() == STAT_MG_Idle);
   CPPUNIT_ASSERT(mg2_1->getStageSequenceNumber() == -1);
   CPPUNIT_ASSERT(mm->stageMatchGroup(*mg2_1) == OK);
-  CPPUNIT_ASSERT(mg2_1->getState() == STAT_MG_STAGED);
+  CPPUNIT_ASSERT(mg2_1->getState() == STAT_MG_Staged);
   CPPUNIT_ASSERT(mg2_1->getStageSequenceNumber() == 3);
 
   // make sure the next match group has been promoted
   auto mg2_2 = mm->getMatchGroup(ms, 2, 2, &e);  // players group 2, round 2
   CPPUNIT_ASSERT(mg2_2 != nullptr);
   CPPUNIT_ASSERT(e == OK);
-  CPPUNIT_ASSERT(mg2_2->getState() == STAT_MG_IDLE);
+  CPPUNIT_ASSERT(mg2_2->getState() == STAT_MG_Idle);
 
   // now three match groups are staged
   CPPUNIT_ASSERT(mm->getMaxStageSeqNum() == 3);
@@ -504,14 +504,14 @@ void tstMatchMngr::testStageAndUnstageMatchGroup()
   // be unstageable
   CPPUNIT_ASSERT(mm->canUnstageMatchGroup(*mg1_1) == MATCH_GROUP_NOT_UNSTAGEABLE);
   CPPUNIT_ASSERT(mm->unstageMatchGroup(*mg1_1)  == MATCH_GROUP_NOT_UNSTAGEABLE);
-  CPPUNIT_ASSERT(mg1_1->getState() == STAT_MG_STAGED);
+  CPPUNIT_ASSERT(mg1_1->getState() == STAT_MG_Staged);
   CPPUNIT_ASSERT(mg1_1->getStageSequenceNumber() == 1);
 
   // mg1_2 is the last staged round of players group 2, so it
   // should be unstageable
   CPPUNIT_ASSERT(mm->canUnstageMatchGroup(*mg1_2) == OK);
   CPPUNIT_ASSERT(mm->unstageMatchGroup(*mg1_2)  == OK);
-  CPPUNIT_ASSERT(mg1_2->getState() == STAT_MG_IDLE);
+  CPPUNIT_ASSERT(mg1_2->getState() == STAT_MG_Idle);
   CPPUNIT_ASSERT(mg1_2->getStageSequenceNumber() == -1);
 
   // the sequence number of the follow-up match group
@@ -520,16 +520,16 @@ void tstMatchMngr::testStageAndUnstageMatchGroup()
   CPPUNIT_ASSERT(mm->getMaxStageSeqNum() == 2);
 
   // match group for round 1 remains untouched
-  CPPUNIT_ASSERT(mg1_1->getState() == STAT_MG_STAGED);
+  CPPUNIT_ASSERT(mg1_1->getState() == STAT_MG_Staged);
   CPPUNIT_ASSERT(mg1_1->getStageSequenceNumber() == 1);
 
   // match group for round 3 must have been demoted from IDLE to FROZEN
-  CPPUNIT_ASSERT(mg1_3->getState() == STAT_MG_FROZEN);
+  CPPUNIT_ASSERT(mg1_3->getState() == STAT_MG_Frozen);
 
   // now unstage match group 1.1
   CPPUNIT_ASSERT(mm->canUnstageMatchGroup(*mg1_1) == OK);
   CPPUNIT_ASSERT(mm->unstageMatchGroup(*mg1_1)  == OK);
-  CPPUNIT_ASSERT(mg1_1->getState() == STAT_MG_IDLE);
+  CPPUNIT_ASSERT(mg1_1->getState() == STAT_MG_Idle);
   CPPUNIT_ASSERT(mg1_1->getStageSequenceNumber() == -1);
 
   // the sequence number of the follow-up match group
@@ -538,14 +538,14 @@ void tstMatchMngr::testStageAndUnstageMatchGroup()
   CPPUNIT_ASSERT(mm->getMaxStageSeqNum() == 1);
 
   // match group for round 3 must have been demoted from IDLE to FROZEN
-  CPPUNIT_ASSERT(mg1_2->getState() == STAT_MG_FROZEN);
+  CPPUNIT_ASSERT(mg1_2->getState() == STAT_MG_Frozen);
 
   // finally unstage the 2.1 match group
   CPPUNIT_ASSERT(mm->canUnstageMatchGroup(*mg2_1) == OK);
   CPPUNIT_ASSERT(mm->unstageMatchGroup(*mg2_1)  == OK);
-  CPPUNIT_ASSERT(mg2_1->getState() == STAT_MG_IDLE);
+  CPPUNIT_ASSERT(mg2_1->getState() == STAT_MG_Idle);
   CPPUNIT_ASSERT(mg2_1->getStageSequenceNumber() == -1);
-  CPPUNIT_ASSERT(mg2_2->getState() == STAT_MG_FROZEN);
+  CPPUNIT_ASSERT(mg2_2->getState() == STAT_MG_Frozen);
   CPPUNIT_ASSERT(mm->getMaxStageSeqNum() == 0);
 
 

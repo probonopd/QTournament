@@ -40,18 +40,18 @@ namespace QTournament
 MatrixAndStandings::MatrixAndStandings(TournamentDB* _db, const QString& _name, const Category& _cat, int _round)
   :AbstractReport(_db, _name), cat(_cat), round(_round)
 {
-  ERR::MATCH_SYSTEM msys = cat.getMatchSystem();
+  ERR::MatchSystem msys = cat.getMatchSystem();
   CatRoundStatus crs = cat.getRoundStatus();
 
   // make sure this category is eligible for a matrix view
-  if ((msys != GROUPS_WITH_KO) && (msys != ROUND_ROBIN))
+  if ((msys != MatchSystem::GroupsWithKO) && (msys != MatchSystem::RoundRobin))
   {
     throw std::runtime_error("Requested matrix and standings report for invalid match type.");
   }
 
-  // if we are in GROUPS_WITH_KO make sure that "round" is still in
+  // if we are in MatchSystem::GroupsWithKO make sure that "round" is still in
   // round-robin-phase
-  if (msys == GROUPS_WITH_KO)
+  if (msys == MatchSystem::GroupsWithKO)
   {
     KO_Config cfg = KO_Config(cat.getParameter_string(CatParameter::GroupConfig));
     int numGroupRounds = cfg.getNumRounds();
@@ -92,9 +92,9 @@ upSimpleReport MatrixAndStandings::regenerateReport()
   // if we are in round robins with multiple iterations,
   // create a subhead indicating the current iteration number
   QString subHead;
-  ERR::MATCH_SYSTEM msys = cat.getMatchSystem();
+  ERR::MatchSystem msys = cat.getMatchSystem();
   int curIteration = -1;
-  if (msys == ROUND_ROBIN)
+  if (msys == MatchSystem::RoundRobin)
   {
     std::unique_ptr<PureRoundRobinCategory> rrCat = PureRoundRobinCategory::getFromGenericCat(cat);
     if (rrCat->getIterationCount() > 1)
@@ -128,7 +128,7 @@ upSimpleReport MatrixAndStandings::regenerateReport()
 
   // determine the number of match groups
   int nGroups = 1;  // round robin
-  if (msys == GROUPS_WITH_KO)
+  if (msys == MatchSystem::GroupsWithKO)
   {
     KO_Config cfg = cat.getParameter_string(CatParameter::GroupConfig);
     nGroups = cfg.getNumGroups();
@@ -140,13 +140,13 @@ upSimpleReport MatrixAndStandings::regenerateReport()
   for (int grpNum = 1; grpNum <= nGroups; ++grpNum)
   {
     QString tableName = catName;
-    if (msys == GROUPS_WITH_KO)
+    if (msys == MatchSystem::GroupsWithKO)
     {
       tableName = tr("Group ") + QString::number(grpNum);
     }
 
     // plot the matrix
-    MatchMatrix matrix{result.get(), tableName, cat, round, (msys == ROUND_ROBIN) ? -1 : grpNum};
+    MatchMatrix matrix{result.get(), tableName, cat, round, (msys == MatchSystem::RoundRobin) ? -1 : grpNum};
     auto plotRect = matrix.plot();
     result->skip(plotRect.size().height() + 3.0);
 
@@ -164,7 +164,7 @@ upSimpleReport MatrixAndStandings::regenerateReport()
           if (rl.empty()) continue;
 
           // skip entries belong to the wrong group
-          if ((msys == GROUPS_WITH_KO) && (rl.at(0).getGroupNumber() != grpNum)) continue;
+          if ((msys == MatchSystem::GroupsWithKO) && (rl.at(0).getGroupNumber() != grpNum)) continue;
 
           // okay, we found the right entry
           plotStandings elem{result.get(), rl, tableName};
@@ -201,8 +201,8 @@ QStringList MatrixAndStandings::getReportLocators() const
   loc += cat.getName() + "::";
 
   // insert the number of the iteration, if applicable
-  ERR::MATCH_SYSTEM msys = cat.getMatchSystem();
-  if (msys == ROUND_ROBIN)
+  ERR::MatchSystem msys = cat.getMatchSystem();
+  if (msys == MatchSystem::RoundRobin)
   {
     std::unique_ptr<PureRoundRobinCategory> rrCat = PureRoundRobinCategory::getFromGenericCat(cat);
     if (rrCat != nullptr)   // should always be true

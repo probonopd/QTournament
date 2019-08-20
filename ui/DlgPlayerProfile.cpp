@@ -143,7 +143,7 @@ void DlgPlayerProfile::fillLabels()
   //
   // set the waiting matches count
   //
-  if (plStat == ObjState::PL_PLAYING)
+  if (plStat == ObjState::PL_Playing)
   {
     txt = tr("%1 further matches scheduled and 1 match currently running");
     txt = txt.arg(pp.getScheduledAndNotFinishedCount() - 1);
@@ -166,7 +166,7 @@ void DlgPlayerProfile::fillLabels()
   txt = tr("%1 services (%2 finished, %3 running, %4 waiting)");
   txt = txt.arg(pp.getMatchesAsUmpire().length());
   txt = txt.arg(pp.getUmpireFinishedCount());
-  if (plStat == ObjState::PL_REFEREE)
+  if (plStat == ObjState::PL_Referee)
   {
     txt = txt.arg(1);
     txt = txt.arg(pp.getUmpireScheduledAndNotFinishedCount() - 1);
@@ -191,12 +191,12 @@ void DlgPlayerProfile::fillTables()
   auto maList = pp.getMatchesAsPlayer();
   for (const Match& ma : maList)
   {
-    if (ma.getMatchNumber() == ERR::MATCH_NUM_NOT_ASSIGNED) continue;
+    if (ma.getMatchNumber() == ERR::MatchNumNotAssigned) continue;
     ui->playerTab->appendMatch(ma);
   }
   for (const Match& ma : maList)
   {
-    if (ma.getMatchNumber() != ERR::MATCH_NUM_NOT_ASSIGNED) continue;
+    if (ma.getMatchNumber() != ERR::MatchNumNotAssigned) continue;
     ui->playerTab->appendMatch(ma);
   }
 }

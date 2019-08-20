@@ -16,8 +16,8 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef RANKINGENTRY_H
-#define	RANKINGENTRY_H
+#ifndef MatchSystem::RankingENTRY_H
+#define	MatchSystem::RankingENTRY_H
 
 #include <memory>
 #include <tuple>
@@ -76,5 +76,5 @@ namespace QTournament
   };
 
 }
-#endif	/* RANKINGENTRY_H */
+#endif	/* MatchSystem::RankingENTRY_H */
 

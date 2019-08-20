@@ -69,34 +69,34 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  MATCH_SYSTEM Category::getMatchSystem() const
+  MatchSystem Category::getMatchSystem() const
   {
-    int sysInt = row.getInt(CAT_SYS);
+    int sysInt = row.getInt(CAT_Sys);
 
-    return static_cast<MATCH_SYSTEM>(sysInt);
+    return static_cast<MatchSystem>(sysInt);
   }
 
   //----------------------------------------------------------------------------
 
-  MATCH_TYPE Category::getMatchType() const
+  MatchType Category::getMatchType() const
   {
-    int typeInt = row.getInt(CAT_MATCH_TYPE);
+    int typeInt = row.getInt(CAT_MatchType);
 
-    return static_cast<MATCH_TYPE>(typeInt);
+    return static_cast<MatchType>(typeInt);
   }
 
   //----------------------------------------------------------------------------
 
   SEX Category::getSex() const
   {
-    int sexInt = row.getInt(CAT_SEX);
+    int sexInt = row.getInt(CAT_Sex);
 
     return static_cast<SEX>(sexInt);
   }
 
   //----------------------------------------------------------------------------
 
-  ERR Category::setMatchSystem(MATCH_SYSTEM s)
+  ERR Category::setMatchSystem(MatchSystem s)
   {
     CatMngr cm{db};
     return cm.setMatchSystem(*this, s);
@@ -104,7 +104,7 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  ERR Category::setMatchType(MATCH_TYPE t)
+  ERR Category::setMatchType(MatchType t)
   {
     CatMngr cm{db};
     return cm.setMatchType(*this, t);
@@ -124,7 +124,7 @@ namespace QTournament
   {
     // For now, you can only add players to a category
     // when it's still in configuration mode
-    return (getState() == ObjState::CAT_CONFIG);
+    return (getState() == ObjState::CAT_Config);
 
     // TODO: make more sophisticated tests depending e. g. on
     // the match system. For instance, if we have random
@@ -133,38 +133,38 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  CAT_ADD_STATE Category::getAddState(const SEX s) const
+  CatAddState Category::getAddState(const SEX s) const
   {
     if (!(canAddPlayers()))
     {
-      return CAT_CLOSED;
+      return CatAddState::CatClosed;
     }
 
     // a "mixed" category can take any player
-    if (getMatchType() == MIXED)
+    if (getMatchType() == MatchType::Mixed)
     {
-      return CAN_JOIN;
+      return CatAddState::CanJoin;
     }
 
     // ok, so we're either in singles or doubles. if the sex
     // is set to DONT_CARE, then also any player will fit
     if (getSex() == DONT_CARE)
     {
-      return CAN_JOIN;
+      return CatAddState::CanJoin;
     }
 
     // in all other cases, the category's sex has to
     // match the player's sex
-    return (s == getSex()) ? CAN_JOIN : WRONG_SEX;
+    return (s == getSex()) ? CatAddState::CanJoin : CatAddState::WrongSex;
   }
 
   //----------------------------------------------------------------------------
 
-  CAT_ADD_STATE Category::getAddState(const Player& p) const
+  CatAddState Category::getAddState(const Player& p) const
   {
     if (hasPlayer(p))
     {
-      return ALREADY_MEMBER;
+      return CatAddState::AlreadyMember;
     }
 
     return getAddState(p.getSex());
@@ -184,7 +184,7 @@ namespace QTournament
   {
     SqliteOverlay::WhereClause wc;
     wc.addCol(P2C_PLAYER_REF, p.getId());
-    wc.addCol(P2C_CAT_REF, getId());
+    wc.addCol(P2C_CONFIGREF, getId());
 
     return (DbTab{db, TAB_P2C, false}.getMatchCountForWhereClause(wc) > 0);
   }
@@ -195,7 +195,7 @@ namespace QTournament
   {
     // For now, you can only delete players from a category
     // when it's still in configuration mode
-    if (getState() != ObjState::CAT_CONFIG) return false;
+    if (getState() != ObjState::CAT_Config) return false;
 
     // check whether the player is paired with another player
     if (isPaired(p))
@@ -233,19 +233,19 @@ namespace QTournament
     switch (p) {
 
     case CatParameter::AllowDraw:
-      return row.getInt(CAT_ACCEPT_DRAW);
+      return row.getInt(CAT_AcceptDraw);
 
     case CatParameter::WinScore:
-      return row.getInt(CAT_CatParameter::WinScore);
+      return row.getInt(CAT_WinScore);
 
     case CatParameter::DrawScore:
-      return row.getInt(CAT_CatParameter::DrawScore);
+      return row.getInt(CAT_DrawScore);
 
     case CatParameter::GroupConfig:
-      return QString::fromUtf8(row[CAT_CatParameter::GroupConfig].data());
+      return QString::fromUtf8(row[CAT_GroupConfig].data());
 
     case CatParameter::RoundRobinIterations:
-      return row.getInt(CAT_CatParameter::RoundRobinIterations);
+      return row.getInt(CAT_RoundRobinIterations);
       /*
       case :
 	return row[];
@@ -316,7 +316,7 @@ namespace QTournament
     // filter out the players that are paired and have already
     // entries in the database
     SqliteOverlay::WhereClause wc;
-    wc.addCol(PAIRS_CAT_REF, getId());
+    wc.addCol(PAIRS_CONFIGREF, getId());
     if (grp > 0) wc.addCol(PAIRS_GRP_NUM, grp);
 
     for (TabRowIterator it{db, TAB_PAIRS, wc}; it.hasData(); ++it)
@@ -363,11 +363,11 @@ namespace QTournament
     // since we want to count only player pairs in the database,
     // we must be beyond CONFIG to be sure that valid database
     // entries exist
-    if (getState() == ObjState::CAT_CONFIG) return -1;
+    if (getState() == ObjState::CAT_Config) return -1;
 
     DbTab pairTab{db, TAB_PAIRS, false};
     SqliteOverlay::WhereClause wc;
-    wc.addCol(PAIRS_CAT_REF, getId());
+    wc.addCol(PAIRS_CONFIGREF, getId());
     if (grp > 0) wc.addCol(PAIRS_GRP_NUM, grp);
     return pairTab.getMatchCountForWhereClause(wc);
   }
@@ -379,7 +379,7 @@ namespace QTournament
     PlayerList result;
     PlayerMngr pmngr{db};
 
-    auto rows = DbTab{db, TAB_P2C, false}.getRowsByColumnValue(P2C_CAT_REF, getId());
+    auto rows = DbTab{db, TAB_P2C, false}.getRowsByColumnValue(P2C_CONFIGREF, getId());
     for (const auto& row : rows)
     {
       result.push_back(pmngr.getPlayer(row.getInt(P2C_PLAYER_REF)));
@@ -402,7 +402,7 @@ namespace QTournament
     where.arg(PAIRS_PLAYER1_REF);
     where.arg(p.getId());
     where.arg(PAIRS_PLAYER2_REF);
-    where.arg(PAIRS_CAT_REF);
+    where.arg(PAIRS_CONFIGREF);
     where.arg(getId());
 
     // see if we have a row that matches the query
@@ -414,15 +414,15 @@ namespace QTournament
   ERR Category::canPairPlayers(const Player& p1, const Player& p2) const
   {
     // we can only create pairs while being in config mode
-    if (getState() != ObjState::CAT_CONFIG)
+    if (getState() != ObjState::CAT_Config)
     {
       return ERR::CATEGORY_NOT_CONFIGURALE_ANYMORE;
     }
 
     // in singles, we don't need pairs. The same is true if we're using
     // the match system "random matches with random partners".
-    MATCH_TYPE mt = getMatchType();
-    if (mt == SINGLES)
+    MatchType mt = getMatchType();
+    if (mt == MatchType::Singles)
     {
       return ERR::NO_CATEGORY_FOR_PAIRING;
     }
@@ -448,7 +448,7 @@ namespace QTournament
     }
 
     // if this is a mixed category, make sure the sex is right
-    if ((mt == MIXED) && (getSex() != DONT_CARE))
+    if ((mt == MatchType::Mixed) && (getSex() != DONT_CARE))
     {
       if (p1.getSex() == p2.getSex())
       {
@@ -457,7 +457,7 @@ namespace QTournament
     }
 
     // if this is a doubles category, make sure the sex is right
-    if ((mt == DOUBLES) && (getSex() != DONT_CARE))
+    if ((mt == MatchType::Doubles) && (getSex() != DONT_CARE))
     {
       SEX catSex = getSex();
       if ((p1.getSex() != catSex) || (p2.getSex() != catSex))
@@ -474,14 +474,14 @@ namespace QTournament
   ERR Category::canSplitPlayers(const Player& p1, const Player& p2) const
   {
     // we can only split pairs while being in config mode
-    if (getState() != ObjState::CAT_CONFIG)
+    if (getState() != ObjState::CAT_Config)
     {
       return ERR::CATEGORY_NOT_CONFIGURALE_ANYMORE;
     }
 
     // check if the two players are paired for this category
     SqliteOverlay::WhereClause wc;
-    wc.addCol(PAIRS_CAT_REF, getId());
+    wc.addCol(PAIRS_CONFIGREF, getId());
     wc.addCol(PAIRS_PLAYER1_REF, p1.getId());
     wc.addCol(PAIRS_PLAYER2_REF, p2.getId());
     DbTab pairsTab{db, TAB_PAIRS, false};
@@ -492,7 +492,7 @@ namespace QTournament
 
     // swap player 1 and player 2 and make a new query
     wc.clear();
-    wc.addCol(PAIRS_CAT_REF, getId());
+    wc.addCol(PAIRS_CONFIGREF, getId());
     wc.addCol(PAIRS_PLAYER1_REF, p2.getId());
     wc.addCol(PAIRS_PLAYER2_REF, p1.getId());
     if (pairsTab.getMatchCountForWhereClause(wc) != 0)
@@ -517,7 +517,7 @@ namespace QTournament
     where.arg(PAIRS_PLAYER1_REF);
     where.arg(p.getId());
     where.arg(PAIRS_PLAYER2_REF);
-    where.arg(PAIRS_CAT_REF);
+    where.arg(PAIRS_CONFIGREF);
     where.arg(getId());
 
     // see if we have a row that matches the query
@@ -559,26 +559,26 @@ namespace QTournament
   std::unique_ptr<Category> Category::convertToSpecializedObject() const
   {
     // return an instance of a suitable, specialized category-child
-    MATCH_SYSTEM sys = getMatchSystem();
+    MatchSystem sys = getMatchSystem();
 
-    if (sys == GROUPS_WITH_KO) {
+    if (sys == MatchSystem::GroupsWithKO) {
       return std::unique_ptr<Category>(new RoundRobinCategory(db, row));
     }
 
-    if (sys == SINGLE_ELIM) {
-      return std::unique_ptr<Category>(new EliminationCategory(db, row, BracketGenerator::BRACKET_SINGLE_ELIM));
+    if (sys == MatchSystem::SingleElim) {
+      return std::unique_ptr<Category>(new EliminationCategory(db, row, BracketGenerator::BRACKET_MatchSystem::SingleElim));
     }
 
-    if (sys == RANKING) {
-      return std::unique_ptr<Category>(new EliminationCategory(db, row, BracketGenerator::BRACKET_RANKING1));
+    if (sys == MatchSystem::Ranking) {
+      return std::unique_ptr<Category>(new EliminationCategory(db, row, BracketGenerator::BRACKET_MatchSystem::Ranking1));
     }
 
-    if (sys == ROUND_ROBIN)
+    if (sys == MatchSystem::RoundRobin)
     {
       return std::unique_ptr<Category>(new PureRoundRobinCategory(db, row));
     }
 
-    if (sys == SWISS_LADDER)
+    if (sys == MatchSystem::SwissLadder)
     {
       return std::unique_ptr<Category>(new SwissLadderCategory(db, row));
     }
@@ -595,7 +595,7 @@ namespace QTournament
 
   ERR Category::canApplyGroupAssignment(const std::vector<PlayerPairList>& grpCfg)
   {
-    if (getState() != ObjState::CAT_FROZEN) return ERR::CATEGORY_NOT_YET_FROZEN;
+    if (getState() != ObjState::CAT_Frozen) return ERR::CATEGORY_NOT_YET_FROZEN;
 
     std::unique_ptr<Category> specializedCat = convertToSpecializedObject();
     if (!(specializedCat->needsGroupInitialization()))
@@ -649,7 +649,7 @@ namespace QTournament
 
   ERR Category::canApplyInitialRanking(PlayerPairList seed)
   {
-    if (getState() != ObjState::CAT_FROZEN) return ERR::CATEGORY_NOT_YET_FROZEN;
+    if (getState() != ObjState::CAT_Frozen) return ERR::CATEGORY_NOT_YET_FROZEN;
 
     std::unique_ptr<Category> specializedCat = convertToSpecializedObject();
     if (!(specializedCat->needsInitialRanking()))
@@ -747,7 +747,7 @@ namespace QTournament
     */
   ERR Category::generateGroupMatches(const PlayerPairList& grpMembers, int grpNum, int firstRoundNum) const
   {
-    if ((grpNum < 1) && (grpNum != GROUP_NUM__ITERATION)) return ERR::INVALID_GROUP_NUM;
+    if ((grpNum < 1) && (grpNum != GroupNum_Iteration)) return ERR::INVALID_GROUP_NUM;
 
     RoundRobinGenerator rrg;
     MatchMngr mm{db};
@@ -847,10 +847,10 @@ namespace QTournament
     // new set of matches. This is not very elegant (since it should
     // be solved in the BracketGenerator) but efficient...
     //
-    if (getMatchSystem() == GROUPS_WITH_KO)
+    if (getMatchSystem() == MatchSystem::GroupsWithKO)
     {
       KO_Config cfg = KO_Config(getParameter_string(CatParameter::GroupConfig));
-      if ((cfg.getStartLevel() == FINAL) && (cfg.getSecondSurvives()))
+      if ((cfg.getStartLevel() == KO_Start::Final) && (cfg.getSecondSurvives()))
       {
         // we start with finals, which is simply "first vs. second"
         BracketMatchData final = BracketMatchData::getNew();
@@ -932,20 +932,20 @@ namespace QTournament
         ++curRound;
 
         // determine the number for the new match group
-        int grpNum = GROUP_NUM__ITERATION;
+        int grpNum = GroupNum_Iteration;
         switch (curDepth)
         {
         case 0:
-          grpNum = GROUP_NUM__FINAL;
+          grpNum = GroupNum_Final;
           break;
         case 1:
-          grpNum = GROUP_NUM__SEMIFINAL;
+          grpNum = GroupNum_Semi;
           break;
         case 2:
-          grpNum = GROUP_NUM__QUARTERFINAL;
+          grpNum = GroupNum_Quarter;
           break;
         case 3:
-          grpNum = GROUP_NUM__L16;
+          grpNum = GroupNum_L16;
           break;
         }
 
@@ -1125,63 +1125,63 @@ namespace QTournament
     if (grpNum > 0) return grpNum;
 
     // a regular round, e.g. in swiss ladder or random matches
-    if (grpNum == GROUP_NUM__ITERATION) return GROUP_NUM__ITERATION;
+    if (grpNum == GroupNum_Iteration) return GroupNum_Iteration;
 
-    // in elimination categories, everything before "L16" is "Iteration"
+    // in elimination categories, everything before "KO_Start::L16" is "Iteration"
     // and the rest follows the normal KO-logic
-    MATCH_SYSTEM mSys = getMatchSystem();
-    if (mSys == SINGLE_ELIM)
+    MatchSystem mSys = getMatchSystem();
+    if (mSys == MatchSystem::SingleElim)
     {
       switch(grpNum)
       {
-      case GROUP_NUM__FINAL:
-        return GROUP_NUM__SEMIFINAL;
-      case GROUP_NUM__SEMIFINAL:
-        return GROUP_NUM__QUARTERFINAL;
-      case GROUP_NUM__QUARTERFINAL:
-        return GROUP_NUM__L16;
+      case GroupNum_Final:
+        return GroupNum_Semi;
+      case GroupNum_Semi:
+        return GroupNum_Quarter;
+      case GroupNum_Quarter:
+        return GroupNum_L16;
       }
-      return GROUP_NUM__ITERATION;
+      return GroupNum_Iteration;
     }
 
     // if we made it to this point, we are in KO rounds.
     // so we need the KO-config to decide if there is a previous
     // KO round or if we fall back to round robins
     KO_Config cfg = KO_Config(getParameter_string(CatParameter::GroupConfig));
-    KO_START startLvl = cfg.getStartLevel();
+    KO_Start startLvl = cfg.getStartLevel();
 
-    if (startLvl == FINAL) return ANY_PLAYERS_GROUP_NUMBER;
+    if (startLvl == KO_Start::Final) return AnyPlayersGroupNumber;
 
-    if (startLvl == SEMI)
+    if (startLvl == KO_Start::Semi)
     {
-      if (grpNum == GROUP_NUM__FINAL) return GROUP_NUM__SEMIFINAL;
+      if (grpNum == GroupNum_Final) return GroupNum_Semi;
     }
 
-    if (startLvl == QUARTER)
-    {
-      switch (grpNum)
-      {
-      case GROUP_NUM__FINAL:
-        return GROUP_NUM__SEMIFINAL;
-      case GROUP_NUM__SEMIFINAL:
-        return GROUP_NUM__QUARTERFINAL;
-      }
-    }
-
-    if (startLvl == L16)
+    if (startLvl == KO_Start::Quarter)
     {
       switch (grpNum)
       {
-      case GROUP_NUM__FINAL:
-        return GROUP_NUM__SEMIFINAL;
-      case GROUP_NUM__SEMIFINAL:
-        return GROUP_NUM__QUARTERFINAL;
-      case GROUP_NUM__QUARTERFINAL:
-        return GROUP_NUM__L16;
+      case GroupNum_Final:
+        return GroupNum_Semi;
+      case GroupNum_Semi:
+        return GroupNum_Quarter;
       }
     }
 
-    return ANY_PLAYERS_GROUP_NUMBER;
+    if (startLvl == KO_Start::L16)
+    {
+      switch (grpNum)
+      {
+      case GroupNum_Final:
+        return GroupNum_Semi;
+      case GroupNum_Semi:
+        return GroupNum_Quarter;
+      case GroupNum_Quarter:
+        return GroupNum_L16;
+      }
+    }
+
+    return AnyPlayersGroupNumber;
   }
 
 
@@ -1279,21 +1279,21 @@ namespace QTournament
 
     // in any kind of "bracket match", draws are not possible.
     // So we need to have a "decision game", if necessary
-    MATCH_SYSTEM ms = getMatchSystem();
-    if ((ms == RANKING) || (ms == SINGLE_ELIM))
+    MatchSystem ms = getMatchSystem();
+    if ((ms == MatchSystem::Ranking) || (ms == MatchSystem::SingleElim))
     {
       return false;
     }
 
     // in swiss ladder or random matches, draws are okay
-    if ((ms == SWISS_LADDER) || (ms == RANDOMIZE))
+    if ((ms == MatchSystem::SwissLadder) || (ms == MatchSystem::Randomize))
     {
       return true;
     }
 
     // in round-robins with subsequent KO matches, it depends on the round
     // we're in
-    if (ms == GROUPS_WITH_KO)
+    if (ms == MatchSystem::GroupsWithKO)
     {
       // invalid parameter
       if (round < 1) return false;
@@ -1403,7 +1403,7 @@ namespace QTournament
 
   QString Category::getBracketVisDataString() const
   {
-    return QString::fromUtf8(row[CAT_BRACKET_VIS_DATA].data());
+    return QString::fromUtf8(row[CAT_BracketVisData].data());
   }
 
   //----------------------------------------------------------------------------

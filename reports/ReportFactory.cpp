@@ -75,7 +75,7 @@ namespace QTournament
     for (Category cat : cm.getAllCategories())
     {
       ObjState catState = cat.getState();
-      if ((catState == ObjState::CAT_CONFIG) || (catState == ObjState::CAT_FROZEN))
+      if ((catState == ObjState::CAT_Config) || (catState == ObjState::CAT_Frozen))
       {
         continue;  // no reports for "unstarted" categories
       }
@@ -95,7 +95,7 @@ namespace QTournament
       // we can also print result lists for all categories with
       // round robin groups
       MatchMngr mm{db};
-      if (cat.getMatchSystem() == GROUPS_WITH_KO)
+      if (cat.getMatchSystem() == MatchSystem::GroupsWithKO)
       {
         for (MatchGroup mg : mm.getMatchGroupsForCat(cat, 1))
         {
@@ -106,9 +106,9 @@ namespace QTournament
       }
 
       // generate matrix-and-result sheets for all round-robin and group matches
-      ERR::MATCH_SYSTEM msys = cat.getMatchSystem();
+      ERR::MatchSystem msys = cat.getMatchSystem();
       int numFinishedRounds = crs.getFinishedRoundsCount();
-      if (msys == GROUPS_WITH_KO)
+      if (msys == MatchSystem::GroupsWithKO)
       {
         // initial matches
         result.append(genRepName(REP__MATRIX_AND_STANDINGS, cat, 0));
@@ -121,7 +121,7 @@ namespace QTournament
           result.append(genRepName(REP__MATRIX_AND_STANDINGS, cat, round));
         }
       }
-      if (msys == ROUND_ROBIN)
+      if (msys == MatchSystem::RoundRobin)
       {
         // initial matches
         result.append(genRepName(REP__MATRIX_AND_STANDINGS, cat, 0));
@@ -151,7 +151,7 @@ namespace QTournament
     for (Category cat : cm.getAllCategories())
     {
       ObjState catState = cat.getState();
-      if ((catState == ObjState::CAT_CONFIG) || (catState == ObjState::CAT_FROZEN))
+      if ((catState == ObjState::CAT_Config) || (catState == ObjState::CAT_Frozen))
       {
         continue;  // no rankings for "unstarted" categories
       }
@@ -183,7 +183,7 @@ namespace QTournament
     for (Category cat : cm.getAllCategories())
     {
       int catId = cat.getId();
-      if (tabVis->getMatchCountForColumnValue(BV_CAT_REF, catId) > 0)
+      if (tabVis->getMatchCountForColumnValue(BV_CONFIGREF, catId) > 0)
       {
         result.append(genRepName(REP__BRACKET, cat, 0));
       }

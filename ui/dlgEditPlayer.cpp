@@ -188,7 +188,7 @@ void DlgEditPlayer::initFromPlayerData()
   
   // initialize the list of applicable categories
   CatMngr cm{db};
-  QHash<Category,CAT_ADD_STATE> catStatus = cm.getAllCategoryAddStates(*selectedPlayer);
+  QHash<Category,CatAddState> catStatus = cm.getAllCategoryAddStates(*selectedPlayer);
   updateCatList(catStatus);
 }
 
@@ -268,37 +268,37 @@ void DlgEditPlayer::onSexSelectionChanged(int preselectCatId)
   // itself that determines the can-add-state
   //
   CatMngr cm{db};
-  QHash<Category,CAT_ADD_STATE> catStatus = cm.getAllCategoryAddStates(getSex());
+  QHash<Category,CatAddState> catStatus = cm.getAllCategoryAddStates(getSex());
   
   updateCatList(catStatus, preselectCatId);
 }
 
 //----------------------------------------------------------------------------
 
-void DlgEditPlayer::updateCatList(QHash<Category,CAT_ADD_STATE> catStatus, int preselectCatId)
+void DlgEditPlayer::updateCatList(QHash<Category,CatAddState> catStatus, int preselectCatId)
 {
   ui.catList->clear();
-  QHash<Category,CAT_ADD_STATE>::const_iterator it;
+  QHash<Category,CatAddState>::const_iterator it;
   
   for (it = catStatus.begin(); it != catStatus.end(); ++it)
   {
-    CAT_ADD_STATE stat = (*it);
+    CatAddState stat = (*it);
     QListWidgetItem* item = new QListWidgetItem(it.key().getName());
     int catId = it.key().getId();
     item->setData(Qt::UserRole, catId);
     
-    if (stat == CAN_JOIN)
+    if (stat == CatAddState::CanJoin)
     {
       item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
       //item->setCheckState(Qt::Unchecked);
       item->setCheckState((catId == preselectCatId) ? Qt::Checked : Qt::Unchecked);
     }
-    if (stat == ERR::WRONG_SEX)
+    if (stat == ERR::CatAddState::WrongSex)
     {
       delete item;
       continue;
     }
-    if (stat == ALREADY_MEMBER)
+    if (stat == CatAddState::AlreadyMember)
     {
       item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
       item->setCheckState(Qt::Checked);
@@ -311,7 +311,7 @@ void DlgEditPlayer::updateCatList(QHash<Category,CAT_ADD_STATE> catStatus, int p
 	item->setForeground(Qt::gray);
       }
     }
-    if (stat == CAT_CLOSED)
+    if (stat == CatAddState::CatClosed)
     {
       item->setFlags(item->flags() & !Qt::ItemIsEditable & !Qt::ItemIsSelectable);
       item->setForeground(Qt::gray);

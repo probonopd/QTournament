@@ -196,7 +196,7 @@ void MatchItemDelegate::drawMatchStatus(QPainter* painter, const QRectF& r, int 
   // add some text, dependend on the match state
   QString txt = tr("Match %1 ");
   txt = txt.arg(matchNum);
-  if (maStat == ObjState::MA_RUNNING)
+  if (maStat == ObjState::MA_Running)
   {
     txt += tr(" currently running on court %1 since %2");
     auto co = ma->getCourt();
@@ -208,15 +208,15 @@ void MatchItemDelegate::drawMatchStatus(QPainter* painter, const QRectF& r, int 
     }
     txt = txt.arg(GuiHelpers::qdt2durationString(ma->getStartTime()));
   }
-  if ((maStat == ObjState::MA_BUSY) || (maStat == ObjState::MA_WAITING))
+  if ((maStat == ObjState::MA_Busy) || (maStat == ObjState::MA_Waiting))
   {
     txt += tr("is not yet ready to be called.");
   }
-  if (maStat == ObjState::MA_READY)
+  if (maStat == ObjState::MA_Ready)
   {
     txt += tr("is ready to be called.");
   }
-  if ((maStat == ObjState::MA_FUZZY) || (maStat == ObjState::MA_INCOMPLETE))
+  if ((maStat == ObjState::MA_Fuzzy) || (maStat == ObjState::MA_Incomplete))
   {
     txt += tr("is incomplete and depends on other match results.");
   }

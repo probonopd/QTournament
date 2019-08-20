@@ -167,20 +167,20 @@ namespace QTournament {
       result = "%2 / %1";
       if (unregisteredPlayersInBrackets)
       {
-        if ((p1Stat == ObjState::PL_WAIT_FOR_REGISTRATION) && (p2Stat == ObjState::PL_WAIT_FOR_REGISTRATION))
+        if ((p1Stat == ObjState::PL_WaitForRegistration) && (p2Stat == ObjState::PL_WaitForRegistration))
         {
           result = "(%2 / %1)";
-        } else if (p1Stat == ObjState::PL_WAIT_FOR_REGISTRATION)
+        } else if (p1Stat == ObjState::PL_WaitForRegistration)
         {
           result = "(%2) / %1";
-        } else if (p2Stat == ObjState::PL_WAIT_FOR_REGISTRATION)
+        } else if (p2Stat == ObjState::PL_WaitForRegistration)
         {
           result = "%2 / (%1)";
         }
       }
       result = result.arg(p2Name);
     } else {
-      result = (unregisteredPlayersInBrackets && (p1Stat == ObjState::PL_WAIT_FOR_REGISTRATION)) ? "(%1)" : "%1";
+      result = (unregisteredPlayersInBrackets && (p1Stat == ObjState::PL_WaitForRegistration)) ? "(%1)" : "%1";
     }
 
     result = result.arg(p1.getDisplayName(maxLen));
@@ -280,7 +280,7 @@ namespace QTournament {
 
     TabRow pairRow{db, TAB_PAIRS, pairId};
     CatMngr cm{db};
-    return cm.getCategoryById(pairRow.getInt(PAIRS_CAT_REF));
+    return cm.getCategoryById(pairRow.getInt(PAIRS_CONFIGREF));
   }
 
 //----------------------------------------------------------------------------
@@ -322,11 +322,11 @@ namespace QTournament {
   bool PlayerPair::areAllPlayersIdle() const
   {
     auto p = getPlayer1();
-    if (p.getState() != ObjState::PL_IDLE) return false;
+    if (p.getState() != ObjState::PL_Idle) return false;
     if (hasPlayer2())
     {
       p = getPlayer2();
-      if (p.getState() != ObjState::PL_IDLE) return false;
+      if (p.getState() != ObjState::PL_Idle) return false;
     }
     return true;
   }

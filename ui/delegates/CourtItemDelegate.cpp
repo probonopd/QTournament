@@ -93,12 +93,12 @@ void CourtItemDelegate::paintMatchInfoCell_Selected(QPainter *painter, const QSt
 
   // draw the third info line with umpire information
   txt = tr("Umpire: ");
-  REFEREE_MODE refMode = ma.get_RAW_RefereeMode();
-  if (refMode == REFEREE_MODE::NONE)
+  RefereeMode refMode = ma.get_RAW_RefereeMode();
+  if (refMode == RefereeMode::RefereeMode::None)
   {
     txt += tr("none");
   }
-  else if (refMode == REFEREE_MODE::HANDWRITTEN)
+  else if (refMode == RefereeMode::RefereeMode::HandWritten)
   {
     txt += tr("manually assigned");
   }
@@ -172,17 +172,17 @@ void CourtItemDelegate::paintCourtStatus(QPainter* painter, const QStyleOptionVi
   // set a default color for text items
   QColor txtCol = isSelected ? QColor(Qt::white) : QColor(Qt::darkGray);
 
-  if ((stat == ObjState::CO_AVAIL) && !manual)
+  if ((stat == ObjState::CO_Avail) && !manual)
   {
     label = tr("(free)");
     txtCol = isSelected ? QColor(Qt::green) : QColor(Qt::darkGreen);
   }
-  else if ((stat == ObjState::CO_AVAIL) && manual)
+  else if ((stat == ObjState::CO_Avail) && manual)
   {
     label = tr("(free, manual match assignment only)");
     txtCol = isSelected ? QColor(Qt::green) : QColor(Qt::darkGreen);
   }
-  else if (stat == ObjState::CO_DISABLED)
+  else if (stat == ObjState::CO_Disabled)
   {
     label = tr("(disabled)");
     txtCol = QColor(Qt::red);

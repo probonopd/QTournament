@@ -61,12 +61,12 @@ CatTabWidget::CatTabWidget()
   ui.gbGroups->hide();
   
   // initialize the entries in the drop box
-  ui.cbMatchSystem->addItem(tr("Swiss ladder"), static_cast<int>(SWISS_LADDER));
-  ui.cbMatchSystem->addItem(tr("Group matches with KO rounds"), static_cast<int>(GROUPS_WITH_KO));
-  //ui.cbMatchSystem->addItem(tr("Random matches (for fun tournaments)"), static_cast<int>(RANDOMIZE));
-  ui.cbMatchSystem->addItem(tr("Tree-like ranking system"), static_cast<int>(RANKING));
-  ui.cbMatchSystem->addItem(tr("Single Elimination"), static_cast<int>(SINGLE_ELIM));
-  ui.cbMatchSystem->addItem(tr("Round robin matches"), static_cast<int>(ROUND_ROBIN));
+  ui.cbMatchSystem->addItem(tr("Swiss ladder"), static_cast<int>(MatchSystem::SwissLadder));
+  ui.cbMatchSystem->addItem(tr("Group matches with KO rounds"), static_cast<int>(MatchSystem::GroupsWithKO));
+  //ui.cbMatchSystem->addItem(tr("Random matches (for fun tournaments)"), static_cast<int>(MatchSystem::Randomize));
+  ui.cbMatchSystem->addItem(tr("Tree-like ranking system"), static_cast<int>(MatchSystem::Ranking));
+  ui.cbMatchSystem->addItem(tr("Single Elimination"), static_cast<int>(MatchSystem::SingleElim));
+  ui.cbMatchSystem->addItem(tr("Round robin matches"), static_cast<int>(MatchSystem::RoundRobin));
 
   // setup the context menu(s)
   initContextMenu();
@@ -150,8 +150,8 @@ void CatTabWidget::updateControls()
   // if we made it to this point, we can be sure to have a valid category selected
   //
   SEX sex = selectedCat.getSex();
-  ERR::MATCH_TYPE mt = selectedCat.getMatchType();
-  bool isEditEnabled = (selectedCat.getState() == ObjState::CAT_CONFIG);
+  ERR::MatchType mt = selectedCat.getMatchType();
+  bool isEditEnabled = (selectedCat.getState() == ObjState::CAT_Config);
 
   ui.gbGeneric->setEnabled(isEditEnabled);
   
@@ -160,8 +160,8 @@ void CatTabWidget::updateControls()
   ui.cbMatchSystem->setCurrentIndex(ui.cbMatchSystem->findData(matchSysId, Qt::UserRole));
   
   // activate the applicable group with the special settings
-  ERR::MATCH_SYSTEM ms = selectedCat.getMatchSystem();
-  if (ms == GROUPS_WITH_KO)
+  ERR::MatchSystem ms = selectedCat.getMatchSystem();
+  if (ms == MatchSystem::GroupsWithKO)
   {
     ui.gbGroups->show();
     ui.gbRandom->hide();
@@ -172,13 +172,13 @@ void CatTabWidget::updateControls()
     KO_Config cfg = KO_Config(selectedCat.getParameter_string(CatParameter::GroupConfig));
     ui.grpCfgWidget->applyConfig(cfg);
   }
-  else if (ms == RANDOMIZE)
+  else if (ms == MatchSystem::Randomize)
   {
     ui.gbGroups->hide();
     ui.gbRandom->show();
     ui.gbRoundRobin->hide();
   }
-  else if (ms == ROUND_ROBIN)
+  else if (ms == MatchSystem::RoundRobin)
   {
     ui.gbGroups->hide();
     ui.gbRandom->hide();
@@ -197,14 +197,14 @@ void CatTabWidget::updateControls()
   }
   
   // update the match type
-  ui.rbSingles->setChecked(mt == SINGLES);
-  ui.rbDoubles->setChecked(mt == DOUBLES);
-  ui.rbMixed->setChecked(mt == MIXED);
+  ui.rbSingles->setChecked(mt == MatchType::Singles);
+  ui.rbDoubles->setChecked(mt == MatchType::Doubles);
+  ui.rbMixed->setChecked(mt == MatchType::Mixed);
   
   // disable radio buttons for male / female for mixed categories
-  ui.rbMen->setEnabled(mt != MIXED);
-  ui.rbLadies->setEnabled(mt != MIXED);
-  if (mt == MIXED)
+  ui.rbMen->setEnabled(mt != MatchType::Mixed);
+  ui.rbLadies->setEnabled(mt != MatchType::Mixed);
+  if (mt == MatchType::Mixed)
   {
     ui.rbMen->hide();
     ui.rbLadies->hide();
@@ -223,8 +223,8 @@ void CatTabWidget::updateControls()
     ui.rbLadies->setChecked(false);
     ui.rbgSex->setExclusive(true);
   } else {
-    ui.rbMen->setChecked((sex == M) && (mt != MIXED));
-    ui.rbLadies->setChecked((sex == F) && (mt != MIXED));
+    ui.rbMen->setChecked((sex == M) && (mt != MatchType::Mixed));
+    ui.rbLadies->setChecked((sex == F) && (mt != MatchType::Mixed));
   }
   ui.cbDontCare->setChecked(sex == DONT_CARE);
   
@@ -239,14 +239,14 @@ void CatTabWidget::updateControls()
   // In the latter case, we need the second player for the
   // match for 3rd place
   bool enableDrawCheckbox = true;
-  if ((ms == SINGLE_ELIM) || (ms == RANKING))
+  if ((ms == MatchSystem::SingleElim) || (ms == MatchSystem::Ranking))
   {
     enableDrawCheckbox = false;
   }
-  if (ms == GROUPS_WITH_KO)
+  if (ms == MatchSystem::GroupsWithKO)
   {
     KO_Config cfg = KO_Config(selectedCat.getParameter_string(CatParameter::GroupConfig));
-    if (cfg.getStartLevel() == FINAL) enableDrawCheckbox = false;
+    if (cfg.getStartLevel() == KO_Start::Final) enableDrawCheckbox = false;
   }
   ui.cbDraw->setEnabled(enableDrawCheckbox);
 
@@ -278,7 +278,7 @@ void CatTabWidget::updateControls()
   ui.sbWinScore->hide();
 
   // group box for configuring player pairs
-  if (mt == SINGLES)
+  if (mt == MatchType::Singles)
   {
     ui.gbPairButtons->setEnabled(false);
     ui.lwPaired->setEnabled(false);
@@ -297,13 +297,13 @@ void CatTabWidget::updateControls()
   // change the label of the "run" button and enable or
   // disable it
   ObjState catState = selectedCat.getState();
-  if (catState == ObjState::CAT_WAIT_FOR_INTERMEDIATE_SEEDING)
+  if (catState == ObjState::CAT_WaitForIntermediateSeeding)
   {
     ui.btnRunCategory->setText("Continue");
   } else {
     ui.btnRunCategory->setText("Run");
   }
-  bool enableRunButton = ((catState == ObjState::CAT_CONFIG) || (catState == ObjState::CAT_WAIT_FOR_INTERMEDIATE_SEEDING));
+  bool enableRunButton = ((catState == ObjState::CAT_Config) || (catState == ObjState::CAT_WaitForIntermediateSeeding));
   ui.btnRunCategory->setEnabled(enableRunButton);
 }
 
@@ -376,7 +376,7 @@ void CatTabWidget::updatePairs()
   }
   
   // update the "required players" label in the GroupConfigWidget
-  if (selCat.getMatchType() == SINGLES)
+  if (selCat.getMatchType() == MatchType::Singles)
   {
     ui.grpCfgWidget->setRequiredPlayersCount(ui.lwUnpaired->count());
   } else {
@@ -653,11 +653,11 @@ void CatTabWidget::onMatchTypeButtonClicked(int btn)
 {
   Category selCat = ui.catTableView->getSelectedCategory();
   
-  ERR::MATCH_TYPE oldType = selCat.getMatchType();
+  ERR::MatchType oldType = selCat.getMatchType();
   
-  ERR::MATCH_TYPE newType = SINGLES;
-  if (ui.rbDoubles->isChecked()) newType = DOUBLES;
-  if (ui.rbMixed->isChecked()) newType = MIXED;
+  ERR::MatchType newType = MatchType::Singles;
+  if (ui.rbDoubles->isChecked()) newType = MatchType::Doubles;
+  if (ui.rbMixed->isChecked()) newType = MatchType::Mixed;
   
   // do we actually have a change?
   if (oldType == newType)
@@ -714,7 +714,7 @@ void CatTabWidget::onDontCareClicked()
   
   // unless we are in a mixed category, "don't care" can only be deactivated
   // by selecting a specific sex
-  if (!newState && (selCat.getMatchType() != MIXED))
+  if (!newState && (selCat.getMatchType() != MatchType::Mixed))
   {
     QString msg = tr("Please deactivate 'Don't care' by selecting a specific sex!");
     QMessageBox::information(this, tr("Change category sex"), msg);
@@ -728,7 +728,7 @@ void CatTabWidget::onDontCareClicked()
   SEX newSex = DONT_CARE;
   
   // if we are in a mixed category, allow simple de-activation of "Don't care"
-  if (!newState && (selCat.getMatchType() == MIXED))
+  if (!newState && (selCat.getMatchType() == MatchType::Mixed))
   {
     // set a dummy default value that is not "Don't care"
     newSex = M;
@@ -770,7 +770,7 @@ void CatTabWidget::onMatchSystemChanged(int newIndex)
 {
   // get the new match system
   int msId = ui.cbMatchSystem->itemData(newIndex, Qt::UserRole).toInt();
-  ERR::MATCH_SYSTEM ms = static_cast<MATCH_SYSTEM>(msId);
+  ERR::MatchSystem ms = static_cast<MatchSystem>(msId);
   
   if (!(ui.catTableView->hasCategorySelected())) return;
   
@@ -862,8 +862,8 @@ void CatTabWidget::onPlayerStateChanged(int playerId, int seqNum, const ObjState
   // if a player changes from/to WAIT_FOR_REGISTRATION, we brute-force rebuild the list widgets
   // because we need to change the item label of the affected players for
   // adding or removing the paranthesis around the player names
-  if (((fromState == ObjState::PL_IDLE) && (toState == ObjState::PL_WAIT_FOR_REGISTRATION)) ||
-      ((fromState == ObjState::PL_WAIT_FOR_REGISTRATION) && (toState == ObjState::PL_IDLE)))
+  if (((fromState == ObjState::PL_Idle) && (toState == ObjState::PL_WaitForRegistration)) ||
+      ((fromState == ObjState::PL_WaitForRegistration) && (toState == ObjState::PL_Idle)))
   {
     updatePairs();
   }
@@ -920,7 +920,7 @@ void CatTabWidget::onUnpairedContextMenuRequested(const QPoint& pos)
   // determine if there is an item under the mouse
   auto selItem = ui.lwUnpaired->itemAt(pos);
   upPlayer selPlayer;
-  ObjState plStat = ObjState::CO_DISABLED;   // arbitrary, non player-related, dummy default
+  ObjState plStat = ObjState::CO_Disabled;   // arbitrary, non player-related, dummy default
   if (selItem != nullptr)
   {
     // clear old selection and select item under the mouse
@@ -948,8 +948,8 @@ void CatTabWidget::onUnpairedContextMenuRequested(const QPoint& pos)
   // enable / disable selection-specific actions
   PlayerMngr pm{db};
   actRemovePlayer->setEnabled(isPlayerClicked);
-  actRegister->setEnabled(plStat == ObjState::PL_WAIT_FOR_REGISTRATION);
-  actUnregister->setEnabled(plStat == ObjState::PL_IDLE);
+  actRegister->setEnabled(plStat == ObjState::PL_WaitForRegistration);
+  actUnregister->setEnabled(plStat == ObjState::PL_Idle);
   listOfCats_CopyPlayerSubmenu->setEnabled(isPlayerClicked);
   listOfCats_MovePlayerSubmenu->setEnabled(isPlayerClicked);
   actCreateNewPlayerInCat->setEnabled(hasCatSelected && canAddPlayers);
@@ -1020,7 +1020,7 @@ void CatTabWidget::onPairedContextMenuRequested(const QPoint& pos)
   for (const Category& cat : cm.getAllCategories())
   {
     // skip singles
-    if (cat.getMatchType() == SINGLES) continue;
+    if (cat.getMatchType() == MatchType::Singles) continue;
 
     // skip the selected category because it doesn't make
     // sense to copy/move if source and target are identical

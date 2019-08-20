@@ -5,8 +5,8 @@
  * Created on March 2, 2014, 3:46 PM
  */
 
-#ifndef TSTRANKINGMNGR_H
-#define	TSTRANKINGMNGR_H
+#ifndef TSTMatchSystem::RankingMNGR_H
+#define	TSTMatchSystem::RankingMNGR_H
 
 #include <cppunit/TestCase.h>
 #include <cppunit/TestSuite.h>
@@ -41,5 +41,5 @@ private:
   void checkSortSequence__RoundRobin(int round);
 };
 
-#endif	/* TSTRANKINGMNGR_H */
+#endif	/* TSTMatchSystem::RankingMNGR_H */
 

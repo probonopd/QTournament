@@ -93,7 +93,7 @@ void MatchLogItemDelegate::paintMatchInfoCell(QPainter* painter, const QStyleOpt
   QColor scoreColor(isSelected ? Qt::white : Qt::black);
   QColor leftColor(isSelected ? Qt::white : Qt::black);   // default: black / white
   QColor rightColor(isSelected ? Qt::white : Qt::black);
-  if (ma.getState() == QTournament::ObjState::MA_FINISHED)
+  if (ma.getState() == QTournament::ObjState::MA_Finished)
   {
     auto w = ma.getWinner();
     auto l = ma.getLoser();

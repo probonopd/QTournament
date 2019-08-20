@@ -238,7 +238,7 @@ bool DlgMatchResult::hasValidResult() const
 
 void DlgMatchResult::fillControlsFromExistingMatchResult()
 {
-  if (ma.getState() != ObjState::MA_FINISHED) return;
+  if (ma.getState() != ObjState::MA_Finished) return;
   auto result = ma.getScore();
   if (result == nullptr) return;
 

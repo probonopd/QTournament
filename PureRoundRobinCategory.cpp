@@ -49,7 +49,7 @@ namespace QTournament
   int PureRoundRobinCategory::getRoundCountPerIteration() const
   {
     ObjState stat = getState();
-    if ((stat == ObjState::CAT_CONFIG) || (stat == ObjState::CAT_FROZEN))
+    if ((stat == ObjState::CAT_Config) || (stat == ObjState::CAT_Frozen))
     {
       return -1;   // category not yet fully configured; can't calc rounds
     }
@@ -71,9 +71,9 @@ namespace QTournament
 
   std::optional<PureRoundRobinCategory> PureRoundRobinCategory::getFromGenericCat(const Category& cat)
   {
-    ERR::MATCH_SYSTEM msys = cat.getMatchSystem();
+    ERR::MatchSystem msys = cat.getMatchSystem();
 
-    return (msys == ROUND_ROBIN) ? PureRoundRobinCategory{cat.db, cat.row} : std::optional<PureRoundRobinCategory>{};
+    return (msys == MatchSystem::RoundRobin) ? PureRoundRobinCategory{cat.db, cat.row} : std::optional<PureRoundRobinCategory>{};
   }
 
   //----------------------------------------------------------------------------
@@ -81,10 +81,10 @@ namespace QTournament
   ModMatchResult PureRoundRobinCategory::canModifyMatchResult(const Match& ma) const
   {
     // the match has to be in FINISHED state
-    if (ma.getState() != ObjState::MA_FINISHED) return ModMatchResult::NotPossible;
+    if (ma.getState() != ObjState::MA_Finished) return ModMatchResult::NotPossible;
 
     // if this match does not belong to us, we're not responsible
-    if (ma.getCategory().getMatchSystem() != ROUND_ROBIN) return ModMatchResult::NotPossible;
+    if (ma.getCategory().getMatchSystem() != MatchSystem::RoundRobin) return ModMatchResult::NotPossible;
 
     // in round robins, we can modify the results of all matches
     // at any time
@@ -122,13 +122,13 @@ namespace QTournament
 
   ERR PureRoundRobinCategory::canFreezeConfig()
   {
-    if (getState() != ObjState::CAT_CONFIG)
+    if (getState() != ObjState::CAT_Config)
     {
       return ERR::CONFIG_ALREADY_FROZEN;
     }
     
     // make sure there no unpaired players in singles or doubles
-    if ((getMatchType() != SINGLES) && (hasUnpairedPlayers()))
+    if ((getMatchType() != MatchType::Singles) && (hasUnpairedPlayers()))
     {
       return ERR::UNPAIRED_PLAYERS;
     }
@@ -161,7 +161,7 @@ namespace QTournament
 
   ERR PureRoundRobinCategory::prepareFirstRound()
   {
-    if (getState() != ObjState::CAT_IDLE) return ERR::WRONG_STATE;
+    if (getState() != ObjState::CAT_Idle) return ERR::WRONG_STATE;
 
     MatchMngr mm{db};
 
@@ -182,7 +182,7 @@ namespace QTournament
     for (int i=0; i < iterationCount; ++i)
     {
       int firstRoundNum = (i * roundsPerIteration) + 1;
-      e = generateGroupMatches(allPairs, GROUP_NUM__ITERATION, firstRoundNum);
+      e = generateGroupMatches(allPairs, GroupNum_Iteration, firstRoundNum);
       if (e != ERR::OK) return e;
     }
     return ERR::OK;

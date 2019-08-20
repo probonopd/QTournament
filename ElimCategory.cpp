@@ -43,9 +43,9 @@ namespace QTournament
   EliminationCategory::EliminationCategory(const TournamentDB& _db, int rowId, int eliminationMode)
   : Category(_db, rowId)
   {
-    if ((eliminationMode != BracketGenerator::BRACKET_SINGLE_ELIM) &&
+    if ((eliminationMode != BracketGenerator::BRACKET_MatchSystem::SingleElim) &&
         (eliminationMode != BracketGenerator::BRACKET_DOUBLE_ELIM) &&
-        (eliminationMode != BracketGenerator::BRACKET_RANKING1))
+        (eliminationMode != BracketGenerator::BRACKET_MatchSystem::Ranking1))
     {
       throw std::invalid_argument("Invalid elimination mode in ctor of EliminationCategory!");
     }
@@ -58,9 +58,9 @@ namespace QTournament
   EliminationCategory::EliminationCategory(const TournamentDB& _db, const TabRow& _row, int eliminationMode)
   : Category(_db, _row)
   {
-    if ((eliminationMode != BracketGenerator::BRACKET_SINGLE_ELIM) &&
+    if ((eliminationMode != BracketGenerator::BRACKET_MatchSystem::SingleElim) &&
         (eliminationMode != BracketGenerator::BRACKET_DOUBLE_ELIM) &&
-        (eliminationMode != BracketGenerator::BRACKET_RANKING1))
+        (eliminationMode != BracketGenerator::BRACKET_MatchSystem::Ranking1))
     {
       throw std::invalid_argument("Invalid elimination mode in ctor of EliminationCategory!");
     }
@@ -72,20 +72,20 @@ namespace QTournament
 
   ERR EliminationCategory::canFreezeConfig()
   {
-    if (getState() != ObjState::CAT_CONFIG)
+    if (getState() != ObjState::CAT_Config)
     {
       return ERR::CONFIG_ALREADY_FROZEN;
     }
     
     // make sure there no unpaired players in singles or doubles
-    if ((getMatchType() != SINGLES) && (hasUnpairedPlayers()))
+    if ((getMatchType() != MatchType::Singles) && (hasUnpairedPlayers()))
     {
       return ERR::UNPAIRED_PLAYERS;
     }
 
     // we should have at least two players / pairs
     int numPairs = getAllPlayersInCategory().size();
-    if (getMatchType() != SINGLES)
+    if (getMatchType() != MatchType::Singles)
     {
       numPairs = numPairs / 2;    // numPairs before division must be even, because we had no unpaired players (see check above)
     }
@@ -96,7 +96,7 @@ namespace QTournament
 
     // for the bracket mode "ranking1" we may not have more
     // than 32 players
-    if ((elimMode == BracketGenerator::BRACKET_RANKING1) && (numPairs > 32))
+    if ((elimMode == BracketGenerator::BRACKET_MatchSystem::Ranking1) && (numPairs > 32))
     {
       return ERR::INVALID_PLAYER_COUNT;
     }
@@ -122,7 +122,7 @@ namespace QTournament
 
   ERR EliminationCategory::prepareFirstRound()
   {
-    if (getState() != ObjState::CAT_IDLE) return ERR::WRONG_STATE;
+    if (getState() != ObjState::CAT_Idle) return ERR::WRONG_STATE;
 
     MatchMngr mm{db};
 
@@ -146,7 +146,7 @@ namespace QTournament
   int EliminationCategory::calcTotalRoundsCount() const
   {
     ObjState stat = getState();
-    if ((stat == ObjState::CAT_CONFIG) || (stat == ObjState::CAT_FROZEN))
+    if ((stat == ObjState::CAT_Config) || (stat == ObjState::CAT_Frozen))
     {
       return -1;   // category not yet fully configured; can't calc rounds
     }
@@ -356,7 +356,7 @@ namespace QTournament
   ModMatchResult EliminationCategory::canModifyMatchResult(const Match& ma) const
   {
     // the match has to be in FINISHED state
-    if (ma.getState() != ObjState::MA_FINISHED) return ModMatchResult::NotPossible;
+    if (ma.getState() != ObjState::MA_Finished) return ModMatchResult::NotPossible;
 
     // if this match does not belong to us, we're not responsible
     if (ma.getCategory().getId() != getId()) return ModMatchResult::NotPossible;
@@ -370,7 +370,7 @@ namespace QTournament
     if (winnerMatch)
     {
       ObjState stat = winnerMatch->getState();
-      if ((stat == ObjState::MA_RUNNING) || (stat == ObjState::MA_FINISHED))
+      if ((stat == ObjState::MA_Running) || (stat == ObjState::MA_Finished))
       {
         canModWinnerLoser = false;
       }
@@ -378,7 +378,7 @@ namespace QTournament
     if (loserMatch)
     {
       ObjState stat = loserMatch->getState();
-      if ((stat == ObjState::MA_RUNNING) || (stat == ObjState::MA_FINISHED))
+      if ((stat == ObjState::MA_Running) || (stat == ObjState::MA_Finished))
       {
         canModWinnerLoser = false;
       }
@@ -498,7 +498,7 @@ namespace QTournament
     // Case 1: the match has been finished
     //
     ObjState stat = ma.getState();
-    if (stat == ObjState::MA_FINISHED)
+    if (stat == ObjState::MA_Finished)
     {
       PlayerPair pp = searchLoserNotWinner ? *(ma.getLoser()) : *(ma.getWinner());
       int round = ma.getMatchGroup().getRound() + 1;

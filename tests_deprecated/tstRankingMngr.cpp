@@ -30,7 +30,7 @@ void tstRankingMngr::testCreateUnsortedRanking()
   
   TournamentDB* db = getScenario06(true);
   Tournament t(getSqliteFileName());
-  DbTab rankTab = db->getTab(TAB_RANKING);
+  DbTab rankTab = db->getTab(TAB_MatchSystem::Ranking);
   RankingMngr* rm = Tournament::getRankingMngr();
   CatMngr* cm = Tournament::getCatMngr();
   MatchMngr* mm = Tournament::getMatchMngr();
@@ -66,7 +66,7 @@ void tstRankingMngr::testCreateUnsortedRanking()
     unique_ptr<Match> ma = mm->getMatchForPlayerPairAndRound(pp, 1);
 
     // check correct category assignment
-    CPPUNIT_ASSERT(r[RA_CAT_REF].toInt() == pp.getCategory(db)->getId());
+    CPPUNIT_ASSERT(r[RA_CONFIGREF].toInt() == pp.getCategory(db)->getId());
 
     // make sure that no rank has been assigned yet
     CPPUNIT_ASSERT(r[RA_RANK].isNull());

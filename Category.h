@@ -63,17 +63,17 @@ namespace QTournament
   public:
     // getters
     QString getName() const;
-    MATCH_TYPE getMatchType() const;
-    MATCH_SYSTEM getMatchSystem() const;
+    MatchType getMatchType() const;
+    MatchSystem getMatchSystem() const;
     SEX getSex() const;
-    CAT_ADD_STATE getAddState(const SEX s) const;
-    CAT_ADD_STATE getAddState(const Player& p) const;
+    CatAddState getAddState(const SEX s) const;
+    CatAddState getAddState(const Player& p) const;
     QVariant getParameter(CatParameter) const;
     int getParameter_int(CatParameter) const;
     bool getParameter_bool(CatParameter) const;
     QString getParameter_string(CatParameter) const;
-    PlayerPairList getPlayerPairs(int grp = GRP_NUM__NOT_ASSIGNED) const;
-    int getDatabasePlayerPairCount(int grp = GRP_NUM__NOT_ASSIGNED) const;
+    PlayerPairList getPlayerPairs(int grp = GroupNum_NotAssigned) const;
+    int getDatabasePlayerPairCount(int grp = GroupNum_NotAssigned) const;
     PlayerList getAllPlayersInCategory() const;
     Player getPartner(const Player& p) const;
     std::unique_ptr<Category> convertToSpecializedObject() const;
@@ -84,8 +84,8 @@ namespace QTournament
     QString getBracketVisDataString() const;
 
     // setters
-    ERR setMatchType(MATCH_TYPE t);
-    ERR setMatchSystem(MATCH_SYSTEM s);
+    ERR setMatchType(MatchType t);
+    ERR setMatchSystem(MatchSystem s);
     ERR setSex(SEX s);
     bool setParameter(CatParameter p, const QVariant& v);
 

@@ -16,8 +16,8 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef RANKINGMNGR_H
-#define	RANKINGMNGR_H
+#ifndef MatchSystem::RankingMNGR_H
+#define	MatchSystem::RankingMNGR_H
 
 #include <memory>
 #include <vector>
@@ -70,5 +70,5 @@ namespace QTournament
   };
 }
 
-#endif	/* RANKINGMNGR_H */
+#endif	/* MatchSystem::RankingMNGR_H */
 
