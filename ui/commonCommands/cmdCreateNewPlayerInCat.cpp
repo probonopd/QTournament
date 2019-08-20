@@ -49,7 +49,7 @@ ERR cmdCreateNewPlayerInCat::exec()
   DlgPickPlayerSex dlgSex{parentWidget, QString()};
   if (dlgSex.exec() != QDialog::Accepted)
   {
-    return OK;
+    return ERR::OK;
   }
   SEX selectedSex = dlgSex.getSelectedSex();
 
@@ -61,7 +61,7 @@ ERR cmdCreateNewPlayerInCat::exec()
     msg = msg.arg((selectedSex == M) ? tr("male player") : tr("female player"));
     QMessageBox::warning(parentWidget, tr("Create new player in category"), msg);
 
-    return INVALID_SEX;
+    return ERR::INVALID_SEX;
   }
 
   // prepare a dialog for creating a new player

@@ -42,12 +42,12 @@ ERR cmdAssignRefereeToMatch::exec()
   assert(refMode != REFEREE_MODE::USE_DEFAULT);
   if ((refMode == REFEREE_MODE::NONE) || (refMode == REFEREE_MODE::HANDWRITTEN))
   {
-    return OK;   // nothing to do for us
+    return ERR::OK;   // nothing to do for us
   }
 
   // make sure we can assign a referee
   ERR err = ma.canAssignReferee(refAction);
-  if (err != OK)
+  if (err != ERR::OK)
   {
     QString msg;
 
@@ -78,7 +78,7 @@ ERR cmdAssignRefereeToMatch::exec()
   int result = dlg.exec();
   if (result != QDialog::Accepted)
   {
-    return OK;
+    return ERR::OK;
   }
   upPlayer selPlayer = dlg.getFinalPlayerSelection();
 
@@ -88,20 +88,20 @@ ERR cmdAssignRefereeToMatch::exec()
   if ((selPlayer == nullptr) && (refAction == REFEREE_ACTION::MATCH_CALL))
   {
     err = mm.setRefereeMode(ma, REFEREE_MODE::NONE);
-    if (err != OK)
+    if (err != ERR::OK)
     {
       QString msg = tr("Cannot continue without umpire!");
       QMessageBox::warning(parentWidget, tr("Umpire assignment failed"), msg);
       return err;
     }
     err = mm.removeReferee(ma);
-    if (err != OK)
+    if (err != ERR::OK)
     {
       QString msg = tr("Cannot continue without umpire!");
       QMessageBox::warning(parentWidget, tr("Umpire assignment failed"), msg);
       return err;
     }
-    return OK;
+    return ERR::OK;
   }
 
   // in all other cases, selPlayer shouldn't be null
@@ -109,7 +109,7 @@ ERR cmdAssignRefereeToMatch::exec()
 
   // actually do the assignment
   err = mm.assignReferee(ma, *selPlayer, refAction);
-  if (err != OK)
+  if (err != ERR::OK)
   {
     QString msg = tr("Could not assign umpire to match.\n");
     msg += tr("Maybe you tried to assign one of the players as umpire?");
@@ -140,6 +140,6 @@ ERR cmdAssignRefereeToMatch::exec()
     }
   }
 
-  return OK;
+  return ERR::OK;
 }
 

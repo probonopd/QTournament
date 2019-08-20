@@ -272,7 +272,7 @@ void CourtTableView::onActionAddCourtTriggered()
   ERR err;
   cm.createNewCourt(nextCourtNum, QString::number(nextCourtNum), &err);
 
-  if (err != OK)
+  if (err != ERR::OK)
   {
     QMessageBox::warning(this, tr("Add court"),
                          tr("Something went wrong, error code = ") + QString::number(static_cast<int>(err)));
@@ -337,7 +337,7 @@ void CourtTableView::onActionSwapRefereeTriggered()
   if (ma == nullptr) return;
 
   // see if we can assign a new referee
-  if (ma->canAssignReferee(REFEREE_ACTION::SWAP) != OK) return;
+  if (ma->canAssignReferee(REFEREE_ACTION::SWAP) != ERR::OK) return;
 
   // trigger the assign-umpire-procedure
   cmdAssignRefereeToMatch cmd{this, *ma, REFEREE_ACTION::SWAP};
@@ -406,7 +406,7 @@ void CourtTableView::onActionDeleteCourtTriggered()
     return;
   }
 
-  if (e == DATABASE_ERROR)
+  if (e == ERR::DATABASE_ERROR)
   {
     QString msg = tr("A database error occured when trying to delete the court.\n");
     msg += tr("The court can't be deleted.\n\n");
@@ -416,7 +416,7 @@ void CourtTableView::onActionDeleteCourtTriggered()
     return;
   }
 
-  if (e != OK)
+  if (e != ERR::OK)
   {
     QString msg = tr("Some error occured when trying to delete the court.\n\n");
     msg += tr("The court can't be deleted.\n\n");

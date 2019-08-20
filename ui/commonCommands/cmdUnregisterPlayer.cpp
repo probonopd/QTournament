@@ -38,7 +38,7 @@ ERR cmdUnregisterPlayer::exec()
 
   err = pm.setWaitForRegistration(pl, true);
 
-  if (err == OK) return OK; // no error
+  if (err == ERR::OK) return ERR::OK; // no error
 
   QString msg = tr("The player is already assigned to matches\n");
   msg += tr("and/or currently running categories.\n\n");

@@ -81,7 +81,7 @@ QVariant MatchTableModel::data(const QModelIndex& index, int role) const
     auto mg = ma->getMatchGroup();
     
     // first column: match num
-    if (index.column() == MATCH_NUM_COL_ID)
+    if (index.column() == ERR::MATCH_NUM_COL_ID)
     {
       return ma->getMatchNumber();
     }
@@ -223,7 +223,7 @@ QVariant MatchTableModel::headerData(int section, Qt::Orientation orientation, i
   
   if (orientation == Qt::Horizontal)
   {
-    if (section == MATCH_NUM_COL_ID) {
+    if (section == ERR::MATCH_NUM_COL_ID) {
       return tr("Number");
     }
     if (section == 1) {

@@ -187,7 +187,7 @@ namespace QTournament
     auto ma = mm.getMatch(r->id());
     if (!ma) return {};  // shouldn't happen
 
-    return ma->getCourt();
+    return ma->getCourt(nullptr);
   }
 
   //----------------------------------------------------------------------------

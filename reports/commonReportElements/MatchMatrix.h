@@ -58,7 +58,7 @@ public:
     TITLE,
     HEADER,
     SCORE,
-    MATCH_NUMBER,
+    ERR::MATCH_NUMBER,
     EMPTY
   };
 

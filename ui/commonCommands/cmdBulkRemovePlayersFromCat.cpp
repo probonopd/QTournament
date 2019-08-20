@@ -37,7 +37,7 @@ ERR cmdBulkRemovePlayersFromCategory::exec()
   DlgSelectPlayer dlg{db, parentWidget, DlgSelectPlayer::DLG_CONTEXT::REMOVE_FROM_CATEGORY, &cat};
   if (dlg.exec() != QDialog::Accepted)
   {
-    return OK;
+    return ERR::OK;
   }
 
   // remove all selected players from the category
@@ -47,7 +47,7 @@ ERR cmdBulkRemovePlayersFromCategory::exec()
   {
     ERR err = cm.removePlayerFromCategory(pl, cat);
 
-    if (err != OK)
+    if (err != ERR::OK)
     {
       QString msg = tr("Could not remove player\n\n");
       msg += "     " + pl.getDisplayName_FirstNameFirst() + "\n\n";
@@ -56,6 +56,6 @@ ERR cmdBulkRemovePlayersFromCategory::exec()
     }
   }
 
-  return OK;
+  return ERR::OK;
 }
 

@@ -293,7 +293,7 @@ void DlgEditPlayer::updateCatList(QHash<Category,CAT_ADD_STATE> catStatus, int p
       //item->setCheckState(Qt::Unchecked);
       item->setCheckState((catId == preselectCatId) ? Qt::Checked : Qt::Unchecked);
     }
-    if (stat == WRONG_SEX)
+    if (stat == ERR::WRONG_SEX)
     {
       delete item;
       continue;

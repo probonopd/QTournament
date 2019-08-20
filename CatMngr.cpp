@@ -55,17 +55,17 @@ namespace QTournament
     
     if (catName.isEmpty())
     {
-      return INVALID_NAME;
+      return ERR::INVALID_NAME;
     }
     
     if (catName.length() > MAX_NAME_LEN)
     {
-      return INVALID_NAME;
+      return ERR::INVALID_NAME;
     }
     
     if (hasCategory(catName))
     {
-      return NAME_EXISTS;
+      return ERR::NAME_EXISTS;
     }
     
     // create a new table row and set some arbitrary default data
@@ -86,7 +86,7 @@ namespace QTournament
     fixSeqNumberAfterInsert();
     cse->endCreateCategory(tab.length() - 1); // the new sequence number is always the highest
     
-    return OK;
+    return ERR::OK;
   }
 
   //----------------------------------------------------------------------------
@@ -95,13 +95,13 @@ namespace QTournament
   {
     if (catNamePostfix.isEmpty())
     {
-      return INVALID_NAME;
+      return ERR::INVALID_NAME;
     }
 
     // set an arbitrarily chosen maximum of 10 characters for the postfix
     if (catNamePostfix.length() > 10)
     {
-      return INVALID_NAME;
+      return ERR::INVALID_NAME;
     }
 
     // try create a new category until we've found a valid name
@@ -124,10 +124,10 @@ namespace QTournament
 
       // try to actually create the category
       err = createNewCategory(dstCatName);
-    } while ((err == NAME_EXISTS) && (cnt < 100));   // a maximum limit of 100 retries
+    } while ((err == ERR::NAME_EXISTS) && (cnt < 100));   // a maximum limit of 100 retries
 
     // did we succeed?
-    if (err != OK)
+    if (err != ERR::OK)
     {
       return err;   // give up
     }
@@ -135,11 +135,11 @@ namespace QTournament
 
     // copy the settings fromt the source category to clone
     err = clone.setMatchSystem(src.getMatchSystem());
-    assert(err == OK);
+    assert(err == ERR::OK);
     err = clone.setMatchType(src.getMatchType());
-    assert(err == OK);
+    assert(err == ERR::OK);
     err = clone.setSex(src.getSex());
-    assert(err == OK);
+    assert(err == ERR::OK);
     bool isOk = setCatParam_AllowDraw(clone, src.getParameter_bool(ALLOW_DRAW));
     assert(isOk);
     isOk = setCatParam_Score(clone, src.getParameter_int(WIN_SCORE), false);
@@ -157,7 +157,7 @@ namespace QTournament
     for (const Player& pl : src.getAllPlayersInCategory())
     {
       err = addPlayerToCategory(pl, clone);
-      if (err != OK)
+      if (err != ERR::OK)
       {
         return err;   // shouldn't happen
       }
@@ -171,14 +171,14 @@ namespace QTournament
         if (!(pp.hasPlayer2())) continue;
 
         err = pairPlayers(clone, pp.getPlayer1(), pp.getPlayer2());
-        if (err != OK)
+        if (err != ERR::OK)
         {
           return err;   // shouldn't happen
         }
       }
     }
 
-    return OK;
+    return ERR::OK;
   }
 
 //----------------------------------------------------------------------------
@@ -235,7 +235,7 @@ namespace QTournament
   {
     if (cat.getState() != STAT_CAT_CONFIG)
     {
-      return CATEGORY_NOT_CONFIGURALE_ANYMORE;
+      return ERR::CATEGORY_NOT_CONFIGURALE_ANYMORE;
     }
 
     // TODO: implement checks, updates to other tables etc
@@ -249,7 +249,7 @@ namespace QTournament
       setCatParam_AllowDraw(cat, false);
     }
 
-    return OK;
+    return ERR::OK;
   }
 
 //----------------------------------------------------------------------------
@@ -259,7 +259,7 @@ namespace QTournament
     // we can only change the match type while being in config mode
     if (cat.getState() != STAT_CAT_CONFIG)
     {
-      return CATEGORY_NOT_CONFIGURALE_ANYMORE;
+      return ERR::CATEGORY_NOT_CONFIGURALE_ANYMORE;
     }
     
     // temporarily store all existing player pairs
@@ -271,14 +271,14 @@ namespace QTournament
     {
       if (!(pp.hasPlayer2())) continue;
       
-      if (cat.canSplitPlayers(pp.getPlayer1(), pp.getPlayer2()) != OK)
+      if (cat.canSplitPlayers(pp.getPlayer1(), pp.getPlayer2()) != ERR::OK)
       {
         canSplit = false;
       }
     }
     if (!canSplit)
     {
-      return INVALID_RECONFIG;  // if only one pair can't be split, refuse to change the match type
+      return ERR::INVALID_RECONFIG;  // if only one pair can't be split, refuse to change the match type
     }
     
     // actually split all pairs
@@ -311,7 +311,7 @@ namespace QTournament
     // IMPORTANT:
     // THIS OPERATION CHANGED THE PAIR-IDs OF ALL PAIRS!
     
-    return OK;
+    return ERR::OK;
   }
 
 //----------------------------------------------------------------------------
@@ -321,7 +321,7 @@ namespace QTournament
     // we can only change the sex while being in config mode
     if (cat.getState() != STAT_CAT_CONFIG)
     {
-      return CATEGORY_NOT_CONFIGURALE_ANYMORE;
+      return ERR::CATEGORY_NOT_CONFIGURALE_ANYMORE;
     }
     
     // unless we switch to "don't care", we have to make sure that
@@ -337,7 +337,7 @@ namespace QTournament
         // for all other players, check if we can remove them
         if (!(cat.canRemovePlayer(p)))
         {
-          return INVALID_RECONFIG;
+          return ERR::INVALID_RECONFIG;
         }
       }
       
@@ -367,8 +367,8 @@ namespace QTournament
         if (pp.getPlayer1().getSex() != pp.getPlayer2().getSex()) continue;
 
         // check if we can split "false" mixed pairs (= same sex pairs)
-        if (cat.canSplitPlayers(pp.getPlayer1(), pp.getPlayer2()) != OK) {
-          return INVALID_RECONFIG;
+        if (cat.canSplitPlayers(pp.getPlayer1(), pp.getPlayer2()) != ERR::OK) {
+          return ERR::INVALID_RECONFIG;
         }
       }
       
@@ -390,7 +390,7 @@ namespace QTournament
     int sexInt = static_cast<int>(newSex);
     cat.row.update(CAT_SEX, sexInt);
     
-    return OK;
+    return ERR::OK;
   }
 
 //----------------------------------------------------------------------------
@@ -399,17 +399,17 @@ namespace QTournament
   {
     if (!(cat.canAddPlayers()))
     {
-      return CATEGORY_CLOSED_FOR_MORE_PLAYERS;
+      return ERR::CATEGORY_CLOSED_FOR_MORE_PLAYERS;
     }
     
     if (cat.hasPlayer(p))
     {
-      return PLAYER_ALREADY_IN_CATEGORY;
+      return ERR::PLAYER_ALREADY_IN_CATEGORY;
     }
     
     if (cat.getAddState(p) != CAN_JOIN)
     {
-      return PLAYER_NOT_SUITABLE;
+      return ERR::PLAYER_NOT_SUITABLE;
     }
     
     // TODO: check that player is not permanently disabled
@@ -423,7 +423,7 @@ namespace QTournament
     
     CentralSignalEmitter::getInstance()->playerAddedToCategory(p, cat);
     
-    return OK;
+    return ERR::OK;
   }
 
 //----------------------------------------------------------------------------
@@ -432,19 +432,19 @@ namespace QTournament
   {
     if (!(cat.canRemovePlayer(p)))
     {
-      return PLAYER_NOT_REMOVABLE_FROM_CATEGORY;
+      return ERR::PLAYER_NOT_REMOVABLE_FROM_CATEGORY;
     }
     
     if (!(cat.hasPlayer(p)))
     {
-      return PLAYER_NOT_IN_CATEGORY;
+      return ERR::PLAYER_NOT_IN_CATEGORY;
     }
     
     if (cat.isPaired(p))
     {
       Player partner = cat.getPartner(p);
       ERR e = splitPlayers(cat, p, partner);
-      if (e != OK)
+      if (e != ERR::OK)
       {
         return e;
       }
@@ -464,7 +464,7 @@ namespace QTournament
     
     CentralSignalEmitter::getInstance()->playerRemovedFromCategory(p, cat);
     
-    return OK;
+    return ERR::OK;
   }
 
   //----------------------------------------------------------------------------
@@ -472,14 +472,14 @@ namespace QTournament
   ERR CatMngr::deleteCategory(const Category& cat) const
   {
     ERR e = canDeleteCategory(cat);
-    if (e != OK) return e;
+    if (e != ERR::OK) return e;
 
     // remove all players from the category
     PlayerList allPlayers = cat.getAllPlayersInCategory();
     for (const Player& pl : allPlayers)
     {
       e = removePlayerFromCategory(pl, cat);
-      if (e != OK)
+      if (e != ERR::OK)
       {
         return e;   // after all the checks before, this shouldn't happen
       }
@@ -501,7 +501,7 @@ namespace QTournament
     fixSeqNumberAfterDelete(tab, oldSeqNum);
     cse->endDeleteCategory();
 
-    return OK;
+    return ERR::OK;
   }
 
   //----------------------------------------------------------------------------
@@ -509,7 +509,7 @@ namespace QTournament
   ERR CatMngr::deleteRunningCategory(const Category& cat) const
   {
     // only one initial check: can we do it "the soft way"?
-    if (canDeleteCategory(cat) == OK)
+    if (canDeleteCategory(cat) == ERR::OK)
     {
       return deleteCategory(cat);
     }
@@ -530,7 +530,7 @@ namespace QTournament
       if (ma.getCategory() != cat) continue;
 
       ERR err = mm.undoMatchCall(ma);
-      if (err != OK) return err;   // shouldn't happen
+      if (err != ERR::OK) return err;   // shouldn't happen
     }
 
     // step 2: un-stage all staged match groups of this category
@@ -540,7 +540,7 @@ namespace QTournament
       if (mg.getCategory() != cat) continue;
 
       ERR err = mm.unstageMatchGroup(mg);
-      if (err != OK) return err;   // shouldn't happen
+      if (err != ERR::OK) return err;   // shouldn't happen
     }
 
     // step 3: tell everyone that something baaaad is about to happen
@@ -608,11 +608,11 @@ namespace QTournament
       // tell all other widgets that a category has been deleted
       cse->categoryRemovedFromTournament(catId, deletedSeqNum);
 
-      return OK;
+      return ERR::OK;
     }
     catch (...)
     {
-      return DATABASE_ERROR;
+      return ERR::DATABASE_ERROR;
     }
   }
 
@@ -812,7 +812,7 @@ namespace QTournament
     // in the category. If this check is positive, we can start
     // right away with creating the pair in the database
     ERR e = c.canPairPlayers(p1, p2);
-    if (e != OK)
+    if (e != ERR::OK)
     {
       return e;
     }
@@ -828,7 +828,7 @@ namespace QTournament
     
     CentralSignalEmitter::getInstance()->playersPaired(c, p1, p2);
     
-    return OK;
+    return ERR::OK;
   }
 
 //----------------------------------------------------------------------------
@@ -839,7 +839,7 @@ namespace QTournament
     // in the category. If this check is positive, we can start
     // right away with deleting the pair from the database
     ERR e = c.canSplitPlayers(p1, p2);
-    if (e != OK)
+    if (e != ERR::OK)
     {
       return e;
     }
@@ -859,7 +859,7 @@ namespace QTournament
     
     CentralSignalEmitter::getInstance()->playersSplit(c, p1, p2);
     
-    return OK;
+    return ERR::OK;
   }
 
 
@@ -869,13 +869,13 @@ namespace QTournament
   {
     DbTab pairsTab{db, TAB_PAIRS, false};
     auto row = tab.get2(pairId);
-    if (!row) return INVALID_ID;
+    if (!row) return ERR::INVALID_ID;
 
     auto p1Id = row->getInt2(PAIRS_PLAYER1_REF);
     auto p2Id = row->getInt2(PAIRS_PLAYER2_REF);
     if (!p1Id || !p2Id)
     {
-      return INVALID_ID;
+      return ERR::INVALID_ID;
     }
 
     PlayerMngr pmngr{db};
@@ -893,18 +893,18 @@ namespace QTournament
     // Ensure the new name is valid
     if ((newName.isEmpty()) || (newName.length() > MAX_NAME_LEN))
     {
-      return INVALID_NAME;
+      return ERR::INVALID_NAME;
     }
     
     // make sure the new name doesn't exist yet
     if (hasCategory(newName))
     {
-      return NAME_EXISTS;
+      return ERR::NAME_EXISTS;
     }
     
     cat.row.update(GENERIC_NAME_FIELD_NAME, QString2StdString(newName));
     
-    return OK;
+    return ERR::OK;
   }
 
 //----------------------------------------------------------------------------
@@ -914,7 +914,7 @@ namespace QTournament
     // make sure that we can actually freeze the config
     auto specialObj = c.convertToSpecializedObject();
     ERR e = specialObj->canFreezeConfig();
-    if (e != OK) return e;
+    if (e != ERR::OK) return e;
 
     // one additional check that is common for all categories:
     // none of the assigned player is allowed to be in state
@@ -923,7 +923,7 @@ namespace QTournament
     {
       if (pl.getState() == STAT_PL_WAIT_FOR_REGISTRATION)
       {
-        return NOT_ALL_PLAYERS_REGISTERED;
+        return ERR::NOT_ALL_PLAYERS_REGISTERED;
       }
     }
     
@@ -993,11 +993,11 @@ namespace QTournament
 
       CentralSignalEmitter::getInstance()->categoryStatusChanged(c, oldState, STAT_CAT_FROZEN);
 
-      return OK;
+      return ERR::OK;
     }
     catch (...)
     {
-      return DATABASE_ERROR;
+      return ERR::DATABASE_ERROR;
     }
   }
 
@@ -1010,12 +1010,12 @@ namespace QTournament
     
     if (oldState == STAT_CAT_CONFIG)
     {
-      return CATEGORY_NOT_YET_FROZEN;
+      return ERR::CATEGORY_NOT_YET_FROZEN;
     }
     
     if (oldState != STAT_CAT_FROZEN)
     {
-      return CATEGORY_NOT_UNFREEZEABLE;
+      return ERR::CATEGORY_NOT_UNFREEZEABLE;
     }
     
     // remove all player pairs without a partner from the official pair list
@@ -1048,11 +1048,11 @@ namespace QTournament
 
       CentralSignalEmitter::getInstance()->categoryStatusChanged(cat, STAT_CAT_FROZEN, STAT_CAT_CONFIG);
 
-      return OK;
+      return ERR::OK;
     }
     catch (...)
     {
-      return DATABASE_ERROR;
+      return ERR::DATABASE_ERROR;
     }
   }
 
@@ -1064,7 +1064,7 @@ namespace QTournament
     // we can only transition to "IDLE" if we are "FROZEN"
     if (cat.getState() != STAT_CAT_FROZEN)
     {
-      return CATEGORY_NOT_YET_FROZEN;
+      return ERR::CATEGORY_NOT_YET_FROZEN;
     }
 
     // let's check if we have all the data we need
@@ -1072,12 +1072,12 @@ namespace QTournament
     if (specializedCat->needsGroupInitialization())
     {
       ERR e = specializedCat->canApplyGroupAssignment(grpCfg);
-      if (e != OK) return e;
+      if (e != ERR::OK) return e;
     }
     if (specializedCat->needsInitialRanking())
     {
       ERR e = specializedCat->canApplyInitialRanking(seed);
-      if (e != OK) return e;
+      if (e != ERR::OK) return e;
     }
 
     // great, it's safe to apply the settings and write to
@@ -1085,7 +1085,7 @@ namespace QTournament
     if (specializedCat->needsGroupInitialization())
     {
       ERR e = specializedCat->applyGroupAssignment(grpCfg);
-      if (e != OK)
+      if (e != ERR::OK)
       {
         throw std::runtime_error("Applying group settings failed unexpectedly. Database corruption likely. !! H E L P !!");
       }
@@ -1094,7 +1094,7 @@ namespace QTournament
     if (specializedCat->needsInitialRanking())
     {
       ERR e = specializedCat->applyInitialRanking(seed);
-      if (e != OK)
+      if (e != ERR::OK)
       {
         throw std::runtime_error("Applying initial category ranking failed unexpectedly. Database corruption likely. !! H E L P !!");
       }
@@ -1226,7 +1226,7 @@ namespace QTournament
     // check 1: the category must be in state CONFIG
     if (cat.getState() != STAT_CAT_CONFIG)
     {
-      return CATEGORY_NOT_CONFIGURALE_ANYMORE;
+      return ERR::CATEGORY_NOT_CONFIGURALE_ANYMORE;
     }
 
     // check 2: all players must be removable from this category
@@ -1234,12 +1234,12 @@ namespace QTournament
     {
       if (!(cat.canRemovePlayer(pl)))
       {
-        return PLAYER_NOT_REMOVABLE_FROM_CATEGORY;
+        return ERR::PLAYER_NOT_REMOVABLE_FROM_CATEGORY;
       }
     }
 
     // okay, we're good to go
-    return OK;
+    return ERR::OK;
   }
 
 //----------------------------------------------------------------------------
@@ -1248,12 +1248,12 @@ namespace QTournament
   {
     if (c.getState() != STAT_CAT_WAIT_FOR_INTERMEDIATE_SEEDING)
     {
-      return CATEGORY_NEEDS_NO_SEEDING;
+      return ERR::CATEGORY_NEEDS_NO_SEEDING;
     }
 
     auto specialCat = c.convertToSpecializedObject();
     ERR e = specialCat->resolveIntermediateSeeding(seeding);
-    if (e != OK) return e;
+    if (e != ERR::OK) return e;
 
     // if the previous calls succeeded, we are guaranteed to
     // safely transit to IDLE and continue with new matches,
@@ -1261,7 +1261,7 @@ namespace QTournament
     c.setState(STAT_CAT_IDLE);
     CentralSignalEmitter::getInstance()->categoryStatusChanged(c, STAT_CAT_WAIT_FOR_INTERMEDIATE_SEEDING, STAT_CAT_IDLE);
 
-    return OK;
+    return ERR::OK;
   }
 
   //----------------------------------------------------------------------------

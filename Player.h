@@ -16,7 +16,7 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PLAYER_H
+#ifndef ERR::PLAYER_H
 #define	PLAYER_H
 
 #include <memory>

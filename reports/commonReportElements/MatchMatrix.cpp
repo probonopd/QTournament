@@ -28,7 +28,7 @@
 MatchMatrix::MatchMatrix(SimpleReportGenerator* _rep, const QString& tabName, const Category& _cat, int _round, int _grpNum)
   :AbstractReportElement(_rep), tableName(tabName), cat(_cat), round(_round), grpNum(_grpNum), showMatchNumbersOnly(round <= 0)
 {
-  MATCH_SYSTEM msys = cat.getMatchSystem();
+  ERR::MATCH_SYSTEM msys = cat.getMatchSystem();
 
   if ((msys != ROUND_ROBIN) && (round < 0))
   {
@@ -96,7 +96,7 @@ QRectF MatchMatrix::plot(const QPointF& topLeft)
   // determine the maximum round number up to
   // which will be searched for matches
   int maxRoundNum = 99999;  // default: search in whole category
-  MATCH_SYSTEM msys = cat.getMatchSystem();
+  ERR::MATCH_SYSTEM msys = cat.getMatchSystem();
   if (msys == GROUPS_WITH_KO)
   {
     KO_Config cfg = cat.getParameter_string(GROUP_CONFIG);

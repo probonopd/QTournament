@@ -111,7 +111,7 @@ void ScheduleTabWidget::onBtnStageClicked()
   if (mg == nullptr) return;
 
   MatchMngr mm{db};
-  if (mm.canStageMatchGroup(*mg) != OK) return;
+  if (mm.canStageMatchGroup(*mg) != ERR::OK) return;
 
   mm.stageMatchGroup(*mg);
 }
@@ -125,7 +125,7 @@ void ScheduleTabWidget::onBtnUnstageClicked()
   if (mg == nullptr) return;
 
   MatchMngr mm{db};
-  if (mm.canUnstageMatchGroup(*mg) != OK) return;
+  if (mm.canUnstageMatchGroup(*mg) != ERR::OK) return;
 
   mm.unstageMatchGroup(*mg);
 }
@@ -164,7 +164,7 @@ void ScheduleTabWidget::updateButtons()
 
   // update the "stage"-button
   auto mg = ui->mgIdleView->getSelectedMatchGroup();
-  if ((mg != nullptr) && (mm.canStageMatchGroup(*mg) == OK))
+  if ((mg != nullptr) && (mm.canStageMatchGroup(*mg) == ERR::OK))
   {
     ui->btnStage->setEnabled(true);
   } else {
@@ -173,7 +173,7 @@ void ScheduleTabWidget::updateButtons()
 
   // update the "unstage"-button
   mg = ui->mgStagedView->getSelectedMatchGroup();
-  if ((mg != nullptr) && (mm.canUnstageMatchGroup(*mg) == OK))
+  if ((mg != nullptr) && (mm.canUnstageMatchGroup(*mg) == ERR::OK))
   {
     ui->btnUnstage->setEnabled(true);
   } else {
@@ -319,7 +319,7 @@ void ScheduleTabWidget::askAndStoreMatchResult(const Match &ma)
   // actually store the data and update the internal object states
   MatchMngr mm{db};
   ERR err = mm.setMatchScoreAndFinalizeMatch(ma, *matchResult);
-  if (err != OK)
+  if (err != ERR::OK)
   {
     QString msg = tr("A dabase error occurred. The match result has not been stored.");
     QMessageBox::critical(this, tr("Store match result"), msg);

@@ -197,7 +197,7 @@ namespace QTournament
 
     if (!scoreEntry)
     {
-      Sloppy::assignIfNotNull<ERR>(err, NO_MATCH_RESULT_SET);
+      Sloppy::assignIfNotNull<ERR>(err, ERR::NO_MATCH_RESULT_SET);
       return {};
     }
 
@@ -213,11 +213,11 @@ namespace QTournament
       // but if it does, we clear the invalid database entry
       // and return an error
       row.updateToNull(MA_RESULT);
-      Sloppy::assignIfNotNull<ERR>(err, INCONSISTENT_MATCH_RESULT_STRING);
+      Sloppy::assignIfNotNull<ERR>(err, ERR::INCONSISTENT_MATCH_RESULT_STRING);
       return {};
     }
 
-    Sloppy::assignIfNotNull<ERR>(err, OK);
+    Sloppy::assignIfNotNull<ERR>(err, ERR::OK);
     return result;
   }
 
@@ -231,13 +231,13 @@ namespace QTournament
     auto courtId = row.getInt2(MA_COURT_REF);
     if (!courtId)
     {
-      Sloppy::assignIfNotNull<ERR>(err, NO_COURT_ASSIGNED);
+      Sloppy::assignIfNotNull<ERR>(err, ERR::NO_COURT_ASSIGNED);
       return {};
     }
 
     CourtMngr cm{db};
     auto result = cm.getCourtById(*courtId);
-    Sloppy::assignIfNotNull<ERR>(err, OK);
+    Sloppy::assignIfNotNull<ERR>(err, ERR::OK);
 
     return result;
   }
@@ -452,18 +452,18 @@ namespace QTournament
     {
       if (!((stat == STAT_MA_BUSY) || (stat == STAT_MA_READY)))
       {
-        return MATCH_NOT_CONFIGURALE_ANYMORE;
+        return ERR::MATCH_NOT_CONFIGURALE_ANYMORE;
       }
     }
     else if (refAction == REFEREE_ACTION::SWAP)
     {
       if (!((stat == STAT_MA_RUNNING) && (hasRefereeAssigned() == true)))
       {
-        return MATCH_NOT_CONFIGURALE_ANYMORE;
+        return ERR::MATCH_NOT_CONFIGURALE_ANYMORE;
       }
     } else {
       // default
-      return MATCH_NOT_CONFIGURALE_ANYMORE;
+      return ERR::MATCH_NOT_CONFIGURALE_ANYMORE;
     }
 
     // don't allow assignments if the mode is set to NONE
@@ -471,10 +471,10 @@ namespace QTournament
     REFEREE_MODE mod = get_EFFECTIVE_RefereeMode();
     if ((mod == REFEREE_MODE::NONE) || (mod == REFEREE_MODE::HANDWRITTEN))
     {
-      return MATCH_NEEDS_NO_REFEREE;
+      return ERR::MATCH_NEEDS_NO_REFEREE;
     }
 
-    return OK;
+    return ERR::OK;
   }
 
   //----------------------------------------------------------------------------

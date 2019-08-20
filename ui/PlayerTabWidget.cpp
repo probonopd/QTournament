@@ -193,7 +193,7 @@ void PlayerTabWidget::onUnregisterAllTriggered()
   for (const Player& pl : pm.getAllPlayers())
   {
     err = pm.setWaitForRegistration(pl, true);
-    if (err != OK) allModified = false;
+    if (err != ERR::OK) allModified = false;
   }
 
   // display an information text if not all
@@ -286,14 +286,14 @@ void PlayerTabWidget::onImportCsv()
   TeamMngr tm{db};
   PlayerMngr pm{db};
   CatMngr cm{db};
-  ERR err = OK;
+  ERR err = ERR::OK;
   QString msg;
   for (const CSVImportRecord& rec : records)
   {
     if (!(tm.hasTeam(rec.getTeamName())))
     {
       err = tm.createNewTeam(rec.getTeamName());
-      if (err != OK)
+      if (err != ERR::OK)
       {
         msg = tr("Error when creating the team '%1'.");
         msg = msg.arg(rec.getTeamName());
@@ -304,7 +304,7 @@ void PlayerTabWidget::onImportCsv()
     if (!(rec.hasExistingName()))
     {
       err = pm.createNewPlayer(rec.getFirstName(), rec.getLastName(), rec.getSex(), rec.getTeamName());
-      if (err != OK)
+      if (err != ERR::OK)
       {
         msg = tr("Error when creating the player '%1 %2'.");
         msg = msg.arg(rec.getFirstName()).arg(rec.getLastName());
@@ -328,7 +328,7 @@ void PlayerTabWidget::onImportCsv()
 
     // done.
   }
-  if ((err != OK) && !(msg.isEmpty()))
+  if ((err != ERR::OK) && !(msg.isEmpty()))
   {
     msg += tr("Import aborted.\n\nThe import might have ");
     msg += tr("partially succeeded up to this point.");

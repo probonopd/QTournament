@@ -47,7 +47,7 @@ ERR cmdBulkAddPlayerToCategory::exec()
   DlgSelectPlayer dlg{db, parentWidget, DlgSelectPlayer::DLG_CONTEXT::ADD_TO_CATEGORY, &cat};
   if (dlg.exec() != QDialog::Accepted)
   {
-    return OK;
+    return ERR::OK;
   }
 
   // add all selected players to the category
@@ -56,7 +56,7 @@ ERR cmdBulkAddPlayerToCategory::exec()
   {
     ERR err = cm.addPlayerToCategory(pl, cat);
 
-    if (err != OK)
+    if (err != ERR::OK)
     {
       QString msg = tr("Could not add player\n\n");
       msg += "     " + pl.getDisplayName_FirstNameFirst() + "\n\n";
@@ -65,6 +65,6 @@ ERR cmdBulkAddPlayerToCategory::exec()
     }
   }
 
-  return OK;
+  return ERR::OK;
 }
 

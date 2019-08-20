@@ -42,13 +42,13 @@ namespace QTournament
     
     if (name.length() > MAX_NAME_LEN)
     {
-      Sloppy::assignIfNotNull<ERR>(err, INVALID_NAME);
+      Sloppy::assignIfNotNull<ERR>(err, ERR::INVALID_NAME);
       return {};
     }
     
     if (hasCourt(courtNum))
     {
-      Sloppy::assignIfNotNull<ERR>(err, COURT_NUMBER_EXISTS);
+      Sloppy::assignIfNotNull<ERR>(err, ERR::COURT_NUMBER_EXISTS);
       return {};
     }
     
@@ -128,14 +128,14 @@ namespace QTournament
     // Ensure the new name is valid
     if (newName.length() > MAX_NAME_LEN)
     {
-      return INVALID_NAME;
+      return ERR::INVALID_NAME;
     }
         
     c.row.update(GENERIC_NAME_FIELD_NAME, QString2StdString(newName));
     
     CentralSignalEmitter::getInstance()->courtRenamed(c);
     
-    return OK;
+    return ERR::OK;
   }
 
 //----------------------------------------------------------------------------
@@ -244,15 +244,15 @@ namespace QTournament
   {
     OBJ_STATE stat = co.getState();
 
-    if (stat == STAT_CO_DISABLED) return OK;   // nothing to do for us
+    if (stat == STAT_CO_DISABLED) return ERR::OK;   // nothing to do for us
 
     // prohibit a state change if the court is in use
-    if (stat == STAT_CO_BUSY) return COURT_BUSY;
+    if (stat == STAT_CO_BUSY) return ERR::COURT_BUSY;
 
     // change the court state and emit a change event
     co.setState(STAT_CO_DISABLED);
     CentralSignalEmitter::getInstance()->courtStatusChanged(co.getId(), co.getSeqNum(), stat, STAT_CO_DISABLED);
-    return OK;
+    return ERR::OK;
   }
 
   //----------------------------------------------------------------------------
@@ -261,12 +261,12 @@ namespace QTournament
   {
     OBJ_STATE stat = co.getState();
 
-    if (stat != STAT_CO_DISABLED) return COURT_NOT_DISABLED;
+    if (stat != STAT_CO_DISABLED) return ERR::COURT_NOT_DISABLED;
 
     // change the court state and emit a change event
     co.setState(STAT_CO_AVAIL);
     CentralSignalEmitter::getInstance()->courtStatusChanged(co.getId(), co.getSeqNum(), STAT_CO_DISABLED, STAT_CO_AVAIL);
-    return OK;
+    return ERR::OK;
   }
 
   //----------------------------------------------------------------------------
@@ -277,7 +277,7 @@ namespace QTournament
     DbTab matchTab{db, TAB_MATCH, false};
     if (matchTab.getMatchCountForColumnValue(MA_COURT_REF, co.getId()) > 0)
     {
-      return COURT_ALREADY_USED;
+      return ERR::COURT_ALREADY_USED;
     }
 
     // after this check it is safe to delete to court because we won't
@@ -290,7 +290,7 @@ namespace QTournament
     fixSeqNumberAfterDelete(tab, oldSeqNum);
     cse->endDeleteCourt();
 
-    return OK;
+    return ERR::OK;
   }
 
   //----------------------------------------------------------------------------
@@ -311,7 +311,7 @@ namespace QTournament
     if (nextAutoCourt)
     {
       // okay, we have a regular court
-      Sloppy::assignIfNotNull<ERR>(err, OK);
+      Sloppy::assignIfNotNull<ERR>(err, ERR::OK);
       return nextAutoCourt;
     }
 
@@ -321,7 +321,7 @@ namespace QTournament
     if (nextManualCourt)
     {
       // okay, there is court available at all
-      Sloppy::assignIfNotNull<ERR>(err, NO_COURT_AVAIL);
+      Sloppy::assignIfNotNull<ERR>(err, ERR::NO_COURT_AVAIL);
       return {};
     }
 
@@ -330,12 +330,12 @@ namespace QTournament
     // manual courts, everything is fine
     if (includeManual)
     {
-      Sloppy::assignIfNotNull<ERR>(err, OK);
+      Sloppy::assignIfNotNull<ERR>(err, ERR::OK);
       return nextManualCourt;
     }
 
     // indicate to the user that there would be a manual court
-    Sloppy::assignIfNotNull<ERR>(err, ONLY_MANUAL_COURT_AVAIL);
+    Sloppy::assignIfNotNull<ERR>(err, ERR::ONLY_MANUAL_COURT_AVAIL);
     return {};
   }
 

@@ -46,23 +46,23 @@ ERR cmdCallMatch::exec()
 
   // check if we need to ask the user for a referee
   ERR err = mm.canAssignMatchToCourt(ma, co);
-  if (err == MATCH_NEEDS_REFEREE)
+  if (err == ERR::MATCH_NEEDS_REFEREE)
   {
     callStartedWithUnassignedReferee = true;
     cmdAssignRefereeToMatch cmd{parentWidget, ma, REFEREE_ACTION::MATCH_CALL};
     err = cmd.exec();
-    if (err != OK) return err;
+    if (err != ERR::OK) return err;
 
     // if the match still needs a referee, the user
     // has canceled the selection dialog
     err = mm.canAssignMatchToCourt(ma, co);
-    if (err == MATCH_NEEDS_REFEREE) return OK;
+    if (err == ERR::MATCH_NEEDS_REFEREE) return ERR::OK;
   }
 
   // all necessary pre-checks should have been performed before
   // so that the following call should always yield "ok"
   err = mm.canAssignMatchToCourt(ma, co);
-  if (err != OK)
+  if (err != ERR::OK)
   {
     QString msg = tr("An unexpected error occured.\n");
     msg += tr("Sorry, this shouldn't happen.\n");
@@ -87,7 +87,7 @@ ERR cmdCallMatch::exec()
     // after all the checks before, the following call
     // should always yield "ok"
     err = mm.assignMatchToCourt(ma, co);
-    if (err != OK)
+    if (err != ERR::OK)
     {
       QString msg = tr("An unexpected error occured.\n");
       msg += tr("Sorry, this shouldn't happen.\n");
@@ -103,7 +103,7 @@ ERR cmdCallMatch::exec()
       return err;
     }
 
-    return OK;
+    return ERR::OK;
   }
 
   // the user hit cancel.
@@ -114,6 +114,6 @@ ERR cmdCallMatch::exec()
   }
 
   QMessageBox::information(parentWidget, tr("Assign match to court"), tr("Call cancled, match not started"));
-  return OK;
+  return ERR::OK;
 }
 

@@ -150,7 +150,7 @@ void CatTabWidget::updateControls()
   // if we made it to this point, we can be sure to have a valid category selected
   //
   SEX sex = selectedCat.getSex();
-  MATCH_TYPE mt = selectedCat.getMatchType();
+  ERR::MATCH_TYPE mt = selectedCat.getMatchType();
   bool isEditEnabled = (selectedCat.getState() == STAT_CAT_CONFIG);
 
   ui.gbGeneric->setEnabled(isEditEnabled);
@@ -160,7 +160,7 @@ void CatTabWidget::updateControls()
   ui.cbMatchSystem->setCurrentIndex(ui.cbMatchSystem->findData(matchSysId, Qt::UserRole));
   
   // activate the applicable group with the special settings
-  MATCH_SYSTEM ms = selectedCat.getMatchSystem();
+  ERR::MATCH_SYSTEM ms = selectedCat.getMatchSystem();
   if (ms == GROUPS_WITH_KO)
   {
     ui.gbGroups->show();
@@ -572,7 +572,7 @@ void CatTabWidget::onUnpairedPlayersSelectionChanged()
     Player p2 = pm.getPlayer(unpairedPlayerId2);
     
     Category c = ui.catTableView->getSelectedCategory();
-    canPair = (c.canPairPlayers(p1, p2) == OK);
+    canPair = (c.canPairPlayers(p1, p2) == ERR::OK);
   }
   ui.btnPair->setEnabled(canPair);
 }
@@ -600,7 +600,7 @@ void CatTabWidget::onBtnPairClicked()
   Category c = ui.catTableView->getSelectedCategory();
   Player p1 = pm.getPlayer(id1);
   Player p2 = pm.getPlayer(id2);
-  if (c.canPairPlayers(p1, p2) != OK)
+  if (c.canPairPlayers(p1, p2) != ERR::OK)
   {
     QMessageBox::warning(this, tr("These two players can't be paired for this category!"), tr("Pairing impossible"));
     updatePairs();
@@ -609,7 +609,7 @@ void CatTabWidget::onBtnPairClicked()
   
   CatMngr cm{db};
   ERR e = cm.pairPlayers(c, p1, p2);
-  if (e != OK)
+  if (e != ERR::OK)
   {
     QMessageBox::warning(this, tr("Something went wrong during pairing. This shouldn't happen. For the records: Error code = ") + e, tr("Pairing impossible"));
   }
@@ -638,7 +638,7 @@ void CatTabWidget::onBtnSplitClicked()
   {
     int pairId = selPairs.at(i)->data(Qt::UserRole).toInt();
     ERR e = cmngr.splitPlayers(c, pairId);
-    if (e != OK)
+    if (e != ERR::OK)
     {
       QMessageBox::warning(this, tr("Something went wrong during splitting. This shouldn't happen. For the records: Error code = ") + e, tr("Splitting impossible"));
     }
@@ -653,9 +653,9 @@ void CatTabWidget::onMatchTypeButtonClicked(int btn)
 {
   Category selCat = ui.catTableView->getSelectedCategory();
   
-  MATCH_TYPE oldType = selCat.getMatchType();
+  ERR::MATCH_TYPE oldType = selCat.getMatchType();
   
-  MATCH_TYPE newType = SINGLES;
+  ERR::MATCH_TYPE newType = SINGLES;
   if (ui.rbDoubles->isChecked()) newType = DOUBLES;
   if (ui.rbMixed->isChecked()) newType = MIXED;
   
@@ -667,7 +667,7 @@ void CatTabWidget::onMatchTypeButtonClicked(int btn)
   
   // change the type
   ERR e = selCat.setMatchType(newType);
-  if (e != OK)
+  if (e != ERR::OK)
   {
     QMessageBox::warning(this, tr("Error"), tr("Could change match type. Error number = ") + e);
   }
@@ -693,7 +693,7 @@ void CatTabWidget::onSexClicked(int btn)
   // actually change the sex
   Category selCat = ui.catTableView->getSelectedCategory();
   ERR e = selCat.setSex(newSex);
-  if (e != OK)
+  if (e != ERR::OK)
   {
     QMessageBox::warning(this, tr("Error"), tr("Could change sex. Error number = ") + e);
   }
@@ -745,7 +745,7 @@ void CatTabWidget::onDontCareClicked()
   
   // set the new value
   ERR e = selCat.setSex(newSex);
-  if (e != OK)
+  if (e != ERR::OK)
   {
     QMessageBox::warning(this, tr("Error"), tr("Could change sex. Error number = ") + e);
   }
@@ -770,7 +770,7 @@ void CatTabWidget::onMatchSystemChanged(int newIndex)
 {
   // get the new match system
   int msId = ui.cbMatchSystem->itemData(newIndex, Qt::UserRole).toInt();
-  MATCH_SYSTEM ms = static_cast<MATCH_SYSTEM>(msId);
+  ERR::MATCH_SYSTEM ms = static_cast<MATCH_SYSTEM>(msId);
   
   if (!(ui.catTableView->hasCategorySelected())) return;
   

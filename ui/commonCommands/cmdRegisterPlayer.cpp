@@ -37,7 +37,7 @@ ERR cmdRegisterPlayer::exec()
 
   err = pm.setWaitForRegistration(pl, false);
 
-  if (err != OK)   // this shouldn't happen
+  if (err != ERR::OK)   // this shouldn't happen
   {
     QString msg = tr("Something went wrong during player registration. This shouldn't happen.\n\n");
     msg += tr("For the records: error code = ") + QString::number(static_cast<int> (err));

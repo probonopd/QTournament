@@ -19,11 +19,13 @@
 #ifndef TOURNAMENTERRORCODES_H
 #define	TOURNAMENTERRORCODES_H
 
+#include <optional>
+
 #include <Sloppy/BasicException.h>
 
 namespace QTournament
 {
-    enum ERR {
+    enum class ERR {
         OK = 0,
         INVALID_NAME = -10000,
         NAME_EXISTS,
@@ -103,6 +105,8 @@ namespace QTournament
         COURT_ALREADY_USED,
     };
 
+    //----------------------------------------------------------------------------
+
     class TournamentException : public Sloppy::BasicException
     {
     public:
@@ -116,6 +120,37 @@ namespace QTournament
 
     private:
       ERR err;
+    };
+
+    //----------------------------------------------------------------------------
+
+    /** \brief A combination of error code and object for function return values;
+     * enforces the invariant that "containing an object" always means "OK" and
+     * that "containing an error code other than OK" always means "no object".
+     */
+    template<typename T>
+    class ErrorOrObject : public std::optional<T>
+    {
+    public:
+      ErrorOrObject(const T& obj)
+        :std::optional<T>{obj}, e{ERR::OK} {}
+
+      ErrorOrObject(T&& obj)
+        :std::optional<T>(std::move(obj)), e{ERR::OK} {}
+
+      ErrorOrObject(ERR errorCode)
+        :std::optional<T>{}, e{errorCode}
+      {
+        if (errorCode == ERR::OK)
+        {
+          throw std::invalid_argument("ErrorOrObject ctor: initialized with OK but without object");
+        }
+      }
+
+      constexpr ERR err() const noexcept { return e; }
+
+    private:
+      ERR e;
     };
 }
 

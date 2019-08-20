@@ -135,7 +135,7 @@ void MainFrame::newTournament()
 
   ERR err;
   auto newDb = TournamentDB::createNew(":memory:", *settings, &err);
-  if ((err != OK) || (newDb == nullptr))
+  if ((err != ERR::OK) || (newDb == nullptr))
   {
     // shouldn't happen, because the file has been
     // deleted before (see above)
@@ -205,7 +205,7 @@ void MainFrame::openTournament()
     QMessageBox::critical(this, tr("Open tournament"), msg);
     return;
   }
-  if ((err != OK) || (newDb == nullptr))
+  if ((err != ERR::OK) || (newDb == nullptr))
   {
     QMessageBox::warning(this, tr("Open tournament"), tr("Something went wrong; no tournament opened."));
     return;
@@ -306,12 +306,12 @@ void MainFrame::openTournament()
   {
     ERR err = pm.openConfiguredExternalPlayerDatabase();
 
-    if (err == OK) return;
+    if (err == ERR::OK) return;
 
     QString msg;
     switch (err)
     {
-    case EPD__NOT_FOUND:
+    case ERR::EPD__NOT_FOUND:
       msg = tr("Could not find the player database\n\n");
       msg += pm.getExternalDatabaseName() + "\n\n";
       msg += tr("Please make sure the file exists and is valid.");
@@ -822,7 +822,7 @@ void MainFrame::setupTestScenario(int scenarioID)
     // run the category
     std::unique_ptr<Category> specialCat = ls.convertToSpecializedObject();
     ERR e = cmngr.freezeConfig(ls);
-    assert(e == OK);
+    assert(e == ERR::OK);
 
     // fake a list of player-pair-lists for the group assignments
     std::vector<PlayerPairList> ppListList;
@@ -842,14 +842,14 @@ void MainFrame::setupTestScenario(int scenarioID)
 
     // make sure the faked group assignment is valid
     e = specialCat->canApplyGroupAssignment(ppListList);
-    assert(e == OK);
+    assert(e == ERR::OK);
 
     // prepare an empty list for the (not required) initial ranking
     PlayerPairList initialRanking;
 
     // actually run the category
     e = cmngr.startCategory(ls, ppListList, initialRanking);
-    assert(e == OK);
+    assert(e == ERR::OK);
 
     // we're done with LS here...
 
@@ -858,7 +858,7 @@ void MainFrame::setupTestScenario(int scenarioID)
     for (int id=100; id < 116; ++id)
     {
       e = ld.addPlayer(pmngr.getPlayer(id));
-      assert(e == OK);
+      assert(e == ERR::OK);
     }
 
     // generate eight player pairs
@@ -867,7 +867,7 @@ void MainFrame::setupTestScenario(int scenarioID)
       Player p1 = pmngr.getPlayer(id);
       Player p2 = pmngr.getPlayer(id+1);
       e = cmngr.pairPlayers(ld, p1, p2);
-      assert(e == OK);
+      assert(e == ERR::OK);
     }
 
     // set the config to be 2 groups of 4 players each
@@ -881,7 +881,7 @@ void MainFrame::setupTestScenario(int scenarioID)
     // freeze
     specialCat = ld.convertToSpecializedObject();
     e = cmngr.freezeConfig(ld);
-    assert(e == OK);
+    assert(e == ERR::OK);
 
     // fake a list of player-pair-lists for the group assignments
     ppListList.clear();
@@ -898,11 +898,11 @@ void MainFrame::setupTestScenario(int scenarioID)
 
     // make sure the faked group assignment is valid
     e = specialCat->canApplyGroupAssignment(ppListList);
-    assert(e == OK);
+    assert(e == ERR::OK);
 
     // actually run the category
     e = cmngr.startCategory(ld, ppListList, initialRanking);  // "initialRanking" is reused from above
-    assert(e == OK);
+    assert(e == ERR::OK);
   };
 
   // extend scenario 4 to already stage and schedule a few match groups
@@ -915,19 +915,19 @@ void MainFrame::setupTestScenario(int scenarioID)
 
     ERR e;
     auto mg = mm.getMatchGroup(ls, 1, 3, &e);  // round 1, players group 3
-    assert(e == OK);
+    assert(e == ERR::OK);
     mm.stageMatchGroup(*mg);
     mm.scheduleAllStagedMatchGroups();
 
     Category ld = cmngr.getCategory("LD");
     mg = mm.getMatchGroup(ld, 1, 1, &e);  // round 1, players group 1
-    assert(e == OK);
+    assert(e == ERR::OK);
     mm.stageMatchGroup(*mg);
     mg = mm.getMatchGroup(ld, 1, 2, &e);  // round 1, players group 2
-    assert(e == OK);
+    assert(e == ERR::OK);
     mm.stageMatchGroup(*mg);
     mg = mm.getMatchGroup(ld, 2, 1, &e);  // round 2, players group 1
-    assert(e == OK);
+    assert(e == ERR::OK);
     mm.stageMatchGroup(*mg);
     mm.scheduleAllStagedMatchGroups();
 
@@ -935,7 +935,7 @@ void MainFrame::setupTestScenario(int scenarioID)
     for (int i=1; i <= 4; ++i)
     {
       courtm.createNewCourt(i, "XX", &e);
-      assert(e == OK);
+      assert(e == ERR::OK);
     }
   };
 
@@ -956,14 +956,14 @@ void MainFrame::setupTestScenario(int scenarioID)
       for (MatchGroup mg : mm.getMatchGroupsForCat(ls))
       {
         if (mg.getState() != STAT_MG_IDLE) continue;
-        if (mm.canStageMatchGroup(mg) != OK) continue;
+        if (mm.canStageMatchGroup(mg) != ERR::OK) continue;
         mm.stageMatchGroup(mg);
         canStageMatchGroups = true;
       }
       for (MatchGroup mg : mm.getMatchGroupsForCat(ld))
       {
         if (mg.getState() != STAT_MG_IDLE) continue;
-        if (mm.canStageMatchGroup(mg) != OK) continue;
+        if (mm.canStageMatchGroup(mg) != ERR::OK) continue;
         mm.stageMatchGroup(mg);
         canStageMatchGroups = true;
       }
@@ -986,7 +986,7 @@ void MainFrame::setupTestScenario(int scenarioID)
       auto nextCourt = courtm.getCourtById(nextCourtId);
       if (nextCourt == nullptr) break;
 
-      if (mm.assignMatchToCourt(*nextMatch, *nextCourt) != OK) break;
+      if (mm.assignMatchToCourt(*nextMatch, *nextCourt) != ERR::OK) break;
       auto score = MatchScore::genRandomScore();
       mm.setMatchScoreAndFinalizeMatch(*nextMatch, *score);
 
@@ -1008,12 +1008,12 @@ void MainFrame::setupTestScenario(int scenarioID)
 
     // set the match system to Single Elimination
     ERR e = ls.setMatchSystem(SINGLE_ELIM) ;
-    assert(e == OK);
+    assert(e == ERR::OK);
 
     // run the category
     std::unique_ptr<Category> specialCat = ls.convertToSpecializedObject();
     e = cmngr.freezeConfig(ls);
-    assert(e == OK);
+    assert(e == ERR::OK);
 
     // prepare an empty list for the not-required initial group assignment
     std::vector<PlayerPairList> ppListList;
@@ -1023,26 +1023,26 @@ void MainFrame::setupTestScenario(int scenarioID)
 
     // actually run the category
     e = cmngr.startCategory(ls, ppListList, initialRanking);
-    assert(e == OK);
+    assert(e == ERR::OK);
 
     // stage all match groups
     auto mg = mm.getMatchGroup(ls, 1, GROUP_NUM__ITERATION, &e);  // round 1
-    assert(e == OK);
+    assert(e == ERR::OK);
     mm.stageMatchGroup(*mg);
     mg = mm.getMatchGroup(ls, 2, GROUP_NUM__ITERATION, &e);  // round 2
-    assert(e == OK);
+    assert(e == ERR::OK);
     mm.stageMatchGroup(*mg);
     mg = mm.getMatchGroup(ls, 3, GROUP_NUM__L16, &e);  // round 3
-    assert(e == OK);
+    assert(e == ERR::OK);
     mm.stageMatchGroup(*mg);
     mg = mm.getMatchGroup(ls, 4, GROUP_NUM__QUARTERFINAL, &e);  // round 4
-    assert(e == OK);
+    assert(e == ERR::OK);
     mm.stageMatchGroup(*mg);
     mg = mm.getMatchGroup(ls, 5, GROUP_NUM__SEMIFINAL, &e);  // round 5
-    assert(e == OK);
+    assert(e == ERR::OK);
     mm.stageMatchGroup(*mg);
     mg = mm.getMatchGroup(ls, 6, GROUP_NUM__FINAL, &e);  // round 6
-    assert(e == OK);
+    assert(e == ERR::OK);
     mm.stageMatchGroup(*mg);
     mm.scheduleAllStagedMatchGroups();
 
@@ -1050,7 +1050,7 @@ void MainFrame::setupTestScenario(int scenarioID)
     for (int i=1; i <= 4; ++i)
     {
       courtm.createNewCourt(i, "XX", &e);
-      assert(e == OK);
+      assert(e == ERR::OK);
     }
 
     // play all matches
@@ -1067,7 +1067,7 @@ void MainFrame::setupTestScenario(int scenarioID)
       auto nextCourt = courtm.getCourtById(nextCourtId);
       if (nextCourt == nullptr) break;
 
-      if (mm.assignMatchToCourt(*nextMatch, *nextCourt) != OK) break;
+      if (mm.assignMatchToCourt(*nextMatch, *nextCourt) != ERR::OK) break;
       auto score = MatchScore::genRandomScore();
       mm.setMatchScoreAndFinalizeMatch(*nextMatch, *score);
     }
@@ -1105,7 +1105,7 @@ void MainFrame::setupTestScenario(int scenarioID)
 
     // freeze the LS category
     ERR e = cmngr.freezeConfig(ls);
-    assert(e == OK);
+    assert(e == ERR::OK);
 
     // prepare an empty list for the not-required initial group assignment
     std::vector<PlayerPairList> ppListList;
@@ -1115,18 +1115,18 @@ void MainFrame::setupTestScenario(int scenarioID)
 
     // actually run the category
     e = cmngr.startCategory(ls, ppListList, initialRanking);
-    assert(e == OK);
+    assert(e == ERR::OK);
 
     // freeze the LD category
     e = cmngr.freezeConfig(ld);
-    assert(e == OK);
+    assert(e == ERR::OK);
 
     // prepare a list for the (faked) initial ranking
     initialRanking = ld.getPlayerPairs();
 
     // actually run the category
     e = cmngr.startCategory(ld, ppListList, initialRanking);
-    assert(e == OK);
+    assert(e == ERR::OK);
   };
 
   switch (scenarioID)
@@ -1311,7 +1311,7 @@ void MainFrame::onNewExternalPlayerDatabase()
   // actually create and actiate the new database
   PlayerMngr pm{currentDb.get()};
   ERR e = pm.setExternalPlayerDatabase(filename, true);
-  if (e != OK)
+  if (e != ERR::OK)
   {
     QMessageBox::warning(this, tr("New player database"), tr("Could not create ") + filename);
     return;
@@ -1340,7 +1340,7 @@ void MainFrame::onSelectExternalPlayerDatabase()
   // open and activate the database
   PlayerMngr pm{currentDb.get()};
   ERR e = pm.setExternalPlayerDatabase(filename, false);
-  if (e != OK)
+  if (e != ERR::OK)
   {
     QString msg = tr("Could not open ") + filename + "\n\n";
     if (pm.hasExternalPlayerDatabaseOpen())

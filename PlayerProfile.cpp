@@ -120,7 +120,7 @@ namespace QTournament
       }
 
       int maNum = ma.getMatchNumber();
-      if ((maNum != MATCH_NUM_NOT_ASSIGNED) && ((maNum < nextMatchNum) || (nextMatchNum < 0)))
+      if ((maNum != ERR::MATCH_NUM_NOT_ASSIGNED) && ((maNum < nextMatchNum) || (nextMatchNum < 0)))
       {
         nextMatchNum = maNum;
         nextUmpireMatchId = ma.getId();
@@ -138,7 +138,7 @@ namespace QTournament
       int maNum = ma.getMatchNumber();
 
       // count all scheduled matches
-      if (maNum != MATCH_NUM_NOT_ASSIGNED) ++scheduledCount;
+      if (maNum != ERR::MATCH_NUM_NOT_ASSIGNED) ++scheduledCount;
 
       if (stat == STAT_MA_RUNNING)
       {
@@ -164,7 +164,7 @@ namespace QTournament
         continue;
       }
 
-      if ((maNum != MATCH_NUM_NOT_ASSIGNED) && ((maNum < nextMatchNum) || (nextMatchNum < 0)))
+      if ((maNum != ERR::MATCH_NUM_NOT_ASSIGNED) && ((maNum < nextMatchNum) || (nextMatchNum < 0)))
       {
         nextMatchNum = maNum;
         nextMatchId = ma.getId();

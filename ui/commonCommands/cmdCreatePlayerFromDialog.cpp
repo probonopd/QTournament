@@ -35,7 +35,7 @@ ERR cmdCreatePlayerFromDialog::exec()
 {
   if (dlg->exec() != QDialog::Accepted)
   {
-    return OK;
+    return ERR::OK;
   }
 
   // we can be sure that all selected data in the dialog
@@ -50,7 +50,7 @@ ERR cmdCreatePlayerFromDialog::exec()
         dlg->getTeam().getName()
         );
 
-  if (e != OK)
+  if (e != ERR::OK)
   {
     QString msg = tr("Something went wrong when inserting the player. This shouldn't happen.");
     msg += tr("For the records: error code = ") + QString::number(static_cast<int>(e));
@@ -75,7 +75,7 @@ ERR cmdCreatePlayerFromDialog::exec()
       Category cat = it.key();
       ERR e = cmngr.addPlayerToCategory(p, cat);
 
-      if (e != OK) {
+      if (e != ERR::OK) {
         QString msg = tr("Something went wrong when adding the player to a category. This shouldn't happen.");
         msg += tr("For the records: error code = ") + QString::number(static_cast<int> (e));
         QMessageBox::warning(parentWidget, tr("WTF??"), msg);
@@ -84,6 +84,6 @@ ERR cmdCreatePlayerFromDialog::exec()
     ++it;
   }
 
-  return OK;
+  return ERR::OK;
 }
 

@@ -89,7 +89,7 @@ namespace QTournament
    *
    * \throws TournamentException with error code FILE_ALREADY_EXISTS if a file of the provided name already exists
    *
-   * \throws TournamentException with error code DATABASE_ERROR if the new database could not be created
+   * \throws TournamentException with error code ERR::DATABASE_ERROR if the new database could not be created
    *
    * \returns the newly created database
    */

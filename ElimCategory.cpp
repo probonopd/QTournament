@@ -74,13 +74,13 @@ namespace QTournament
   {
     if (getState() != STAT_CAT_CONFIG)
     {
-      return CONFIG_ALREADY_FROZEN;
+      return ERR::CONFIG_ALREADY_FROZEN;
     }
     
     // make sure there no unpaired players in singles or doubles
     if ((getMatchType() != SINGLES) && (hasUnpairedPlayers()))
     {
-      return UNPAIRED_PLAYERS;
+      return ERR::UNPAIRED_PLAYERS;
     }
 
     // we should have at least two players / pairs
@@ -91,17 +91,17 @@ namespace QTournament
     }
     if (numPairs < 2)
     {
-      return INVALID_PLAYER_COUNT;
+      return ERR::INVALID_PLAYER_COUNT;
     }
 
     // for the bracket mode "ranking1" we may not have more
     // than 32 players
     if ((elimMode == BracketGenerator::BRACKET_RANKING1) && (numPairs > 32))
     {
-      return INVALID_PLAYER_COUNT;
+      return ERR::INVALID_PLAYER_COUNT;
     }
 
-    return OK;
+    return ERR::OK;
   }
 
 //----------------------------------------------------------------------------
@@ -122,7 +122,7 @@ namespace QTournament
 
   ERR EliminationCategory::prepareFirstRound()
   {
-    if (getState() != STAT_CAT_IDLE) return WRONG_STATE;
+    if (getState() != STAT_CAT_IDLE) return ERR::WRONG_STATE;
 
     MatchMngr mm{db};
 
@@ -132,7 +132,7 @@ namespace QTournament
     // do not return an error here, because obviously we have been
     // called successfully before and we only want to avoid
     // double initialization
-    if (allGrp.size() != 0) return OK;
+    if (allGrp.size() != 0) return ERR::OK;
 
     // alright, this is a virgin category. Generate bracket matches
     // for each group
@@ -182,7 +182,7 @@ namespace QTournament
       ppList = getPlayerPairs();
     } else {
       ppList = this->getRemainingPlayersAfterRound(round - 1, &err);
-      if (err != OK) return err;
+      if (err != ERR::OK) return err;
     }
     auto rll = rm.getSortedRanking(*this, round-1);
     for (auto rl : rll)
@@ -205,7 +205,7 @@ namespace QTournament
     // create unsorted entries for everyone who played in this round
     // or who achieved a final rank in a previous round
     rm.createUnsortedRankingEntriesForLastRound(*this, &err, ppList);
-    if (err != OK) return err;
+    if (err != ERR::OK) return err;
 
     // set the rank for all players that ended up at a final rank
     // in this or any prior round
@@ -221,7 +221,7 @@ namespace QTournament
     int lastRoundInThisCat = calcTotalRoundsCount();
     if (round == lastRoundInThisCat)
     {
-      if (err != nullptr) *err = OK;
+      if (err != nullptr) *err = ERR::OK;
       return PlayerPairList();  // no remaining players after last round
     }
 
@@ -229,7 +229,7 @@ namespace QTournament
     CatRoundStatus crs = getRoundStatus();
     if (round > crs.getFinishedRoundsCount())
     {
-      if (err != nullptr) *err = INVALID_ROUND;
+      if (err != nullptr) *err = ERR::INVALID_ROUND;
       return PlayerPairList();
     }
 
@@ -239,14 +239,14 @@ namespace QTournament
     {
       ERR e;
       result = this->getRemainingPlayersAfterRound(round-1, &e);
-      if (e != OK)
+      if (e != ERR::OK)
       {
-        if (err != nullptr) *err = INVALID_ROUND;
+        if (err != nullptr) *err = ERR::INVALID_ROUND;
         return PlayerPairList();
       }
     } else {
       // round 0 (before first round)
-      if (err != nullptr) *err = OK;
+      if (err != nullptr) *err = ERR::OK;
       return getPlayerPairs();
     }
 
@@ -347,7 +347,7 @@ namespace QTournament
 
     // everyone who has not yet been kicked from the
     // list survives this round
-    Sloppy::assignIfNotNull<ERR>(err, OK);
+    Sloppy::assignIfNotNull<ERR>(err, ERR::OK);
     return result;
   }
 
@@ -424,12 +424,12 @@ namespace QTournament
         if (winnerMatch)
         {
           ERR e = mm.swapPlayer(*winnerMatch, oldWinner, oldLoser);
-          if (e != OK) return ModMatchResult::NotPossible;   // triggers implicit rollback
+          if (e != ERR::OK) return ModMatchResult::NotPossible;   // triggers implicit rollback
         }
         if (loserMatch)
         {
           ERR e = mm.swapPlayer(*loserMatch, oldLoser, oldWinner);
-          if (e != OK) return ModMatchResult::NotPossible;  // triggers implicit rollback
+          if (e != ERR::OK) return ModMatchResult::NotPossible;  // triggers implicit rollback
         }
 
         // delete explicit references to the affected pair in the
@@ -444,7 +444,7 @@ namespace QTournament
 
       // update the match score
       ERR e = mm.updateMatchScore(ma, newScore, (mmr == ModMatchResult::WinnerLoser));
-      if (e != OK)
+      if (e != ERR::OK)
       {
         return ModMatchResult::NotPossible;  // triggers implicit rollback
       }
@@ -452,7 +452,7 @@ namespace QTournament
       // update the ranking entries but skip the assignment of ranks
       RankingMngr rm{db};
       e = rm.updateRankingsAfterMatchResultChange(ma, oldScore, true);
-      if (e != OK) return ModMatchResult::NotPossible;  // triggers implicit rollback
+      if (e != ERR::OK) return ModMatchResult::NotPossible;  // triggers implicit rollback
 
       // the previous call did not properly update the assigned
       // ranks, because ranking in bracket matches works different
@@ -466,7 +466,7 @@ namespace QTournament
       if (ma.getMatchGroup().getRound() <= crs.getFinishedRoundsCount())
       {
         e = rewriteFinalRankForMultipleRounds(ma.getMatchGroup().getRound());
-        if (e != OK) return ModMatchResult::NotPossible;  // triggers implicit rollback
+        if (e != ERR::OK) return ModMatchResult::NotPossible;  // triggers implicit rollback
       }
 
       trans.commit();
@@ -536,14 +536,14 @@ namespace QTournament
   ERR EliminationCategory::rewriteFinalRankForMultipleRounds(int minRound, int maxRound) const
   {
     // some boundary checks
-    if (minRound < 1) return INVALID_ROUND;
+    if (minRound < 1) return ERR::INVALID_ROUND;
     CatRoundStatus crs = getRoundStatus();
     int lastCompletedRound = crs.getFinishedRoundsCount();
-    if (lastCompletedRound < 1) return INVALID_ROUND;
-    if (minRound > lastCompletedRound) return INVALID_ROUND;
+    if (lastCompletedRound < 1) return ERR::INVALID_ROUND;
+    if (minRound > lastCompletedRound) return ERR::INVALID_ROUND;
     if (maxRound < 1) maxRound = lastCompletedRound;
-    if (maxRound < minRound) return INVALID_ROUND;
-    if (maxRound > lastCompletedRound) return INVALID_ROUND;
+    if (maxRound < minRound) return ERR::INVALID_ROUND;
+    if (maxRound > lastCompletedRound) return ERR::INVALID_ROUND;
 
     // start a pretty inefficient algorithm that goes through
     // all rounds from "min" to "max" and loop over all
@@ -608,7 +608,7 @@ namespace QTournament
       }
     }
 
-    return OK;
+    return ERR::OK;
   }
 
 //----------------------------------------------------------------------------

@@ -94,7 +94,7 @@ void CommonMatchTableWidget::insertMatch(int beforeRowIdx, const Match& ma)
 
   // add the match number
   int maNum = ma.getMatchNumber();
-  if (maNum != MATCH_NUM_NOT_ASSIGNED)
+  if (maNum != ERR::MATCH_NUM_NOT_ASSIGNED)
   {
     setCellItem(IDX_MATCH_NUM_COL, QString::number(maNum), matchId);
   } else {

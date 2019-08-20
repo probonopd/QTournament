@@ -135,7 +135,7 @@ namespace QTournament
     ERR e;
     auto mg = mm.getMatchGroup(*this, lastRound+1, GROUP_NUM__ITERATION, &e);
     assert(mg.has_value());
-    assert(e == OK);
+    assert(e == ERR::OK);
     assert(mg->getMatches().size() == nextMatches.size());
     int cnt = 0;
     PlayerMngr pm{db};
@@ -148,7 +148,7 @@ namespace QTournament
       PlayerPair pp2 = pm.getPlayerPair(pp2Id);
 
       e = mm.setPlayerPairsForMatch(ma, pp1, pp2);
-      assert(e == OK);
+      assert(e == ERR::OK);
       ++cnt;
     }
 
@@ -179,7 +179,7 @@ namespace QTournament
       if (mg.getCategory().getId() != catId) continue;
 
       ERR err = mm.unstageMatchGroup(mg);
-      if (err != OK) return err;   // shouldn't happen
+      if (err != ERR::OK) return err;   // shouldn't happen
     }
 
     // step 2: tell everyone that something baaaad is about to happen
@@ -220,7 +220,7 @@ namespace QTournament
     CatMngr cm{db};
     cm.updateCatStatusFromMatchStatus(*this);
 
-    return OK;
+    return ERR::OK;
   }
 
 
@@ -230,23 +230,23 @@ namespace QTournament
   {
     if (getState() != STAT_CAT_CONFIG)
     {
-      return CONFIG_ALREADY_FROZEN;
+      return ERR::CONFIG_ALREADY_FROZEN;
     }
     
     // make sure there no unpaired players in singles or doubles
     if ((getMatchType() != SINGLES) && (hasUnpairedPlayers()))
     {
-      return UNPAIRED_PLAYERS;
+      return ERR::UNPAIRED_PLAYERS;
     }
     
     // make sure we have at least three players
     PlayerPairList pp = getPlayerPairs();
     if (pp.size() < 3)
     {
-      return INVALID_PLAYER_COUNT;
+      return ERR::INVALID_PLAYER_COUNT;
     }
     
-    return OK;
+    return ERR::OK;
   }
 
 //----------------------------------------------------------------------------
@@ -267,7 +267,7 @@ namespace QTournament
 
   ERR SwissLadderCategory::prepareFirstRound()
   {
-    if (getState() != STAT_CAT_IDLE) return WRONG_STATE;
+    if (getState() != STAT_CAT_IDLE) return ERR::WRONG_STATE;
 
     MatchMngr mm{db};
 
@@ -277,7 +277,7 @@ namespace QTournament
     // do not return an error here, because obviously we have been
     // called successfully before and we only want to avoid
     // double initialization
-    if (allGrp.size() != 0) return OK;
+    if (allGrp.size() != 0) return ERR::OK;
 
     // alright, this is a virgin category.
     // Assume that we play all possible rounds (very much like a
@@ -292,13 +292,13 @@ namespace QTournament
       ERR e;
       auto mg = mm.createMatchGroup(*this, r, GROUP_NUM__ITERATION, &e);
       assert(mg.has_value());
-      assert(e == OK);
+      assert(e == ERR::OK);
 
       for (int m=0; m < nMatchesPerRound; ++m)
       {
         auto ma = mm.createMatch(*mg, &e);
         assert(ma.has_value());
-        assert(e == OK);
+        assert(e == ERR::OK);
       }
 
       mm.closeMatchGroup(*mg);
@@ -307,7 +307,7 @@ namespace QTournament
     // Fill the first round of matches based on the initial seeding
     genMatchesForNextRound();
 
-    return OK;
+    return ERR::OK;
   }
 
 //----------------------------------------------------------------------------
@@ -389,16 +389,16 @@ namespace QTournament
     PlayerPairList allPairs = getPlayerPairs();
 
     rm.createUnsortedRankingEntriesForLastRound(*this, &err, allPairs);
-    if (err != OK) return err;  // shouldn't happen
+    if (err != ERR::OK) return err;  // shouldn't happen
     rm.sortRankingEntriesForLastRound(*this, &err);
-    if (err != OK) return err;  // shouldn't happen
+    if (err != ERR::OK) return err;  // shouldn't happen
 
     if (round != calcTotalRoundsCount())
     {
       genMatchesForNextRound();
     }
 
-    return OK;
+    return ERR::OK;
   }
 
 //----------------------------------------------------------------------------
@@ -406,7 +406,7 @@ namespace QTournament
   PlayerPairList SwissLadderCategory::getRemainingPlayersAfterRound(int round, ERR* err) const
   {
     // No knock-outs, never
-    if (err != nullptr) *err = OK;
+    if (err != nullptr) *err = ERR::OK;
     return getPlayerPairs();
   }
 
@@ -448,7 +448,7 @@ namespace QTournament
     MatchMngr mm{db};
     ERR e = mm.updateMatchScore(ma, newScore, true);
 
-    return (e == OK) ? ModMatchResult::ModDone : ModMatchResult::NotPossible;
+    return (e == ERR::OK) ? ModMatchResult::ModDone : ModMatchResult::NotPossible;
   }
 
 //----------------------------------------------------------------------------

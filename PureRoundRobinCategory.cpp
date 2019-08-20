@@ -71,7 +71,7 @@ namespace QTournament
 
   std::optional<PureRoundRobinCategory> PureRoundRobinCategory::getFromGenericCat(const Category& cat)
   {
-    MATCH_SYSTEM msys = cat.getMatchSystem();
+    ERR::MATCH_SYSTEM msys = cat.getMatchSystem();
 
     return (msys == ROUND_ROBIN) ? PureRoundRobinCategory{cat.db, cat.row} : std::optional<PureRoundRobinCategory>{};
   }
@@ -110,12 +110,12 @@ namespace QTournament
     // update the match
     MatchMngr mm{db};
     ERR e = mm.updateMatchScore(ma, newScore, true);
-    if (e != OK) return ModMatchResult::NotPossible;
+    if (e != ERR::OK) return ModMatchResult::NotPossible;
 
     // update all affected ranking entries
     RankingMngr rm{db};
     e = rm.updateRankingsAfterMatchResultChange(ma, oldScore);
-    return (e == OK) ? ModMatchResult::ModDone : ModMatchResult::NotPossible;
+    return (e == ERR::OK) ? ModMatchResult::ModDone : ModMatchResult::NotPossible;
   }
 
 //----------------------------------------------------------------------------
@@ -124,23 +124,23 @@ namespace QTournament
   {
     if (getState() != STAT_CAT_CONFIG)
     {
-      return CONFIG_ALREADY_FROZEN;
+      return ERR::CONFIG_ALREADY_FROZEN;
     }
     
     // make sure there no unpaired players in singles or doubles
     if ((getMatchType() != SINGLES) && (hasUnpairedPlayers()))
     {
-      return UNPAIRED_PLAYERS;
+      return ERR::UNPAIRED_PLAYERS;
     }
     
     // make sure we have at least three players
     PlayerPairList pp = getPlayerPairs();
     if (pp.size() < 3)
     {
-      return INVALID_PLAYER_COUNT;
+      return ERR::INVALID_PLAYER_COUNT;
     }
     
-    return OK;
+    return ERR::OK;
   }
 
 //----------------------------------------------------------------------------
@@ -161,7 +161,7 @@ namespace QTournament
 
   ERR PureRoundRobinCategory::prepareFirstRound()
   {
-    if (getState() != STAT_CAT_IDLE) return WRONG_STATE;
+    if (getState() != STAT_CAT_IDLE) return ERR::WRONG_STATE;
 
     MatchMngr mm{db};
 
@@ -171,27 +171,21 @@ namespace QTournament
     // do not return an error here, because obviously we have been
     // called successfully before and we only want to avoid
     // double initialization
-    if (allGrp.size() != 0) return OK;
+    if (allGrp.size() != 0) return ERR::OK;
 
     // alright, this is a virgin category. Generate
     // all round robin matches at once
     PlayerPairList allPairs = getPlayerPairs();
-    if (progressNotificationQueue != nullptr)
-    {
-      int nPlayers = allPairs.size();
-      int nMatches = (nPlayers / 2) * calcTotalRoundsCount();
-      progressNotificationQueue->reset(nMatches);
-    }
     int iterationCount = getIterationCount();
     int roundsPerIteration = getRoundCountPerIteration();
     ERR e;
     for (int i=0; i < iterationCount; ++i)
     {
       int firstRoundNum = (i * roundsPerIteration) + 1;
-      e = generateGroupMatches(allPairs, GROUP_NUM__ITERATION, firstRoundNum, progressNotificationQueue);
-      if (e != OK) return e;
+      e = generateGroupMatches(allPairs, GROUP_NUM__ITERATION, firstRoundNum);
+      if (e != ERR::OK) return e;
     }
-    return OK;
+    return ERR::OK;
   }
 
 //----------------------------------------------------------------------------
@@ -251,11 +245,11 @@ namespace QTournament
     ERR err;
 
     rm.createUnsortedRankingEntriesForLastRound(*this, &err);
-    if (err != OK) return err;  // shouldn't happen
+    if (err != ERR::OK) return err;  // shouldn't happen
     rm.sortRankingEntriesForLastRound(*this, &err);
-    if (err != OK) return err;  // shouldn't happen
+    if (err != ERR::OK) return err;  // shouldn't happen
 
-    return OK;
+    return ERR::OK;
   }
 
 //----------------------------------------------------------------------------
@@ -263,7 +257,7 @@ namespace QTournament
   PlayerPairList PureRoundRobinCategory::getRemainingPlayersAfterRound(int round, ERR* err) const
   {
     // No knock-outs, never
-    if (err != nullptr) *err = OK;
+    if (err != nullptr) *err = ERR::OK;
     return getPlayerPairs();
   }
 

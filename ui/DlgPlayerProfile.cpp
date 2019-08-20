@@ -191,12 +191,12 @@ void DlgPlayerProfile::fillTables()
   auto maList = pp.getMatchesAsPlayer();
   for (const Match& ma : maList)
   {
-    if (ma.getMatchNumber() == MATCH_NUM_NOT_ASSIGNED) continue;
+    if (ma.getMatchNumber() == ERR::MATCH_NUM_NOT_ASSIGNED) continue;
     ui->playerTab->appendMatch(ma);
   }
   for (const Match& ma : maList)
   {
-    if (ma.getMatchNumber() != MATCH_NUM_NOT_ASSIGNED) continue;
+    if (ma.getMatchNumber() != ERR::MATCH_NUM_NOT_ASSIGNED) continue;
     ui->playerTab->appendMatch(ma);
   }
 }

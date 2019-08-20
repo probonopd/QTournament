@@ -88,7 +88,7 @@ void DlgPickTeam::onFinishedRequested()
   TeamMngr tm{db};
   ERR e = tm.createNewTeam(tName);
   QString msg;
-  if (e != OK)
+  if (e != ERR::OK)
   {
     if (e == NAME_EXISTS)
     {

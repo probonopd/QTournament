@@ -68,7 +68,7 @@ upSimpleReport ResultsAndNextMatches::regenerateReport()
   if (mgl.size() == 1)
   {
     int grpNum = mgl.at(0).getGroupNumber();
-    MATCH_SYSTEM mSys = cat.getMatchSystem();
+    ERR::MATCH_SYSTEM mSys = cat.getMatchSystem();
     if ((grpNum < 0) && (grpNum >= GROUP_NUM__L16) &&
         ((mSys == GROUPS_WITH_KO) || (mSys == SINGLE_ELIM)))
     {
@@ -208,7 +208,7 @@ void ResultsAndNextMatches::printNextMatchPart(upSimpleReport& rep) const
   auto specialCat = cat.convertToSpecializedObject();
   ERR e;
   PlayerPairList remainingPlayers = specialCat->getRemainingPlayersAfterRound(round, &e);
-  if (e == OK)
+  if (e == ERR::OK)
   {
     for (PlayerPair pp : remainingPlayers)
     {

@@ -44,14 +44,14 @@ ERR cmdImportSinglePlayerFromExternalDatabase::exec()
     QString msg = tr("No valid database for player export available.\n\n");
     msg +=tr("Is the database configured and the file existing?");
     QMessageBox::warning(parentWidget, tr("Export player"), msg);
-    return EPD__NOT_OPENED;
+    return ERR::EPD__NOT_OPENED;
   }
   ERR e = pm.openConfiguredExternalPlayerDatabase();
-  if (!(pm.hasExternalPlayerDatabaseOpen()) || (e != OK))
+  if (!(pm.hasExternalPlayerDatabaseOpen()) || (e != ERR::OK))
   {
     QString msg = tr("Could not open database for player export!");
     QMessageBox::warning(parentWidget, tr("Export player"), msg);
-    return EPD__NOT_OPENED;
+    return ERR::EPD__NOT_OPENED;
   }
 
   ExternalPlayerDB* extDb = pm.getExternalPlayerDatabaseHandle();
@@ -60,7 +60,7 @@ ERR cmdImportSinglePlayerFromExternalDatabase::exec()
   DlgImportPlayer dlg{parentWidget, extDb};
   if (dlg.exec() != QDialog::Accepted)
   {
-    return OK;
+    return ERR::OK;
   }
 
   // get the selected ID
@@ -69,7 +69,7 @@ ERR cmdImportSinglePlayerFromExternalDatabase::exec()
   {
     QString msg = tr("No valid player selection found");
     QMessageBox::warning(parentWidget, tr("Import player"), msg);
-    return INVALID_ID;
+    return ERR::INVALID_ID;
   }
 
   // get the selected player from the database
@@ -78,7 +78,7 @@ ERR cmdImportSinglePlayerFromExternalDatabase::exec()
   {
     QString msg = tr("No valid player selection found");
     QMessageBox::warning(parentWidget, tr("Import player"), msg);
-    return INVALID_ID;
+    return ERR::INVALID_ID;
   }
 
   // if the player has no valid sex assigned,
@@ -89,7 +89,7 @@ ERR cmdImportSinglePlayerFromExternalDatabase::exec()
     DlgPickPlayerSex dlgPickSex{parentWidget, extPlayer->getFirstname() + " " + extPlayer->getLastname()};
     if (dlgPickSex.exec() != QDialog::Accepted)
     {
-      return OK;
+      return ERR::OK;
     }
 
     finalPlayerData = make_unique<ExternalPlayerDatabaseEntry>(
@@ -118,7 +118,7 @@ ERR cmdImportSinglePlayerFromExternalDatabase::exec()
       QString msg = tr("%1 cannot be added to this category.");
       msg = msg.arg((selSex == M) ? tr("A male player") : tr("A female player"));
       QMessageBox::warning(parentWidget, tr("Import player"), msg);
-      return INVALID_SEX;
+      return ERR::INVALID_SEX;
     }
   }
 

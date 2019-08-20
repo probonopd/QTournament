@@ -37,10 +37,10 @@ ERR cmdRemovePlayerFromCategory::exec()
 
   err = cm.removePlayerFromCategory(pl, cat);
 
-  if (err == OK) return OK;
+  if (err == ERR::OK) return ERR::OK;
 
   QString msg;
-  if (err == PLAYER_NOT_REMOVABLE_FROM_CATEGORY)
+  if (err == ERR::PLAYER_NOT_REMOVABLE_FROM_CATEGORY)
   {
     msg = tr("The player cannot be removed from the category anymore,\n");
     msg += tr("e.g., because the category has already been started");

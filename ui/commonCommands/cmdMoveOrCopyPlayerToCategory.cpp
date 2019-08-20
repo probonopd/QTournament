@@ -40,7 +40,7 @@ ERR cmdMoveOrCopyPlayerToCategory::exec()
   {
     QString msg = tr("The player is not assigned to the source category of this operation.");
     QMessageBox::warning(parentWidget, tr("Move or copy player"), msg);
-    return PLAYER_NOT_IN_CATEGORY;
+    return ERR::PLAYER_NOT_IN_CATEGORY;
   }
 
   // if this is a move operation: make sure we can actually delete
@@ -49,7 +49,7 @@ ERR cmdMoveOrCopyPlayerToCategory::exec()
   {
     QString msg = tr("The player cannot be removed from the source category of this operation.");
     QMessageBox::warning(parentWidget, tr("Move player"), msg);
-    return PLAYER_NOT_REMOVABLE_FROM_CATEGORY;
+    return ERR::PLAYER_NOT_REMOVABLE_FROM_CATEGORY;
   }
 
   // if this is a copy operation and the player is already in
@@ -57,7 +57,7 @@ ERR cmdMoveOrCopyPlayerToCategory::exec()
   bool dstCatHasPlayer = dstCat.hasPlayer(pl);
   if (!isMove && dstCatHasPlayer)
   {
-    return OK;
+    return ERR::OK;
   }
 
   // if this is a move operation and the player is already in
@@ -66,7 +66,7 @@ ERR cmdMoveOrCopyPlayerToCategory::exec()
   {
     ERR err = cm.removePlayerFromCategory(pl, srcCat);
 
-    if (err != OK)   // shouldn't happen after the previous check, but anyway...
+    if (err != ERR::OK)   // shouldn't happen after the previous check, but anyway...
     {
       QString msg = tr("The player cannot be removed from the source category of this operation.");
       QMessageBox::warning(parentWidget, tr("Move player"), msg);
@@ -77,7 +77,7 @@ ERR cmdMoveOrCopyPlayerToCategory::exec()
 
   // try to add the player to the target category
   ERR err = cm.addPlayerToCategory(pl, dstCat);
-  if (err != OK)
+  if (err != ERR::OK)
   {
     QString msg = tr("The player cannot be added to the target category of this operation.");
     QMessageBox::warning(parentWidget, tr("Move or copy player"), msg);
@@ -89,7 +89,7 @@ ERR cmdMoveOrCopyPlayerToCategory::exec()
   {
     ERR err = cm.removePlayerFromCategory(pl, srcCat);
 
-    if (err != OK)   // shouldn't happen after the previous check, but anyway...
+    if (err != ERR::OK)   // shouldn't happen after the previous check, but anyway...
     {
       QString msg = tr("The player cannot be removed from the source category of this operation.");
       QMessageBox::warning(parentWidget, tr("Move player"), msg);
@@ -98,6 +98,6 @@ ERR cmdMoveOrCopyPlayerToCategory::exec()
     return err;
   }
 
-  return OK;
+  return ERR::OK;
 }
 

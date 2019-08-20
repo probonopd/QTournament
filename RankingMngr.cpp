@@ -48,7 +48,7 @@ namespace QTournament
     int lastRound = crs.getFinishedRoundsCount();
     if (lastRound < 1)
     {
-      if (err != nullptr) *err = ROUND_NOT_FINISHED;
+      if (err != nullptr) *err = ERR::ROUND_NOT_FINISHED;
       return RankingEntryList();
     }
 
@@ -75,14 +75,14 @@ namespace QTournament
       {
         ERR e;
         auto score = ma->getScore(&e);
-        if (e != OK)
+        if (e != ERR::OK)
         {
           if (err != nullptr) *err = e;
           return RankingEntryList();
         }
         if (!score.has_value())
         {
-          if (err != nullptr) *err = NO_MATCH_RESULT_SET;
+          if (err != nullptr) *err = ERR::NO_MATCH_RESULT_SET;
           return RankingEntryList();
         }
       }
@@ -211,7 +211,7 @@ namespace QTournament
       result.push_back(RankingEntry(db, newId));
     }
 
-    if (err != nullptr) *err = OK;
+    if (err != nullptr) *err = ERR::OK;
     return result;
   }
 
@@ -301,7 +301,7 @@ namespace QTournament
 
   ERR RankingMngr::updateRankingsAfterMatchResultChange(const Match& ma, const MatchScore& oldScore, bool skipSorting) const
   {
-    if (ma.getState() != STAT_MA_FINISHED) return WRONG_STATE;
+    if (ma.getState() != STAT_MA_FINISHED) return ERR::WRONG_STATE;
 
     Category cat = ma.getCategory();
     int catId = cat.getId();
@@ -388,7 +388,7 @@ namespace QTournament
     w.addCol(RA_PAIR_REF, pp1Id);
     w.addCol(RA_ROUND, firstRoundToModify);
     auto re = getSingleObjectByWhereClause<RankingEntry>(w);
-    if (!re.has_value()) return OK;  // no ranking entries yet
+    if (!re.has_value()) return ERR::OK;  // no ranking entries yet
     int grpNum = re->getGroupNumber();
 
     //
@@ -481,18 +481,18 @@ namespace QTournament
     }
     catch (SqliteOverlay::BusyException&)
     {
-      return DATABASE_ERROR;
+      return ERR::DATABASE_ERROR;
     }
     catch (SqliteOverlay::GenericSqliteException&)
     {
-      return DATABASE_ERROR;
+      return ERR::DATABASE_ERROR;
     }
     catch (...)
     {
       throw;
     }
 
-    return OK;
+    return ERR::OK;
   }
 
   //----------------------------------------------------------------------------
@@ -514,7 +514,7 @@ namespace QTournament
     int lastRound = crs.getFinishedRoundsCount();
     if (lastRound < 1)
     {
-      if (err != nullptr) *err = ROUND_NOT_FINISHED;
+      if (err != nullptr) *err = ERR::ROUND_NOT_FINISHED;
       return RankingEntryListList();
     }
 
@@ -525,7 +525,7 @@ namespace QTournament
     RankingEntryList rel = getObjectsByWhereClause<RankingEntry>(wc);
     if (rel.empty())
     {
-      if (err != nullptr) *err = MISSING_RANKING_ENTRIES;
+      if (err != nullptr) *err = ERR::MISSING_RANKING_ENTRIES;
       return RankingEntryListList();
     }
 
@@ -582,7 +582,7 @@ namespace QTournament
       result.push_back(rankList);
     }
 
-    if (err != nullptr) *err = OK;
+    if (err != nullptr) *err = ERR::OK;
     return result;
   }
 
@@ -590,11 +590,11 @@ namespace QTournament
 
   ERR RankingMngr::forceRank(const RankingEntry& re, int rank) const
   {
-    if (rank < 1) return INVALID_RANK;
+    if (rank < 1) return ERR::INVALID_RANK;
 
     re.row.update(RA_RANK, rank);
 
-    return OK;
+    return ERR::OK;
   }
 
   //----------------------------------------------------------------------------
@@ -603,7 +603,7 @@ namespace QTournament
   {
     re.row.updateToNull(RA_RANK);
 
-    return OK;
+    return ERR::OK;
   }
 
 //----------------------------------------------------------------------------

@@ -201,7 +201,7 @@ namespace QTournament
     if (isPaired(p))
     {
       Player partner = getPartner(p);
-      if (canSplitPlayers(p, partner) != OK)
+      if (canSplitPlayers(p, partner) != ERR::OK)
       {
         return false;
       }
@@ -416,7 +416,7 @@ namespace QTournament
     // we can only create pairs while being in config mode
     if (getState() != STAT_CAT_CONFIG)
     {
-      return CATEGORY_NOT_CONFIGURALE_ANYMORE;
+      return ERR::CATEGORY_NOT_CONFIGURALE_ANYMORE;
     }
 
     // in singles, we don't need pairs. The same is true if we're using
@@ -424,7 +424,7 @@ namespace QTournament
     MATCH_TYPE mt = getMatchType();
     if (mt == SINGLES)
     {
-      return NO_CATEGORY_FOR_PAIRING;
+      return ERR::NO_CATEGORY_FOR_PAIRING;
     }
     // TODO: check for "random" with "random partners"
 
@@ -432,19 +432,19 @@ namespace QTournament
     // make sure that both players are actually listed in this category
     if ((!(hasPlayer(p1))) || (!(hasPlayer(p2))))
     {
-      return PLAYER_NOT_IN_CATEGORY;
+      return ERR::PLAYER_NOT_IN_CATEGORY;
     }
 
     // make sure that both players are not yet paired in this category
     if ((isPaired(p1)) || (isPaired(p2)))
     {
-      return PLAYER_ALREADY_PAIRED;
+      return ERR::PLAYER_ALREADY_PAIRED;
     }
 
     // make sure that the players are not identical
     if (p1 == p2)
     {
-      return PLAYERS_IDENTICAL;
+      return ERR::PLAYERS_IDENTICAL;
     }
 
     // if this is a mixed category, make sure the sex is right
@@ -452,7 +452,7 @@ namespace QTournament
     {
       if (p1.getSex() == p2.getSex())
       {
-        return INVALID_SEX;
+        return ERR::INVALID_SEX;
       }
     }
 
@@ -462,11 +462,11 @@ namespace QTournament
       SEX catSex = getSex();
       if ((p1.getSex() != catSex) || (p2.getSex() != catSex))
       {
-        return INVALID_SEX;
+        return ERR::INVALID_SEX;
       }
     }
 
-    return OK;
+    return ERR::OK;
   }
 
   //----------------------------------------------------------------------------
@@ -476,7 +476,7 @@ namespace QTournament
     // we can only split pairs while being in config mode
     if (getState() != STAT_CAT_CONFIG)
     {
-      return CATEGORY_NOT_CONFIGURALE_ANYMORE;
+      return ERR::CATEGORY_NOT_CONFIGURALE_ANYMORE;
     }
 
     // check if the two players are paired for this category
@@ -487,7 +487,7 @@ namespace QTournament
     DbTab pairsTab{db, TAB_PAIRS, false};
     if (pairsTab.getMatchCountForWhereClause(wc) != 0)
     {
-      return OK;
+      return ERR::OK;
     }
 
     // swap player 1 and player 2 and make a new query
@@ -497,10 +497,10 @@ namespace QTournament
     wc.addCol(PAIRS_PLAYER2_REF, p1.getId());
     if (pairsTab.getMatchCountForWhereClause(wc) != 0)
     {
-      return OK;
+      return ERR::OK;
     }
 
-    return PLAYERS_NOT_A_PAIR;
+    return ERR::PLAYERS_NOT_A_PAIR;
   }
 
   //----------------------------------------------------------------------------
@@ -595,26 +595,26 @@ namespace QTournament
 
   ERR Category::canApplyGroupAssignment(const std::vector<PlayerPairList>& grpCfg)
   {
-    if (getState() != STAT_CAT_FROZEN) return CATEGORY_NOT_YET_FROZEN;
+    if (getState() != STAT_CAT_FROZEN) return ERR::CATEGORY_NOT_YET_FROZEN;
 
     std::unique_ptr<Category> specializedCat = convertToSpecializedObject();
     if (!(specializedCat->needsGroupInitialization()))
     {
-      return CATEGORY_NEEDS_NO_GROUP_ASSIGNMENTS;
+      return ERR::CATEGORY_NEEDS_NO_GROUP_ASSIGNMENTS;
     }
 
     KO_Config cfg = KO_Config(getParameter(GROUP_CONFIG).toString());
-    if (!(cfg.isValid())) return INVALID_KO_CONFIG;
+    if (!(cfg.isValid())) return ERR::INVALID_KO_CONFIG;
 
     // check if the grpCfg matches the KO_Config
-    if (grpCfg.size() != cfg.getNumGroups()) return INVALID_GROUP_NUM;
+    if (grpCfg.size() != cfg.getNumGroups()) return ERR::INVALID_GROUP_NUM;
     int pairsInGrpCfg = 0;
     for (int i=0; i<grpCfg.size(); i++)
     {
       pairsInGrpCfg += grpCfg.at(i).size();
     }
     int pairsInCategory = getPlayerPairs().size();
-    if (pairsInCategory != pairsInGrpCfg) return INVALID_PLAYER_COUNT;
+    if (pairsInCategory != pairsInGrpCfg) return ERR::INVALID_PLAYER_COUNT;
 
     // make sure we only have player pairs that actually belong to this category
     PlayerPairList allPairs = getPlayerPairs();
@@ -637,28 +637,28 @@ namespace QTournament
           }
         }
 
-        if (!isValid) return PLAYER_NOT_IN_CATEGORY;
+        if (!isValid) return ERR::PLAYER_NOT_IN_CATEGORY;
       }
     }
 
     // okay, we're good to go!
-    return OK;
+    return ERR::OK;
   }
 
   //----------------------------------------------------------------------------
 
   ERR Category::canApplyInitialRanking(PlayerPairList seed)
   {
-    if (getState() != STAT_CAT_FROZEN) return CATEGORY_NOT_YET_FROZEN;
+    if (getState() != STAT_CAT_FROZEN) return ERR::CATEGORY_NOT_YET_FROZEN;
 
     std::unique_ptr<Category> specializedCat = convertToSpecializedObject();
     if (!(specializedCat->needsInitialRanking()))
     {
-      return CATEGORY_NEEDS_NO_SEEDING;
+      return ERR::CATEGORY_NEEDS_NO_SEEDING;
     }
 
     int pairsInCategory = getPlayerPairs().size();
-    if (pairsInCategory != seed.size()) return INVALID_PLAYER_COUNT;
+    if (pairsInCategory != seed.size()) return ERR::INVALID_PLAYER_COUNT;
 
     // make sure we only have player pairs that actually belong to this category
     PlayerPairList allPairs = getPlayerPairs();
@@ -677,11 +677,11 @@ namespace QTournament
         }
       }
 
-      if (!isValid) return PLAYER_NOT_IN_CATEGORY;
+      if (!isValid) return ERR::PLAYER_NOT_IN_CATEGORY;
     }
 
     // okay, we're good to go!
-    return OK;
+    return ERR::OK;
   }
 
   //----------------------------------------------------------------------------
@@ -689,7 +689,7 @@ namespace QTournament
   ERR Category::applyGroupAssignment(const std::vector<PlayerPairList>& grpCfg)
   {
     ERR e = canApplyGroupAssignment(grpCfg);
-    if (e != OK) return e;
+    if (e != ERR::OK) return e;
     
     // The previous call checked for all possible errors or
     // misconfigurations. So we can safely write directly to the database
@@ -705,7 +705,7 @@ namespace QTournament
       }
     }
     
-    return OK;
+    return ERR::OK;
   }
 
   //----------------------------------------------------------------------------
@@ -713,7 +713,7 @@ namespace QTournament
   ERR Category::applyInitialRanking(const PlayerPairList& seed)
   {
     ERR e = canApplyInitialRanking(seed);
-    if (e != OK) return e;
+    if (e != ERR::OK) return e;
     
     // The previous call checked for all possible errors or
     // misconfigurations. So we can safely write directly to the database
@@ -726,7 +726,7 @@ namespace QTournament
       ++rank;
     }
     
-    return OK;
+    return ERR::OK;
   }
 
   //----------------------------------------------------------------------------
@@ -747,7 +747,7 @@ namespace QTournament
     */
   ERR Category::generateGroupMatches(const PlayerPairList& grpMembers, int grpNum, int firstRoundNum) const
   {
-    if ((grpNum < 1) && (grpNum != GROUP_NUM__ITERATION)) return INVALID_GROUP_NUM;
+    if ((grpNum < 1) && (grpNum != GROUP_NUM__ITERATION)) return ERR::INVALID_GROUP_NUM;
 
     RoundRobinGenerator rrg;
     MatchMngr mm{db};
@@ -769,13 +769,13 @@ namespace QTournament
         if (matches.size() == 0)
         {
           trans.commit();
-          return OK;
+          return ERR::OK;
         }
 
         // create a match group for the new round
         ERR e;
         auto mg = mm.createMatchGroup(*this, firstRoundNum + internalRoundNum, grpNum, &e);
-        if (e != OK) return e;
+        if (e != ERR::OK) return e;
 
         // assign matches to this group
         for (auto [pairIndex1, pairIndex2] : matches)
@@ -784,10 +784,10 @@ namespace QTournament
           const PlayerPair& pp2 = grpMembers.at(pairIndex2);
 
           auto newMatch = mm.createMatch(*mg, &e);
-          if (e != OK) return e;
+          if (e != ERR::OK) return e;
 
           e = mm.setPlayerPairsForMatch(*newMatch, pp1, pp2);
-          if (e != OK) return e;
+          if (e != ERR::OK) return e;
         }
 
         // close this group (transition to FROZEN) and potentially promote it further to IDLE
@@ -798,7 +798,7 @@ namespace QTournament
     }
     catch (...)
     {
-      return DATABASE_ERROR;
+      return ERR::DATABASE_ERROR;
     }
   }
 
@@ -821,7 +821,7 @@ namespace QTournament
   ERR Category::generateBracketMatches(int bracketMode, const PlayerPairList& seeding, int firstRoundNum) const
   {
     CatRoundStatus crs = getRoundStatus();
-    if (firstRoundNum <= crs.getHighestGeneratedMatchRound()) return INVALID_ROUND;
+    if (firstRoundNum <= crs.getHighestGeneratedMatchRound()) return ERR::INVALID_ROUND;
 
     // generate the bracket data for the player list
     BracketGenerator gen{bracketMode};
@@ -952,14 +952,14 @@ namespace QTournament
         // create the match group
         ERR err;
         curGroup = mm.createMatchGroup(*this, firstRoundNum+curRound, grpNum, &err);
-        assert(err == OK);
+        assert(err == ERR::OK);
         assert(curGroup);
       }
 
       // create a new, empty match in this group and map it to the bracket match id
       ERR err;
       auto ma = mm.createMatch(*curGroup, &err);
-      assert(err == OK);
+      assert(err == ERR::OK);
       assert(ma);
 
       bracket2Match.insert(bmd.getBracketMatchId(), ma->getId());
@@ -1114,7 +1114,7 @@ namespace QTournament
       // for now
       bvd->fillMissingPlayerNames();
     }
-    return OK;
+    return ERR::OK;
   }
 
   //----------------------------------------------------------------------------
@@ -1221,7 +1221,7 @@ namespace QTournament
 
     ERR e;
     PlayerPairList remainingPlayers = specialCat->getRemainingPlayersAfterRound(round, &e);
-    if (e != OK)
+    if (e != ERR::OK)
     {
       if (err != nullptr) *err = e;
       return PlayerPairList();
@@ -1235,7 +1235,7 @@ namespace QTournament
       eliminatedPlayers.push_back(pp);
     }
 
-    if (err != nullptr) *err = OK;
+    if (err != nullptr) *err = ERR::OK;
     return eliminatedPlayers;
   }
 

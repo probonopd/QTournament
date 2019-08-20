@@ -40,7 +40,7 @@ namespace QTournament
 MatrixAndStandings::MatrixAndStandings(TournamentDB* _db, const QString& _name, const Category& _cat, int _round)
   :AbstractReport(_db, _name), cat(_cat), round(_round)
 {
-  MATCH_SYSTEM msys = cat.getMatchSystem();
+  ERR::MATCH_SYSTEM msys = cat.getMatchSystem();
   CatRoundStatus crs = cat.getRoundStatus();
 
   // make sure this category is eligible for a matrix view
@@ -92,7 +92,7 @@ upSimpleReport MatrixAndStandings::regenerateReport()
   // if we are in round robins with multiple iterations,
   // create a subhead indicating the current iteration number
   QString subHead;
-  MATCH_SYSTEM msys = cat.getMatchSystem();
+  ERR::MATCH_SYSTEM msys = cat.getMatchSystem();
   int curIteration = -1;
   if (msys == ROUND_ROBIN)
   {
@@ -201,7 +201,7 @@ QStringList MatrixAndStandings::getReportLocators() const
   loc += cat.getName() + "::";
 
   // insert the number of the iteration, if applicable
-  MATCH_SYSTEM msys = cat.getMatchSystem();
+  ERR::MATCH_SYSTEM msys = cat.getMatchSystem();
   if (msys == ROUND_ROBIN)
   {
     std::unique_ptr<PureRoundRobinCategory> rrCat = PureRoundRobinCategory::getFromGenericCat(cat);

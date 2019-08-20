@@ -45,24 +45,24 @@ namespace QTournament
 
     if (!(cfg.getBool(CFG_KEY_USE_TEAMS)))
     {
-      return NOT_USING_TEAMS;
+      return ERR::NOT_USING_TEAMS;
     }
     
     QString teamName = tm.trimmed();
     
     if (teamName.isEmpty())
     {
-      return INVALID_NAME;
+      return ERR::INVALID_NAME;
     }
     
     if (teamName.length() > MAX_NAME_LEN)
     {
-      return INVALID_NAME;
+      return ERR::INVALID_NAME;
     }
     
     if (hasTeam(teamName))
     {
-      return NAME_EXISTS;
+      return ERR::NAME_EXISTS;
     }
     
     // create a new table row
@@ -75,7 +75,7 @@ namespace QTournament
     fixSeqNumberAfterInsert();
     cse->endCreateTeam(tab.length() - 1);  // the new sequence number is always the greatest
     
-    return OK;
+    return ERR::OK;
   }
 
 //----------------------------------------------------------------------------
@@ -129,19 +129,19 @@ namespace QTournament
     // Ensure the new name is valid
     if ((newName.isEmpty()) || (newName.length() > MAX_NAME_LEN))
     {
-      return INVALID_NAME;
+      return ERR::INVALID_NAME;
     }
     
     // make sure the new name doesn't exist yet
     if (hasTeam(newName))
     {
-      return NAME_EXISTS;
+      return ERR::NAME_EXISTS;
     }
     
     t.row.update(GENERIC_NAME_FIELD_NAME, newName.toUtf8().constData());
     CentralSignalEmitter::getInstance()->teamRenamed(t.getSeqNum());
     
-    return OK;
+    return ERR::OK;
   }
 
 //----------------------------------------------------------------------------
@@ -196,20 +196,20 @@ namespace QTournament
 
     if (!(cfg.getBool(CFG_KEY_USE_TEAMS)))
     {
-      return NOT_USING_TEAMS;
+      return ERR::NOT_USING_TEAMS;
     }
     
     Team oldTeam = p.getTeam();
     
     if (oldTeam.getId() == newTeam.getId())
     {
-      return OK;  // no database access necessary
+      return ERR::OK;  // no database access necessary
     }
     
     p.row.update(PL_TEAM_REF, newTeam.getId());
     CentralSignalEmitter::getInstance()->teamAssignmentChanged(p, oldTeam, newTeam);
     
-    return OK;
+    return ERR::OK;
   }
 
 //----------------------------------------------------------------------------

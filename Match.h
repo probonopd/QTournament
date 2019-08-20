@@ -16,7 +16,7 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MATCH_H
+#ifndef ERR::MATCH_H
 #define	MATCH_H
 
 #include <memory>
@@ -105,5 +105,5 @@ namespace QTournament
 
   using MatchList = std::vector<Match>;
 }
-#endif	/* MATCH_H */
+#endif	/* ERR::MATCH_H */
 
