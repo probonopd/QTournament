@@ -23,6 +23,8 @@
 #include "ui/DlgSelectPlayer.h"
 #include "CatMngr.h"
 
+using namespace QTournament;
+
 cmdBulkRemovePlayersFromCategory::cmdBulkRemovePlayersFromCategory(QWidget* p, const Category& _cat)
   :AbstractCommand(_cat.getDatabaseHandle(), p), cat(_cat)
 {
@@ -34,7 +36,7 @@ cmdBulkRemovePlayersFromCategory::cmdBulkRemovePlayersFromCategory(QWidget* p, c
 Error cmdBulkRemovePlayersFromCategory::exec()
 {
   // show a dialog for selecting the players
-  DlgSelectPlayer dlg{db, parentWidget, DlgSelectPlayer::DlgContext::RemoveFromCategory, &cat};
+  DlgSelectPlayer dlg{db, parentWidget, DlgSelectPlayer::DlgContext::RemoveFromCategory, cat};
   if (dlg.exec() != QDialog::Accepted)
   {
     return Error::OK;

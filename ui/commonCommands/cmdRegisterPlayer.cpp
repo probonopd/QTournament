@@ -22,6 +22,8 @@
 #include "cmdRegisterPlayer.h"
 #include "PlayerMngr.h"
 
+using namespace QTournament;
+
 cmdRegisterPlayer::cmdRegisterPlayer(QWidget* p, const Player& _pl)
   :AbstractCommand(_pl.getDatabaseHandle(), p), pl(_pl)
 {

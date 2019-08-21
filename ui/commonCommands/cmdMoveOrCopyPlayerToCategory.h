@@ -33,12 +33,11 @@ class cmdMoveOrCopyPlayerToCategory : public QObject, AbstractCommand
 public:
   cmdMoveOrCopyPlayerToCategory(QWidget* p, const QTournament::Player& _pl, const QTournament::Category& _srcCat, const QTournament::Category& _dstCat, bool _isMove=false);
   virtual QTournament::Error exec() override;
-  virtual ~cmdMoveOrCopyPlayerToCategory() {}
 
 protected:
-  QTournament::Player pl;
-  QTournament::Category srcCat;
-  QTournament::Category dstCat;
+  const QTournament::Player pl;
+  const QTournament::Category srcCat;
+  const QTournament::Category dstCat;
   bool isMove;
 };
 

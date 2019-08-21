@@ -27,7 +27,9 @@
 #include "PlayerMngr.h"
 #include "CatMngr.h"
 
-cmdImportSinglePlayerFromExternalDatabase::cmdImportSinglePlayerFromExternalDatabase(TournamentDB* _db, QWidget* p, int _preselectedCatId)
+using namespace QTournament;
+
+cmdImportSinglePlayerFromExternalDatabase::cmdImportSinglePlayerFromExternalDatabase(const TournamentDB& _db, QWidget* p, int _preselectedCatId)
   :AbstractCommand(_db, p), preselectedCatId(_preselectedCatId)
 {
 
@@ -74,7 +76,7 @@ Error cmdImportSinglePlayerFromExternalDatabase::exec()
 
   // get the selected player from the database
   auto extPlayer = extDb->getPlayer(extId);
-  if (extPlayer == nullptr)
+  if (!extPlayer)
   {
     QString msg = tr("No valid player selection found");
     QMessageBox::warning(parentWidget, tr("Import player"), msg);
@@ -83,7 +85,7 @@ Error cmdImportSinglePlayerFromExternalDatabase::exec()
 
   // if the player has no valid sex assigned,
   // show a selection dialog
-  upExternalPlayerDatabaseEntry finalPlayerData;
+  std::optional<ExternalPlayerDatabaseEntry> finalPlayerData;
   if (extPlayer->getSex() == Sex::DontCare)
   {
     DlgPickPlayerSex dlgPickSex{parentWidget, extPlayer->getFirstname() + " " + extPlayer->getLastname()};
@@ -92,13 +94,13 @@ Error cmdImportSinglePlayerFromExternalDatabase::exec()
       return Error::OK;
     }
 
-    finalPlayerData = make_unique<ExternalPlayerDatabaseEntry>(
+    finalPlayerData.emplace(
           extPlayer->getFirstname(),
           extPlayer->getLastname(),
           dlgPickSex.getSelectedSex()
           );
   } else {
-    finalPlayerData = std::move(extPlayer);
+    finalPlayerData = extPlayer;
   }
 
   // make sure the player's sex fits to a possibly preselected
@@ -109,14 +111,14 @@ Error cmdImportSinglePlayerFromExternalDatabase::exec()
     auto cat = cm.getCategory(preselectedCatId);
 
     // was the provided ID valid? If not, invalidate it
-    if (cat == nullptr) preselectedCatId = -1;
+    if (!cat) preselectedCatId = -1;
 
     // may we add a player of the selected sex to this category?
     Sex selSex = finalPlayerData->getSex();
     if (cat->getAddState(selSex) != CatAddState::CanJoin)
     {
       QString msg = tr("%1 cannot be added to this category.");
-      msg = msg.arg((selSex == M) ? tr("A male player") : tr("A female player"));
+      msg = msg.arg((selSex == Sex::M) ? tr("A male player") : tr("A female player"));
       QMessageBox::warning(parentWidget, tr("Import player"), msg);
       return Error::InvalidSex;
     }

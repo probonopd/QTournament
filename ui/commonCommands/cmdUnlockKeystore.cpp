@@ -25,7 +25,9 @@
 #include "cmdUnlockKeystore.h"
 #include "OnlineMngr.h"
 
-cmdUnlockKeystore::cmdUnlockKeystore(QWidget* p, TournamentDB* _db)
+using namespace QTournament;
+
+cmdUnlockKeystore::cmdUnlockKeystore(QWidget* p, const TournamentDB& _db)
   :AbstractCommand(_db, p)
 {
 
@@ -35,7 +37,7 @@ cmdUnlockKeystore::cmdUnlockKeystore(QWidget* p, TournamentDB* _db)
 
 Error cmdUnlockKeystore::exec()
 {
-  OnlineMngr* om = db->getOnlineManager();
+  OnlineMngr* om = db.getOnlineManager();
 
   // if the user hasn't supplied a password yet,
   // there's nothing we can unlock

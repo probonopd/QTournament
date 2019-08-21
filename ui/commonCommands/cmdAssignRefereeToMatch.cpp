@@ -27,7 +27,9 @@
 #include "ui/DlgSelectReferee.h"
 #include "reports/ResultSheets.h"
 
-cmdAssignRefereeToMatch::cmdAssignRefereeToMatch(QWidget* p, const QTournament::Match &_ma, REFEREE_ACTION _refAction)
+using namespace QTournament;
+
+cmdAssignRefereeToMatch::cmdAssignRefereeToMatch(QWidget* p, const QTournament::Match &_ma, RefereeAction _refAction)
   :AbstractCommand(_ma.getDatabaseHandle(), p), ma(_ma), refAction(_refAction)
 {
 
@@ -38,7 +40,7 @@ cmdAssignRefereeToMatch::cmdAssignRefereeToMatch(QWidget* p, const QTournament::
 Error cmdAssignRefereeToMatch::exec()
 {
   // do we actually need to assign an umpire?
-  RefereeMode refMode = (refAction == REFEREE_ACTION::SWAP) ? ma.get_RAW_RefereeMode() : ma.get_EFFECTIVE_RefereeMode();
+  RefereeMode refMode = (refAction == RefereeAction::Swap) ? ma.get_RAW_RefereeMode() : ma.get_EFFECTIVE_RefereeMode();
   assert(refMode != RefereeMode::UseDefault);
   if ((refMode == RefereeMode::None) || (refMode == RefereeMode::HandWritten))
   {
@@ -51,17 +53,17 @@ Error cmdAssignRefereeToMatch::exec()
   {
     QString msg;
 
-    if (refAction == REFEREE_ACTION::MATCH_CALL)
+    if (refAction == RefereeAction::MatchCall)
     {
       msg = tr("An unexpected error occured: the match needs an umpire,\n");
       msg += tr("but an umpire can't be assigned right now.\n\n");
       msg += tr("The match cannot be started.");
 
-    } else if (refAction == REFEREE_ACTION::PRE_ASSIGN) {
+    } else if (refAction == RefereeAction::PreAssign) {
       msg = tr("It is currently not possible to assign\n");
       msg += tr("an umpire to this match. Maybe the match has\n");
       msg += tr("already been started or finished?\n");
-    } else if (refAction == REFEREE_ACTION::PRE_ASSIGN) {
+    } else if (refAction == RefereeAction::PreAssign) {
       msg = tr("It is currently not possible to swap\n");
       msg += tr("the assigned umpire for this match.");
     } else {
@@ -80,12 +82,12 @@ Error cmdAssignRefereeToMatch::exec()
   {
     return Error::OK;
   }
-  upPlayer selPlayer = dlg.getFinalPlayerSelection();
+  auto selPlayer = dlg.getFinalPlayerSelection();
 
   // if selPlayer is null and we are in a match call, the user decided to
   // continue without referee
   MatchMngr mm{db};
-  if ((selPlayer == nullptr) && (refAction == REFEREE_ACTION::MATCH_CALL))
+  if (!selPlayer && (refAction == RefereeAction::MatchCall))
   {
     err = mm.setRefereeMode(ma, RefereeMode::None);
     if (err != Error::OK)
@@ -105,7 +107,7 @@ Error cmdAssignRefereeToMatch::exec()
   }
 
   // in all other cases, selPlayer shouldn't be null
-  assert(selPlayer != nullptr);
+  assert(selPlayer);
 
   // actually do the assignment
   err = mm.assignReferee(ma, *selPlayer, refAction);
@@ -119,7 +121,7 @@ Error cmdAssignRefereeToMatch::exec()
 
   // if we are calling a match, the user might want to print a
   // new result sheet with the freshly umpire name
-  if (refAction == REFEREE_ACTION::MATCH_CALL)
+  if (refAction == RefereeAction::MatchCall)
   {
     QString msg = tr("Do you want to print a new result sheet with the\n");
     msg += tr("updated umpire name for this match?");

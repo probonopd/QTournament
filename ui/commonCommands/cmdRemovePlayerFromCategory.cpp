@@ -22,6 +22,8 @@
 #include "cmdRemovePlayerFromCategory.h"
 #include "CatMngr.h"
 
+using namespace QTournament;
+
 cmdRemovePlayerFromCategory::cmdRemovePlayerFromCategory(QWidget* p, const Player& _pl, const Category& _cat)
   :AbstractCommand(_pl.getDatabaseHandle(), p), pl(_pl), cat(_cat)
 {

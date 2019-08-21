@@ -33,7 +33,9 @@
 #include "ui/DlgRegisterTournament.h"
 #include "ui/DlgPassword.h"
 
-cmdOnlineRegistration::cmdOnlineRegistration(QWidget* p, TournamentDB* _db)
+using namespace QTournament;
+
+cmdOnlineRegistration::cmdOnlineRegistration(QWidget* p, const TournamentDB& _db)
   :AbstractCommand(_db, p)
 {
 
@@ -43,7 +45,7 @@ cmdOnlineRegistration::cmdOnlineRegistration(QWidget* p, TournamentDB* _db)
 
 Error cmdOnlineRegistration::exec()
 {
-  OnlineMngr* om = db->getOnlineManager();
+  OnlineMngr* om = db.getOnlineManager();
 
   // if the user hasn't supplied a password yet,
   // do that now
@@ -81,17 +83,17 @@ Error cmdOnlineRegistration::exec()
   }
 
   // show the registration form
-  auto cfg = SqliteOverlay::KeyValueTab::getTab(db, TabCfg, false);
-  string tName = cfg.operator [](CfgKey_TnmtName);
-  string club = cfg.operator [](CfgKey_TnmtOrga);
+  SqliteOverlay::KeyValueTab cfg{db, TabCfg};
+  std::string tName = cfg[CfgKey_TnmtName];
+  std::string club = cfg[CfgKey_TnmtOrga];
   DlgRegisterTournament dlg{parentWidget, QString::fromUtf8(tName.c_str()), QString::fromUtf8(club.c_str())};
   int rc = dlg.exec();
   if (rc != QDialog::Accepted) return Error::WrongState;  // dummy error code; will not be evaluated by caller
 
   // show a consent form, either in English or German
   bool isGerman = QLocale().name().startsWith("de", Qt::CaseInsensitive);
-  QResource binData(isGerman ? ":/ui/consent_de.html" : ":/ui/consent.html");
-  QString consentTxt = QString::fromUtf8((const char*)binData.data());
+  QFile binData{(isGerman ? ":/ui/consent_de.html" : ":/ui/consent.html")};
+  QString consentTxt = binData.readAll();
   QMessageBox dlgConsent{parentWidget};
   dlgConsent.setText(consentTxt);
   dlgConsent.setStandardButtons(QMessageBox::No | QMessageBox::Yes);

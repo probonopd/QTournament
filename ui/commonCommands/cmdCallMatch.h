@@ -36,8 +36,8 @@ public:
   virtual ~cmdCallMatch() {}
 
 protected:
-  QTournament::Match ma;
-  QTournament::Court co;
+  const QTournament::Match ma;
+  const QTournament::Court co;
 };
 
 #endif // CMDCALLMATCH_H

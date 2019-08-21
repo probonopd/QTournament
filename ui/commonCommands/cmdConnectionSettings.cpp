@@ -30,7 +30,9 @@
 #include "cmdConnectionSettings.h"
 #include "../DlgConnectionSettings.h"
 
-cmdConnectionSetting::cmdConnectionSetting(QWidget* p, TournamentDB* _db)
+using namespace QTournament;
+
+cmdConnectionSetting::cmdConnectionSetting(QWidget* p, const TournamentDB& _db)
   :AbstractCommand(_db, p)
 {
 
@@ -40,7 +42,7 @@ cmdConnectionSetting::cmdConnectionSetting(QWidget* p, TournamentDB* _db)
 
 Error cmdConnectionSetting::exec()
 {
-  OnlineMngr* om = db->getOnlineManager();
+  OnlineMngr* om = db.getOnlineManager();
   SyncState sy = om->getSyncState();
   if (sy.hasSession())
   {
@@ -60,59 +62,57 @@ Error cmdConnectionSetting::exec()
   QString customKeyAfter = dlg.getCustomPubKey();
   int customTimeoutAfter = dlg.getCustomTimeout_ms();
 
-  // start a transaction
-  auto trans = db->startTransaction();
-  if (trans == nullptr)
+  try
   {
-    QString msg = tr("A local database error occured and thus settings can't be applied!");
-    QMessageBox::warning(parentWidget, tr("Edit Connection Settings"), msg);
-    return Error::WrongState; // Dummy
-  }
+    // start a transaction
+    auto trans = db.startTransaction();
 
-  // update the URL, if necessary
-  if (customUrlAfter != customUrlBefore)
-  {
-    bool isOkay = om->setCustomUrl(customUrlAfter);
+    // update the URL, if necessary
+    if (customUrlAfter != customUrlBefore)
+    {
+      bool isOkay = om->setCustomUrl(customUrlAfter);
 
-    if (!isOkay) {
-      QString msg = tr("The server URL could not be updated.");
-      msg += "\n\n";
-      msg += tr("All connection settings remain untouched!");
-      QMessageBox::warning(parentWidget, tr("Edit Connection Settings"), msg);
-      return Error::WrongState; // Dummy
+      if (!isOkay) {
+        QString msg = tr("The server URL could not be updated.");
+        msg += "\n\n";
+        msg += tr("All connection settings remain untouched!");
+        QMessageBox::warning(parentWidget, tr("Edit Connection Settings"), msg);
+        return Error::WrongState; // Dummy
+      }
     }
-  }
 
-  // update the key, if necessary
-  if (customKeyAfter != customKeyBefore)
-  {
-    bool isOkay = om->setCustomServerKey(customKeyAfter);
+    // update the key, if necessary
+    if (customKeyAfter != customKeyBefore)
+    {
+      bool isOkay = om->setCustomServerKey(customKeyAfter);
 
-    if (!isOkay) {
-      QString msg = tr("The server's public key could not be updated. Maybe your input was malformed?");
-      msg += "\n\n";
-      msg += tr("All connection settings remain untouched!");
-      QMessageBox::warning(parentWidget, tr("Edit Connection Settings"), msg);
-      return Error::WrongState; // Dummy
+      if (!isOkay) {
+        QString msg = tr("The server's public key could not be updated. Maybe your input was malformed?");
+        msg += "\n\n";
+        msg += tr("All connection settings remain untouched!");
+        QMessageBox::warning(parentWidget, tr("Edit Connection Settings"), msg);
+        return Error::WrongState; // Dummy
+      }
     }
-  }
 
-  // update the timeout, if necessary
-  if (customTimeoutAfter != customTimeoutBefore)
-  {
-    bool isOkay = om->setCustomTimeout_ms(customTimeoutAfter);
+    // update the timeout, if necessary
+    if (customTimeoutAfter != customTimeoutBefore)
+    {
+      bool isOkay = om->setCustomTimeout_ms(customTimeoutAfter);
 
-    if (!isOkay) {
-      QString msg = tr("The timeout setting could not be updated.");
-      msg += "\n\n";
-      msg += tr("All connection settings remain untouched!");
-      QMessageBox::warning(parentWidget, tr("Edit Connection Settings"), msg);
-      return Error::WrongState; // Dummy
+      if (!isOkay) {
+        QString msg = tr("The timeout setting could not be updated.");
+        msg += "\n\n";
+        msg += tr("All connection settings remain untouched!");
+        QMessageBox::warning(parentWidget, tr("Edit Connection Settings"), msg);
+        return Error::WrongState; // Dummy
+      }
     }
-  }
 
-  // commit all changes
-  if (!(trans->commit()))
+    // commit all changes
+    trans.commit();
+  }
+  catch (...)
   {
     QString msg = tr("A local database error occured and thus settings can't be applied!");
     QMessageBox::warning(parentWidget, tr("Edit Connection Settings"), msg);

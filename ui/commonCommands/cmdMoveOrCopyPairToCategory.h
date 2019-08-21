@@ -35,12 +35,11 @@ public:
                               const QTournament::Category& _srcCat, const QTournament::Category& _dstCat,
                               bool _isMove=false);
   virtual QTournament::Error exec() override;
-  virtual ~cmdMoveOrCopyPairToCategory() {}
 
 protected:
-  QTournament::PlayerPair pp;
-  QTournament::Category srcCat;
-  QTournament::Category dstCat;
+  const QTournament::PlayerPair pp;
+  const QTournament::Category srcCat;
+  const QTournament::Category dstCat;
   bool isMove;
 };
 

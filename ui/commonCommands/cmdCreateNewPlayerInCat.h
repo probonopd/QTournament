@@ -35,7 +35,7 @@ public:
   virtual ~cmdCreateNewPlayerInCat() {}
 
 protected:
-  QTournament::Category cat;
+  const QTournament::Category cat;
 };
 
 #endif // CMDREGISTERPLAYER_H

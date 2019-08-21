@@ -22,6 +22,8 @@
 #include "cmdUnregisterPlayer.h"
 #include "PlayerMngr.h"
 
+using namespace QTournament;
+
 cmdUnregisterPlayer::cmdUnregisterPlayer(QWidget* p, const Player& _pl)
   :AbstractCommand(_pl.getDatabaseHandle(), p), pl(_pl)
 {

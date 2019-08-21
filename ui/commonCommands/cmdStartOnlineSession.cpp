@@ -34,7 +34,9 @@
 #include "ui/DlgPassword.h"
 #include "cmdFullSync.h"
 
-cmdStartOnlineSession::cmdStartOnlineSession(QWidget* p, TournamentDB* _db)
+using namespace QTournament;
+
+cmdStartOnlineSession::cmdStartOnlineSession(QWidget* p, const TournamentDB& _db)
   :AbstractCommand(_db, p)
 {
 
@@ -44,7 +46,7 @@ cmdStartOnlineSession::cmdStartOnlineSession(QWidget* p, TournamentDB* _db)
 
 Error cmdStartOnlineSession::exec()
 {
-  OnlineMngr* om = db->getOnlineManager();
+  OnlineMngr* om = db.getOnlineManager();
 
   // if the user hasn't supplied a password yet,
   // we can't open a session

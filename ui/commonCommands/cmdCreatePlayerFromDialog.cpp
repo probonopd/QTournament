@@ -23,7 +23,9 @@
 #include "PlayerMngr.h"
 #include "CatMngr.h"
 
-cmdCreatePlayerFromDialog::cmdCreatePlayerFromDialog(TournamentDB* _db, QWidget* p, DlgEditPlayer* initializedDialog)
+using namespace QTournament;
+
+cmdCreatePlayerFromDialog::cmdCreatePlayerFromDialog(const TournamentDB& _db, QWidget* p, DlgEditPlayer* initializedDialog)
   :AbstractCommand(_db, p), dlg(initializedDialog)
 {
 

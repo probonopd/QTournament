@@ -32,7 +32,6 @@ class cmdStartOnlineSession : public QObject, AbstractCommand
 public:
   cmdStartOnlineSession(QWidget* p, const QTournament::TournamentDB& _db);
   virtual QTournament::Error exec() override;
-  virtual ~cmdStartOnlineSession() {}
 
 };
 

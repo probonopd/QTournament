@@ -33,7 +33,9 @@
 #include "ui/DlgRegisterTournament.h"
 #include "ui/DlgPassword.h"
 
-cmdDeleteFromServer::cmdDeleteFromServer(QWidget* p, TournamentDB* _db)
+using namespace QTournament;
+
+cmdDeleteFromServer::cmdDeleteFromServer(QWidget* p, const TournamentDB& _db)
   :AbstractCommand(_db, p)
 {
 
@@ -43,7 +45,7 @@ cmdDeleteFromServer::cmdDeleteFromServer(QWidget* p, TournamentDB* _db)
 
 Error cmdDeleteFromServer::exec()
 {
-  OnlineMngr* om = db->getOnlineManager();
+  OnlineMngr* om = db.getOnlineManager();
 
   // if the user hasn't registered yet,
   // it's pointless to proceed.

@@ -29,7 +29,9 @@
 #include "OnlineMngr.h"
 #include "cmdFullSync.h"
 
-cmdFullSync::cmdFullSync(QWidget* p, TournamentDB* _db)
+using namespace QTournament;
+
+cmdFullSync::cmdFullSync(QWidget* p, const TournamentDB& _db)
   :AbstractCommand(_db, p)
 {
 
@@ -39,7 +41,7 @@ cmdFullSync::cmdFullSync(QWidget* p, TournamentDB* _db)
 
 Error cmdFullSync::exec()
 {
-  OnlineMngr* om = db->getOnlineManager();
+  OnlineMngr* om = db.getOnlineManager();
 
   QString errTxt;
   OnlineError err = om->doFullSync(errTxt);

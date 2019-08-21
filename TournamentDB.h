@@ -69,7 +69,7 @@ namespace QTournament
     bool convertToLatestDatabaseVersion();
 
     // access to the tournament-wide instance of the OnlineMngr
-    OnlineMngr* getOnlineManager();
+    OnlineMngr* getOnlineManager() const;
 
     // conversion to CSV for syncing with the server
     std::tuple<std::string,int> tableDataToCSV(const std::string& tabName, const std::vector<Sloppy::estring>& colNames, int rowId=-1) const;

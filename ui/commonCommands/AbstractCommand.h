@@ -34,7 +34,7 @@ public:
   virtual ~AbstractCommand() {}
 
 protected:
-  std::reference_wrapper<const QTournament::TournamentDB> db;
+  const QTournament::TournamentDB& db;
   QWidget* parentWidget;
 };
 

@@ -27,7 +27,9 @@
 #include "OnlineMngr.h"
 #include "ui/DlgPassword.h"
 
-cmdSetOrChangePassword::cmdSetOrChangePassword(QWidget* p, TournamentDB* _db)
+using namespace QTournament;
+
+cmdSetOrChangePassword::cmdSetOrChangePassword(QWidget* p, const TournamentDB& _db)
   :AbstractCommand(_db, p)
 {
 
@@ -37,7 +39,7 @@ cmdSetOrChangePassword::cmdSetOrChangePassword(QWidget* p, TournamentDB* _db)
 
 Error cmdSetOrChangePassword::exec()
 {
-  OnlineMngr* om = db->getOnlineManager();
+  OnlineMngr* om = db.getOnlineManager();
   bool hasPw = om->hasSecretInDatabase();
 
   OnlineError oe;

@@ -32,7 +32,6 @@ class cmdFullSync : public QObject, AbstractCommand
 public:
   cmdFullSync(QWidget* p, const QTournament::TournamentDB& _db);
   virtual QTournament::Error exec() override;
-  virtual ~cmdFullSync() {}
 
 };
 

@@ -25,6 +25,8 @@
 #include "cmdCreatePlayerFromDialog.h"
 #include "CatMngr.h"
 
+using namespace QTournament;
+
 cmdCreateNewPlayerInCat::cmdCreateNewPlayerInCat(QWidget* p, const Category& _cat)
   :AbstractCommand(_cat.getDatabaseHandle(), p), cat(_cat)
 {
@@ -42,7 +44,7 @@ Error cmdCreateNewPlayerInCat::exec()
     msg += tr("full or already started.");
     QMessageBox::warning(parentWidget, tr("Create new player in category"), msg);
 
-    return CategoryClosedForMorePlayers;
+    return Error::CategoryClosedForMorePlayers;
   }
 
   // show a dialog for selecting the new player's sex
@@ -58,7 +60,7 @@ Error cmdCreateNewPlayerInCat::exec()
   if (cat.getAddState(selectedSex) != CatAddState::CanJoin)
   {
     QString msg = tr("Can't add a %1 to the category.");
-    msg = msg.arg((selectedSex == M) ? tr("male player") : tr("female player"));
+    msg = msg.arg((selectedSex == Sex::M) ? tr("male player") : tr("female player"));
     QMessageBox::warning(parentWidget, tr("Create new player in category"), msg);
 
     return Error::InvalidSex;

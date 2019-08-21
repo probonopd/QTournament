@@ -23,6 +23,8 @@
 #include "ui/DlgSelectPlayer.h"
 #include "CatMngr.h"
 
+using namespace QTournament;
+
 cmdBulkAddPlayerToCategory::cmdBulkAddPlayerToCategory(QWidget* p, const Category& _cat)
   :AbstractCommand(_cat.getDatabaseHandle(), p), cat(_cat)
 {
@@ -40,11 +42,11 @@ Error cmdBulkAddPlayerToCategory::exec()
     msg += tr("full or already started.");
     QMessageBox::warning(parentWidget, tr("Add players to category"), msg);
 
-    return CategoryClosedForMorePlayers;
+    return Error::CategoryClosedForMorePlayers;
   }
 
   // show a dialog for selecting the players
-  DlgSelectPlayer dlg{db, parentWidget, DlgSelectPlayer::DlgContext::AddToCategory, &cat};
+  DlgSelectPlayer dlg{db, parentWidget, DlgSelectPlayer::DlgContext::AddToCategory, cat};
   if (dlg.exec() != QDialog::Accepted)
   {
     return Error::OK;

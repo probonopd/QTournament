@@ -32,10 +32,9 @@ class cmdRegisterPlayer : public QObject, AbstractCommand
 public:
   cmdRegisterPlayer(QWidget* p, const QTournament::Player& _pl);
   virtual QTournament::Error exec() override;
-  virtual ~cmdRegisterPlayer() {}
 
 protected:
-  QTournament::Player pl;
+  const QTournament::Player pl;
 };
 
 #endif // CMDREGISTERPLAYER_H

@@ -35,7 +35,7 @@ public:
   virtual ~cmdAssignRefereeToMatch() {}
 
 protected:
-  QTournament::Match ma;
+  const QTournament::Match ma;
   QTournament::RefereeAction refAction;
 };
 

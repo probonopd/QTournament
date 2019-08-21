@@ -23,6 +23,8 @@
 #include "ui/DlgSelectPlayer.h"
 #include "CatMngr.h"
 
+using namespace QTournament;
+
 cmdMoveOrCopyPlayerToCategory::cmdMoveOrCopyPlayerToCategory(QWidget* p, const Player& _pl, const Category& _srcCat, const Category& _dstCat, bool _isMove)
   :AbstractCommand(_srcCat.getDatabaseHandle(), p), pl(_pl), srcCat(_srcCat), dstCat(_dstCat), isMove(_isMove)
 {

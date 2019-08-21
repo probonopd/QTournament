@@ -28,6 +28,8 @@
 #include "ui/commonCommands/cmdAssignRefereeToMatch.h"
 #include "ui/GuiHelpers.h"
 
+using namespace QTournament;
+
 cmdCallMatch::cmdCallMatch(QWidget* p, const QTournament::Match &_ma, const Court& _co)
   :AbstractCommand(_ma.getDatabaseHandle(), p), ma(_ma), co(_co)
 {
@@ -49,7 +51,7 @@ Error cmdCallMatch::exec()
   if (err == Error::MatchNeedsReferee)
   {
     callStartedWithUnassignedReferee = true;
-    cmdAssignRefereeToMatch cmd{parentWidget, ma, REFEREE_ACTION::MATCH_CALL};
+    cmdAssignRefereeToMatch cmd{parentWidget, ma, RefereeAction::MatchCall};
     err = cmd.exec();
     if (err != Error::OK) return err;
 

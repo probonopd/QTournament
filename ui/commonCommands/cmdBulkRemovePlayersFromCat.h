@@ -31,10 +31,9 @@ class cmdBulkRemovePlayersFromCategory : public QObject, AbstractCommand
 public:
   cmdBulkRemovePlayersFromCategory(QWidget* p, const QTournament::Category& _cat);
   virtual QTournament::Error exec() override;
-  virtual ~cmdBulkRemovePlayersFromCategory() {}
 
 protected:
-  QTournament::Category cat;
+  const QTournament::Category cat;
 };
 
 #endif // CMDREGISTERPLAYER_H

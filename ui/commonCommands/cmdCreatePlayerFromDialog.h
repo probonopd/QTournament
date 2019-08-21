@@ -33,7 +33,6 @@ class cmdCreatePlayerFromDialog : public QObject, AbstractCommand
 public:
   cmdCreatePlayerFromDialog(const QTournament::TournamentDB& _db, QWidget* p, DlgEditPlayer* initializedDialog);
   virtual QTournament::Error exec() override;
-  virtual ~cmdCreatePlayerFromDialog() {}
 
 protected:
   DlgEditPlayer* dlg;

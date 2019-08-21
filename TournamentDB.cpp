@@ -359,7 +359,7 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  OnlineMngr* TournamentDB::getOnlineManager()
+  OnlineMngr* TournamentDB::getOnlineManager() const
   {
     return om.get();
   }

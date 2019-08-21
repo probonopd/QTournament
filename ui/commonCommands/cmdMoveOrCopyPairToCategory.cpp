@@ -24,6 +24,8 @@
 #include "ui/DlgSelectPlayer.h"
 #include "CatMngr.h"
 
+using namespace QTournament;
+
 cmdMoveOrCopyPairToCategory::cmdMoveOrCopyPairToCategory(QWidget* p, const PlayerPair& _pp, const Category& _srcCat, const Category& _dstCat, bool _isMove)
   :AbstractCommand(_srcCat.getDatabaseHandle(), p), pp(_pp), srcCat(_srcCat), dstCat(_dstCat), isMove(_isMove)
 {
@@ -49,7 +51,7 @@ Error cmdMoveOrCopyPairToCategory::exec()
 
   // check if the player pair is in the source category
   auto ppCat = pp.getCategory(db);
-  if (ppCat == nullptr)
+  if (!ppCat)
   {
     QString msg = tr("The provided player pair is invalid.");
     QMessageBox::warning(parentWidget, tr("Copy or move player pair"), msg);
@@ -67,7 +69,7 @@ Error cmdMoveOrCopyPairToCategory::exec()
   {
     QString msg = tr("Cannot move or copy pair to a singles category");
     QMessageBox::warning(parentWidget, tr("Move or copy player pair"), msg);
-    return NoCategoryForPairing;
+    return Error::NoCategoryForPairing;
   }
 
   // if this is a move operation: make sure we can actually delete

@@ -32,7 +32,6 @@ class cmdOnlineRegistration : public QObject, AbstractCommand
 public:
   cmdOnlineRegistration(QWidget* p, const QTournament::TournamentDB& _db);
   virtual QTournament::Error exec() override;
-  virtual ~cmdOnlineRegistration() {}
 
 };
 

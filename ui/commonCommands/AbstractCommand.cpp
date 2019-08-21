@@ -18,7 +18,9 @@
 
 #include "AbstractCommand.h"
 
-AbstractCommand::AbstractCommand(TournamentDB* _db, QWidget* _parent)
+using namespace QTournament;
+
+AbstractCommand::AbstractCommand(const TournamentDB& _db, QWidget* _parent)
   :db(_db), parentWidget(_parent)
 {
 
