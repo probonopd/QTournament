@@ -22,25 +22,25 @@
 #include <SimpleReportGeneratorLib/TableWriter.h>
 
 #include "AbstractReport.h"
+#include "HelperFunc.h"
+
+using namespace SimpleReportLib;
+using namespace QTournament;
 
 namespace QTournament
 {
 
-  constexpr char AbstractReport::HEADLINE_STYLE[];
-  constexpr char AbstractReport::SUBHEADLINE_STYLE[];
-  constexpr char AbstractReport::INTERMEDIATEHEADLINE_STYLE[];
-  constexpr char AbstractReport::RESULTSHEET_NAME_STYLE[];
-  constexpr char AbstractReport::RESULTSHEET_TEAM_STYLE[];
-  constexpr char AbstractReport::RESULTSHEET_GAMELABEL_STYLE[];
-  constexpr char AbstractReport::BOLD_STYLE[];
+  constexpr char AbstractReport::HeadlineStyle[];
+  constexpr char AbstractReport::SubheadStyle[];
+  constexpr char AbstractReport::IntermediateHeadlineStyle[];
+  constexpr char AbstractReport::ResultsheetNameStyle[];
+  constexpr char AbstractReport::ResultsheetTeamStyle[];
+  constexpr char AbstractReport::ResultsheetGamelabelStyle[];
+  constexpr char AbstractReport::BoldStyle[];
 
-AbstractReport::AbstractReport(TournamentDB* _db, const QString& _name)
-  :db(_db), name(_name), cfg(KeyValueTab::getTab(db, TabCfg))
+AbstractReport::AbstractReport(const TournamentDB& _db, const QString& _name)
+  :db(_db), name(_name), cfg(SqliteOverlay::KeyValueTab{db, TabCfg})
 {
-  if (db == nullptr)
-  {
-    throw std::runtime_error("Got nullptr for database handle");
-  }
   if (name.isEmpty() || (name == ""))
   {
     throw std::runtime_error("Got empty name for report");
@@ -59,7 +59,7 @@ AbstractReport::~AbstractReport()
 upSimpleReport AbstractReport::createEmptyReport_Portrait() const
 {
   SimpleReportLib::SimpleReportGenerator* rawResult = new SimpleReportLib::SimpleReportGenerator(
-        A4_WIDTH__MM, A4_HEIGHT__MM, DEFAULT_MARGIN__MM);
+        WidthA4_mm, HeightA4_mm, DefaultMargin_mm);
   rawResult->startNextPage();
 
   upSimpleReport result = upSimpleReport(rawResult);
@@ -73,7 +73,7 @@ upSimpleReport AbstractReport::createEmptyReport_Portrait() const
 upSimpleReport AbstractReport::createEmptyReport_Landscape() const
 {
   SimpleReportLib::SimpleReportGenerator* rawResult = new SimpleReportLib::SimpleReportGenerator(
-        A4_HEIGHT__MM, A4_WIDTH__MM, DEFAULT_MARGIN__MM);
+        HeightA4_mm, WidthA4_mm, DefaultMargin_mm);
   rawResult->startNextPage();
 
   upSimpleReport result = upSimpleReport(rawResult);
@@ -94,16 +94,16 @@ QString AbstractReport::getName() const
 void AbstractReport::setHeaderAndHeadline(SimpleReportLib::SimpleReportGenerator* rep, const QString& headline, const QString& subHead) const
 {
   SimpleReportLib::TabSet ts;
-  ts.addTab(A4_WIDTH__MM / 2.0 - DEFAULT_MARGIN__MM, SimpleReportLib::TAB_JUSTIFICATION::TAB_CENTER);
+  ts.addTab(WidthA4_mm / 2.0 - DefaultMargin_mm, SimpleReportLib::TAB_JUSTIFICATION::TAB_CENTER);
   rep->pushTabs(ts);
-  rep->writeLine("\t" + headline, HEADLINE_STYLE, 0.0, BEFORE_HEADLINE_SKIP__MM);
+  rep->writeLine("\t" + headline, HeadlineStyle, 0.0, BeforeHeadlineSkip_mm);
   if (subHead.length() > 0)
   {
-    rep->skip(HEAD_SUBHEAD_SKIP__MM);
-    rep->writeLine("\t" + subHead, SUBHEADLINE_STYLE);
+    rep->skip(HeadSubheadSkip_mm);
+    rep->writeLine("\t" + subHead, SubheadStyle);
   }
   rep->popTabs();
-  rep->skip(AFTER_HEADLINE_SKIP__MM);
+  rep->skip(AfterHeadlineSkip_mm);
 }
 
 //----------------------------------------------------------------------------
@@ -116,35 +116,35 @@ void AbstractReport::prepStyles(upSimpleReport& rep) const
   style->setFontSize_MM(2.0);
 
   // bold font
-  style = rep->createChildTextStyle(BOLD_STYLE);
+  style = rep->createChildTextStyle(BoldStyle);
   style->setBoldState(true);
 
   // headlines: 4 mm, bold
-  style = rep->createChildTextStyle(HEADLINE_STYLE);
+  style = rep->createChildTextStyle(HeadlineStyle);
   style->setFontSize_MM(4.0);
   style->setBoldState(true);
 
   // sub-heaadline: 2,5 mm, italic
-  style = rep->createChildTextStyle(SUBHEADLINE_STYLE);
+  style = rep->createChildTextStyle(SubheadStyle);
   style->setFontSize_MM(2.5);
   style->setItalicsState(true);
 
   // intermediate headine: 3,5 mm, not bold
-  style = rep->createChildTextStyle(INTERMEDIATEHEADLINE_STYLE);
+  style = rep->createChildTextStyle(IntermediateHeadlineStyle);
   style->setFontSize_MM(3.5);
 
   // player names in result sheets: 3 mm, bold
-  style = rep->createChildTextStyle(RESULTSHEET_NAME_STYLE);
+  style = rep->createChildTextStyle(ResultsheetNameStyle);
   style->setFontSize_MM(2.9);
   style->setBoldState(true);
 
   // team names in result sheets: 2 mm, italic
-  style = rep->createChildTextStyle(RESULTSHEET_TEAM_STYLE);
+  style = rep->createChildTextStyle(ResultsheetTeamStyle);
   style->setFontSize_MM(2.0);
   style->setItalicsState(true);
 
   // "Game xx:"-labels in result sheets: 2,5 mm, bold
-  style = rep->createChildTextStyle(RESULTSHEET_GAMELABEL_STYLE);
+  style = rep->createChildTextStyle(ResultsheetGamelabelStyle);
   style->setFontSize_MM(2.5);
   style->setBoldState(true);
 }
@@ -156,14 +156,14 @@ void AbstractReport::printIntermediateHeader(upSimpleReport& rep, const QString&
   if (skipBefore__MM < 0) skipBefore__MM = 0.0;
 
   // check for sufficient space
-  if (!(rep->hasSpaceForAnotherLine(INTERMEDIATEHEADLINE_STYLE, skipBefore__MM + SKIP_AFTER_INTERMEDIATE_HEADER__MM)))
+  if (!(rep->hasSpaceForAnotherLine(IntermediateHeadlineStyle, skipBefore__MM + SkipAfterIntermediateHeader_mm)))
   {
     rep->startNextPage();
   }
   if (skipBefore__MM > 0) rep->skip(skipBefore__MM);
-  rep->writeLine(txt, INTERMEDIATEHEADLINE_STYLE);
+  rep->writeLine(txt, IntermediateHeadlineStyle);
   rep->addHorLine();
-  rep->skip(SKIP_AFTER_INTERMEDIATE_HEADER__MM);
+  rep->skip(SkipAfterIntermediateHeader_mm);
 }
 
 //----------------------------------------------------------------------------
@@ -242,11 +242,11 @@ void AbstractReport::printMatchList(upSimpleReport& rep, const MatchList& maList
     if (withResults)
     {
       auto ms = ma.getScore();
-      if (ms == nullptr) continue;
+      if (!ms) continue;
       for (int i=0; i < ms->getNumGames(); ++i)
       {
         auto gs = ms->getGame(i);
-        assert(gs != nullptr);
+        assert(gs);
 
         std::tuple<int, int> sc = gs->getScore();
         rowContent << QString::number(get<0>(sc));
@@ -310,10 +310,10 @@ void AbstractReport::printMatchList(upSimpleReport& rep, const MatchList& maList
 
 //----------------------------------------------------------------------------
 
-void AbstractReport::setHeaderAndFooter(upSimpleReport& rep, const QString& reportName) const
+void AbstractReport::setHeaderAndFooter(upSimpleReport& rep, const QString& reportName)
 {
-  QString tName = QString::fromUtf8(cfg.operator[](CfgKey_TnmtName).data());
-  QString cName = QString::fromUtf8(cfg.operator[](CfgKey_TnmtOrga).data());
+  QString tName = stdString2QString(cfg[CfgKey_TnmtName]);
+  QString cName = stdString2QString(cfg[CfgKey_TnmtOrga]);
   rep->setGlobalHeader(cName, tName, SimpleReportLib::HeaderFooterStrings::TOKEN_CURDATE);
 
   QString fl = SimpleReportLib::HeaderFooterStrings::TOKEN_CURTIME;

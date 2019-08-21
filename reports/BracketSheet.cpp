@@ -29,21 +29,25 @@
 #include "MatchMngr.h"
 #include "BracketGenerator.h"
 #include "PlayerMngr.h"
+#include "HelperFunc.h"
+
+using namespace SimpleReportLib;
+
 
 namespace QTournament
 {
 
-  constexpr char BracketSheet::BRACKET_STYLE[];
-  constexpr char BracketSheet::BRACKET_STYLE_ITALICS[];
-  constexpr char BracketSheet::BRACKET_STYLE_BOLD[];
+  constexpr char BracketSheet::BracketStyle[];
+  constexpr char BracketSheet::BracketStyleItalics[];
+  constexpr char BracketSheet::BracketStyleBold[];
 
 
-BracketSheet::BracketSheet(TournamentDB* _db, const QString& _name, const Category& _cat)
+BracketSheet::BracketSheet(const TournamentDB& _db, const QString& _name, const Category& _cat)
   :AbstractReport(_db, _name), cat(_cat), rawReport(nullptr)
 {
   // make sure the requested category has bracket visualization data
   auto bvd = BracketVisData::getExisting(cat);
-  if (bvd == nullptr)
+  if (!bvd)
   {
     throw std::runtime_error("Requested bracket report for a category without bracket visualization data!");
   }
@@ -55,7 +59,7 @@ upSimpleReport BracketSheet::regenerateReport()
 {
   // get the handle of the overall bracket visualization data
   auto bvd = BracketVisData::getExisting(cat);
-  if (bvd == nullptr)
+  if (!bvd)
   {
     auto result = createEmptyReport_Portrait();
     setHeaderAndHeadline(result.get(), "Tournament Bracket");
@@ -67,8 +71,8 @@ upSimpleReport BracketSheet::regenerateReport()
   bvd->fillMissingPlayerNames();
 
 
-  BRACKET_PAGE_ORIENTATION pgOrientation;
-  BRACKET_LABEL_POS labelPos;
+  BracketPageOrientation pgOrientation;
+  BracketLabelPos labelPos;
 
   // get the orientation of the first page
   //
@@ -78,7 +82,7 @@ upSimpleReport BracketSheet::regenerateReport()
   tie(pgOrientation, labelPos) = bvd->getPageInfo(0);
 
   // initialize the report's first page
-  upSimpleReport rep = (pgOrientation == BRACKET_PAGE_ORIENTATION::LANDSCAPE) ? createEmptyReport_Landscape() : createEmptyReport_Portrait();
+  upSimpleReport rep = (pgOrientation == BracketPageOrientation::Landscape) ? createEmptyReport_Landscape() : createEmptyReport_Portrait();
   rawReport = rep.get();
 
   // determine the conversion factor between "grid units" and "paper units" (millimeter)
@@ -125,11 +129,11 @@ upSimpleReport BracketSheet::regenerateReport()
       int y0 = el.getGridY0();
       int spanY = el.getSpanY();
       int yPageBreakSpan = el.getYPageBreakSpan();
-      BRACKET_ORIENTATION orientation = el.getOrientation();
-      BRACKET_TERMINATOR terminator = el.getTerminator();
+      BracketOrientation orientation = el.getOrientation();
+      BracketTerminator terminator = el.getTerminator();
 
       int xLen = -1;
-      if (orientation == BRACKET_ORIENTATION::RIGHT)
+      if (orientation == BracketOrientation::Right)
       {
         xLen = 1;
       }
@@ -171,11 +175,11 @@ upSimpleReport BracketSheet::regenerateReport()
 
       // draw the terminator, if any
       int termOffset = el.getTerminatorOffset();
-      if (terminator == BRACKET_TERMINATOR::OUTWARDS)
+      if (terminator == BracketTerminator::Outwards)
       {
         drawHorLine(x0 + xLen, y0 + spanY / 2 + termOffset, xLen);
       }
-      if (terminator == BRACKET_TERMINATOR::INWARDS)
+      if (terminator == BracketTerminator::Inwards)
       {
         drawHorLine(x0 + xLen, y0 + spanY / 2 + termOffset, -xLen);
       }
@@ -186,14 +190,14 @@ upSimpleReport BracketSheet::regenerateReport()
       {
         drawBracketTextItem(x0, y0, spanY, orientation,
                             QString::number(iniRank) + ".",
-                            BRACKET_TEXT_ELEMENT::INITIAL_RANK1);
+                            BracketTextElement::InitialRank1);
       }
       iniRank = el.getInitialRank2();
       if (iniRank > 0)
       {
         drawBracketTextItem(x0, y0, spanY, orientation,
                             QString::number(iniRank) + ".",
-                            BRACKET_TEXT_ELEMENT::INITIAL_RANK2);
+                            BracketTextElement::InitialRank2);
       }
 
       //
@@ -209,10 +213,10 @@ upSimpleReport BracketSheet::regenerateReport()
         isSymbolic = true;
       } else {
         PlayerPair pp = pm.getPlayerPair(ppId);
-        pairName = getTruncatedPlayerName(pp, xFac - 2 * GAP_LINE_TXT__MM, rawReport->getTextStyle(BRACKET_STYLE));
+        pairName = getTruncatedPlayerName(pp, xFac - 2 * GapLineTxt_mm, rawReport->getTextStyle(BracketStyle));
       }
-      drawBracketTextItem(x0, y0, spanY, orientation, pairName, BRACKET_TEXT_ELEMENT::PAIR1,
-                          isSymbolic ? BRACKET_STYLE_ITALICS : QString());
+      drawBracketTextItem(x0, y0, spanY, orientation, pairName, BracketTextElement::Pair1,
+                          isSymbolic ? BracketStyleItalics : QString());
 
       ppId = determineEffectivePlayerPairId(el, 2);
       isSymbolic = false;
@@ -222,7 +226,7 @@ upSimpleReport BracketSheet::regenerateReport()
         isSymbolic = true;
       } else {
         PlayerPair pp = pm.getPlayerPair(ppId);
-        pairName = getTruncatedPlayerName(pp, xFac - 2 * GAP_LINE_TXT__MM, rawReport->getTextStyle(BRACKET_STYLE));
+        pairName = getTruncatedPlayerName(pp, xFac - 2 * GapLineTxt_mm, rawReport->getTextStyle(BracketStyle));
       }
       if (yPageBreakSpan > 0)   // does the name of the second pair go on the next page?
       {
@@ -231,14 +235,14 @@ upSimpleReport BracketSheet::regenerateReport()
 
         // draw the remaining part of the bracket element
         int remainingYSpan = spanY - yPageBreakSpan;
-        drawBracketTextItem(x0, 0, remainingYSpan, orientation, pairName, BRACKET_TEXT_ELEMENT::PAIR2,
-                            isSymbolic ? BRACKET_STYLE_ITALICS : QString());
+        drawBracketTextItem(x0, 0, remainingYSpan, orientation, pairName, BracketTextElement::Pair2,
+                            isSymbolic ? BracketStyleItalics : QString());
 
         // return to our current page
         rawReport->setActivePage(idxPage);
       } else {
-        drawBracketTextItem(x0, y0, spanY, orientation, pairName, BRACKET_TEXT_ELEMENT::PAIR2,
-                            isSymbolic ? BRACKET_STYLE_ITALICS : QString());
+        drawBracketTextItem(x0, y0, spanY, orientation, pairName, BracketTextElement::Pair2,
+                            isSymbolic ? BracketStyleItalics : QString());
       }
 
       //
@@ -247,7 +251,7 @@ upSimpleReport BracketSheet::regenerateReport()
 
       // is there a match connected to this bracket element?
       auto ma = el.getLinkedMatch();
-      if (ma != nullptr)
+      if (ma)
       {
         // print match number or result, if any
         ObjState stat = ma->getState();
@@ -263,19 +267,19 @@ upSimpleReport BracketSheet::regenerateReport()
             scTxt = score->toString();
             scTxt.replace(",", "  ");
           }
-          drawBracketTextItem(x0, y0, spanY, orientation, scTxt, BRACKET_TEXT_ELEMENT::SCORE);
+          drawBracketTextItem(x0, y0, spanY, orientation, scTxt, BracketTextElement::Score);
         }
         else if (matchNum > 0)
         {
           QString s = "#" + QString::number(matchNum);
-          drawBracketTextItem(x0, y0, spanY, orientation, s, BRACKET_TEXT_ELEMENT::MATCH_NUM);
+          drawBracketTextItem(x0, y0, spanY, orientation, s, BracketTextElement::MatchNum);
         }
       }
 
       // print final rank for winner, if any
       int winRank = -1;
-      upPlayerPair winnerName = nullptr;
-      if (ma != nullptr)
+      std::optional<PlayerPair> winnerName{};
+      if (ma)
       {
         // case 1: get the winner rank from the direcly linked match
         winRank = ma->getWinnerRank();
@@ -289,20 +293,20 @@ upSimpleReport BracketSheet::regenerateReport()
         // to actually play all matches
         auto pp1 = el.getLinkedPlayerPair(1);
         auto pp2 = el.getLinkedPlayerPair(2);
-        if ((pp1 != nullptr) || (pp2 != nullptr))
+        if (pp1 || pp2)
         {
           int nextWinnerMatch = el.getNextBracketElementForWinner();
           if (nextWinnerMatch < 0) winRank = -nextWinnerMatch;
-          winnerName = (pp1 != nullptr) ? std::move(pp1) : std::move(pp2);
+          winnerName = pp1 ? pp1 : pp2;
         }
       }
-      if ((terminator != BRACKET_TERMINATOR::RefereeMode::None) && (winRank > 0))
+      if ((terminator != BracketTerminator::None) && (winRank > 0))
       {
         // add an offset to x0 in case we have inwards offsets
         int tmpX0 = x0;
-        if (terminator == BRACKET_TERMINATOR::INWARDS)
+        if (terminator == BracketTerminator::Inwards)
         {
-          if (orientation == BRACKET_ORIENTATION::LEFT)
+          if (orientation == BracketOrientation::Left)
           {
             ++x0;
           } else {
@@ -311,13 +315,13 @@ upSimpleReport BracketSheet::regenerateReport()
         }
 
         QString txt = QString::number(winRank) + ". " + tr("Place");
-        drawBracketTextItem(x0, y0 + termOffset, spanY, orientation, txt, BRACKET_TEXT_ELEMENT::WINNER_RANK);
+        drawBracketTextItem(x0, y0 + termOffset, spanY, orientation, txt, BracketTextElement::WinnerRank);
 
         // if the match is finished, print the winner's name as well
-        if (winnerName != nullptr)
+        if (winnerName)
         {
-          QString txt = getTruncatedPlayerName(*winnerName, xFac - 2 * GAP_LINE_TXT__MM, rawReport->getTextStyle(BRACKET_STYLE));
-          drawBracketTextItem(x0, y0 + termOffset, spanY, orientation, txt, BRACKET_TEXT_ELEMENT::TERMINATOR_NAME);
+          QString txt = getTruncatedPlayerName(*winnerName, xFac - 2 * GapLineTxt_mm, rawReport->getTextStyle(BracketStyle));
+          drawBracketTextItem(x0, y0 + termOffset, spanY, orientation, txt, BracketTextElement::TerminatorName);
         }
 
         // restore the original x0
@@ -362,7 +366,7 @@ void BracketSheet::determineGridSize()
   // by searching through all bracket visualisation entries
   // get the handle of the overall bracket visualization data
   auto bvd = BracketVisData::getExisting(cat);
-  assert(bvd != nullptr);
+  assert(bvd);
   int maxX = -1;
   int maxY = -1;
   for (const BracketVisElement& el : bvd->getVisElements())
@@ -370,15 +374,15 @@ void BracketSheet::determineGridSize()
     int x = el.getGridX0();
     int y = el.getGridY0();
     int spanY = el.getSpanY();
-    BRACKET_ORIENTATION orientation = el.getOrientation();
-    BRACKET_TERMINATOR terminator = el.getTerminator();
+    BracketOrientation orientation = el.getOrientation();
+    BracketTerminator terminator = el.getTerminator();
 
-    if (orientation == BRACKET_ORIENTATION::RIGHT)
+    if (orientation == BracketOrientation::Right)
     {
       ++x;  // reserve space to the right for the bracket itself
     }
 
-    if (terminator == BRACKET_TERMINATOR::OUTWARDS)
+    if (terminator == BracketTerminator::Outwards)
     {
       ++x;  // reserve space for the terminator-line
     }
@@ -402,26 +406,26 @@ void BracketSheet::determineGridSize()
 void BracketSheet::setupTextStyle()
 {
   // check if the text style for bracket text already exists
-  SimpleReportLib::TextStyle* baseStyle = rawReport->getTextStyle(BRACKET_STYLE);
+  SimpleReportLib::TextStyle* baseStyle = rawReport->getTextStyle(BracketStyle);
   if (baseStyle == nullptr)
   {
-    baseStyle = rawReport->createChildTextStyle(BRACKET_STYLE);
+    baseStyle = rawReport->createChildTextStyle(BracketStyle);
   }
 
   // set the text size as 40% of the y grid size
   baseStyle->setFontSize_MM(yFac * 0.4);
 
   // create childs in italics and bold as well
-  auto childStyle = rawReport->getTextStyle(BRACKET_STYLE_ITALICS);
+  auto childStyle = rawReport->getTextStyle(BracketStyleItalics);
   if (childStyle == nullptr)
   {
-    childStyle = rawReport->createChildTextStyle(BRACKET_STYLE_ITALICS, BRACKET_STYLE);
+    childStyle = rawReport->createChildTextStyle(BracketStyleItalics, BracketStyle);
   }
   childStyle->setItalicsState(true);
-  childStyle = rawReport->getTextStyle(BRACKET_STYLE_BOLD);
+  childStyle = rawReport->getTextStyle(BracketStyleBold);
   if (childStyle == nullptr)
   {
-    childStyle = rawReport->createChildTextStyle(BRACKET_STYLE_BOLD, BRACKET_STYLE);
+    childStyle = rawReport->createChildTextStyle(BracketStyleBold, BracketStyle);
   }
   childStyle->setBoldState(true);
 }
@@ -430,8 +434,8 @@ void BracketSheet::setupTextStyle()
 
 tuple<double, double> BracketSheet::grid2MM(int gridX, int gridY) const
 {
-  double x = gridX * xFac + DEFAULT_MARGIN__MM;
-  double y = gridY * yFac + DEFAULT_MARGIN__MM;
+  double x = gridX * xFac + DefaultMargin_mm;
+  double y = gridY * yFac + DefaultMargin_mm;
 
   return make_tuple(x, y);
 }
@@ -450,10 +454,10 @@ tuple<double, double> BracketSheet::grid2MM(int gridX, int gridY) const
  *   x---------------x p4a
  *   p4
  */
-void BracketSheet::drawBracketTextItem(int bracketX0, int bracketY0, int ySpan, BRACKET_ORIENTATION orientation, QString txt, BracketSheet::BRACKET_TEXT_ELEMENT item, const QString& styleNameOverride) const
+void BracketSheet::drawBracketTextItem(int bracketX0, int bracketY0, int ySpan, BracketOrientation orientation, QString txt, BracketSheet::BracketTextElement item, const QString& styleNameOverride) const
 {
   // get the default text style for bracket text
-  auto style = rawReport->getTextStyle(BRACKET_STYLE);
+  auto style = rawReport->getTextStyle(BracketStyle);
 
   // apply a different text style, if requested by the user
   if (!(styleNameOverride.isEmpty()))
@@ -473,7 +477,7 @@ void BracketSheet::drawBracketTextItem(int bracketX0, int bracketY0, int ySpan, 
   QPointF p4 = p1 + QPointF(0, ySpan * yFac);
 
   // calculate p2
-  bool isLeftToRight = (orientation == BRACKET_ORIENTATION::RIGHT);
+  bool isLeftToRight = (orientation == BracketOrientation::Right);
   double dx = (isLeftToRight) ? xFac / 2.0 : -xFac / 2.0;
   double dy = (ySpan * yFac) / 2.0;
   QPointF p2 = p1 + QPointF(dx, dy);
@@ -486,8 +490,8 @@ void BracketSheet::drawBracketTextItem(int bracketX0, int bracketY0, int ySpan, 
   QPointF p3 = p1 + QPointF(3 * dx, dy);
 
   // prepare an offset-vector of one GAP_LINE_TXT__MM in x- and y-direction
-  QPointF gapOffsetX{GAP_LINE_TXT__MM, 0};
-  QPointF gapOffsetY{0, GAP_LINE_TXT__MM};
+  QPointF gapOffsetX{GapLineTxt_mm, 0};
+  QPointF gapOffsetY{0, GapLineTxt_mm};
 
   // check if we have a multiline text. That indicates a double player name
   bool isMultiline = (txt.split("\n").length() > 1);
@@ -495,7 +499,7 @@ void BracketSheet::drawBracketTextItem(int bracketX0, int bracketY0, int ySpan, 
   // calc the line space for multiline text
   double lineSpace = 0.1 * style->getFontSize_MM();
 
-  if (item == BRACKET_TEXT_ELEMENT::PAIR1)
+  if (item == BracketTextElement::Pair1)
   {
     if (isLeftToRight)
     {
@@ -520,7 +524,7 @@ void BracketSheet::drawBracketTextItem(int bracketX0, int bracketY0, int ySpan, 
     return;
   }
 
-  if (item == BRACKET_TEXT_ELEMENT::PAIR2)
+  if (item == BracketTextElement::Pair2)
   {
     if (isLeftToRight)
     {
@@ -545,13 +549,13 @@ void BracketSheet::drawBracketTextItem(int bracketX0, int bracketY0, int ySpan, 
     return;
   }
 
-  if ((item == BRACKET_TEXT_ELEMENT::SCORE) || (item == BRACKET_TEXT_ELEMENT::MATCH_NUM))
+  if ((item == BracketTextElement::Score) || (item == BracketTextElement::MatchNum))
   {
     rawReport->drawMultilineText(p2, SimpleReportLib::RECT_CORNER::CENTER, txt, SimpleReportLib::CENTER, lineSpace, style);
     return;
   }
 
-  if (item == BRACKET_TEXT_ELEMENT::INITIAL_RANK1)
+  if (item == BracketTextElement::InitialRank1)
   {
     if (isLeftToRight)
     {
@@ -562,7 +566,7 @@ void BracketSheet::drawBracketTextItem(int bracketX0, int bracketY0, int ySpan, 
     return;
   }
 
-  if (item == BRACKET_TEXT_ELEMENT::INITIAL_RANK2)
+  if (item == BracketTextElement::InitialRank2)
   {
     if (isLeftToRight)
     {
@@ -573,14 +577,14 @@ void BracketSheet::drawBracketTextItem(int bracketX0, int bracketY0, int ySpan, 
     return;
   }
 
-  if (item == BRACKET_TEXT_ELEMENT::WINNER_RANK)
+  if (item == BracketTextElement::WinnerRank)
   {
-    style = rawReport->getTextStyle(BRACKET_STYLE_BOLD);
+    style = rawReport->getTextStyle(BracketStyleBold);
     rawReport->drawMultilineText(p3 + gapOffsetY, SimpleReportLib::RECT_CORNER::TOP_CENTER, txt, SimpleReportLib::CENTER, lineSpace, style);
     return;
   }
 
-  if (item == BRACKET_TEXT_ELEMENT::TERMINATOR_NAME)
+  if (item == BracketTextElement::TerminatorName)
   {
     rawReport->drawMultilineText(p3 - gapOffsetY, SimpleReportLib::RECT_CORNER::BOTTOM_CENTER, txt, SimpleReportLib::CENTER, lineSpace, style);
     return;
@@ -630,9 +634,9 @@ void BracketSheet::drawWinnerNameOnTerminator(const QPointF& txtBottomCenter, co
   if (pp.hasPlayer2())
   {
     p1Postfix = " /";
-    p2Name = getTruncatedPlayerName(pp.getPlayer2(), QString(), gridWidth - 2 * GAP_LINE_TXT__MM, style);
+    p2Name = getTruncatedPlayerName(pp.getPlayer2(), QString(), gridWidth - 2 * GapLineTxt_mm, style);
   }
-  QString p1Name = getTruncatedPlayerName(pp.getPlayer1(), p1Postfix, gridWidth - 2 * GAP_LINE_TXT__MM, style);
+  QString p1Name = getTruncatedPlayerName(pp.getPlayer1(), p1Postfix, gridWidth - 2 * GapLineTxt_mm, style);
 
   QString fullName = (p2Name.isEmpty()) ? p1Name : p1Name + "\n" + p2Name;
   rawReport->drawMultilineText(txtBottomCenter, SimpleReportLib::RECT_CORNER::BOTTOM_CENTER, fullName, SimpleReportLib::CENTER,
@@ -648,7 +652,7 @@ QString BracketSheet::determineSymbolicPlayerPairDisplayText(const BracketVisEle
 
   // is there a symbolic name?
   auto ma = el.getLinkedMatch();
-  if (ma != nullptr)
+  if (ma)
   {
     int symbName = (pos == 1) ? ma->getSymbolicPlayerPair1Name() : ma->getSymbolicPlayerPair2Name();
     if (symbName < 0)   // process only loser; we don't need to print "Winner of #xxx", because that's indicated by the graph
@@ -677,7 +681,7 @@ int BracketSheet::determineEffectivePlayerPairId(const BracketVisElement& el, in
   auto ma = el.getLinkedMatch();
 
   // case 1: there is valid match linked to this bracket element
-  if (ma != nullptr)
+  if (ma)
   {
     // case 1a: the match has valid player pairs
     // in this case, return their display name
@@ -693,7 +697,7 @@ int BracketSheet::determineEffectivePlayerPairId(const BracketVisElement& el, in
 
   // case 2: we have fixed, static player pair references stored for this bracket element
   auto pp = el.getLinkedPlayerPair(pos);
-  if (pp != nullptr)
+  if (pp)
   {
     return pp->getPairId();
   }
@@ -703,26 +707,26 @@ int BracketSheet::determineEffectivePlayerPairId(const BracketVisElement& el, in
 
 //----------------------------------------------------------------------------
 
-void BracketSheet::printHeaderAndFooterOnAllPages() const
+void BracketSheet::printHeaderAndFooterOnAllPages()
 {
   // get the handle of the overall bracket visualization data
   auto bvd = BracketVisData::getExisting(cat);
-  if (bvd == nullptr) return;
+  if (!bvd) return;
 
   assert(bvd->getNumPages() == rawReport->getPageCount());
 
   // prepare the elements of the label: headline, organizer name, date
   QString headline = cat.getName() + " -- " + tr("Bracket");
   QString org = "%1 -- %2";
-  org = org.arg(QString::fromUtf8(cfg.operator[](CfgKey_TnmtOrga).data()));
-  org = org.arg(QString::fromUtf8(cfg.operator[](CfgKey_TnmtName).data()));
+  org = org.arg(stdString2QString(cfg[CfgKey_TnmtOrga]));
+  org = org.arg(stdString2QString(cfg[CfgKey_TnmtName]));
   QString dat = tr("As of %1, %2");
   dat = dat.arg(SimpleReportLib::HeaderFooterStrings::TOKEN_CURDATE);
   dat = dat.arg(SimpleReportLib::HeaderFooterStrings::TOKEN_CURTIME);
   SimpleReportLib::HeaderFooterStrings::substTokensInPlace(dat, -1, -1);
 
   // prepare the styles for the text elements
-  auto headlineStyle = rawReport->getTextStyle(HEADLINE_STYLE);
+  auto headlineStyle = rawReport->getTextStyle(HeadlineStyle);
   assert(headlineStyle != nullptr);
   auto orgStyle = rawReport->getTextStyle(SimpleReportLib::SimpleReportGenerator::DEFAULT_HEADER_STYLE_NAME);
   assert(orgStyle != nullptr);
@@ -730,26 +734,26 @@ void BracketSheet::printHeaderAndFooterOnAllPages() const
   // loop over all pages to check if and where to print a label
   for (int pg=0; pg < rawReport->getPageCount(); ++pg)
   {
-    BRACKET_PAGE_ORIENTATION orientation;
-    BRACKET_LABEL_POS labelPos;
+    BracketPageOrientation orientation;
+    BracketLabelPos labelPos;
     tie(orientation, labelPos) = bvd->getPageInfo(pg);
 
-    if (labelPos == BRACKET_LABEL_POS::RefereeMode::None) continue;
+    if (labelPos == BracketLabelPos::None) continue;
 
     rawReport->setActivePage(pg);
 
     // determine text alignment and base point
-    double x0 = DEFAULT_MARGIN__MM;
-    double y0 = DEFAULT_MARGIN__MM;
+    double x0 = DefaultMargin_mm;
+    double y0 = DefaultMargin_mm;
     SimpleReportLib::HOR_TXT_ALIGNMENT align = SimpleReportLib::LEFT;
-    if ((labelPos == BRACKET_LABEL_POS::TOP_RIGHT) || (labelPos == BRACKET_LABEL_POS::BOTTOM_RIGHT))
+    if ((labelPos == BracketLabelPos::TopRight) || (labelPos == BracketLabelPos::BottomRight))
     {
       align = SimpleReportLib::RIGHT;
-      x0 = rawReport->getPageWidth() - DEFAULT_MARGIN__MM;
+      x0 = rawReport->getPageWidth() - DefaultMargin_mm;
     }
-    if ((labelPos == BRACKET_LABEL_POS::BOTTOM_LEFT) || (labelPos == BRACKET_LABEL_POS::BOTTOM_RIGHT))
+    if ((labelPos == BracketLabelPos::BottomLeft) || (labelPos == BracketLabelPos::BottomRight))
     {
-      y0 = rawReport->getPageHeight() - DEFAULT_MARGIN__MM;
+      y0 = rawReport->getPageHeight() - DefaultMargin_mm;
 
       // subtract the height for three lines of text
       double txtHeight = headlineStyle->getFontSize_MM();  // headline height
@@ -770,7 +774,7 @@ void BracketSheet::printHeaderAndFooterOnAllPages() const
     // for bottom aligned text the sequence is: headline, date, org
     //
 
-    if ((labelPos == BRACKET_LABEL_POS::TOP_LEFT) || (labelPos == BRACKET_LABEL_POS::TOP_RIGHT))
+    if ((labelPos == BracketLabelPos::TopLeft) || (labelPos == BracketLabelPos::TopRight))
     {
       y0 -= orgStyle->getFontSize_MM();
 
@@ -786,7 +790,7 @@ void BracketSheet::printHeaderAndFooterOnAllPages() const
       rawReport->drawText(x0, y0, dat, "", align);
     }
 
-    if ((labelPos == BRACKET_LABEL_POS::BOTTOM_LEFT) || (labelPos == BRACKET_LABEL_POS::BOTTOM_RIGHT))
+    if ((labelPos == BracketLabelPos::BottomLeft) || (labelPos == BracketLabelPos::BottomRight))
     {
       // headline
       QRectF bb = rawReport->drawText(x0, y0, headline, headlineStyle, align);

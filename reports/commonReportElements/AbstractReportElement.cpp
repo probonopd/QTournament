@@ -18,6 +18,8 @@
 
 #include "AbstractReportElement.h"
 
+using namespace SimpleReportLib;
+
 AbstractReportElement::AbstractReportElement(SimpleReportGenerator *_rep)
   :rep(_rep)
 {

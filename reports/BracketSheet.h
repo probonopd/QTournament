@@ -37,20 +37,20 @@ namespace QTournament
   {
     Q_OBJECT
 
-    enum class BRACKET_TEXT_ELEMENT {
-      PAIR1,
-      PAIR2,
-      INITIAL_RANK1,
-      INITIAL_RANK2,
-      SCORE,
-      Error::MATCH_NUM,
-      WINNER_RANK,
-      TERMINATOR_NAME
+    enum class BracketTextElement {
+      Pair1,
+      Pair2,
+      InitialRank1,
+      InitialRank2,
+      Score,
+      MatchNum,
+      WinnerRank,
+      TerminatorName
     };
 
-    static constexpr char BRACKET_STYLE[] = "BracketText";
-    static constexpr char BRACKET_STYLE_ITALICS[] = "BracketTextItalics";
-    static constexpr char BRACKET_STYLE_BOLD[] = "BracketTextBold";
+    static constexpr char BracketStyle[] = "BracketText";
+    static constexpr char BracketStyleItalics[] = "BracketTextItalics";
+    static constexpr char BracketStyleBold[] = "BracketTextBold";
 
   public:
     BracketSheet(const QTournament::TournamentDB& _db, const QString& _name, const Category& _cat);
@@ -58,10 +58,10 @@ namespace QTournament
     virtual upSimpleReport regenerateReport() override;
     virtual QStringList getReportLocators() const override;
 
-    static constexpr double GAP_LINE_TXT__MM = 1.0;
+    static constexpr double GapLineTxt_mm = 1.0;
 
   private:
-    Category cat;
+    const Category cat;  // DO NOT USE REFERENCES HERE, because this report might out-live the caller and its local objects
 
     SimpleReportLib::SimpleReportGenerator* rawReport;  // raw pointer, only to be used during regenerateReport! (BAAAD style)
     double xFac;
@@ -70,14 +70,14 @@ namespace QTournament
     void determineGridSize();
     void setupTextStyle();
     std::tuple<double, double> grid2MM(int gridX, int gridY) const;
-    void drawBracketTextItem(int bracketX0, int bracketY0, int ySpan, BRACKET_ORIENTATION orientation, QString txt, BRACKET_TEXT_ELEMENT item, const QString& styleNameOverride="") const;
+    void drawBracketTextItem(int bracketX0, int bracketY0, int ySpan, BracketOrientation orientation, QString txt, BracketTextElement item, const QString& styleNameOverride="") const;
     QString getTruncatedPlayerName(const Player& p, const QString& postfix, double maxWidth, SimpleReportLib::TextStyle* style) const;
     QString getTruncatedPlayerName(const PlayerPair& pp, double maxWidth, SimpleReportLib::TextStyle* style) const;
     void drawWinnerNameOnTerminator(const QPointF& txtBottomCenter, const PlayerPair& pp, double gridWidth, SimpleReportLib::TextStyle* style) const;
 
     QString determineSymbolicPlayerPairDisplayText(const BracketVisElement& el, int pos) const;
     int determineEffectivePlayerPairId(const BracketVisElement& el, int pos) const;
-    void printHeaderAndFooterOnAllPages() const;
+    void printHeaderAndFooterOnAllPages();
   };
 
 }

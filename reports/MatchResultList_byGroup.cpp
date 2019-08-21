@@ -34,7 +34,7 @@ namespace QTournament
 {
 
 
-MatchResultList_ByGroup::MatchResultList_ByGroup(TournamentDB* _db, const QString& _name, const Category& _cat, int _grpNum)
+MatchResultList_ByGroup::MatchResultList_ByGroup(const TournamentDB& _db, const QString& _name, const Category& _cat, int _grpNum)
   :AbstractReport(_db, _name), cat(_cat), grpNum(_grpNum)
 {
   // make sure that the requested group is a round-robin group

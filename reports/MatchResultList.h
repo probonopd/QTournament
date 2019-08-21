@@ -40,7 +40,7 @@ namespace QTournament
     virtual QStringList getReportLocators() const override;
 
   private:
-    Category cat;
+    const Category cat; // DO NOT USE REFERENCES HERE, because this report might out-live the caller and its local objects
     int round;
   };
 

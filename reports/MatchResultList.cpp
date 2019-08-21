@@ -34,7 +34,7 @@ namespace QTournament
 {
 
 
-MatchResultList::MatchResultList(TournamentDB* _db, const QString& _name, const Category& _cat, int _round)
+MatchResultList::MatchResultList(const TournamentDB& _db, const QString& _name, const Category& _cat, int _round)
   :AbstractReport(_db, _name), cat(_cat), round(_round)
 {
   // make sure that the requested round is already finished or at least running

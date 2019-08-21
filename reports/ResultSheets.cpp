@@ -33,7 +33,7 @@ namespace QTournament
 {
 
 
-ResultSheets::ResultSheets(TournamentDB* _db, const QString& _name, int _numMatches)
+ResultSheets::ResultSheets(const TournamentDB& _db, const QString& _name, int _numMatches)
   :AbstractReport(_db, _name), numMatches(_numMatches)
 {
   firstMatchNum = -1;
@@ -42,7 +42,7 @@ ResultSheets::ResultSheets(TournamentDB* _db, const QString& _name, int _numMatc
 
 //----------------------------------------------------------------------------
 
-ResultSheets::ResultSheets(TournamentDB* _db, const Match& firstMatchForPrinting, int _numMatches)
+ResultSheets::ResultSheets(const TournamentDB& _db, const Match& firstMatchForPrinting, int _numMatches)
   :AbstractReport(_db, "Dummy"), numMatches(_numMatches), firstMatchNum(firstMatchForPrinting.getMatchNumber())
 {
   // No connection to the SignalRelay here!
@@ -72,7 +72,7 @@ upSimpleReport ResultSheets::regenerateReport()
   while (matchList.size() < numMatches)
   {
     auto ma = mm.getMatchByMatchNum(i);
-    if (ma != nullptr)
+    if (ma)
     {
       // we can only print result sheet for unfinished
       // matches. For now, let's also acceppt FUZZY and POSTPONED matches...
@@ -104,8 +104,8 @@ upSimpleReport ResultSheets::regenerateReport()
   result->addTab(190.0,  SimpleReportLib::TAB_RIGHT);  // right-bound stuff
 
   // we have three result sheets per page. Calculate the number of pages
-  int numPages = matchList.size() / SHEETS_PER_PAGE;   // this always rounds down ("truncates to zero")
-  if ((matchList.size() % SHEETS_PER_PAGE) != 0)
+  int numPages = matchList.size() / SheetsPerPage;   // this always rounds down ("truncates to zero")
+  if ((matchList.size() % SheetsPerPage) != 0)
   {
     ++numPages;   // round up. we'll have at least one page
   }
@@ -113,7 +113,7 @@ upSimpleReport ResultSheets::regenerateReport()
   // create the report page by page
   for (int p=0; p < numPages; ++p)
   {
-    for (int n=0; n < SHEETS_PER_PAGE; ++n)
+    for (int n=0; n < SheetsPerPage; ++n)
     {
       // top of page 1: game1; top of page 2: game2, ...
       // mid of page 1: game"numPages"; mid of page 2: game"numPages+1", ...
@@ -122,12 +122,12 @@ upSimpleReport ResultSheets::regenerateReport()
       // we might have empty sheets due to rounding
       if (matchIndex >= matchList.size()) continue;
 
-      result->warpTo(n * SHEET_HEIGHT__MM + SHEET_TOP_MARGIN__MM);
+      result->warpTo(n * SheetHeight_mm + SheetTopMargin_mm);
       printMatchData(result, matchList.at(matchIndex));
 
-      if (n < (SHEETS_PER_PAGE - 1))
+      if (n < (SheetsPerPage - 1))
       {
-        result->addHorLine_absPos((n+1) * SHEET_HEIGHT__MM, SimpleReportLib::THIN);
+        result->addHorLine_absPos((n+1) * SheetHeight_mm, SimpleReportLib::THIN);
       }
     }
 
@@ -169,7 +169,7 @@ void ResultSheets::onMatchSelectionChanged(int newlySelectedMatchId)
   } else {
     MatchMngr mm{db};
     auto ma = mm.getMatch(newlySelectedMatchId);
-    assert(ma != nullptr);
+    assert(ma);
     firstMatchNum = ma->getMatchNumber();
   }
 }
@@ -181,8 +181,8 @@ void ResultSheets::printMatchData(upSimpleReport& rep, const Match& ma) const
   // if the match already a court assigned, we print the court number. Otherwise,
   // we simple print some underscores for putting in the court number manually
   QString courtNumString = "____________";
-  auto co = ma.getCourt();
-  if (co != nullptr)
+  auto co = ma.getCourt(nullptr);
+  if (co)
   {
     courtNumString = QString::number(co->getNumber());
   }
@@ -237,27 +237,27 @@ void ResultSheets::printMatchData(upSimpleReport& rep, const Match& ma) const
       name2_Line1 += QString::number(abs(symbolicName));
     }
   }
-  rep->writeLine("\t" + name1_Line1 + "\t:\t" + name2_Line1, RESULTSHEET_NAME_STYLE);
+  rep->writeLine("\t" + name1_Line1 + "\t:\t" + name2_Line1, ResultsheetNameStyle);
   if (!(name1_Line2.isEmpty()) || !(name2_Line2.isEmpty()))
   {
-    rep->writeLine("\t" + name1_Line2 + "\t\t" + name2_Line2, RESULTSHEET_NAME_STYLE);
+    rep->writeLine("\t" + name1_Line2 + "\t\t" + name2_Line2, ResultsheetNameStyle);
   }
 
   // write the team names
   if (!(team1.isEmpty()) || !(team2.isEmpty()))
   {
-    rep->writeLine("\t" + team1 + "\t\t" + team2, RESULTSHEET_TEAM_STYLE);
+    rep->writeLine("\t" + team1 + "\t\t" + team2, ResultsheetTeamStyle);
   }
 
   rep->skip(8.0);
 
   // print the score area
-  for (int n=0; n < GAMES_PER_SHEET; ++n)
+  for (int n=0; n < GamesPerSheet; ++n)
   {
     QString txt = QString::number(n+1) + ". ";
     txt += tr("Game:");
     txt += "\t__________     \t:\t     __________";
-    rep->writeLine(txt, RESULTSHEET_GAMELABEL_STYLE);
+    rep->writeLine(txt, ResultsheetGamelabelStyle);
     rep->skip(4.5);
   }
 
@@ -266,13 +266,13 @@ void ResultSheets::printMatchData(upSimpleReport& rep, const Match& ma) const
   if (refMode != RefereeMode::None)
   {
     QString txt = tr("Umpire: ");
-    upPlayer referee = ma.getAssignedReferee();
+    auto referee = ma.getAssignedReferee();
 
-    if ((refMode != RefereeMode::HandWritten) && (referee != nullptr))
+    if ((refMode != RefereeMode::HandWritten) && referee)
     {
       txt += referee->getDisplayName_FirstNameFirst();
     }
-    rep->writeLine(txt, RESULTSHEET_GAMELABEL_STYLE);
+    rep->writeLine(txt, ResultsheetGamelabelStyle);
   }
 }
 

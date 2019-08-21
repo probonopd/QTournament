@@ -36,7 +36,7 @@ namespace QTournament
 {
 
 
-Standings::Standings(TournamentDB* _db, const QString& _name, const Category& _cat, int _round)
+Standings::Standings(const TournamentDB& _db, const QString& _name, const Category& _cat, int _round)
   :AbstractReport(_db, _name), cat(_cat), round(_round)
 {
   // make sure that the requested round is already finished
@@ -168,20 +168,20 @@ int Standings::determineBestPossibleRankForPlayerAfterRound(const PlayerPair& pp
   // determine the last FINISHED match that this player has played.
   // Note: this must not be in this round because the player
   // could have had a bye
-  std::unique_ptr<Match> lastMatch = nullptr;
+  std::optional<Match> lastMatch{};
   int _r = round;
   MatchMngr mm{db};
-  while ((lastMatch == nullptr) && (_r > 0))
+  while (!lastMatch  && (_r > 0))
   {
     lastMatch = mm.getMatchForPlayerPairAndRound(pp, _r);
-    if ((lastMatch != nullptr) && (lastMatch->is_NOT_InState(ObjState::MA_Finished)))
+    if (lastMatch && (lastMatch->is_NOT_InState(ObjState::MA_Finished)))
     {
-      lastMatch = nullptr;   // skip all matches that are not finished
+      lastMatch.reset();   // skip all matches that are not finished
     }
     --_r;
   }
 
-  if (lastMatch == nullptr)
+  if (!lastMatch)
   {
     // the player had no match yet (or none finished), so the first place is still
     // possible
@@ -210,10 +210,10 @@ int Standings::determineBestPossibleRankForPlayerAfterRound(const PlayerPair& pp
 
   // a little helper function to get the next match for a match winner
   int finalRound = crs.getTotalRoundsCount();
-  auto getNextWinnerMatch = [this, &finalRound, &mm](const Match& ma) -> std::unique_ptr<Match> {
+  auto getNextWinnerMatch = [this, &finalRound, &mm](const Match& ma) -> std::optional<Match> {
     if (ma.getWinnerRank() > 0)
     {
-      return nullptr;  // no next match
+      return {};  // no next match
     }
 
     // maybe we already HAVE winner. then we must search for real
@@ -225,8 +225,8 @@ int Standings::determineBestPossibleRankForPlayerAfterRound(const PlayerPair& pp
       int r = ma.getMatchGroup().getRound();
 
       ++r;
-      std::unique_ptr<Match> nextMatch = nullptr;
-      while ((nextMatch == nullptr) && (r <= finalRound))
+      std::optional<Match> nextMatch{};
+      while (!nextMatch && (r <= finalRound))
       {
         nextMatch = mm.getMatchForPlayerPairAndRound(*w, r);
         ++r;
@@ -237,12 +237,15 @@ int Standings::determineBestPossibleRankForPlayerAfterRound(const PlayerPair& pp
 
     // the match is not yet finished, so we need to search for symbolic
     // player values. In this case, it is the positive ID of our match
-    QString where = QString("%1 = %2 OR %3 = %4").arg(MA_Pair1SymbolicVal).arg(ma.getId());
-    where = where.arg(MA_Pair2SymbolicVal).arg(ma.getId());
+    Sloppy::estring where{"%1 = %2 OR %3 = %4"};
+    where.arg(MA_Pair1SymbolicVal);
+    where.arg(ma.getId());
+    where.arg(MA_Pair2SymbolicVal);
+    where.arg(ma.getId());
 
-    TabRow winnerMatchRow = db->getTab(TabMatch)->getSingleRowByWhereClause(where.toUtf8().constData());  // this query must always yield exactly one match
+    auto winnerMatchRow = SqliteOverlay::DbTab{db, TabMatch, false}.getSingleRowByWhereClause(where);  // this query must always yield exactly one match
 
-    return mm.getMatch(winnerMatchRow.getId());
+    return mm.getMatch(winnerMatchRow.id());
   };
 
   //
@@ -254,14 +257,14 @@ int Standings::determineBestPossibleRankForPlayerAfterRound(const PlayerPair& pp
   // and the match must be identifiable by the pair ID, not by a symbolic name (the symbolic
   // name should be resolved by now).
   _r = round + 1;
-  std::unique_ptr<Match> nextMatch = nullptr;
-  while ((nextMatch == nullptr) && (_r <= finalRound))
+  std::optional<Match> nextMatch{};
+  while (!nextMatch && (_r <= finalRound))
   {
     nextMatch = mm.getMatchForPlayerPairAndRound(pp, _r);
     ++_r;
   }
 
-  if (nextMatch == nullptr)
+  if (!nextMatch)
   {
     // this shouldn't happen. There should always be a next match.
     // I give up.
@@ -271,7 +274,7 @@ int Standings::determineBestPossibleRankForPlayerAfterRound(const PlayerPair& pp
   // no we follow the bracket tree, assuming that the player wins all
   // subsequent matches. Let's see where it takes us...
   Match oldNextMatch = *nextMatch;
-  while (nextMatch != nullptr)
+  while (nextMatch)
   {
     oldNextMatch = *nextMatch;
     nextMatch = getNextWinnerMatch(*nextMatch);

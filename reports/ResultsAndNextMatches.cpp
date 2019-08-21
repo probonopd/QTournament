@@ -35,7 +35,7 @@ namespace QTournament
 {
 
 
-ResultsAndNextMatches::ResultsAndNextMatches(TournamentDB* _db, const QString& _name, const Category& _cat, int _round)
+ResultsAndNextMatches::ResultsAndNextMatches(const TournamentDB& _db, const QString& _name, const Category& _cat, int _round)
   :AbstractReport(_db, _name), cat(_cat), round(_round)
 {
   // if "round" is zero, we only print the first matches

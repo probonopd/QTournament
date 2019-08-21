@@ -34,12 +34,12 @@ namespace QTournament
     Q_OBJECT
 
   public:
-    static constexpr int SORT_BY_NAME = 1;
-    static constexpr int SORT_BY_TEAM = 2;
-    static constexpr int SORT_BY_CATEGORY = 3;
+    static constexpr int SortByName = 1;
+    static constexpr int SortByTeam = 2;
+    static constexpr int SortByCategory = 3;
 
-    ParticipantsList(const QTournament::TournamentDB& _db, const QString& _name, int _sortCriterion=SORT_BY_NAME);
-    virtual ~ParticipantsList();
+    ParticipantsList(const QTournament::TournamentDB& _db, const QString& _name, int _sortCriterion=SortByName);
+    virtual ~ParticipantsList() override;
 
     virtual upSimpleReport regenerateReport() override;
     virtual QStringList getReportLocators() const override;

@@ -42,7 +42,7 @@ namespace QTournament
     static bool isValidCatRoundCombination(const Category& _cat, int _round);
 
   private:
-    Category cat;
+    const Category cat; // DO NOT USE REFERENCES HERE, because this report might out-live the caller and its local objects
     int round;
   };
 

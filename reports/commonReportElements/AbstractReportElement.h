@@ -16,8 +16,8 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef ABSTRACT_REPORT_ELEMENT__H
-#define ABSTRACT_REPORT_ELEMENT__H
+#ifndef ABSTRACT_REPORT_ELEMENT_H
+#define ABSTRACT_REPORT_ELEMENT_H
 
 #include <QPointF>
 #include <QRectF>

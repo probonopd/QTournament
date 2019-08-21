@@ -25,6 +25,9 @@
 #include "reports/AbstractReport.h"
 #include "PureRoundRobinCategory.h"
 
+using namespace SimpleReportLib;
+using namespace QTournament;
+
 MatchMatrix::MatchMatrix(SimpleReportGenerator* _rep, const QString& tabName, const Category& _cat, int _round, int _grpNum)
   :AbstractReportElement(_rep), tableName(tabName), cat(_cat), round(_round), grpNum(_grpNum), showMatchNumbersOnly(round <= 0)
 {
@@ -115,8 +118,8 @@ QRectF MatchMatrix::plot(const QPointF& topLeft)
   int minRoundNum = 1;
   if (msys == MatchSystem::RoundRobin)
   {
-    std::unique_ptr<PureRoundRobinCategory> rrCat = PureRoundRobinCategory::getFromGenericCat(cat);
-    if ((rrCat != nullptr) && (round > 0))
+    auto rrCat = PureRoundRobinCategory::getFromGenericCat(cat);
+    if (rrCat && (round > 0))
     {
       int rpi = rrCat->getRoundCountPerIteration();
       int curIteration = (round - 1) / rpi;  // will be >= 0 even if round==0
@@ -128,7 +131,7 @@ QRectF MatchMatrix::plot(const QPointF& topLeft)
   // get the textstyle for the table contents
   TextStyle* baseStyle = rep->getTextStyle();
   assert(baseStyle != nullptr);
-  TextStyle* boldStyle = rep->getTextStyle(AbstractReport::BOLD_STYLE);
+  TextStyle* boldStyle = rep->getTextStyle(AbstractReport::BoldStyle);
   assert(boldStyle != nullptr);
 
   // prepare the grid
@@ -158,23 +161,23 @@ QRectF MatchMatrix::plot(const QPointF& topLeft)
     {
       // get the cell's content
       QString txt;
-      CELL_CONTENT_TYPE cct;
+      CellContentType cct;
       tie(cct, txt) = getCellContent(ppList, r, c, minRoundNum, maxRoundNum);
 
       // special case: content == tableName
-      if (cct == CELL_CONTENT_TYPE::TITLE)
+      if (cct == CellContentType::Title)
       {
         txt = tableName;
       }
 
       // determine the font for the cell content
-      TextStyle* style = (cct == CELL_CONTENT_TYPE::TITLE) ? boldStyle : baseStyle;
+      TextStyle* style = (cct == CellContentType::Title) ? boldStyle : baseStyle;
 
       // determine the position of the content within the cell
       // and the content's reference position (text base point)
       RECT_CORNER posInCell = RECT_CORNER::CENTER;
       RECT_CORNER txtBasePoint = RECT_CORNER::CENTER;
-      if (cct == CELL_CONTENT_TYPE::MATCH_NUMBER)
+      if (cct == CellContentType::MatchScore)
       {
         posInCell = RECT_CORNER::TOP_RIGHT;
         txtBasePoint = RECT_CORNER::TOP_RIGHT;
@@ -182,18 +185,18 @@ QRectF MatchMatrix::plot(const QPointF& topLeft)
 
       // determine the cell's size and position
       auto cell = grid.getCell(r, c);
-      if (cct == CELL_CONTENT_TYPE::MATCH_NUMBER)
+      if (cct == CellContentType::MatchScore)
       {
         // shrink the cell to virtually add some margin
         // between match number and grid line
-        cell.adjust(0, GAP_TEXT_TO_GRID__MM, -GAP_TEXT_TO_GRID__MM, 0);
+        cell.adjust(0, GapTextToGrid_mm, -GapTextToGrid_mm, 0);
       }
 
       // prepare the player names for multiline headers
-      if (cct == CELL_CONTENT_TYPE::HEADER)
+      if (cct == CellContentType::Header)
       {
         PlayerPair pp = ppList.at(r + c - 1);  // either r or c is guaranteed to be 0
-        txt = getTruncatedPlayerNames(pp, style, cell.width() - 2 * GAP_TEXT_TO_GRID__MM);
+        txt = getTruncatedPlayerNames(pp, style, cell.width() - 2 * GapTextToGrid_mm);
       }
 
       // plot the contents. Call the "multiline"-function even although we
@@ -204,7 +207,7 @@ QRectF MatchMatrix::plot(const QPointF& topLeft)
       //
       // this string-based approach is faster than calling again
       // getMatchForCell() with swapped row/column values
-      if (cct == CELL_CONTENT_TYPE::SCORE)
+      if (cct == CellContentType::Score)
       {
         QString swappedScore;
         for (QString gameScore : txt.split("\n"))
@@ -229,10 +232,10 @@ QRectF MatchMatrix::plot(const QPointF& topLeft)
       }
 
       // draw the "mirrored" match number
-      if (cct == CELL_CONTENT_TYPE::MATCH_NUMBER)
+      if (cct == CellContentType::MatchScore)
       {
         auto mirroredCell = grid.getCell(c, r);
-        mirroredCell.adjust(0, GAP_TEXT_TO_GRID__MM, -GAP_TEXT_TO_GRID__MM, 0);
+        mirroredCell.adjust(0, GapTextToGrid_mm, -GapTextToGrid_mm, 0);
         rep->drawText(mirroredCell, posInCell, txtBasePoint, txt, style);
       }
     }
@@ -247,7 +250,7 @@ std::optional<QTournament::Match> MatchMatrix::getMatchForCell(const PlayerPairL
 {
   if ((row < 1) || (col < 1) || (row > ppList.size()) || (col > ppList.size()))
   {
-    return nullptr;
+    return {};
   }
 
   PlayerPair ppRow = ppList.at(row - 1);
@@ -255,17 +258,19 @@ std::optional<QTournament::Match> MatchMatrix::getMatchForCell(const PlayerPairL
 
   // create a direct, low-level database query for the
   // applicable matches
-  TournamentDB* db = cat.getDatabaseHandle();
+  auto& db = cat.getDatabaseHandle();
   MatchMngr mm{db};
-  QString where = "(%1 = %2 AND %3 = %4) OR (%1 = %4 AND %3 = %2)";
-  where = where.arg(MA_Pair1Ref).arg(ppRow.getPairId());
-  where = where.arg(MA_Pair2Ref).arg(ppCol.getPairId());
-  DbTab* matchTab = db->getTab(TabMatch);
-  DbTab::CachingRowIterator it = matchTab->getRowsByWhereClause(where.toUtf8().constData());
-  while (!(it.isEnd()))
+  Sloppy::estring where = "(%1 = %2 AND %3 = %4) OR (%1 = %4 AND %3 = %2)";
+  where.arg(MA_Pair1Ref);
+  where.arg(ppRow.getPairId());
+  where.arg(MA_Pair2Ref);
+  where.arg(ppCol.getPairId());
+  SqliteOverlay::DbTab matchTab{db, TabMatch, false};
+
+  for (const auto& row : matchTab.getRowsByWhereClause(where))
   {
-    auto ma = mm.getMatch((*it).getId());
-    assert(ma != nullptr);
+    auto ma = mm.getMatch(row.id());
+    assert(ma);
 
     // check for right category and the right round number
     int r = ma->getMatchGroup().getRound();
@@ -273,11 +278,9 @@ std::optional<QTournament::Match> MatchMatrix::getMatchForCell(const PlayerPairL
     {
       return ma;
     }
-
-    ++it;
   }
 
-  return nullptr;
+  return {};
 }
 
 //----------------------------------------------------------------------------
@@ -294,13 +297,13 @@ QStringList MatchMatrix::getSortedMatchScoreStrings(const Match& ma, const Playe
   bool mustSwapScore = (ppRow == pp2);
 
   auto score = ma.getScore();
-  if (score == nullptr) return QStringList();
+  if (!score) return QStringList();
 
   QStringList result;
   for (int g=0; g < score->getNumGames(); ++g)
   {
     auto gameScore = score->getGame(g);
-    assert(gameScore != nullptr);
+    assert(gameScore);
 
     int sc1;
     int sc2;
@@ -323,18 +326,18 @@ QStringList MatchMatrix::getSortedMatchScoreStrings(const Match& ma, const Playe
 
 //----------------------------------------------------------------------------
 
-tuple<MatchMatrix::CELL_CONTENT_TYPE, QString> MatchMatrix::getCellContent(const PlayerPairList& ppList, int row, int col, int minRound, int maxRound) const
+tuple<MatchMatrix::CellContentType, QString> MatchMatrix::getCellContent(const PlayerPairList& ppList, int row, int col, int minRound, int maxRound) const
 {
   // the table name goes in the top-left corner
   if ((row == 0) && (col == 0))
   {
-    return make_tuple(CELL_CONTENT_TYPE::TITLE, QString());  // don't return the title itself, it's already know to the caller
+    return make_tuple(CellContentType::Title, QString());  // don't return the title itself, it's already know to the caller
   }
 
   // the player names go to column 0 and row 0
   if ((row == 0) || (col == 0))
   {
-    return make_tuple(CELL_CONTENT_TYPE::HEADER, ppList.at(row + col - 1).getDisplayName());
+    return make_tuple(CellContentType::Header, ppList.at(row + col - 1).getDisplayName());
   }
 
   // for every cell above the diagonal, check for
@@ -344,9 +347,9 @@ tuple<MatchMatrix::CELL_CONTENT_TYPE, QString> MatchMatrix::getCellContent(const
   {
     auto ma = getMatchForCell(ppList, row, col, minRound, maxRound);
 
-    if (ma == nullptr)
+    if (!ma)
     {
-      return make_tuple(CELL_CONTENT_TYPE::EMPTY, QString());
+      return make_tuple(CellContentType::Empty, QString());
     }
 
     int maRound = ma->getMatchGroup().getRound();
@@ -361,12 +364,12 @@ tuple<MatchMatrix::CELL_CONTENT_TYPE, QString> MatchMatrix::getCellContent(const
       if (maNum < 0)
       {
         // no score, no match number. nothing more to do.
-        return make_tuple(CELL_CONTENT_TYPE::EMPTY, QString());
+        return make_tuple(CellContentType::Empty, QString());
       }
 
       // the cell content will be the match number
       QString txt = "#" + QString::number(maNum);
-      return make_tuple(CELL_CONTENT_TYPE::MATCH_NUMBER, txt);
+      return make_tuple(CellContentType::MatchScore, txt);
     }
 
     if ((maRound <= round) && (maStat == ObjState::MA_Finished))
@@ -390,11 +393,11 @@ tuple<MatchMatrix::CELL_CONTENT_TYPE, QString> MatchMatrix::getCellContent(const
         txt += "\n" + tr("walkover");
       }
 
-      return make_tuple(CELL_CONTENT_TYPE::SCORE, txt);
+      return make_tuple(CellContentType::Score, txt);
     }
   }
 
-  return make_tuple(CELL_CONTENT_TYPE::EMPTY, QString());
+  return make_tuple(CellContentType::Empty, QString());
 }
 
 //----------------------------------------------------------------------------

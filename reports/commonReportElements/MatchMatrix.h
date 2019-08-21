@@ -54,15 +54,15 @@ class MatchMatrix : public QObject, AbstractReportElement
   Q_OBJECT
 
 public:
-  enum class CELL_CONTENT_TYPE {
-    TITLE,
-    HEADER,
-    SCORE,
-    Error::MATCH_NUMBER,
-    EMPTY
+  enum class CellContentType {
+    Title,
+    Header,
+    Score,
+    MatchScore,
+    Empty
   };
 
-  static constexpr double GAP_TEXT_TO_GRID__MM = 1.0;
+  static constexpr double GapTextToGrid_mm = 1.0;
 
   MatchMatrix(SimpleReportLib::SimpleReportGenerator* _rep, const QString& tabName, const QTournament::Category& _cat, int _round, int _grpNum = -1);
   virtual QRectF plot(const QPointF& topLeft = QPointF(-1, -1));
@@ -77,7 +77,7 @@ protected:
 
   std::optional<QTournament::Match> getMatchForCell(const QTournament::PlayerPairList& ppList, int row, int col, int minRound, int maxRound) const;
   QStringList getSortedMatchScoreStrings(const QTournament::Match& ma, const QTournament::PlayerPair& ppRow, const QTournament::PlayerPair& ppCol) const;
-  std::tuple<CELL_CONTENT_TYPE, QString> getCellContent(const QTournament::PlayerPairList& ppList, int row, int col, int minRound, int maxRound) const;
+  std::tuple<CellContentType, QString> getCellContent(const QTournament::PlayerPairList& ppList, int row, int col, int minRound, int maxRound) const;
   QString getTruncatedPlayerNames(const QTournament::PlayerPair& pp, const SimpleReportLib::TextStyle* style, double maxWidth) const;
 };
 

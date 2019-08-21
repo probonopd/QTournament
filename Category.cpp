@@ -865,8 +865,8 @@ namespace QTournament
         visFinal.gridY0 = 0;
         visFinal.ySpan = 2;
         visFinal.yPageBreakSpan = 0;
-        visFinal.orientation = BRACKET_ORIENTATION::RIGHT;
-        visFinal.terminator = BRACKET_TERMINATOR::OUTWARDS;
+        visFinal.orientation = BracketOrientation::Right;
+        visFinal.terminator = BracketTerminator::Outwards;
         visFinal.terminatorOffsetY = 0;
 
         // match for third place
@@ -882,8 +882,8 @@ namespace QTournament
         visThird.gridY0 = 1;
         visThird.ySpan = 2;
         visThird.yPageBreakSpan = 0;
-        visThird.orientation = BRACKET_ORIENTATION::LEFT;
-        visThird.terminator = BRACKET_TERMINATOR::OUTWARDS;
+        visThird.orientation = BracketOrientation::Left;
+        visThird.terminator = BracketTerminator::Outwards;
         visThird.terminatorOffsetY = 0;
 
         // replace all previously generated matches with these two
@@ -892,7 +892,7 @@ namespace QTournament
         bmdl.push_back(thirdPlaceMatch);
 
         visDataDef.clear();
-        visDataDef.addPage(BRACKET_PAGE_ORIENTATION::LANDSCAPE, BRACKET_LABEL_POS::TOP_LEFT);
+        visDataDef.addPage(BracketPageOrientation::Landscape, BracketLabelPos::TopLeft);
         visDataDef.addElement(visFinal);
         visDataDef.addElement(visThird);
       }

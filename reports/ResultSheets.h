@@ -44,13 +44,13 @@ namespace QTournament
     void onMatchSelectionChanged(int newlySelectedMatchId);
 
   private:
-    static constexpr int SHEETS_PER_PAGE = 4;
-    static constexpr int GAMES_PER_SHEET = 3;
-    static constexpr double SHEET_HEIGHT__MM = 297.0 / SHEETS_PER_PAGE;
-    static constexpr double SHEET_TOP_MARGIN__MM = 10.0;
+    static constexpr int SheetsPerPage = 4;
+    static constexpr int GamesPerSheet = 3;
+    static constexpr double SheetHeight_mm = HeightA4_mm / SheetsPerPage;
+    static constexpr double SheetTopMargin_mm = 10.0;
 
-    int firstMatchNum;
     int numMatches;
+    int firstMatchNum{-1};
     void printMatchData(upSimpleReport& rep, const Match& ma) const;
   };
 

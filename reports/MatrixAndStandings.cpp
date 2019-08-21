@@ -37,7 +37,7 @@ namespace QTournament
 {
 
 
-MatrixAndStandings::MatrixAndStandings(TournamentDB* _db, const QString& _name, const Category& _cat, int _round)
+MatrixAndStandings::MatrixAndStandings(const TournamentDB& _db, const QString& _name, const Category& _cat, int _round)
   :AbstractReport(_db, _name), cat(_cat), round(_round)
 {
   MatchSystem msys = cat.getMatchSystem();
@@ -96,7 +96,7 @@ upSimpleReport MatrixAndStandings::regenerateReport()
   int curIteration = -1;
   if (msys == MatchSystem::RoundRobin)
   {
-    std::unique_ptr<PureRoundRobinCategory> rrCat = PureRoundRobinCategory::getFromGenericCat(cat);
+    auto rrCat = PureRoundRobinCategory::getFromGenericCat(cat);
     if (rrCat->getIterationCount() > 1)
     {
       int rpi = rrCat->getRoundCountPerIteration();
@@ -204,8 +204,8 @@ QStringList MatrixAndStandings::getReportLocators() const
   MatchSystem msys = cat.getMatchSystem();
   if (msys == MatchSystem::RoundRobin)
   {
-    std::unique_ptr<PureRoundRobinCategory> rrCat = PureRoundRobinCategory::getFromGenericCat(cat);
-    if (rrCat != nullptr)   // should always be true
+    auto rrCat = PureRoundRobinCategory::getFromGenericCat(cat);
+    if (rrCat)   // should always be true
     {
       // if we play more than one iteration, add another
       // location "sub-tree" for the iteration number

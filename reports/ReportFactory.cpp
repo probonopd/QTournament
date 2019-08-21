@@ -33,27 +33,20 @@
 
 namespace QTournament
 {
-  constexpr char ReportFactory::REP__PARTLIST_BY_NAME[];
-  constexpr char ReportFactory::REP__PARTLIST_BY_TEAM[];
-  constexpr char ReportFactory::REP__PARTLIST_BY_CATEGORY[];
-  constexpr char ReportFactory::REP__RESULTS[];
-  constexpr char ReportFactory::REP__RESULTS_BY_GROUP[];
-  constexpr char ReportFactory::REP__STANDINGS_BY_CATEGORY[];
-  constexpr char ReportFactory::REP__INOUTLIST_BY_CATEGORY[];
-  constexpr char ReportFactory::REP__RESULTSHEETS[];
-  constexpr char ReportFactory::REP__RESULTS_AND_NEXT_MATCHES[];
-  constexpr char ReportFactory::REP__BRACKET[];
-  constexpr char ReportFactory::REP__MATRIX_AND_STANDINGS[];
+  constexpr char ReportFactory::REP_PartListByName[];
+  constexpr char ReportFactory::REP_PartListByTeam[];
+  constexpr char ReportFactory::REP_PartListByCat[];
+  constexpr char ReportFactory::REP_Results[];
+  constexpr char ReportFactory::REP_ResultsByGroup[];
+  constexpr char ReportFactory::REP_StandingsByCat[];
+  constexpr char ReportFactory::REP_InOutByCat[];
+  constexpr char ReportFactory::REP_ResultSheets[];
+  constexpr char ReportFactory::REP_ResultsAndNextMatches[];
+  constexpr char ReportFactory::REP_Bracket[];
+  constexpr char ReportFactory::REP_MatrixAndStandings[];
 
-  ReportFactory::ReportFactory(TournamentDB* _db)
+  ReportFactory::ReportFactory(const TournamentDB& _db)
     : db(_db)
-  {
-
-  }
-
-//----------------------------------------------------------------------------
-
-  ReportFactory::~ReportFactory()
   {
 
   }
@@ -66,9 +59,9 @@ namespace QTournament
     CatMngr cm{db};
 
     // we can always generate a participants list
-    result.append(REP__PARTLIST_BY_NAME);
-    result.append(REP__PARTLIST_BY_TEAM);
-    result.append(REP__PARTLIST_BY_CATEGORY);
+    result.append(REP_PartListByName);
+    result.append(REP_PartListByTeam);
+    result.append(REP_PartListByCat);
 
     // we can print result lists for all finished or running rounds
     // in all categories
@@ -81,15 +74,15 @@ namespace QTournament
       }
 
       CatRoundStatus crs = cat.getRoundStatus();
-      result.append(genRepName(REP__RESULTS_AND_NEXT_MATCHES, cat, 0));   // list of initial matches
+      result.append(genRepName(REP_ResultsAndNextMatches, cat, 0));   // list of initial matches
       for (int round=1; round <= crs.getFinishedRoundsCount(); ++round)
       {
-        result.append(genRepName(REP__RESULTS, cat, round));
-        result.append(genRepName(REP__RESULTS_AND_NEXT_MATCHES, cat, round));
+        result.append(genRepName(REP_Results, cat, round));
+        result.append(genRepName(REP_ResultsAndNextMatches, cat, round));
       }
       for (int round : crs.getCurrentlyRunningRoundNumbers())
       {
-        result.append(genRepName(REP__RESULTS, cat, round));
+        result.append(genRepName(REP_Results, cat, round));
       }
 
       // we can also print result lists for all categories with
@@ -101,7 +94,7 @@ namespace QTournament
         {
           int grpNum = mg.getGroupNumber();
           if (grpNum < 0) continue;
-          result.append(genRepName(REP__RESULTS_BY_GROUP, cat, grpNum));
+          result.append(genRepName(REP_ResultsByGroup, cat, grpNum));
         }
       }
 
@@ -111,21 +104,21 @@ namespace QTournament
       if (msys == MatchSystem::GroupsWithKO)
       {
         // initial matches
-        result.append(genRepName(REP__MATRIX_AND_STANDINGS, cat, 0));
+        result.append(genRepName(REP_MatrixAndStandings, cat, 0));
 
         // a matrix for each finished round of the round-robin phase
         KO_Config cfg = KO_Config(cat.getParameter_string(CatParameter::GroupConfig));
         int numGroupRounds = cfg.getNumRounds();
         for (int round = 1; ((round <= numGroupRounds) && (round <= numFinishedRounds)); ++round)
         {
-          result.append(genRepName(REP__MATRIX_AND_STANDINGS, cat, round));
+          result.append(genRepName(REP_MatrixAndStandings, cat, round));
         }
       }
       if (msys == MatchSystem::RoundRobin)
       {
         // initial matches
-        result.append(genRepName(REP__MATRIX_AND_STANDINGS, cat, 0));
-        std::unique_ptr<PureRoundRobinCategory> rrCat = PureRoundRobinCategory::getFromGenericCat(cat);
+        result.append(genRepName(REP_MatrixAndStandings, cat, 0));
+        auto rrCat = PureRoundRobinCategory::getFromGenericCat(cat);
         int rpi = rrCat->getRoundCountPerIteration();
         int itCnt = rrCat->getIterationCount();
         for (int i=1; i < itCnt; ++i)
@@ -134,13 +127,13 @@ namespace QTournament
 
           // note: negative round numbers denote: plot initial matches for the iteration
           // that starts with abs(firstRoundInIteration)
-          result.append(genRepName(REP__MATRIX_AND_STANDINGS, cat, -firstRoundInIteration));
+          result.append(genRepName(REP_MatrixAndStandings, cat, -firstRoundInIteration));
         }
 
         // a matrix for each finished round
         for (int round = 1; round <= numFinishedRounds; ++round)
         {
-          result.append(genRepName(REP__MATRIX_AND_STANDINGS, cat, round));
+          result.append(genRepName(REP_MatrixAndStandings, cat, round));
         }
       }
     }
@@ -159,7 +152,7 @@ namespace QTournament
       CatRoundStatus crs = cat.getRoundStatus();
       for (int round=1; round <= crs.getFinishedRoundsCount(); ++round)
       {
-        result.append(genRepName(REP__STANDINGS_BY_CATEGORY, cat, round));
+        result.append(genRepName(REP_StandingsByCat, cat, round));
       }
     }
 
@@ -172,28 +165,28 @@ namespace QTournament
       {
         if (InOutList::isValidCatRoundCombination(cat, round))
         {
-          result.append(genRepName(REP__INOUTLIST_BY_CATEGORY, cat, round));
+          result.append(genRepName(REP_InOutByCat, cat, round));
         }
       }
     }
 
     // we brute-force check all categories for the availability
     // of tournament bracket visualization data
-    DbTab* tabVis = db->getTab(TabBracketVis);
+    SqliteOverlay::DbTab tabVis{db, TabBracketVis, false};
     for (Category cat : cm.getAllCategories())
     {
       int catId = cat.getId();
-      if (tabVis->getMatchCountForColumnValue(BV_CatRef, catId) > 0)
+      if (tabVis.getMatchCountForColumnValue(BV_CatRef, catId) > 0)
       {
-        result.append(genRepName(REP__BRACKET, cat, 0));
+        result.append(genRepName(REP_Bracket, cat, 0));
       }
     }
 
     // we can always generate result sheets
-    result.append(genRepName(REP__RESULTSHEETS, 1, 0));
-    result.append(genRepName(REP__RESULTSHEETS, 4, 0));
-    result.append(genRepName(REP__RESULTSHEETS, 8, 0));
-    result.append(genRepName(REP__RESULTSHEETS, 12, 0));
+    result.append(genRepName(REP_ResultSheets, 1, 0));
+    result.append(genRepName(REP_ResultSheets, 4, 0));
+    result.append(genRepName(REP_ResultSheets, 8, 0));
+    result.append(genRepName(REP_ResultSheets, 12, 0));
 
 
     return result;
@@ -216,23 +209,23 @@ namespace QTournament
       intParam2 = repNameComponent[2].toInt();
     }
 
-    if (pureRepName == REP__PARTLIST_BY_NAME)
+    if (pureRepName == REP_PartListByName)
     {
-      return upAbstractReport(new ParticipantsList(db, REP__PARTLIST_BY_NAME, ParticipantsList::SORT_BY_NAME));
+      return upAbstractReport(new ParticipantsList(db, REP_PartListByName, ParticipantsList::SortByName));
     }
-    if (pureRepName == REP__PARTLIST_BY_TEAM)
+    if (pureRepName == REP_PartListByTeam)
     {
-      return upAbstractReport(new ParticipantsList(db, REP__PARTLIST_BY_TEAM, ParticipantsList::SORT_BY_TEAM));
+      return upAbstractReport(new ParticipantsList(db, REP_PartListByTeam, ParticipantsList::SortByTeam));
     }
-    if (pureRepName == REP__PARTLIST_BY_CATEGORY)
+    if (pureRepName == REP_PartListByCat)
     {
-      return upAbstractReport(new ParticipantsList(db, REP__PARTLIST_BY_CATEGORY, ParticipantsList::SORT_BY_CATEGORY));
+      return upAbstractReport(new ParticipantsList(db, REP_PartListByCat, ParticipantsList::SortByCategory));
     }
 
     CatMngr cm{db};
 
     // result lists by round
-    if (pureRepName == REP__RESULTS)
+    if (pureRepName == REP_Results)
     {
       int catId = intParam1;
       int round = intParam2;
@@ -241,7 +234,7 @@ namespace QTournament
     }
 
     // result lists by group
-    if (pureRepName == REP__RESULTS_BY_GROUP)
+    if (pureRepName == REP_ResultsByGroup)
     {
       int catId = intParam1;
       int grpNum = intParam2;
@@ -250,7 +243,7 @@ namespace QTournament
     }
 
     // standings by category
-    if (pureRepName == REP__STANDINGS_BY_CATEGORY)
+    if (pureRepName == REP_StandingsByCat)
     {
       int catId = intParam1;
       int round = intParam2;
@@ -259,7 +252,7 @@ namespace QTournament
     }
 
     // in-out-lists
-    if (pureRepName == REP__INOUTLIST_BY_CATEGORY)
+    if (pureRepName == REP_InOutByCat)
     {
       int catId = intParam1;
       int round = intParam2;
@@ -268,14 +261,14 @@ namespace QTournament
     }
 
     // result sheets
-    if (pureRepName == REP__RESULTSHEETS)
+    if (pureRepName == REP_ResultSheets)
     {
       int numMatches = intParam1;
       return upAbstractReport(new ResultSheets(db, repName, numMatches));
     }
 
     // results and next Matches
-    if (pureRepName == REP__RESULTS_AND_NEXT_MATCHES)
+    if (pureRepName == REP_ResultsAndNextMatches)
     {
       int catId = intParam1;
       int round = intParam2;
@@ -284,7 +277,7 @@ namespace QTournament
     }
 
     // brackets
-    if (pureRepName == REP__BRACKET)
+    if (pureRepName == REP_Bracket)
     {
       int catId = intParam1;
       Category cat = cm.getCategoryById(catId);
@@ -292,7 +285,7 @@ namespace QTournament
     }
 
     // matrix with standings
-    if (pureRepName == REP__MATRIX_AND_STANDINGS)
+    if (pureRepName == REP_MatrixAndStandings)
     {
       int catId = intParam1;
       int round = intParam2;

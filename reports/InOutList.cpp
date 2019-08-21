@@ -34,7 +34,7 @@ namespace QTournament
 {
 
 
-InOutList::InOutList(TournamentDB* _db, const QString& _name, const Category& _cat, int _round)
+InOutList::InOutList(const TournamentDB& _db, const QString& _name, const Category& _cat, int _round)
   :AbstractReport(_db, _name), cat(_cat), round(_round)
 {
   if (!isValidCatRoundCombination(_cat, _round))

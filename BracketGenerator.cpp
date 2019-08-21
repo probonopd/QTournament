@@ -456,7 +456,7 @@ namespace QTournament
     if (numPlayers <= 16)
     {
       // prepare the container for the visualization data
-      bvdd__out.addPage(BRACKET_PAGE_ORIENTATION::LANDSCAPE, BRACKET_LABEL_POS::TOP_LEFT);
+      bvdd__out.addPage(BracketPageOrientation::Landscape, BracketLabelPos::TopLeft);
 
       for (int i=0; i < 36; ++i)
       {
@@ -486,9 +486,9 @@ namespace QTournament
       }
     } else {
       // prepare the container for the visualization data
-      bvdd__out.addPage(BRACKET_PAGE_ORIENTATION::LANDSCAPE, BRACKET_LABEL_POS::TOP_LEFT);
-      bvdd__out.addPage(BRACKET_PAGE_ORIENTATION::LANDSCAPE, BRACKET_LABEL_POS::NONE);
-      bvdd__out.addPage(BRACKET_PAGE_ORIENTATION::LANDSCAPE, BRACKET_LABEL_POS::NONE);
+      bvdd__out.addPage(BracketPageOrientation::Landscape, BracketLabelPos::TopLeft);
+      bvdd__out.addPage(BracketPageOrientation::Landscape, BracketLabelPos::None);
+      bvdd__out.addPage(BracketPageOrientation::Landscape, BracketLabelPos::None);
 
       for (int i=0; i < 92; ++i)
       {

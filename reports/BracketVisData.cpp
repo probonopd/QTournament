@@ -24,50 +24,50 @@
 #include "CatMngr.h"
 
 using namespace QTournament;
+using namespace SqliteOverlay;
 
-unique_ptr<QTournament::BracketVisData> QTournament::BracketVisData::getExisting(const QTournament::Category& _cat)
+std::optional<BracketVisData> QTournament::BracketVisData::getExisting(const QTournament::Category& _cat)
 {
   // acquire a database handle
-  TournamentDB* _db = _cat.getDatabaseHandle();
+  const auto& _db = _cat.getDatabaseHandle();
 
   // check if the requested category has visualization data
-  DbTab* catTab = _db->getTab(TabCategory);
-  TabRow r = catTab->operator [](_cat.getId());
+  DbTab catTab{_db, TabCategory, false};
+  TabRow r = catTab[_cat.getId()];
   auto visData = r.getString2(CAT_BracketVisData);
-  if (visData->isNull())
+  if (!visData)
   {
-    return nullptr;
+    return {};
   }
 
   // FIX ME: check the consistency of the is data? Not for now, add later
 
 
   // the category is valid, create and return a new object
-  auto result = new BracketVisData(_db, _cat);
-  return std::unique_ptr<BracketVisData>(result);
+  return BracketVisData(_db, _cat);
 }
 
 //----------------------------------------------------------------------------
 
-unique_ptr<BracketVisData> BracketVisData::createNew(const Category& _cat, BRACKET_PAGE_ORIENTATION orientation, BRACKET_LABEL_POS firstPageLabelPos)
+std::optional<BracketVisData> BracketVisData::createNew(const Category& _cat, BracketPageOrientation orientation, BracketLabelPos firstPageLabelPos)
 {
   // check if the category already has visualization data and
   // return nullptr to indicate an error in this case
   auto tmp = BracketVisData::getExisting(_cat);
-  if (tmp != nullptr)
+  if (tmp)
   {
-    return nullptr;
+    return {};
   }
 
   // create a new, empty object
-  TournamentDB* _db = _cat.getDatabaseHandle();
-  auto result = new BracketVisData(_db, _cat);
+  const auto& _db = _cat.getDatabaseHandle();
+  BracketVisData result{_db, _cat};
 
   // populate the first page
-  result->addPage(orientation, firstPageLabelPos);
+  result.addPage(orientation, firstPageLabelPos);
 
   // return the object
-  return std::unique_ptr<BracketVisData>(result);
+  return result;
 }
 
 //----------------------------------------------------------------------------
@@ -83,7 +83,7 @@ int BracketVisData::getNumPages() const
 
 //----------------------------------------------------------------------------
 
-tuple<BRACKET_PAGE_ORIENTATION, BRACKET_LABEL_POS> BracketVisData::getPageInfo(int idxPage) const
+std::tuple<BracketPageOrientation, BracketLabelPos> BracketVisData::getPageInfo(int idxPage) const
 {
   QString visData = cat.getBracketVisDataString();
   if (idxPage >= getNumPages())
@@ -95,7 +95,7 @@ tuple<BRACKET_PAGE_ORIENTATION, BRACKET_LABEL_POS> BracketVisData::getPageInfo(i
   int iOrientation = pageDef.split(",")[0].toInt();
   int iLabelPos = pageDef.split(",")[1].toInt();
 
-  return make_tuple(static_cast<BRACKET_PAGE_ORIENTATION>(iOrientation), static_cast<BRACKET_LABEL_POS>(iLabelPos));
+  return std::make_tuple(static_cast<BracketPageOrientation>(iOrientation), static_cast<BracketLabelPos>(iLabelPos));
 }
 
 //----------------------------------------------------------------------------
@@ -113,7 +113,7 @@ QTournament::BracketVisElementList BracketVisData::getVisElements(int idxPage)
 
 //----------------------------------------------------------------------------
 
-QTournament::upBracketVisElement BracketVisData::getVisElement(int idx) const
+std::optional<BracketVisElement> BracketVisData::getVisElement(int idx) const
 {
   WhereClause wc;
   wc.addCol(BV_CatRef, cat.getId());
@@ -124,25 +124,22 @@ QTournament::upBracketVisElement BracketVisData::getVisElement(int idx) const
 
 //----------------------------------------------------------------------------
 
-void BracketVisData::addPage(BRACKET_PAGE_ORIENTATION pageOrientation, BRACKET_LABEL_POS labelOnPagePosition) const
+void BracketVisData::addPage(BracketPageOrientation pageOrientation, BracketLabelPos labelOnPagePosition) const
 {
   // convert the parameters into a comma-sep. string
-  string pageDef = to_string(static_cast<int>(pageOrientation));
-  pageDef += "," + to_string(static_cast<int>(labelOnPagePosition));
+  std::string pageDef = std::to_string(static_cast<int>(pageOrientation));
+  pageDef += "," + std::to_string(static_cast<int>(labelOnPagePosition));
 
   // get the existing page specification
-  DbTab* catTab = db->getTab(TabCategory);
+  DbTab catTab{db, TabCategory, false};
   int catId = cat.getId();
-  TabRow visDataRow = catTab->operator [](catId);
+  TabRow visDataRow = catTab[catId];
   auto _visData = visDataRow.getString2(CAT_BracketVisData);
 
   // treat the vis data as a colon-separated list of integers and add a new
   // element, if necessary
-  string visData = _visData->isNull() ? "" : (_visData->get() + ":");
+  std::string visData = _visData ? (*_visData + ":") : "";
   visData += pageDef;
-
-  // lock the database before writing
-  DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
 
   // write the new string to the database
   visDataRow.update(CAT_BracketVisData, visData);
@@ -173,10 +170,7 @@ void BracketVisData::addElement(int idx, const RawBracketVisElement& el)
   cvc.addCol(BV_NextMatchPosForWinner, el.nextMatchPlayerPosForWinner);
   cvc.addCol(BV_NextMatchPosForLoser, el.nextMatchPlayerPosForLoser);
 
-  // lock the database before writing
-  DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
-
-  tab->insertRow(cvc);
+  tab.insertRow(cvc);
 }
 
 //----------------------------------------------------------------------------
@@ -243,7 +237,7 @@ void BracketVisData::fillMissingPlayerNames() const
       // is there any match pointing to this bracket element
       // as winner or loser?
       auto parentElem = getParentPlayerPairForElement(el, 1);
-      if(parentElem != nullptr)
+      if(parentElem)
       {
         el.linkToPlayerPair(*parentElem, 1);
         hasModifications = true;
@@ -253,7 +247,7 @@ void BracketVisData::fillMissingPlayerNames() const
       // is there any match pointing to this bracket element
       // as winner or loser?
       parentElem = getParentPlayerPairForElement(el, 2);
-      if(parentElem != nullptr)
+      if(parentElem)
       {
         el.linkToPlayerPair(*parentElem, 2);
         hasModifications = true;
@@ -281,68 +275,63 @@ void BracketVisData::clearExplicitPlayerPairReferences(const PlayerPair& pp) con
 
   int catId = cat.getId();
 
-  // lock the database before writing
-  DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
-
   WhereClause w;
   w.addCol(BV_CatRef, catId);
   w.addCol(BV_Pair1Ref, pp.getPairId());
-  DbTab::CachingRowIterator it = tab->getRowsByWhereClause(w);
-  while (!(it.isEnd()))
+  for (TabRowIterator it{db, TabBracketVis, w}; it.hasData(); ++it)
   {
-    (*it).updateToNull(BV_Pair1Ref);
-    ++it;
+    it->updateToNull(BV_Pair1Ref);
   }
 
   w.clear();
   w.addCol(BV_CatRef, catId);
   w.addCol(BV_Pair2Ref, pp.getPairId());
-  it = tab->getRowsByWhereClause(w);
-  while (!(it.isEnd()))
+  for (TabRowIterator it{db, TabBracketVis, w}; it.hasData(); ++it)
   {
-    (*it).updateToNull(BV_Pair2Ref);
-    ++it;
+    it->updateToNull(BV_Pair2Ref);
   }
 }
 
 //----------------------------------------------------------------------------
 
-BracketVisData::BracketVisData(TournamentDB* _db, const Category& _cat)
+BracketVisData::BracketVisData(const TournamentDB& _db, const Category& _cat)
 : TournamentDatabaseObjectManager(_db, TabBracketVis), cat(_cat)
 {
 }
 
-unique_ptr<PlayerPair> BracketVisData::getParentPlayerPairForElement(const BracketVisElement& el, int pos) const
+//----------------------------------------------------------------------------
+
+std::optional<PlayerPair> BracketVisData::getParentPlayerPairForElement(const BracketVisElement& el, int pos) const
 {
   // check parameter range
-  if ((pos != 1) && (pos != 2)) return nullptr;
+  if ((pos != 1) && (pos != 2)) return {};
 
   // check element validity
-  if (el.getCategoryId() != cat.getId()) return nullptr;
+  if (el.getCategoryId() != cat.getId()) return {};
 
   int elemId = el.getBracketElementId();
 
   // search for a bracket element that uses this element as next winner / loser match
-  QString where = "%1=%2 AND ((%3=%4 AND %5=%6) OR (%7=%4 AND %8=%6))";
-  where = where.arg(BV_CatRef);                    // %1
-  where = where.arg(cat.getId());               // %2
-  where = where.arg(BV_NextWinnerMatch);          // %3
-  where = where.arg(elemId);                      // %4
-  where = where.arg(BV_NextMatchPosForWinner);  // %5
-  where = where.arg(pos);                           // %6
-  where = where.arg(BV_NextLoserMatch);           // %7
-  where = where.arg(BV_NextMatchPosForLoser);   // %8
-  auto parentElem = getSingleObjectByWhereClause<BracketVisElement>(where.toUtf8().constData());
+  Sloppy::estring where = "%1=%2 AND ((%3=%4 AND %5=%6) OR (%7=%4 AND %8=%6))";
+  where.arg(BV_CatRef);                    // %1
+  where.arg(cat.getId());               // %2
+  where.arg(BV_NextWinnerMatch);          // %3
+  where.arg(elemId);                      // %4
+  where.arg(BV_NextMatchPosForWinner);  // %5
+  where.arg(pos);                           // %6
+  where.arg(BV_NextLoserMatch);           // %7
+  where.arg(BV_NextMatchPosForLoser);   // %8
+  auto parentElem = getSingleObjectByWhereClause<BracketVisElement>(where);
 
   // case 1: no parent
-  if (parentElem == nullptr) return nullptr;
+  if (!parentElem) return {};
 
   // case 2: parent has a match assigned
   auto ma = parentElem->getLinkedMatch();
-  if (ma != nullptr)
+  if (ma)
   {
     // case 2a: match is not finished, winner and loser are unknown
-    if (ma->is_NOT_InState(ObjState::MA_Finished)) return nullptr;
+    if (ma->is_NOT_InState(ObjState::MA_Finished)) return {};
 
     // case 2b: match is finished, winner and loser are determined
     if (parentElem->getNextBracketElementForWinner() == elemId)
@@ -360,9 +349,9 @@ unique_ptr<PlayerPair> BracketVisData::getParentPlayerPairForElement(const Brack
 
   // case 3: no assigned match for parent, but exactly one assigned player pair
   // AND "elem" is the "winner child" of "parent"
-  assert(ma == nullptr);
-  bool hasFixedPair1 = parentElem->getLinkedPlayerPair(1) != nullptr;
-  bool hasFixedPair2 = parentElem->getLinkedPlayerPair(2) != nullptr;
+  assert(!ma);
+  bool hasFixedPair1 = parentElem->getLinkedPlayerPair(1).has_value();
+  bool hasFixedPair2 = parentElem->getLinkedPlayerPair(2).has_value();
   if (hasFixedPair1 ^ hasFixedPair2)    // exclusive OR... only one pair is allowed
   {
     if (parentElem->getNextBracketElementForWinner() == elemId)
@@ -373,7 +362,7 @@ unique_ptr<PlayerPair> BracketVisData::getParentPlayerPairForElement(const Brack
   }
 
   // default: don't know or can't decide
-  return nullptr;
+  return {};
 }
 
 //----------------------------------------------------------------------------
@@ -427,12 +416,12 @@ unique_ptr<PlayerPair> BracketVisData::getParentPlayerPairForElement(const Brack
 
 
 
-unique_ptr<Match> BracketVisElement::getLinkedMatch() const
+std::optional<Match> BracketVisElement::getLinkedMatch() const
 {
-  auto _matchId = row.getInt2(BV_MatchRef);
-  if (_matchId->isNull()) return nullptr;
+  auto matchId = row.getInt2(BV_MatchRef);
+  if (!matchId) return {};
   MatchMngr mm{db};
-  return mm.getMatch(_matchId->get());
+  return mm.getMatch(*matchId);
 }
 
 //----------------------------------------------------------------------------
@@ -446,17 +435,17 @@ Category BracketVisElement::getLinkedCategory() const
 
 //----------------------------------------------------------------------------
 
-unique_ptr<PlayerPair> BracketVisElement::getLinkedPlayerPair(int pos) const
+std::optional<PlayerPair> BracketVisElement::getLinkedPlayerPair(int pos) const
 {
-  if ((pos != 1) && (pos != 2)) return nullptr;
+  if ((pos != 1) && (pos != 2)) return {};
 
-  std::unique_ptr<ScalarQueryResult<int>> _pairId;
-  if (pos == 1) _pairId = row.getInt2(BV_Pair1Ref);
-  else _pairId = row.getInt2(BV_Pair2Ref);
+  std::optional<int> pairId;
+  if (pos == 1) pairId = row.getInt2(BV_Pair1Ref);
+  else pairId = row.getInt2(BV_Pair2Ref);
 
-  if (_pairId->isNull()) return nullptr;
+  if (!pairId) return {};
 
-  return make_unique<PlayerPair>(db, _pairId->get());
+  return PlayerPair{db, *pairId};
 }
 
 //----------------------------------------------------------------------------
@@ -465,9 +454,6 @@ bool BracketVisElement::linkToMatch(const Match& ma) const
 {
   Category myCat = getLinkedCategory();
   if (ma.getCategory() != myCat) return false;
-
-  // lock the database before writing
-  DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
 
   row.update(BV_MatchRef, ma.getId());
   return true;
@@ -481,15 +467,12 @@ bool BracketVisElement::linkToPlayerPair(const PlayerPair& pp, int pos) const
 
   Category myCat = getLinkedCategory();
   auto ppCat = pp.getCategory(db);
-  if (ppCat == nullptr) return false;
+  if (!ppCat) return false;
 
   if ((*ppCat) != myCat) return false;
 
   int pairId = pp.getPairId();
   if (pairId <= 0) return false;
-
-  // lock the database before writing
-  DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
 
   if (pos == 1)
   {
@@ -503,7 +486,7 @@ bool BracketVisElement::linkToPlayerPair(const PlayerPair& pp, int pos) const
 
 //----------------------------------------------------------------------------
 
-BracketVisElement::BracketVisElement(TournamentDB* _db, int rowId)
+BracketVisElement::BracketVisElement(const TournamentDB& _db, int rowId)
   :TournamentDatabaseObject(_db, TabBracketVis, rowId)
 {
 
@@ -511,8 +494,8 @@ BracketVisElement::BracketVisElement(TournamentDB* _db, int rowId)
 
 //----------------------------------------------------------------------------
 
-BracketVisElement::BracketVisElement(TournamentDB* _db, TabRow row)
-  :TournamentDatabaseObject(_db, row)
+BracketVisElement::BracketVisElement(const TournamentDB& _db, const TabRow& _row)
+  :TournamentDatabaseObject(_db, _row)
 {
 
 }
@@ -540,25 +523,25 @@ RawBracketVisElement::RawBracketVisElement(int visData[9])
   yPageBreakSpan = visData[4];
   nextPageNum = visData[5];
 
-  orientation = (visData[6] == -1) ? BRACKET_ORIENTATION::LEFT : BRACKET_ORIENTATION::RIGHT;
+  orientation = (visData[6] == -1) ? BracketOrientation::Left : BracketOrientation::Right;
 
   switch (visData[7])
   {
   case 1:
-    terminator = BRACKET_TERMINATOR::OUTWARDS;
+    terminator = BracketTerminator::Outwards;
     break;
   case -1:
-    terminator = BRACKET_TERMINATOR::INWARDS;
+    terminator = BracketTerminator::Inwards;
     break;
   default:
-    terminator = BRACKET_TERMINATOR::RefereeMode::None;
+    terminator = BracketTerminator::RefereeMode::None;
   }
   terminatorOffsetY = visData[8];
 }
 
 //----------------------------------------------------------------------------
 
-void RawBracketVisDataDef::addPage(BRACKET_PAGE_ORIENTATION orientation, BRACKET_LABEL_POS labelPos)
+void RawBracketVisDataDef::addPage(BracketPageOrientation orientation, BracketLabelPos labelPos)
 {
   pageOrientationList.push_back(orientation);
   labelPosList.push_back(labelPos);
@@ -577,7 +560,7 @@ bool RawBracketVisDataDef::addElement(const RawBracketVisElement& el)
 
 //----------------------------------------------------------------------------
 
-tuple<BRACKET_PAGE_ORIENTATION, BRACKET_LABEL_POS> RawBracketVisDataDef::getPageInfo(int idxPage) const
+tuple<BracketPageOrientation, BracketLabelPos> RawBracketVisDataDef::getPageInfo(int idxPage) const
 {
   if (idxPage >= getNumPages())
   {
