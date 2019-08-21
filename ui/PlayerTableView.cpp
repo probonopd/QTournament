@@ -87,7 +87,7 @@ void PlayerTableView::hook_onDatabaseOpened()
   AutoSizingTableView_WithDatabase::hook_onDatabaseOpened();
 
   // define a delegate for drawing the player items
-  playerItemDelegate = new PlayerItemDelegate(*db, this);
+  playerItemDelegate = new PlayerItemDelegate(db, this);
   playerItemDelegate->setProxy(sortedModel.get());
   setCustomDelegate(playerItemDelegate);  // takes ownership
 }

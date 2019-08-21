@@ -41,12 +41,10 @@ namespace QTournament
     virtual PlayerPairList getRemainingPlayersAfterRound(int round, Error *err) const override;
     int getRoundCountPerIteration() const;
     int getIterationCount() const;
-    static std::optional<PureRoundRobinCategory> getFromGenericCat(const Category& cat);
 
     ModMatchResult canModifyMatchResult(const Match& ma) const override;
     ModMatchResult modifyMatchResult(const Match& ma, const MatchScore& newScore) const override;
 
-  private:
     PureRoundRobinCategory (const TournamentDB& _db, int rowId);
     PureRoundRobinCategory (const TournamentDB& _db, const SqliteOverlay::TabRow& _row);
 

@@ -40,7 +40,7 @@ public:
   static constexpr int NeutralTag = 0;
 
 
-  RefereeSelectionDelegate(const QTournament::TournamentDB& _db, QObject* parent = nullptr)
+  RefereeSelectionDelegate(const QTournament::TournamentDB* _db, QObject* parent = nullptr)
     :BaseItemDelegate{_db, ItemRowHeight, -1, parent} {}
 
 protected:

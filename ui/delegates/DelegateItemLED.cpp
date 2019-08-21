@@ -20,20 +20,21 @@
 
 #include "DelegateItemLED.h"
 
+using namespace QTournament;
 
 const QMap<ObjState, QColor> DelegateItemLED::state2color = {
-  {CAT_Frozen, Qt::darkYellow},
-  {CAT_Idle, Qt::darkGreen},
-  {CAT_Playing, Qt::green},
-  {CAT_Finalized, Qt::darkRed},
-  {PL_Idle, Qt::green},
-  {PL_Playing, Qt::red},
-  {PL_WaitForRegistration, Qt::lightGray},
-  {PL_Referee, Qt::blue},
-  {MA_Ready, Qt::green},
-  {MA_Busy, Qt::red},
-  {MA_Waiting, Qt::yellow},
-  {CAT_WaitForIntermediateSeeding, Qt::yellow},
+  {ObjState::CAT_Frozen, Qt::darkYellow},
+  {ObjState::CAT_Idle, Qt::darkGreen},
+  {ObjState::CAT_Playing, Qt::green},
+  {ObjState::CAT_Finalized, Qt::darkRed},
+  {ObjState::PL_Idle, Qt::green},
+  {ObjState::PL_Playing, Qt::red},
+  {ObjState::PL_WaitForRegistration, Qt::lightGray},
+  {ObjState::PL_Referee, Qt::blue},
+  {ObjState::MA_Ready, Qt::green},
+  {ObjState::MA_Busy, Qt::red},
+  {ObjState::MA_Waiting, Qt::yellow},
+  {ObjState::CAT_WaitForIntermediateSeeding, Qt::yellow},
 //  {, Qt::},
 //  {, Qt::},
 };

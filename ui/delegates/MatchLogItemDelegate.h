@@ -36,7 +36,7 @@ public:
   static constexpr int ItemMargin = 5;
   static constexpr double ItemTextRowSkip_Perc = 0.2;
 
-  MatchLogItemDelegate(const QTournament::TournamentDB& _db, QObject* parent = 0)
+  MatchLogItemDelegate(const QTournament::TournamentDB* _db, QObject* parent = nullptr)
     :BaseItemDelegate{_db, ItemRowHeight, -1, parent} {}
 
 protected:

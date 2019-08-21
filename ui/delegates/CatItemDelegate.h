@@ -30,7 +30,7 @@
 class CatItemDelegate : public BaseItemDelegate
 {
 public:
-  CatItemDelegate(const QTournament::TournamentDB& _db, QObject* parent = 0)
+  CatItemDelegate(const QTournament::TournamentDB* _db, QObject* parent = nullptr)
     :BaseItemDelegate(_db, CatItemRowHeight, -1, parent) {}
 
 protected:

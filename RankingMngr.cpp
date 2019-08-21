@@ -471,7 +471,7 @@ namespace QTournament
           int rank = 1;
           for (RankingEntry re : rankList)
           {
-            re.row.update(RA_Rank, rank);
+            re.rowRef().update(RA_Rank, rank);
             ++rank;
           }
 
@@ -574,7 +574,7 @@ namespace QTournament
       int rank = 1;
       for (RankingEntry re : rankList)
       {
-        re.row.update(RA_Rank, rank);
+        re.rowRef().update(RA_Rank, rank);
         ++rank;
       }
 
@@ -592,7 +592,7 @@ namespace QTournament
   {
     if (rank < 1) return Error::InvalidRank;
 
-    re.row.update(RA_Rank, rank);
+    re.rowRef().update(RA_Rank, rank);
 
     return Error::OK;
   }
@@ -601,7 +601,7 @@ namespace QTournament
 
   Error RankingMngr::clearRank(const RankingEntry& re) const
   {
-    re.row.updateToNull(RA_Rank);
+    re.rowRef().updateToNull(RA_Rank);
 
     return Error::OK;
   }

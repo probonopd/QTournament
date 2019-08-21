@@ -118,9 +118,9 @@ namespace QTournament
       {
         // initial matches
         result.append(genRepName(REP_MatrixAndStandings, cat, 0));
-        auto rrCat = PureRoundRobinCategory::getFromGenericCat(cat);
-        int rpi = rrCat->getRoundCountPerIteration();
-        int itCnt = rrCat->getIterationCount();
+        PureRoundRobinCategory rrCat{db, cat.rowRef()};
+        int rpi = rrCat.getRoundCountPerIteration();
+        int itCnt = rrCat.getIterationCount();
         for (int i=1; i < itCnt; ++i)
         {
           int firstRoundInIteration = i * rpi + 1;

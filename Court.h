@@ -48,8 +48,7 @@ namespace QTournament
     void setManualAssignment(bool isManual);
     std::optional<Match> getMatch() const;
 
-  private:
-    Court (const TournamentDB& db, int rowId);
+    Court (const TournamentDB& db, int& rowId);
     Court (const TournamentDB& _db, const SqliteOverlay::TabRow& _row);
   };
   using CourtList = std::vector<Court>;

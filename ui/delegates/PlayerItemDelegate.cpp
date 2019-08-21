@@ -25,17 +25,17 @@
 #include "Player.h"
 #include "DelegateItemLED.h"
 
-#define Error::PLAYER_ITEM_MALE_BG_COL 215, 238, 244
-#define Error::PLAYER_ITEM_FEMALE_BG_COL 255, 220, 220
+#define PLAYER_ITEM_MALE_BG_COL 215, 238, 244
+#define PLAYER_ITEM_FEMALE_BG_COL 255, 220, 220
 
 using namespace QTournament;
 
 
 void PlayerItemDelegate::paintSelectedCell(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index, int srcRowId) const
 {
-  PlayerMngr pm{db};
+  PlayerMngr pm{*db};
   auto p = pm.getPlayerBySeqNum(srcRowId);
-  if (p == nullptr) return;
+  if (!p) return;
 
   // draw text in highlighted cells in white bold text
   painter->setPen(QPen(QColor(Qt::white)));
@@ -48,13 +48,13 @@ void PlayerItemDelegate::paintSelectedCell(QPainter* painter, const QStyleOption
 
 void PlayerItemDelegate::paintUnselectedCell(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index, int srcRowId) const
 {
-  PlayerMngr pm{db};
+  PlayerMngr pm{*db};
   auto p = pm.getPlayerBySeqNum(srcRowId);
-  if (p == nullptr) return;
+  if (!p) return;
 
   // Paint the background in a color related
   // to the participant's sex
-  QColor bgColor = (p->getSex() == F) ? QColor(PLAYER_ITEM_FEMALE_BG_COL) : QColor(PLAYER_ITEM_MALE_BG_COL);
+  QColor bgColor = (p->getSex() == Sex::F) ? QColor(PLAYER_ITEM_FEMALE_BG_COL) : QColor(PLAYER_ITEM_MALE_BG_COL);
   painter->fillRect(option.rect, bgColor);
 
   commonPaint(painter, option, index, *p);

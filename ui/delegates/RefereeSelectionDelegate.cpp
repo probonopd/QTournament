@@ -29,6 +29,7 @@ constexpr int RefereeSelectionDelegate::WinnerTag;
 constexpr int RefereeSelectionDelegate::LoserTag;
 constexpr int RefereeSelectionDelegate::NeutralTag;
 
+using namespace QTournament;
 
 void RefereeSelectionDelegate::paintSelectedCell(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index, int srcRowId) const
 {
@@ -46,10 +47,10 @@ void RefereeSelectionDelegate::paintUnselectedCell(QPainter* painter, const QSty
 
 void RefereeSelectionDelegate::commonPaint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index, bool isSelected) const
 {
-  PlayerMngr pm{db};
+  PlayerMngr pm{*db};
   int playerId = index.data(Qt::UserRole).toInt();
   auto p = pm.getPlayer2(playerId);
-  if (p == nullptr) return;
+  if (!p) return;
 
   ObjState plStat = p->getState();
 

@@ -66,7 +66,7 @@ namespace QTournament
     
     // create a court object for the new court and return a pointer
     // to this new object
-    return CourtOrError{db, newId};
+    return CourtOrError(db.get(), newId);
   }
 
 //----------------------------------------------------------------------------
@@ -129,7 +129,7 @@ namespace QTournament
       return Error::InvalidName;
     }
         
-    c.row.update(GenericNameFieldName, QString2StdString(newName));
+    c.rowRef().update(GenericNameFieldName, QString2StdString(newName));
     
     CentralSignalEmitter::getInstance()->courtRenamed(c);
     
@@ -308,7 +308,7 @@ namespace QTournament
     auto nextAutoCourt = getNextUnusedCourt(false);
     if (nextAutoCourt)
     {
-      return nextAutoCourt;
+      return *nextAutoCourt;
     }
 
     // Damn, no court for automatic assignment available.
@@ -324,7 +324,7 @@ namespace QTournament
     // manual courts, everything is fine
     if (includeManual)
     {
-      return nextManualCourt;
+      return *nextManualCourt;
     }
 
     // indicate to the user that there would be a manual court

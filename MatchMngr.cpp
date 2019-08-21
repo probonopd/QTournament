@@ -322,8 +322,8 @@ namespace QTournament {
     }
 
     // assign the player pairs
-    ma.row.update(MA_Pair1Ref, pp1.getPairId());
-    ma.row.update(MA_Pair2Ref, pp2.getPairId());
+    ma.rowRef().update(MA_Pair1Ref, pp1.getPairId());
+    ma.rowRef().update(MA_Pair2Ref, pp2.getPairId());
 
     // potentially, the player pairs where all that was necessary
     // to actually promote the match to e.g., WAITING
@@ -344,8 +344,8 @@ namespace QTournament {
     if (e != Error::OK) return e;
 
     // assign the player pair
-    if (ppPos == 1) ma.row.update(MA_Pair1Ref, pp.getPairId());
-    if (ppPos == 2) ma.row.update(MA_Pair2Ref, pp.getPairId());
+    if (ppPos == 1) ma.rowRef().update(MA_Pair1Ref, pp.getPairId());
+    if (ppPos == 2) ma.rowRef().update(MA_Pair2Ref, pp.getPairId());
 
     return Error::OK;
   }
@@ -378,13 +378,13 @@ namespace QTournament {
     int dstId = asWinner ? fromMatch.getId() : -(fromMatch.getId());
     if (dstPlayerPosInMatch == 1)
     {
-      toMatch.row.update(MA_Pair1SymbolicVal, dstId);
-      toMatch.row.updateToNull(MA_Pair1Ref);
+      toMatch.rowRef().update(MA_Pair1SymbolicVal, dstId);
+      toMatch.rowRef().updateToNull(MA_Pair1Ref);
     }
     if (dstPlayerPosInMatch == 2)
     {
-      toMatch.row.update(MA_Pair2SymbolicVal, dstId);
-      toMatch.row.updateToNull(MA_Pair2Ref);
+      toMatch.rowRef().update(MA_Pair2SymbolicVal, dstId);
+      toMatch.rowRef().updateToNull(MA_Pair2Ref);
     }
 
     return Error::OK;
@@ -399,15 +399,15 @@ namespace QTournament {
 
     if (unusedPlayerPos == 1)
     {
-      ma.row.updateToNull(MA_Pair1Ref);
-      ma.row.update(MA_Pair1SymbolicVal, SymbolicIdForUnusedPlayerPairInMatch);
+      ma.rowRef().updateToNull(MA_Pair1Ref);
+      ma.rowRef().update(MA_Pair1SymbolicVal, SymbolicIdForUnusedPlayerPairInMatch);
     }
     if (unusedPlayerPos == 2)
     {
-      ma.row.updateToNull(MA_Pair2Ref);
-      ma.row.update(MA_Pair2SymbolicVal, SymbolicIdForUnusedPlayerPairInMatch);
+      ma.rowRef().updateToNull(MA_Pair2Ref);
+      ma.rowRef().update(MA_Pair2SymbolicVal, SymbolicIdForUnusedPlayerPairInMatch);
     }
-    ma.row.update(MA_WinnerRank, winnerRank);
+    ma.rowRef().update(MA_WinnerRank, winnerRank);
 
     return Error::OK;
   }
@@ -423,9 +423,9 @@ namespace QTournament {
 
     if (isWinner)
     {
-      ma.row.update(MA_WinnerRank, rank);
+      ma.rowRef().update(MA_WinnerRank, rank);
     } else {
-      ma.row.update(MA_LoserRank, rank);
+      ma.rowRef().update(MA_LoserRank, rank);
     }
 
     return Error::OK;
@@ -546,13 +546,13 @@ namespace QTournament {
     }
 
     // set the new mode
-    ma.row.update(MA_RefereeMode, static_cast<int>(newMode));
+    ma.rowRef().update(MA_RefereeMode, static_cast<int>(newMode));
 
     // if we go to a more restrictive mode, delete any existing
     // referee assignments
     if ((ma.hasRefereeAssigned()) && (newMode != RefereeMode::AllPlayers))
     {
-      ma.row.updateToNull(MA_RefereeRef);
+      ma.rowRef().updateToNull(MA_RefereeRef);
     }
 
     // fake a match-changed-event in order to trigger UI updates
@@ -601,7 +601,7 @@ namespace QTournament {
 
     // okay, it is safe to assign the referee
 
-    ma.row.update(MA_RefereeRef, p.getId());
+    ma.rowRef().update(MA_RefereeRef, p.getId());
 
     // if we're swapping the umpire, we have to update the player states as well
     //
@@ -667,7 +667,7 @@ namespace QTournament {
       return Error::MatchNotConfiguraleAnymore;
     }
 
-    ma.row.updateToNull(MA_RefereeRef);
+    ma.rowRef().updateToNull(MA_RefereeRef);
 
     // maybe the match status changes after the removal, because we're not
     // waiting anymore for a busy referee to become available
@@ -732,8 +732,8 @@ namespace QTournament {
       auto trans = db.get().startTransaction();
 
       // actually swap the players
-      if (ppPos == 1) ma.row.update(MA_Pair1Ref, ppNew.getPairId());
-      if (ppPos == 2) ma.row.update(MA_Pair2Ref, ppNew.getPairId());
+      if (ppPos == 1) ma.rowRef().update(MA_Pair1Ref, ppNew.getPairId());
+      if (ppPos == 2) ma.rowRef().update(MA_Pair2Ref, ppNew.getPairId());
 
       // make sure that the newly assigned player
       // is not already foreseen as a referee
@@ -951,7 +951,7 @@ namespace QTournament {
     // promote the group to STAGED and assign a sequence number
     int nextStageSeqNum = getMaxStageSeqNum() + 1;
     grp.setState(ObjState::MG_Staged);
-    grp.row.update(MG_StageSeqNum, nextStageSeqNum);
+    grp.rowRef().update(MG_StageSeqNum, nextStageSeqNum);
     CentralSignalEmitter::getInstance()->matchGroupStatusChanged(grp.getId(), grp.getSeqNum(), ObjState::MG_Idle, ObjState::MG_Staged);
 
     // promote other groups from FROZEN to IDLE, if applicable
@@ -1098,7 +1098,7 @@ namespace QTournament {
 
     // store and delete old stage sequence number
     int oldStageSeqNumber = grp.getStageSequenceNumber();
-    grp.row.updateToNull(MG_StageSeqNum);
+    grp.rowRef().updateToNull(MG_StageSeqNum);
 
     CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
 
@@ -1110,7 +1110,7 @@ namespace QTournament {
     for (const auto& mg : getObjectsByWhereClause<MatchGroup>(groupTab, wc))
     {
       int old = mg.getStageSequenceNumber();
-      mg.row.update(MG_StageSeqNum, old - 1);
+      mg.rowRef().update(MG_StageSeqNum, old - 1);
       cse->matchGroupStatusChanged(mg.getId(), mg.getSeqNum(), ObjState::MG_Staged, ObjState::MG_Staged);
     }
 
@@ -1189,8 +1189,8 @@ namespace QTournament {
     // from INCOMPLETE to FUZZY
     if (curState == ObjState::MA_Incomplete)
     {
-      bool isFuzzy1 = (ma.row.getInt(MA_Pair1SymbolicVal) != 0);
-      bool isFuzzy2 = (ma.row.getInt(MA_Pair2SymbolicVal) != 0);
+      bool isFuzzy1 = (ma.rowRef().getInt(MA_Pair1SymbolicVal) != 0);
+      bool isFuzzy2 = (ma.rowRef().getInt(MA_Pair2SymbolicVal) != 0);
       bool hasMatchNumber = ma.getMatchNumber() > 0;
 
       // we shall never have a symbolic and a real player assignment at the same time
@@ -1214,8 +1214,8 @@ namespace QTournament {
     // FUZZY at least to WAITING, maybe even to READY or BUSY
     if (curState == ObjState::MA_Fuzzy)
     {
-      bool isFixed1 = ((ma.row.getInt(MA_Pair1SymbolicVal) == 0) && (ma.row.getInt(MA_Pair1Ref) > 0));
-      bool isFixed2 = ((ma.row.getInt(MA_Pair2SymbolicVal) == 0) && (ma.row.getInt(MA_Pair2Ref) > 0));
+      bool isFixed1 = ((ma.rowRef().getInt(MA_Pair1SymbolicVal) == 0) && (ma.rowRef().getInt(MA_Pair1Ref) > 0));
+      bool isFixed2 = ((ma.rowRef().getInt(MA_Pair2SymbolicVal) == 0) && (ma.rowRef().getInt(MA_Pair2Ref) > 0));
       bool hasMatchNumber = ma.getMatchNumber() > 0;
 
       if (isFixed1 && isFixed2 && hasMatchNumber)
@@ -1344,7 +1344,7 @@ namespace QTournament {
     {
       for (auto ma : mg.getMatches())
       {
-        ma.row.update(MA_Num, nextMatchNumber);
+        ma.rowRef().update(MA_Num, nextMatchNumber);
         updateMatchStatus(ma);
 
         // Manually trigger (another) update, because assigning the match number
@@ -1357,7 +1357,7 @@ namespace QTournament {
 
       // update the match group's state
       mg.setState(ObjState::MG_Scheduled);
-      mg.row.updateToNull(MG_StageSeqNum);  // delete the sequence number
+      mg.rowRef().updateToNull(MG_StageSeqNum);  // delete the sequence number
       cse->matchGroupStatusChanged(mg.getId(), mg.getSeqNum(), ObjState::MG_Staged, ObjState::MG_Scheduled);
     }
   }
@@ -1457,17 +1457,16 @@ namespace QTournament {
       return Error::NoMatchAvail;
     }
 
-    Error err;
     CourtMngr cm{db};
-    auto nextCourt = cm.autoSelectNextUnusedCourt(&err, includeManualCourts);
-    if (err == Error::OK)
+    auto nextCourt = cm.autoSelectNextUnusedCourt(includeManualCourts);
+    if (nextCourt)
     {
       *matchId = matchRow->id();
       *courtId = nextCourt->getId();
       return Error::OK;
     }
 
-    return err;
+    return nextCourt.err();
   }
 
   //----------------------------------------------------------------------------
@@ -1583,7 +1582,7 @@ namespace QTournament {
     // execute all updates at once
     auto trans = db.get().startTransaction();
 
-    ma.row.update(cvc);
+    ma.rowRef().update(cvc);
 
     // tell the world that the match status has changed
     CentralSignalEmitter::getInstance()->matchStatusChanged(ma.getId(), ma.getSeqNum(), ObjState::MA_Ready, ObjState::MA_Running);
@@ -1624,7 +1623,7 @@ namespace QTournament {
       // So we have to hard-code the mode change here
       auto cfg = SqliteOverlay::KeyValueTab{db.get(), TabCfg};
       int tnmtDefaultRefereeModeId = cfg.getInt(CfgKey_DefaultRefereemode);
-      ma.row.update(MA_RefereeMode, tnmtDefaultRefereeModeId);
+      ma.rowRef().update(MA_RefereeMode, tnmtDefaultRefereeModeId);
     }
 
     // now we finally acquire the court in the aftermath
@@ -1637,7 +1636,7 @@ namespace QTournament {
     catm.updateCatStatusFromMatchStatus(ma.getCategory());
 
     // store the call time in the database
-    ma.row.update(MA_StartTime, UTCTimestamp());
+    ma.rowRef().update(MA_StartTime, UTCTimestamp());
 
     // check all matches that are currently "READY" because
     // due to the player allocation, some of them might have
@@ -1661,9 +1660,8 @@ namespace QTournament {
   {
     assert(err != nullptr);
 
-    Error e;
     CourtMngr cm{db};
-    auto nextCourt = cm.autoSelectNextUnusedCourt(&e, includeManualCourts);
+    auto nextCourt = cm.autoSelectNextUnusedCourt(includeManualCourts);
     if (nextCourt)
     {
       *err = assignMatchToCourt(ma, *nextCourt);
@@ -1671,7 +1669,7 @@ namespace QTournament {
     }
 
     // return the error resulting from the court selection
-    *err = e;
+    *err = nextCourt.err();
     return {};
   }
 
@@ -1738,7 +1736,7 @@ namespace QTournament {
       }
 
       // apply the update
-      ma.row.update(cvc);
+      ma.rowRef().update(cvc);
 
       // let the world know what has happened
       int maId = ma.getId();
@@ -1867,7 +1865,7 @@ namespace QTournament {
     }
 
     // everything is fine, so write the result to the database
-    ma.row.update(MA_Result, newScore.toString().toUtf8().constData());
+    ma.rowRef().update(MA_Result, newScore.toString().toUtf8().constData());
 
     CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
     cse->matchResultUpdated(ma.getId(), ma.getSeqNum());
@@ -1946,7 +1944,7 @@ namespace QTournament {
     cvc.addCol(GenericStateFieldName, static_cast<int>(ObjState::MA_Ready));
 
     // apply all changes at once
-    ma.row.update(cvc);
+    ma.rowRef().update(cvc);
     CentralSignalEmitter::getInstance()->matchStatusChanged(ma.getId(), ma.getSeqNum(), ObjState::MA_Running, ObjState::MA_Ready);
 
     // release the court
@@ -1962,8 +1960,8 @@ namespace QTournament {
     catm.updateCatStatusFromMatchStatus(ma.getCategory());
 
     // erase start time from database
-    ma.row.updateToNull(MA_StartTime);
-    ma.row.updateToNull(MA_AdditionalCallTimes);
+    ma.rowRef().updateToNull(MA_StartTime);
+    ma.rowRef().updateToNull(MA_AdditionalCallTimes);
 
     // check all matches that are currently "BUSY" because
     // due to the player release, some of them might have
@@ -2047,7 +2045,7 @@ namespace QTournament {
         {
           if (p.getId() == playerId)
           {
-            ma.row.update(GenericStateFieldName, static_cast<int>(ObjState::MA_Busy));
+            ma.rowRef().update(GenericStateFieldName, static_cast<int>(ObjState::MA_Busy));
             cse->matchStatusChanged(ma.getId(), ma.getSeqNum(), ObjState::MA_Ready, ObjState::MA_Busy);
             break;  // no need to check other players for this match
           }
@@ -2063,7 +2061,7 @@ namespace QTournament {
       {
         if (pm.canAcquirePlayerPairsForMatch(ma) == Error::OK)
         {
-          ma.row.update(GenericStateFieldName, static_cast<int>(ObjState::MA_Ready));
+          ma.rowRef().update(GenericStateFieldName, static_cast<int>(ObjState::MA_Ready));
           cse->matchStatusChanged(ma.getId(), ma.getSeqNum(), ObjState::MA_Busy, ObjState::MA_Ready);
         }
       }
@@ -2186,8 +2184,8 @@ namespace QTournament {
           ObjState stat = m.getState();
           if ((stat != ObjState::MA_Fuzzy) && (stat != ObjState::MA_Incomplete)) continue;
 
-          m.row.update(pairRefColName, pairId);  // set the reference to the winner / loser
-          m.row.update(symbolColName, 0);   // delete symbolic reference
+          m.rowRef().update(pairRefColName, pairId);  // set the reference to the winner / loser
+          m.rowRef().update(symbolColName, 0);   // delete symbolic reference
 
           // emit a faked state change to trigger a display update of the
           // match in the match tab view

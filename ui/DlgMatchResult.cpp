@@ -157,8 +157,8 @@ void DlgMatchResult::updateControls()
   } else {
     auto sc1 = ui->game1Widget->getScore();
     auto sc2 = ui->game2Widget->getScore();
-    assert(sc1 != nullptr);
-    assert(sc2 != nullptr);
+    assert(sc1);
+    assert(sc2);
 
     // switch the "draw" label on or off
     bool isDraw = (!game3Necessary && (sc1->getWinner() != sc2->getWinner()));
@@ -212,8 +212,8 @@ bool DlgMatchResult::isGame3Necessary() const
   {
     auto sc1 = ui->game1Widget->getScore();
     auto sc2 = ui->game2Widget->getScore();
-    assert(sc1 != nullptr);
-    assert(sc2 != nullptr);
+    assert(sc1);
+    assert(sc2);
 
     return (sc1->getWinner() != sc2->getWinner());
   }

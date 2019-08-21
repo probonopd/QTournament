@@ -173,7 +173,7 @@ void MatchTableView::hook_onDatabaseOpened()
   sortedModel->sort(MatchTableModel::MatchNumColId, Qt::AscendingOrder);
 
   // define a delegate for drawing the match items
-  matchItemDelegate =  new MatchItemDelegate(*db, this);
+  matchItemDelegate =  new MatchItemDelegate(db, this);
   matchItemDelegate->setProxy(sortedModel.get());
   setCustomDelegate(matchItemDelegate);  // takes ownership
 }
@@ -715,7 +715,7 @@ void MatchTableView::printResultSheets(int matchCount)
   std::unique_ptr<ResultSheets> rep{nullptr};
   try
   {
-    rep = make_unique<ResultSheets>(db, *curMatch, matchCount);
+    rep = make_unique<ResultSheets>(*db, *curMatch, matchCount);
   }
   catch (...) {}
   if (rep == nullptr) return;

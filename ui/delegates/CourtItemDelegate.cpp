@@ -104,8 +104,8 @@ void CourtItemDelegate::paintMatchInfoCell_Selected(QPainter *painter, const QSt
   }
   else
   {
-    upPlayer referee = ma.getAssignedReferee();
-    assert(referee != nullptr);
+    auto referee = ma.getAssignedReferee();
+    assert(referee);
     txt += referee->getDisplayName_FirstNameFirst();
   }
   baseline += fntMetrics.height() * (1 + ItemTextRowSkip_Perc);
@@ -116,7 +116,7 @@ void CourtItemDelegate::paintMatchInfoCell_Selected(QPainter *painter, const QSt
 
 void CourtItemDelegate::paintSelectedCell(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index, int srcRowId) const
 {
-  CourtMngr cm{db};
+  CourtMngr cm{*db};
   auto co = cm.getCourtBySeqNum(srcRowId);
   auto ma = co->getMatch();
 
@@ -125,7 +125,7 @@ void CourtItemDelegate::paintSelectedCell(QPainter* painter, const QStyleOptionV
     GuiHelpers::drawFormattedText(painter, option.rect, index.data(Qt::DisplayRole).toString(),
                                   Qt::AlignVCenter|Qt::AlignCenter, true, false, normalFont, QColor(Qt::white), 1.0);
   } else {
-    if (ma != nullptr)
+    if (ma)
     {
       paintMatchInfoCell_Selected(painter, option, *ma);
     } else {
@@ -138,7 +138,7 @@ void CourtItemDelegate::paintSelectedCell(QPainter* painter, const QStyleOptionV
 
 void CourtItemDelegate::paintUnselectedCell(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index, int srcRowId) const
 {
-  CourtMngr cm{db};
+  CourtMngr cm{*db};
   auto co = cm.getCourtBySeqNum(srcRowId);
   auto ma = co->getMatch();
 
@@ -146,7 +146,7 @@ void CourtItemDelegate::paintUnselectedCell(QPainter* painter, const QStyleOptio
   {
     painter->drawText(option.rect, Qt::AlignVCenter|Qt::AlignCenter, index.data(Qt::DisplayRole).toString());
   } else {
-    if (ma != nullptr)
+    if (ma)
     {
       // calculate the position of the text baseline
       double vertMargin = (ItemRowHeight - fntMetrics.height()) / 2.0;

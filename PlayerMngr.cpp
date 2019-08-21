@@ -193,7 +193,7 @@ namespace QTournament
     cvc.addCol(PL_Fname, newFirst.toUtf8().constData());
     cvc.addCol(PL_Lname, newLast.toUtf8().constData());
 
-    p.row.update(cvc);
+    p.rowRef().update(cvc);
     
     CentralSignalEmitter::getInstance()->playerRenamed(p);
     
@@ -310,7 +310,7 @@ namespace QTournament
     for (const Player& p : pl)
     {
       ObjState oldStat = p.getState();
-      p.row.update(GenericStateFieldName, static_cast<int>(ObjState::PL_Playing));
+      p.rowRef().update(GenericStateFieldName, static_cast<int>(ObjState::PL_Playing));
       CentralSignalEmitter::getInstance()->playerStatusChanged(p.getId(), p.getSeqNum(), oldStat, ObjState::PL_Playing);
     }
 
@@ -326,7 +326,7 @@ namespace QTournament
     // update all player states back to idle
     for (const Player& p : pl)
     {
-      p.row.update(GenericStateFieldName, static_cast<int>(ObjState::PL_Idle));
+      p.rowRef().update(GenericStateFieldName, static_cast<int>(ObjState::PL_Idle));
       CentralSignalEmitter::getInstance()->playerStatusChanged(p.getId(), p.getSeqNum(), ObjState::PL_Playing, ObjState::PL_Idle);
     }
 
@@ -987,7 +987,7 @@ namespace QTournament
   {
     int oldCount = p.getRefereeCount();
 
-    p.row.update(PL_RefereeCount, oldCount + 1);
+    p.rowRef().update(PL_RefereeCount, oldCount + 1);
   }
 
   //----------------------------------------------------------------------------

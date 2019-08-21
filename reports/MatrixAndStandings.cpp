@@ -96,10 +96,10 @@ upSimpleReport MatrixAndStandings::regenerateReport()
   int curIteration = -1;
   if (msys == MatchSystem::RoundRobin)
   {
-    auto rrCat = PureRoundRobinCategory::getFromGenericCat(cat);
-    if (rrCat->getIterationCount() > 1)
+    PureRoundRobinCategory rrCat{db, cat.rowRef()};
+    if (rrCat.getIterationCount() > 1)
     {
-      int rpi = rrCat->getRoundCountPerIteration();
+      int rpi = rrCat.getRoundCountPerIteration();
       curIteration = (abs(round) - 1) / rpi;  // will be >= 0 even if round==0
       ++curIteration;
       subHead = tr("%1. Iteration");
@@ -130,7 +130,7 @@ upSimpleReport MatrixAndStandings::regenerateReport()
   int nGroups = 1;  // round robin
   if (msys == MatchSystem::GroupsWithKO)
   {
-    KO_Config cfg = cat.getParameter_string(CatParameter::GroupConfig);
+    KO_Config cfg{cat.getParameter_string(CatParameter::GroupConfig)};
     nGroups = cfg.getNumGroups();
   }
 
@@ -204,18 +204,15 @@ QStringList MatrixAndStandings::getReportLocators() const
   MatchSystem msys = cat.getMatchSystem();
   if (msys == MatchSystem::RoundRobin)
   {
-    auto rrCat = PureRoundRobinCategory::getFromGenericCat(cat);
-    if (rrCat)   // should always be true
+    PureRoundRobinCategory rrCat{db, cat.rowRef()};
+    // if we play more than one iteration, add another
+    // location "sub-tree" for the iteration number
+    if (rrCat.getIterationCount() > 1)
     {
-      // if we play more than one iteration, add another
-      // location "sub-tree" for the iteration number
-      if (rrCat->getIterationCount() > 1)
-      {
-        int rpi = rrCat->getRoundCountPerIteration();
-        int curIteration = (abs(round) - 1) / rpi;  // will be >= 0 even if round==0
-        loc += tr("%1. Iteration::");
-        loc = loc.arg(curIteration + 1);
-      }
+      int rpi = rrCat.getRoundCountPerIteration();
+      int curIteration = (abs(round) - 1) / rpi;  // will be >= 0 even if round==0
+      loc += tr("%1. Iteration::");
+      loc = loc.arg(curIteration + 1);
     }
   }
 

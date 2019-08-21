@@ -29,12 +29,10 @@
 
 #include "TournamentDataDefs.h"
 #include "TournamentErrorCodes.h"
+#include "OnlineMngr.h"
 
 namespace QTournament
 {
-  // forward
-  class OnlineMngr;
-
   // the default transaction type for all transactional database operations
   static constexpr SqliteOverlay::TransactionType DefaultTransactionType{SqliteOverlay::TransactionType::Immediate};
 

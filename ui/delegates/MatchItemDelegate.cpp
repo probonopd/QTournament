@@ -57,9 +57,9 @@ void MatchItemDelegate::paintUnselectedCell(QPainter* painter, const QStyleOptio
 
 void MatchItemDelegate::paintSelectedMatchCell(QPainter* painter, const QStyleOptionViewItem& option, int srcRowId) const
 {
-  MatchMngr mm{db};
+  MatchMngr mm{*db};
   auto ma = mm.getMatchBySeqNum(srcRowId);
-  if (ma == nullptr) return;  // shouldn't happen
+  if (!ma) return;  // shouldn't happen
 
   QRect r = option.rect;
 
@@ -122,7 +122,7 @@ void MatchItemDelegate::paintSelectedMatchCell(QPainter* painter, const QStyleOp
 
   // if we have an umpire assigned show that status as well
   auto ref = ma->getAssignedReferee();
-  if (ref != nullptr)
+  if (ref)
   {
     drawPlayerStatus(painter, nameRect, *ref);
     nameRect.adjust(0, rowOffset, 0, rowOffset);
@@ -154,9 +154,9 @@ void MatchItemDelegate::paintSelectedMatchCell(QPainter* painter, const QStyleOp
 
 void MatchItemDelegate::paintUnselectedMatchCell(QPainter* painter, const QStyleOptionViewItem& option, int srcRowId) const
 {
-  MatchMngr mm{db};
+  MatchMngr mm{*db};
   auto ma = mm.getMatchBySeqNum(srcRowId);
-  if (ma == nullptr) return;  // shouldn't happen
+  if (!ma) return;  // shouldn't happen
 
   QRect r = option.rect;
 
@@ -184,10 +184,10 @@ void MatchItemDelegate::drawPlayerStatus(QPainter* painter, const QRectF& r, con
 
 void MatchItemDelegate::drawMatchStatus(QPainter* painter, const QRectF& r, int matchNum) const
 {
-  MatchMngr mm{db};
+  MatchMngr mm{*db};
 
   auto ma = mm.getMatchByMatchNum(matchNum);
-  if (ma == nullptr) return;
+  if (!ma) return;
 
   // paint a status LED
   ObjState maStat = ma->getState();
@@ -199,8 +199,8 @@ void MatchItemDelegate::drawMatchStatus(QPainter* painter, const QRectF& r, int 
   if (maStat == ObjState::MA_Running)
   {
     txt += tr(" currently running on court %1 since %2");
-    auto co = ma->getCourt();
-    if (co != nullptr)
+    auto co = ma->getCourt(nullptr);
+    if (co)
     {
       txt = txt.arg(co->getNumber());
     } else {

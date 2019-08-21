@@ -76,7 +76,7 @@ void CategoryTableView::hook_onDatabaseOpened()
 {
   AutoSizingTableView_WithDatabase::hook_onDatabaseOpened();
 
-  catItemDelegate = new CatItemDelegate(*db, this);
+  catItemDelegate = new CatItemDelegate(db, this);
   catItemDelegate->setProxy(sortedModel.get());
   setCustomDelegate(catItemDelegate);   // takes ownership
 

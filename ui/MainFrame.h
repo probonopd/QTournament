@@ -26,6 +26,7 @@
 #include <QTimer>
 
 #include "ui_MainFrame.h"
+#include "TournamentDB.h"
 
 #define PRG_VERSION_STRING "0.6.0"
 

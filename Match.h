@@ -16,7 +16,7 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef Error::MATCH_H
+#ifndef MATCH_H
 #define	MATCH_H
 
 #include <memory>
@@ -49,11 +49,6 @@ namespace QTournament
 
   class Match : public TournamentDatabaseObject
   {
-    friend class MatchMngr;
-    friend class MatchGroup;
-    friend class SqliteOverlay::GenericObjectManager<TournamentDB>;
-    friend class TournamentDatabaseObjectManager;
-    
   public:
     Category getCategory() const;
     MatchGroup getMatchGroup() const;
@@ -96,9 +91,10 @@ namespace QTournament
     bool hasRefereeAssigned() const;
     Error canAssignReferee(RefereeAction refAction) const;
 
-  private:
     Match (const TournamentDB& _db, int rowId);
     Match (const TournamentDB& _db, const SqliteOverlay::TabRow& _row);
+
+  private:
     int getSymbolicPlayerPairName(int playerPos) const;
 
   };

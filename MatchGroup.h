@@ -36,11 +36,6 @@ namespace QTournament
 
   class MatchGroup : public TournamentDatabaseObject
   {
-    friend class MatchMngr;
-    friend class Match;
-    friend class SqliteOverlay::GenericObjectManager<TournamentDB>;
-    friend class TournamentDatabaseObjectManager;
-    
   public:
     Category getCategory() const;
     int getGroupNumber() const;
@@ -51,10 +46,11 @@ namespace QTournament
     bool hasMatchesInState(ObjState stat) const;
     bool hasMatches__NOT__InState(ObjState stat) const;
 
-  private:
-    SqliteOverlay::DbTab matchTab;
     MatchGroup(const TournamentDB& _db, int rowId);
     MatchGroup(const TournamentDB& _db, const SqliteOverlay::TabRow& _row);
+
+  private:
+    SqliteOverlay::DbTab matchTab;
   } ;
 
   using MatchGroupList = std::vector<MatchGroup> ;

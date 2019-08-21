@@ -24,6 +24,7 @@
 #include <QTableView>
 #include <QSortFilterProxyModel>
 #include <QStringListModel>
+#include <QMenu>
 
 #include "TournamentDB.h"
 #include "delegates/CourtItemDelegate.h"

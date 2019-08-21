@@ -199,7 +199,7 @@ void SeedingListWidget::setDatabase(const QTournament::TournamentDB* _db)
   // assign a delegate to the list widget for drawing the entries
   if (db != nullptr)
   {
-    pairDelegate = std::make_unique<PairItemDelegate>(*db, nullptr, true);
+    pairDelegate = std::make_unique<PairItemDelegate>(db, nullptr, true);
     setItemDelegate(pairDelegate.get());
   } else {
     setItemDelegate(defaultDelegate);

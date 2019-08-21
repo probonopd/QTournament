@@ -102,7 +102,7 @@ QRectF MatchMatrix::plot(const QPointF& topLeft)
   MatchSystem msys = cat.getMatchSystem();
   if (msys == MatchSystem::GroupsWithKO)
   {
-    KO_Config cfg = cat.getParameter_string(CatParameter::GroupConfig);
+    KO_Config cfg{cat.getParameter_string(CatParameter::GroupConfig)};
 
     // in group matches, limit the search radius to the
     // group phase, because otherwise we might end up displaying
@@ -116,16 +116,14 @@ QRectF MatchMatrix::plot(const QPointF& topLeft)
   //
   // also update maxRoundNum as the upper limit of the search radius
   int minRoundNum = 1;
-  if (msys == MatchSystem::RoundRobin)
+  if ((msys == MatchSystem::RoundRobin) && (round > 0))
   {
-    auto rrCat = PureRoundRobinCategory::getFromGenericCat(cat);
-    if (rrCat && (round > 0))
-    {
-      int rpi = rrCat->getRoundCountPerIteration();
-      int curIteration = (round - 1) / rpi;  // will be >= 0 even if round==0
-      minRoundNum = curIteration * rpi + 1;
-      maxRoundNum = (curIteration + 1) * rpi;
-    }
+    auto rrCat_ = cat.convertToSpecializedObject();
+    PureRoundRobinCategory* rrCat = dynamic_cast<PureRoundRobinCategory*>(rrCat_.get());
+    int rpi = rrCat->getRoundCountPerIteration();
+    int curIteration = (round - 1) / rpi;  // will be >= 0 even if round==0
+    minRoundNum = curIteration * rpi + 1;
+    maxRoundNum = (curIteration + 1) * rpi;
   }
 
   // get the textstyle for the table contents

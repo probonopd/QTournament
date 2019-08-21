@@ -29,7 +29,7 @@
 namespace QTournament
 {
 
-  Court::Court(const TournamentDB& _db, int rowId)
+  Court::Court(const TournamentDB& _db, int& rowId)
     :TournamentDatabaseObject(_db, TabCourt, rowId)
   {
   }

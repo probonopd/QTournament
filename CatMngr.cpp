@@ -239,7 +239,7 @@ namespace QTournament
     }
 
     // TODO: implement checks, updates to other tables etc
-    cat.row.update(CAT_Sys, static_cast<int>(newMatchSystem));
+    cat.rowRef().update(CAT_Sys, static_cast<int>(newMatchSystem));
     
     // if we switch to single elimination categories or
     // to the ranking system, we want to
@@ -298,7 +298,7 @@ namespace QTournament
     }
     
     // change the match type
-    cat.row.update(CAT_MatchType, static_cast<int>(newMatchType));
+    cat.rowRef().update(CAT_MatchType, static_cast<int>(newMatchType));
     
     // try to recreate as many pairs as possible
     for (const PlayerPair& pp : pairList)
@@ -388,7 +388,7 @@ namespace QTournament
     
     // execute the actual change
     int sexInt = static_cast<int>(newSex);
-    cat.row.update(CAT_Sex, sexInt);
+    cat.rowRef().update(CAT_Sex, sexInt);
     
     return Error::OK;
   }
@@ -692,7 +692,7 @@ namespace QTournament
     {
       if (cat.is_NOT_InState(ObjState::CAT_Config)) return false;
 
-      cat.row.update(CAT_GroupConfig, v.toString().toUtf8().constData());
+      cat.rowRef().update(CAT_GroupConfig, v.toString().toUtf8().constData());
       return true;
     }
     if (p == CatParameter::RoundRobinIterations)
@@ -703,7 +703,7 @@ namespace QTournament
 
       if (iterations <= 0) return false;
 
-      cat.row.update(CAT_RoundRobinIterations, iterations);
+      cat.rowRef().update(CAT_RoundRobinIterations, iterations);
       return true;
     }
     
@@ -744,17 +744,17 @@ namespace QTournament
       if (drawScore < 1)
       {
         drawScore = 1;
-        c.row.update(CAT_DrawScore, 1);
+        c.rowRef().update(CAT_DrawScore, 1);
       }
       if (winScore <= drawScore)
       {
         winScore = drawScore + 1;
-        c.row.update(CAT_WinScore, winScore);
+        c.rowRef().update(CAT_WinScore, winScore);
       }
     }
 
     // set the new status
-    c.row.update(CAT_AcceptDraw, allowDraw);
+    c.rowRef().update(CAT_AcceptDraw, allowDraw);
     return true;
   }
 
@@ -790,7 +790,7 @@ namespace QTournament
         return false;
       }
       
-      c.row.update(CAT_DrawScore, newScore);
+      c.rowRef().update(CAT_DrawScore, newScore);
       return true;
     }
 
@@ -800,7 +800,7 @@ namespace QTournament
       return false;
     }
 
-    c.row.update(CAT_WinScore, newScore);
+    c.rowRef().update(CAT_WinScore, newScore);
     return true;
   }
 
@@ -902,7 +902,7 @@ namespace QTournament
       return Error::NameExists;
     }
     
-    cat.row.update(GenericNameFieldName, QString2StdString(newName));
+    cat.rowRef().update(GenericNameFieldName, QString2StdString(newName));
     
     return Error::OK;
   }

@@ -534,7 +534,7 @@ RawBracketVisElement::RawBracketVisElement(int visData[9])
     terminator = BracketTerminator::Inwards;
     break;
   default:
-    terminator = BracketTerminator::RefereeMode::None;
+    terminator = BracketTerminator::None;
   }
   terminatorOffsetY = visData[8];
 }
@@ -560,14 +560,14 @@ bool RawBracketVisDataDef::addElement(const RawBracketVisElement& el)
 
 //----------------------------------------------------------------------------
 
-tuple<BracketPageOrientation, BracketLabelPos> RawBracketVisDataDef::getPageInfo(int idxPage) const
+std::tuple<BracketPageOrientation, BracketLabelPos> RawBracketVisDataDef::getPageInfo(int idxPage) const
 {
   if (idxPage >= getNumPages())
   {
     throw std::range_error("Attempt to access invalid page in bracket visualization data!");
   }
 
-  return make_tuple(pageOrientationList.at(idxPage), labelPosList.at(idxPage));
+  return std::make_tuple(pageOrientationList.at(idxPage), labelPosList.at(idxPage));
 }
 
 //----------------------------------------------------------------------------

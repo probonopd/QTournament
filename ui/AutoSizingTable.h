@@ -333,7 +333,7 @@ namespace GuiHelpers
     {
       AutoSizingTable_WithDatabase<QTableView>::hook_onDatabaseOpened();
 
-      setCustomDataModel(new CustomDataModelType(db));
+      setCustomDataModel(new CustomDataModelType(*db));
     }
 
     void hook_onDatabaseClosed() override

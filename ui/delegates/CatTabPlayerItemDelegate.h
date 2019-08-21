@@ -34,7 +34,7 @@ public:
   static constexpr int NumberTextGap = 3;
   CatTabPlayerItemDelegate(QObject* parent = nullptr, bool _showListIndex = true)
     :BaseItemDelegate{nullptr, ItemHeight, -1, parent}, showListIndex{_showListIndex},
-      maxNumberColumnWidth{fntMetrics.width("88.")} {}
+      maxNumberColumnWidth{fntMetrics.horizontalAdvance("88.")} {}
 
 protected:
   virtual void paintSelectedCell(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index, int srcRowId) const override;

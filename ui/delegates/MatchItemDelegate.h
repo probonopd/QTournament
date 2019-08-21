@@ -43,7 +43,7 @@ public:
   static constexpr int ItemStatusIndicatorSize = 15;
   static constexpr int ItemMargin = 5;
 
-  MatchItemDelegate(const QTournament::TournamentDB& _db, QObject* parent = nullptr)
+  MatchItemDelegate(const QTournament::TournamentDB* _db, QObject* parent = nullptr)
     :BaseItemDelegate{_db, ItemRowHeight, ItemRowHeightSelected, parent} {}
 
 private:

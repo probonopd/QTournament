@@ -74,7 +74,7 @@ void CommonMatchTableWidget::hook_onDatabaseOpened()
   AutoSizingTableWidget_WithDatabase::hook_onDatabaseOpened();
 
   // update the delegate
-  logItemDelegate = new MatchLogItemDelegate(*db, this);
+  logItemDelegate = new MatchLogItemDelegate(db, this);
   setCustomDelegate(logItemDelegate);  // the base class takes ownership of the pointer
 }
 

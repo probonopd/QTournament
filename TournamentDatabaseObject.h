@@ -43,6 +43,8 @@ namespace QTournament
     void setState(ObjState newState) const;
     int getSeqNum() const;
 
+    const SqliteOverlay::TabRow& rowRef() const { return row; }
+
   };
 }
 

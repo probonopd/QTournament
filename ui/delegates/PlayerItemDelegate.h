@@ -31,7 +31,7 @@
 class PlayerItemDelegate : public BaseItemDelegate
 {
 public:
-  PlayerItemDelegate(const QTournament::TournamentDB& _db, QObject* parent = nullptr)
+  PlayerItemDelegate(const QTournament::TournamentDB* _db, QObject* parent = nullptr)
     :BaseItemDelegate{_db, PlayerItemRowHeight, -1, parent} {}
   
 protected:

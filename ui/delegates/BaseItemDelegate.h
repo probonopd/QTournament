@@ -36,7 +36,7 @@ public:
   static constexpr double DEFAULT_LARGE_FONT_FAC = 1.2;
   static constexpr double DEFAULT_SMALL_FONT_FAC = 0.8;
 
-  BaseItemDelegate(const QTournament::TournamentDB& _db, int _defaultRowHeight, int _selectedRowHeight = -1, QObject* parent = 0);
+  BaseItemDelegate(const QTournament::TournamentDB* _db, int _defaultRowHeight, int _selectedRowHeight = -1, QObject* parent = nullptr);
   void setProxy(QAbstractProxyModel* _proxy) { proxy = _proxy; }
   virtual void paint (QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index ) const override;
   virtual QSize sizeHint (const QStyleOptionViewItem& option, const QModelIndex& index ) const override;
@@ -47,7 +47,7 @@ public:
   virtual void paintUnselectedCell(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index, int srcRowId) const;
 
 protected:
-  std::reference_wrapper<const QTournament::TournamentDB> db;
+  const QTournament::TournamentDB* db;
   QAbstractProxyModel* proxy;
   QFont normalFont;
   QFont largeFont;

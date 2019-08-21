@@ -138,7 +138,7 @@ namespace QTournament
       return Error::NameExists;
     }
     
-    t.row.update(GenericNameFieldName, newName.toUtf8().constData());
+    t.rowRef().update(GenericNameFieldName, newName.toUtf8().constData());
     CentralSignalEmitter::getInstance()->teamRenamed(t.getSeqNum());
     
     return Error::OK;
@@ -206,7 +206,7 @@ namespace QTournament
       return Error::OK;  // no database access necessary
     }
     
-    p.row.update(PL_TeamRef, newTeam.getId());
+    p.rowRef().update(PL_TeamRef, newTeam.getId());
     CentralSignalEmitter::getInstance()->teamAssignmentChanged(p, oldTeam, newTeam);
     
     return Error::OK;

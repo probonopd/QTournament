@@ -31,9 +31,8 @@ namespace QTournament
   {
   public:
     KO_Config(KO_Start _startLevel, bool _secondSurvives, GroupDefList grps = GroupDefList());
-    KO_Config(QString iniString);
-    KO_Config(const KO_Config& orig);
-    virtual ~KO_Config();
+    explicit KO_Config(QString iniString);
+    explicit KO_Config(const KO_Config& orig);
     
     bool isValid(int opponentCount = -1) const;
     int getNumMatches() const;

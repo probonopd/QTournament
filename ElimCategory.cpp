@@ -435,7 +435,7 @@ namespace QTournament
         // delete explicit references to the affected pair in the
         // bracket visualization
         auto bvd = BracketVisData::getExisting(ma.getCategory());
-        if (bvd != nullptr)
+        if (bvd)
         {
           bvd->clearExplicitPlayerPairReferences(oldWinner);
           bvd->clearExplicitPlayerPairReferences(oldLoser);

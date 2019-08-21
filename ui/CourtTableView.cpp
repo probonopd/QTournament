@@ -85,7 +85,7 @@ void CourtTableView::hook_onDatabaseOpened()
   AutoSizingTableView_WithDatabase::hook_onDatabaseOpened();
 
   // set a new delegate
-  courtItemDelegate = new CourtItemDelegate(*db, this);
+  courtItemDelegate = new CourtItemDelegate(db, this);
   courtItemDelegate->setProxy(sortedModel.get());
   setCustomDelegate(courtItemDelegate);   // Takes ownership
 }
@@ -433,7 +433,7 @@ void CourtTableView::onReprintResultSheetTriggered()
   std::unique_ptr<ResultSheets> rep{nullptr};
   try
   {
-    rep = make_unique<ResultSheets>(db, *curMatch, 1);
+    rep = make_unique<ResultSheets>(*db, *curMatch, 1);
   }
   catch (...) {}
   if (rep == nullptr) return;

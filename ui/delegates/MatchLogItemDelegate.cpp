@@ -23,15 +23,16 @@
 #include "ui/GuiHelpers.h"
 #include "MatchLogItemDelegate.h"
 
+using namespace QTournament;
 
 void MatchLogItemDelegate::paintSelectedCell(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index, int srcRowId) const
 {
   if (index.column() == 4)
   {
-    MatchMngr mm{db};
+    MatchMngr mm{*db};
     int matchId = index.data(Qt::UserRole).toInt();
     auto ma = mm.getMatch(matchId);
-    if (ma == nullptr) return;
+    if (!ma) return;
 
     paintMatchInfoCell(painter, option, *ma, true);
   } else {
@@ -46,10 +47,10 @@ void MatchLogItemDelegate::paintUnselectedCell(QPainter* painter, const QStyleOp
 {
   if (index.column() == 4)
   {
-    MatchMngr mm{db};
+    MatchMngr mm{*db};
     int matchId = index.data(Qt::UserRole).toInt();
     auto ma = mm.getMatch(matchId);
-    if (ma == nullptr) return;
+    if (!ma) return;
 
     paintMatchInfoCell(painter, option, *ma, false);
   } else {
@@ -80,7 +81,7 @@ void MatchLogItemDelegate::paintMatchInfoCell(QPainter* painter, const QStyleOpt
   // get the score string
   auto sc = ma.getScore();
   QString txtScore;
-  if (sc != nullptr)
+  if (sc)
   {
     txtScore = sc->toString();
     txtScore.replace(",", ",   ");
@@ -99,7 +100,7 @@ void MatchLogItemDelegate::paintMatchInfoCell(QPainter* painter, const QStyleOpt
     auto l = ma.getLoser();
     auto ppLeft = ma.getPlayerPair1();
 
-    if ((w != nullptr) && (l != nullptr))
+    if (w && l)
     {
       if (*w == ppLeft)
       {

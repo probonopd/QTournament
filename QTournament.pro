@@ -350,4 +350,4 @@ unix {
   CONFIG(release, debug|release): LIBS += -lSimpleReportGenerator
 }
 
-LIBS += -lSqliteOverlay -lSloppy  
+LIBS += -lSqliteOverlay -lSloppy  -lsqlite3

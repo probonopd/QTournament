@@ -30,17 +30,12 @@ namespace QTournament
 
   class Team : public TournamentDatabaseObject
   {
-    friend class TeamMngr;
-    friend class SqliteOverlay::GenericObjectManager<TournamentDB>;
-    friend class TournamentDatabaseObjectManager;
-
   public:
     QString getName(int maxLen=0) const;
     Error rename(const QString& newName);
     int getMemberCount() const;
     int getUnregisteredMemberCount() const;
 
-  private:
     Team (const TournamentDB& _db, int rowId);
     Team (const TournamentDB& _db, const SqliteOverlay::TabRow& _row);
   };

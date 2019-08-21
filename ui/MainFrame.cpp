@@ -187,7 +187,7 @@ void MainFrame::openTournament()
   std::unique_ptr<TournamentDB> newDb{nullptr};
   try
   {
-    newDb = make_unique<TournamentDB>(filename);
+    newDb = make_unique<TournamentDB>(QString2StdString(filename));
   }
   catch (TournamentException&)
   {
@@ -694,7 +694,7 @@ void MainFrame::setupTestScenario(int scenarioID)
   cfg.tournamentName = "World Championship";
   cfg.useTeams = true;
   cfg.refereeMode = RefereeMode::None;
-  currentDb = make_unique<TournamentDB>(testFileName, cfg);
+  currentDb = make_unique<TournamentDB>(QString2StdString(testFileName), cfg);
   distributeCurrentDatabasePointerToWidgets();
   
   // the empty scenario

@@ -1072,23 +1072,17 @@ namespace QTournament
     if ((visDataDef.getNumPages() > 0) && (visDataDef.getNumElements() > 0))
     {
       // create a new visualization entry
-      upBracketVisData bvd;
-      for (int i=0; i < visDataDef.getNumPages(); ++i)
+      auto [orientation, lp] = visDataDef.getPageInfo(0);
+      std::optional<BracketVisData> bvd = BracketVisData::createNew(*this, orientation, lp);
+      assert(bvd);
+
+      // add all further pages
+      for (int i=1; i < visDataDef.getNumPages(); ++i)
       {
-        auto [orientation, lp] = visDataDef.getPageInfo(i);
-
-        if (i == 0)
-        {
-          bvd = BracketVisData::createNew(*this, orientation, lp);
-        }
-
-        assert(bvd != nullptr);
-
-        if (i > 0)
-        {
-          bvd->addPage(orientation, lp);
-        }
+        std::tie(orientation, lp) = visDataDef.getPageInfo(i);
+        bvd->addPage(orientation, lp);
       }
+
       for (int i=0; i < visDataDef.getNumElements(); ++i)
       {
         RawBracketVisElement el = visDataDef.getElement(i);
@@ -1104,7 +1098,7 @@ namespace QTournament
           auto ma = mm.getMatch(maId);
 
           auto bracketElement = bvd->getVisElement(i+1);   // bracket match IDs are 1-based, not 0-based!
-          assert(bracketElement != nullptr);
+          assert(bracketElement);
 
           assert(bracketElement->linkToMatch(*ma));
         }

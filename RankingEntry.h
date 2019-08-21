@@ -38,11 +38,6 @@ namespace QTournament
 {
   class RankingEntry : public TournamentDatabaseObject
   {
-
-    friend class RankingMngr;
-    friend class SqliteOverlay::GenericObjectManager<TournamentDB>;
-    friend class TournamentDatabaseObjectManager;
-
   public:
     static constexpr int NoRankAssigned = -1;
     static constexpr int NoGroupAssigned = -999;
@@ -70,7 +65,6 @@ namespace QTournament
       std::swap(a.row, b.row);
     }
 
-  private:
     RankingEntry (const TournamentDB& _db, int rowId);
     RankingEntry (const TournamentDB& _db, const SqliteOverlay::TabRow& _row);
   };

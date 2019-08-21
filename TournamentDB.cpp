@@ -51,7 +51,7 @@ namespace QTournament
     // initialize the internal instance of the online manager
     //
     // FIX ME: server name and API url hard coded
-    om = make_unique<OnlineMngr>(this);
+    om = make_unique<OnlineMngr>(*this);
   }
 
   //----------------------------------------------------------------------------
@@ -64,7 +64,7 @@ namespace QTournament
     // initialize the internal instance of the online manager
     //
     // FIX ME: server name and API url hard coded
-    om = make_unique<OnlineMngr>(this);
+    om = make_unique<OnlineMngr>(*this);
   }
 
   //----------------------------------------------------------------------------
@@ -84,7 +84,7 @@ namespace QTournament
     // initialize the internal instance of the online manager
     //
     // FIX ME: server name and API url hard coded
-    om = make_unique<OnlineMngr>(this);
+    om = make_unique<OnlineMngr>(*this);
   }
 
   //----------------------------------------------------------------------------
@@ -455,7 +455,7 @@ namespace QTournament
   void TournamentDB::initBlankDb(const TournamentSettings& cfg)
   {
     populateTables();
-    populateTables();
+    populateViews();
     createIndices();
 
     // initialize the database
@@ -463,7 +463,7 @@ namespace QTournament
     Sloppy::estring dbVersion = "%1.%2";
     dbVersion.arg(DbVersionMajor);
     dbVersion.arg(DbVersionMinor);
-    cfgTab.set(CfgKey_DbVersion, dbVersion);
+    cfgTab.set(CfgKey_DbVersion, dbVersion.toStdString());
     cfgTab.set(CfgKey_TnmtName, QString2StdString(cfg.tournamentName));
     cfgTab.set(CfgKey_TnmtOrga, QString2StdString(cfg.organizingClub));
     cfgTab.set(CfgKey_UseTeams, cfg.useTeams);

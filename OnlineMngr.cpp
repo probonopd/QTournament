@@ -260,7 +260,7 @@ namespace QTournament
     if (result == OnlineError::Okay)
     {
       UTCTimestamp now;
-      cfgTab.set(CfgKey_RegistrationTimestamp, &now);
+      cfgTab.set(CfgKey_RegistrationTimestamp, now);
     }
 
     return result;

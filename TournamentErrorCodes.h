@@ -132,19 +132,27 @@ namespace QTournament
     class ObjectOrError : public std::optional<T>
     {
     public:
-      explicit ObjectOrError(const T& obj)
+      template<class... Args>
+      ObjectOrError(Args&&... args)
+        :std::optional<T>(std::in_place, std::forward<Args>(args)...), e{Error::OK}
+        //:std::optional<T>{std::in_place, args...}, e{Error::OK}
+        //:std::optional<T>(T{args...}), e{Error::OK}
+      {
+      }
+
+      ObjectOrError(const T& obj)
         :std::optional<T>{obj}, e{Error::OK} {}
 
-      explicit ObjectOrError(const std::optional<T>& obj)
+      ObjectOrError(const std::optional<T>& obj)
         :std::optional<T>{obj}, e{Error::OK} {}
 
-      explicit ObjectOrError(std::optional<T>&& obj)
-        :std::optional<T>(std::forward<std::optional<T>>(obj)), e{Error::OK} {}
+      ObjectOrError(std::optional<T>&& obj)
+        :std::optional<T>(std::move(obj)), e{Error::OK} {}
 
-      explicit ObjectOrError(T&& obj)
+      ObjectOrError(T&& obj)
         :std::optional<T>(std::forward<T>(obj)), e{Error::OK} {}
 
-      explicit ObjectOrError(Error errorCode)
+      ObjectOrError(Error errorCode)
         :std::optional<T>{}, e{errorCode}
       {
         if (errorCode == Error::OK)
@@ -153,9 +161,6 @@ namespace QTournament
         }
       }
 
-      template<class... Args>
-      ObjectOrError(Args&&... args)
-        :std::optional<T>{std::in_place, std::forward<Args>(args)...}, e{Error::OK} {}
 
       constexpr Error err() const noexcept { return e; }
 

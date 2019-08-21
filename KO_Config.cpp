@@ -55,12 +55,6 @@ namespace QTournament {
 
 //----------------------------------------------------------------------------
 
-  KO_Config::~KO_Config()
-  {
-  }
-
-//----------------------------------------------------------------------------
-
   bool KO_Config::isValid(int opponentCount) const
   {
     // compare the required number with the actual number of groups
@@ -219,10 +213,10 @@ namespace QTournament {
       int grpSize;
       try
       {
-	numGroups = num.toInt();
-	grpSize = gSize.toInt();
-      } catch (std::exception ex) {
-	throw std::invalid_argument("Initialization string is invalid (non-digits in group def)!");
+        numGroups = num.toInt();
+        grpSize = gSize.toInt();
+      } catch (std::exception&) {
+        throw std::invalid_argument("Initialization string is invalid (non-digits in group def)!");
       }
       
       grpDefs.append(GroupDef(grpSize, numGroups));

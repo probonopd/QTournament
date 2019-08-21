@@ -52,14 +52,6 @@ namespace QTournament
 
   class Category : public TournamentDatabaseObject
   {
-    friend class CatMngr;
-    friend class RoundRobinCategory;
-    friend class EliminationCategory;
-    friend class PureRoundRobinCategory;
-    friend class SwissLadderCategory;
-    friend class TournamentDatabaseObjectManager;
-    friend class SqliteOverlay::GenericObjectManager<TournamentDB>;
-
   public:
     // getters
     QString getName() const;
@@ -131,9 +123,9 @@ namespace QTournament
     virtual ModMatchResult canModifyMatchResult(const Match& ma) const;
     virtual ModMatchResult modifyMatchResult(const Match& ma, const MatchScore& newScore) const;
 
-  private:
     Category (const TournamentDB& _db, int rowId);
     Category (const TournamentDB& _db, const SqliteOverlay::TabRow& _row);
+
     Error applyGroupAssignment(const std::vector<PlayerPairList>& grpCfg);
     Error applyInitialRanking(const PlayerPairList& seed);
     Error generateGroupMatches(const PlayerPairList &grpMembers, int grpNum, int firstRoundNum=1) const;

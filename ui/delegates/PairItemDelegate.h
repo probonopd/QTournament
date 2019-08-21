@@ -29,7 +29,7 @@
 class PairItemDelegate : public BaseItemDelegate
 {
 public:
-  PairItemDelegate(const QTournament::TournamentDB& _db, QObject* parent = nullptr, bool _showListIndex = false)
+  PairItemDelegate(const QTournament::TournamentDB* _db, QObject* parent = nullptr, bool _showListIndex = false)
     :BaseItemDelegate{_db, PairItemRowHeight, -1, parent}, showListIndex{_showListIndex},
      teamFont{smallFont}
   {

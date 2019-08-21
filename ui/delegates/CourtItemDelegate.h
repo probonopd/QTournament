@@ -39,7 +39,7 @@ public:
 
   static constexpr double ItemTextRowSkip_Perc = 0.2;
 
-  CourtItemDelegate(const QTournament::TournamentDB& _db, QObject* parent = nullptr)
+  CourtItemDelegate(const QTournament::TournamentDB* _db, QObject* parent = nullptr)
     :BaseItemDelegate{_db, ItemRowHeight, ItemRowHeightSelected, parent} {}
 
 protected:

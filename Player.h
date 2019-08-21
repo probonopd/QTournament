@@ -16,7 +16,7 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef Error::PLAYER_H
+#ifndef PLAYER_H
 #define	PLAYER_H
 
 #include <memory>
@@ -42,11 +42,6 @@ namespace QTournament
 
   class Player : public TournamentDatabaseObject
   {
-    friend class PlayerMngr;
-    friend class TeamMngr;
-    friend class SqliteOverlay::GenericObjectManager<TournamentDB>;
-    friend class TournamentDatabaseObjectManager;
-    
   public:
     QString getDisplayName(int maxLen = 0) const;
     QString getDisplayName_FirstNameFirst() const;
@@ -60,7 +55,6 @@ namespace QTournament
     std::optional<Court> getRefereeCourt() const;
     std::optional<Court> getMatchCourt() const;
 
-  private:
     Player (const TournamentDB& _db, int rowId);
     Player (const TournamentDB& _db, const SqliteOverlay::TabRow& _row);
   };
