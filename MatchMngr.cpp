@@ -135,6 +135,7 @@ namespace QTournament {
     cvc.addCol(MG_Round, round);
     cvc.addCol(MG_GrpNum, grpNum);
     cvc.addCol(GenericStateFieldName, static_cast<int>(ObjState::MG_Config));
+    cvc.addCol(GenericSeqnumFieldName, InvalidInitialSequenceNumber);  // will be fixed immediately; this is just for satisfying a not-NULL constraint
 
     CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
     cse->beginCreateMatchGroup();
@@ -246,6 +247,7 @@ namespace QTournament {
     cvc.addCol(MA_WinnerRank, -1);         // default: no rank, no knock out
     cvc.addCol(MA_LoserRank, -1);         // default: no rank, no knock out
     cvc.addCol(MA_RefereeMode, -1);        // -1: use current tournament default
+    cvc.addCol(GenericSeqnumFieldName, InvalidInitialSequenceNumber);  // will be fixed immediately; this is just for satisfying a not-NULL constraint
 
     CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
     cse->beginCreateMatch();

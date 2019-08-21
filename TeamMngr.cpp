@@ -68,6 +68,7 @@ namespace QTournament
     // create a new table row
     ColumnValueClause cvc;
     cvc.addCol(GenericNameFieldName, teamName.toUtf8().constData());
+    cvc.addCol(GenericSeqnumFieldName, InvalidInitialSequenceNumber);  // will be fixed immediately; this is just for satisfying a not-NULL constraint
     
     CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
     cse->beginCreateTeam();

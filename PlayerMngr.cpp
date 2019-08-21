@@ -76,7 +76,8 @@ namespace QTournament
     cvc.addCol(PL_Lname, last.toUtf8().constData());
     cvc.addCol(PL_Sex, static_cast<int>(sex));
     cvc.addCol(GenericStateFieldName, static_cast<int>(ObjState::PL_Idle));
-    
+    cvc.addCol(GenericSeqnumFieldName, InvalidInitialSequenceNumber);  // will be fixed immediately; this is just for satisfying a not-NULL constraint
+
     // set the team reference, if applicable
     auto cfg = SqliteOverlay::KeyValueTab{db.get(), TabCfg};
     if (cfg.getInt(CfgKey_UseTeams) != 0)

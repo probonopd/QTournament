@@ -56,7 +56,8 @@ namespace QTournament
     cvc.addCol(GenericNameFieldName, QString2StdString(name));
     cvc.addCol(CO_IsManualAssignment, 0);
     cvc.addCol(GenericStateFieldName, static_cast<int>(ObjState::CO_Avail));
-    
+    cvc.addCol(GenericSeqnumFieldName, InvalidInitialSequenceNumber);  // will be fixed immediately; this is just for satisfying a not-NULL constraint
+
     // create the new court row
     CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
     cse->beginCreateCourt();

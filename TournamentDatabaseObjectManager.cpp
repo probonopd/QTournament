@@ -36,7 +36,7 @@ namespace QTournament
    */
   void TournamentDatabaseObjectManager::fixSeqNumberAfterInsert(const SqliteOverlay::DbTab& otherTab) const
   {
-    auto r = otherTab.getSingleRowByColumnValueNull(GenericSeqnumFieldName);
+    auto r = otherTab.getSingleRowByColumnValue(GenericSeqnumFieldName, InvalidInitialSequenceNumber);
     
     int newSeqNum = otherTab.length() - 1;
     

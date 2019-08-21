@@ -79,7 +79,8 @@ namespace QTournament
     cvc.addCol(CAT_WinScore, 2);
     cvc.addCol(CAT_DrawScore, 1);
     cvc.addCol(CAT_GroupConfig, KO_Config(KO_Start::Quarter, false).toString().toUtf8().constData());
-    
+    cvc.addCol(GenericSeqnumFieldName, InvalidInitialSequenceNumber);  // will be fixed immediately; this is just for satisfying a not-NULL constraint
+
     CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
     cse->beginCreateCategory();
     tab.insertRow(cvc);

@@ -47,6 +47,8 @@ namespace QTournament
     virtual std::string getSyncString(const std::vector<int>& rows) const { return ""; }
 
   protected:
+    static constexpr int InvalidInitialSequenceNumber = -1;
+
     void fixSeqNumberAfterInsert() const;
     void fixSeqNumberAfterDelete(int deletedSeqNum) const;
     void fixSeqNumberAfterInsert(const SqliteOverlay::DbTab& otherTab) const;
