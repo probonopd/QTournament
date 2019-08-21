@@ -42,7 +42,7 @@ public:
   ~GameResultWidget();
   void setGameNumber(int n);
   bool hasValidScore() const;
-  std::unique_ptr<QTournament::GameScore> getScore() const;
+  std::optional<QTournament::GameScore> getScore() const;
   void setScore(const QTournament::GameScore& sc);
 
 private slots:

@@ -188,7 +188,8 @@ void GroupAssignmentListWidget::onRowSelectionChanged()
   if (!isInitialized) return;
   
   // determine which list box sent the signal
-  QListWidget* senderWidget = (QListWidget*) QObject::sender();
+  QListWidget* senderWidget = dynamic_cast<QListWidget*>(QObject::sender());
+  if (senderWidget == nullptr) return;
   
   // if the selection change happened in one of the already selected 
   // list widgets, do nothing

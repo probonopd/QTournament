@@ -37,21 +37,23 @@
 #include "Match.h"
 #include "MatchTimePredictor.h"
 
+using namespace QTournament;
+
 PlayerTableView::PlayerTableView(QWidget* parent)
   :GuiHelpers::AutoSizingTableView_WithDatabase<PlayerTableModel>{
      GuiHelpers::AutosizeColumnDescrList{
-        {"", REL_NAME_COL_WIDTH, -1, MAX_NAME_COL_WIDTH},
-        {"", REL_Sex_COL_WIDTH, -1, MAX_Sex_COL_WIDTH},
-        {"", REL_TEAM_COL_WIDTH, -1, MAX_TEAM_COL_WIDTH},
-        {"", REL_CONFIGCOL_WIDTH, -1, MAX_CONFIGCOL_WIDTH},
+        {"", NameColRelWidth, -1, NameColMaxWidth},
+        {"", SexColRelWidth, -1, SexColMaxWidth},
+        {"", TeamColRelWidth, -1, TeamColMaxWidth},
+        {"", CatColRelWidth, -1, CatColMaxWidth},
         {"", 0, -1, -1}}, true, parent}
 {
-  setRubberBandCol(PlayerTableModel::FILL_COL);
+  setRubberBandCol(PlayerTableModel::FillColId);
 
   // set an initial default sorting column and
   // make sorting case insensitive so that last names starting with
   // a lower case character do not show up at the end of the list
-  sortByColumn(PlayerTableModel::COL_NAME, Qt::AscendingOrder);
+  sortByColumn(PlayerTableModel::ColNameId, Qt::AscendingOrder);
   sortedModel->setSortCaseSensitivity(Qt::CaseInsensitive);
 
   // handle context menu requests
@@ -72,9 +74,9 @@ PlayerTableView::PlayerTableView(QWidget* parent)
 std::optional<QTournament::Player> PlayerTableView::getSelectedPlayer() const
 {
   int srcRow = getSelectedSourceRow();
-  if (srcRow < 0) return nullptr;
+  if (srcRow < 0) return {};
 
-  PlayerMngr pm{db};
+  PlayerMngr pm{*db};
   return pm.getPlayerBySeqNum(srcRow);
 }
 
@@ -85,7 +87,7 @@ void PlayerTableView::hook_onDatabaseOpened()
   AutoSizingTableView_WithDatabase::hook_onDatabaseOpened();
 
   // define a delegate for drawing the player items
-  playerItemDelegate = new PlayerItemDelegate(db, this);
+  playerItemDelegate = new PlayerItemDelegate(*db, this);
   playerItemDelegate->setProxy(sortedModel.get());
   setCustomDelegate(playerItemDelegate);  // takes ownership
 }
@@ -104,7 +106,7 @@ void PlayerTableView::onContextMenuRequested(const QPoint& pos)
 
   // get the player status for enabling / disabling state-dependent actions
   auto selPlayer = getSelectedPlayer();
-  bool isPlayerClicked = (selPlayer != nullptr);
+  bool isPlayerClicked = (selPlayer.has_value());
   ObjState plStat = ObjState::CO_Disabled;   // an arbitrary, dummy default value that has nothing to do with players
   if (isPlayerClicked) plStat = selPlayer->getState();
 
@@ -119,7 +121,7 @@ void PlayerTableView::onContextMenuRequested(const QPoint& pos)
   actRegister->setEnabled(isPlayerClicked & (plStat == ObjState::PL_WaitForRegistration) & isRowClicked);
   actUnregister->setEnabled(isPlayerClicked & (plStat == ObjState::PL_Idle) & isRowClicked);
 
-  PlayerMngr pm{db};
+  PlayerMngr pm{*db};
   bool hasExtDb = pm.hasExternalPlayerDatabaseAvailable();
   actImportFromExtDatabase->setEnabled(hasExtDb);
   actSyncAllToExtDatabase->setEnabled(hasExtDb);
@@ -140,10 +142,10 @@ void PlayerTableView::onSectionHeaderDoubleClicked()
 
 void PlayerTableView::onAddPlayerTriggered()
 {
-  DlgEditPlayer dlg(db, this);
+  DlgEditPlayer dlg(*db, this);
 
   dlg.setModal(true);
-  cmdCreatePlayerFromDialog cmd{db, this, &dlg};
+  cmdCreatePlayerFromDialog cmd{*db, this, &dlg};
   cmd.exec();
 }
 
@@ -152,9 +154,9 @@ void PlayerTableView::onAddPlayerTriggered()
 void PlayerTableView::onEditPlayerTriggered()
 {
   auto selectedPlayer = getSelectedPlayer();
-  if (selectedPlayer == nullptr) return;
+  if (!selectedPlayer) return;
 
-  DlgEditPlayer dlg(db, this, selectedPlayer.get());
+  DlgEditPlayer dlg(*db, this, *selectedPlayer);
 
   dlg.setModal(true);
   int result = dlg.exec();
@@ -182,7 +184,7 @@ void PlayerTableView::onEditPlayerTriggered()
   }
 
   // category changes
-  CatMngr cmngr{db};
+  CatMngr cmngr{*db};
 
   QHash<Category, bool> catSelection = dlg.getCategoryCheckState();
   QHash<Category, bool>::const_iterator it = catSelection.constBegin();
@@ -214,7 +216,7 @@ void PlayerTableView::onEditPlayerTriggered()
   }
 
   // Team changes
-  TeamMngr tmngr{db};
+  TeamMngr tmngr{*db};
   Team newTeam = dlg.getTeam();
   if (newTeam != selectedPlayer->getTeam())
   {
@@ -233,7 +235,7 @@ void PlayerTableView::onEditPlayerTriggered()
 void PlayerTableView::onPlayerDoubleCLicked()
 {
   auto selectedPlayer = getSelectedPlayer();
-  if (selectedPlayer == nullptr) return;
+  if (!selectedPlayer) return;
 
   // query the current keyboard modifiers (Shift, Ctrl, ...)
   auto keyMod = QGuiApplication::keyboardModifiers();
@@ -255,7 +257,7 @@ void PlayerTableView::onPlayerDoubleCLicked()
 void PlayerTableView::onShowPlayerInfoTriggered()
 {
   auto selectedPlayer = getSelectedPlayer();
-  if (selectedPlayer == nullptr) return;
+  if (!selectedPlayer) return;
 
   // query the current keyboard modifiers (Shift, Ctrl, ...)
   auto keyMod = QGuiApplication::keyboardModifiers();
@@ -275,9 +277,9 @@ void PlayerTableView::onShowPlayerInfoTriggered()
 void PlayerTableView::onRemovePlayerTriggered()
 {
   auto p = getSelectedPlayer();
-  if (p == nullptr) return;
+  if (!p) return;
 
-  PlayerMngr pm{db};
+  PlayerMngr pm{*db};
 
   // can the player be deleted at all?
   Error err = pm.canDeletePlayer(*p);
@@ -324,9 +326,9 @@ void PlayerTableView::onRemovePlayerTriggered()
 void PlayerTableView::onShowNextMatchesForPlayerTriggered()
 {
   auto selectedPlayer = getSelectedPlayer();
-  if (selectedPlayer == nullptr) return;
+  if (!selectedPlayer) return;
 
-  PlayerMngr pm{db};
+  PlayerMngr pm{*db};
   std::vector<Match> nextMatches = pm.getAllScheduledMatchesForPlayer(*selectedPlayer);
 
   QString msg;
@@ -340,7 +342,7 @@ void PlayerTableView::onShowNextMatchesForPlayerTriggered()
 
     // get a new MatchTimePredictor for retrieving the
     // estimated start times
-    MatchTimePredictor predictor{db};
+    MatchTimePredictor predictor{*db};
 
     for (const Match& ma : nextMatches)
     {
@@ -370,7 +372,7 @@ void PlayerTableView::onShowNextMatchesForPlayerTriggered()
 void PlayerTableView::onRegisterPlayerTriggered()
 {
   auto selectedPlayer = getSelectedPlayer();
-  if (selectedPlayer == nullptr) return;
+  if (!selectedPlayer) return;
 
   // remove the "wait for registration"-flag
   cmdRegisterPlayer cmd{this, *selectedPlayer};
@@ -382,7 +384,7 @@ void PlayerTableView::onRegisterPlayerTriggered()
 void PlayerTableView::onUnregisterPlayerTriggered()
 {
   auto selectedPlayer = getSelectedPlayer();
-  if (selectedPlayer == nullptr) return;
+  if (!selectedPlayer) return;
 
   // remove the "wait for registration"-flag
   cmdUnregisterPlayer cmd{this, *selectedPlayer};
@@ -393,7 +395,7 @@ void PlayerTableView::onUnregisterPlayerTriggered()
 
 void PlayerTableView::onImportFromExtDatabase()
 {
-  cmdImportSinglePlayerFromExternalDatabase cmd{db, this};
+  cmdImportSinglePlayerFromExternalDatabase cmd{*db, this};
 
   cmd.exec();
 }
@@ -404,7 +406,7 @@ void PlayerTableView::onExportToExtDatabase()
 {
   // check if any player is selected
   auto selPlayer = getSelectedPlayer();
-  if (selPlayer == nullptr)
+  if (!selPlayer)
   {
     QMessageBox::warning(this, tr("Export player"), tr("No player selected!"));
     return;
@@ -421,7 +423,7 @@ void PlayerTableView::onExportToExtDatabase()
 
 void PlayerTableView::onSyncAllToExtDatabase()
 {
-  PlayerMngr pm{db};
+  PlayerMngr pm{*db};
 
   Error err = pm.syncAllPlayersToExternalDatabase();
   if (err != Error::OK)
@@ -438,7 +440,7 @@ void PlayerTableView::onSyncAllToExtDatabase()
 void PlayerTableView::onShowPlayerProfile()
 {
   auto p = getSelectedPlayer();
-  if (p == nullptr) return;
+  if (!p) return;
 
   DlgPlayerProfile dlg{*p, this};
 

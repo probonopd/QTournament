@@ -171,7 +171,7 @@ namespace QTournament
 
   std::optional<Court> Player::getRefereeCourt() const
   {
-    if (getState() != ObjState::PL_Referee) return {};
+    if (is_NOT_InState(ObjState::PL_Referee)) return {};
 
     // find the court on which the player is umpire
     SqliteOverlay::DbTab matchTab{db, TabMatch, false};
@@ -194,7 +194,7 @@ namespace QTournament
 
   std::optional<Court> Player::getMatchCourt() const
   {
-    if (getState() != ObjState::PL_Playing) return {};
+    if (is_NOT_InState(ObjState::PL_Playing)) return {};
 
     // find the court on which the player is playing
     //
@@ -204,7 +204,7 @@ namespace QTournament
     CourtMngr cm{db};
     for (const Court& co : cm.getAllCourts())
     {
-      if (co.getState() != ObjState::CO_Busy) continue;
+      if (co.is_NOT_InState(ObjState::CO_Busy)) continue;
       auto ma = co.getMatch();
       if (!ma) continue;
 

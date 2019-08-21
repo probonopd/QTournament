@@ -25,21 +25,23 @@
 #include "MainFrame.h"
 #include "TeamMngr.h"
 
+using namespace QTournament;
+
 TeamTableView::TeamTableView(QWidget* parent)
-:QTableView(parent), db(nullptr), curDataModel(nullptr), teamItemDelegate(nullptr)
+:QTableView(parent)
 {
   // an empty model for clearing the list when
   // no tournament is open
-  emptyModel = new QStringListModel();
-  defaultDelegate = itemDelegate();
+  emptyModel = std::make_unique<QStringListModel>();
+  defaultDelegate.reset(itemDelegate());
 
   // prepare a proxy model to support sorting by columns
-  sortedModel = new QSortFilterProxyModel();
-  sortedModel->setSourceModel(emptyModel);
-  setModel(sortedModel);
+  sortedModel = std::make_unique<QSortFilterProxyModel>();
+  sortedModel->setSourceModel(emptyModel.get());
+  setModel(sortedModel.get());
 
   // set an initial default sorting column
-  sortByColumn(TeamTableModel::NAME_COL_ID, Qt::AscendingOrder);
+  sortByColumn(TeamTableModel::NameColId, Qt::AscendingOrder);
 
   // initiate the model(s) as empty
   setDatabase(nullptr);
@@ -49,15 +51,11 @@ TeamTableView::TeamTableView(QWidget* parent)
     
 TeamTableView::~TeamTableView()
 {
-  delete emptyModel;
-  delete sortedModel;
-  if (curDataModel != nullptr) delete curDataModel;
-  if (defaultDelegate != nullptr) delete defaultDelegate;
 }
 
 //----------------------------------------------------------------------------
 
-void TeamTableView::setDatabase(TournamentDB* _db)
+void TeamTableView::setDatabase(const TournamentDB* _db)
 {
   // According to the Qt documentation, the selection model
   // has to be explicitly deleted by the user
@@ -69,27 +67,23 @@ void TeamTableView::setDatabase(TournamentDB* _db)
   TeamTableModel* newDataModel = nullptr;
   if (_db != nullptr)
   {
-    newDataModel = new TeamTableModel(_db);
-    sortedModel->setSourceModel(newDataModel);
+    auto newDataModel = std::make_unique<TeamTableModel>(*_db);
+    sortedModel->setSourceModel(newDataModel.release());
 
     // define a delegate for drawing the category items
     teamItemDelegate = make_unique<TeamItemDelegate>(_db, this);
-    teamItemDelegate->setProxy(sortedModel);
+    teamItemDelegate->setProxy(sortedModel.get());
     setItemDelegate(teamItemDelegate.get());
   } else {
-    sortedModel->setSourceModel(emptyModel);
-    setItemDelegate(defaultDelegate);
-  }
-
-  // delete the old data model, if it was a
-  // CategoryTableModel instance
-  if (curDataModel != nullptr)
-  {
-    delete curDataModel;
+    sortedModel->setSourceModel(emptyModel.get());
+    setItemDelegate(defaultDelegate.get());
   }
 
   // store the new CategoryTableModel instance, if any
-  curDataModel = newDataModel;
+  //
+  // implicitly delete the old data model, if it was a
+  // CategoryTableModel instance
+  curDataModel.reset(newDataModel);
 
   // delete the old selection model
   //delete oldSelectionModel;
@@ -108,18 +102,18 @@ std::optional<QTournament::Team> TeamTableView::getSelectedTeam()
 {
   // make sure we have a non-empty model
   auto mod = model();
-  if (mod == nullptr) return nullptr;
-  if (mod->rowCount() == 0) return nullptr;
+  if (mod == nullptr) return {};
+  if (mod->rowCount() == 0) return {};
 
   // make sure we have one item selected
   QModelIndexList indexes = selectionModel()->selection().indexes();
   if (indexes.count() == 0)
   {
-    return nullptr;
+    return {};
   }
 
   // return the selected item
-  TeamMngr tm{db};
+  TeamMngr tm{*db};
   int selectedSourceRow = sortedModel->mapToSource(indexes.at(0)).row();
   return tm.getTeamBySeqNum2(selectedSourceRow);
 }
@@ -148,24 +142,24 @@ void TeamTableView::autosizeColumns()
   {
     widthAvail -= verticalScrollBar()->width();
   }
-  double unitWidth = widthAvail / (1.0 * TOTAL_WIDTH_UNITS);
-  bool isWidthExceeded = (widthAvail >= MAX_TOTAL_COL_WIDTH);
-  int nameColWidth = isWidthExceeded ? MAX_NAME_COL_WIDTH : unitWidth * REL_NAME_COL_WIDTH;
-  int sizeColWidth = isWidthExceeded ? MAX_SIZE_COL_WIDTH : unitWidth * REL_SIZE_COL_WIDTH;
-  int unregColWidth = isWidthExceeded ? MAX_UNREG_COL_WIDTH : unitWidth * REL_UNREG_COL_WIDTH;
+  double unitWidth = widthAvail / (1.0 * TotalWidthUnits);
+  bool isWidthExceeded = (widthAvail >= TotalColMaxWidth);
+  int nameColWidth = isWidthExceeded ? NameColMaxWidth : unitWidth * NameColRelWidth;
+  int sizeColWidth = isWidthExceeded ? SizeColMaxWidth : unitWidth * SizeColRelWidth;
+  int unregColWidth = isWidthExceeded ? UnregColMaxWidth : unitWidth * UnregColRelWidth;
 
   // set the column widths
-  setColumnWidth(TeamTableModel::NAME_COL_ID, nameColWidth);
-  setColumnWidth(TeamTableModel::MEMBER_COUNT_COL_ID, sizeColWidth);
-  setColumnWidth(TeamTableModel::UNREGISTERED_MEMBER_COUNT_COL_ID, unregColWidth);
+  setColumnWidth(TeamTableModel::NameColId, nameColWidth);
+  setColumnWidth(TeamTableModel::MemberCountColId, sizeColWidth);
+  setColumnWidth(TeamTableModel::UnregisteredMemberCountColId, unregColWidth);
 }
 
 //----------------------------------------------------------------------------
 
 void TeamTableView::onTeamDoubleClicked(const QModelIndex& index)
 {
-  std::unique_ptr<Team> selectedTeam = getSelectedTeam();
-  if (selectedTeam == nullptr) return;
+  auto selectedTeam = getSelectedTeam();
+  if (!selectedTeam) return;
 
   QString oldName = selectedTeam->getName();
 
@@ -194,7 +188,7 @@ void TeamTableView::onTeamDoubleClicked(const QModelIndex& index)
 
     // okay, we have a valid name. try to rename the team
     newName = newName.trimmed();
-    TeamMngr tm{db};
+    TeamMngr tm{*db};
     Error e = tm.renameTeam(*selectedTeam, newName);
 
     if (e == Error::InvalidName)
@@ -204,7 +198,7 @@ void TeamTableView::onTeamDoubleClicked(const QModelIndex& index)
       continue;
     }
 
-    if (e == NameExists)
+    if (e == Error::NameExists)
     {
       QMessageBox::critical(this, tr("Rename team"), tr("A team of this name already exists"));
       isOk = false;

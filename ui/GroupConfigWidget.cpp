@@ -19,7 +19,9 @@
 #include "GroupConfigWidget.h"
 
 #include <stdexcept>
-#include <QtWidgets/qmessagebox.h>
+#include <QMessageBox>
+
+using namespace QTournament;
 
 GroupConfigWidget::~GroupConfigWidget()
 {
@@ -28,7 +30,7 @@ GroupConfigWidget::~GroupConfigWidget()
 //----------------------------------------------------------------------------
     
 GroupConfigWidget::GroupConfigWidget(QWidget* parent)
-    : QWidget(parent), db(nullptr), pointersInitialized(false), rangeControlEnabled(true)
+    : QWidget(parent)
 {
   ui.setupUi(this);
   
@@ -259,7 +261,7 @@ void GroupConfigWidget::setRequiredPlayersCount(int cnt)
 
 //----------------------------------------------------------------------------
 
-void GroupConfigWidget::setDatabase(TournamentDB* _db)
+void GroupConfigWidget::setDatabase(const TournamentDB* _db)
 {
   db = _db;
 

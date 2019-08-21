@@ -32,8 +32,10 @@
 #include "ui/DlgImportCSV_Step1.h"
 #include "ui/DlgImportCSV_Step2.h"
 
+using namespace QTournament;
+
 PlayerTabWidget::PlayerTabWidget()
-:QWidget(), db(nullptr)
+:QWidget()
 {
   ui.setupUi(this);
 
@@ -69,7 +71,7 @@ PlayerTabWidget::~PlayerTabWidget()
 
 //----------------------------------------------------------------------------
 
-void PlayerTabWidget::setDatabase(TournamentDB* _db)
+void PlayerTabWidget::setDatabase(const QTournament::TournamentDB* _db)
 {
   db = _db;
 
@@ -154,7 +156,7 @@ void PlayerTabWidget::onPlayerCountChanged()
     return;
   }
 
-  PlayerMngr pm{db};
+  PlayerMngr pm{*db};
   QString txt = QString::number(pm.getTotalPlayerCount());
   txt += tr(" players in tournament");
   ui.laPlayerCount->setText(txt);
@@ -170,7 +172,7 @@ void PlayerTabWidget::onRegisterAllTriggered()
   if (result != QMessageBox::Yes) return;
 
   // loop over all players and set them to "registered"
-  PlayerMngr pm{db};
+  PlayerMngr pm{*db};
   for (const Player& pl : pm.getAllPlayers())
   {
     pm.setWaitForRegistration(pl, false);
@@ -187,7 +189,7 @@ void PlayerTabWidget::onUnregisterAllTriggered()
   if (result != QMessageBox::Yes) return;
 
   // loop over all players and set them to "Wait for registration"
-  PlayerMngr pm{db};
+  PlayerMngr pm{*db};
   bool allModified = true;
   Error err;
   for (const Player& pl : pm.getAllPlayers())
@@ -212,7 +214,7 @@ void PlayerTabWidget::onUnregisterAllTriggered()
 
 void PlayerTabWidget::onImportFromExtDatabase()
 {
-  cmdImportSinglePlayerFromExternalDatabase cmd{db, this};
+  cmdImportSinglePlayerFromExternalDatabase cmd{*db, this};
 
   cmd.exec();
 }
@@ -235,7 +237,7 @@ void PlayerTabWidget::onSyncAllToExtDatabase()
 
 void PlayerTabWidget::onExternalDatabaseChanged()
 {
-  PlayerMngr pm{db};
+  PlayerMngr pm{*db};
   ui.btnExtDatabase->setEnabled(pm.hasExternalPlayerDatabaseAvailable());
   onPlayerSelectionChanged(QItemSelection(), QItemSelection());
 }
@@ -246,21 +248,21 @@ void PlayerTabWidget::onPlayerSelectionChanged(const QItemSelection&, const QIte
 {
   auto selPlayer = ui.playerView->getSelectedPlayer();
 
-  actExportToExtDatabase->setEnabled(selPlayer != nullptr);
+  actExportToExtDatabase->setEnabled(selPlayer.has_value());
 }
 
 //----------------------------------------------------------------------------
 
 void PlayerTabWidget::onImportCsv()
 {
-  DlgImportCSV_Step1 dlg1{this, db};
+  DlgImportCSV_Step1 dlg1{this, *db};
 
   int rc = dlg1.exec();
   if (rc != QDialog::Accepted) return;
 
-  auto sourceImportRecords = convertCSVfromPlainText(db, dlg1.getSplitData());
+  auto sourceImportRecords = convertCSVfromPlainText(*db, dlg1.getSplitData());
 
-  DlgImportCSV_Step2 dlg2{this, db, sourceImportRecords};
+  DlgImportCSV_Step2 dlg2{this, *db, sourceImportRecords};
   rc = dlg2.exec();
   if (rc != QDialog::Accepted) return;
 
@@ -271,7 +273,7 @@ void PlayerTabWidget::onImportCsv()
   // make sure the data set is error free.
   // this SHOULD have been checked by the DlgImportCSV_Step2 before,
   // but better safe than sorry
-  std::vector<CSVError> errList = analyseCSV(db, records);
+  std::vector<CSVError> errList = analyseCSV(*db, records);
   for (const CSVError& err : errList)
   {
     if (err.isFatal)
@@ -283,9 +285,9 @@ void PlayerTabWidget::onImportCsv()
   }
 
   // the actual import
-  TeamMngr tm{db};
-  PlayerMngr pm{db};
-  CatMngr cm{db};
+  TeamMngr tm{*db};
+  PlayerMngr pm{*db};
+  CatMngr cm{*db};
   Error err = Error::OK;
   QString msg;
   for (const CSVImportRecord& rec : records)

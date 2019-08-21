@@ -34,7 +34,7 @@ class MatchGroupTableView : public GuiHelpers::AutoSizingTableView_WithDatabase<
   Q_OBJECT
   
 public:
-  enum class FilterType : std::int8_t { IDLE = 1, STAGED = 2, RefereeMode::None = 0 };
+  enum class FilterType : std::int8_t { IDLE = 1, STAGED = 2, None = 0 };
 
   MatchGroupTableView (QWidget* parent);
   virtual ~MatchGroupTableView () {}
@@ -43,8 +43,8 @@ public:
   std::optional<QTournament::MatchGroup> getSelectedMatchGroup();
   
 protected:
-  static constexpr int REL_NUMERIC_COL_WIDTH = 2;
-  static constexpr int REL_CATEGORY_COL_WIDTH = 3;
+  static constexpr int NumericColRelWidth = 2;
+  static constexpr int CategoryColRelWidth = 3;
 
   void hook_onDatabaseOpened() override;
 

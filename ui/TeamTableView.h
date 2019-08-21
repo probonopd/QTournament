@@ -34,19 +34,19 @@ class TeamTableView : public QTableView
   
 public:
   TeamTableView (QWidget* parent);
-  virtual ~TeamTableView();
-  void setDatabase(QTournament::TournamentDB* _db);
+  virtual ~TeamTableView() override;
+  void setDatabase(const QTournament::TournamentDB* _db);
   std::optional<QTournament::Team> getSelectedTeam();
   
 protected:
-  static constexpr int REL_NAME_COL_WIDTH = 10;
-  static constexpr int REL_SIZE_COL_WIDTH = 2;
-  static constexpr int REL_UNREG_COL_WIDTH = 2;
-  static constexpr int MAX_NAME_COL_WIDTH = 350;
-  static constexpr int MAX_SIZE_COL_WIDTH = (MAX_NAME_COL_WIDTH / (REL_NAME_COL_WIDTH * 1.0)) * REL_SIZE_COL_WIDTH;
-  static constexpr int MAX_UNREG_COL_WIDTH = (MAX_NAME_COL_WIDTH / (REL_NAME_COL_WIDTH * 1.0)) * REL_UNREG_COL_WIDTH;
-  static constexpr int MAX_TOTAL_COL_WIDTH = MAX_NAME_COL_WIDTH + MAX_SIZE_COL_WIDTH + MAX_UNREG_COL_WIDTH;
-  static constexpr int TOTAL_WIDTH_UNITS = REL_NAME_COL_WIDTH + REL_SIZE_COL_WIDTH + REL_UNREG_COL_WIDTH;
+  static constexpr int NameColRelWidth = 10;
+  static constexpr int SizeColRelWidth = 2;
+  static constexpr int UnregColRelWidth = 2;
+  static constexpr int NameColMaxWidth = 350;
+  static constexpr int SizeColMaxWidth = (NameColMaxWidth / (NameColRelWidth * 1.0)) * SizeColRelWidth;
+  static constexpr int UnregColMaxWidth = (NameColMaxWidth / (NameColRelWidth * 1.0)) * UnregColRelWidth;
+  static constexpr int TotalColMaxWidth = NameColMaxWidth + SizeColMaxWidth + UnregColMaxWidth;
+  static constexpr int TotalWidthUnits = NameColRelWidth + SizeColRelWidth + UnregColRelWidth;
   virtual void resizeEvent(QResizeEvent *event) override;
   void autosizeColumns();
 
@@ -55,12 +55,12 @@ public slots:
   QModelIndex mapToSource(const QModelIndex& proxyIndex);
 
 private:
-  QTournament::TournamentDB* db;
-  QStringListModel* emptyModel;
-  QTournament::TeamTableModel* curDataModel;
-  QSortFilterProxyModel* sortedModel;
+  const QTournament::TournamentDB* db{nullptr};
+  std::unique_ptr<QStringListModel> emptyModel;
+  std::unique_ptr<QTournament::TeamTableModel> curDataModel;
+  std::unique_ptr<QSortFilterProxyModel> sortedModel;
   std::unique_ptr<TeamItemDelegate> teamItemDelegate;
-  QAbstractItemDelegate* defaultDelegate;
+  std::unique_ptr<QAbstractItemDelegate> defaultDelegate;
 
 };
 

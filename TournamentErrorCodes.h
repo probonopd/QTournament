@@ -159,6 +159,8 @@ namespace QTournament
 
       constexpr Error err() const noexcept { return e; }
 
+      constexpr bool err(Error compareError) const noexcept { return (e == compareError); }
+
     private:
       Error e;
     };

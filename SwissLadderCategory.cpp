@@ -95,7 +95,7 @@ namespace QTournament
       {
         // ignore unfinished matches. However, there
         // shouldn't be any when this function is called
-        if (ma.getState() != ObjState::MA_Finished)
+        if (ma.is_NOT_InState(ObjState::MA_Finished))
         {
           continue;
         }
@@ -203,7 +203,7 @@ namespace QTournament
     // deletion 3b: match groups for these future matches
     for (const MatchGroup& mg : mm.getMatchGroupsForCat(*this))
     {
-      if (mg.getState() != ObjState::MG_Finished)
+      if (mg.is_NOT_InState(ObjState::MG_Finished))
       {
         mm.deleteMatchGroupAndMatch(mg);
       }
@@ -228,7 +228,7 @@ namespace QTournament
 
   Error SwissLadderCategory::canFreezeConfig()
   {
-    if (getState() != ObjState::CAT_Config)
+    if (is_NOT_InState(ObjState::CAT_Config))
     {
       return Error::ConfigAlreadyFrozen;
     }
@@ -267,7 +267,7 @@ namespace QTournament
 
   Error SwissLadderCategory::prepareFirstRound()
   {
-    if (getState() != ObjState::CAT_Idle) return Error::WrongState;
+    if (is_NOT_InState(ObjState::CAT_Idle)) return Error::WrongState;
 
     MatchMngr mm{db};
 
@@ -415,7 +415,7 @@ namespace QTournament
   ModMatchResult SwissLadderCategory::canModifyMatchResult(const Match& ma) const
   {
     // the match has to be in FINISHED state
-    if (ma.getState() != ObjState::MA_Finished) return ModMatchResult::NotPossible;
+    if (ma.is_NOT_InState(ObjState::MA_Finished)) return ModMatchResult::NotPossible;
 
     // if this match does not belong to us, we're not responsible
     if (ma.getCategory().getMatchSystem() != MatchSystem::SwissLadder) return ModMatchResult::NotPossible;

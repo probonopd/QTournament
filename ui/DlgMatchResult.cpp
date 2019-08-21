@@ -240,7 +240,7 @@ bool DlgMatchResult::hasValidResult() const
 
 void DlgMatchResult::fillControlsFromExistingMatchResult()
 {
-  if (ma.getState() != ObjState::MA_Finished) return;
+  if (ma.is_NOT_InState(ObjState::MA_Finished)) return;
   auto result = ma.getScore();
   if (!result) return;
 

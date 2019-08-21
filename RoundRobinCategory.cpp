@@ -50,7 +50,7 @@ namespace QTournament
 
   Error RoundRobinCategory::canFreezeConfig()
   {
-    if (getState() != ObjState::CAT_Config)
+    if (is_NOT_InState(ObjState::CAT_Config))
     {
       return Error::ConfigAlreadyFrozen;
     }
@@ -96,7 +96,7 @@ namespace QTournament
 
   Error RoundRobinCategory::prepareFirstRound()
   {
-    if (getState() != ObjState::CAT_Idle) return Error::WrongState;
+    if (is_NOT_InState(ObjState::CAT_Idle)) return Error::WrongState;
 
     MatchMngr mm{db};
 
@@ -352,7 +352,7 @@ namespace QTournament
 
   PlayerPairList RoundRobinCategory::getPlayerPairsForIntermediateSeeding() const
   {
-    if (getState() != ObjState::CAT_WaitForIntermediateSeeding)
+    if (is_NOT_InState(ObjState::CAT_WaitForIntermediateSeeding))
     {
       return PlayerPairList();
     }
@@ -364,7 +364,7 @@ namespace QTournament
 
   Error RoundRobinCategory::resolveIntermediateSeeding(const PlayerPairList& seed) const
   {
-    if (getState() != ObjState::CAT_WaitForIntermediateSeeding)
+    if (is_NOT_InState(ObjState::CAT_WaitForIntermediateSeeding))
     {
       return Error::CategoryNeedsNoSeeding;
     }

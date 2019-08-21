@@ -233,7 +233,7 @@ namespace QTournament
 
   Error CatMngr::setMatchSystem(Category& cat, MatchSystem newMatchSystem)
   {
-    if (cat.getState() != ObjState::CAT_Config)
+    if (cat.is_NOT_InState(ObjState::CAT_Config))
     {
       return Error::CategoryNotConfiguraleAnymore;
     }
@@ -257,7 +257,7 @@ namespace QTournament
   Error CatMngr::setMatchType(Category& cat, MatchType newMatchType)
   {
     // we can only change the match type while being in config mode
-    if (cat.getState() != ObjState::CAT_Config)
+    if (cat.is_NOT_InState(ObjState::CAT_Config))
     {
       return Error::CategoryNotConfiguraleAnymore;
     }
@@ -319,7 +319,7 @@ namespace QTournament
   Error CatMngr::setSex(Category& cat, Sex newSex)
   {
     // we can only change the sex while being in config mode
-    if (cat.getState() != ObjState::CAT_Config)
+    if (cat.is_NOT_InState(ObjState::CAT_Config))
     {
       return Error::CategoryNotConfiguraleAnymore;
     }
@@ -690,7 +690,7 @@ namespace QTournament
     }
     if (p == CatParameter::GroupConfig)
     {
-      if (cat.getState() != ObjState::CAT_Config) return false;
+      if (cat.is_NOT_InState(ObjState::CAT_Config)) return false;
 
       cat.row.update(CAT_GroupConfig, v.toString().toUtf8().constData());
       return true;
@@ -714,7 +714,7 @@ namespace QTournament
 
   bool CatMngr::setCatParam_AllowDraw(Category& c, const QVariant& v)
   {
-    if (c.getState() != ObjState::CAT_Config)
+    if (c.is_NOT_InState(ObjState::CAT_Config))
     {
       return false;
     }
@@ -762,7 +762,7 @@ namespace QTournament
 
   bool CatMngr::setCatParam_Score(Category& c, int newScore, bool isDraw)
   {
-    if (c.getState() != ObjState::CAT_Config)
+    if (c.is_NOT_InState(ObjState::CAT_Config))
     {
       return false;
     }
@@ -921,7 +921,7 @@ namespace QTournament
     // WAIT_FOR_REGISTRATION
     for (const Player& pl : c.getAllPlayersInCategory())
     {
-      if (pl.getState() == ObjState::PL_WaitForRegistration)
+      if (pl.isInState(ObjState::PL_WaitForRegistration))
       {
         return Error::NotAllPlayersRegistered;
       }
@@ -1062,7 +1062,7 @@ namespace QTournament
   Error CatMngr::startCategory(const Category& cat, const std::vector<PlayerPairList>& grpCfg, const PlayerPairList& seed)
   {
     // we can only transition to "IDLE" if we are "FROZEN"
-    if (cat.getState() != ObjState::CAT_Frozen)
+    if (cat.is_NOT_InState(ObjState::CAT_Frozen))
     {
       return Error::CategoryNotYetFrozen;
     }
@@ -1185,7 +1185,7 @@ namespace QTournament
   bool CatMngr::switchCatToWaitForSeeding(const Category& cat)
   {
     // only switch to SEEDING if no match is currently running
-    if (cat.getState() != ObjState::CAT_Idle) return false;
+    if (cat.is_NOT_InState(ObjState::CAT_Idle)) return false;
 
     cat.setState(ObjState::CAT_WaitForIntermediateSeeding);
     CentralSignalEmitter::getInstance()->categoryStatusChanged(cat, ObjState::CAT_Idle, ObjState::CAT_WaitForIntermediateSeeding);
@@ -1208,7 +1208,7 @@ namespace QTournament
     // as long as the category is still in configuration, we can't rely
     // on the existence of valid player pairs in the database and thus
     // we'll return an empty list as an error indicator
-    if (cat.getState() == ObjState::CAT_Config) return PlayerPairList();
+    if (cat.isInState(ObjState::CAT_Config)) return PlayerPairList();
 
     // get the player pairs for the category
     DbTab pairsTab{db, TabPairs, false};
@@ -1224,7 +1224,7 @@ namespace QTournament
   Error CatMngr::canDeleteCategory(const Category& cat) const
   {
     // check 1: the category must be in state CONFIG
-    if (cat.getState() != ObjState::CAT_Config)
+    if (cat.is_NOT_InState(ObjState::CAT_Config))
     {
       return Error::CategoryNotConfiguraleAnymore;
     }
@@ -1246,7 +1246,7 @@ namespace QTournament
 
   Error CatMngr::continueWithIntermediateSeeding(const Category& c, const PlayerPairList& seeding)
   {
-    if (c.getState() != ObjState::CAT_WaitForIntermediateSeeding)
+    if (c.is_NOT_InState(ObjState::CAT_WaitForIntermediateSeeding))
     {
       return Error::CategoryNeedsNoSeeding;
     }

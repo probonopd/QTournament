@@ -70,6 +70,7 @@ namespace QTournament
   //----------------------------------------------------------------------------
 
   TournamentDB::TournamentDB(const string& fName)
+    :SqliteOverlay::SqliteDatabase(fName, SqliteOverlay::OpenMode::OpenExisting_RW)
   {
     if (!isCompatibleDatabaseVersion())
     {

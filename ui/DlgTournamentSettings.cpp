@@ -21,6 +21,10 @@
 #include "DlgTournamentSettings.h"
 #include "ui_DlgTournamentSettings.h"
 
+#include "HelperFunc.h"
+
+using namespace QTournament;
+
 DlgTournamentSettings::DlgTournamentSettings(QWidget *parent) :
   QDialog(parent),
   ui(new Ui::DlgTournamentSettings), db(nullptr)
@@ -34,20 +38,20 @@ DlgTournamentSettings::DlgTournamentSettings(QWidget *parent) :
 
 //----------------------------------------------------------------------------
 
-DlgTournamentSettings::DlgTournamentSettings(TournamentDB* _db, QWidget* parent) :
+DlgTournamentSettings::DlgTournamentSettings(const QTournament::TournamentDB& _db, QWidget* parent) :
   QDialog(parent),
-  ui(new Ui::DlgTournamentSettings), db(_db)
+  ui(new Ui::DlgTournamentSettings), db(&_db)
 {
   ui->setupUi(this);
 
   fillRefereeComboBox(false);
 
   // initialize the controls with the existing values
-  auto cfg = SqliteOverlay::KeyValueTab::getTab(db, TabCfg, false);
-  string tmp = (*cfg)[CfgKey_TnmtOrga];
-  ui->leOrgaClub->setText(QString::fromUtf8(tmp.c_str()));
-  tmp = (*cfg)[CfgKey_TnmtName];
-  ui->leTournamentName->setText(QString::fromUtf8(tmp.c_str()));
+  SqliteOverlay::KeyValueTab cfg{*db, TabCfg};
+  std::string tmp = cfg[CfgKey_TnmtOrga];
+  ui->leOrgaClub->setText(stdString2QString(tmp));
+  tmp = cfg[CfgKey_TnmtName];
+  ui->leTournamentName->setText(stdString2QString(tmp));
   int tnmtDefaultRefereeModeId = cfg.getInt(CfgKey_DefaultRefereemode);
   int idx = ui->cbUmpire->findData(tnmtDefaultRefereeModeId);
   ui->cbUmpire->setCurrentIndex(idx);
@@ -65,29 +69,31 @@ DlgTournamentSettings::~DlgTournamentSettings()
   delete ui;
 }
 
-std::unique_ptr<QTournament::TournamentSettings> DlgTournamentSettings::getTournamentSettings() const
+//----------------------------------------------------------------------------
+
+std::optional<QTournament::TournamentSettings> DlgTournamentSettings::getTournamentSettings() const
 {
   QString tName = ui->leTournamentName->text().trimmed();
-  if (tName.isEmpty()) return nullptr;
+  if (tName.isEmpty()) return {};
 
   QString orgName = ui->leOrgaClub->text().trimmed();
-  if (orgName.isEmpty()) return nullptr;
+  if (orgName.isEmpty()) return {};
 
   int refereeModeId = ui->cbUmpire->currentData().toInt();
-  if (refereeModeId < 0) return nullptr;
+  if (refereeModeId < 0) return {};
 
   // the next attribute is always "1" for the time being;
   // maybe I'll add the possibility of having a "team-free"
   // tournament sometime later
   bool useTeams = true;
 
-  QTournament::TournamentSettings* result = new QTournament::TournamentSettings();
-  result->organizingClub = orgName;
-  result->tournamentName = tName;
-  result->useTeams = useTeams;
-  result->refereeMode = static_cast<QTournament::RefereeMode>(refereeModeId);
+  QTournament::TournamentSettings result;
+  result.organizingClub = orgName;
+  result.tournamentName = tName;
+  result.useTeams = useTeams;
+  result.refereeMode = static_cast<QTournament::RefereeMode>(refereeModeId);
 
-  return std::unique_ptr<QTournament::TournamentSettings>(result);
+  return result;
 }
 
 //----------------------------------------------------------------------------

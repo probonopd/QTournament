@@ -5,8 +5,8 @@
  * Created on March 19, 2014, 7:38 PM
  */
 
-#ifndef _PLAYERTABWIDGET_H
-#define	_PLAYERTABWIDGET_H
+#ifndef PLAYERTABWIDGET_H
+#define	PLAYERTABWIDGET_H
 /*
  *    This is QTournament, a badminton tournament management program.
  *    Copyright (C) 2014 - 2017  Volker Knollmann
@@ -39,10 +39,10 @@ class PlayerTabWidget : public QWidget
 public:
   PlayerTabWidget();
   virtual ~PlayerTabWidget ();
-  void setDatabase(QTournament::TournamentDB* _db);
+  void setDatabase(const QTournament::TournamentDB* _db);
   
 private:
-  QTournament::TournamentDB* db;
+  const QTournament::TournamentDB* db{nullptr};
   Ui::PlayerTabWidget ui;
 
   std::unique_ptr<QMenu> registrationMenu;

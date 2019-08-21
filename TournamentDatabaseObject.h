@@ -38,6 +38,8 @@ namespace QTournament
       : SqliteOverlay::GenericDatabaseObject<TournamentDB>(_db, _row) {}
     
     ObjState getState() const;
+    bool isInState(ObjState cmpState) const { return (getState() == cmpState); }
+    bool is_NOT_InState(ObjState cmpState) const { return (getState() != cmpState); }
     void setState(ObjState newState) const;
     int getSeqNum() const;
 

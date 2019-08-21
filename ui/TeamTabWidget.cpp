@@ -21,8 +21,11 @@
 #include "MainFrame.h"
 #include "TeamMngr.h"
 
+using namespace QTournament;
+
 TeamTabWidget::TeamTabWidget()
-:QWidget(), db(nullptr)
+:QWidget()
+
 {
   ui.setupUi(this);
 }
@@ -35,7 +38,7 @@ TeamTabWidget::~TeamTabWidget()
 
 //----------------------------------------------------------------------------
 
-void TeamTabWidget::setDatabase(TournamentDB* _db)
+void TeamTabWidget::setDatabase(const TournamentDB* _db)
 {
   db = _db;
 
@@ -52,12 +55,12 @@ void TeamTabWidget::onCreateTeamClicked()
   
   // try to create new teams using a
   // canonical name until it finally succeeds
-  Error e = NameExists;
+  Error e = Error::NameExists;
   while (e != Error::OK)
   {
     QString teamName = tr("New Team ") + QString::number(cnt);
     
-    TeamMngr tm{db};
+    TeamMngr tm{*db};
     e = tm.createNewTeam(teamName);
     cnt++;
   }

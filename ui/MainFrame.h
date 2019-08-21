@@ -16,8 +16,8 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _MAINFRAME_H
-#define	_MAINFRAME_H
+#ifndef MAINFRAME_H
+#define	MAINFRAME_H
 
 #include <memory>
 
@@ -34,26 +34,42 @@ class MainFrame : public QMainWindow
   Q_OBJECT
 public:
   MainFrame ();
-  virtual ~MainFrame ();
+  virtual ~MainFrame () override;
   
 protected:
   virtual void closeEvent(QCloseEvent *ev) override;
 
 private:
   Ui::MainFrame ui;
-  
+  std::unique_ptr<QTournament::TournamentDB> currentDb{nullptr};
+  QString testFileName;
+  QString currentDatabaseFileName;
+
+  // the test menu
+  QShortcut* scToggleTestMenuVisibility;
+  bool isTestMenuVisible;
+
+  // timers for polling the database's dirty flag
+  // and triggering the autosave function
+  static constexpr int DirtyFlagPollIntervall_ms = 1000;
+  static constexpr int AutosaveIntervall_ms = 120 * 1000;
+  std::unique_ptr<QTimer> dirtyFlagPollTimer;
+  std::unique_ptr<QTimer> autosaveTimer;
+
+  // a label for the status bar that shows the last autosave
+  QLabel* lastAutosaveTimeStatusLabel;
+
+  // a timer and label for server syncs
+  static constexpr int ServerSyncStatusInterval_ms = 1000;
+  std::unique_ptr<QTimer> serverSyncTimer;
+  QLabel* syncStatLabel;
+  QPushButton* btnPingTest;
+
   void enableControls(bool doEnable = true);
   void setupTestScenario(int scenarioID);
   
-  std::unique_ptr<QTournament::TournamentDB> currentDb;
-  
-  QString testFileName;
-  QString currentDatabaseFileName;
-  
   bool closeCurrentTournament();
   
-  QShortcut* scToggleTestMenuVisibility;
-  bool isTestMenuVisible;
 
   void distributeCurrentDatabasePointerToWidgets(bool forceNullptr = false);
   bool saveCurrentDatabaseToFile(const QString& dstFileName);
@@ -65,23 +81,6 @@ private:
 
   void updateOnlineMenu();
 
-  // timers for polling the database's dirty flag
-  // and triggering the autosave function
-  static constexpr int DIRTY_FLAG_POLL_INTERVALL__MS = 1000;
-  static constexpr int AUTOSAVE_INTERVALL__MS = 120000;
-  std::unique_ptr<QTimer> dirtyFlagPollTimer;
-  std::unique_ptr<QTimer> autosaveTimer;
-  bool lastDirtyState;
-  int lastAutosaveDirtyCounterValue;
-
-  // a label for the status bar that shows the last autosave
-  QLabel* lastAutosaveTimeStatusLabel;
-
-  // a timer and label for server syncs
-  static constexpr int ServerSyncStatusInterval_ms = 1000;
-  std::unique_ptr<QTimer> serverSyncTimer;
-  QLabel* syncStatLabel;
-  QPushButton* btnPingTest;
 
 public slots:
   void newTournament();

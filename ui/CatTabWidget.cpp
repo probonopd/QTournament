@@ -152,7 +152,7 @@ void CatTabWidget::updateControls()
   //
   Sex sex = selectedCat.getSex();
   MatchType mt = selectedCat.getMatchType();
-  bool isEditEnabled = (selectedCat.getState() == ObjState::CAT_Config);
+  bool isEditEnabled = (selectedCat.isInState(ObjState::CAT_Config));
 
   ui.gbGeneric->setEnabled(isEditEnabled);
   

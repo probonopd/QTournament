@@ -124,7 +124,7 @@ namespace QTournament
   {
     // For now, you can only add players to a category
     // when it's still in configuration mode
-    return (getState() == ObjState::CAT_Config);
+    return isInState(ObjState::CAT_Config);
 
     // TODO: make more sophisticated tests depending e. g. on
     // the match system. For instance, if we have random
@@ -195,7 +195,7 @@ namespace QTournament
   {
     // For now, you can only delete players from a category
     // when it's still in configuration mode
-    if (getState() != ObjState::CAT_Config) return false;
+    if (is_NOT_InState(ObjState::CAT_Config)) return false;
 
     // check whether the player is paired with another player
     if (isPaired(p))
@@ -363,7 +363,7 @@ namespace QTournament
     // since we want to count only player pairs in the database,
     // we must be beyond CONFIG to be sure that valid database
     // entries exist
-    if (getState() == ObjState::CAT_Config) return -1;
+    if (isInState(ObjState::CAT_Config)) return -1;
 
     DbTab pairTab{db, TabPairs, false};
     SqliteOverlay::WhereClause wc;
@@ -414,7 +414,7 @@ namespace QTournament
   Error Category::canPairPlayers(const Player& p1, const Player& p2) const
   {
     // we can only create pairs while being in config mode
-    if (getState() != ObjState::CAT_Config)
+    if (is_NOT_InState(ObjState::CAT_Config))
     {
       return Error::CategoryNotConfiguraleAnymore;
     }
@@ -474,7 +474,7 @@ namespace QTournament
   Error Category::canSplitPlayers(const Player& p1, const Player& p2) const
   {
     // we can only split pairs while being in config mode
-    if (getState() != ObjState::CAT_Config)
+    if (is_NOT_InState(ObjState::CAT_Config))
     {
       return Error::CategoryNotConfiguraleAnymore;
     }
@@ -595,7 +595,7 @@ namespace QTournament
 
   Error Category::canApplyGroupAssignment(const std::vector<PlayerPairList>& grpCfg)
   {
-    if (getState() != ObjState::CAT_Frozen) return Error::CategoryNotYetFrozen;
+    if (is_NOT_InState(ObjState::CAT_Frozen)) return Error::CategoryNotYetFrozen;
 
     std::unique_ptr<Category> specializedCat = convertToSpecializedObject();
     if (!(specializedCat->needsGroupInitialization()))
@@ -649,7 +649,7 @@ namespace QTournament
 
   Error Category::canApplyInitialRanking(PlayerPairList seed)
   {
-    if (getState() != ObjState::CAT_Frozen) return Error::CategoryNotYetFrozen;
+    if (is_NOT_InState(ObjState::CAT_Frozen)) return Error::CategoryNotYetFrozen;
 
     std::unique_ptr<Category> specializedCat = convertToSpecializedObject();
     if (!(specializedCat->needsInitialRanking()))

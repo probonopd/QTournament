@@ -106,7 +106,7 @@ int CatRoundStatus::getFinishedRoundsCount() const
     bool allGroupsFinished = true;
     for (MatchGroup mg : matchGroupsInThisRound)
     {
-      if (mg.getState() != ObjState::MG_Finished)
+      if (mg.is_NOT_InState(ObjState::MG_Finished))
       {
         allGroupsFinished = false;
         break;
@@ -151,8 +151,8 @@ std::tuple<int, int, int> CatRoundStatus::getMatchCountForCurrentRound() const
     {
       for (Match ma : mg.getMatches())
       {
-        if (ma.getState() != ObjState::MA_Finished) ++unfinishedMatchCount;
-        if (ma.getState() == ObjState::MA_Running) ++runningMatchCount;
+        if (ma.is_NOT_InState(ObjState::MA_Finished)) ++unfinishedMatchCount;
+        if (ma.isInState(ObjState::MA_Running)) ++runningMatchCount;
         ++totalMatchCount;
       }
     }

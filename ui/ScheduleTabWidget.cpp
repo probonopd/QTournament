@@ -31,16 +31,17 @@
 #include "ui/commonCommands/cmdCallMatch.h"
 #include "ui/DlgRoundFinished.h"
 
+using namespace QTournament;
+
 ScheduleTabWidget::ScheduleTabWidget(QWidget *parent) :
-    QDialog(parent), db(nullptr),
-    ui(new Ui::ScheduleTabWidget)
+    QDialog(parent), ui(new Ui::ScheduleTabWidget)
 {
     ui->setupUi(this);
 
     // initialize sorting and filtering in the two match group views
     ui->mgIdleView->setFilter(MatchGroupTableView::FilterType::IDLE);
     ui->mgStagedView->setFilter(MatchGroupTableView::FilterType::STAGED);
-    ui->mgStagedView->sortByColumn(MatchGroupTableModel::STAGE_SEQ_COL_ID, Qt::AscendingOrder);
+    ui->mgStagedView->sortByColumn(MatchGroupTableModel::StageSeqColId, Qt::AscendingOrder);
 
     // react on selection changes in the IDLE match groups view
     connect(ui->mgIdleView->selectionModel(),
@@ -75,7 +76,7 @@ ScheduleTabWidget::~ScheduleTabWidget()
 
 //----------------------------------------------------------------------------
 
-void ScheduleTabWidget::setDatabase(TournamentDB* _db)
+void ScheduleTabWidget::setDatabase(const TournamentDB* _db)
 {
   db = _db;
 
@@ -108,9 +109,9 @@ void ScheduleTabWidget::onBtnStageClicked()
 {
   // lets check if a valid match group is selected
   auto mg = ui->mgIdleView->getSelectedMatchGroup();
-  if (mg == nullptr) return;
+  if (!mg) return;
 
-  MatchMngr mm{db};
+  MatchMngr mm{*db};
   if (mm.canStageMatchGroup(*mg) != Error::OK) return;
 
   mm.stageMatchGroup(*mg);
@@ -122,9 +123,9 @@ void ScheduleTabWidget::onBtnUnstageClicked()
 {
   // lets check if a valid match group is selected
   auto mg = ui->mgStagedView->getSelectedMatchGroup();
-  if (mg == nullptr) return;
+  if (!mg) return;
 
-  MatchMngr mm{db};
+  MatchMngr mm{*db};
   if (mm.canUnstageMatchGroup(*mg) != Error::OK) return;
 
   mm.unstageMatchGroup(*mg);
@@ -135,7 +136,7 @@ void ScheduleTabWidget::onBtnUnstageClicked()
 void ScheduleTabWidget::onBtnScheduleClicked()
 {
   // is at least one match group staged?
-  MatchMngr mm{db};
+  MatchMngr mm{*db};
   if (mm.getMaxStageSeqNum() == 0) return;
 
   mm.scheduleAllStagedMatchGroups();
@@ -160,11 +161,11 @@ void ScheduleTabWidget::onStagedSelectionChanged(const QItemSelection& selected,
 
 void ScheduleTabWidget::updateButtons()
 {
-  MatchMngr mm{db};
+  MatchMngr mm{*db};
 
   // update the "stage"-button
   auto mg = ui->mgIdleView->getSelectedMatchGroup();
-  if ((mg != nullptr) && (mm.canStageMatchGroup(*mg) == Error::OK))
+  if ((mg.has_value()) && (mm.canStageMatchGroup(*mg) == Error::OK))
   {
     ui->btnStage->setEnabled(true);
   } else {
@@ -173,7 +174,7 @@ void ScheduleTabWidget::updateButtons()
 
   // update the "unstage"-button
   mg = ui->mgStagedView->getSelectedMatchGroup();
-  if ((mg != nullptr) && (mm.canUnstageMatchGroup(*mg) == Error::OK))
+  if ((mg.has_value()) && (mm.canUnstageMatchGroup(*mg) == Error::OK))
   {
     ui->btnUnstage->setEnabled(true);
   } else {
@@ -189,10 +190,10 @@ void ScheduleTabWidget::updateButtons()
 void ScheduleTabWidget::onCourtDoubleClicked(const QModelIndex &index)
 {
   auto court = ui->tvCourts->getSelectedCourt();
-  if (court == nullptr) return;
+  if (!court) return;
 
   auto ma = court->getMatch();
-  if (ma == nullptr)
+  if (!ma)
   {
     return;  // no match assigned to this court
   }
@@ -204,7 +205,7 @@ void ScheduleTabWidget::onCourtDoubleClicked(const QModelIndex &index)
 
 void ScheduleTabWidget::onRoundCompleted(int catId, int round)
 {
-  CatMngr cm{db};
+  CatMngr cm{*db};
   Category cat = cm.getCategoryById(catId);
 
   //
@@ -221,7 +222,7 @@ void ScheduleTabWidget::onRoundCompleted(int catId, int round)
 
     int nRoundsTheory = ((nPairs % 2) == 0) ? nPairs - 1 : nPairs;
     int nRoundsActual = cat.convertToSpecializedObject()->calcTotalRoundsCount();
-    if ((nPairs > 4) && (nRoundsActual < nRoundsTheory) && (cat.getState() == ObjState::CAT_Finalized))
+    if ((nPairs > 4) && (nRoundsActual < nRoundsTheory) && (cat.isInState(ObjState::CAT_Finalized)))
     {
       QString msg = tr("<br><center><b><font color=\"red\">SWISS LADDER DEADLOCK</font></b></center><br><br>");
       msg += tr("Unfortuantely, the sequence of matches in past rounds in the category %3 has lead ");
@@ -266,7 +267,7 @@ void ScheduleTabWidget::onBtnHideStagingAreaClicked()
 void ScheduleTabWidget::askAndStoreMatchResult(const Match &ma)
 {
   // only accept results for running matches
-  if (ma.getState() != ObjState::MA_Running)
+  if (ma.is_NOT_InState(ObjState::MA_Running))
   {
     return;
   }
@@ -280,7 +281,7 @@ void ScheduleTabWidget::askAndStoreMatchResult(const Match &ma)
     return;
   }
   auto matchResult = dlg.getMatchScore();
-  assert(matchResult != nullptr);
+  assert(matchResult);
 
   // create a (rather ugly) confirmation message box
   QString msg = tr("Please confirm:\n\n");
@@ -317,7 +318,7 @@ void ScheduleTabWidget::askAndStoreMatchResult(const Match &ma)
   if (confirm != QMessageBox::Yes) return;
 
   // actually store the data and update the internal object states
-  MatchMngr mm{db};
+  MatchMngr mm{*db};
   Error err = mm.setMatchScoreAndFinalizeMatch(ma, *matchResult);
   if (err != Error::OK)
   {
@@ -331,15 +332,15 @@ void ScheduleTabWidget::askAndStoreMatchResult(const Match &ma)
   //
   // only do this if the court is not limited to manual match assignment
   //
-  auto oldCourt = ma.getCourt();
-  assert(oldCourt != nullptr);
+  auto oldCourt = ma.getCourt(nullptr);
+  assert(oldCourt);
   if (oldCourt->isManualAssignmentOnly()) return;
 
   // first of all, check if there is a next match available
   int nextMatchId;
   int nextCourtId;
   Error e = mm.getNextViableMatchCourtPair(&nextMatchId, &nextCourtId, true);
-  if ((e == NoMatchAvail) || (nextMatchId < 1))
+  if ((e == Error::NoMatchAvail) || (nextMatchId < 1))
   {
     return;
   }
@@ -353,7 +354,7 @@ void ScheduleTabWidget::askAndStoreMatchResult(const Match &ma)
 
   // try to start the match on the old court
   auto nextMatch = mm.getMatch(nextMatchId);
-  assert(nextMatch != nullptr);
+  assert(nextMatch);
   cmdCallMatch cmd{this, *nextMatch, *oldCourt};
   cmd.exec();
 }

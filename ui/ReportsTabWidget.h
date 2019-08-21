@@ -47,7 +47,7 @@ public:
   ~ReportsTabWidget();
 
   void updateRepPool();
-  void setDatabase(QTournament::TournamentDB* _db);
+  void setDatabase(const QTournament::TournamentDB* _db);
 
 public slots:
   void onTreeSelectionChanged();
@@ -55,17 +55,17 @@ public slots:
   void onResetRequested();
 
 private:
-  QTournament::TournamentDB* db;
+  const QTournament::TournamentDB* db{nullptr};
   Ui::ReportsTabWidget *ui;
   std::vector<QTournament::upAbstractReport> repPool;
-  QTreeWidgetItem* treeRoot;
+  QTreeWidgetItem* treeRoot{nullptr};
 
   QTreeWidgetItem* createOrRetrieveTreeItem(const QString& locator);
   QTreeWidgetItem* findTreeItemChildByName(QTreeWidgetItem* _parent, const QString& childName) const;
   void createRootItem();
   void showReport(const QString& repName);
   QTournament::upSimpleReport curReport;
-  bool isInResetProcedure;
+  bool isInResetProcedure{false};
 };
 
 #endif // REPORTSTABWIDGET_H

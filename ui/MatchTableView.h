@@ -42,17 +42,17 @@ class MatchTableView : public GuiHelpers::AutoSizingTableView_WithDatabase<QTour
   
 public:
   MatchTableView (QWidget* parent);
-  virtual ~MatchTableView ();
+  virtual ~MatchTableView () override;
   std::optional<QTournament::Match> getSelectedMatch() const;
   void updateSelectionAfterDataChange();
   void updateRefereeColumn();
   
 protected:
-  static constexpr int MAX_NUMERIC_COL_WIDTH = 90;
-  static constexpr int REL_NUMERIC_COL_WIDTH = 8;
-  static constexpr int REL_CONFIGCOL_WIDTH = 9;
-  static constexpr int REL_MATCH_COL_WIDTH = 63;
-  static constexpr int REL_REFEREE_COL_WIDTH = 20;
+  static constexpr int MaxNumericColWidth = 90;
+  static constexpr int NumericColRelWidth = 8;
+  static constexpr int CategoryColRelWidth = 9;
+  static constexpr int MatchColRelWidth = 63;
+  static constexpr int RefereeColRelWidth = 20;
 
   void hook_onDatabaseOpened() override;
 
@@ -76,7 +76,7 @@ signals:
   void matchSelectionChanged(int newlySelectedMatchId);
 
 private:
-  static constexpr int PREDICTION_UPDATE_INTERVAL__MS = 10 * 1000; // update every 10 secs
+  static constexpr int PredictionUpdateInterval_ms = 10 * 1000; // update every 10 secs
   MatchItemDelegate* matchItemDelegate;
 
   std::unique_ptr<QMenu> contextMenu;

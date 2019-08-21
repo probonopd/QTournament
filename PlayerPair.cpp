@@ -322,11 +322,11 @@ namespace QTournament {
   bool PlayerPair::areAllPlayersIdle() const
   {
     auto p = getPlayer1();
-    if (p.getState() != ObjState::PL_Idle) return false;
+    if (p.is_NOT_InState(ObjState::PL_Idle)) return false;
     if (hasPlayer2())
     {
       p = getPlayer2();
-      if (p.getState() != ObjState::PL_Idle) return false;
+      if (p.is_NOT_InState(ObjState::PL_Idle)) return false;
     }
     return true;
   }

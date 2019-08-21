@@ -259,7 +259,7 @@ void CategoryTableView::onRunCategory()
 
   // branch here to another function if the action was triggered to
   // continue a category that's waiting in state ObjState::CAT_WaitForIntermediateSeeding
-  if (selectedCat->getState() == ObjState::CAT_WaitForIntermediateSeeding)
+  if (selectedCat->isInState(ObjState::CAT_WaitForIntermediateSeeding))
   {
     handleIntermediateSeedingForSelectedCat();
     return;
@@ -550,7 +550,7 @@ void CategoryTableView::handleIntermediateSeedingForSelectedCat()
   std::unique_ptr<Category> selectedCat = getSelectedCategory().convertToSpecializedObject();
   if (selectedCat == nullptr) return;
 
-  if (selectedCat->getState() != ObjState::CAT_WaitForIntermediateSeeding)
+  if (selectedCat->is_NOT_InState(ObjState::CAT_WaitForIntermediateSeeding))
   {
     return;
   }
@@ -593,7 +593,7 @@ void CategoryTableView::handleIntermediateSeedingForSelectedCat()
 
 bool CategoryTableView::unfreezeAndCleanup(const Category& selectedCat)
 {
-  if (selectedCat.getState() != ObjState::CAT_Frozen) return false;
+  if (selectedCat.is_NOT_InState(ObjState::CAT_Frozen)) return false;
 
   // undo all database changes that happened during freezing
   CatMngr cm{*db};

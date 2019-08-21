@@ -31,10 +31,10 @@ class TeamTabWidget : public QWidget
 public:
   TeamTabWidget ();
   virtual ~TeamTabWidget ();
-  void setDatabase(QTournament::TournamentDB* _db);
+  void setDatabase(const QTournament::TournamentDB* _db);
 
 private:
-  QTournament::TournamentDB* db;
+  const QTournament::TournamentDB* db{nullptr};
   Ui::TeamTabWidget ui;
   
 public slots:

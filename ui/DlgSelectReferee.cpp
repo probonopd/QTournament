@@ -329,7 +329,7 @@ void DlgSelectReferee::rebuildPlayerList()
     {
       const TaggedPlayer& tp = *it;
       const Player& p = tp.first;
-      if (p.getState() != ObjState::PL_Idle)
+      if (p.is_NOT_InState(ObjState::PL_Idle))
       {
         it = pList.erase(it);
       } else {
@@ -367,7 +367,7 @@ TaggedPlayerList DlgSelectReferee::getPlayerList_recentFinishers()
       Player p = pp.getPlayer1();
 
       // if this player is already a referee, skip this player
-      if (p.getState() == ObjState::PL_Referee) continue;
+      if (p.isInState(ObjState::PL_Referee)) continue;
 
       // Before we add this player to the result list,
       // make sure that the player is not already in it
@@ -380,7 +380,7 @@ TaggedPlayerList DlgSelectReferee::getPlayerList_recentFinishers()
       if (pp.hasPlayer2())
       {
         p = pp.getPlayer2();
-        if (p.getState() == ObjState::PL_Referee) continue;
+        if (p.isInState(ObjState::PL_Referee)) continue;
         if (std::find(purePlayerList.begin(), purePlayerList.end(), p) == purePlayerList.end())
         {
           purePlayerList.push_back(p);

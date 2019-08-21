@@ -230,7 +230,7 @@ namespace QTournament {
 
     // we can only add matches to a group if the group
     // is in the config state
-    if (grp.getState() != ObjState::MG_Config)
+    if (grp.is_NOT_InState(ObjState::MG_Config))
     {
       *err = Error::MatchGroupNotConfiguraleAnymore;
       return {};
@@ -355,7 +355,7 @@ namespace QTournament {
   Error MatchMngr::setSymbolicPlayerForMatch(const Match& fromMatch, const Match& toMatch, bool asWinner, int dstPlayerPosInMatch) const
   {
     // Only allow changing / setting players if we not yet fully configured
-    if (toMatch.getState() != ObjState::MA_Incomplete) return Error::MatchNotConfiguraleAnymore;
+    if (toMatch.is_NOT_InState(ObjState::MA_Incomplete)) return Error::MatchNotConfiguraleAnymore;
 
     // fromMatch and toMatch must be in the same category
     int fromMatchCatId = fromMatch.getCategory().getId();
@@ -395,7 +395,7 @@ namespace QTournament {
   Error MatchMngr::setPlayerToUnused(const Match& ma, int unusedPlayerPos, int winnerRank) const
   {
     // Only allow changing / setting player pairs if we not yet fully configured
-    if (ma.getState() != ObjState::MA_Incomplete) return Error::MatchNotConfiguraleAnymore;
+    if (ma.is_NOT_InState(ObjState::MA_Incomplete)) return Error::MatchNotConfiguraleAnymore;
 
     if (unusedPlayerPos == 1)
     {
@@ -417,7 +417,7 @@ namespace QTournament {
   Error MatchMngr::setRankForWinnerOrLoser(const Match& ma, bool isWinner, int rank) const
   {
     // Only allow changing / setting match data if we not yet fully configured
-    if (ma.getState() != ObjState::MA_Incomplete) return Error::MatchNotConfiguraleAnymore;
+    if (ma.is_NOT_InState(ObjState::MA_Incomplete)) return Error::MatchNotConfiguraleAnymore;
 
     // TODO: check if rank is really valid
 
@@ -512,7 +512,7 @@ namespace QTournament {
   Error MatchMngr::closeMatchGroup(const MatchGroup &grp)
   {
     // we can only close match groups that are in state CONFIG
-    if (grp.getState() != ObjState::MG_Config) return Error::MatchGroupAlreadyClosed;
+    if (grp.is_NOT_InState(ObjState::MG_Config)) return Error::MatchGroupAlreadyClosed;
 
     // the match group should contain at least one match
     if (grp.getMatchCount() < 1) return Error::MatchGroupEmpty;
@@ -591,7 +591,7 @@ namespace QTournament {
 
     // ensure that the player is IDLE when calling a match or
     // swapping the umpire
-    if ((refAction != RefereeAction::PreAssign) && (p.getState() != ObjState::PL_Idle))
+    if ((refAction != RefereeAction::PreAssign) && (p.is_NOT_InState(ObjState::PL_Idle)))
     {
       return Error::PlayerNotSuitable;
     }
@@ -863,7 +863,7 @@ namespace QTournament {
       bool isfinished = true;
       for (auto match : mg.getMatches())
       {
-        if (match.getState() != ObjState::MA_Finished)
+        if (match.is_NOT_InState(ObjState::MA_Finished))
         {
           isfinished = false;
           break;
@@ -1005,7 +1005,7 @@ namespace QTournament {
   Error MatchMngr::canUnstageMatchGroup(const MatchGroup &grp)
   {
     // first precondition: match group has to be staged
-    if (grp.getState() != ObjState::MG_Staged)
+    if (grp.is_NOT_InState(ObjState::MG_Staged))
     {
       return Error::MatchGroupNotUnstageable;
     }
@@ -1158,7 +1158,7 @@ namespace QTournament {
    */
   Error MatchMngr::canStageMatchGroup(const MatchGroup &grp)
   {
-    return (grp.getState() == ObjState::MG_Idle) ? Error::OK : Error::WrongState;
+    return (grp.isInState(ObjState::MG_Idle)) ? Error::OK : Error::WrongState;
   }
 
   //----------------------------------------------------------------------------
@@ -1322,7 +1322,7 @@ namespace QTournament {
       }
 
       // Okay, the previous match group really has to be finished first.
-      if (prevMg.getState() != ObjState::MG_Finished) return true;
+      if (prevMg.is_NOT_InState(ObjState::MG_Finished)) return true;
     }
 
     return false;   // no match group found that has to be finished before the match
@@ -1483,7 +1483,7 @@ namespace QTournament {
   Error MatchMngr::canAssignMatchToCourt(const Match &ma, const Court& court) const
   {
     // check the match's state
-    if (ma.getState() != ObjState::MA_Ready)
+    if (ma.is_NOT_InState(ObjState::MA_Ready))
     {
       return Error::MatchNotRunnable;
     }
@@ -1512,7 +1512,7 @@ namespace QTournament {
       if (!referee) return Error::MatchNeedsReferee;
 
       // check if the assigned referee is available
-      if (referee->getState() != ObjState::PL_Idle) return Error::RefereeNotIdle;
+      if (referee->is_NOT_InState(ObjState::PL_Idle)) return Error::RefereeNotIdle;
     }
 
     // check the court's availability
@@ -1602,7 +1602,7 @@ namespace QTournament {
       // the following assertion must hold,
       // because the conditions have been check by canAssignMatchToCourt()
       assert(referee);
-      assert(referee->getState() == ObjState::PL_Idle);
+      assert(referee->isInState(ObjState::PL_Idle));
 
       referee->setState(ObjState::PL_Referee);
     }
@@ -1759,7 +1759,7 @@ namespace QTournament {
 
         // release the umpire, if any
         auto referee = ma.getAssignedReferee();
-        if (referee && (referee->getState() == ObjState::PL_Referee))
+        if (referee && (referee->isInState(ObjState::PL_Referee)))
         {
           referee->setState(ObjState::PL_Idle);
           pm.increaseRefereeCountForPlayer(*referee);
@@ -1780,7 +1780,7 @@ namespace QTournament {
       {
         for (const Match& otherMatch : getMatchesForMatchGroup(mg))
         {
-          if (otherMatch.getState() != ObjState::MA_Waiting) continue;
+          if (otherMatch.is_NOT_InState(ObjState::MA_Waiting)) continue;
           updateMatchStatus(otherMatch);
         }
       }
@@ -1842,7 +1842,7 @@ namespace QTournament {
     //
 
     // only modify finished matches
-    if (ma.getState() != ObjState::MA_Finished) return Error::WrongState;
+    if (ma.is_NOT_InState(ObjState::MA_Finished)) return Error::WrongState;
 
     // make sure the score itself is valid
     Category cat = ma.getCategory();
@@ -1912,7 +1912,7 @@ namespace QTournament {
 
   Error MatchMngr::undoMatchCall(const Match& ma) const
   {
-    if (ma.getState() != ObjState::MA_Running)
+    if (ma.is_NOT_InState(ObjState::MA_Running))
     {
       return Error::MatchNotRunning;
     }
@@ -1924,7 +1924,7 @@ namespace QTournament {
 
     // release the umpire, if any
     auto referee = ma.getAssignedReferee();
-    if (referee  && (referee->getState() == ObjState::PL_Referee))
+    if (referee && (referee->isInState(ObjState::PL_Referee)))
     {
       referee->setState(ObjState::PL_Idle);
     }
@@ -2157,7 +2157,7 @@ namespace QTournament {
 
   void MatchMngr::resolveSymbolicNamesAfterFinishedMatch(const Match &ma) const
   {
-    if (ma.getState() != ObjState::MA_Finished)
+    if (ma.is_NOT_InState(ObjState::MA_Finished))
     {
       return;
     }

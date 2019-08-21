@@ -200,7 +200,7 @@ namespace QTournament
 
   bool CourtMngr::acquireCourt(const Court &co)
   {
-    if (co.getState() != ObjState::CO_Avail)
+    if (co.is_NOT_InState(ObjState::CO_Avail))
     {
       return false;
     }
@@ -214,7 +214,7 @@ namespace QTournament
 
   bool CourtMngr::releaseCourt(const Court &co)
   {
-    if (co.getState() != ObjState::CO_Busy)
+    if (co.is_NOT_InState(ObjState::CO_Busy))
     {
       return false;
     }

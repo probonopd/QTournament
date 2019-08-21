@@ -21,9 +21,10 @@
 #include "PlayerMngr.h"
 #include "SeedingListWidget.h"
 
+using namespace QTournament;
 
 SeedingListWidget::SeedingListWidget(QWidget* parent)
-  :QListWidget(parent), pairDelegate(nullptr), defaultDelegate(itemDelegate())
+  :QListWidget(parent), defaultDelegate(itemDelegate())
 {
 }
 
@@ -122,7 +123,7 @@ void SeedingListWidget::warpSelectedPlayerTo(int targetRow)
 PlayerPairList SeedingListWidget::getSeedList() const
 {
   PlayerPairList result;
-  PlayerMngr pm{db};
+  PlayerMngr pm{*db};
 
   for (int row = 0; row < count(); ++row)
   {
@@ -170,11 +171,11 @@ void SeedingListWidget::clearListAndFillFromSeed(const PlayerPairList& seed)
   int oldSelection = currentRow();
 
   clear();
-  for (int cnt=0; cnt < seed.size(); ++cnt)
+  for (const auto& pp : seed)
   {
     QListWidgetItem* lwi = new QListWidgetItem(this);
-    lwi->setData(Qt::UserRole, seed.at(cnt).getPairId());
-    lwi->setData(Qt::DisplayRole, seed.at(cnt).getDisplayName());
+    lwi->setData(Qt::UserRole, pp.getPairId());
+    lwi->setData(Qt::DisplayRole, pp.getDisplayName());
   }
 
   // restore the old selection, if necessary and possible
@@ -198,7 +199,7 @@ void SeedingListWidget::setDatabase(const QTournament::TournamentDB* _db)
   // assign a delegate to the list widget for drawing the entries
   if (db != nullptr)
   {
-    pairDelegate = make_unique<PairItemDelegate>(db, nullptr, true);
+    pairDelegate = std::make_unique<PairItemDelegate>(*db, nullptr, true);
     setItemDelegate(pairDelegate.get());
   } else {
     setItemDelegate(defaultDelegate);

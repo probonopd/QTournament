@@ -31,6 +31,7 @@
 #include "Player.h"
 #include "PlayerProfile.h"
 
+using namespace QTournament;
 
 QString GuiHelpers::groupNumToString(int grpNum)
 {
@@ -41,7 +42,7 @@ QString GuiHelpers::groupNumToString(int grpNum)
   case GroupNum_Iteration:
     return "--";
   case GroupNum_L16:
-    return QObject::tr("KO_Start::L16");
+    return QObject::tr("L16");
   case GroupNum_Quarter:
     return QObject::tr("QF");
   case GroupNum_Semi:
@@ -145,8 +146,8 @@ QString GuiHelpers::prepCall(const QTournament::Match &ma, const QTournament::Co
   QTournament::RefereeMode refMode = ma.get_EFFECTIVE_RefereeMode();
   if ((refMode != QTournament::RefereeMode::None) && ((refMode != QTournament::RefereeMode::HandWritten)))
   {
-    QTournament::upPlayer referee = ma.getAssignedReferee();
-    if (referee != nullptr)
+    auto referee = ma.getAssignedReferee();
+    if (referee)
     {
       call += "<br><br><br><b>";
       call += QObject::tr("Umpire is %1.");
@@ -355,12 +356,12 @@ void GuiHelpers::drawTwoLinePlayerPairNames_Centered(QPainter* painter, const QR
   // determine the colors for the left and the right block
   QColor leftColor{fntColor};
   QColor rightColor{fntColor};
-  if (ma.getState() == QTournament::ObjState::MA_Finished)
+  if (ma.isInState(ObjState::MA_Finished))
   {
     auto w = ma.getWinner();
     auto l = ma.getLoser();
 
-    if ((w != nullptr) && (l != nullptr))
+    if (w && l)
     {
       auto pp1 = ma.getPlayerPair1();
       if (*w == pp1)
@@ -403,8 +404,8 @@ void GuiHelpers::drawTwoLinePlayerPairNames_Centered(QPainter* painter, const QR
   double r2LeftWidth = fm.width(row2Left);
   double r1RightWidth = fm.width(row1Right);
   double r2RightWidth = fm.width(row2Right);
-  double maxLeftWidth = max(r1LeftWidth, r2LeftWidth);
-  double maxRightWidth = max(r1RightWidth, r2RightWidth);
+  double maxLeftWidth = std::max(r1LeftWidth, r2LeftWidth);
+  double maxRightWidth = std::max(r1RightWidth, r2RightWidth);
   double totalWidth = maxLeftWidth + fm.width(colon) + maxRightWidth;
 
   // calculate the side margin
@@ -506,7 +507,7 @@ QString GuiHelpers::getStatusSummaryForPlayer(const QTournament::Player& p, cons
     txt = QObject::tr(" is idle");
 
     auto ma = pp.getLastPlayedMatch();
-    if (ma != nullptr)
+    if (ma)
     {
       txt += QObject::tr(". The last match ended %1 ago.");
       txt = txt.arg(qdt2durationString(ma->getFinishTime()));
@@ -514,7 +515,7 @@ QString GuiHelpers::getStatusSummaryForPlayer(const QTournament::Player& p, cons
       txt += QObject::tr("; no played matches yet.");
     }
   }
-  std::unique_ptr<Match> ma;
+  std::optional<Match> ma;
   if ((plStat == QTournament::ObjState::PL_Playing) ||
       (plStat == QTournament::ObjState::PL_Referee))
   {
@@ -529,10 +530,10 @@ QString GuiHelpers::getStatusSummaryForPlayer(const QTournament::Player& p, cons
       ma = pp.getCurrentUmpireMatch();
     }
 
-    if (ma != nullptr)
+    if (ma)
     {
-      auto co = ma->getCourt();
-      txt = txt.arg(co != nullptr ? QString::number(co->getNumber()) : "??");
+      auto co = ma->getCourt(nullptr);
+      txt = txt.arg(co ? QString::number(co->getNumber()) : "??");
 
       QDateTime sTime = ma->getStartTime();
       txt = txt.arg(sTime.isValid() ? qdt2durationString(sTime) : "??");

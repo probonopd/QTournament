@@ -18,10 +18,10 @@ public:
   explicit MatchLogTabWidget(QWidget *parent = nullptr);
   ~MatchLogTabWidget();
 
-  void setDatabase(QTournament::TournamentDB* _db);
+  void setDatabase(const QTournament::TournamentDB* _db);
 
 private:
-  QTournament::TournamentDB* db;
+  const QTournament::TournamentDB* db;
   Ui::MatchLogTabWidget *ui;
 };
 

@@ -180,7 +180,7 @@ namespace QTournament {
     // determine the available, not disabled courts
     CourtMngr cm{db};
     CourtList allCourts = cm.getAllCourts();
-    allCourts.erase(remove_if(allCourts.begin(), allCourts.end(), [](Court& c){ return (c.getState() == ObjState::CO_Disabled);}),
+    allCourts.erase(remove_if(allCourts.begin(), allCourts.end(), [](Court& c){ return (c.isInState(ObjState::CO_Disabled));}),
         allCourts.end());
 
     // if we don't have any courts at all, we can't make any predictions

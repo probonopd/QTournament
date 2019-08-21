@@ -365,7 +365,7 @@ void CourtTableView::onActionToogleEnableStateTriggered()
   if (!co) return;
 
   CourtMngr cm{*db};
-  if (co->getState() == ObjState::CO_Disabled)
+  if (co->isInState(ObjState::CO_Disabled))
   {
     cm.enableCourt(*co);
   } else {

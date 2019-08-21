@@ -72,7 +72,7 @@ namespace QTournament
 
   Error EliminationCategory::canFreezeConfig()
   {
-    if (getState() != ObjState::CAT_Config)
+    if (is_NOT_InState(ObjState::CAT_Config))
     {
       return Error::ConfigAlreadyFrozen;
     }
@@ -122,7 +122,7 @@ namespace QTournament
 
   Error EliminationCategory::prepareFirstRound()
   {
-    if (getState() != ObjState::CAT_Idle) return Error::WrongState;
+    if (is_NOT_InState(ObjState::CAT_Idle)) return Error::WrongState;
 
     MatchMngr mm{db};
 
@@ -356,7 +356,7 @@ namespace QTournament
   ModMatchResult EliminationCategory::canModifyMatchResult(const Match& ma) const
   {
     // the match has to be in FINISHED state
-    if (ma.getState() != ObjState::MA_Finished) return ModMatchResult::NotPossible;
+    if (ma.is_NOT_InState(ObjState::MA_Finished)) return ModMatchResult::NotPossible;
 
     // if this match does not belong to us, we're not responsible
     if (ma.getCategory().getId() != getId()) return ModMatchResult::NotPossible;

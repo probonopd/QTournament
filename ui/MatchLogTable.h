@@ -36,7 +36,6 @@ class MatchLogTable : public CommonMatchTableWidget
 
 public:
   MatchLogTable(QWidget* parent);
-  virtual ~MatchLogTable() {}
   std::optional<QTournament::Match> getSelectedMatch() const;
 
 public slots:

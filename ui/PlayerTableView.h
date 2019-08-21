@@ -37,18 +37,17 @@ class PlayerTableView : public GuiHelpers::AutoSizingTableView_WithDatabase<QTou
   
 public:
   PlayerTableView (QWidget* parent);
-  virtual ~PlayerTableView () {}
   std::optional<QTournament::Player> getSelectedPlayer() const;
     
 protected:
-  static constexpr int REL_NAME_COL_WIDTH = 10;
-  static constexpr int REL_Sex_COL_WIDTH = 1;
-  static constexpr int REL_TEAM_COL_WIDTH = 10;
-  static constexpr int REL_CONFIGCOL_WIDTH = 7;
-  static constexpr int MAX_NAME_COL_WIDTH = 350;
-  static constexpr int MAX_Sex_COL_WIDTH = 30;
-  static constexpr int MAX_TEAM_COL_WIDTH = 300;
-  static constexpr int MAX_CONFIGCOL_WIDTH = 300;
+  static constexpr int NameColRelWidth = 10;
+  static constexpr int SexColRelWidth = 1;
+  static constexpr int TeamColRelWidth = 10;
+  static constexpr int CatColRelWidth = 7;
+  static constexpr int NameColMaxWidth = 350;
+  static constexpr int SexColMaxWidth = 30;
+  static constexpr int TeamColMaxWidth = 300;
+  static constexpr int CatColMaxWidth = 300;
   void hook_onDatabaseOpened() override;
 
 public slots:

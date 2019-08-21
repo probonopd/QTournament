@@ -88,7 +88,7 @@ QVariant CourtTableModel::data(const QModelIndex& index, int role) const
     // second column: match name
     if (index.column() == 1)
     {
-      if (co->getState() != ObjState::CO_Busy) return "";
+      if (co->is_NOT_InState(ObjState::CO_Busy)) return "";
       return "(FIX: need to look up match data)";
     }
 

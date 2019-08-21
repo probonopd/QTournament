@@ -26,7 +26,7 @@
 
 using namespace QTournament;
 
-void MenuGenerator::allCategories(TournamentDB* db, QMenu* targetMenu)
+void MenuGenerator::allCategories(const QTournament::TournamentDB& db, QMenu* targetMenu)
 {
   CatMngr cm{db};
   fromCategoryList(db, cm.getAllCategories(), targetMenu);
@@ -34,7 +34,7 @@ void MenuGenerator::allCategories(TournamentDB* db, QMenu* targetMenu)
 
 //----------------------------------------------------------------------------
 
-void MenuGenerator::fromCategoryList(TournamentDB* db, const CategoryList& catList, QMenu* targetMenu)
+void MenuGenerator::fromCategoryList(const QTournament::TournamentDB& db, const CategoryList& catList, QMenu* targetMenu)
 {
   if (targetMenu == nullptr) return;
 

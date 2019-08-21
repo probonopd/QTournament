@@ -43,7 +43,7 @@ public:
   explicit DlgTournamentSettings(const QTournament::TournamentDB& _db, QWidget *parent = nullptr);
 
   ~DlgTournamentSettings();
-  std::unique_ptr<QTournament::TournamentSettings> getTournamentSettings() const;
+  std::optional<QTournament::TournamentSettings> getTournamentSettings() const;
 
   int getCourtCount() const;
 
@@ -55,7 +55,7 @@ public slots:
 private:
   Ui::DlgTournamentSettings *ui;
   void updateButtons();
-  std::reference_wrapper<const QTournament::TournamentDB> db;
+  const QTournament::TournamentDB* db;
   void fillRefereeComboBox(bool includeSelectHint);
 };
 

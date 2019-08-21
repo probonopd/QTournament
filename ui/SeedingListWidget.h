@@ -51,8 +51,8 @@ public:
   void setDatabase(const QTournament::TournamentDB* _db);
 
 private:
-  const QTournament::TournamentDB* db;
-  std::unique_ptr<PairItemDelegate> pairDelegate;
+  const QTournament::TournamentDB* db{nullptr};
+  std::unique_ptr<PairItemDelegate> pairDelegate{nullptr};
   QAbstractItemDelegate* defaultDelegate;
   QQueue<QListWidgetItem*> selectionQueue;
   void swapListItems(int row1, int row2);

@@ -99,7 +99,7 @@ namespace QTournament
 
       if (stat == ObjState::MA_Finished) ++umpireFinishedCount;
 
-      if (ma.getState() == ObjState::MA_Running)
+      if (ma.isInState(ObjState::MA_Running))
       {
         currentUmpireMatchId = ma.getId();
         continue;

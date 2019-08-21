@@ -278,7 +278,7 @@ namespace QTournament
 
     for (Player p : pl)
     {
-      if (p.getState() != ObjState::PL_Idle) return Error::PlayerNotIdle;
+      if (p.is_NOT_InState(ObjState::PL_Idle)) return Error::PlayerNotIdle;
     }
 
     // check for the referee, if any
@@ -291,7 +291,7 @@ namespace QTournament
       if (!referee.has_value()) return Error::OK;
 
       // if a referee has been assigned, check its availability
-      if (referee->getState() != ObjState::PL_Idle) return Error::RefereeNotIdle;
+      if (referee->is_NOT_InState(ObjState::PL_Idle)) return Error::RefereeNotIdle;
     }
 
     return Error::OK;

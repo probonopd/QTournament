@@ -36,18 +36,20 @@
 #include "reports/ResultSheets.h"
 #include <SimpleReportGeneratorLib/SimpleReportViewer.h>
 
+using namespace QTournament;
+
 MatchTableView::MatchTableView(QWidget* parent)
   :AutoSizingTableView_WithDatabase<MatchTableModel>{GuiHelpers::AutosizeColumnDescrList{
-     {"", REL_NUMERIC_COL_WIDTH, -1, MAX_NUMERIC_COL_WIDTH},   // match number
-     {"", REL_MATCH_COL_WIDTH, -1, -1},                        // match descrption
-     {"", REL_CONFIGCOL_WIDTH, -1, -1},                          // category name
-     {"", REL_NUMERIC_COL_WIDTH, -1, MAX_NUMERIC_COL_WIDTH},   // round
-     {"", REL_NUMERIC_COL_WIDTH, -1, MAX_NUMERIC_COL_WIDTH},   // match group
+     {"", NumericColRelWidth, -1, MaxNumericColWidth},   // match number
+     {"", MatchColRelWidth, -1, -1},                        // match descrption
+     {"", CategoryColRelWidth, -1, -1},                          // category name
+     {"", NumericColRelWidth, -1, MaxNumericColWidth},   // round
+     {"", NumericColRelWidth, -1, MaxNumericColWidth},   // match group
      {"", 0, -1, -1},                                          // match state, invisible
-     {"", REL_REFEREE_COL_WIDTH, -1, -1},                      // umpire
-     {"", REL_NUMERIC_COL_WIDTH, -1, MAX_NUMERIC_COL_WIDTH},   // est. start
-     {"", REL_NUMERIC_COL_WIDTH, -1, MAX_NUMERIC_COL_WIDTH},   // est.finish
-     {"", REL_NUMERIC_COL_WIDTH, -1, MAX_NUMERIC_COL_WIDTH}    // est. court
+     {"", RefereeColRelWidth, -1, -1},                      // umpire
+     {"", NumericColRelWidth, -1, MaxNumericColWidth},   // est. start
+     {"", NumericColRelWidth, -1, MaxNumericColWidth},   // est.finish
+     {"", NumericColRelWidth, -1, MaxNumericColWidth}    // est. court
    },true, parent}
 {
   setRubberBandCol(1);
@@ -81,7 +83,7 @@ MatchTableView::MatchTableView(QWidget* parent)
   // prepare a timer that periodically updates the predicted start / finish times for matches
   predictionUpdateTimer = make_unique<QTimer>(this);
   connect(predictionUpdateTimer.get(), SIGNAL(timeout()), this, SLOT(onMatchTimePredictionUpdate()));
-  predictionUpdateTimer->start(PREDICTION_UPDATE_INTERVAL__MS);
+  predictionUpdateTimer->start(PredictionUpdateInterval_ms);
 }
 
 //----------------------------------------------------------------------------
@@ -96,9 +98,9 @@ MatchTableView::~MatchTableView()
 std::optional<QTournament::Match> MatchTableView::getSelectedMatch() const
 {
   int srcRow = getSelectedSourceRow();
-  if (srcRow < 0) return nullptr;
+  if (srcRow < 0) return {};
 
-  MatchMngr mm{db};
+  MatchMngr mm{*db};
   return mm.getMatchBySeqNum(srcRow);
 }
 
@@ -120,7 +122,7 @@ void MatchTableView::onSelectionChanged(const QItemSelection& selectedItem, cons
   // this is used by the result sheets report to update
   // the range of printed matches
   auto ma = getSelectedMatch();
-  emit matchSelectionChanged((ma == nullptr) ? -1 : ma->getId());
+  emit matchSelectionChanged(ma ? ma->getId() : -1);
 }
 
 //----------------------------------------------------------------------------
@@ -143,8 +145,8 @@ void MatchTableView::updateRefereeColumn()
 {
   if (db == nullptr) return;
 
-  QModelIndex topLeft = customDataModel->getIndex(0, MatchTableModel::RefereeMode_COL_ID);
-  QModelIndex bottomRight = customDataModel->getIndex(customDataModel->rowCount(), MatchTableModel::RefereeMode_COL_ID);
+  QModelIndex topLeft = customDataModel->getIndex(0, MatchTableModel::RefereeModeColId);
+  QModelIndex bottomRight = customDataModel->getIndex(customDataModel->rowCount(), MatchTableModel::RefereeModeColId);
   dataChanged(topLeft, bottomRight);
 }
 
@@ -154,7 +156,7 @@ void MatchTableView::hook_onDatabaseOpened()
 {
   AutoSizingTableView_WithDatabase::hook_onDatabaseOpened();
 
-  setColumnHidden(MatchTableModel::STATE_COL_ID, true);  // hide the column containing the internal object state
+  setColumnHidden(MatchTableModel::StateColId, true);  // hide the column containing the internal object state
 
   // create a regular expression, that matches either the match state
   // READY, BUSY, FUZZY or WAITING
@@ -165,13 +167,13 @@ void MatchTableView::hook_onDatabaseOpened()
 
   // apply the regExp as a filter on the state id column
   sortedModel->setFilterRegExp(reString);
-  sortedModel->setFilterKeyColumn(MatchTableModel::STATE_COL_ID);
+  sortedModel->setFilterKeyColumn(MatchTableModel::StateColId);
 
   // sort matches in ascing match number order
-  sortedModel->sort(MatchTableModel::MATCH_NUM_COL_ID, Qt::AscendingOrder);
+  sortedModel->sort(MatchTableModel::MatchNumColId, Qt::AscendingOrder);
 
   // define a delegate for drawing the match items
-  matchItemDelegate =  new MatchItemDelegate(db, this);
+  matchItemDelegate =  new MatchItemDelegate(*db, this);
   matchItemDelegate->setProxy(sortedModel.get());
   setCustomDelegate(matchItemDelegate);  // takes ownership
 }
@@ -191,11 +193,11 @@ void MatchTableView::onContextMenuRequested(const QPoint& pos)
 
   // find out which match is selected
   auto ma = getSelectedMatch();
-  if (ma == nullptr) return;  // shouldn't happen
+  if (!ma) return;  // shouldn't happen
 
   // enable / disable the action for assigning umpires, depending
   // on the current umpire mode and match state
-  actAssignReferee->setEnabled(ma->canAssignReferee(REFEREE_ACTION::PRE_ASSIGN) == Error::OK);
+  actAssignReferee->setEnabled(ma->canAssignReferee(RefereeAction::PreAssign) == Error::OK);
   actRemoveReferee->setEnabled(ma->hasRefereeAssigned());
 
   // show the context menu
@@ -213,9 +215,9 @@ void MatchTableView::onContextMenuRequested(const QPoint& pos)
   if (isOk)
   {
     // get the selected court
-    CourtMngr cm{db};
+    CourtMngr cm{*db};
     auto co = cm.getCourt(selectedCourt);
-    if (co == nullptr) return;  // shouldn't happen
+    if (!co) return;  // shouldn't happen
 
     // call the match on the selected court
     cmdCallMatch cmd{this, *ma, *co};
@@ -235,7 +237,7 @@ void MatchTableView::onContextMenuRequested(const QPoint& pos)
     int modeId = selectedItem->data().toInt();
     RefereeMode refMode = static_cast<RefereeMode>(modeId);
 
-    MatchMngr mm{db};
+    MatchMngr mm{*db};
     Error e = mm.setRefereeMode(*ma, refMode);
     if (e != Error::OK)
     {
@@ -264,12 +266,12 @@ void MatchTableView::onWalkoverP2Triggered()
 void MatchTableView::onMatchDoubleClicked(const QModelIndex& index)
 {
   auto ma = getSelectedMatch();
-  if (ma == nullptr) return;
+  if (!ma) return;
 
   // special case: if the user double-clicked the umpire-column,
   // we do not call the match, but we present the dialog for
   // selecting an umpire, if possible and meaningful
-  if (index.column() == MatchTableModel::RefereeMode_COL_ID)
+  if (index.column() == MatchTableModel::RefereeModeColId)
   {
     onAssignRefereeTriggered();
     return;  // do not proceed with a match call
@@ -277,17 +279,17 @@ void MatchTableView::onMatchDoubleClicked(const QModelIndex& index)
 
   // special case: if the match is busy, we show information
   // why the match can't be called
-  if (ma->getState() == ObjState::MA_Busy)
+  if (ma->isInState(ObjState::MA_Busy))
   {
     showMatchBusyReason(*ma);
     return;  // do not proceed with a match call
   }
 
-  CourtMngr cm{db};
-  MatchMngr mm{db};
+  CourtMngr cm{*db};
+  MatchMngr mm{*db};
 
   // first of all, make sure that the match is eligible for being started
-  if (ma->getState() != ObjState::MA_Ready)
+  if (ma->is_NOT_InState(ObjState::MA_Ready))
   {
     QString msg = tr("This match cannot be started at this point in time.\n");
     msg += tr("It's probably waiting for all players to become available or \n");
@@ -297,9 +299,8 @@ void MatchTableView::onMatchDoubleClicked(const QModelIndex& index)
   }
 
   // check if there is a court available
-  Error err;
-  auto nextCourt = cm.autoSelectNextUnusedCourt(&err, false);
-  if (err == OnlyManualCourtAvail)
+  auto nextCourt = cm.autoSelectNextUnusedCourt(false);
+  if (nextCourt.err(Error::OnlyManualCourtAvail))
   {
     QString msg = tr("There are no free courts for automatic match assignment available right now.\n");
     msg += tr("However, there is at least one free court for manual match assignment.\n\n");
@@ -310,8 +311,8 @@ void MatchTableView::onMatchDoubleClicked(const QModelIndex& index)
       return;
     }
 
-    nextCourt = cm.autoSelectNextUnusedCourt(&err, true);
-    if (nextCourt == nullptr)
+    nextCourt = cm.autoSelectNextUnusedCourt(true);
+    if (!nextCourt)
     {
       QString msg = tr("An unexpected error occured.\n");
       msg += tr("Sorry, this shouldn't happen.\n");
@@ -321,7 +322,7 @@ void MatchTableView::onMatchDoubleClicked(const QModelIndex& index)
     }
   }
 
-  if (err == NoCourtAvail)
+  if (nextCourt.err(Error::NoCourtAvail))
   {
     QString msg = tr("The match cannot be started since there is no\n");
     msg += tr("free court available right now.");
@@ -331,7 +332,7 @@ void MatchTableView::onMatchDoubleClicked(const QModelIndex& index)
 
   // if we made it to this point and nextCourt is not null and err is OK,
   // we may try to assign the match
-  if ((err == Error::OK) && (nextCourt != nullptr))
+  if (nextCourt)
   {
     cmdCallMatch cmd{this, *ma, *nextCourt};
     if (cmd.exec() == Error::OK)
@@ -346,9 +347,9 @@ void MatchTableView::onMatchDoubleClicked(const QModelIndex& index)
 void MatchTableView::onAssignRefereeTriggered()
 {
   auto ma = getSelectedMatch();
-  if (ma == nullptr) return;
+  if (!ma) return;
 
-  cmdAssignRefereeToMatch cmd{this, *ma, REFEREE_ACTION::PRE_ASSIGN};
+  cmdAssignRefereeToMatch cmd{this, *ma, RefereeAction::PreAssign};
   cmd.exec();
 }
 
@@ -357,7 +358,7 @@ void MatchTableView::onAssignRefereeTriggered()
 void MatchTableView::onRemoveRefereeTriggered()
 {
   auto ma = getSelectedMatch();
-  if (ma == nullptr) return;
+  if (!ma) return;
 
   // make sure there is a referee assigned
   if (!(ma->hasRefereeAssigned()))
@@ -366,7 +367,7 @@ void MatchTableView::onRemoveRefereeTriggered()
   }
 
   // try to remove the assignment
-  MatchMngr mm{db};
+  MatchMngr mm{*db};
   Error e = mm.removeReferee(*ma);
   if (e != Error::OK)
   {
@@ -406,7 +407,7 @@ void MatchTableView::onMatchStatusChanged(int maId, int maSeqNum, ObjState oldSt
   if ((oldStat == ObjState::MA_Running) && (newStat == ObjState::MA_Ready))
   {
     auto selMatch = getSelectedMatch();
-    if (selMatch == nullptr) return;
+    if (!selMatch) return;
 
     // will the match be inserted before or after the currently selected match?
     //
@@ -531,18 +532,18 @@ void MatchTableView::updateContextMenu()
   auto ma = getSelectedMatch();
 
   // completely re-build the list of available courts
-  bool isCallPossible = ((ma != nullptr) && (ma->getState() == ObjState::MA_Ready));
+  bool isCallPossible = ((ma.has_value()) && (ma->isInState(ObjState::MA_Ready)));
   courtSelectionMenu->setEnabled(isCallPossible);
   if (isCallPossible)
   {
     courtSelectionMenu->clear();
 
-    CourtMngr cm{db};
+    CourtMngr cm{*db};
 
     QStringList availCourtNum;
     for (auto co : cm.getAllCourts())
     {
-      if (co.getState() == ObjState::CO_Avail)
+      if (co.isInState(ObjState::CO_Avail))
       {
         availCourtNum << QString::number(co.getNumber());
       }
@@ -559,8 +560,8 @@ void MatchTableView::updateContextMenu()
   }
 
   // update the player pair names for the walkover menu
-  walkoverSelectionMenu->setEnabled(ma != nullptr);
-  if (ma != nullptr)
+  walkoverSelectionMenu->setEnabled(ma.has_value());
+  if (ma)
   {
     if (ma->isWalkoverPossible())
     {
@@ -572,10 +573,10 @@ void MatchTableView::updateContextMenu()
   }
 
   // update the "postpone" action
-  actPostponeMatch->setEnabled(ma != nullptr);
+  actPostponeMatch->setEnabled(ma.has_value());
 
   // enable / disable print the result sheet
-  printSelectionMenu->setEnabled(ma != nullptr);
+  printSelectionMenu->setEnabled(ma.has_value());
 }
 
 //----------------------------------------------------------------------------
@@ -583,7 +584,7 @@ void MatchTableView::updateContextMenu()
 void MatchTableView::execWalkover(int playerNum)
 {
   auto ma = getSelectedMatch();
-  if (ma == nullptr) return; // shouldn't happen
+  if (!ma) return; // shouldn't happen
   if ((playerNum != 1) && (playerNum != 2)) return; // shouldn't happen
   GuiHelpers::execWalkover(this, *ma, playerNum);
 }
@@ -592,7 +593,7 @@ void MatchTableView::execWalkover(int playerNum)
 
 void MatchTableView::showMatchBusyReason(const Match& ma)
 {
-  if (ma.getState() != ObjState::MA_Busy)
+  if (ma.is_NOT_InState(ObjState::MA_Busy))
   {
     return;
   }
@@ -616,8 +617,8 @@ void MatchTableView::showMatchBusyReason(const Match& ma)
 
       // try to retrieve the court number where the player
       // is the referee
-      std::unique_ptr<Court> co = pl.getMatchCourt();
-      if (co != nullptr)
+      auto co = pl.getMatchCourt();
+      if (co)
       {
         result += tr(" on court %1");
         result = result.arg(co->getNumber());
@@ -633,8 +634,8 @@ void MatchTableView::showMatchBusyReason(const Match& ma)
 
       // try to retrieve the court number where the player
       // is the referee
-      std::unique_ptr<Court> co = pl.getRefereeCourt();
-      if (co != nullptr)
+      auto co = pl.getRefereeCourt();
+      if (co)
       {
         result += tr(" on court %1");
         result = result.arg(co->getNumber());
@@ -680,8 +681,8 @@ void MatchTableView::showMatchBusyReason(const Match& ma)
   RefereeMode refMode = ma.get_EFFECTIVE_RefereeMode();
   if ((refMode != RefereeMode::None) && (refMode != RefereeMode::HandWritten))
   {
-    upPlayer referee = ma.getAssignedReferee();
-    if (referee != nullptr)
+    auto referee = ma.getAssignedReferee();
+    if (referee)
     {
       QString r = getBusyReasonForPlayer(*referee);
 
@@ -707,7 +708,7 @@ void MatchTableView::printResultSheets(int matchCount)
   if (matchCount < 1) return;
 
   auto curMatch = getSelectedMatch();
-  if (curMatch == nullptr) return;
+  if (!curMatch) return;
 
   // try to create the result sheet report with the
   // requested number of matches

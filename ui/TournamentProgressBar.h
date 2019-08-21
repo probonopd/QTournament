@@ -14,15 +14,15 @@ class TournamentProgressBar : public QProgressBar
 
 public:
   TournamentProgressBar(QWidget* parentWidget = nullptr);
-  void setDatabase(QTournament::TournamentDB* _db);
+  void setDatabase(const QTournament::TournamentDB* _db);
 
 public slots:
   void updateProgressBar();
   void onMatchTimePredictionChanged(int newAvgMatchDuration, time_t newLastMatchFinish);
 
 private:
-  static constexpr int ObjState::POLL_TIMER_INTERVAL__MS = 1000;  // update once a second
-  QTournament::TournamentDB* db;
+  static constexpr int PollTimerIntervall_ms = 1000;  // update once a second
+  const QTournament::TournamentDB* db{nullptr};
   QString rawStatusString;
   time_t lastMatchFinishTime__UTC;
   int avgMatchDuration__secs;
