@@ -64,11 +64,10 @@ void TeamTableView::setDatabase(const TournamentDB* _db)
   //QItemSelectionModel *oldSelectionModel = selectionModel();
 
   // set the new data model
-  TeamTableModel* newDataModel = nullptr;
   if (_db != nullptr)
   {
-    auto newDataModel = std::make_unique<TeamTableModel>(*_db);
-    sortedModel->setSourceModel(newDataModel.release());
+    curDataModel = std::make_unique<TeamTableModel>(*_db);
+    sortedModel->setSourceModel(curDataModel.get());
 
     // define a delegate for drawing the category items
     teamItemDelegate = make_unique<TeamItemDelegate>(_db, this);
@@ -77,16 +76,8 @@ void TeamTableView::setDatabase(const TournamentDB* _db)
   } else {
     sortedModel->setSourceModel(emptyModel.get());
     setItemDelegate(defaultDelegate.get());
+    curDataModel.reset();
   }
-
-  // store the new CategoryTableModel instance, if any
-  //
-  // implicitly delete the old data model, if it was a
-  // CategoryTableModel instance
-  curDataModel.reset(newDataModel);
-
-  // delete the old selection model
-  //delete oldSelectionModel;
 
   // update the database pointer and set the widget's enabled state
   db = _db;

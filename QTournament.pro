@@ -41,6 +41,7 @@ HEADERS += \
     TournamentDataDefs.h \
     TournamentDB.h \
     TournamentErrorCodes.h \
+    ui/BuiltinTestScenarios.h \
     ui/CatTableView.h \
     ui/CatTabWidget.h \
     ui/dlgEditPlayer.h \
@@ -177,6 +178,7 @@ SOURCES += \
     Team.cpp \
     TeamMngr.cpp \
     TournamentDB.cpp \
+    ui/BuiltinTestScenarios.cpp \
     ui/CatTableView.cpp \
     ui/CatTabWidget.cpp \
     ui/dlgEditPlayer.cpp \

@@ -436,7 +436,7 @@ namespace QTournament
     {
       // start a new transaction to make sure that
       // the database remains consistent in case something goes wrong
-      auto trans = db.get().startTransaction(DefaultTransactionType);
+      auto trans = db.startTransaction(DefaultTransactionType);
 
       // modify the ranking entries
       doMod(pp1Id, deltaMatches_P1, deltaGames_P1, deltaPoints_P1);
@@ -502,7 +502,7 @@ namespace QTournament
     std::vector<Sloppy::estring> cols = {"id", RA_Round, RA_PairRef, RA_CatRef, RA_GrpNum, RA_GamesWon, RA_GamesLost,
                           RA_MatchesWon, RA_MatchesLost, RA_MatchesDraw, RA_PointsWon, RA_PointsLost, RA_Rank};
 
-    return db.get().getSyncStringForTable(TabMatchSystem, cols, rows);
+    return db.getSyncStringForTable(TabMatchSystem, cols, rows);
   }
 
 //----------------------------------------------------------------------------

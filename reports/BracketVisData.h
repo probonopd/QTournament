@@ -166,8 +166,6 @@ namespace QTournament
     bool linkToMatch(const Match& ma) const;
     bool linkToPlayerPair(const PlayerPair& pp, int pos) const;
 
-
-  private:
     BracketVisElement (const QTournament::TournamentDB& _db, int rowId);
     BracketVisElement (const QTournament::TournamentDB& _db, const SqliteOverlay::TabRow& _row);
   };
@@ -194,8 +192,9 @@ namespace QTournament
     void fillMissingPlayerNames() const;
     void clearExplicitPlayerPairReferences(const PlayerPair& pp) const;
 
-  private:
     BracketVisData(const QTournament::TournamentDB& _db, const Category& _cat);
+
+  private:
     const Category cat;  // DO NOT USE REFERENCES HERE, because this report might out-live the caller and its local objects
     QList<int> labelPosOnPage;
 

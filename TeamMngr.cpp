@@ -41,7 +41,7 @@ namespace QTournament
 
   Error TeamMngr::createNewTeam(const QString& tm)
   {
-    auto cfg = SqliteOverlay::KeyValueTab{db.get(), TabCfg};
+    auto cfg = SqliteOverlay::KeyValueTab{db, TabCfg};
 
     if (!(cfg.getBool(CfgKey_UseTeams)))
     {
@@ -106,7 +106,7 @@ namespace QTournament
     
     TabRow r = tab.getSingleRowByColumnValue(GenericNameFieldName, name.toUtf8().constData());
     
-    return Team{db.get(), r};
+    return Team{db, r};
   }
 
 //----------------------------------------------------------------------------
@@ -193,7 +193,7 @@ namespace QTournament
 
   Error TeamMngr::changeTeamAssigment(const Player& p, const Team& newTeam)
   {
-    auto cfg = SqliteOverlay::KeyValueTab{db.get(), TabCfg};
+    auto cfg = SqliteOverlay::KeyValueTab{db, TabCfg};
 
     if (!(cfg.getBool(CfgKey_UseTeams)))
     {
@@ -226,8 +226,8 @@ namespace QTournament
 
   PlayerList TeamMngr::getPlayersForTeam(const Team& t) const
   {
-    DbTab playerTab = DbTab{db.get(), TabPlayer, false};
-    return getObjectsByColumnValue<Player>(playerTab, PL_TeamRef, t.getId());
+    DbTab playerTab = DbTab{db, TabPlayer, false};
+    return SqliteOverlay::getObjectsByColumnValue<Player>(db, playerTab, PL_TeamRef, t.getId());
   }
 
   //----------------------------------------------------------------------------
@@ -236,7 +236,7 @@ namespace QTournament
   {
     std::vector<Sloppy::estring> cols = {"id", GenericNameFieldName};
 
-    return db.get().getSyncStringForTable(TabTeam, cols, rows);
+    return db.getSyncStringForTable(TabTeam, cols, rows);
   }
 
 //----------------------------------------------------------------------------

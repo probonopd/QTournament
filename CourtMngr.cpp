@@ -67,7 +67,7 @@ namespace QTournament
     
     // create a court object for the new court and return a pointer
     // to this new object
-    return CourtOrError(db.get(), newId);
+    return CourtOrError(db, newId);
   }
 
 //----------------------------------------------------------------------------
@@ -85,7 +85,7 @@ namespace QTournament
 
     try
     {
-      return db.get().execScalarQueryIntOrNull(sql).value_or(1);
+      return db.execScalarQueryIntOrNull(sql).value_or(1);
     }
     catch (NoDataException&) {
       return 1;
@@ -298,7 +298,7 @@ namespace QTournament
   {
     std::vector<Sloppy::estring> cols = {"id", GenericNameFieldName, CO_Number};
 
-    return db.get().getSyncStringForTable(TabCourt, cols, rows);
+    return db.getSyncStringForTable(TabCourt, cols, rows);
   }
 
   //----------------------------------------------------------------------------

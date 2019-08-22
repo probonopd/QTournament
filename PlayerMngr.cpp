@@ -79,7 +79,7 @@ namespace QTournament
     cvc.addCol(GenericSeqnumFieldName, InvalidInitialSequenceNumber);  // will be fixed immediately; this is just for satisfying a not-NULL constraint
 
     // set the team reference, if applicable
-    auto cfg = SqliteOverlay::KeyValueTab{db.get(), TabCfg};
+    auto cfg = SqliteOverlay::KeyValueTab{db, TabCfg};
     if (cfg.getInt(CfgKey_UseTeams) != 0)
     {
       if (teamName.isEmpty())
@@ -265,10 +265,10 @@ namespace QTournament
 
   std::optional<PlayerPair> PlayerMngr::getPlayerPair2(int pairId) const
   {
-    DbTab pairsTab{db.get(), TabPairs, false};
+    DbTab pairsTab{db, TabPairs, false};
     auto r = pairsTab.getSingleRowByColumnValue2("id", pairId);
 
-    return (r.has_value()) ? PlayerPair{db.get(), pairId} : std::optional<PlayerPair>{};
+    return (r.has_value()) ? PlayerPair{db, pairId} : std::optional<PlayerPair>{};
   }
 
 //----------------------------------------------------------------------------
@@ -503,7 +503,7 @@ namespace QTournament
 
   bool PlayerMngr::hasExternalPlayerDatabaseConfigured() const
   {
-    auto cfg = SqliteOverlay::KeyValueTab{db.get(), TabCfg};
+    auto cfg = SqliteOverlay::KeyValueTab{db, TabCfg};
 
     auto fName = cfg.getString2(CfgKey_ExtPlayerDb);
 
@@ -523,7 +523,7 @@ namespace QTournament
 
   QString PlayerMngr::getExternalDatabaseName() const
   {
-    auto cfg = SqliteOverlay::KeyValueTab{db.get(), TabCfg};
+    auto cfg = SqliteOverlay::KeyValueTab{db, TabCfg};
 
     auto fName = cfg.getString2(CfgKey_ExtPlayerDb);
 
@@ -562,7 +562,7 @@ namespace QTournament
     //
     // do this only if the database name actually changed
     extPlayerDb = std::move(extDb);
-    auto cfg = SqliteOverlay::KeyValueTab{db.get(), TabCfg};
+    auto cfg = SqliteOverlay::KeyValueTab{db, TabCfg};
     std::string _oldFileName = cfg[CfgKey_ExtPlayerDb];
     QString oldFileName = QString::fromUtf8(_oldFileName.data());
     if (oldFileName != fname)
@@ -584,7 +584,7 @@ namespace QTournament
       return Error::EPD_NotConfigured;
     }
 
-    auto cfg = SqliteOverlay::KeyValueTab{db.get(), TabCfg};
+    auto cfg = SqliteOverlay::KeyValueTab{db, TabCfg};
     QString playerDbName = QString::fromUtf8(cfg[CfgKey_ExtPlayerDb].data());
 
     return setExternalPlayerDatabase(playerDbName, false);
@@ -715,7 +715,7 @@ namespace QTournament
   {
     std::vector<Sloppy::estring> cols = {"id", PL_Fname, PL_Lname, GenericStateFieldName, PL_Sex, PL_RefereeCount, PL_TeamRef};
 
-    return db.get().getSyncStringForTable(TabPlayer, cols, rows);
+    return db.getSyncStringForTable(TabPlayer, cols, rows);
   }
 
   //----------------------------------------------------------------------------
@@ -724,7 +724,7 @@ namespace QTournament
   {
     std::vector<Sloppy::estring> cols = {"id", P2C_PlayerRef, P2C_CatRef};
 
-    return db.get().getSyncStringForTable(TabP2C, cols, rows);
+    return db.getSyncStringForTable(TabP2C, cols, rows);
   }
 
   //----------------------------------------------------------------------------
@@ -733,7 +733,7 @@ namespace QTournament
   {
     std::vector<Sloppy::estring> cols = {"id", Pairs_Player1Ref, Pairs_Player2Ref, Pairs_CatRef, Pairs_GrpNum, Pairs_InitialRank};
 
-    return db.get().getSyncStringForTable(TabPairs, cols, rows);
+    return db.getSyncStringForTable(TabPairs, cols, rows);
   }
 
   //----------------------------------------------------------------------------
@@ -759,7 +759,7 @@ namespace QTournament
     where.arg(p.getId());
     where.arg(Pairs_Player2Ref);
     DbTab pairTab{db, TabPairs, false};
-    PlayerPairList assignedPairs = getObjectsByWhereClause<PlayerPair>(pairTab, where);
+    PlayerPairList assignedPairs = SqliteOverlay::getObjectsByWhereClause<PlayerPair>(db, pairTab, where);
 
     // step 2: check if we have any matches that involve one of these pairs
     DbTab matchTab{db, TabMatch, false};
@@ -857,7 +857,7 @@ namespace QTournament
     wc.addCol(GenericStateFieldName, static_cast<int>(ObjState::MA_Finished));
     wc.setOrderColumn_Desc(MA_FinishTime);
     wc.setLimit(maxCnt);
-    MatchList ml = getObjectsByWhereClause<Match>(matchTab, wc);
+    MatchList ml = SqliteOverlay::getObjectsByWhereClause<Match>(db, matchTab, wc);
 
     // extract the winners and losers from these matches
     for (const Match& ma : ml)
@@ -898,7 +898,7 @@ namespace QTournament
 
     try
     {
-      int matchId = db.get().execScalarQueryInt(sql);
+      int matchId = db.execScalarQueryInt(sql);
 
       MatchMngr mm{db};
       return mm.getMatch(matchId);
@@ -935,7 +935,7 @@ namespace QTournament
 
     DbTab matchTab{db, TabMatch, false};
     MatchMngr mm{db};
-    for (const Match& ma : getObjectsByWhereClause<Match>(matchTab, wc))
+    for (const Match& ma : SqliteOverlay::getObjectsByWhereClause<Match>(db, matchTab, wc))
     {
       // stop the loop if we only need one match
       if (findFirstOnly && (!(result.empty()))) return result;

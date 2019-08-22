@@ -66,7 +66,7 @@ namespace QTournament
     wc.setOrderColumn_Asc(GenericSeqnumFieldName);
 
     // make sure we update all rows in a single transaction
-    auto trans = db.get().startTransaction(DefaultTransactionType);
+    auto trans = db.startTransaction(DefaultTransactionType);
 
     auto rows = otherTab.getRowsByWhereClause(wc);
     

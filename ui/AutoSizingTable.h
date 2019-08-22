@@ -288,8 +288,9 @@ namespace GuiHelpers
       if (useSortedModel)
       {
         sortedModel->setSourceModel(cdm);
-        customDataModel.reset(cdm);
       }
+
+      customDataModel.reset(cdm);
     }
 
     //----------------------------------------------------------------------------

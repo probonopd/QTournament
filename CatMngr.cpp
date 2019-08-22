@@ -553,7 +553,7 @@ namespace QTournament
     //
     try
     {
-      auto trans = db.get().startTransaction();
+      auto trans = db.startTransaction();
 
       int catId = cat.getId();
 
@@ -569,7 +569,7 @@ namespace QTournament
       // deletion 3b: match groups, they are refered to only by ranking data and matches
       t = DbTab{db, TabMatch, false};
       DbTab mgTab{db, TabMatchGroup, false};
-      for (const auto& mg : getObjectsByColumnValue<MatchGroup>(mgTab, MG_CatRef, cat.getId()))
+      for (const auto& mg : SqliteOverlay::getObjectsByColumnValue<MatchGroup>(db, mgTab, MG_CatRef, cat.getId()))
       {
         for (const auto& ma : mg.getMatches())
         {
@@ -971,7 +971,7 @@ namespace QTournament
 
     try
     {
-      auto trans = db.get().startTransaction();
+      auto trans = db.startTransaction();
 
       for (const auto& pp : ppList)
       {
@@ -1025,7 +1025,7 @@ namespace QTournament
     DbTab pairsTab{db, TabPairs, false};
     try
     {
-      auto trans = db.get().startTransaction();
+      auto trans = db.startTransaction();
 
       for (const auto& pp : ppList)
       {
@@ -1217,7 +1217,7 @@ namespace QTournament
     wc.addCol(Pairs_CatRef, cat.getId());
     wc.setOrderColumn_Asc(Pairs_InitialRank);
 
-    return getObjectsByWhereClause<PlayerPair>(pairsTab, wc);
+    return SqliteOverlay::getObjectsByWhereClause<PlayerPair>(db, pairsTab, wc);
   }
 
   //----------------------------------------------------------------------------
@@ -1272,7 +1272,7 @@ namespace QTournament
     std::vector<Sloppy::estring> cols = {"id", GenericNameFieldName, GenericStateFieldName, CAT_MatchType, CAT_Sex, CAT_Sys, CAT_AcceptDraw,
                           CAT_WinScore, CAT_DrawScore, CAT_GroupConfig, CAT_RoundRobinIterations};
 
-    return db.get().getSyncStringForTable(TabCategory, cols, rows);
+    return db.getSyncStringForTable(TabCategory, cols, rows);
   }
 
 //----------------------------------------------------------------------------

@@ -43,7 +43,6 @@ protected:
 private:
   Ui::MainFrame ui;
   std::unique_ptr<QTournament::TournamentDB> currentDb{nullptr};
-  QString testFileName;
   QString currentDatabaseFileName;
 
   // the test menu

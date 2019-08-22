@@ -159,14 +159,14 @@ namespace QTournament {
       wc.addCol(MG_Round, round);
     }
 
-    return getObjectsByWhereClause<MatchGroup>(groupTab, wc);
+    return SqliteOverlay::getObjectsByWhereClause<MatchGroup>(db, groupTab, wc);
   }
   
   //----------------------------------------------------------------------------
 
   MatchGroupList MatchMngr::getAllMatchGroups() const
   {
-    return getAllObjects<MatchGroup>(groupTab);
+    return SqliteOverlay::getAllObjects<MatchGroup>(db, groupTab);
   }
 
   //----------------------------------------------------------------------------
@@ -731,7 +731,7 @@ namespace QTournament {
     // start a transaction
     try
     {
-      auto trans = db.get().startTransaction();
+      auto trans = db.startTransaction();
 
       // actually swap the players
       if (ppPos == 1) ma.rowRef().update(MA_Pair1Ref, ppNew.getPairId());
@@ -787,7 +787,7 @@ namespace QTournament {
 
     try
     {
-      auto trans = db.get().startTransaction();
+      auto trans = db.startTransaction();
 
       // swap the players
       Error e = swapPlayer(ma1, ma1PlayerPair, ma2PlayerPair);
@@ -826,7 +826,7 @@ namespace QTournament {
                            MA_Pair1SymbolicVal, MA_Pair2SymbolicVal, MA_WinnerRank, MA_LoserRank,
                            MA_RefereeMode, MA_RefereeRef};
 
-    return db.get().getSyncStringForTable(TabMatch, cols, rows);
+    return db.getSyncStringForTable(TabMatch, cols, rows);
   }
 
   //----------------------------------------------------------------------------
@@ -835,7 +835,7 @@ namespace QTournament {
   {
     std::vector<Sloppy::estring> cols = {"id", MG_CatRef, GenericStateFieldName, MG_Round, MG_GrpNum};
 
-    return db.get().getSyncStringForTable(TabMatchGroup, cols, rows);
+    return db.getSyncStringForTable(TabMatchGroup, cols, rows);
   }
 
   //----------------------------------------------------------------------------
@@ -928,7 +928,7 @@ namespace QTournament {
 
   std::optional<MatchGroup> MatchMngr::getMatchGroupBySeqNum(int mgSeqNum)
   {
-    return getSingleObjectByColumnValue<MatchGroup>(groupTab, GenericSeqnumFieldName, mgSeqNum);
+    return SqliteOverlay::getSingleObjectByColumnValue<MatchGroup>(db, groupTab, GenericSeqnumFieldName, mgSeqNum);
   }
 
   //----------------------------------------------------------------------------
@@ -984,7 +984,7 @@ namespace QTournament {
     sql.arg(TabMatchGroup);
     try
     {
-      return db.get().execScalarQueryInt(sql);
+      return db.execScalarQueryInt(sql);
     }
     catch (...)
     {
@@ -1056,7 +1056,7 @@ namespace QTournament {
     // if the match group(s) with "round+1" are of the
     // same players group or already in KO phase, we can't
     // demote this match group
-    for (MatchGroup mg : getObjectsByWhereClause<MatchGroup>(groupTab, wc))
+    for (MatchGroup mg : SqliteOverlay::getObjectsByWhereClause<MatchGroup>(db, groupTab, wc))
     {
       int nextGroupNumber = mg.getGroupNumber();
       if (nextGroupNumber < 0)
@@ -1109,7 +1109,7 @@ namespace QTournament {
     // update all subsequent sequence numbers
     WhereClause wc;
     wc.addCol(MG_StageSeqNum, ">", oldStageSeqNumber);
-    for (const auto& mg : getObjectsByWhereClause<MatchGroup>(groupTab, wc))
+    for (const auto& mg : SqliteOverlay::getObjectsByWhereClause<MatchGroup>(db, groupTab, wc))
     {
       int old = mg.getStageSequenceNumber();
       mg.rowRef().update(MG_StageSeqNum, old - 1);
@@ -1126,7 +1126,7 @@ namespace QTournament {
     wc.addCol(MG_Round, round+1);
     wc.addCol(GenericStateFieldName, static_cast<int>(ObjState::MG_Idle));
     wc.addCol(MG_CatRef, catId);
-    for (MatchGroup mg : getObjectsByWhereClause<MatchGroup>(groupTab, wc))
+    for (MatchGroup mg : SqliteOverlay::getObjectsByWhereClause<MatchGroup>(db, groupTab, wc))
     {
       // if our demoted match group and the IDLE match group are round-robin-groups,
       // the IDLE match group has only to be demoted if it matches the "grp's" players group
@@ -1377,7 +1377,7 @@ namespace QTournament {
     WhereClause wc;
     wc.addCol(MG_StageSeqNum, ">", 0);
     wc.setOrderColumn_Asc(MG_StageSeqNum);
-    return getObjectsByWhereClause<MatchGroup>(groupTab, wc);
+    return SqliteOverlay::getObjectsByWhereClause<MatchGroup>(db, groupTab, wc);
   }
 
   //----------------------------------------------------------------------------
@@ -1405,7 +1405,7 @@ namespace QTournament {
     sql.arg(TabMatch);
     try
     {
-      return db.get().execScalarQueryIntOrNull(sql).value_or(0);
+      return db.execScalarQueryIntOrNull(sql).value_or(0);
     }
     catch (SqliteOverlay::NoDataException&)
     {
@@ -1582,7 +1582,7 @@ namespace QTournament {
     cvc.addCol(GenericStateFieldName, static_cast<int>(ObjState::MA_Running));
 
     // execute all updates at once
-    auto trans = db.get().startTransaction();
+    auto trans = db.startTransaction();
 
     ma.rowRef().update(cvc);
 
@@ -1623,7 +1623,7 @@ namespace QTournament {
       // above we've already changed the match state to RUNNING and
       // setRefereeMode() refuses to update matches in state RUNNING.
       // So we have to hard-code the mode change here
-      auto cfg = SqliteOverlay::KeyValueTab{db.get(), TabCfg};
+      auto cfg = SqliteOverlay::KeyValueTab{db, TabCfg};
       int tnmtDefaultRefereeModeId = cfg.getInt(CfgKey_DefaultRefereemode);
       ma.rowRef().update(MA_RefereeMode, tnmtDefaultRefereeModeId);
     }
@@ -1722,7 +1722,7 @@ namespace QTournament {
     // wrap all changes in one giant commit
     try
     {
-      auto trans = db.get().startTransaction();
+      auto trans = db.startTransaction();
 
       // store score and FINISH status
       ColumnValueClause cvc;
@@ -2123,7 +2123,7 @@ namespace QTournament {
 
     try
     {
-      return db.get().execScalarQueryIntOrNull(sql).value_or(0);
+      return db.execScalarQueryIntOrNull(sql).value_or(0);
     }
     catch (NoDataException&)
     {
