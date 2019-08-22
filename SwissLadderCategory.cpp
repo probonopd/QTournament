@@ -132,10 +132,8 @@ namespace QTournament
     //
     // let's fill the already prepared, "empty" matches with the
     // match information from newMatches
-    Error e;
-    auto mg = mm.getMatchGroup(*this, lastRound+1, GroupNum_Iteration, &e);
+    auto mg = mm.getMatchGroup(*this, lastRound+1, GroupNum_Iteration);
     assert(mg.has_value());
-    assert(e == Error::OK);
     assert(mg->getMatches().size() == nextMatches.size());
     int cnt = 0;
     PlayerMngr pm{db};
@@ -147,7 +145,7 @@ namespace QTournament
       PlayerPair pp1 = pm.getPlayerPair(pp1Id);
       PlayerPair pp2 = pm.getPlayerPair(pp2Id);
 
-      e = mm.setPlayerPairsForMatch(ma, pp1, pp2);
+      Error e = mm.setPlayerPairsForMatch(ma, pp1, pp2);
       assert(e == Error::OK);
       ++cnt;
     }
@@ -289,16 +287,13 @@ namespace QTournament
 
     for (int r=1; r <= nRounds; ++r)
     {
-      Error e;
-      auto mg = mm.createMatchGroup(*this, r, GroupNum_Iteration, &e);
+      auto mg = mm.createMatchGroup(*this, r, GroupNum_Iteration);
       assert(mg.has_value());
-      assert(e == Error::OK);
 
       for (int m=0; m < nMatchesPerRound; ++m)
       {
-        auto ma = mm.createMatch(*mg, &e);
+        auto ma = mm.createMatch(*mg);
         assert(ma.has_value());
-        assert(e == Error::OK);
       }
 
       mm.closeMatchGroup(*mg);

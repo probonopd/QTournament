@@ -773,9 +773,8 @@ namespace QTournament
         }
 
         // create a match group for the new round
-        Error e;
-        auto mg = mm.createMatchGroup(*this, firstRoundNum + internalRoundNum, grpNum, &e);
-        if (e != Error::OK) return e;
+        auto mg = mm.createMatchGroup(*this, firstRoundNum + internalRoundNum, grpNum);
+        if (!mg) return mg.err();
 
         // assign matches to this group
         for (auto [pairIndex1, pairIndex2] : matches)
@@ -783,10 +782,10 @@ namespace QTournament
           const PlayerPair& pp1 = grpMembers.at(pairIndex1);
           const PlayerPair& pp2 = grpMembers.at(pairIndex2);
 
-          auto newMatch = mm.createMatch(*mg, &e);
-          if (e != Error::OK) return e;
+          auto newMatch = mm.createMatch(*mg);
+          if (!newMatch) return newMatch.err();
 
-          e = mm.setPlayerPairsForMatch(*newMatch, pp1, pp2);
+          Error e = mm.setPlayerPairsForMatch(*newMatch, pp1, pp2);
           if (e != Error::OK) return e;
         }
 
@@ -950,16 +949,12 @@ namespace QTournament
         }
 
         // create the match group
-        Error err;
-        curGroup = mm.createMatchGroup(*this, firstRoundNum+curRound, grpNum, &err);
-        assert(err == Error::OK);
+        curGroup = mm.createMatchGroup(*this, firstRoundNum+curRound, grpNum);
         assert(curGroup);
       }
 
       // create a new, empty match in this group and map it to the bracket match id
-      Error err;
-      auto ma = mm.createMatch(*curGroup, &err);
-      assert(err == Error::OK);
+      auto ma = mm.createMatch(*curGroup);
       assert(ma);
 
       bracket2Match.insert(bmd.getBracketMatchId(), ma->getId());

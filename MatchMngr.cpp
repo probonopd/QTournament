@@ -43,17 +43,14 @@ namespace QTournament {
 
   //----------------------------------------------------------------------------
 
-  std::optional<MatchGroup> MatchMngr::createMatchGroup(const Category& cat, const int round, const int grpNum, Error *err)
+  MatchGroupOrError MatchMngr::createMatchGroup(const Category& cat, const int round, const int grpNum)
   {
-    assert(err != nullptr);
-
     // we can only create match groups, if the category configuration is stable
     // this means, we may not be in ObjState::CAT_Config or _FROZEN
     ObjState catState = cat.getState();
     if ((catState == ObjState::CAT_Config) || (catState == ObjState::CAT_Frozen))
     {
-      *err = Error::CategoryStillConfigurable;
-      return {};
+      return MatchGroupOrError{Error::CategoryStillConfigurable};
     }
 
     // check parameters for validity
@@ -65,15 +62,13 @@ namespace QTournament {
           && (grpNum != GroupNum_L16)
           && (grpNum != GroupNum_Iteration))
       {
-        *err = Error::InvalidGroupNum;
-        return {};
+        return MatchGroupOrError{Error::InvalidGroupNum};
       }
     }
 
     if (round <= 0)
     {
-      *err = Error::InvalidRound;
-      return {};
+      return MatchGroupOrError{Error::InvalidRound};
     }
 
     // ensure that we don't mix "normal" group numbers with "special" group numbers
@@ -84,8 +79,7 @@ namespace QTournament {
       const auto otherGroups = getMatchGroupsForCat(cat, round);
       if (!otherGroups.empty())
       {
-        *err = Error::InvalidGroupNum;
-        return {};
+        return MatchGroupOrError{Error::InvalidGroupNum};
       }
     }
     if (grpNum > 0)
@@ -99,23 +93,19 @@ namespace QTournament {
       int nOtherGroups = groupTab.getMatchCountForWhereClause(wc);
       if (nOtherGroups != 0)
       {
-        *err = Error::InvalidGroupNum;
-        return {};
+        return MatchGroupOrError{Error::InvalidGroupNum};
       }
     }
 
     // make sure the match group doesn't already exist
-    Error e;
-    auto mg = getMatchGroup(cat, round, grpNum, &e);
-    if (e == Error::OK)    // match group exists
+    auto mg = getMatchGroup(cat, round, grpNum);
+    if (mg.err(Error::OK))    // match group exists
     {
-      *err = Error::MatchGroupExists;
-      return {};
+      return MatchGroupOrError{Error::MatchGroupExists};
     }
-    if (e != Error::NoSuchMatchGroup)   // catch any other error except "no such group"
+    if (mg.err() != Error::NoSuchMatchGroup)   // catch any other error except "no such group"
     {
-      *err = e;
-      return {};
+      return MatchGroupOrError{mg.err()};
     }
 
     
@@ -171,15 +161,12 @@ namespace QTournament {
 
   //----------------------------------------------------------------------------
 
-  std::optional<MatchGroup> MatchMngr::getMatchGroup(const Category& cat, const int round, const int grpNum, Error *err)
+  MatchGroupOrError MatchMngr::getMatchGroup(const Category& cat, const int round, const int grpNum)
   {
-    assert(err != nullptr);
-
     // check round parameter for validity
     if (round <= 0)
     {
-      *err = Error::InvalidRound;
-      return {};
+      return MatchGroupOrError{Error::InvalidRound};
     }
     
     // check group parameter for validity
@@ -191,8 +178,7 @@ namespace QTournament {
           && (grpNum != GroupNum_L16)
           && (grpNum != GroupNum_Iteration))
       {
-        *err = Error::InvalidGroupNum;
-        return {};
+        return MatchGroupOrError{Error::InvalidGroupNum};
       }
     }
     
@@ -205,16 +191,15 @@ namespace QTournament {
 
     if (!r)
     {
-      *err = Error::NoSuchMatchGroup;
-      return {};
+      return MatchGroupOrError{Error::NoSuchMatchGroup};
     }
 
-    *err = Error::OK;
-    return MatchGroup{db, *r};
+    return MatchGroupOrError{db, *r};
   }
 
   //----------------------------------------------------------------------------
 
+  /*
   bool MatchMngr::hasMatchGroup(const Category& cat, const int round, const int grpNum, Error* err)
   {
     Error e;
@@ -222,19 +207,17 @@ namespace QTournament {
     Sloppy::assignIfNotNull<Error>(err, e);
     return mg.has_value();
   }
+  */
 
   //----------------------------------------------------------------------------
 
-  std::optional<Match> MatchMngr::createMatch(const MatchGroup &grp, Error* err)
+  MatchOrError MatchMngr::createMatch(const MatchGroup &grp)
   {
-    assert(err != nullptr);
-
     // we can only add matches to a group if the group
     // is in the config state
     if (grp.is_NOT_InState(ObjState::MG_Config))
     {
-      *err = Error::MatchGroupNotConfiguraleAnymore;
-      return {};
+      return MatchOrError{Error::MatchGroupNotConfiguraleAnymore};
     }
 
     // Okay, parameters are valid
@@ -256,7 +239,7 @@ namespace QTournament {
     cse->endCreateMatch(tab.length() - 1); // the new sequence number is always the highest
 
     // return a match object for the new match
-    return Match(db, newId);
+    return MatchOrError{db, newId};
   }
 
   //----------------------------------------------------------------------------

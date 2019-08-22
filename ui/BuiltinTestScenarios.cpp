@@ -281,21 +281,20 @@ namespace QTournament
 
       Category ls = cmngr.getCategory("LS");
 
-      Error e;
-      auto mg = mm.getMatchGroup(ls, 1, 3, &e);  // round 1, players group 3
-      assert(e == Error::OK);
+      auto mg = mm.getMatchGroup(ls, 1, 3);  // round 1, players group 3
+      assert(mg);
       mm.stageMatchGroup(*mg);
       mm.scheduleAllStagedMatchGroups();
 
       Category ld = cmngr.getCategory("LD");
-      mg = mm.getMatchGroup(ld, 1, 1, &e);  // round 1, players group 1
-      assert(e == Error::OK);
+      mg = mm.getMatchGroup(ld, 1, 1);  // round 1, players group 1
+      assert(mg);
       mm.stageMatchGroup(*mg);
-      mg = mm.getMatchGroup(ld, 1, 2, &e);  // round 1, players group 2
-      assert(e == Error::OK);
+      mg = mm.getMatchGroup(ld, 1, 2);  // round 1, players group 2
+      assert(mg);
       mm.stageMatchGroup(*mg);
-      mg = mm.getMatchGroup(ld, 2, 1, &e);  // round 2, players group 1
-      assert(e == Error::OK);
+      mg = mm.getMatchGroup(ld, 2, 1);  // round 2, players group 1
+      assert(mg);
       mm.stageMatchGroup(*mg);
       mm.scheduleAllStagedMatchGroups();
 
@@ -407,23 +406,23 @@ namespace QTournament
       assert(e == Error::OK);
 
       // stage all match groups
-      auto mg = mm.getMatchGroup(ls, 1, GroupNum_Iteration, &e);  // round 1
-      assert(e == Error::OK);
+      auto mg = mm.getMatchGroup(ls, 1, GroupNum_Iteration);  // round 1
+      assert(mg);
       mm.stageMatchGroup(*mg);
-      mg = mm.getMatchGroup(ls, 2, GroupNum_Iteration, &e);  // round 2
-      assert(e == Error::OK);
+      mg = mm.getMatchGroup(ls, 2, GroupNum_Iteration);  // round 2
+      assert(mg);
       mm.stageMatchGroup(*mg);
-      mg = mm.getMatchGroup(ls, 3, GroupNum_L16, &e);  // round 3
-      assert(e == Error::OK);
+      mg = mm.getMatchGroup(ls, 3, GroupNum_L16);  // round 3
+      assert(mg);
       mm.stageMatchGroup(*mg);
-      mg = mm.getMatchGroup(ls, 4, GroupNum_Quarter, &e);  // round 4
-      assert(e == Error::OK);
+      mg = mm.getMatchGroup(ls, 4, GroupNum_Quarter);  // round 4
+      assert(mg);
       mm.stageMatchGroup(*mg);
-      mg = mm.getMatchGroup(ls, 5, GroupNum_Semi, &e);  // round 5
-      assert(e == Error::OK);
+      mg = mm.getMatchGroup(ls, 5, GroupNum_Semi);  // round 5
+      assert(mg);
       mm.stageMatchGroup(*mg);
-      mg = mm.getMatchGroup(ls, 6, GroupNum_Final, &e);  // round 6
-      assert(e == Error::OK);
+      mg = mm.getMatchGroup(ls, 6, GroupNum_Final);  // round 6
+      assert(mg);
       mm.stageMatchGroup(*mg);
       mm.scheduleAllStagedMatchGroups();
 

@@ -402,6 +402,10 @@ constexpr int MaxRandomizationRounds = 100;    // for group assignments, player 
   // not in any group at all
   constexpr int GroupNum_NotAssigned = -1;
 
+  // A special initial rank indicating that a player pair
+  // does not (yet) have an initial rank assigned
+  static constexpr int InitialRankNotAssigned = -1;
+
   // A special value that matches any players group
   // Is only used for return values of functions
   constexpr int AnyPlayersGroupNumber = -200;

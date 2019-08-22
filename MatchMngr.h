@@ -39,7 +39,9 @@
 namespace QTournament
 {
 
-  
+  using MatchOrError = ObjectOrError<Match>;
+  using MatchGroupOrError = ObjectOrError<MatchGroup>;
+
   class MatchMngr : public QObject, public TournamentDatabaseObjectManager
   {
     Q_OBJECT
@@ -48,8 +50,8 @@ namespace QTournament
     MatchMngr(const TournamentDB& _db);
 
     // creators
-    std::optional<MatchGroup> createMatchGroup(const Category& cat, const int round, const int grpNum, Error* err);
-    std::optional<Match> createMatch(const MatchGroup& grp, Error* err);
+    MatchGroupOrError createMatchGroup(const Category& cat, const int round, const int grpNum);
+    MatchOrError createMatch(const MatchGroup& grp);
 
     // deletion
     void deleteMatchGroupAndMatch(const MatchGroup& mg) const;
@@ -71,12 +73,12 @@ namespace QTournament
     // retrievers / enumerators for MATCH GROUPS
     MatchGroupList getMatchGroupsForCat(const Category& cat, int round=-1) const;
     MatchGroupList getAllMatchGroups() const;
-    std::optional<MatchGroup> getMatchGroup(const Category& cat, const int round, const int grpNum,  Error* err);
+    MatchGroupOrError getMatchGroup(const Category& cat, const int round, const int grpNum);
     std::optional<MatchGroup> getMatchGroupBySeqNum(int mgSeqNum);
     MatchGroupList getStagedMatchGroupsOrderedBySequence() const;
 
     // boolean hasXXXXX functions for MATCH GROUPS
-    bool hasMatchGroup(const Category& cat, const int round, const int grpNum, Error* err=nullptr);
+    //bool hasMatchGroup(const Category& cat, const int round, const int grpNum, Error* err=nullptr);
 
     // staging of match groups
     Error stageMatchGroup(const MatchGroup& grp);

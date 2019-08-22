@@ -824,6 +824,7 @@ namespace QTournament
     cvc.addCol(Pairs_Player1Ref, p1.getId());
     cvc.addCol(Pairs_Player2Ref, p2.getId());
     cvc.addCol(Pairs_GrpNum, GroupNum_NotAssigned);   // Default value: no group
+    cvc.addCol(Pairs_InitialRank, InitialRankNotAssigned);
 
     DbTab{db, TabPairs, false}.insertRow(cvc);
     
@@ -980,6 +981,7 @@ namespace QTournament
         ColumnValueClause cvc;
         cvc.addCol(Pairs_CatRef, catId);
         cvc.addCol(Pairs_GrpNum, GroupNum_NotAssigned);
+        cvc.addCol(Pairs_InitialRank, InitialRankNotAssigned);
         cvc.addCol(Pairs_Player1Ref, pp.getPlayer1().getId());
         cvc.addNullCol(Pairs_Player2Ref);
 
@@ -1215,6 +1217,7 @@ namespace QTournament
     DbTab pairsTab{db, TabPairs, false};
     WhereClause wc;
     wc.addCol(Pairs_CatRef, cat.getId());
+    wc.addCol(Pairs_InitialRank, "!=", InitialRankNotAssigned);
     wc.setOrderColumn_Asc(Pairs_InitialRank);
 
     return SqliteOverlay::getObjectsByWhereClause<PlayerPair>(db, pairsTab, wc);
