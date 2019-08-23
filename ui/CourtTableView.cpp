@@ -263,7 +263,7 @@ void CourtTableView::onActionAddCourtTriggered()
 {
   CourtMngr cm{*db};
 
-  int nextCourtNum = cm.getHighestUnusedCourtNumber();
+  int nextCourtNum = cm.getHighestUsedCourtNumber() + 1;
 
   auto co = cm.createNewCourt(nextCourtNum, QString::number(nextCourtNum));
 

@@ -196,7 +196,7 @@ namespace QTournament
     tc.addCol(RA_MatchesDraw, cdt::Integer, cc::NotUsed, cc::Abort);
     tc.addCol(RA_PointsWon, cdt::Integer, cc::NotUsed, cc::Abort);
     tc.addCol(RA_PointsLost, cdt::Integer, cc::NotUsed, cc::Abort);
-    tc.addCol(RA_Rank, cdt::Integer, cc::NotUsed, cc::Abort);
+    tc.addCol(RA_Rank, cdt::Integer, cc::NotUsed, cc::NotUsed);  // ranks can be temporarily NULL, because we first create the entry and assign the rank later on
     tc.createTableAndResetCreator(*this, TabMatchSystem);
 
     // Generate a table with bracket visualization data

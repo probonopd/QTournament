@@ -79,16 +79,16 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  int CourtMngr::getHighestUnusedCourtNumber() const
+  int CourtMngr::getHighestUsedCourtNumber() const
   {
     static const std::string sql{"SELECT max(" + std::string{CO_Number} + ") FROM " + std::string{TabCourt}};
 
     try
     {
-      return db.execScalarQueryIntOrNull(sql).value_or(1);
+      return db.execScalarQueryIntOrNull(sql).value_or(0);
     }
     catch (NoDataException&) {
-      return 1;
+      return 0;
     }
   }
 
@@ -315,7 +315,7 @@ namespace QTournament
     // Damn, no court for automatic assignment available.
     // So let's check for courts with manual assignment, too.
     auto nextManualCourt = getNextUnusedCourt(true);
-    if (nextManualCourt)
+    if (!nextManualCourt)
     {
       return Error::NoCourtAvail;
     }

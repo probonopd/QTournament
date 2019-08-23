@@ -46,7 +46,7 @@ namespace QTournament
     CourtMngr (const TournamentDB& _db);
     CourtOrError createNewCourt (const int courtNum, const QString& _name);
     bool hasCourt (const int courtNum);
-    int getHighestUnusedCourtNumber() const;
+    int getHighestUsedCourtNumber() const;
     std::optional<Court> getCourt(const int courtNum);
     std::vector<Court> getAllCourts();
     Error renameCourt (Court& c, const QString& _newName);
