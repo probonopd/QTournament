@@ -45,6 +45,7 @@ HEADERS += \
     ui/CatTableView.h \
     ui/CatTabWidget.h \
     ui/CustomMetatypes.h \
+    ui/Procedures.h \
     ui/dlgEditPlayer.h \
     ui/dlgGroupAssignment.h \
     ui/GroupAssignmentListWidget.h \
@@ -299,7 +300,9 @@ SOURCES += \
     ui/commonCommands/cmdFullSync.cpp \
     ui/commonCommands/cmdDeleteFromServer.cpp \
     ui/DlgConnectionSettings.cpp \
-    ui/commonCommands/cmdConnectionSettings.cpp
+    ui/commonCommands/cmdConnectionSettings.cpp \
+    ui/procedures/Proc_RoundComplete.cpp \
+    ui/procedures/Proc_MatchCallAndFinish.cpp
 
 RESOURCES += \
     tournament.qrc

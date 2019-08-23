@@ -27,6 +27,7 @@
 #include "ui/commonCommands/cmdAssignRefereeToMatch.h"
 #include "reports/ResultSheets.h"
 #include <SimpleReportGeneratorLib/SimpleReportViewer.h>
+#include "Procedures.h"
 
 using namespace QTournament;
 
@@ -232,7 +233,8 @@ void CourtTableView::execWalkover(int playerNum)
   auto ma = getSelectedMatch();
   if (!ma) return;
   if ((playerNum != 1) && (playerNum != 2)) return; // shouldn't happen
-  GuiHelpers::execWalkover(this, *ma, playerNum);
+
+  Procedures::walkover(this, *ma, playerNum);
 }
 
 //----------------------------------------------------------------------------

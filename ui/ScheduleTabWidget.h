@@ -55,7 +55,6 @@ public slots:
   void onIdleSelectionChanged(const QItemSelection &, const QItemSelection &);
   void onStagedSelectionChanged(const QItemSelection &, const QItemSelection &);
   void onCourtDoubleClicked(const QModelIndex& index);
-  void onRoundCompleted(int catId, int round);
   void onBtnHideStagingAreaClicked();
 
 private:

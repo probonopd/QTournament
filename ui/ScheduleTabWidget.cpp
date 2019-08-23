@@ -29,7 +29,7 @@
 #include "CatMngr.h"
 #include "CourtMngr.h"
 #include "ui/commonCommands/cmdCallMatch.h"
-#include "ui/DlgRoundFinished.h"
+#include "Procedures.h"
 
 using namespace QTournament;
 
@@ -52,10 +52,6 @@ ScheduleTabWidget::ScheduleTabWidget(QWidget *parent) :
     connect(ui->mgStagedView->selectionModel(),
       SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
       SLOT(onStagedSelectionChanged(const QItemSelection&, const QItemSelection&)));
-
-    // react to changes in round,  match or category status
-    CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
-    connect(cse, SIGNAL(roundCompleted(int,int)), this, SLOT(onRoundCompleted(int,int)));
 
     // default all buttons to "disabled"
     ui->btnSchedule->setEnabled(false);
@@ -203,52 +199,6 @@ void ScheduleTabWidget::onCourtDoubleClicked(const QModelIndex &index)
 
 //----------------------------------------------------------------------------
 
-void ScheduleTabWidget::onRoundCompleted(int catId, int round)
-{
-  CatMngr cm{*db};
-  Category cat = cm.getCategoryById(catId);
-
-  //
-  // --------- Begin BAD HACK ------------
-  //
-
-  // if we're in Swiss Ladder and the number of rounds for
-  // the category suddenly shrinked, we've encountered a
-  // deadlock and we need to inform the user
-
-  if (cat.getMatchSystem() == MatchSystem::SwissLadder)
-  {
-    int nPairs = cat.getPlayerPairs().size();
-
-    int nRoundsTheory = ((nPairs % 2) == 0) ? nPairs - 1 : nPairs;
-    int nRoundsActual = cat.convertToSpecializedObject()->calcTotalRoundsCount();
-    if ((nPairs > 4) && (nRoundsActual < nRoundsTheory) && (cat.isInState(ObjState::CAT_Finalized)))
-    {
-      QString msg = tr("<br><center><b><font color=\"red\">SWISS LADDER DEADLOCK</font></b></center><br><br>");
-      msg += tr("Unfortuantely, the sequence of matches in past rounds in the category %3 has lead ");
-      msg += tr("to a deadlock. We can't play any more rounds in this category without repeating already ");
-      msg += tr("played matches.<br><br>");
-      msg += tr("Thus, the category has been reduced from %1 to %2 rounds and ");
-      msg += tr("is now finished.<br><br>");
-      msg += tr("Normally, such a deadlock should not happen... sincere apologies for this!<br><br>");
-      msg = msg.arg(nRoundsTheory).arg(nRoundsActual).arg(cat.getName());
-
-      QMessageBox::warning(this, tr("Swiss Ladder Deadlock"), msg);
-    }
-  }
-
-  //
-  // --------- End BAD HACK ------------
-  //
-
-  // present an info dialog along with the option to directly
-  // print some useful reports
-  DlgRoundFinished dlg{this, cat, round};
-  dlg.exec();
-}
-
-//----------------------------------------------------------------------------
-
 void ScheduleTabWidget::onBtnHideStagingAreaClicked()
 {
   bool setToVisible = !(ui->stagingWidget->isVisible());
@@ -319,11 +269,10 @@ void ScheduleTabWidget::askAndStoreMatchResult(const Match &ma)
 
   // actually store the data and update the internal object states
   MatchMngr mm{*db};
-  Error err = mm.setMatchScoreAndFinalizeMatch(ma, *matchResult);
-  if (err != Error::OK)
+  auto finalizationResult = mm.setMatchScoreAndFinalizeMatch(ma, *matchResult);
+  Procedures::afterMatch(this, ma, finalizationResult);
+  if (finalizationResult.err != Error::OK)
   {
-    QString msg = tr("A dabase error occurred. The match result has not been stored.");
-    QMessageBox::critical(this, tr("Store match result"), msg);
     return;
   }
 

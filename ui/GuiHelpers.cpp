@@ -459,34 +459,6 @@ void GuiHelpers::drawTwoLinePlayerPairNames_Centered(QPainter* painter, const QR
 
 //----------------------------------------------------------------------------
 
-void GuiHelpers::execWalkover(QWidget* parent, const QTournament::Match& ma, int playerNum)
-{
-  if ((playerNum != 1) && (playerNum != 2)) return; // shouldn't happen
-  if (!(ma.isWalkoverPossible())) return;
-
-  // get a user confirmation
-  QString msg = QObject::tr("This will be a walkover for\n\n\t");
-  if (playerNum == 1)
-  {
-    msg += ma.getPlayerPair1().getDisplayName();
-  } else {
-    msg += ma.getPlayerPair2().getDisplayName();
-  }
-  msg += "\n\n";
-  msg += QObject::tr("All games will be 21:0.") + "\n\n";
-  msg += QObject::tr("WARNING: this step is irrevocable!") + "\n\n";
-  msg += QObject::tr("Proceed?");
-  int result = QMessageBox::question(parent, QObject::tr("Confirm walkover"), msg);
-  if (result != QMessageBox::Yes)
-  {
-    return;
-  }
-  QTournament::MatchMngr mm{ma.getDatabaseHandle()};
-  mm.walkover(ma, playerNum);
-}
-
-//----------------------------------------------------------------------------
-
 QString GuiHelpers::getStatusSummaryForPlayer(const QTournament::Player& p)
 {
   QTournament::PlayerProfile pp{p};

@@ -1660,17 +1660,17 @@ namespace QTournament {
 
   //----------------------------------------------------------------------------
 
-  Error MatchMngr::setMatchScoreAndFinalizeMatch(const Match &ma, const MatchScore &score, bool isWalkover) const
+  MatchFinalizationResult MatchMngr::setMatchScoreAndFinalizeMatch(const Match &ma, const MatchScore &score, bool isWalkover) const
   {
     // check the match's state
     ObjState oldState = ma.getState();
     if ((!isWalkover) && (oldState != ObjState::MA_Running))
     {
-      return Error::MatchNotRunning;
+      return MatchFinalizationResult{Error::MatchNotRunning};
     }
     if (isWalkover && (!(ma.isWalkoverPossible())))
     {
-      return Error::WrongState;
+      return MatchFinalizationResult{Error::WrongState};
     }
 
     // check if the score is valid for the category settings
@@ -1679,7 +1679,7 @@ namespace QTournament {
     int numWinGames = 2; // TODO: this needs to become a category parameter!
     if (!(score.isValidScore(numWinGames, isDrawAllowed)))
     {
-      return Error::InvalidMatchResultForCategorySettings;
+      return MatchFinalizationResult{Error::InvalidMatchResultForCategorySettings};
     }
 
     // conserve the round status BEFORE we finalize the match.
@@ -1738,7 +1738,7 @@ namespace QTournament {
       {
         // release the players
         Error err = pm.releasePlayerPairsAfterMatch(ma);
-        if (err != Error::OK) return err;
+        if (err != Error::OK) return MatchFinalizationResult{err};
 
         // release the umpire, if any
         auto referee = ma.getAssignedReferee();
@@ -1750,9 +1750,9 @@ namespace QTournament {
 
         // release the court
         auto court = ma.getCourt(&err);
-        if (err != Error::OK) return err;
+        if (err != Error::OK) return MatchFinalizationResult{err};
         bool isOkay = cm.releaseCourt(*court);
-        if (!isOkay) return Error::DatabaseError;
+        if (!isOkay) return MatchFinalizationResult{Error::DatabaseError};
       }
 
       // update the match group
@@ -1780,13 +1780,18 @@ namespace QTournament {
       // get the round status AFTER the match and check whether
       // we've just finished a round
       int lastFinishedRoundAfterMatch = ma.getCategory().getRoundStatus().getFinishedRoundsCount();
-      if (lastFinishedRoundBeforeMatch != lastFinishedRoundAfterMatch)
+      std::optional<int> finishedRound =
+          (lastFinishedRoundBeforeMatch != lastFinishedRoundAfterMatch) ?
+            lastFinishedRoundAfterMatch :
+            std::optional<int>{};
+
+      if (finishedRound)
       {
         // call the hook for finished rounds (e.g., for updating the ranking information
         // or for generating new matches)
         auto specialCat = ma.getCategory().convertToSpecializedObject();
-        specialCat->onRoundCompleted(lastFinishedRoundAfterMatch);
-        cse->roundCompleted(ma.getCategory().getId(), lastFinishedRoundAfterMatch);
+        specialCat->onRoundCompleted(*finishedRound);
+        cse->roundCompleted(ma.getCategory().getId(), *finishedRound);
       }
 
       // check all matches that are currently "BUSY" because
@@ -1800,15 +1805,30 @@ namespace QTournament {
       // commit all changes
       trans.commit();
 
-      return Error::OK;
+      // special treatmeant of swiss ladder categories:
+      // check for deadlock situations if we've just finished a round
+      bool swissLadderDeadlock{false};
+      if (finishedRound && (cat.getMatchSystem() == MatchSystem::SwissLadder))
+      {
+        int nPairs = cat.getPlayerPairs().size();
+
+        int nRoundsTheory = ((nPairs % 2) == 0) ? nPairs - 1 : nPairs;
+        int nRoundsActual = cat.convertToSpecializedObject()->calcTotalRoundsCount();
+        if ((nPairs > 4) && (nRoundsActual < nRoundsTheory) && (cat.isInState(ObjState::CAT_Finalized)))
+        {
+          swissLadderDeadlock = true;
+        }
+      }
+
+      return MatchFinalizationResult{Error::OK, finishedRound, swissLadderDeadlock};
     }
     catch (BusyException&)
     {
-      return Error::DatabaseError;
+      return MatchFinalizationResult{Error::DatabaseError};
     }
     catch (GenericSqliteException&)
     {
-      return Error::DatabaseError;
+      return MatchFinalizationResult{Error::DatabaseError};
     }
   }
 
@@ -1860,18 +1880,18 @@ namespace QTournament {
 
   //----------------------------------------------------------------------------
 
-  Error MatchMngr::walkover(const Match& ma, int winningPlayerNum) const
+  MatchFinalizationResult MatchMngr::walkover(const Match& ma, int winningPlayerNum) const
   {
     // for a walkover, the match must be in READY, WAITING, RUNNING or BUSY
     if (!(ma.isWalkoverPossible()))
     {
-      return Error::WrongState;
+      return MatchFinalizationResult{Error::WrongState};
     }
 
     // the playerNum must be either 1 or 2
     if ((winningPlayerNum != 1) && (winningPlayerNum != 2))
     {
-      return Error::InvalidPlayerPair;
+      return MatchFinalizationResult{Error::InvalidPlayerPair};
     }
 
     // determine the game results

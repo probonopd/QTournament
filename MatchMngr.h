@@ -21,6 +21,7 @@
 
 #include <memory>
 #include <tuple>
+#include <optional>
 
 #include <QList>
 #include <QString>
@@ -41,6 +42,17 @@ namespace QTournament
 
   using MatchOrError = ObjectOrError<Match>;
   using MatchGroupOrError = ObjectOrError<MatchGroup>;
+
+  //----------------------------------------------------------------------------
+
+  struct MatchFinalizationResult
+  {
+    Error err;
+    std::optional<int> completedRound{};   ///< contains the number of the round that was completed by finalizing the match, if any
+    bool hasSwissLadderDeadlock{false};   ///< only for Swiss Ladder: did we encounter a deadlock situation after a match has been finished?
+  };
+
+  //----------------------------------------------------------------------------
 
   class MatchMngr : public QObject, public TournamentDatabaseObjectManager
   {
@@ -103,11 +115,11 @@ namespace QTournament
     Error canAssignMatchToCourt(const Match& ma, const Court &court) const;
     Error assignMatchToCourt(const Match& ma, const Court& court) const;
     std::optional<Court> autoAssignMatchToNextAvailCourt(const Match& ma, Error* err, bool includeManualCourts=false) const;
-    Error setMatchScoreAndFinalizeMatch(const Match& ma, const MatchScore& score, bool isWalkover=false) const;
+    MatchFinalizationResult setMatchScoreAndFinalizeMatch(const Match& ma, const MatchScore& score, bool isWalkover=false) const;
     Error updateMatchScore(const Match& ma, const MatchScore& newScore, bool winnerLoserChangePermitted) const;
     Error setNextMatchForWinner(const Match& fromMatch, const Match& toMatch, int playerNum) const;
     Error setNextMatchForLoser(const Match& fromMatch, const Match& toMatch, int playerNum) const;
-    Error walkover(const Match& ma, int winningPlayerNum) const;
+    MatchFinalizationResult walkover(const Match& ma, int winningPlayerNum) const;
     Error undoMatchCall(const Match& ma) const;
     // configuration of MATCH GROUPS
     Error closeMatchGroup(const MatchGroup& grp);

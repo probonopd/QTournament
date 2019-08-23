@@ -56,7 +56,6 @@ namespace GuiHelpers
   void drawTwoLinePlayerPairNames_Centered(QPainter* painter, const QRectF rect, const QTournament::Match& ma, const QString& localWinnerName, const QString localLoserName,
                                          double percLineSpace=1.15, bool isBold=false, bool isItalics=false, QFont fnt=QFont(), QColor fntColor = QColor(0,0,0),
                                          double fntSizeFac = 1.0, QColor winnerNameColor = QColor(Qt::green), QColor loserNameColor = QColor(Qt::red));
-  void execWalkover(QWidget* parent, const QTournament::Match& ma, int playerNum);
 
   QString getStatusSummaryForPlayer(const QTournament::Player& p);
   QString getStatusSummaryForPlayer(const QTournament::Player& p, const QTournament::PlayerProfile& pp);
