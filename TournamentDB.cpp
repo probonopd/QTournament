@@ -200,7 +200,7 @@ namespace QTournament
     tc.createTableAndResetCreator(*this, TabMatchSystem);
 
     // Generate a table with bracket visualization data
-    tc.addForeignKey(BV_MatchRef, TabMatch, ca::Cascade, ca::Cascade, cc::Abort, cc::Abort);
+    tc.addForeignKey(BV_MatchRef, TabMatch, ca::Cascade, ca::Cascade, cc::Abort, cc::NotUsed);
     tc.addForeignKey(BV_CatRef, TabCategory, ca::Cascade, ca::Cascade, cc::NotUsed, cc::Abort);
     tc.addCol(BV_Page, cdt::Integer, cc::NotUsed, cc::Abort);
     tc.addCol(BV_GridX0, cdt::Integer, cc::NotUsed, cc::Abort);
@@ -218,8 +218,8 @@ namespace QTournament
     tc.addCol(BV_NextMatchPosForLoser, cdt::Integer, cc::NotUsed, cc::Abort);
     tc.addCol(BV_NextLoserMatch, cdt::Integer, cc::NotUsed, cc::Abort);
     tc.addCol(BV_NextWinnerMatch, cdt::Integer, cc::NotUsed, cc::Abort);
-    tc.addForeignKey(BV_Pair1Ref, TabPairs, ca::Cascade, ca::Cascade, cc::NotUsed, cc::Abort);
-    tc.addForeignKey(BV_Pair2Ref, TabPairs, ca::Cascade, ca::Cascade, cc::NotUsed, cc::Abort);
+    tc.addForeignKey(BV_Pair1Ref, TabPairs, ca::Cascade, ca::Cascade, cc::NotUsed, cc::NotUsed);
+    tc.addForeignKey(BV_Pair2Ref, TabPairs, ca::Cascade, ca::Cascade, cc::NotUsed, cc::NotUsed);
     tc.createTableAndResetCreator(*this, TabBracketVis);
   }
 
