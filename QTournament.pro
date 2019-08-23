@@ -44,6 +44,7 @@ HEADERS += \
     ui/BuiltinTestScenarios.h \
     ui/CatTableView.h \
     ui/CatTabWidget.h \
+    ui/CustomMetatypes.h \
     ui/dlgEditPlayer.h \
     ui/dlgGroupAssignment.h \
     ui/GroupAssignmentListWidget.h \
@@ -181,6 +182,7 @@ SOURCES += \
     ui/BuiltinTestScenarios.cpp \
     ui/CatTableView.cpp \
     ui/CatTabWidget.cpp \
+    ui/CustomMetatypes.cpp \
     ui/dlgEditPlayer.cpp \
     ui/dlgGroupAssignment.cpp \
     ui/GroupAssignmentListWidget.cpp \

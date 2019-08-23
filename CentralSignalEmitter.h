@@ -25,6 +25,8 @@
 #include "Player.h"
 #include "Court.h"
 
+#include "ui/CustomMetatypes.h"
+
 namespace QTournament
 {
 
@@ -63,8 +65,8 @@ namespace QTournament
     void endCreateMatchGroup (int newMatchGroupSeqNum);
     void beginCreateMatch();
     void endCreateMatch(int newMatchSeqNum);
-    void matchStatusChanged(int matchId, int matchSeqNum, ObjState fromState, ObjState toState) const;
-    void matchGroupStatusChanged(int matchGroupId, int matchGroupSeqNum, ObjState fromState, ObjState toState) const;
+    void matchStatusChanged(int matchId, int matchSeqNum, ObjState fromState, ObjState toState);
+    void matchGroupStatusChanged(int matchGroupId, int matchGroupSeqNum, ObjState fromState, ObjState toState);
     void matchResultUpdated(int matchId, int matchSeqNum) const;
     void roundCompleted(int catId, int round) const;
 
@@ -72,7 +74,7 @@ namespace QTournament
     void beginCreatePlayer ();
     void endCreatePlayer (int newPlayerSeqNum);
     void playerRenamed (const Player& p);
-    void playerStatusChanged(int playerId, int playerSeqNum, ObjState fromState, ObjState toState) const;
+    void playerStatusChanged(int playerId, int playerSeqNum, ObjState fromState, ObjState toState);
     void beginDeletePlayer(int playerSeqNum) const;
     void endDeletePlayer() const;
     void externalPlayerDatabaseChanged();

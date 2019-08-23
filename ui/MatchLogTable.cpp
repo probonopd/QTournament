@@ -32,8 +32,15 @@ using namespace QTournament;
 MatchLogTable::MatchLogTable(QWidget* parent)
   :CommonMatchTableWidget{parent}
 {
-  connect(CentralSignalEmitter::getInstance(), SIGNAL(matchStatusChanged(int,int,ObjState,ObjState)),
-          this, SLOT(onMatchStatusChanged(int,int,ObjState,ObjState)), Qt::DirectConnection);
+  CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
+
+  auto con = QObject::connect(
+        cse,
+        SIGNAL(matchStatusChanged(int,int,ObjState,ObjState)),
+        this, SLOT(onMatchStatusChanged(int,int,ObjState,ObjState)),
+        Qt::DirectConnection
+        );
+  std::cerr << "MatchLogTable: connected! con status = " << con << std::endl;
 
   // handle context menu requests
   setContextMenuPolicy(Qt::CustomContextMenu);
@@ -65,6 +72,8 @@ std::optional<Match> MatchLogTable::getSelectedMatch() const
 
 void MatchLogTable::onMatchStatusChanged(int maId, int maSeqNum, ObjState oldStat, ObjState newStat)
 {
+  std::cerr << "MatchLogTable: onMatchStatusChanged!" << std::endl;
+
   if (newStat != ObjState::MA_Finished) return;
   if (db == nullptr) return;
 

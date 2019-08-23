@@ -101,11 +101,11 @@ namespace QTournament
     createNewKeyValueTab(TabCfg);
     
     // Generate the table for the courts
-    tc.addCol(GenericNameFieldName, cdt::Text, cc::Abort, cc::Abort);
+    tc.addCol(GenericNameFieldName, cdt::Text, cc::NotUsed, cc::Abort);
     tc.addCol(GenericStateFieldName, cdt::Integer, cc::NotUsed, cc::Abort);
     tc.addCol(GenericSeqnumFieldName, cdt::Integer, cc::Abort, cc::Abort);
     tc.addCol(CO_Number, cdt::Integer, cc::Abort, cc::Abort);
-    tc.addCol(CO_IsManualAssignment, cdt::Integer, cc::Abort, cc::Abort);
+    tc.addCol(CO_IsManualAssignment, cdt::Integer, cc::NotUsed, cc::Abort);
     tc.createTableAndResetCreator(*this, TabCourt);
     
     // Generate the table holding the teams

@@ -39,7 +39,7 @@ CommonMatchTableWidget::CommonMatchTableWidget(QWidget* parent)
 {tr("Duration"), RelNumericColWidth, -1, MaxNumericColWidth},
 {tr("Court"), RelNumericColWidth, -1, MaxNumericColWidth},
 {tr("Umpire"), RelUmpireColWidth, -1, -1}
-     }}
+     }, parent}
 {
   setRubberBandCol(IdxMatchInfoCol);
 

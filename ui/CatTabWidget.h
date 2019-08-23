@@ -26,11 +26,15 @@
 #include "TournamentDB.h"
 #include "ui/delegates/CatTabPlayerItemDelegate.h"
 
+#include "CustomMetatypes.h"
+
+using namespace QTournament;
+
 class CatTabWidget : public QDialog
 {
   Q_OBJECT
 public:
-  CatTabWidget();
+  CatTabWidget(QWidget* parent = nullptr);
   virtual ~CatTabWidget();
   void setDatabase(QTournament::TournamentDB* _db);
 
@@ -80,12 +84,12 @@ public slots:
   void onBtnAddCatClicked();
   void onBtnRunCatClicked();
   void onMatchSystemChanged(int newId);
-  void onGroupConfigChanged(const QTournament::KO_Config& newCfg);
-  void onPlayerAddedToCategory(const QTournament::Player& p, const QTournament::Category& c);
-  void onPlayerRemovedFromCategory(const QTournament::Player& p, const QTournament::Category& c);
-  void onPlayerRenamed(const QTournament::Player& p);
-  void onCatStateChanged(const QTournament::Category& c, const QTournament::ObjState fromState, const QTournament::ObjState toState);
-  void onPlayerStateChanged(int playerId, int seqNum, const QTournament::ObjState fromState, const QTournament::ObjState toState);
+  void onGroupConfigChanged(const KO_Config& newCfg);
+  void onPlayerAddedToCategory(const Player& p, const Category& c);
+  void onPlayerRemovedFromCategory(const Player& p, const Category& c);
+  void onPlayerRenamed(const Player& p);
+  void onCatStateChanged(const Category& c, const ObjState fromState, const ObjState toState);
+  void onPlayerStateChanged(int playerId, int seqNum, ObjState fromState, ObjState toState);
   void onRemovePlayerFromCat();
   void onBulkRemovePlayersFromCat();
   void onAddPlayerToCat();

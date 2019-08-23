@@ -43,8 +43,8 @@
 using namespace std;
 using namespace QTournament;
 
-CatTabWidget::CatTabWidget()
-  :db(nullptr)
+CatTabWidget::CatTabWidget(QWidget* parent)
+  :QDialog(nullptr), db(nullptr)
 {
   ui.setupUi(this);
   
@@ -862,7 +862,7 @@ void CatTabWidget::onCatStateChanged(const Category &c, const ObjState fromState
 
 //----------------------------------------------------------------------------
 
-void CatTabWidget::onPlayerStateChanged(int playerId, int seqNum, const ObjState fromState, const ObjState toState)
+void CatTabWidget::onPlayerStateChanged(int playerId, int seqNum, ObjState fromState, ObjState toState)
 {
   // is a category selected?
   if (!(ui.catTableView->hasCategorySelected())) return;

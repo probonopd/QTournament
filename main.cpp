@@ -28,11 +28,16 @@
 #include <QStyleFactory>
 
 #include "ui/MainFrame.h"
+#include "TournamentDataDefs.h"
+#include "ui/CustomMetatypes.h"
 
 int main(int argc, char *argv[])
 {
   // initialize resources, if needed
   Q_INIT_RESOURCE(tournament);
+
+  // register my custom types as metatypes
+  registerCustomTypes();
 
   QApplication app(argc, argv);
 

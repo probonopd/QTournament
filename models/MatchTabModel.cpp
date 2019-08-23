@@ -286,6 +286,8 @@ void MatchTableModel::onEndCreateMatch(int newMatchSeqNum)
 
 void MatchTableModel::onMatchStatusChanged(int matchId, int matchSeqNum, ObjState fromState, ObjState toState)
 {
+  std::cerr << "MatchTabModel: onMatchStatusChanged!" << std::endl;
+
   QModelIndex startIdx = createIndex(matchSeqNum, 0);
   QModelIndex endIdx = createIndex(matchSeqNum, ColumnCount-1);
   emit dataChanged(startIdx, endIdx);

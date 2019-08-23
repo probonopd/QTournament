@@ -1,5 +1,6 @@
 #include "MatchLogTabWidget.h"
 #include "ui_MatchLogTabWidget.h"
+#include "CentralSignalEmitter.h"
 
 using namespace QTournament;
 

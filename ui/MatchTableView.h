@@ -35,6 +35,7 @@
 #include "Match.h"
 #include "AutoSizingTable.h"
 
+using namespace QTournament;
 
 class MatchTableView : public GuiHelpers::AutoSizingTableView_WithDatabase<QTournament::MatchTableModel>
 {
@@ -66,7 +67,7 @@ private slots:
   void onRemoveRefereeTriggered();
   void onSectionHeaderDoubleClicked();
   void onMatchTimePredictionUpdate();
-  void onMatchStatusChanged(int maId, int maSeqNum, QTournament::ObjState oldStat, QTournament::ObjState newStat);
+  void onMatchStatusChanged(int maId, int maSeqNum, ObjState oldStat, ObjState newStat);
   void onPrint1Selected();
   void onPrint4Selected();
   void onPrint8Selected();
