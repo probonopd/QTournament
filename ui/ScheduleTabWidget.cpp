@@ -29,6 +29,7 @@
 #include "CatMngr.h"
 #include "CourtMngr.h"
 #include "Procedures.h"
+#include "../BackendAPI.h"
 
 using namespace QTournament;
 
@@ -232,39 +233,8 @@ void ScheduleTabWidget::askAndStoreMatchResult(const Match &ma)
   auto matchResult = dlg.getMatchScore();
   assert(matchResult);
 
-  // create a (rather ugly) confirmation message box
-  QString msg = tr("Please confirm:\n\n");
-  msg += ma.getPlayerPair1().getDisplayName() + "\n";
-  msg += "\tvs.\n";
-  msg += ma.getPlayerPair2().getDisplayName() + "\n\n";
-  msg += tr("Result: ");
-  QString sResult = matchResult->toString();
-  sResult = sResult.replace(",", ", ");
-  msg += sResult + "\n\n\n";
-  if (matchResult->getWinner() == 1)
-  {
-    msg += tr("WINNER: ");
-    msg += ma.getPlayerPair1().getDisplayName();
-    msg += "\n\n";
-    msg += tr("LOSER: ");
-    msg += ma.getPlayerPair2().getDisplayName();
-  }
-  if (matchResult->getWinner() == 2)
-  {
-    msg += tr("WINNER: ");
-    msg += ma.getPlayerPair2().getDisplayName();
-    msg += "\n\n";
-    msg += tr("LOSER: ");
-    msg += ma.getPlayerPair1().getDisplayName();
-  }
-  if (matchResult->getWinner() == 0)
-  {
-    msg += tr("The match result is DRAW");
-  }
-  msg += "\n\n";
-
-  int confirm = QMessageBox::question(this, tr("Please confirm match result"), msg);
-  if (confirm != QMessageBox::Yes) return;
+  // let the user confirm the result
+  if (!GuiHelpers::showAndConfirmMatchResult(this, ma, matchResult)) return;
 
   // actually store the data and update the internal object states
   MatchMngr mm{*db};
@@ -285,24 +255,14 @@ void ScheduleTabWidget::askAndStoreMatchResult(const Match &ma)
   if (oldCourt->isManualAssignmentOnly()) return;
 
   // first of all, check if there is a next match available
-  int nextMatchId;
-  int nextCourtId;
-  Error e = mm.getNextViableMatchCourtPair(&nextMatchId, &nextCourtId, true);
-  if ((e == Error::NoMatchAvail) || (nextMatchId < 1))
-  {
-    return;
-  }
+  auto nextMatch = API::Qry::nextCallableMatch(*db);
+  if (!nextMatch) return;
 
   // now ask if the match should be started
-  confirm = QMessageBox::question(this, tr("Next Match"), tr("Start the next available match on the free court?"));
-  if (confirm != QMessageBox::Yes) return;
-
-  // instead of the court determined by getNextViableMatchCourtPair we use
-  // the court of the previous match
+  int rc = QMessageBox::question(this, tr("Next Match"), tr("Start the next available match on the free court?"));
+  if (rc != QMessageBox::Yes) return;
 
   // try to start the match on the old court
-  auto nextMatch = mm.getMatch(nextMatchId);
-  assert(nextMatch);
   Procedures::callMatch(this, *nextMatch, *oldCourt);
 }
 

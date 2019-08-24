@@ -5,5 +5,7 @@
         <file>icons/edit-delete-9.png</file>
         <file>ui/consent.html</file>
         <file>ui/consent_de.html</file>
+        <file>ui/match_result_confirmation.html</file>
+        <file>ui/match_result_confirmation_de.html</file>
     </qresource>
 </RCC>

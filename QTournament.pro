@@ -26,6 +26,7 @@ CONFIG(release, debug|release) {
 DEFINES += "BOOST_LOG_DYN_LINK=1"
 
 HEADERS += \
+    BackendAPI.h \
     Category.h \
     CatMngr.h \
     GroupDef.h \
@@ -164,6 +165,7 @@ HEADERS += \
     SqliteQverlayForwards.h
 
 SOURCES += \
+    BackendAPI_Getters.cpp \
     Category.cpp \
     CatMngr.cpp \
     GroupDef.cpp \

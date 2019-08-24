@@ -33,6 +33,7 @@ namespace QTournament
   class PlayerPair;
   class Match;
   class Court;
+  class MatchScore;
 }
 
 namespace GuiHelpers
@@ -61,6 +62,28 @@ namespace GuiHelpers
   QString getStatusSummaryForPlayer(const QTournament::Player& p, const QTournament::PlayerProfile& pp);
   QString qdt2durationString(const QDateTime& qdt);
   QString qdt2string(const QDateTime& qdt);
+
+  /** \brief Looks up a (textual) resource and returns its locale-dependent value.
+   *
+   * Locale dependend means: if our current locale is "de" we try to retrieve a
+   * resource with an appended "_de" before the resource name extension (e.g., before
+   * the ".html". If we can't find such a resource or if the locale is not "de", we
+   * simply return the base resource as provided by the caller.
+   *
+   * \returns the content of the "localized" resource or an empty string if we
+   * couldn't find any matching resource.
+   *
+   */
+  QString getLocaleDependedResource(const QString& resName);
+
+  /** \brief Asks the user to confirm a given result for a given match.
+   *
+   * This function is only for displaying the dialog box. There is absolutely
+   * no business logic (consistency checks, ...) inside this function.
+   *
+   * \return `true` if the user confirmed the result; `false` otherwise
+   */
+  bool showAndConfirmMatchResult(QWidget* parent, const QTournament::Match& ma, const std::optional<QTournament::MatchScore>& matchResult);
 }
 
 #endif // GUIHELPERS_H

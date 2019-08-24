@@ -21,6 +21,8 @@
 #include <QObject>
 #include <QMessageBox>
 #include <QFontMetricsF>
+#include <QLocale>
+#include <QFile>
 
 #include "TournamentDataDefs.h"
 #include "MatchMngr.h"
@@ -551,6 +553,72 @@ QString GuiHelpers::qdt2string(const QDateTime& qdt)
 
 //----------------------------------------------------------------------------
 
+QString GuiHelpers::getLocaleDependedResource(const QString& resName)
+{
+  // determine the local as a string and check if we're
+  // using a German locale
+  bool isGerman = QLocale().name().startsWith("de", Qt::CaseInsensitive);
+
+  // determine the local resource name
+  QString rn{resName};
+  if (isGerman)
+  {
+    // find the file extension (==> everything after and including the last dot)
+    auto idxLastDot = resName.lastIndexOf('.');
+    QString ext{};
+    if (idxLastDot >= 0)
+    {
+      ext = resName.mid(idxLastDot);  // includes the dot
+      rn.truncate(idxLastDot);
+    }
+    rn += "_de" + ext;
+
+    // fall back to the default if no local version exists
+    if (!QFile::exists(rn)) rn = resName;
+  }
+
+  QFile binData{rn};
+  if (!binData.open(QIODevice::ReadOnly)) return QString{};
+
+  return binData.readAll();
+}
+
+//----------------------------------------------------------------------------
+
+bool GuiHelpers::showAndConfirmMatchResult(QWidget* parent, const Match& ma, const std::optional<MatchScore>& matchResult)
+{
+  auto pp1Name = ma.getPlayerPair1().getDisplayName();
+  auto pp2Name = ma.getPlayerPair2().getDisplayName();
+  QString sResult = matchResult->toString();
+  sResult = sResult.replace(",", "  ,  ");
+  QString msg = getLocaleDependedResource(":/ui/match_result_confirmation.html");
+  msg = msg.arg(pp1Name);
+  msg = msg.arg(pp2Name);
+  msg = msg.arg(sResult);
+  if (matchResult->getWinner() == 1)
+  {
+    msg = msg.arg(pp1Name);
+    msg = msg.arg(pp2Name);
+  }
+  if (matchResult->getWinner() == 2)
+  {
+    msg = msg.arg(pp2Name);
+    msg = msg.arg(pp1Name);
+  }
+  if (matchResult->getWinner() == 0)
+  {
+    msg = msg.arg(QObject::tr("--- (Draw)"));
+    msg = msg.arg(QObject::tr("--- (Draw)"));
+  }
+
+  QMessageBox dlgConfirm{parent};
+  dlgConfirm.setText(msg);
+  dlgConfirm.setStandardButtons(QMessageBox::No | QMessageBox::Yes);
+  dlgConfirm.setDefaultButton(QMessageBox::Yes);
+  dlgConfirm.setWindowTitle(QObject::tr("Please confirm match result"));
+
+  return (dlgConfirm.exec() == QMessageBox::Yes);
+}
 
 //----------------------------------------------------------------------------
 
@@ -597,5 +665,4 @@ QString GuiHelpers::qdt2string(const QDateTime& qdt)
 //----------------------------------------------------------------------------
 
 
-//----------------------------------------------------------------------------
 

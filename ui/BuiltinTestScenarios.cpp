@@ -21,6 +21,7 @@
 
 #include "BuiltinTestScenarios.h"
 #include "../HelperFunc.h"
+#include "BackendAPI.h"
 
 namespace QTournament
 {
@@ -350,14 +351,10 @@ namespace QTournament
       SqliteOverlay::DbTab matchTab{db, TabMatch, false};
       while (true)
       {
-        int nextMacthId;
-        int nextCourtId;
-        mm.getNextViableMatchCourtPair(&nextMacthId, &nextCourtId);
-        if (nextMacthId <= 0) break;
-
-        auto nextMatch = mm.getMatch(nextMacthId);
+        auto nextMatch = API::Qry::nextCallableMatch(db);
         if (!nextMatch) break;
-        auto nextCourt = courtm.getCourtById(nextCourtId);
+
+        auto nextCourt = courtm.getNextUnusedCourt();
         if (!nextCourt) break;
 
         if (mm.assignMatchToCourt(*nextMatch, *nextCourt) != Error::OK) break;
@@ -367,7 +364,7 @@ namespace QTournament
         // overwrite the match finish time to get a fake match duration
         // the duration is at least 15 minutes and max 25 minutes
         int fakeDuration = 15 * 60  +  10 * 60 * (qrand() / (RAND_MAX * 1.0));
-        auto maRow = matchTab[nextMacthId];
+        auto maRow = matchTab[nextMatch->getId()];
         maRow.update(MA_FinishTime, std::to_string(epochSecs + fakeDuration));
       }
     }
@@ -436,14 +433,10 @@ namespace QTournament
       // play all matches
       while (true)
       {
-        int nextMacthId;
-        int nextCourtId;
-        mm.getNextViableMatchCourtPair(&nextMacthId, &nextCourtId);
-        if (nextMacthId <= 0) break;
-
-        auto nextMatch = mm.getMatch(nextMacthId);
+        auto nextMatch = API::Qry::nextCallableMatch(db);
         if (!nextMatch) break;
-        auto nextCourt = courtm.getCourtById(nextCourtId);
+
+        auto nextCourt = courtm.getNextUnusedCourt();
         if (!nextCourt) break;
 
         if (mm.assignMatchToCourt(*nextMatch, *nextCourt) != Error::OK) break;

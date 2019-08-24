@@ -111,7 +111,6 @@ namespace QTournament
     Error setSymbolicPlayerForMatch(const Match& fromMatch, const Match& toMatch, bool asWinner, int dstPlayerPosInMatch) const;
     Error setPlayerToUnused(const Match& ma, int unusedPlayerPos, int winnerRank) const;   // use only if this is the last match for the winner!
     Error setRankForWinnerOrLoser(const Match& ma, bool isWinner, int rank) const;
-    Error getNextViableMatchCourtPair(int* matchId, int* courtId, bool includeManualCourts=false) const;
     Error canAssignMatchToCourt(const Match& ma, const Court &court) const;
     Error assignMatchToCourt(const Match& ma, const Court& court) const;
     std::optional<Court> autoAssignMatchToNextAvailCourt(const Match& ma, Error* err, bool includeManualCourts=false) const;

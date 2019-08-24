@@ -1413,50 +1413,6 @@ namespace QTournament {
   //----------------------------------------------------------------------------
 
   /**
-   * Determines the next callable match and the next free court. Can be used for
-   * automatically calling the next match, e.g., after a previous match is finished
-   *
-   * @param matchNum will contain the database ID of the next callable match
-   * @param courtNum will contain the database ID of the next free court
-   * @param includeManualCourts should be set to true if the search for free courts shall include courts with manual match assignment
-   *
-   * @return the identified match and court number and an error code
-   */
-  Error MatchMngr::getNextViableMatchCourtPair(int *matchId, int *courtId, bool includeManualCourts) const
-  {
-    assert(matchId != nullptr);
-    assert(courtId != nullptr);
-
-    // default return values: error
-    *matchId = -1;
-    *courtId = -1;
-
-    // find the next available match with the lowest match number
-    int reqState = static_cast<int>(ObjState::MA_Ready);
-    WhereClause wc;
-    wc.addCol(GenericStateFieldName, reqState);
-    wc.setOrderColumn_Asc(MA_Num);
-    auto matchRow = tab.get2(wc);
-    if (!matchRow)
-    {
-      return Error::NoMatchAvail;
-    }
-
-    CourtMngr cm{db};
-    auto nextCourt = cm.autoSelectNextUnusedCourt(includeManualCourts);
-    if (nextCourt)
-    {
-      *matchId = matchRow->id();
-      *courtId = nextCourt->getId();
-      return Error::OK;
-    }
-
-    return nextCourt.err();
-  }
-
-  //----------------------------------------------------------------------------
-
-  /**
    * Determines whether it is okay to start a specific match on a specific court
    *
    * @param ma the match to start
