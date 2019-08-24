@@ -24,7 +24,6 @@
 #include "CourtMngr.h"
 #include "MatchMngr.h"
 #include "ui/GuiHelpers.h"
-#include "ui/commonCommands/cmdAssignRefereeToMatch.h"
 #include "reports/ResultSheets.h"
 #include <SimpleReportGeneratorLib/SimpleReportViewer.h>
 #include "Procedures.h"
@@ -334,11 +333,10 @@ void CourtTableView::onActionSwapRefereeTriggered()
   if (!ma) return;
 
   // see if we can assign a new referee
-  if (ma->canAssignReferee(RefereeAction::Swap) != Error::OK) return;
+  //if (ma->canAssignReferee(RefereeAction::Swap) != Error::OK) return;
 
   // trigger the assign-umpire-procedure
-  cmdAssignRefereeToMatch cmd{this, *ma, RefereeAction::Swap};
-  cmd.exec();
+  Procedures::swapUmpire(this, *ma);
 }
 
 //----------------------------------------------------------------------------

@@ -17,7 +17,7 @@
  */
 
 #ifndef UIPROCEDURES_H
-#define GUIHELPERS_H
+#define UIPROCEDURES_H
 
 #include <QWidget>
 
@@ -76,9 +76,61 @@ namespace Procedures {
       const QTournament::Match& ma,   ///< the affected match
       const QTournament::MatchFinalizationResult& mfr   ///< some flags what has happened after the match was finished
       );
+
   //----------------------------------------------------------------------------
+
+  /** \brief Pre-assigns an umpire to a match BEFORE THE MATCH IS CALLED
+   */
+  void preassignUmpireToMatch(
+      QWidget* parentWidget,   ///< parent window for dialogs, etc.
+      const QTournament::Match& ma   ///< the affected match
+      );
+
   //----------------------------------------------------------------------------
+
+  /** \brief Assigns an umpire to a match WHEN THE MATCH IS BEING CALLED
+   */
+  void selectUmpireOnMatchCall(
+      QWidget* parentWidget,   ///< parent window for dialogs, etc.
+      const QTournament::Match& ma   ///< the affected match
+      );
+
   //----------------------------------------------------------------------------
+
+  /** \brief Swaps the umpire for an already running match
+   */
+  void swapUmpire(
+      QWidget* parentWidget,   ///< parent window for dialogs, etc.
+      const QTournament::Match& ma   ///< the affected match
+      );
+
   //----------------------------------------------------------------------------
+
+  void callMatch(
+      QWidget* parentWidget,   ///< parent window for dialogs, etc.
+      const QTournament::Match& ma,   ///< the match to call
+      const QTournament::Court& co   ///< the court on which to call the match
+      );
+
+  //----------------------------------------------------------------------------
+
+
+  //----------------------------------------------------------------------------
+
+
+  //----------------------------------------------------------------------------
+
+
+  //----------------------------------------------------------------------------
+
+
+  //----------------------------------------------------------------------------
+
+
+  //----------------------------------------------------------------------------
+
+
+  //----------------------------------------------------------------------------
+
 }
 #endif // GUIHELPERS_H

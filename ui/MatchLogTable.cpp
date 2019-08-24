@@ -34,13 +34,12 @@ MatchLogTable::MatchLogTable(QWidget* parent)
 {
   CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
 
-  auto con = QObject::connect(
+  QObject::connect(
         cse,
         SIGNAL(matchStatusChanged(int,int,ObjState,ObjState)),
         this, SLOT(onMatchStatusChanged(int,int,ObjState,ObjState)),
         Qt::DirectConnection
         );
-  std::cerr << "MatchLogTable: connected! con status = " << con << std::endl;
 
   // handle context menu requests
   setContextMenuPolicy(Qt::CustomContextMenu);

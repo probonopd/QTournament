@@ -127,8 +127,6 @@ HEADERS += \
     TournamentDatabaseObject.h \
     CentralSignalEmitter.h \
     ui/DlgSelectReferee.h \
-    ui/commonCommands/cmdAssignRefereeToMatch.h \
-    ui/commonCommands/cmdCallMatch.h \
     ui/delegates/TeamItemDelegate.h \
     models/TeamTableModel.h \
     ui/TeamTableView.h \
@@ -265,8 +263,6 @@ SOURCES += \
     TournamentDatabaseObject.cpp \
     CentralSignalEmitter.cpp \
     ui/DlgSelectReferee.cpp \
-    ui/commonCommands/cmdAssignRefereeToMatch.cpp \
-    ui/commonCommands/cmdCallMatch.cpp \
     ui/delegates/TeamItemDelegate.cpp \
     models/TeamTableModel.cpp \
     ui/TeamTableView.cpp \

@@ -32,8 +32,6 @@
 #include "MatchMngr.h"
 #include "CourtMngr.h"
 #include "DlgSelectReferee.h"
-#include "ui/commonCommands/cmdAssignRefereeToMatch.h"
-#include "ui/commonCommands/cmdCallMatch.h"
 #include "CentralSignalEmitter.h"
 #include "reports/ResultSheets.h"
 #include "Procedures.h"
@@ -222,11 +220,8 @@ void MatchTableView::onContextMenuRequested(const QPoint& pos)
     if (!co) return;  // shouldn't happen
 
     // call the match on the selected court
-    cmdCallMatch cmd{this, *ma, *co};
-    if (cmd.exec() == Error::OK)
-    {
-      updateSelectionAfterDataChange();
-    }
+    Procedures::callMatch(this, *ma, *co);
+    updateSelectionAfterDataChange();
   }
 
   // another hack:
@@ -336,11 +331,8 @@ void MatchTableView::onMatchDoubleClicked(const QModelIndex& index)
   // we may try to assign the match
   if (nextCourt)
   {
-    cmdCallMatch cmd{this, *ma, *nextCourt};
-    if (cmd.exec() == Error::OK)
-    {
-      updateSelectionAfterDataChange();
-    }
+    Procedures::callMatch(this, *ma, *nextCourt);
+    updateSelectionAfterDataChange();
   }
 }
 
@@ -351,8 +343,7 @@ void MatchTableView::onAssignRefereeTriggered()
   auto ma = getSelectedMatch();
   if (!ma) return;
 
-  cmdAssignRefereeToMatch cmd{this, *ma, RefereeAction::PreAssign};
-  cmd.exec();
+  Procedures::preassignUmpireToMatch(this, *ma);
 }
 
 //----------------------------------------------------------------------------

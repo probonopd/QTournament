@@ -1593,7 +1593,7 @@ namespace QTournament {
 
     // store the effective referee-mode at call time.
     //
-    // This is necessary because cmdAssignRefereeToMatch wouldn't work
+    // This is necessary because the procedure "assign referee" wouldn't work
     // correctly if the referee mode is USE DEFAULT and we change the
     // default mode e.g. to RefereeMode::None after the match has been called. The
     // same applies to the CourtItemDelegate.

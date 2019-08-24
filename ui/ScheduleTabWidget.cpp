@@ -28,7 +28,6 @@
 #include "MatchMngr.h"
 #include "CatMngr.h"
 #include "CourtMngr.h"
-#include "ui/commonCommands/cmdCallMatch.h"
 #include "Procedures.h"
 
 using namespace QTournament;
@@ -304,8 +303,7 @@ void ScheduleTabWidget::askAndStoreMatchResult(const Match &ma)
   // try to start the match on the old court
   auto nextMatch = mm.getMatch(nextMatchId);
   assert(nextMatch);
-  cmdCallMatch cmd{this, *nextMatch, *oldCourt};
-  cmd.exec();
+  Procedures::callMatch(this, *nextMatch, *oldCourt);
 }
 
 //----------------------------------------------------------------------------
