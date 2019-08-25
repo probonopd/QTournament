@@ -5,10 +5,11 @@
         <file>icons/edit-delete-9.png</file>
         <file>txt/consent.html</file>
         <file>txt/match_result_confirmation.html</file>
+        <file>txt/match_call.html</file>
     </qresource>
-    <qresource prefix="/" lang="de">
+    <qresource lang="de" prefix="/">
         <file alias="txt/match_result_confirmation.html">txt/match_result_confirmation_de.html</file>
         <file alias="txt/consent.html">txt/consent_de.html</file>
+        <file alias="txt/match_call.html">txt/match_call_de.html</file>
     </qresource>
-
 </RCC>

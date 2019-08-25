@@ -16,13 +16,14 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "GuiHelpers.h"
+#include <iostream>
 
 #include <QObject>
 #include <QMessageBox>
 #include <QFontMetricsF>
 #include <QLocale>
 #include <QFile>
+#include <QRegExp>
 
 #include "TournamentDataDefs.h"
 #include "MatchMngr.h"
@@ -32,6 +33,8 @@
 #include "PlayerPair.h"
 #include "Player.h"
 #include "PlayerProfile.h"
+
+#include "GuiHelpers.h"
 
 using namespace QTournament;
 
@@ -93,82 +96,59 @@ QString GuiHelpers::groupNumToLongString(int grpNum)
  */
 QString GuiHelpers::prepCall(const QTournament::Match &ma, const QTournament::Court &co, int nCall)
 {
-  int maNum = ma.getMatchNumber();
-  int coNum = co.getNumber();
+  // get the (translated) pattern for the call message
+  QString call = getLocaleDependedResource(":/txt/match_call.html");
 
-  QString call = "<i><font color=\"blue\">" + QObject::tr("Please announce:") + "</font></i><br><br><br>";
-
-  call += "<big>";
-
+  // Pick the right opening phrase  (arg #1, optional)
   if (nCall == 0)
   {
-    call += QObject::tr("Next match,<br><br>");
+    enableTextOption(call, "InitialCall");
+    disableTextOption(call, "RepCall");
   } else {
-    call += "<b><font color=\"darkRed\">%1. ";
-    call = call.arg(QString::number(nCall + 1));
-    call += QObject::tr("call");
-    call += "</font></b>";
-    call += QObject::tr(" for ");
+    disableTextOption(call, "InitialCall");
+    enableTextOption(call, "RepCall");
+    call = call.arg(nCall + 1);
   }
 
-  call += QObject::tr("match number ") + "<b><font color=\"darkRed\">%1</font></b>";
-  call += QObject::tr(" on court number ") + "<b><font color=\"darkRed\">%2</font></b><br><br>";
-  call = call.arg(maNum);
-  call = call.arg(coNum);
+  // set match number and court number
+  call = call.arg(ma.getMatchNumber()); // arg #2
+  call = call.arg(co.getNumber());   // arg #3
 
-  call += "<center><b>";
+  // set the category name
+  call = call.arg(ma.getCategory().getName());  // arg #4
 
-  call += ma.getCategory().getName() + ",<br><br>";
-
+  // is this a match for a final rank?
   int winnerRank = ma.getWinnerRank();
+  enableTextOption(call, "RankMatch", (winnerRank > 0));
   if (winnerRank > 0)
   {
-    call += "<font color=\"darkRed\">";
     if (winnerRank == 1)
     {
-      call += QObject::tr("KO_Start::Final");
+      enableTextOption(call, "FinalMatch");
+      disableTextOption(call, "RankNumber");
     } else {
-      call += QObject::tr("MATCH FOR PLACE %1");
-      call = call.arg(winnerRank);
+      disableTextOption(call, "FinalMatch");
+      enableTextOption(call, "RankNumber");
+      call = call.arg(winnerRank);  // arg #5, optional
     }
-    call += "</font>";
-    call +=  ",<br><br>";
   }
 
-  call += ma.getPlayerPair1().getCallName(QObject::tr("and")) + "<br><br>";
-  call += QObject::tr("versus<br><br>");
-  call += ma.getPlayerPair2().getCallName(QObject::tr("and")) + ",<br><br></b></center>";
-  call += QObject::tr("match number ") + "<b><font color=\"darkRed\">%1</font></b>";
-  call += QObject::tr(" on court number ") + "<b><font color=\"darkRed\">%2</font></b>";
-  call = call.arg(maNum);
-  call = call.arg(coNum);
-  call += ".";
+  // set player pair names
+  call = call.arg(ma.getPlayerPair1().getCallName(QObject::tr("and")));  // arg #6
+  call = call.arg(ma.getPlayerPair2().getCallName(QObject::tr("and")));  // arg #7
 
   // add the umpire's name, if necessary
   QTournament::RefereeMode refMode = ma.get_EFFECTIVE_RefereeMode();
-  if ((refMode != QTournament::RefereeMode::None) && ((refMode != QTournament::RefereeMode::HandWritten)))
+  const bool useUmpire = ((refMode != QTournament::RefereeMode::None) && ((refMode != QTournament::RefereeMode::HandWritten)));
+  const auto referee = ma.getAssignedReferee();
+  const bool hasUmpire = referee.has_value();
+  if (useUmpire && hasUmpire)
   {
-    auto referee = ma.getAssignedReferee();
-    if (referee)
-    {
-      call += "<br><br><br><b>";
-      call += QObject::tr("Umpire is %1.");
-      call = call.arg(referee->getDisplayName_FirstNameFirst());
-      call += "</b><br>";
-    }
+    enableTextOption(call, "Umpire");
+    call = call.arg(referee->getDisplayName_FirstNameFirst());  // arg #8
+  } else {
+    disableTextOption(call, "Umpire");
   }
-
-  // add additional calls, if applicable
-  if (nCall > 0)
-  {
-    call += "<br><br>";
-    call += "<b><font color=\"darkRed\">";
-    call += QObject::tr("THIS IS THE %1. CALL!");
-    call += "</font></b>";
-    call = call.arg(nCall + 1);
-  }
-  call += "</big><br><br><br>";
-  call += "<i><font color=\"blue\">" + QObject::tr("Call executed?") + "</font></i><br><br><br>";
 
   return call;
 }
@@ -559,41 +539,6 @@ QString GuiHelpers::getLocaleDependedResource(const QString& resName)
   if (!binData.open(QIODevice::ReadOnly)) return QString{};
 
   return binData.readAll();
-
-
-  /*
-   * Locale handling is included in the Qt resource system and thus
-   * we don't need the code below anymore.
-   *
-
-
-  // determine the local as a string and check if we're
-  // using a German locale
-  bool isGerman = QLocale().name().startsWith("de", Qt::CaseInsensitive);
-
-  // determine the local resource name
-  QString rn{resName};
-  if (isGerman)
-  {
-    // find the file extension (==> everything after and including the last dot)
-    auto idxLastDot = resName.lastIndexOf('.');
-    QString ext{};
-    if (idxLastDot >= 0)
-    {
-      ext = resName.mid(idxLastDot);  // includes the dot
-      rn.truncate(idxLastDot);
-    }
-    rn += "_de" + ext;
-
-    // fall back to the default if no local version exists
-    if (!QFile::exists(rn)) rn = resName;
-  }
-
-  QFile binData{rn};
-  if (!binData.open(QIODevice::ReadOnly)) return QString{};
-
-  return binData.readAll();
-  */
 }
 
 //----------------------------------------------------------------------------
@@ -608,6 +553,10 @@ bool GuiHelpers::showAndConfirmMatchResult(QWidget* parent, const Match& ma, con
   msg = msg.arg(pp1Name);
   msg = msg.arg(pp2Name);
   msg = msg.arg(sResult);
+
+  int winner = matchResult->getWinner();
+  enableTextOption(msg, "Winner", (winner != 0));
+  enableTextOption(msg, "Draw", (winner == 0));
   if (matchResult->getWinner() == 1)
   {
     msg = msg.arg(pp1Name);
@@ -617,11 +566,6 @@ bool GuiHelpers::showAndConfirmMatchResult(QWidget* parent, const Match& ma, con
   {
     msg = msg.arg(pp2Name);
     msg = msg.arg(pp1Name);
-  }
-  if (matchResult->getWinner() == 0)
-  {
-    msg = msg.arg(QObject::tr("--- (Draw)"));
-    msg = msg.arg(QObject::tr("--- (Draw)"));
   }
 
   QMessageBox dlgConfirm{parent};
@@ -635,15 +579,65 @@ bool GuiHelpers::showAndConfirmMatchResult(QWidget* parent, const Match& ma, con
 
 //----------------------------------------------------------------------------
 
+bool GuiHelpers::enableTextOption(QString& src, const QString& optName, bool enable)
+{
+  static const QString baseRePattern{"<option_%1>(.*)</option_%1>"};
+
+  // construct the matching regexp pattern
+  QString rePattern = baseRePattern.arg(optName);
+
+  return enableOrDisableTextOption(src, rePattern, enable);
+}
 
 //----------------------------------------------------------------------------
 
+bool GuiHelpers::disableTextOption(QString& src, const QString& optName)
+{
+  return enableTextOption(src, optName, false);
+}
 
 //----------------------------------------------------------------------------
 
+bool GuiHelpers::enableAllTextOptions(QString& src, bool enable)
+{
+  static const QString rePattern{"<option_[\\d\\w]+>(.*)</option_[\\d\\w]+>"};
+
+  return enableOrDisableTextOption(src, rePattern, enable);
+}
 
 //----------------------------------------------------------------------------
 
+bool GuiHelpers::disableAllTextOptions(QString& src)
+{
+  return enableAllTextOptions(src, false);
+}
+
+//----------------------------------------------------------------------------
+
+bool GuiHelpers::enableOrDisableTextOption(QString& src, const QString& pattern, bool enable)
+{
+  // construct the matching regexp
+  QRegExp re{pattern};
+  re.setMinimal(true);
+
+  bool patternFound{false};
+
+  for (int startIdx = re.indexIn(src) ; startIdx >= 0; startIdx = re.indexIn(src))
+  {
+    int matchLen = re.matchedLength();
+
+    if (enable)
+    {
+      src.replace(startIdx, matchLen, re.cap(1));  // remove the tags
+    } else {
+      src.remove(startIdx, matchLen);   // remove tags and text between tags
+    }
+
+    patternFound = true;
+  }
+
+  return patternFound;
+}
 
 //----------------------------------------------------------------------------
 
