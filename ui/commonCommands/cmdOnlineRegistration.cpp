@@ -92,7 +92,7 @@ Error cmdOnlineRegistration::exec()
   if (rc != QDialog::Accepted) return Error::WrongState;  // dummy error code; will not be evaluated by caller
 
   // show a consent form, either in English or German
-  const QString consentTxt = GuiHelpers::getLocaleDependedResource(":/ui/consent.html");
+  const QString consentTxt = GuiHelpers::getLocaleDependedResource(":/txt/consent.html");
   QMessageBox dlgConsent{parentWidget};
   dlgConsent.setText(consentTxt);
   dlgConsent.setStandardButtons(QMessageBox::No | QMessageBox::Yes);

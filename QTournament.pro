@@ -302,8 +302,7 @@ SOURCES += \
     ui/procedures/Proc_RoundComplete.cpp \
     ui/procedures/Proc_MatchCallAndFinish.cpp
 
-RESOURCES += \
-    tournament.qrc
+RESOURCES += resources/tournament.qrc
 
 OTHER_FILES +=
 

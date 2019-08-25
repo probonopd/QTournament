@@ -33,9 +33,6 @@
 
 int main(int argc, char *argv[])
 {
-  // initialize resources, if needed
-  Q_INIT_RESOURCE(tournament);
-
   // register my custom types as metatypes
   registerCustomTypes();
 
@@ -52,7 +49,6 @@ int main(int argc, char *argv[])
     app.setStyle(fusionStyle);
   }
   
-  cout << "System locale: " << QLocale().name().toStdString() << endl;
   QTranslator qtTranslator;
   // Only temporary: hard-coded German translation while in debug mode
   //qtTranslator.load("qt_de", QLibraryInfo::location(QLibraryInfo::TranslationsPath));

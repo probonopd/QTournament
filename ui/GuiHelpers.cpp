@@ -555,6 +555,18 @@ QString GuiHelpers::qdt2string(const QDateTime& qdt)
 
 QString GuiHelpers::getLocaleDependedResource(const QString& resName)
 {
+  QFile binData{resName};
+  if (!binData.open(QIODevice::ReadOnly)) return QString{};
+
+  return binData.readAll();
+
+
+  /*
+   * Locale handling is included in the Qt resource system and thus
+   * we don't need the code below anymore.
+   *
+
+
   // determine the local as a string and check if we're
   // using a German locale
   bool isGerman = QLocale().name().startsWith("de", Qt::CaseInsensitive);
@@ -581,6 +593,7 @@ QString GuiHelpers::getLocaleDependedResource(const QString& resName)
   if (!binData.open(QIODevice::ReadOnly)) return QString{};
 
   return binData.readAll();
+  */
 }
 
 //----------------------------------------------------------------------------
@@ -591,7 +604,7 @@ bool GuiHelpers::showAndConfirmMatchResult(QWidget* parent, const Match& ma, con
   auto pp2Name = ma.getPlayerPair2().getDisplayName();
   QString sResult = matchResult->toString();
   sResult = sResult.replace(",", "  ,  ");
-  QString msg = getLocaleDependedResource(":/ui/match_result_confirmation.html");
+  QString msg = getLocaleDependedResource(":/txt/match_result_confirmation.html");
   msg = msg.arg(pp1Name);
   msg = msg.arg(pp2Name);
   msg = msg.arg(sResult);

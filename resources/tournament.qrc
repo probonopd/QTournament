@@ -1,0 +1,14 @@
+<RCC>
+    <qresource prefix="/">
+        <file>icons/document-new-5.png</file>
+        <file>icons/edit-rename.png</file>
+        <file>icons/edit-delete-9.png</file>
+        <file>txt/consent.html</file>
+        <file>txt/match_result_confirmation.html</file>
+    </qresource>
+    <qresource prefix="/" lang="de">
+        <file alias="txt/match_result_confirmation.html">txt/match_result_confirmation_de.html</file>
+        <file alias="txt/consent.html">txt/consent_de.html</file>
+    </qresource>
+
+</RCC>
