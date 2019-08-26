@@ -322,7 +322,6 @@ void CourtTableView::onActionAddCallTriggered()
     ma->addAddtionalCallTime();
     return;
   }
-  QMessageBox::information(this, tr("Repeat call"), tr("Call cancled"));
 }
 
 //----------------------------------------------------------------------------

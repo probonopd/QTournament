@@ -38,8 +38,8 @@ namespace QTournament
   class TournamentDatabaseObjectManager : public SqliteOverlay::GenericObjectManager<TournamentDB>
   {
   public:
-    TournamentDatabaseObjectManager (const TournamentDB& _db, const QString& _tabName)
-      : SqliteOverlay::GenericObjectManager<TournamentDB>(_db, _tabName.toUtf8().constData()) {}
+    TournamentDatabaseObjectManager (const TournamentDB& _db, const std::string& _tabName)
+      : SqliteOverlay::GenericObjectManager<TournamentDB>(_db, _tabName, false) {}
 
     virtual ~TournamentDatabaseObjectManager() {}
 

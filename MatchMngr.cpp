@@ -1199,8 +1199,17 @@ namespace QTournament {
     // FUZZY at least to WAITING, maybe even to READY or BUSY
     if (curState == ObjState::MA_Fuzzy)
     {
-      bool isFixed1 = ((ma.rowRef().getInt(MA_Pair1SymbolicVal) == 0) && (ma.rowRef().getInt(MA_Pair1Ref) > 0));
-      bool isFixed2 = ((ma.rowRef().getInt(MA_Pair2SymbolicVal) == 0) && (ma.rowRef().getInt(MA_Pair2Ref) > 0));
+      // is player pair 1 fully defined?
+      auto symVal = ma.rowRef().getInt2(MA_Pair1SymbolicVal);
+      auto pairRef = ma.rowRef().getInt2(MA_Pair1Ref);
+      bool isFixed1 = ((symVal.value_or(0) == 0) && (pairRef.value_or(-1) > 0));
+
+      // is player pair 2 fully defined?
+      symVal = ma.rowRef().getInt2(MA_Pair2SymbolicVal);
+      pairRef = ma.rowRef().getInt2(MA_Pair2Ref);
+      bool isFixed2 = ((symVal.value_or(0) == 0) && (pairRef.value_or(-1) > 0));
+
+      // do we have an assigned match number?
       bool hasMatchNumber = ma.getMatchNumber() > 0;
 
       if (isFixed1 && isFixed2 && hasMatchNumber)

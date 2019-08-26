@@ -870,7 +870,7 @@ namespace QTournament
   Error CatMngr::splitPlayers(const Category c, int pairId) const
   {
     DbTab pairsTab{db, TabPairs, false};
-    auto row = tab.get2(pairId);
+    auto row = pairsTab.get2(pairId);
     if (!row) return Error::InvalidId;
 
     auto p1Id = row->getInt2(Pairs_Player1Ref);
