@@ -9,4 +9,6 @@ moc_*.cpp
 ui_*.h
 qrc_*
 debug
+svgBracketChecker/debug
+svgBracketChecker/release
 
