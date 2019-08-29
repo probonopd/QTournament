@@ -42,5 +42,8 @@ int main(int argc, char *argv[])
     return 1;
   }
 
+  auto br = QTournament::SvgBracket::findSvgBracket(QTournament::SvgBracket::SvgBracketMatchSys::SingleElim, 10);
+  std::cout << br.has_value() << std::endl;
+
   return 0;
 }

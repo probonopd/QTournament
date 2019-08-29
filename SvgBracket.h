@@ -244,6 +244,17 @@ namespace QTournament::SvgBracket
   //std::optional<std::string> checkRule01(const std::vector<ParsedTag>& allMatches, const std::vector<ParsedTag>& allPlayers, const std::vector<ParsedTag>& allRanks);
 
   //----------------------------------------------------------------------------
+
+  /** \brief Searches for a SVG bracket with a given match system and for a given number
+   * of players.
+   *
+   * \returns the full bracket definition if the search was successful; empty otherwise
+   */
+  std::optional<SvgBracket> findSvgBracket(
+      SvgBracketMatchSys msys,   ///< the match system for which we need a bracket
+      int nPlayers   ///< the number of players currently in the category
+      );
+
   //----------------------------------------------------------------------------
 }
 

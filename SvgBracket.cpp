@@ -661,9 +661,53 @@ namespace QTournament::SvgBracket
     return {};
   }
 
+  //----------------------------------------------------------------------------
 
+  std::optional<SvgBracket> findSvgBracket(SvgBracketMatchSys msys, int nPlayers)
+  {
+    // statically store all available bracket definitions here
+    static const vector<SvgBracket> allBrackets
+    {
+      {
+        SvgBracketMatchSys::RankSys,
+        16,
+        {
+          {
+            297.0,
+            210.0,
+            ":/resources/brackets/RankSys16.svg",
+            10.0,
+            findRawTags(":/resources/brackets/RankSys16.svg"),
+          }
+        }
+      }
+    };
 
+    // for all brackets we need at least two players
+    if (nPlayers < 2) return {};
 
+    // iterate over all brackets and look for a suitable match
+    //
+    // search for the one with the lowest number
+    // of maximum players for the best match
+    int bestIdx{-1};
+    int maxNum{999999};
+    for (size_t idx=0; idx < allBrackets.size(); ++idx)
+    {
+      const auto& br = allBrackets.at(idx);
+
+      if (br.sys != msys) continue;
+      if (br.maxNumPlayers < nPlayers) continue;
+
+      if (br.maxNumPlayers < maxNum)
+      {
+        bestIdx = idx;
+        maxNum = br.maxNumPlayers;
+      }
+    }
+
+    return (bestIdx >= 0) ? allBrackets.at(bestIdx) : std::optional<SvgBracket>{};
+  }
 
 
   //----------------------------------------------------------------------------
