@@ -8,12 +8,12 @@
 
 using namespace std;
 
-namespace QTournament
+namespace QTournament::SvgBracket
 {
 
-  std::vector<SvgBracket::TagData> SvgBracket::findRawTags(const string_view& svgData, const string& openingBracket, const string& closingBracket)
+  std::vector<TagData> findRawTags(const string_view& svgData, const string& openingBracket, const string& closingBracket)
   {
-    std::vector<SvgBracket::TagData> result;
+    std::vector<TagData> result;
 
     string_view::size_type idx = 0;
     while (true)
@@ -52,7 +52,7 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  SvgBracket::TagType SvgBracket::determineTagTypeFromName(const string& tagName)
+  TagType determineTagTypeFromName(const string& tagName)
   {
     if (tagName.size() < 2)
     {
@@ -83,7 +83,7 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  SvgBracket::MatchTag SvgBracket::parseMatchTag(const string& tagName)
+  MatchTag parseMatchTag(const string& tagName)
   {
     // RegEx for the first part (match number and round) of a match tag
     static const std::regex reNumAndRound{R"(M(\d+):R(\d+))"};
@@ -120,7 +120,7 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  SvgBracket::PlayerTag SvgBracket::parsePlayerTag(const string& tagName)
+  PlayerTag parsePlayerTag(const string& tagName)
   {
     // RegEx for the first part (match number and player number) of a player tag
     static const std::regex rePlayerBase{R"(P(\d+)\.([12]))"};
@@ -175,7 +175,7 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  SvgBracket::RankTag SvgBracket::parseRankTag(const string& tagName)
+  RankTag parseRankTag(const string& tagName)
   {
     // RegEx for a rank label
     static const std::regex reRankLabel{R"(R(\d+)([ab]))"};
@@ -196,9 +196,9 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  std::vector<SvgBracket::ParsedTag> SvgBracket::parseContent(const string_view& svgData, const string& openingBracket, const string& closingBracket)
+  std::vector<ParsedTag> parseContent(const string_view& svgData, const string& openingBracket, const string& closingBracket)
   {
-    std::vector<SvgBracket::ParsedTag> result;
+    std::vector<ParsedTag> result;
 
     // find all tag positions
     auto allTags = findRawTags(svgData, openingBracket, closingBracket);
@@ -264,22 +264,22 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  std::optional<string> SvgBracket::consistencyCheck(const std::vector<SvgBracket::ParsedTag> allTags)
+  std::optional<string> consistencyCheck(const std::vector<ParsedTag> allTags)
   {
     // dissect the input into players, matches and ranks
-    std::vector<SvgBracket::ParsedTag> allMatches;
+    std::vector<ParsedTag> allMatches;
     std::copy_if(begin(allTags), end(allTags), std::back_inserter(allMatches), [](const ParsedTag& pt)
     {
       return (pt.type == TagType::Match);
     });
 
-    std::vector<SvgBracket::ParsedTag> allPlayers;
+    std::vector<ParsedTag> allPlayers;
     std::copy_if(begin(allTags), end(allTags), std::back_inserter(allPlayers), [](const ParsedTag& pt)
     {
       return (pt.type == TagType::Player);
     });
 
-    std::vector<SvgBracket::ParsedTag> allRanks;
+    std::vector<ParsedTag> allRanks;
     std::copy_if(begin(allTags), end(allTags), std::back_inserter(allRanks), [](const ParsedTag& pt)
     {
       return (pt.type == TagType::Rank);
@@ -293,7 +293,7 @@ namespace QTournament
     allChecks.push_back(checkRule03);
     allChecks.push_back(checkRule04);
     allChecks.push_back(checkRule05);
-    //allChecks.push_back(checkRule01);
+    allChecks.push_back(checkRule06);
     //allChecks.push_back(checkRule01);
     //allChecks.push_back(checkRule01);
     //allChecks.push_back(checkRule01);
@@ -313,7 +313,7 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  std::optional<std::string> SvgBracket::checkRule01(const std::vector<ParsedTag>& allMatches, const std::vector<ParsedTag>& allPlayers, const std::vector<ParsedTag>& allRanks)
+  std::optional<std::string> checkRule01(const std::vector<ParsedTag>& allMatches, const std::vector<ParsedTag>& allPlayers, const std::vector<ParsedTag>& allRanks)
   {
     std::cout << "Rule 01 called" << std::endl;
 
@@ -327,12 +327,12 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  std::optional<string> SvgBracket::checkRule02(const std::vector<ParsedTag>& allMatches, const std::vector<ParsedTag>& allPlayers, const std::vector<ParsedTag>& allRanks)
+  std::optional<string> checkRule02(const std::vector<ParsedTag>& allMatches, const std::vector<ParsedTag>& allPlayers, const std::vector<ParsedTag>& allRanks)
   {
     std::cout << "Rule 02 called" << std::endl;
 
     // copy the match list
-    std::vector<SvgBracket::ParsedTag> ma{allMatches.begin(), allMatches.end()};
+    std::vector<ParsedTag> ma{allMatches.begin(), allMatches.end()};
 
     // sort the list in ascending match number order
     std::sort(begin(ma), end(ma), [](const ParsedTag& t1, const ParsedTag& t2)
@@ -374,7 +374,7 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  std::optional<string> SvgBracket::checkRule03(const std::vector<SvgBracket::ParsedTag>& allMatches, const std::vector<SvgBracket::ParsedTag>& allPlayers, const std::vector<SvgBracket::ParsedTag>& allRanks)
+  std::optional<string> checkRule03(const std::vector<ParsedTag>& allMatches, const std::vector<ParsedTag>& allPlayers, const std::vector<ParsedTag>& allRanks)
   {
     std::cout << "Rule 03 called" << std::endl;
 
@@ -417,7 +417,7 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  std::optional<string> SvgBracket::checkRule04(const std::vector<SvgBracket::ParsedTag>& allMatches, const std::vector<SvgBracket::ParsedTag>& allPlayers, const std::vector<SvgBracket::ParsedTag>& allRanks)
+  std::optional<string> checkRule04(const std::vector<ParsedTag>& allMatches, const std::vector<ParsedTag>& allPlayers, const std::vector<ParsedTag>& allRanks)
   {
     std::cout << "Rule 04 called" << std::endl;
 
@@ -517,11 +517,11 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  std::optional<string> SvgBracket::checkRule05(const std::vector<SvgBracket::ParsedTag>& allMatches, const std::vector<SvgBracket::ParsedTag>& allPlayers, const std::vector<SvgBracket::ParsedTag>& allRanks)
+  std::optional<string> checkRule05(const std::vector<ParsedTag>& allMatches, const std::vector<ParsedTag>& allPlayers, const std::vector<ParsedTag>& allRanks)
   {
     std::cout << "Rule 05 called" << std::endl;
 
-    // count how often a match is referenced a source match
+    // count how often a match is referenced as a source match
     vector<int> winnerRefs(static_cast<int>(allMatches.size()), 0);
     vector<int> loserRefs(static_cast<int>(allMatches.size()), 0);
     for (const auto& tag : allPlayers)
@@ -536,11 +536,11 @@ namespace QTournament
 
       if (pl.srcMatch > 0)
       {
-        winnerRefs.at(pl.srcMatch) += 1;
+        winnerRefs.at(pl.srcMatch - 1) += 1;
       }
       if (pl.srcMatch < 0)
       {
-        loserRefs.at(-pl.srcMatch) += 1;
+        loserRefs.at(-pl.srcMatch - 1) += 1;
       }
     }
 
@@ -551,7 +551,7 @@ namespace QTournament
     });
     if (it != end(winnerRefs))
     {
-      return "Match " + to_string(std::distance(begin(winnerRefs), it)) + " was referenced "
+      return "Match " + to_string(std::distance(begin(winnerRefs), it) + 1) + " was referenced "
              " more than once as a source game (winner)";
     }
     it = std::find_if(begin(loserRefs), end(loserRefs), [](const int& i)
@@ -560,7 +560,7 @@ namespace QTournament
     });
     if (it != end(loserRefs))
     {
-      return "Match " + to_string(std::distance(begin(loserRefs), it)) + " was referenced "
+      return "Match " + to_string(std::distance(begin(loserRefs), it) + 1) + " was referenced "
              " more than once as a source game (loser)";
     }
 
@@ -577,6 +577,85 @@ namespace QTournament
         return "Player " + to_string(pl.playerPos) + " of match " + to_string(pl.bracketMatchNum) +
                " has neither an initial rank nor a source match";
       }
+    }
+
+    return {};
+  }
+
+  //----------------------------------------------------------------------------
+
+  std::optional<string> checkRule06(const std::vector<ParsedTag>& allMatches, const std::vector<ParsedTag>& allPlayers, const std::vector<ParsedTag>& allRanks)
+  {
+    std::cout << "Rule 06 called" << std::endl;
+
+    // helper function
+    auto hasFollowUpMatch = [&](int srcMatchNum)
+    {
+      auto it = find_if(begin(allPlayers), end(allPlayers), [&srcMatchNum](const ParsedTag& tag)
+      {
+        const auto& pl = get<PlayerTag>(tag.content);
+        return (pl.srcMatch == srcMatchNum);
+      });
+
+      return (it != end(allPlayers));
+    };
+
+    // filter for all first round matches
+    std::vector<ParsedTag> frm;
+    std::copy_if(begin(allMatches), end(allMatches), std::back_inserter(frm), [](const ParsedTag& pt)
+    {
+      const auto& ma = get<MatchTag>(pt.content);
+      return (ma.roundNum == 1);
+    });
+    auto nPlayers = frm.size() * 2;
+
+    // count how often a rank has been assigned
+    vector<int> cntRank(nPlayers, 0);
+
+    // loop over all matches, check winner/loser references
+    // and rank assignment
+    for (const auto& tag : allMatches)
+    {
+      const auto& ma = get<MatchTag>(tag.content);
+
+      if (ma.loserRank > 0)
+      {
+        if (ma.loserRank > nPlayers)
+        {
+          return "Match " + to_string(ma.bracketMatchNum) + " has an invalid loser rank";
+        }
+        cntRank.at(ma.loserRank - 1) += 1;
+      } else {
+        if (!hasFollowUpMatch(-ma.bracketMatchNum))
+        {
+          return "Loser of match " + to_string(ma.bracketMatchNum) + " has no final rank and no follow-up match";
+        }
+      }
+
+      if (ma.winnerRank > 0)
+      {
+        if (ma.winnerRank > nPlayers)
+        {
+          return "Match " + to_string(ma.bracketMatchNum) + " has an invalid winner rank";
+        }
+        cntRank.at(ma.winnerRank - 1) += 1;
+      } else {
+        if (!hasFollowUpMatch(ma.bracketMatchNum))
+        {
+          return "Winner of match " + to_string(ma.bracketMatchNum) + " has no final rank and no follow-up match";
+        }
+      }
+    }
+
+    // checks occurencies
+    auto it = std::find_if(begin(cntRank), end(cntRank), [](const int& i)
+    {
+      return (i > 1);
+    });
+    if (it != end(cntRank))
+    {
+      return "Rank " + to_string(std::distance(begin(cntRank), it) + 1) + " was assigned "
+             " more than once as winner/loser rank";
     }
 
     return {};

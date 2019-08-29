@@ -7,6 +7,18 @@
 #include <string_view>
 #include <optional>
 
+namespace QTournament
+{
+  /** \brief Basic data about a SVG page
+   */
+  struct SvgPageDescr
+  {
+    double width_mm{0};   ///< the page width in mm
+    double height_mm{0};   ///< the page height in mm
+    std::string resName;   ///< the name of the resource containing the SVG data
+  };
+}
+
 namespace QTournament::SvgBracket
 {
   /** \brief Information about the position, length and name of
@@ -141,6 +153,38 @@ namespace QTournament::SvgBracket
 
   //----------------------------------------------------------------------------
 
+  /** \brief A list of all match systems that are available as SVG bracket
+   */
+  enum SvgBracketMatchSys
+  {
+    SingleElim,   ///< single elimination bracket (KO rounds)
+    DoubleElim,   ///< double elimination
+    RankSys,   ///< used in official ranking tournaments
+  };
+
+  //----------------------------------------------------------------------------
+
+  /** \brief A single page of an SVG bracket
+   */
+  struct SvgBracketPage : public SvgPageDescr
+  {
+    double maxNameLen_mm;   ///< the maximum length of a page that fits on a line of the bracket
+    std::vector<TagData> rawTags;   ///< a list of all tags on that page
+  };
+
+  //----------------------------------------------------------------------------
+
+  /** \brief A complete, multi-page SVG bracket definition
+   */
+  struct SvgBracket
+  {
+    SvgBracketMatchSys sys;    ///< the match system this bracket can be used for
+    int maxNumPlayers;   ///< the maximum number of players for this bracket
+    std::vector<SvgBracketPage> pages;   ///< all pages that belong to this bracket
+  };
+
+  //----------------------------------------------------------------------------
+
   /** \brief Checks whether the bracket data is consistent
    *
    * \returns a string with an error message for the first encountered error; empty string if everything is fine
@@ -149,29 +193,45 @@ namespace QTournament::SvgBracket
       const std::vector<ParsedTag> allTags   ///< list of tags to be checked
       );
 
+  //----------------------------------------------------------------------------
+
   /** \brief Consistency rule 1: there must be at least one match
    */
   std::optional<std::string> checkRule01(const std::vector<ParsedTag>& allMatches, const std::vector<ParsedTag>& allPlayers, const std::vector<ParsedTag>& allRanks);
+
+  //----------------------------------------------------------------------------
 
   /** \brief Consistency rule 2: all matches must have unique, consecutive numbers starting with "1"
    * and the round number must be equal or higher than the round number of the previous match
    */
   std::optional<std::string> checkRule02(const std::vector<ParsedTag>& allMatches, const std::vector<ParsedTag>& allPlayers, const std::vector<ParsedTag>& allRanks);
 
+  //----------------------------------------------------------------------------
+
   /** \brief Consistency rule 3: each match must have four player labels
    */
   std::optional<std::string> checkRule03(const std::vector<ParsedTag>& allMatches, const std::vector<ParsedTag>& allPlayers, const std::vector<ParsedTag>& allRanks);
+
+  //----------------------------------------------------------------------------
 
   /** \brief Each match in the first round must have an initial rank; the
    * sum of two initial ranks in a match must always be "numberOfPlayers + 1"
    */
   std::optional<std::string> checkRule04(const std::vector<ParsedTag>& allMatches, const std::vector<ParsedTag>& allPlayers, const std::vector<ParsedTag>& allRanks);
 
+  //----------------------------------------------------------------------------
+
   /** \brief Rerefential integrity: each match may occur only zero or once as the "winner from X" or "loser from X" in a later round;
    * each match without an initial rank must have references to the previous match
    */
   std::optional<std::string> checkRule05(const std::vector<ParsedTag>& allMatches, const std::vector<ParsedTag>& allPlayers, const std::vector<ParsedTag>& allRanks);
-  //std::optional<std::string> checkRule01(const std::vector<ParsedTag>& allMatches, const std::vector<ParsedTag>& allPlayers, const std::vector<ParsedTag>& allRanks);
+
+  /** \brief Rerefential integrity2: each winner or loser of a match must have either
+   * a final rank, drop out of the tournament or has to be used used in a subsequent match;
+   * all winner/loser ranks may only be assigned once
+   */
+  std::optional<std::string> checkRule06(const std::vector<ParsedTag>& allMatches, const std::vector<ParsedTag>& allPlayers, const std::vector<ParsedTag>& allRanks);
+
   //std::optional<std::string> checkRule01(const std::vector<ParsedTag>& allMatches, const std::vector<ParsedTag>& allPlayers, const std::vector<ParsedTag>& allRanks);
   //std::optional<std::string> checkRule01(const std::vector<ParsedTag>& allMatches, const std::vector<ParsedTag>& allPlayers, const std::vector<ParsedTag>& allRanks);
   //std::optional<std::string> checkRule01(const std::vector<ParsedTag>& allMatches, const std::vector<ParsedTag>& allPlayers, const std::vector<ParsedTag>& allRanks);

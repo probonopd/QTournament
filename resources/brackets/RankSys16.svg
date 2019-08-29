@@ -26,9 +26,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1.4"
-     inkscape:cx="583.57065"
-     inkscape:cy="452.90774"
+     inkscape:zoom="1.979899"
+     inkscape:cx="826.9946"
+     inkscape:cy="260.41936"
      inkscape:document-units="mm"
      inkscape:current-layer="layer4"
      showgrid="false"
@@ -1585,7 +1585,7 @@
          id="tspan5474"
          x="223.58282"
          y="81.912338"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.29305553px;font-family:'Bitstream Vera Sans';-inkscape-font-specification:'Bitstream Vera Sans, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;writing-mode:lr-tb;text-anchor:middle;stroke-width:0.26458332px">{{M36:R5}}</tspan></text>
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.29305553px;font-family:'Bitstream Vera Sans';-inkscape-font-specification:'Bitstream Vera Sans, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;writing-mode:lr-tb;text-anchor:middle;stroke-width:0.26458332px">{{M36:R5:W1:L2}}</tspan></text>
     <text
        id="text5480"
        y="86.690254"
@@ -1596,7 +1596,7 @@
          y="86.690254"
          x="48.054893"
          id="tspan5478"
-         sodipodi:role="line">{{M34:R5}}</tspan></text>
+         sodipodi:role="line">{{M34:R5:W5:L6}}</tspan></text>
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.29305553px;line-height:61.69999838%;font-family:'Bitstream Vera Sans';-inkscape-font-specification:'Bitstream Vera Sans, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
@@ -1827,7 +1827,7 @@
          y="186.41269"
          x="198.81969"
          id="tspan5566"
-         sodipodi:role="line">{{M29:R5}}</tspan></text>
+         sodipodi:role="line">{{M29:R5:W15:L16}}</tspan></text>
     <g
        id="g5578"
        transform="translate(22.870038,161.54553)">
@@ -1890,7 +1890,7 @@
          id="tspan5590"
          x="249.06503"
          y="186.41269"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.29305553px;font-family:'Bitstream Vera Sans';-inkscape-font-specification:'Bitstream Vera Sans, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;writing-mode:lr-tb;text-anchor:middle;stroke-width:0.26458332px">{{M30:R5}}</tspan></text>
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.29305553px;font-family:'Bitstream Vera Sans';-inkscape-font-specification:'Bitstream Vera Sans, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;writing-mode:lr-tb;text-anchor:middle;stroke-width:0.26458332px">{{M30:R5:W13:L14}}</tspan></text>
     <g
        transform="translate(73.11671,161.54553)"
        id="g5602">
@@ -2167,7 +2167,7 @@
          y="153.22266"
          x="249.06503"
          id="tspan1206"
-         sodipodi:role="line">{{M35:R5}}</tspan></text>
+         sodipodi:role="line">{{M35:R5:W3:L4}}</tspan></text>
     <text
        id="text1212"
        y="149.93083"
