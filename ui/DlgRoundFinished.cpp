@@ -52,13 +52,14 @@ DlgRoundFinished::DlgRoundFinished(QWidget *parent, const QTournament::Category&
   ui->laTitle->setText(msg);
 
   // decide which reports to offer
-  try
+  /*try
   {
     optBracket.reset();
     optBracket.emplace(db, "dummy", cat);
   }
   catch (...) {}
-  ui->btnBracket->setVisible(optBracket.has_value());
+  ui->btnBracket->setVisible(optBracket.has_value());*/
+  ui->btnBracket->setVisible(false);  // FIX ME: temporary default
 
   try
   {
@@ -128,7 +129,8 @@ void DlgRoundFinished::printReport(AbstractReport* rep)
 
 void DlgRoundFinished::onBtnBracketClicked()
 {
-  printReport(&(*optBracket));
+  // FIX ME
+  //printReport(&(*optBracket));
 }
 
 //----------------------------------------------------------------------------

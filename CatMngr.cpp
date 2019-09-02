@@ -36,6 +36,7 @@
 #include "CentralSignalEmitter.h"
 #include "MatchMngr.h"
 #include "PlayerMngr.h"
+#include "SvgBracket.h"
 
 using namespace SqliteOverlay;
 
@@ -150,9 +151,7 @@ namespace QTournament
     isOk = clone.setParameter(CatParameter::GroupConfig, ko.toString());
     assert(isOk);
     setCatParameter(clone, CatParameter::RoundRobinIterations, src.getParameter_int(CatParameter::RoundRobinIterations));
-
-    // Do not copy the BracketVisData here, because the clone is still in
-    // CONFIG and BracketVisData is created when starting the cat
+    setCatParameter(clone, CatParameter::BracketMatchSystem, src.getParameter_int(CatParameter::BracketMatchSystem));
 
     // assign the players to the category
     for (const Player& pl : src.getAllPlayersInCategory())
@@ -242,10 +241,9 @@ namespace QTournament
     // TODO: implement checks, updates to other tables etc
     cat.rowRef().update(CAT_Sys, static_cast<int>(newMatchSystem));
     
-    // if we switch to single elimination categories or
-    // to the ranking system, we want to
+    // if we switch to bracket mode, we want to
     // prevent draw
-    if ((newMatchSystem == MatchSystem::SingleElim) || (newMatchSystem == MatchSystem::Ranking))
+    if (newMatchSystem == MatchSystem::Bracket)
     {
       setCatParam_AllowDraw(cat, false);
     }
@@ -492,7 +490,6 @@ namespace QTournament
     assert(DbTab(db, TabPairs, false).getMatchCountForColumnValue(Pairs_CatRef, catId) == 0);
     assert(DbTab(db, TabMatchGroup, false).getMatchCountForColumnValue(MG_CatRef, catId) == 0);
     assert(DbTab(db, TabMatchSystem, false).getMatchCountForColumnValue(RA_CatRef, catId) == 0);
-    assert(DbTab(db, TabBracketVis, false).getMatchCountForColumnValue(BV_CatRef, catId) == 0);
 
     // the actual deletion
     int oldSeqNum = cat.getSeqNum();
@@ -557,16 +554,12 @@ namespace QTournament
 
       int catId = cat.getId();
 
-      // deletion 1: bracket vis data, because it has only outgoing refs
-      DbTab t{db, TabBracketVis, false};
-      t.deleteRowsByColumnValue(BV_CatRef, catId);
-
-      // deletion 2: ranking data, because it has only outgoing refs
-      t = DbTab{db, TabMatchSystem, false};
+      // deletion 1: ranking data, because it has only outgoing refs
+      DbTab t{db, TabMatchSystem, false};
       t.deleteRowsByColumnValue(RA_CatRef, catId);
 
-      // deletion 3a: matches, they are refered to by bracket vis data only
-      // deletion 3b: match groups, they are refered to only by ranking data and matches
+      // deletion 2a: matches
+      // deletion 2b: match groups, they are refered to only by ranking data and matches
       t = DbTab{db, TabMatch, false};
       DbTab mgTab{db, TabMatchGroup, false};
       for (const auto& mg : SqliteOverlay::getObjectsByColumnValue<MatchGroup>(db, mgTab, MG_CatRef, cat.getId()))
@@ -585,11 +578,11 @@ namespace QTournament
         fixSeqNumberAfterDelete(mgTab, deletedSeqNum);
       }
 
-      // deletion 4: player pairs
+      // deletion 3: player pairs
       t = DbTab{db, TabPairs, false};
       t.deleteRowsByColumnValue(Pairs_CatRef, catId);
 
-      // deletion 5: player to category allocation
+      // deletion 4: player to category allocation
       t = DbTab{db, TabP2C, false};
       t.deleteRowsByColumnValue(P2C_CatRef, catId);
 
@@ -708,6 +701,27 @@ namespace QTournament
       return true;
     }
     
+    if (p == CatParameter::BracketMatchSystem)
+    {
+      bool isOk;
+      int idxMatchSystem = v.toInt(&isOk);
+      if (!isOk) return false;
+
+      try
+      {
+        // validity check
+        auto bms = static_cast<SvgBracketMatchSys>(idxMatchSystem);
+
+        // actual update
+        cat.rowRef().update(CAT_BracketMatchSys, idxMatchSystem);
+        return true;
+      }
+      catch (...)
+      {
+        return false;
+      }
+    }
+
     return false;
   }
 
@@ -728,10 +742,10 @@ namespace QTournament
       return true; // no change necessary;
     }
 
-    // no draw matches in elimination categories
+    // no draw matches in brackt categories
     MatchSystem msys = c.getMatchSystem();
-    bool isElimCat = ((msys == MatchSystem::SingleElim) || (msys == MatchSystem::Ranking));
-    if (isElimCat && allowDraw)
+    bool isBracketCat = (msys == MatchSystem::Bracket);
+    if (isBracketCat && allowDraw)
     {
       return false;
     }

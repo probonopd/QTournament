@@ -70,7 +70,7 @@ upSimpleReport ResultsAndNextMatches::regenerateReport()
     int grpNum = mgl.at(0).getGroupNumber();
     MatchSystem mSys = cat.getMatchSystem();
     if ((grpNum < 0) && (grpNum >= GroupNum_L16) &&
-        ((mSys == MatchSystem::GroupsWithKO) || (mSys == MatchSystem::SingleElim)))
+        ((mSys == MatchSystem::GroupsWithKO) || (mSys == MatchSystem::Bracket)))
     {
       subHeader = GuiHelpers::groupNumToLongString(mgl.at(0).getGroupNumber());
     }

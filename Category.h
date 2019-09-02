@@ -69,11 +69,9 @@ namespace QTournament
     PlayerList getAllPlayersInCategory() const;
     Player getPartner(const Player& p) const;
     std::unique_ptr<Category> convertToSpecializedObject() const;
-    int getGroupNumForPredecessorRound(const int grpNum) const;
     CatRoundStatus getRoundStatus() const;
     PlayerPairList getEliminatedPlayersAfterRound(int round, Error *err) const;
     int getMaxNumGamesInRound(int round) const;
-    QString getBracketVisDataString() const;
 
     // setters
     Error setMatchType(MatchType t);
@@ -129,7 +127,7 @@ namespace QTournament
     Error applyGroupAssignment(const std::vector<PlayerPairList>& grpCfg);
     Error applyInitialRanking(const PlayerPairList& seed);
     Error generateGroupMatches(const PlayerPairList &grpMembers, int grpNum, int firstRoundNum=1) const;
-    Error generateBracketMatches(int bracketMode, const PlayerPairList& seeding, int firstRoundNum) const;
+
   };
 
   // we need this to have a category object in a QHash

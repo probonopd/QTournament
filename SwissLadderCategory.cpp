@@ -25,11 +25,11 @@
 #include "RankingEntry.h"
 #include "RankingMngr.h"
 #include "assert.h"
-#include "BracketGenerator.h"
 #include "CatMngr.h"
 #include "PlayerMngr.h"
 #include "CentralSignalEmitter.h"
 #include "SwissLadderGenerator.h"
+#include "MatchMngr.h"
 
 using namespace std;
 using namespace SqliteOverlay;
@@ -188,17 +188,13 @@ namespace QTournament
     // now the actual deletion starts
     //
 
-    // deletion 1: bracket vis data, because it has only outgoing refs
-    //
-    // not necessary here because Swiss Ladder does not have any bracket vis data
-
-    // deletion 2: ranking data, because it has only outgoing refs
+    // deletion 1: ranking data, because it has only outgoing refs
     //
     // not necessary here because we only delete matches for future rounds
     // that do not yet have any ranking data assigned
 
-    // deletion 3a: matches of future match groups (rounds > last finished round; equivalent to: groups that are not yet FINISHED)
-    // deletion 3b: match groups for these future matches
+    // deletion 2a: matches of future match groups (rounds > last finished round; equivalent to: groups that are not yet FINISHED)
+    // deletion 2b: match groups for these future matches
     for (const MatchGroup& mg : mm.getMatchGroupsForCat(*this))
     {
       if (mg.is_NOT_InState(ObjState::MG_Finished))

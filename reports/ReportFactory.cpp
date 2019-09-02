@@ -27,9 +27,9 @@
 #include "Standings.h"
 #include "InOutList.h"
 #include "ResultSheets.h"
-#include "BracketSheet.h"
 #include "MatrixAndStandings.h"
 #include "PureRoundRobinCategory.h"
+#include "MatchMngr.h"
 
 namespace QTournament
 {
@@ -42,7 +42,7 @@ namespace QTournament
   constexpr char ReportFactory::REP_InOutByCat[];
   constexpr char ReportFactory::REP_ResultSheets[];
   constexpr char ReportFactory::REP_ResultsAndNextMatches[];
-  constexpr char ReportFactory::REP_Bracket[];
+  //constexpr char ReportFactory::REP_Bracket[];
   constexpr char ReportFactory::REP_MatrixAndStandings[];
 
   ReportFactory::ReportFactory(const TournamentDB& _db)
@@ -172,7 +172,7 @@ namespace QTournament
 
     // we brute-force check all categories for the availability
     // of tournament bracket visualization data
-    SqliteOverlay::DbTab tabVis{db, TabBracketVis, false};
+    /*SqliteOverlay::DbTab tabVis{db, TabBracketVis, false};
     for (Category cat : cm.getAllCategories())
     {
       int catId = cat.getId();
@@ -180,7 +180,7 @@ namespace QTournament
       {
         result.append(genRepName(REP_Bracket, cat, 0));
       }
-    }
+    }*/
 
     // we can always generate result sheets
     result.append(genRepName(REP_ResultSheets, 1, 0));
@@ -277,12 +277,12 @@ namespace QTournament
     }
 
     // brackets
-    if (pureRepName == REP_Bracket)
+    /*if (pureRepName == REP_Bracket)
     {
       int catId = intParam1;
       Category cat = cm.getCategoryById(catId);
       return upAbstractReport(new BracketSheet(db, repName, cat));
-    }
+    }*/
 
     // matrix with standings
     if (pureRepName == REP_MatrixAndStandings)

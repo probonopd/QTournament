@@ -7,6 +7,9 @@
 #include <string_view>
 #include <optional>
 
+#include "TournamentDataDefs.h"
+#include "PlayerPair.h"
+
 namespace QTournament
 {
   /** \brief Basic data about a SVG page
@@ -104,6 +107,18 @@ namespace QTournament::SvgBracket
 
   //----------------------------------------------------------------------------
 
+  /** \brief Reads binary content from a resource and searches it for tags
+   *
+   * \throws std::invalid_argument if a resource with the provided name could not be found
+   */
+  std::vector<TagData> findRawTagsInResource(
+      const std::string& resName,   ///< the SVG data to parse
+      const std::string& openingBracket = "{{",   ///< the opening tag character
+      const std::string& closingBracket = "}}"   ///< the closing tag character
+      );
+
+  //----------------------------------------------------------------------------
+
   /** \brief Finds all tags in the raw SVG data
    */
   std::vector<TagData> findRawTags(
@@ -153,17 +168,6 @@ namespace QTournament::SvgBracket
 
   //----------------------------------------------------------------------------
 
-  /** \brief A list of all match systems that are available as SVG bracket
-   */
-  enum SvgBracketMatchSys
-  {
-    SingleElim,   ///< single elimination bracket (KO rounds)
-    DoubleElim,   ///< double elimination
-    RankSys,   ///< used in official ranking tournaments
-  };
-
-  //----------------------------------------------------------------------------
-
   /** \brief A single page of an SVG bracket
    */
   struct SvgBracketPage : public SvgPageDescr
@@ -176,11 +180,237 @@ namespace QTournament::SvgBracket
 
   /** \brief A complete, multi-page SVG bracket definition
    */
-  struct SvgBracket
+  struct SvgBracketDef
   {
     SvgBracketMatchSys sys;    ///< the match system this bracket can be used for
     int maxNumPlayers;   ///< the maximum number of players for this bracket
     std::vector<SvgBracketPage> pages;   ///< all pages that belong to this bracket
+    std::vector<int> roundTypes;   ///< for each round whether it is a normal iteration, a quarter final, semi final, ...
+  };
+
+  //----------------------------------------------------------------------------
+
+  /** \brief Extracts the players from a list of raw tags
+   *
+   * \return a player tag list, sorted
+   * by match number in ascending order.
+   */
+  std::vector<PlayerTag> sortedPlayersFromTagList(
+      const std::vector<TagData>& tagList   ///< the list of parsed SVG tags from that we'll extract the players
+      );
+
+  //----------------------------------------------------------------------------
+
+  /** \brief Extracts the matches from a list of raw tags
+   *
+   * \return a match tag list, sorted
+   * by match number in ascending order.
+   */
+  std::vector<MatchTag> sortedMatchesFromTagList(
+      const std::vector<TagData>& tagList   ///< the list of parsed SVG tags from that we'll extract the players
+      );
+
+  //----------------------------------------------------------------------------
+
+  /** \brief The role of a player pair (in particular in a bracket)
+   */
+  enum class PairRole
+  {
+    AsWinner,
+    AsLoser
+  };
+
+  /** \brief Information on where a player came from in a bracket
+   */
+  struct IncomingBracketLink
+  {
+    BracketMatchNumber srcMatch;
+    PairRole role;
+  };
+
+  /** \brief Information about an outgoing link for a player
+   * pair in a bracket
+   */
+  struct OutgoingBracketLink
+  {
+    BracketMatchNumber dstMatch;  ///< the bracket match number of the next match
+    int pos;   ///< "1": the player becomes player 1 of the next match, "2": guess...
+  };
+
+  /** \brief Internal, intermediate struct that captures all important aspects
+   * of a bracket match
+   */
+  class BracketMatchData
+  {
+  public:
+    enum class BranchState
+    {
+      Dead,
+      Alive,
+      Assigned
+    };
+
+    /** \brief Default ctor for an (invalid) bracket match data struct */
+    BracketMatchData() = default;
+
+    /** \brief Standard ctor for a bracket match with initial ranks; the round
+     * number is implicitly set to "1".
+     */
+    BracketMatchData(
+        const BracketMatchNumber& n,   ///< the bracket-internal, 1-based number of this match
+        const Rank& p1InitialRank,   ///< the initial rank of player pair 1
+        const Rank& p2InitialRank,   ///< the initial rank of player pair 2
+        const std::variant<OutgoingBracketLink, Rank>& dstWinner,   ///< what happens to the winner
+        const std::variant<OutgoingBracketLink, Rank>& dstLoser   ///< what happens to the loser
+        );
+
+    /** \brief Standard ctor for a bracket match in a round >= 2
+     */
+    BracketMatchData(
+        const BracketMatchNumber& n,   ///< the bracket-internal, 1-based number of this match
+        const Round& r,   ///< the bracket-internal, 1-based round number for this match
+        const IncomingBracketLink& inLink1,   ///< where player 1 comes from
+        const IncomingBracketLink& inLink2,   ///< where player 2 comes from
+        const std::variant<OutgoingBracketLink, Rank>& dstWinner,   ///< what happens to the winner
+        const std::variant<OutgoingBracketLink, Rank>& dstLoser   ///< what happens to the loser
+        );
+
+    /** \brief Default copy ctor */
+    BracketMatchData(const BracketMatchData& other) = default;
+
+    /** \brief Default move ctor */
+    BracketMatchData(BracketMatchData&& other) = default;
+
+    /** \brief Default copy assignment */
+    BracketMatchData& operator=(const BracketMatchData& other) = default;
+
+    /** \brief Default copy assignment */
+    BracketMatchData& operator=(BracketMatchData&& other) = default;
+
+    BracketMatchNumber matchNum() const { return brMaNum; }
+    Round round() const { return _round; }
+    PlayerPairRefId assignedPair1() const { return p1Pair; }
+    PlayerPairRefId assignedPair2() const { return p2Pair ;}
+    BranchState pair1State() const { return p1State; }
+    BranchState pair2State() const { return p2State; }
+
+    const OutgoingBracketLink& nextWinnerMatch() const { return std::get<OutgoingBracketLink>(winnerAction); }
+    const OutgoingBracketLink& nextLoserMatch() const { return std::get<OutgoingBracketLink>(loserAction); }
+    const IncomingBracketLink& inLink1() const { return std::get<IncomingBracketLink>(src1); }
+    const IncomingBracketLink& inLink2() const { return std::get<IncomingBracketLink>(src2); }
+    std::optional<Rank> winnerRank() const { return (std::holds_alternative<Rank>(winnerAction) ? std::get<Rank>(winnerAction) : std::optional<Rank>{}); }
+    std::optional<Rank> loserRank() const { return (std::holds_alternative<Rank>(loserAction) ? std::get<Rank>(loserAction) : std::optional<Rank>{}); }
+
+
+    /** \returns an empty optional if the requested player doesn't have
+     * an initial rank
+     */
+    std::optional<Rank> initialRank(
+        int pos
+        ) const;
+
+    /** \brief Assigns a player pair */
+    void assignPlayerPair(
+        const PlayerPairRefId& ppId,   ///< the pair ID to assign
+        int pos   ///< assign to player "1" or "2"
+        );
+
+    /** \brief Declares a player pair as unused
+     */
+    void setPairUnused(
+        int pos   ///< pair "1" or "2"
+        );
+
+    /** \returns `true` if both players have no pair assigned
+     */
+    constexpr bool noPairsAssigned() const { return ((p1Pair.get() == -1) && (p2Pair.get() == -1)); }
+
+    /** \returns `true` if there is a follow-up match for the winner
+     */
+    constexpr bool hasWinnerMatch() const { return std::holds_alternative<OutgoingBracketLink>(winnerAction); }
+
+    /** \returns `true` if there is a follow-up match for the loser
+     */
+    constexpr bool hasLoserMatch() const { return std::holds_alternative<OutgoingBracketLink>(loserAction); }
+
+    /** \return `true` if a match can be skipped; that's the case if at least one of the branches is dead.
+     */
+    constexpr bool canSkip() const { return ((p1State == BranchState::Dead) || (p2State == BranchState::Dead)); }
+
+  protected:
+
+  private:
+    BracketMatchNumber brMaNum{-1};   ///< the number of the associated match in the bracket
+    Round _round{-1};   ///< the 1-based, bracket-internal round this match is played in
+
+    // static structure information
+    std::variant<OutgoingBracketLink, Rank> winnerAction{Rank{-1}};   ///< what happens to the winner
+    std::variant<OutgoingBracketLink, Rank> loserAction{Rank{-1}};   ///< what happens to the loser
+    std::variant<IncomingBracketLink, Rank> src1{Rank{-1}};   ///< where player 1 comes from
+    std::variant<IncomingBracketLink, Rank> src2{Rank{-1}};   ///< where player 2 comes from
+
+    // dynamic allocation information
+    BranchState p1State{BranchState::Alive};
+    BranchState p2State{BranchState::Alive};
+    PlayerPairRefId p1Pair{-1};
+    PlayerPairRefId p2Pair{-1};
+  };
+
+  /** \brief A sorted list of bracket matches with additional manipulation functions
+   * that ensure that the match data (especially the linking) is kept consistent
+   */
+  class BracketMatchDataList : public std::vector<BracketMatchData>
+  {
+  public:
+    // inherit all parent ctors
+    using std::vector<BracketMatchData>::vector;
+
+    /** \brief Takes a sorted list of player pairs (seed) and
+     *   * assignes PlayerPair IDs to the first matches as far as possible; and
+     *   * tags unused matches
+     *
+     * \pre The seeding list is sorted with the strongest player at index zero.
+     *
+     * \pre The seeding list contains at least two player pairs and not more than twice the
+     * number of matches in the first round.
+     *
+     * \pre The list of bracket matches stems from a SvgDef that has passed all checks in SvgBracket::consistencyCheck()
+     *
+     */
+    void applySeeding(const QTournament::PlayerPairList& seed);
+
+    /** \brief Follows the bracket in forward direction (==> towards higher rounds)
+     * until it finds the next playable match (==> both branches non-dead) starting
+     * from a given match as a winner or loser.
+     *
+     * \returns a BracketMatchNumber if such a match could be found or the resulting final rank
+     */
+    std::variant<OutgoingBracketLink, Rank> traverseForward(
+        const BracketMatchData& ma,   ///< the starting point of the traversal
+        PairRole role   ///< start the traversal as a winner or loser
+        ) const;
+
+  protected:
+    /** \brief Takes the player in the given position and promotes it as to the winner
+     * match and declares the loser match as "dead".
+     *
+     * \pre The given position has an assigned pair.
+     *
+     * \pre The other position is dead.
+     */
+    void fastForward(
+        BracketMatchData& ma,   ///< the match from which to start
+        int pos   ///< the position (1 or 2) that contains the to-be-forwarded pair
+        );
+
+    /** \brief Sets the loser branch of a given match to "dead"
+     *
+     * \pre The given match actually has an outgoing link for the loser
+     */
+    void declareLoserBranchDead(
+        const BracketMatchData& ma   ///< the match of which the loser's branch will be declared "dead"
+        );
+
   };
 
   //----------------------------------------------------------------------------
@@ -250,12 +480,19 @@ namespace QTournament::SvgBracket
    *
    * \returns the full bracket definition if the search was successful; empty otherwise
    */
-  std::optional<SvgBracket> findSvgBracket(
+  std::optional<SvgBracketDef> findSvgBracket(
       SvgBracketMatchSys msys,   ///< the match system for which we need a bracket
       int nPlayers   ///< the number of players currently in the category
       );
 
   //----------------------------------------------------------------------------
+
+  /** \brief Converts the tag-based SvgBracketDef into the more
+   * application-level based representation BracketMatchData
+   *
+   * \return all bracket matches, sorted by match number (and thus by round)
+   */
+  BracketMatchDataList convertToBracketMatches(const SvgBracketDef& def);
 }
 
 #endif // SVGBRACKET_H

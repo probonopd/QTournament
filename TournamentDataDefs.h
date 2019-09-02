@@ -21,6 +21,8 @@
 
 #include <QString>
 
+#include <Sloppy/NamedType.h>
+
 namespace QTournament
 {
   constexpr int DbVersionMajor = 3;
@@ -43,10 +45,30 @@ namespace QTournament
   
 //----------------------------------------------------------------------------
 
-constexpr int MaxRandomizationRounds = 100;    // for group assignments, player pairs, etc.
+  constexpr int MaxRandomizationRounds = 100;    // for group assignments, player pairs, etc.
 
 //----------------------------------------------------------------------------
-    
+
+  // Named types as aliases from simple types like int, etc.
+  //
+  // Not yet used consistently throughout the app
+  using PlayerPairRefId = Sloppy::NamedType<int, struct PlayerPairRefIdTag>;   ///< reference ID of a player pair
+  using BracketMatchNumber = Sloppy::NamedType<int, struct BracketMatchNumberTag>;   ///< the 1-based, bracket-internal number of a match
+  using Rank  = Sloppy::NamedType<int, struct RankTag>;   ///< the 1-based rank of a player pair in a ranking / in an initial seeding
+  using Round  = Sloppy::NamedType<int, struct RoundTag>;   ///< the 1-based round a match is played in
+
+  // for using NamedTypes as keys in unordered maps
+  template<typename NT>
+  struct NamedTypeHasher
+  {
+    std::size_t operator()(const NT& x) const noexcept
+    {
+      return std::hash<typename NT::UnderlyingType>{}(x.get());
+    }
+  };
+
+  template<typename NT_Key, typename V>
+  using unordered_map_NT = std::unordered_map<NT_Key, V, NamedTypeHasher<NT_Key>>;
 
 //----------------------------------------------------------------------------
     
@@ -119,7 +141,7 @@ constexpr int MaxRandomizationRounds = 100;    // for group assignments, player 
 #define CAT_WinScore "WinScore"
 #define CAT_DrawScore "DrawScore"
 #define CAT_GroupConfig "GroupConfig"
-#define CAT_BracketVisData "BracketVisData"
+#define CAT_BracketMatchSys "BracketMatchSys"
 #define CAT_RoundRobinIterations "RoundRobinIterations"
 //#define CAT_ ""
   
@@ -160,7 +182,7 @@ constexpr int MaxRandomizationRounds = 100;    // for group assignments, player 
 #define MA_LoserRank  "LoserRank"
 #define MA_RefereeMode  "RefereeMode"
 #define MA_RefereeRef  "RefereeRefId"
-//#define MA_  ""
+#define MA_BracketMatchNum  "BracketMatchNum"
 //#define MA_  ""
 //#define MA_  ""
 //#define MA_  ""
@@ -213,29 +235,6 @@ constexpr int MaxRandomizationRounds = 100;    // for group assignments, player 
 
 //----------------------------------------------------------------------------
 
-#define TabBracketVis "BracketVisualization"
-#define BV_MatchRef "MatchRefId"
-#define BV_CatRef "CategoryRefId"
-#define BV_Page "PageNumber"
-#define BV_GridX0 "GridX0"
-#define BV_GridY0 "GridY0"
-#define BV_SpanY "SpanY"
-#define BV_Orientation "Orientation"
-#define BV_Terminator "Terminator"
-#define BV_InitialRank1 "InitialRank1"
-#define BV_InitialRank2 "InitialRank2"
-#define BV_Pair1Ref "PlayerPair1RefId"
-#define BV_Pair2Ref "PlayerPair2RefId"
-#define BV_YPagebreakSpan "PagebreakOffsetY"
-#define BV_NextPageNum "NextPageNum"
-#define BV_Terminator_OFFSET_Y "TerminatorOffset"
-#define BV_ElementId "BracketElementId"
-#define BV_NextWinnerMatch "NextWinnerMatch"
-#define BV_NextLoserMatch "NextLoserMatch"
-#define BV_NextMatchPosForWinner "NextMatchPosForWinner"
-#define BV_NextMatchPosForLoser "NextMatchPosForLoser"
-//#define BV_ ""
-//#define BV_ ""
 
 //----------------------------------------------------------------------------
 
@@ -280,8 +279,8 @@ constexpr int MaxRandomizationRounds = 100;    // for group assignments, player 
     WinScore,
     DrawScore,
     GroupConfig,
-    RoundRobinIterations
-    
+    RoundRobinIterations,
+    BracketMatchSystem
   };
   
 //----------------------------------------------------------------------------
@@ -351,11 +350,23 @@ constexpr int MaxRandomizationRounds = 100;    // for group assignments, player 
     SwissLadder,
     GroupsWithKO,
     Randomize,
-    Ranking,
-    SingleElim,
     RoundRobin,
+    Bracket
   };
-  
+
+  //----------------------------------------------------------------------------
+
+  /** \brief A list of all match systems that are available as SVG bracket
+   */
+  enum SvgBracketMatchSys
+  {
+    SingleElim,   ///< single elimination bracket (KO rounds)
+    DoubleElim,   ///< double elimination
+    RankSys,   ///< used in official ranking tournaments
+  };
+
+
+
 //----------------------------------------------------------------------------
 
   enum class RefereeMode {

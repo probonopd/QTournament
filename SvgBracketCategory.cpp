@@ -16,60 +16,36 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <QDebug>
-
-#include <Sloppy/Utils.h>
-
-#include <SqliteOverlay/Transaction.h>
-
-#include "ElimCategory.h"
+#include "SvgBracketCategory.h"
 #include "KO_Config.h"
 #include "CatRoundStatus.h"
 #include "RankingEntry.h"
 #include "RankingMngr.h"
-#include "assert.h"
 #include "HelperFunc.h"
 #include "MatchMngr.h"
 #include "CatMngr.h"
-#include "RankingMngr.h"
-#include "reports/BracketVisData.h"
+#include "BackendAPI.h"
 
 using namespace SqliteOverlay;
 
 namespace QTournament
 {
 
-  EliminationCategory::EliminationCategory(const TournamentDB& _db, int rowId, int eliminationMode)
-  : Category(_db, rowId)
+  SvgBracketCategory::SvgBracketCategory(const TournamentDB& _db, int rowId, SvgBracketMatchSys brMatchSys)
+    : Category(_db, rowId), bracketMatchSys{brMatchSys}
   {
-    if ((eliminationMode != BracketGenerator::BracketSingleElim) &&
-        (eliminationMode != BracketGenerator::BracketDoubleElim) &&
-        (eliminationMode != BracketGenerator::BracketRanking1))
-    {
-      throw std::invalid_argument("Invalid elimination mode in ctor of EliminationCategory!");
-    }
-
-    elimMode = eliminationMode;
   }
 
 //----------------------------------------------------------------------------
 
-  EliminationCategory::EliminationCategory(const TournamentDB& _db, const TabRow& _row, int eliminationMode)
-  : Category(_db, _row)
+  SvgBracketCategory::SvgBracketCategory(const TournamentDB& _db, const TabRow& _row, SvgBracketMatchSys brMatchSys)
+  : Category(_db, _row), bracketMatchSys{brMatchSys}
   {
-    if ((eliminationMode != BracketGenerator::BracketSingleElim) &&
-        (eliminationMode != BracketGenerator::BracketDoubleElim) &&
-        (eliminationMode != BracketGenerator::BracketRanking1))
-    {
-      throw std::invalid_argument("Invalid elimination mode in ctor of EliminationCategory!");
-    }
-
-    elimMode = eliminationMode;
   }
 
 //----------------------------------------------------------------------------
 
-  Error EliminationCategory::canFreezeConfig()
+  Error SvgBracketCategory::canFreezeConfig()
   {
     if (is_NOT_InState(ObjState::CAT_Config))
     {
@@ -93,9 +69,11 @@ namespace QTournament
       return Error::InvalidPlayerCount;
     }
 
-    // for the bracket mode "ranking1" we may not have more
-    // than 32 players
-    if ((elimMode == BracketGenerator::BracketRanking1) && (numPairs > 32))
+    // check if there is suitable bracket available
+    // for the selected bracket system and the current
+    // number of players
+    auto bracket = SvgBracket::findSvgBracket(bracketMatchSys, numPairs);
+    if (!bracket)
     {
       return Error::InvalidPlayerCount;
     }
@@ -105,21 +83,21 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  bool EliminationCategory::needsInitialRanking()
+  bool SvgBracketCategory::needsInitialRanking()
   {
     return true;
   }
 
 //----------------------------------------------------------------------------
 
-  bool EliminationCategory::needsGroupInitialization()
+  bool SvgBracketCategory::needsGroupInitialization()
   {
     return false;
   }
 
 //----------------------------------------------------------------------------
 
-  Error EliminationCategory::prepareFirstRound()
+  Error SvgBracketCategory::prepareFirstRound()
   {
     if (is_NOT_InState(ObjState::CAT_Idle)) return Error::WrongState;
 
@@ -128,6 +106,7 @@ namespace QTournament
     // make sure we have not been called before; to this end, just
     // check that there have no matches been created for us so far
     auto allGrp = mm.getMatchGroupsForCat(*this);
+
     // do not return an error here, because obviously we have been
     // called successfully before and we only want to avoid
     // double initialization
@@ -137,12 +116,13 @@ namespace QTournament
     // for each group
     CatMngr cm{db};
     PlayerPairList seeding = cm.getSeeding(*this);
-    return generateBracketMatches(elimMode, seeding, 1);
+
+    return API::Internal::generateBracketMatches(*this, bracketMatchSys, seeding, 1);
   }
 
 //----------------------------------------------------------------------------
 
-  int EliminationCategory::calcTotalRoundsCount() const
+  int SvgBracketCategory::calcTotalRoundsCount() const
   {
     ObjState stat = getState();
     if ((stat == ObjState::CAT_Config) || (stat == ObjState::CAT_Frozen))
@@ -150,16 +130,20 @@ namespace QTournament
       return -1;   // category not yet fully configured; can't calc rounds
     }
 
-    BracketGenerator bg{elimMode};
-    int numPairs = getDatabasePlayerPairCount();
-    return bg.getNumRounds(numPairs);
+    // assuming that the matches have already been created we simply
+    // return the number of match groups for this category.
+    static const std::string sql{"SELECT COUNT(*) FROM " + std::string{TabMatchGroup} + " WHERE " + std::string{MG_CatRef} + "=?"};
+    auto stmt = db.get().prepStatement(sql);
+    int nRounds = db.get().execScalarQueryInt(stmt);
+
+    return (nRounds > 0) ? nRounds : -1;
   }
 
 //----------------------------------------------------------------------------
 
   // this returns a function that should return true if "a" goes before "b" when sorting. Read:
   // return a function that returns true true if the score of "a" is better than "b"
-  std::function<bool (RankingEntry& a, RankingEntry& b)> EliminationCategory::getLessThanFunction()
+  std::function<bool (RankingEntry& a, RankingEntry& b)> SvgBracketCategory::getLessThanFunction()
   {
     return [](RankingEntry& a, RankingEntry& b) {
       return false;   // there is no definite ranking in elimination rounds, so simply return a dummy value
@@ -168,7 +152,7 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  Error EliminationCategory::onRoundCompleted(int round)
+  Error SvgBracketCategory::onRoundCompleted(int round)
   {
     // create ranking entries for everyone who played
     // and for everyone who achieved a final rank in a
@@ -215,7 +199,7 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  PlayerPairList EliminationCategory::getRemainingPlayersAfterRound(int round, Error* err) const
+  PlayerPairList SvgBracketCategory::getRemainingPlayersAfterRound(int round, Error* err) const
   {
     int lastRoundInThisCat = calcTotalRoundsCount();
     if (round == lastRoundInThisCat)
@@ -352,7 +336,7 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  ModMatchResult EliminationCategory::canModifyMatchResult(const Match& ma) const
+  ModMatchResult SvgBracketCategory::canModifyMatchResult(const Match& ma) const
   {
     // the match has to be in FINISHED state
     if (ma.is_NOT_InState(ObjState::MA_Finished)) return ModMatchResult::NotPossible;
@@ -388,7 +372,7 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  ModMatchResult EliminationCategory::modifyMatchResult(const Match& ma, const MatchScore& newScore) const
+  ModMatchResult SvgBracketCategory::modifyMatchResult(const Match& ma, const MatchScore& newScore) const
   {
     ModMatchResult mmr = canModifyMatchResult(ma);
     if ((mmr != ModMatchResult::ScoreOnly) && (mmr != ModMatchResult::WinnerLoser)) return mmr;
@@ -429,15 +413,6 @@ namespace QTournament
         {
           Error e = mm.swapPlayer(*loserMatch, oldLoser, oldWinner);
           if (e != Error::OK) return ModMatchResult::NotPossible;  // triggers implicit rollback
-        }
-
-        // delete explicit references to the affected pair in the
-        // bracket visualization
-        auto bvd = BracketVisData::getExisting(ma.getCategory());
-        if (bvd)
-        {
-          bvd->clearExplicitPlayerPairReferences(oldWinner);
-          bvd->clearExplicitPlayerPairReferences(oldLoser);
         }
       }
 
@@ -480,7 +455,7 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  std::optional<Match> EliminationCategory::getFollowUpMatch(const Match& ma, bool searchLoserNotWinner) const
+  std::optional<Match> SvgBracketCategory::getFollowUpMatch(const Match& ma, bool searchLoserNotWinner) const
   {
     if (ma.getCategory().getId() != getId()) return {};
 
@@ -532,7 +507,7 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  Error EliminationCategory::rewriteFinalRankForMultipleRounds(int minRound, int maxRound) const
+  Error SvgBracketCategory::rewriteFinalRankForMultipleRounds(int minRound, int maxRound) const
   {
     // some boundary checks
     if (minRound < 1) return Error::InvalidRound;

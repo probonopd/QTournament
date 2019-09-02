@@ -187,7 +187,9 @@ bool InOutList::isValidCatRoundCombination(const Category& _cat, int _round)
   }
 
   // for elimination contests, we can always generate in-out-lists
-  if (mSys == MatchSystem::SingleElim)
+  //
+  // FIX ME: make a more precise decision here based on the bracket mode
+  if (mSys == MatchSystem::Bracket)
   {
     return true;
   }

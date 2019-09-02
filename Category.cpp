@@ -24,16 +24,17 @@
 #include "TournamentDB.h"
 #include "TournamentErrorCodes.h"
 #include "CatMngr.h"
+#include "MatchMngr.h"
 #include "RoundRobinCategory.h"
 #include "RoundRobinGenerator.h"
 #include "Match.h"
 #include "CatRoundStatus.h"
-#include "BracketGenerator.h"
 #include "ElimCategory.h"
 #include "PureRoundRobinCategory.h"
 #include "SwissLadderCategory.h"
 #include "HelperFunc.h"
 #include "PlayerMngr.h"
+#include "SvgBracketCategory.h"
 
 using namespace SqliteOverlay;
 
@@ -246,6 +247,10 @@ namespace QTournament
 
     case CatParameter::RoundRobinIterations:
       return row.getInt(CAT_RoundRobinIterations);
+
+    case CatParameter::BracketMatchSystem:
+      return row.getInt(CAT_BracketMatchSys);
+
       /*
       case :
 	return row[];
@@ -565,14 +570,6 @@ namespace QTournament
       return std::unique_ptr<Category>(new RoundRobinCategory(db, row));
     }
 
-    if (sys == MatchSystem::SingleElim) {
-      return std::unique_ptr<Category>(new EliminationCategory(db, row, BracketGenerator::BracketSingleElim));
-    }
-
-    if (sys == MatchSystem::Ranking) {
-      return std::unique_ptr<Category>(new EliminationCategory(db, row, BracketGenerator::BracketRanking1));
-    }
-
     if (sys == MatchSystem::RoundRobin)
     {
       return std::unique_ptr<Category>(new PureRoundRobinCategory(db, row));
@@ -581,6 +578,12 @@ namespace QTournament
     if (sys == MatchSystem::SwissLadder)
     {
       return std::unique_ptr<Category>(new SwissLadderCategory(db, row));
+    }
+
+    if (sys == MatchSystem::Bracket)
+    {
+      int brackSys = getParameter_int(CatParameter::BracketMatchSystem);
+      return std::unique_ptr<Category>(new SvgBracketCategory(db, row, static_cast<SvgBracketMatchSys>(brackSys)));
     }
 
     // THIS IS JUST A HOT FIX UNTIL WE HAVE
@@ -803,380 +806,6 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  /**
-    Convenience function that generates a set of bracket matches for
-    a list of PlayerPairs. This function does not do any error checking
-    whether the PlayerPairs or other arguments are valid. It assumes
-    that those checks have been performed before and that it's generally
-    safe to generate the matches here and now.
-
-    \param bracketMode is the type of bracket to use (e.g., single elimination)
-    \param seeding is the initial list of player pairs, sorted from best player (index 0) to weakest player
-    \param firstRoundNum the number of the first round of bracket matches
-    \param progressNotificationQueue is an optional pointer to a FIFO that communicates progress back to the GUI
-
-    \return error code
-    */
-  Error Category::generateBracketMatches(int bracketMode, const PlayerPairList& seeding, int firstRoundNum) const
-  {
-    CatRoundStatus crs = getRoundStatus();
-    if (firstRoundNum <= crs.getHighestGeneratedMatchRound()) return Error::InvalidRound;
-
-    // generate the bracket data for the player list
-    BracketGenerator gen{bracketMode};
-    BracketMatchDataList bmdl;
-    RawBracketVisDataDef visDataDef;
-    gen.getBracketMatches(seeding.size(), bmdl, visDataDef);
-
-    //
-    // handle a special corner case here:
-    //
-    // If we are
-    //   * in KO matches after round robins; and
-    //   * we are configured to start directly with the finals; and
-    //   * the second of each group qualifies
-    //
-    // then we have four initial players that DO NOT need a
-    // semi final. The normal behavior of the BracketGenerator for
-    // four players is to generate semi-finals and finals. But in this
-    // special case, we only need the finals ("real" final and the
-    // match for third place).
-    //
-    // So if the conditions above are fulfilled, we regenerate a
-    // new set of matches. This is not very elegant (since it should
-    // be solved in the BracketGenerator) but efficient...
-    //
-    if (getMatchSystem() == MatchSystem::GroupsWithKO)
-    {
-      KO_Config cfg = KO_Config(getParameter_string(CatParameter::GroupConfig));
-      if ((cfg.getStartLevel() == KO_Start::Final) && (cfg.getSecondSurvives()))
-      {
-        // we start with finals, which is simply "first vs. second"
-        BracketMatchData final = BracketMatchData::getNew();
-        final.setInitialRanks(1, 2);
-        final.nextMatchForLoser = -2;
-        final.nextMatchForWinner = -1;
-        final.depthInBracket = 0;
-
-        RawBracketVisElement visFinal;
-        visFinal.page = 0;
-        visFinal.gridX0 = 2;
-        visFinal.gridY0 = 0;
-        visFinal.ySpan = 2;
-        visFinal.yPageBreakSpan = 0;
-        visFinal.orientation = BracketOrientation::Right;
-        visFinal.terminator = BracketTerminator::Outwards;
-        visFinal.terminatorOffsetY = 0;
-
-        // match for third place
-        BracketMatchData thirdPlaceMatch = BracketMatchData::getNew();
-        thirdPlaceMatch.setInitialRanks(3, 4);
-        thirdPlaceMatch.nextMatchForLoser = -4;
-        thirdPlaceMatch.nextMatchForWinner = -3;
-        thirdPlaceMatch.depthInBracket = 0;
-
-        RawBracketVisElement visThird;
-        visThird.page = 0;
-        visThird.gridX0 = 2;
-        visThird.gridY0 = 1;
-        visThird.ySpan = 2;
-        visThird.yPageBreakSpan = 0;
-        visThird.orientation = BracketOrientation::Left;
-        visThird.terminator = BracketTerminator::Outwards;
-        visThird.terminatorOffsetY = 0;
-
-        // replace all previously generated matches with these two
-        bmdl.clear();
-        bmdl.push_back(final);
-        bmdl.push_back(thirdPlaceMatch);
-
-        visDataDef.clear();
-        visDataDef.addPage(BracketPageOrientation::Landscape, BracketLabelPos::TopLeft);
-        visDataDef.addElement(visFinal);
-        visDataDef.addElement(visThird);
-      }
-    }
-
-    // sort the bracket data so that we have early rounds first
-    //
-    // std::sort constantly produces memory leaks by reading / writing beyond the end of the list. So I've
-    // finally decided to use my own primitive sorting algorithm that is optimized on simplicity, not efficiency
-    //
-    //std::sort(bmdl.begin(), bmdl.end(), BracketGenerator::getBracketMatchSortFunction_earlyRoundsFirst());
-    lazyAndInefficientVectorSortFunc<BracketMatchData>(bmdl, BracketGenerator::getBracketMatchSortFunction_earlyRoundsFirst());
-
-    // create match groups and matches "from left to right"
-    MatchMngr mm{db};
-    int curRound = -1;
-    int curDepth = -1;
-    std::optional<MatchGroup> curGroup{};
-    QHash<int, int> bracket2Match;
-    for (const BracketMatchData& bmd : bmdl)
-    {
-      // skip unused matches
-      if (bmd.matchDeleted)
-      {
-        continue;
-      }
-
-      // do we have to start a new round / group?
-      if (bmd.depthInBracket != curDepth)
-      {
-        if (curGroup)
-        {
-          mm.closeMatchGroup(*curGroup);
-        }
-
-        curDepth = bmd.depthInBracket;
-        ++curRound;
-
-        // determine the number for the new match group
-        int grpNum = GroupNum_Iteration;
-        switch (curDepth)
-        {
-        case 0:
-          grpNum = GroupNum_Final;
-          break;
-        case 1:
-          grpNum = GroupNum_Semi;
-          break;
-        case 2:
-          grpNum = GroupNum_Quarter;
-          break;
-        case 3:
-          grpNum = GroupNum_L16;
-          break;
-        }
-
-        // create the match group
-        curGroup = mm.createMatchGroup(*this, firstRoundNum+curRound, grpNum);
-        assert(curGroup);
-      }
-
-      // create a new, empty match in this group and map it to the bracket match id
-      auto ma = mm.createMatch(*curGroup);
-      assert(ma);
-
-      bracket2Match.insert(bmd.getBracketMatchId(), ma->getId());
-    }
-    // close the last open match group (the finals)
-    if (curGroup) mm.closeMatchGroup(*curGroup);
-
-    // a little helper function that returns an iterator to a match with
-    // a given ID
-    auto getMatchById = [&bmdl](int matchId) {
-      return std::find_if(begin(bmdl), end(bmdl), [matchId](const BracketMatchData& bmd)
-      {
-        return bmd.getBracketMatchId() == matchId;
-      });
-    };
-
-    // fill the empty matches with the right values
-    for (const BracketMatchData& bmd : bmdl)
-    {
-      // skip unused matches
-      if (bmd.matchDeleted)
-      {
-        continue;
-      }
-
-      // "zero" is invalid for initialRank!
-      assert(bmd.initialRank_Player1 != 0);
-      assert(bmd.initialRank_Player2 != 0);
-
-      auto ma = mm.getMatch(bracket2Match.value(bmd.getBracketMatchId()));
-      assert(ma);
-
-      // case 1: we have "real" players that we can use
-      if ((bmd.initialRank_Player1 > 0) && (bmd.initialRank_Player1 <= seeding.size()))
-      {
-        PlayerPair pp = seeding.at(bmd.initialRank_Player1 - 1);
-        mm.setPlayerPairForMatch(*ma, pp, 1);
-      }
-      if ((bmd.initialRank_Player2 > 0) && (bmd.initialRank_Player2 <= seeding.size()))
-      {
-        PlayerPair pp = seeding.at(bmd.initialRank_Player2 - 1);
-        mm.setPlayerPairForMatch(*ma, pp, 2);
-      }
-
-      // case 2: we have "symbolic" values like "winner of bracket match XYZ"
-      if (bmd.initialRank_Player1 < 0)
-      {
-        int srcBracketMatchId = -(bmd.initialRank_Player1);
-        BracketMatchData srcBracketMatch = *(getMatchById(srcBracketMatchId));
-
-        int srcDatabaseMatchId = bracket2Match.value(srcBracketMatchId);
-        auto srcDatabaseMatch = mm.getMatch(srcDatabaseMatchId);
-        assert(srcDatabaseMatch);
-
-        if (srcBracketMatch.nextMatchForWinner == bmd.getBracketMatchId())  // player 1 of bmd is the winner of srcMatch
-        {
-          assert(srcBracketMatch.nextMatchPlayerPosForWinner == 1);
-          mm.setSymbolicPlayerForMatch(*srcDatabaseMatch, *ma, true, 1);
-        } else {
-          // player 1 of bmd is the loser of srcMatch
-          assert(srcBracketMatch.nextMatchPlayerPosForLoser == 1);
-          mm.setSymbolicPlayerForMatch(*srcDatabaseMatch, *ma, false, 1);
-        }
-      }
-      if (bmd.initialRank_Player2 < 0)
-      {
-        int srcBracketMatchId = -(bmd.initialRank_Player2);
-        BracketMatchData srcBracketMatch = *(getMatchById(srcBracketMatchId));
-
-        int srcDatabaseMatchId = bracket2Match.value(srcBracketMatchId);
-        auto srcDatabaseMatch = mm.getMatch(srcDatabaseMatchId);
-
-        if (srcBracketMatch.nextMatchForWinner == bmd.getBracketMatchId())  // player 2 of bmd is the winner of srcMatch
-        {
-          assert(srcBracketMatch.nextMatchPlayerPosForWinner == 2);
-          mm.setSymbolicPlayerForMatch(*srcDatabaseMatch, *ma, true, 2);
-        } else {
-          // player 2 of bmd is the loser of srcMatch
-          assert(srcBracketMatch.nextMatchPlayerPosForLoser == 2);
-          mm.setSymbolicPlayerForMatch(*srcDatabaseMatch, *ma, false, 2);
-        }
-      }
-
-      // case 3 (rare): only one player is used and the match does not need to be played,
-      // BUT the match contains information about the final rank of the one player
-      if ((bmd.initialRank_Player1 == BracketMatchData::UnusedPlayer) && (bmd.nextMatchForWinner < 0))
-      {
-        mm.setPlayerToUnused(*ma, 1, -(bmd.nextMatchForWinner));
-      }
-      if ((bmd.initialRank_Player2 == BracketMatchData::UnusedPlayer) && (bmd.nextMatchForWinner < 0))
-      {
-        mm.setPlayerToUnused(*ma, 2, -(bmd.nextMatchForWinner));
-      }
-
-      // last step: perhaps we have final ranks for winner and/or loser
-      if (bmd.nextMatchForWinner < 0)
-      {
-        mm.setRankForWinnerOrLoser(*ma, true, -(bmd.nextMatchForWinner));
-      }
-      if (bmd.nextMatchForLoser < 0)
-      {
-        mm.setRankForWinnerOrLoser(*ma, false, -(bmd.nextMatchForLoser));
-      }
-    }
-
-    //
-    // copy visualization info (if available) to the database
-    //
-
-    if ((visDataDef.getNumPages() > 0) && (visDataDef.getNumElements() > 0))
-    {
-      // create a new visualization entry
-      auto [orientation, lp] = visDataDef.getPageInfo(0);
-      std::optional<BracketVisData> bvd = BracketVisData::createNew(*this, orientation, lp);
-      assert(bvd);
-
-      // add all further pages
-      for (int i=1; i < visDataDef.getNumPages(); ++i)
-      {
-        std::tie(orientation, lp) = visDataDef.getPageInfo(i);
-        bvd->addPage(orientation, lp);
-      }
-
-      for (int i=0; i < visDataDef.getNumElements(); ++i)
-      {
-        RawBracketVisElement el = visDataDef.getElement(i);
-        bvd->addElement(i + 1, el);    // bracket match IDs are 1-based, not 0-based!
-      }
-
-      // link actual matches to the bracket elements
-      for (int i=0; i < visDataDef.getNumElements(); ++i)
-      {
-        if (bracket2Match.keys().contains(i+1))    // bracket match IDs are 1-based, not 0-based!
-        {
-          int maId = bracket2Match.value(i+1);     // bracket match IDs are 1-based, not 0-based!
-          auto ma = mm.getMatch(maId);
-
-          auto bracketElement = bvd->getVisElement(i+1);   // bracket match IDs are 1-based, not 0-based!
-          assert(bracketElement);
-
-          assert(bracketElement->linkToMatch(*ma));
-        }
-      }
-
-      // fill empty bracket matches with names as good as possible
-      // for now
-      bvd->fillMissingPlayerNames();
-    }
-    return Error::OK;
-  }
-
-  //----------------------------------------------------------------------------
-
-  int Category::getGroupNumForPredecessorRound(const int grpNum) const
-  {
-    // a regular players group
-    if (grpNum > 0) return grpNum;
-
-    // a regular round, e.g. in swiss ladder or random matches
-    if (grpNum == GroupNum_Iteration) return GroupNum_Iteration;
-
-    // in elimination categories, everything before "KO_Start::L16" is "Iteration"
-    // and the rest follows the normal KO-logic
-    MatchSystem mSys = getMatchSystem();
-    if (mSys == MatchSystem::SingleElim)
-    {
-      switch(grpNum)
-      {
-      case GroupNum_Final:
-        return GroupNum_Semi;
-      case GroupNum_Semi:
-        return GroupNum_Quarter;
-      case GroupNum_Quarter:
-        return GroupNum_L16;
-      }
-      return GroupNum_Iteration;
-    }
-
-    // if we made it to this point, we are in KO rounds.
-    // so we need the KO-config to decide if there is a previous
-    // KO round or if we fall back to round robins
-    KO_Config cfg = KO_Config(getParameter_string(CatParameter::GroupConfig));
-    KO_Start startLvl = cfg.getStartLevel();
-
-    if (startLvl == KO_Start::Final) return AnyPlayersGroupNumber;
-
-    if (startLvl == KO_Start::Semi)
-    {
-      if (grpNum == GroupNum_Final) return GroupNum_Semi;
-    }
-
-    if (startLvl == KO_Start::Quarter)
-    {
-      switch (grpNum)
-      {
-      case GroupNum_Final:
-        return GroupNum_Semi;
-      case GroupNum_Semi:
-        return GroupNum_Quarter;
-      }
-    }
-
-    if (startLvl == KO_Start::L16)
-    {
-      switch (grpNum)
-      {
-      case GroupNum_Final:
-        return GroupNum_Semi;
-      case GroupNum_Semi:
-        return GroupNum_Quarter;
-      case GroupNum_Quarter:
-        return GroupNum_L16;
-      }
-    }
-
-    return AnyPlayersGroupNumber;
-  }
-
-
-
-  //----------------------------------------------------------------------------
-
   CatRoundStatus Category::getRoundStatus() const
   {
     return CatRoundStatus(db, *this);
@@ -1269,7 +898,7 @@ namespace QTournament
     // in any kind of "bracket match", draws are not possible.
     // So we need to have a "decision game", if necessary
     MatchSystem ms = getMatchSystem();
-    if ((ms == MatchSystem::Ranking) || (ms == MatchSystem::SingleElim))
+    if (ms == MatchSystem::Bracket)
     {
       return false;
     }
@@ -1389,11 +1018,6 @@ namespace QTournament
   }
 
   //----------------------------------------------------------------------------
-
-  QString Category::getBracketVisDataString() const
-  {
-    return QString::fromUtf8(row[CAT_BracketVisData].data());
-  }
 
   //----------------------------------------------------------------------------
 

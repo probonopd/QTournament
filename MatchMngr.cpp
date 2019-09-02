@@ -1266,60 +1266,9 @@ namespace QTournament {
    */
   bool MatchMngr::hasUnfinishedMandatoryPredecessor(const Match &ma) const
   {
-    auto mg = ma.getMatchGroup();
-
-    int round = mg.getRound();
-    if (round < 2)
-    {
-      // matches in round 1 can always be played
-      return false;
-    }
-
-    // okay, our match is at least in round 2. Check for unplayed matches
-    // in round-1
-    auto cat = ma.getCategory();
-    int requiredPrevRoundsPlayersGroup = cat.getGroupNumForPredecessorRound(mg.getGroupNumber());
-    for (auto prevMg : getMatchGroupsForCat(cat, round-1))
-    {
-      int actualPrevRoundsPlayersGroup = prevMg.getGroupNumber();
-      if ((requiredPrevRoundsPlayersGroup == AnyPlayersGroupNumber) && (actualPrevRoundsPlayersGroup < 0))
-      {
-        continue;  // we're looking for any round robins, but this a KO group or an iterative group
-      }
-
-      if ((requiredPrevRoundsPlayersGroup > 0) && (actualPrevRoundsPlayersGroup != requiredPrevRoundsPlayersGroup))
-      {
-        // we're looking for a specific players group in round robins,
-        // but this a KO group or an iterative group or a wrong
-        // players group
-        continue;
-      }
-
-      if (((requiredPrevRoundsPlayersGroup == GroupNum_Semi) ||
-           (requiredPrevRoundsPlayersGroup == GroupNum_Quarter) ||
-           (requiredPrevRoundsPlayersGroup == GroupNum_L16)) && (actualPrevRoundsPlayersGroup != requiredPrevRoundsPlayersGroup))
-      {
-        continue;  // wrong KO round
-      }
-
-      //
-      // if we made it to this point, the match group is a mandatory predecessor
-      //
-
-      // in round robins, rounds are independent from each other. for this reason,
-      // we may, for instance, start matches in round 3 before round 2 is finished.
-      // the same assumption holds for elimination rounds
-      MatchSystem mSys = cat.getMatchSystem();
-      if ((mSys == MatchSystem::SingleElim) || (mSys == MatchSystem::Ranking) || (mSys == MatchSystem::RoundRobin) || ((mSys == MatchSystem::GroupsWithKO) && (mg.getGroupNumber() > 0)))
-      {
-        return false;
-      }
-
-      // Okay, the previous match group really has to be finished first.
-      if (prevMg.is_NOT_InState(ObjState::MG_Finished)) return true;
-    }
-
-    return false;   // no match group found that has to be finished before the match
+    // FIX ME: for now, we always return `false` and thus we allow any
+    // match to be called regardless of any pending matches in earlier rounds
+    return false;
   }
 
   //----------------------------------------------------------------------------
@@ -1602,6 +1551,13 @@ namespace QTournament {
     trans.commit();
 
     return Error::OK;
+  }
+
+  //----------------------------------------------------------------------------
+
+  void MatchMngr::setBrackMatchLink(const Match& ma, const BracketMatchNumber& bm) const
+  {
+    ma.rowRef().update(MA_BracketMatchNum, bm.get());
   }
 
   //----------------------------------------------------------------------------

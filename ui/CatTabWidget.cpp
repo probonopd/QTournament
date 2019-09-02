@@ -65,9 +65,13 @@ CatTabWidget::CatTabWidget(QWidget* parent)
   ui.cbMatchSystem->addItem(tr("Swiss ladder"), static_cast<int>(MatchSystem::SwissLadder));
   ui.cbMatchSystem->addItem(tr("Group matches with KO rounds"), static_cast<int>(MatchSystem::GroupsWithKO));
   //ui.cbMatchSystem->addItem(tr("Random matches (for fun tournaments)"), static_cast<int>(MatchSystem::Randomize));
-  ui.cbMatchSystem->addItem(tr("Tree-like ranking system"), static_cast<int>(MatchSystem::Ranking));
-  ui.cbMatchSystem->addItem(tr("Single Elimination"), static_cast<int>(MatchSystem::SingleElim));
+  ui.cbMatchSystem->addItem(tr("Bracket"), static_cast<int>(MatchSystem::Bracket));
   ui.cbMatchSystem->addItem(tr("Round robin matches"), static_cast<int>(MatchSystem::RoundRobin));
+
+  // initialize the entries in the drop-down box for the bracket mode
+  ui.cbBracketSys->addItem(tr("Single Elimination"), static_cast<int>(SvgBracketMatchSys::SingleElim));
+  ui.cbBracketSys->addItem(tr("Double Elimination"), static_cast<int>(SvgBracketMatchSys::DoubleElim));
+  ui.cbBracketSys->addItem(tr("Ranking System"), static_cast<int>(SvgBracketMatchSys::RankSys));
 
   // setup the context menu(s)
   initContextMenu();
@@ -142,6 +146,7 @@ void CatTabWidget::updateControls()
     ui.gbGroups->hide();
     ui.gbRandom->hide();
     ui.gbRoundRobin->hide();
+    ui.gbBracket->hide();
     return;
   }
   
@@ -167,7 +172,8 @@ void CatTabWidget::updateControls()
     ui.gbGroups->show();
     ui.gbRandom->hide();
     ui.gbRoundRobin->hide();
-    
+    ui.gbBracket->hide();
+
     // read the current group settings from the database and
     // copy them to the widget
     KO_Config cfg = KO_Config(selectedCat.getParameter_string(CatParameter::GroupConfig));
@@ -178,23 +184,39 @@ void CatTabWidget::updateControls()
     ui.gbGroups->hide();
     ui.gbRandom->show();
     ui.gbRoundRobin->hide();
+    ui.gbBracket->hide();
   }
   else if (ms == MatchSystem::RoundRobin)
   {
     ui.gbGroups->hide();
     ui.gbRandom->hide();
     ui.gbRoundRobin->show();
+    ui.gbBracket->hide();
 
     // read the number of iterations that are
     // currently configured for this category
     int it = selectedCat.getParameter_int(CatParameter::RoundRobinIterations);
     ui.cbRoundRobinTwoIterations->setChecked(it > 1);
   }
+  else if (ms == MatchSystem::Bracket)
+  {
+    ui.gbGroups->hide();
+    ui.gbRandom->hide();
+    ui.gbRoundRobin->hide();
+    ui.gbBracket->show();
+
+    // read the currently configured match system
+    int idxMatchSys = selectedCat.getParameter_int(CatParameter::BracketMatchSystem);
+
+    // select the combo box entry with the right text
+    ui.cbBracketSys->setCurrentIndex(ui.cbBracketSys->findData(idxMatchSys, Qt::UserRole));
+  }
   else
   {
     ui.gbGroups->hide();
     ui.gbRandom->hide();
     ui.gbRoundRobin->hide();
+    ui.gbBracket->hide();
   }
   
   // update the match type
@@ -240,7 +262,7 @@ void CatTabWidget::updateControls()
   // In the latter case, we need the second player for the
   // match for 3rd place
   bool enableDrawCheckbox = true;
-  if ((ms == MatchSystem::SingleElim) || (ms == MatchSystem::Ranking))
+  if (ms == MatchSystem::Bracket)
   {
     enableDrawCheckbox = false;
   }
@@ -1181,6 +1203,19 @@ void CatTabWidget::onTwoIterationsChanged()
   int it = (ui.cbRoundRobinTwoIterations->isChecked()) ? 2 : 1;
   Category selCat = ui.catTableView->getSelectedCategory();
   selCat.setParameter(CatParameter::RoundRobinIterations, it);
+}
+
+//----------------------------------------------------------------------------
+
+void CatTabWidget::onBracketSysChanged(int newIndex)
+{
+  // get the new bracket system
+  int brackSysId = ui.cbBracketSys->itemData(newIndex, Qt::UserRole).toInt();
+
+  if (!(ui.catTableView->hasCategorySelected())) return;
+
+  Category selectedCat = ui.catTableView->getSelectedCategory();
+  selectedCat.setParameter(CatParameter::BracketMatchSystem, brackSysId);
 }
 
 //----------------------------------------------------------------------------

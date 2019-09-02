@@ -24,12 +24,13 @@
 
 //#include "TournamentDB.h"
 #include "TournamentErrorCodes.h"
-
+#include "SvgBracket.h"
 
 namespace QTournament
 {
   class TournamentDB;
   class Match;
+  class Category;
 
   /** \brief Only queries that are guaranteed to not modify the database
    */
@@ -40,6 +41,34 @@ namespace QTournament
     std::optional<Match> nextCallableMatch(
         const TournamentDB& db
         );
+  }
+
+  /** \brief Helper function for the API functions itself; what's inside "API::Internal"
+   * should not be called by the GUI directly
+   */
+  namespace API::Internal
+  {
+    /** \brief Convenience function that generates a set of bracket matches for
+     * a list of PlayerPairs.
+     *
+     * This function does not do any error checking
+     * whether the PlayerPairs or other arguments are valid. It assumes
+     * that those checks have been performed before and that it's generally
+     * safe to generate the matches here and now.
+     *
+     * \return error code
+      */
+    Error generateBracketMatches(
+        const Category& cat,   ///< the category to operate on
+        SvgBracketMatchSys brMatchSys,   ///< the type of bracket to use (e.g., single elimination)
+        const PlayerPairList& seeding,   ///< the initial list of player pairs, sorted from best player (index 0) to weakest player
+        int firstRoundNum   ///< the number of the first round of bracket matches
+        );
+
+  }
+
+  namespace API
+  {
   }
 }
 #endif	/* COURT_H */

@@ -24,10 +24,10 @@
 #include "RankingEntry.h"
 #include "RankingMngr.h"
 #include "assert.h"
-#include "BracketGenerator.h"
 #include "HelperFunc.h"
 #include "MatchMngr.h"
 #include "CatMngr.h"
+#include "BackendAPI.h"
 
 using namespace SqliteOverlay;
 
@@ -389,7 +389,7 @@ namespace QTournament
     // for the second phase of the tournament
     KO_Config cfg = KO_Config(getParameter_string(CatParameter::GroupConfig));
     int numGroupRounds = cfg.getNumRounds();
-    return generateBracketMatches(BracketGenerator::BracketSingleElim, seed, numGroupRounds+1);
+    return API::Internal::generateBracketMatches(*this, SvgBracketMatchSys::SingleElim, seed, numGroupRounds+1);
   }
 
 //----------------------------------------------------------------------------

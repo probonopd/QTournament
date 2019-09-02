@@ -78,7 +78,7 @@ upSimpleReport Standings::regenerateReport()
     int matchGroupNumber = mgl.at(0).getGroupNumber();
     MatchSystem mSys = cat.getMatchSystem();
     if ((matchGroupNumber < 0) && (matchGroupNumber != GroupNum_Iteration) &&
-        ((mSys == MatchSystem::GroupsWithKO) || (mSys == MatchSystem::SingleElim)))
+        ((mSys == MatchSystem::GroupsWithKO) || (mSys == MatchSystem::Bracket)))
     {
       subHeader = GuiHelpers::groupNumToLongString(mgl.at(0).getGroupNumber());
     }
@@ -107,8 +107,8 @@ upSimpleReport Standings::regenerateReport()
     result->skip(3.0);
   }
 
-  // if we are in ranking matches, print a list of all best-case reachable places
-  if ((cat.getMatchSystem() == MatchSystem::Ranking) && (round != cat.getRoundStatus().getTotalRoundsCount()))
+  // if we are in bracket matches, print a list of all best-case reachable places
+  if ((cat.getMatchSystem() == MatchSystem::Bracket) && (round != cat.getRoundStatus().getTotalRoundsCount()))
   {
     printIntermediateHeader(result, tr("Best case reachable places after this round"));
     printBestCaseList(result);
@@ -141,7 +141,7 @@ int Standings::determineBestPossibleRankForPlayerAfterRound(const PlayerPair& pp
 {
   // we can only determine the best possible final rank if we
   // are in the MatchSystem::Ranking match system
-  if (cat.getMatchSystem() != MatchSystem::Ranking)
+  if (cat.getMatchSystem() != MatchSystem::Bracket)
   {
     return -1;
   }
@@ -290,7 +290,7 @@ int Standings::determineBestPossibleRankForPlayerAfterRound(const PlayerPair& pp
 
 void Standings::printBestCaseList(upSimpleReport& rep) const
 {
-  if (cat.getMatchSystem() != MatchSystem::Ranking)
+  if (cat.getMatchSystem() != MatchSystem::Bracket)
   {
     return;
   }

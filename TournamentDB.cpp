@@ -134,7 +134,7 @@ namespace QTournament
     tc.addCol(CAT_WinScore, cdt::Integer, cc::NotUsed, cc::Abort);
     tc.addCol(CAT_DrawScore, cdt::Integer, cc::NotUsed, cc::Abort);
     tc.addCol(CAT_GroupConfig, cdt::Text, cc::NotUsed, cc::NotUsed);
-    tc.addCol(CAT_BracketVisData, cdt::Text, cc::NotUsed, cc::NotUsed);
+    tc.addCol(CAT_BracketMatchSys, cdt::Integer, cc::NotUsed, cc::Abort, 0);
     tc.addCol(CAT_RoundRobinIterations, cdt::Integer, cc::NotUsed, cc::Abort, 1);
     tc.createTableAndResetCreator(*this, TabCategory);
     
@@ -182,6 +182,7 @@ namespace QTournament
     tc.addCol(MA_LoserRank, cdt::Integer, cc::NotUsed, cc::NotUsed);
     tc.addCol(MA_RefereeMode, cdt::Integer, cc::NotUsed, cc::Abort, -1);
     tc.addForeignKey(MA_RefereeRef, TabPlayer, ca::Cascade, ca::Cascade, cc::NotUsed, cc::NotUsed);
+    tc.addCol(MA_BracketMatchNum, cdt::Integer, cc::NotUsed, cc::NotUsed);
     tc.createTableAndResetCreator(*this, TabMatch);
 
     // Generate a table with ranking information
@@ -199,28 +200,6 @@ namespace QTournament
     tc.addCol(RA_Rank, cdt::Integer, cc::NotUsed, cc::NotUsed);  // ranks can be temporarily NULL, because we first create the entry and assign the rank later on
     tc.createTableAndResetCreator(*this, TabMatchSystem);
 
-    // Generate a table with bracket visualization data
-    tc.addForeignKey(BV_MatchRef, TabMatch, ca::Cascade, ca::Cascade, cc::Abort, cc::NotUsed);
-    tc.addForeignKey(BV_CatRef, TabCategory, ca::Cascade, ca::Cascade, cc::NotUsed, cc::Abort);
-    tc.addCol(BV_Page, cdt::Integer, cc::NotUsed, cc::Abort);
-    tc.addCol(BV_GridX0, cdt::Integer, cc::NotUsed, cc::Abort);
-    tc.addCol(BV_GridY0, cdt::Integer, cc::NotUsed, cc::Abort);
-    tc.addCol(BV_SpanY, cdt::Integer, cc::NotUsed, cc::Abort);
-    tc.addCol(BV_Orientation, cdt::Integer, cc::NotUsed, cc::Abort);
-    tc.addCol(BV_Terminator, cdt::Integer, cc::NotUsed, cc::Abort);
-    tc.addCol(BV_InitialRank1, cdt::Integer, cc::NotUsed, cc::Abort);
-    tc.addCol(BV_InitialRank2, cdt::Integer, cc::NotUsed, cc::Abort);
-    tc.addCol(BV_YPagebreakSpan, cdt::Integer, cc::NotUsed, cc::Abort);
-    tc.addCol(BV_NextPageNum, cdt::Integer, cc::NotUsed, cc::Abort);
-    tc.addCol(BV_Terminator_OFFSET_Y, cdt::Integer, cc::NotUsed, cc::Abort);
-    tc.addCol(BV_ElementId, cdt::Integer, cc::NotUsed, cc::Abort);
-    tc.addCol(BV_NextMatchPosForWinner, cdt::Integer, cc::NotUsed, cc::Abort);
-    tc.addCol(BV_NextMatchPosForLoser, cdt::Integer, cc::NotUsed, cc::Abort);
-    tc.addCol(BV_NextLoserMatch, cdt::Integer, cc::NotUsed, cc::Abort);
-    tc.addCol(BV_NextWinnerMatch, cdt::Integer, cc::NotUsed, cc::Abort);
-    tc.addForeignKey(BV_Pair1Ref, TabPairs, ca::Cascade, ca::Cascade, cc::NotUsed, cc::NotUsed);
-    tc.addForeignKey(BV_Pair2Ref, TabPairs, ca::Cascade, ca::Cascade, cc::NotUsed, cc::NotUsed);
-    tc.createTableAndResetCreator(*this, TabBracketVis);
   }
 
   //----------------------------------------------------------------------------
@@ -272,11 +251,6 @@ namespace QTournament
     indexCreationHelper(TabMatchSystem, RA_PairRef);
     indexCreationHelper(TabMatchSystem, RA_CatRef);
     indexCreationHelper(TabMatchSystem, RA_Round);
-
-    indexCreationHelper(TabBracketVis, BV_CatRef);
-    indexCreationHelper(TabBracketVis, BV_MatchRef);
-    indexCreationHelper(TabBracketVis, BV_Pair1Ref);
-    indexCreationHelper(TabBracketVis, BV_Pair2Ref);
 
     //indexCreationHelper(TAB_, );
   }

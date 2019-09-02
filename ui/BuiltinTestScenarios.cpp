@@ -383,8 +383,8 @@ namespace QTournament
 
       Category ls = cmngr.getCategory("LS");
 
-      // set the match system to Single Elimination
-      Error e = ls.setMatchSystem(MatchSystem::SingleElim) ;
+      // set the match system to Bracket
+      Error e = ls.setMatchSystem(MatchSystem::Bracket) ;
       assert(e == Error::OK);
 
       // run the category
@@ -478,8 +478,8 @@ namespace QTournament
         }
       }
 
-      ls.setMatchSystem(MatchSystem::Ranking);
-      ld.setMatchSystem(MatchSystem::Ranking);
+      ls.setMatchSystem(MatchSystem::Bracket);
+      ld.setMatchSystem(MatchSystem::Bracket);
 
       // freeze the LS category
       Error e = cmngr.freezeConfig(ls);

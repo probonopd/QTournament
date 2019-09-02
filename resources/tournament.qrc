@@ -6,8 +6,9 @@
         <file>txt/consent.html</file>
         <file>txt/match_result_confirmation.html</file>
         <file>txt/match_call.html</file>
+        <file>brackets/RankSys16.svg</file>
     </qresource>
-    <qresource lang="de" prefix="/">
+    <qresource prefix="/" lang="de">
         <file alias="txt/match_result_confirmation.html">txt/match_result_confirmation_de.html</file>
         <file alias="txt/consent.html">txt/consent_de.html</file>
         <file alias="txt/match_call.html">txt/match_call_de.html</file>

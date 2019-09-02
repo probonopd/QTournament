@@ -37,6 +37,8 @@ HEADERS += \
     PlayerMngr.h \
     PlayerPair.h \
     RoundRobinCategory.h \
+    SvgBracket.h \
+    SvgBracketCategory.h \
     Team.h \
     TeamMngr.h \
     TournamentDataDefs.h \
@@ -79,7 +81,6 @@ HEADERS += \
     CatRoundStatus.h \
     RankingMngr.h \
     RankingEntry.h \
-    BracketGenerator.h \
     reports/AbstractReport.h \
     reports/ParticipantsList.h \
     ui/ReportsTabWidget.h \
@@ -87,7 +88,6 @@ HEADERS += \
     reports/MatchResultList.h \
     reports/MatchResultList_byGroup.h \
     reports/Standings.h \
-    ElimCategory.h \
     reports/InOutList.h \
     ui/SeedingListWidget.h \
     ui/DlgSeedingEditor.h \
@@ -99,8 +99,6 @@ HEADERS += \
     reports/ResultsAndNextMatches.h \
     PureRoundRobinCategory.h \
     SwissLadderCategory.h \
-    reports/BracketSheet.h \
-    reports/BracketVisData.h \
     ui/commonCommands/AbstractCommand.h \
     ui/commonCommands/cmdRegisterPlayer.h \
     ui/commonCommands/cmdUnregisterPlayer.h \
@@ -166,10 +164,13 @@ HEADERS += \
 
 SOURCES += \
     BackendAPI_Getters.cpp \
+    BackendAPI_MatchGen.cpp \
     Category.cpp \
     CatMngr.cpp \
     GroupDef.cpp \
     KO_Config.cpp \
+    SvgBracket.cpp \
+    SvgBracketCategory.cpp \
     main.cpp \
     MatchGroup.cpp \
     MatchMngr.cpp \
@@ -216,7 +217,6 @@ SOURCES += \
     CatRoundStatus.cpp \
     RankingMngr.cpp \
     RankingEntry.cpp \
-    BracketGenerator.cpp \
     reports/AbstractReport.cpp \
     reports/ParticipantsList.cpp \
     ui/ReportsTabWidget.cpp \
@@ -224,7 +224,6 @@ SOURCES += \
     reports/MatchResultList.cpp \
     reports/MatchResultList_byGroup.cpp \
     reports/Standings.cpp \
-    ElimCategory.cpp \
     reports/InOutList.cpp \
     ui/SeedingListWidget.cpp \
     ui/DlgSeedingEditor.cpp \
@@ -236,8 +235,6 @@ SOURCES += \
     reports/ResultsAndNextMatches.cpp \
     PureRoundRobinCategory.cpp \
     SwissLadderCategory.cpp \
-    reports/BracketSheet.cpp \
-    reports/BracketVisData.cpp \
     ui/commonCommands/AbstractCommand.cpp \
     ui/commonCommands/cmdRegisterPlayer.cpp \
     ui/commonCommands/cmdUnregisterPlayer.cpp \

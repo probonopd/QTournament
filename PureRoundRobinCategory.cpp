@@ -22,7 +22,6 @@
 #include "RankingEntry.h"
 #include "RankingMngr.h"
 #include "assert.h"
-#include "BracketGenerator.h"
 #include "MatchMngr.h"
 
 #include <QDebug>

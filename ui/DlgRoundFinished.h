@@ -28,7 +28,6 @@
 #include "TournamentDB.h"
 #include "Category.h"
 
-#include "reports/BracketSheet.h"
 #include "reports/InOutList.h"
 #include "reports/ResultsAndNextMatches.h"
 #include "reports/MatrixAndStandings.h"
@@ -62,7 +61,7 @@ private:
   const QTournament::Category& cat;
   int round;
 
-  std::optional<QTournament::BracketSheet> optBracket;
+  //std::optional<QTournament::BracketSheet> optBracket;
   std::optional<QTournament::InOutList> optInOut;
   std::optional<QTournament::ResultsAndNextMatches> optResults;
   std::optional<QTournament::MatrixAndStandings> optMatrix;

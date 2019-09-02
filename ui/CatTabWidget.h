@@ -103,6 +103,7 @@ public slots:
   void onImportPlayer();
   void onCategoryRemoved();
   void onTwoIterationsChanged();
+  void onBracketSysChanged(int newIndex);
 } ;
 
 #endif	/* _CATTABWIDGET_H */

@@ -118,12 +118,6 @@ QVariant MatchTableModel::data(const QModelIndex& index, int role) const
         return txt;
       }
 
-      // if we have a ranking bracket, labels like "QF", "SF"
-      // or "FI" do not really make sense. So we display
-      // nothing instead
-      Category c = mg.getCategory();
-      if (c.getMatchSystem() == MatchSystem::Ranking) return "--";
-
       // in all other cases, try to print a group number
       return GuiHelpers::groupNumToString(mg.getGroupNumber());
     }

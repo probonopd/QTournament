@@ -113,6 +113,7 @@ namespace QTournament
     Error setRankForWinnerOrLoser(const Match& ma, bool isWinner, int rank) const;
     Error canAssignMatchToCourt(const Match& ma, const Court &court) const;
     Error assignMatchToCourt(const Match& ma, const Court& court) const;
+    void setBrackMatchLink(const Match& ma, const BracketMatchNumber& bm) const;
     std::optional<Court> autoAssignMatchToNextAvailCourt(const Match& ma, Error* err, bool includeManualCourts=false) const;
     MatchFinalizationResult setMatchScoreAndFinalizeMatch(const Match& ma, const MatchScore& score, bool isWalkover=false) const;
     Error updateMatchScore(const Match& ma, const MatchScore& newScore, bool winnerLoserChangePermitted) const;
