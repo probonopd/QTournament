@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += widgets network
+QT       += widgets network svg
 
 TARGET = QTournament
 TEMPLATE = app
@@ -44,6 +44,7 @@ HEADERS += \
     TournamentDataDefs.h \
     TournamentDB.h \
     TournamentErrorCodes.h \
+    reports/SvgBracketSheet.h \
     ui/BuiltinTestScenarios.h \
     ui/CatTableView.h \
     ui/CatTabWidget.h \
@@ -181,6 +182,7 @@ SOURCES += \
     Team.cpp \
     TeamMngr.cpp \
     TournamentDB.cpp \
+    reports/SvgBracketSheet.cpp \
     ui/BuiltinTestScenarios.cpp \
     ui/CatTableView.cpp \
     ui/CatTabWidget.cpp \

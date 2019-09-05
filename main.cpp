@@ -80,7 +80,5 @@ int main(int argc, char *argv[])
   MainFrame w;
   w.show();
 
-  // create and show your widgets here
-
   return app.exec();
 }

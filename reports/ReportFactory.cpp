@@ -28,6 +28,7 @@
 #include "InOutList.h"
 #include "ResultSheets.h"
 #include "MatrixAndStandings.h"
+#include "SvgBracketSheet.h"
 #include "PureRoundRobinCategory.h"
 #include "MatchMngr.h"
 
@@ -42,7 +43,7 @@ namespace QTournament
   constexpr char ReportFactory::REP_InOutByCat[];
   constexpr char ReportFactory::REP_ResultSheets[];
   constexpr char ReportFactory::REP_ResultsAndNextMatches[];
-  //constexpr char ReportFactory::REP_Bracket[];
+  constexpr char ReportFactory::REP_Bracket[];
   constexpr char ReportFactory::REP_MatrixAndStandings[];
 
   ReportFactory::ReportFactory(const TournamentDB& _db)
@@ -170,17 +171,34 @@ namespace QTournament
       }
     }
 
-    // we brute-force check all categories for the availability
-    // of tournament bracket visualization data
-    /*SqliteOverlay::DbTab tabVis{db, TabBracketVis, false};
+    // show brackets for all bracket categories
     for (Category cat : cm.getAllCategories())
     {
-      int catId = cat.getId();
-      if (tabVis.getMatchCountForColumnValue(BV_CatRef, catId) > 0)
+      MatchSystem msys = cat.getMatchSystem();
+      if (msys != MatchSystem::Bracket) continue;
+
+      auto stat = cat.getState();
+      if ((stat == ObjState::CAT_Config) || (stat == ObjState::CAT_Frozen))
       {
-        result.append(genRepName(REP_Bracket, cat, 0));
+        continue;  // no brackets for "un-seeded" categories
       }
-    }*/
+
+      int catId = cat.getId();
+
+      // generate a bracket for the initial seeding ("round 0"),
+      // for the current status ("round -1") and for each
+      // finished round
+      result.append(genRepName(REP_Bracket, catId, 0));
+      CatRoundStatus crs = cat.getRoundStatus();
+      for (int round=1; round <= crs.getFinishedRoundsCount(); ++round)
+      {
+        result.append(genRepName(REP_Bracket, catId, round));
+      }
+      if (crs.getCurrentlyRunningRoundNumber() != CatRoundStatus::NoCurrentlyRunningRounds)
+      {
+        result.append(genRepName(REP_Bracket, catId, -1));  // "-1" = latest status, including partial rounds
+      }
+    }
 
     // we can always generate result sheets
     result.append(genRepName(REP_ResultSheets, 1, 0));
@@ -277,12 +295,13 @@ namespace QTournament
     }
 
     // brackets
-    /*if (pureRepName == REP_Bracket)
+    if (pureRepName == REP_Bracket)
     {
       int catId = intParam1;
+      int round = intParam2;
       Category cat = cm.getCategoryById(catId);
-      return upAbstractReport(new BracketSheet(db, repName, cat));
-    }*/
+      return upAbstractReport(new SvgBracketSheet(db, repName, cat, round));
+    }
 
     // matrix with standings
     if (pureRepName == REP_MatrixAndStandings)
