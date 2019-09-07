@@ -76,11 +76,19 @@ namespace QTournament
         const PlayerPairList& seeding   ///< the seeding for the category; is needed by all reports
         ) const;
 
+    /** \brief prepares the bracket for the report mode "current status / everything"
+     */
+    std::vector<SvgPageDescr> prepReport_Current(
+        SimpleReportLib::SimpleReportGenerator* rep,   ///< pointer to the report we should be writing to
+        const PlayerPairList& seeding   ///< the seeding for the category; is needed by all reports
+        ) const;
+
   private:
     const BracketReportType repType;
     const Category cat;
     const SvgBracketMatchSys msys;
     Round round;
+    Round firstBracketRound{1};
   };
 
 }

@@ -313,6 +313,7 @@ namespace QTournament::SvgBracket
    * \returns a vector of SVG pages (empty on error)
    */
   std::vector<SvgPageDescr> substSvgBracketTags(
+      const TournamentDB& db,
       SvgBracketMatchSys msys,   ///< the match system for which we need a bracket
       const QTournament::PlayerPairList& seed,   ///< the sorted list of initial player pairs
       const std::vector<MatchDispInfo>& maList,  ///< a list of matches that should be filled into the bracket
@@ -370,11 +371,10 @@ namespace QTournament::SvgBracket
   /** \brief Determines the substituion strings for a single bracket element and
    * adds them to a dictionary
    */
-  void defSubstStringsForBracketElement(
-      std::unordered_map<std::string, std::string>& dict,   ///< dictionary for the substitution strings
+  void defSubstStringsForBracketElement(const TournamentDB& db, std::unordered_map<std::string, std::string>& dict,   ///< dictionary for the substitution strings
       const BracketElementTagNames& betl,   ///< tag names (keys) for this bracket for the dictionary
       const BracketMatchData& bmd,   ///< the BracketMatchData that represents the bracket element
-      const MatchDispInfo& mdi   ///< how match and player pairs should be represented
+      const std::optional<MatchDispInfo>& mdi   ///< how match and player pairs should be represented
       );
 
 }

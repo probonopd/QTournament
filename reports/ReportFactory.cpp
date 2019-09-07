@@ -186,9 +186,12 @@ namespace QTournament
       int catId = cat.getId();
 
       // generate a bracket for the initial seeding ("round 0"),
-      // for the current status ("round -1") and for each
-      // finished round
       result.append(genRepName(REP_Bracket, catId, 0));
+
+      // "-1" = latest status, including partial rounds
+      result.append(genRepName(REP_Bracket, catId, -1));
+
+      // a bracket for the situation after a finished round
       int firstBracketRound = 1;
       if (cat.getMatchSystem() == MatchSystem::GroupsWithKO)
       {
@@ -199,10 +202,6 @@ namespace QTournament
       for (int round=firstBracketRound; round <= crs.getFinishedRoundsCount(); ++round)
       {
         result.append(genRepName(REP_Bracket, catId, round));
-      }
-      if (crs.getCurrentlyRunningRoundNumber() != CatRoundStatus::NoCurrentlyRunningRounds)
-      {
-        result.append(genRepName(REP_Bracket, catId, -1));  // "-1" = latest status, including partial rounds
       }
     }
 

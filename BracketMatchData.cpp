@@ -120,20 +120,20 @@ namespace QTournament::SvgBracket
       {
         const PlayerPairRefId ppId{ma.getPlayerPair1().getPairId()};
         bmd.assignPlayerPair(ppId, 1);
-      } else {
-        bmd.setPairUnused(1);
       }
       if (ma.hasPlayerPair2())
       {
         const PlayerPairRefId ppId{ma.getPlayerPair2().getPairId()};
         bmd.assignPlayerPair(ppId, 2);
-      } else {
-        bmd.setPairUnused(2);
       }
-
-      // apply fast-forward logic to this match
-      propagateWinnerLoser(bmd);
     }
+
+    // step 2:
+    // apply all "fast forwards" in all rounds
+    //
+    // matches are sorted by number and thus implicitly by rounds ==> it is sufficient to iterate
+    // over all matches
+    std::for_each(begin(), end(), [&](BracketMatchData& bmd) { propagateWinnerLoser(bmd); });
   }
 
   //----------------------------------------------------------------------------

@@ -580,7 +580,7 @@ namespace QTournament::SvgBracket
 
   //----------------------------------------------------------------------------
 
-  std::vector<SvgPageDescr> substSvgBracketTags(SvgBracketMatchSys msys, const PlayerPairList& seed, const std::vector<MatchDispInfo>& maList, const CommonBracketTags& cbt)
+  std::vector<SvgPageDescr> substSvgBracketTags(const TournamentDB& db, SvgBracketMatchSys msys, const PlayerPairList& seed, const std::vector<MatchDispInfo>& maList, const CommonBracketTags& cbt)
   {
     // retrieve the bracket definition for the selected system
     // and the required number of players
@@ -662,13 +662,17 @@ namespace QTournament::SvgBracket
     {
       // find the associated display info
       // and the match tag
-      const auto& mdi = brNum2MatchDispInfo.at(bmd.matchNum().get());
+      std::optional<MatchDispInfo> mdi{};
+      auto it = brNum2MatchDispInfo.find(bmd.matchNum().get());
+      if (it != end(brNum2MatchDispInfo))
+      {
+        mdi = it->second;
+      }
       const auto& maTag = matchTagByMatchNum(bmd.matchNum());
 
       // get the tag names for which we need substitution strings
       BracketElementTagNames betl;
       auto [p1a, p1b, p2a, p2b] = findPlayerTagsforMatchNum(parsedTags, bmd.matchNum());
-      {}
       betl.p1aTagName = p1a.src.name;
       betl.p1bTagName = p1b.src.name;
       betl.p2aTagName = p2a.src.name;
@@ -676,7 +680,7 @@ namespace QTournament::SvgBracket
       betl.matchTagName = maTag.src.name;
 
       // assign all substitution strings
-      defSubstStringsForBracketElement(dict, betl, bmd, mdi);
+      defSubstStringsForBracketElement(db, dict, betl, bmd, mdi);
     }
 
     return applySvgSubstitution(brDef->pages, dict);
@@ -684,28 +688,35 @@ namespace QTournament::SvgBracket
 
   //----------------------------------------------------------------------------
 
-  void defSubstStringsForBracketElement(std::unordered_map<string, string>& dict, const BracketElementTagNames& betl, const BracketMatchData& bmd, const MatchDispInfo& mdi)
+  void defSubstStringsForBracketElement(const TournamentDB& db, std::unordered_map<string, string>& dict, const BracketElementTagNames& betl, const BracketMatchData& bmd, const std::optional<MatchDispInfo>& mdi)
   {
+    // if this is a bracket without match, display pair names or symbolic names
+    MatchDispInfo::PairRepresentation pairRep = (mdi.has_value()) ? mdi->pairRep : MatchDispInfo::PairRepresentation::RealOrSymbolic;
+
     //
     // deal with the pair tags
     //
     for (int pos=1; pos < 3; ++pos)
     {
-      if (mdi.pairRep == MatchDispInfo::PairRepresentation::None)
+      auto pairId = (pos == 1) ? bmd.assignedPair1() : bmd.assignedPair2();
+
+      if (pairRep == MatchDispInfo::PairRepresentation::None)
       {
         // Do nothing; tags without subst string will be implicitly erased later
         continue;
       }
 
-      auto pairId = (pos == 1) ? bmd.assignedPair1() : bmd.assignedPair2();
-
       // print nothing if we need real names but don't have one
-      if ((pairId.get() <= 0) && (mdi.pairRep == MatchDispInfo::PairRepresentation::RealNamesOnly))
+      if ((pairId.get() <= 0) && (pairRep == MatchDispInfo::PairRepresentation::RealNamesOnly))
       {
         continue;
       }
 
-      int symName = mdi.ma.getSymbolicPlayerPair1Name();
+      int symName{0};
+      if (mdi)
+      {
+        symName = (pos == 1) ? mdi->ma.getSymbolicPlayerPair1Name() : mdi->ma.getSymbolicPlayerPair2Name();
+      }
 
       // print nothing if we have neither real names nor symbolic names
       if ((pairId.get() <= 0) && (symName == 0))
@@ -719,7 +730,7 @@ namespace QTournament::SvgBracket
       // always use real names, if available
       if (pairId.get() > 0)
       {
-        PlayerPair pp{mdi.ma.getDatabaseHandle(), pairId.get()};
+        PlayerPair pp{db, pairId.get()};
         a = QString2StdString(pp.getPlayer1().getDisplayName());
         if (pp.hasPlayer2())
         {
@@ -730,11 +741,11 @@ namespace QTournament::SvgBracket
         QString tmp;
         if (symName > 0)
         {
-          tmp = QObject::tr("Winner of #");
+          tmp = QObject::tr("(Winner of #");
         } else {
-          tmp = QObject::tr("Loser of #");
+          tmp = QObject::tr("(Loser of #");
         }
-        tmp += QString::number(abs(symName));
+        tmp += QString::number(abs(symName)) + ")";
         a = QString2StdString(tmp);
       }
 
@@ -749,23 +760,27 @@ namespace QTournament::SvgBracket
     // Deal with the match tag
     //
 
-    if (mdi.resultRep == MatchDispInfo::ResultFieldContent::None)
+    if (!mdi) return;
+
+    if (mdi->resultRep == MatchDispInfo::ResultFieldContent::None)
     {
       return;
     }
 
-    auto score = mdi.ma.getScore();
-    if (mdi.resultRep == MatchDispInfo::ResultFieldContent::ResultOnly)
+    auto score = mdi->ma.getScore();
+    if (mdi->resultRep == MatchDispInfo::ResultFieldContent::ResultOnly)
     {
       if (score)
       {
-        dict[betl.matchTagName] = QString2StdString(score->toString());
+        QString tmp = score->toString();
+        tmp = tmp.replace(",", ", ");
+        dict[betl.matchTagName] = QString2StdString(tmp);
       }
       return;
     }
 
-    auto maNum = mdi.ma.getMatchNumber();
-    if (mdi.resultRep == MatchDispInfo::ResultFieldContent::ResultOnly)
+    auto maNum = mdi->ma.getMatchNumber();
+    if (mdi->resultRep == MatchDispInfo::ResultFieldContent::MatchNumberOnly)
     {
       if (maNum != MatchNumNotAssigned)
       {
@@ -779,7 +794,9 @@ namespace QTournament::SvgBracket
     //
     if (score)
     {
-      dict[betl.matchTagName] = QString2StdString(score->toString());
+      QString tmp = score->toString();
+      tmp = tmp.replace(",", ", ");
+      dict[betl.matchTagName] = QString2StdString(tmp);
       return;
     }
 

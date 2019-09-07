@@ -175,7 +175,7 @@ SOURCES += \
     KO_Config.cpp \
     SvgBracket.cpp \
     SvgBracketCategory.cpp \
-    SvgRuleChecks.cp \
+    SvgRuleChecks.cpp \
     main.cpp \
     MatchGroup.cpp \
     MatchMngr.cpp \

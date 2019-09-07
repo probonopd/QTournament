@@ -37,19 +37,19 @@ SvgBracketSheet::SvgBracketSheet(const TournamentDB& _db, const QString& _name, 
   :AbstractReport(_db, _name), repType{reportType}, cat{_cat}, round{_round},
     msys{static_cast<SvgBracketMatchSys>(cat.getParameter_int(CatParameter::BracketMatchSystem))}
 {
-  // For the report type "seeding" our first round
-  // the might be something != 1 if
-  // we're in group matches with KO
+  // in "groups with KO", the first round of bracket matches is not "1"
+  if (cat.getMatchSystem() == MatchSystem::GroupsWithKO)
+  {
+    KO_Config ko{cat.getParameter_string(CatParameter::GroupConfig)};
+    firstBracketRound = Round{ko.getNumRounds() + 1};
+  }
+
+  // For the report type "seeding" the parameter _round
+  // is initialized with 0
+  // ==> set it to the "real" value of the first round
   if (repType == BracketReportType::Seeding)
   {
-    if (cat.getMatchSystem() == MatchSystem::GroupsWithKO)
-    {
-      KO_Config ko{cat.getParameter_string(CatParameter::GroupConfig)};
-      round = Round{ko.getNumRounds() + 1};
-    }
-    else {
-      round = Round{1};
-    }
+    round = firstBracketRound;
   }
 }
 
@@ -82,6 +82,11 @@ upSimpleReport SvgBracketSheet::regenerateReport()
   if (repType == BracketReportType::AfterRound)
   {
     pages = prepReport_AfterRound(result.get(), seeding);
+  }
+
+  if (repType == BracketReportType::Current)
+  {
+    pages = prepReport_Current(result.get(), seeding);
   }
 
   // append all pages to the report
@@ -166,13 +171,15 @@ std::vector<SvgPageDescr> SvgBracketSheet::prepReport_Seeding(SimpleReportLib::S
   {
     for (const auto& ma : mgl[0].getMatches())
     {
-      SvgBracket::MatchDispInfo mdi{ma};
-      mdi.pairRep = SvgBracket::MatchDispInfo::PairRepresentation::RealNamesOnly;
-      mdi.resultRep = SvgBracket::MatchDispInfo::ResultFieldContent::MatchNumberOnly;
+      SvgBracket::MatchDispInfo mdi{
+        ma,
+        SvgBracket::MatchDispInfo::PairRepresentation::RealNamesOnly,
+        SvgBracket::MatchDispInfo::ResultFieldContent::MatchNumberOnly
+      };
       firstRoundMatches.push_back(mdi);
     }
   }
-  return SvgBracket::substSvgBracketTags(msys, seeding, firstRoundMatches, commonTags());
+  return SvgBracket::substSvgBracketTags(db, msys, seeding, firstRoundMatches, commonTags());
 }
 
 //----------------------------------------------------------------------------
@@ -180,12 +187,7 @@ std::vector<SvgPageDescr> SvgBracketSheet::prepReport_Seeding(SimpleReportLib::S
 std::vector<SvgPageDescr> SvgBracketSheet::prepReport_AfterRound(SimpleReportLib::SimpleReportGenerator* rep, const PlayerPairList& seeding) const
 {
   // determine the first round that contains bracket matches
-  Round curRound{1};
-  if (cat.getMatchSystem() == MatchSystem::GroupsWithKO)
-  {
-    KO_Config ko{cat.getParameter_string(CatParameter::GroupConfig)};
-    curRound = Round{ko.getNumRounds() + 1};
-  }
+  Round curRound{firstBracketRound};
 
   // prepare a list bracket matches for the all
   // bracket matches up to "our" round
@@ -198,9 +200,11 @@ std::vector<SvgPageDescr> SvgBracketSheet::prepReport_AfterRound(SimpleReportLib
     {
       for (const auto& ma : mgl[0].getMatches())
       {
-        SvgBracket::MatchDispInfo mdi{ma};
-        mdi.pairRep = SvgBracket::MatchDispInfo::PairRepresentation::RealNamesOnly;
-        mdi.resultRep = SvgBracket::MatchDispInfo::ResultFieldContent::ResultOnly;
+        SvgBracket::MatchDispInfo mdi{
+          ma,
+          SvgBracket::MatchDispInfo::PairRepresentation::RealNamesOnly,
+          SvgBracket::MatchDispInfo::ResultFieldContent::ResultOnly
+        };
         bracketMatches.push_back(mdi);
       }
     }
@@ -213,14 +217,63 @@ std::vector<SvgPageDescr> SvgBracketSheet::prepReport_AfterRound(SimpleReportLib
   {
     for (const auto& ma : mgl[0].getMatches())
     {
-      SvgBracket::MatchDispInfo mdi{ma};
-      mdi.pairRep = SvgBracket::MatchDispInfo::PairRepresentation::RealNamesOnly;
-      mdi.resultRep = SvgBracket::MatchDispInfo::ResultFieldContent::MatchNumberOnly;
+      SvgBracket::MatchDispInfo mdi{
+        ma,
+        SvgBracket::MatchDispInfo::PairRepresentation::RealNamesOnly,
+        SvgBracket::MatchDispInfo::ResultFieldContent::MatchNumberOnly
+      };
       bracketMatches.push_back(mdi);
     }
   }
 
-  return SvgBracket::substSvgBracketTags(msys, seeding, bracketMatches, commonTags());
+  // if possible, add also matches for all further rounds
+  // for which we already have fixed names; don't show match
+  // numbers, though. This is only to display we players have
+  // moved to
+  while (true)
+  {
+    curRound = Round{curRound.get() + 1};
+    auto mgl = mm.getMatchGroupsForCat(cat, curRound.get());
+    if (mgl.empty()) break; // no more rounds
+    for (const auto& ma : mgl[0].getMatches())
+    {
+      SvgBracket::MatchDispInfo mdi{
+        ma,
+        SvgBracket::MatchDispInfo::PairRepresentation::RealNamesOnly,
+        SvgBracket::MatchDispInfo::ResultFieldContent::None
+      };
+      bracketMatches.push_back(mdi);
+    }
+  }
+
+  return SvgBracket::substSvgBracketTags(db, msys, seeding, bracketMatches, commonTags());
+}
+
+//----------------------------------------------------------------------------
+
+std::vector<SvgPageDescr> SvgBracketSheet::prepReport_Current(SimpleReportLib::SimpleReportGenerator* rep, const PlayerPairList& seeding) const
+{
+  // determine the first round that contains bracket matches
+  Round curRound{firstBracketRound};
+
+  // prepare a list bracket matches for the all
+  // available bracket matches up to "our" round
+  std::vector<SvgBracket::MatchDispInfo> bracketMatches;
+  MatchMngr mm{db};
+  for (const auto& mg : mm.getMatchGroupsForCat(cat))
+  {
+    for (const auto& ma : mg.getMatches())
+    {
+      SvgBracket::MatchDispInfo mdi{
+        ma,
+        SvgBracket::MatchDispInfo::PairRepresentation::RealOrSymbolic,
+        SvgBracket::MatchDispInfo::ResultFieldContent::ResultOrNumber
+      };
+      bracketMatches.push_back(mdi);
+    }
+  }
+
+  return SvgBracket::substSvgBracketTags(db, msys, seeding, bracketMatches, commonTags());
 }
 
 //----------------------------------------------------------------------------
