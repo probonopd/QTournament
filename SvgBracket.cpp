@@ -6,6 +6,8 @@
 
 #include <QFile>
 
+#include <Sloppy/Memory.h>
+
 #include "HelperFunc.h"
 #include "SvgBracket.h"
 
@@ -126,19 +128,19 @@ namespace QTournament::SvgBracket
     }
 
     MatchTag result;
-    result.bracketMatchNum = std::stoi(sm[1].str());
-    result.roundNum = std::stoi(sm[2].str());
+    result.bracketMatchNum = BracketMatchNumber{std::stoi(sm[1].str())};
+    result.roundNum = Round{std::stoi(sm[2].str())};
 
     // check for additional winner / loser ranks
     static const std::regex reWinnerRank{R"(:W(\d+))"};
     static const std::regex reLoserRank{R"(:L(\d+))"};
     if (std::regex_search(tagName, sm, reWinnerRank))
     {
-      result.winnerRank = std::stoi(sm[1].str());
+      result.winnerRank = Rank{std::stoi(sm[1].str())};
     }
     if (std::regex_search(tagName, sm, reLoserRank))
     {
-      result.loserRank = std::stoi(sm[1].str());
+      result.loserRank = Rank{std::stoi(sm[1].str())};
     }
 
     return result;
@@ -164,7 +166,7 @@ namespace QTournament::SvgBracket
 
     PlayerTag result;
 
-    result.bracketMatchNum = std::stoi(sm[1].str());
+    result.bracketMatchNum = BracketMatchNumber{std::stoi(sm[1].str())};
     result.playerPos = std::stoi(sm[2].str());
 
     // if the name ends with 'b' we have the label for the second name
@@ -184,14 +186,15 @@ namespace QTournament::SvgBracket
     static const std::regex rePlayerInitial{R"(P(\d+)\.([12]):I(\d+))"};
     if (std::regex_match(tagName, sm, rePlayerInitial))
     {
-      result.initialRank = std::stoi(sm[3].str());
+      result.initialRank = Rank{std::stoi(sm[3].str())};
       return result;
     }
     static const std::regex rePlayerWinnerLoser{R"(P(\d+)\.([12]):([WL])(\d+))"};
     if (std::regex_match(tagName, sm, rePlayerWinnerLoser))
     {
-      result.srcMatch = std::stoi(sm[4].str());
-      if (sm[3].str() == "L") result.srcMatch *= -1;  // losers get a negative source match number
+      int maNum = std::stoi(sm[4].str());
+      if (sm[3].str() == "L") maNum *= -1;  // losers get a negative source match number
+      result.srcMatch = BracketMatchNumber{maNum};
 
       return result;
     }
@@ -211,7 +214,7 @@ namespace QTournament::SvgBracket
     if (std::regex_match(tagName, sm, reRankLabel))
     {
       RankTag result;
-      result.rank = std::stoi(sm[1].str());
+      result.rank = Rank{std::stoi(sm[1].str())};
       result.pos = (sm[2].str() == "a") ? LabelPos::First : LabelPos::Second;
 
       return result;
@@ -224,13 +227,20 @@ namespace QTournament::SvgBracket
 
   std::vector<ParsedTag> parseContent(const string_view& svgData, const string& openingBracket, const string& closingBracket)
   {
-    std::vector<ParsedTag> result;
-
     // find all tag positions
     auto allTags = findRawTags(svgData, openingBracket, closingBracket);
 
+    return parseRawTagList(allTags);
+  }
+
+  //----------------------------------------------------------------------------
+
+  std::vector<ParsedTag> parseRawTagList(const std::vector<TagData>& tagList)
+  {
+    std::vector<ParsedTag> result;
+
     // parse each tag
-    for (const auto& tag : allTags)
+    for (const auto& tag : tagList)
     {
       auto type = determineTagTypeFromName(tag.name);
 
@@ -239,9 +249,9 @@ namespace QTournament::SvgBracket
         auto mTag = parseMatchTag(tag.name);
         //ParsedTag p{type, tag, mTag, PlayerTag{}, RankTag{}};
         ParsedTag p{type, tag, mTag};
-        std::cout << tag.name << " --> Match tag with match num " << mTag.bracketMatchNum
-                  << ", round " << mTag.roundNum << ", loser rank " << mTag.loserRank
-                  << " and winner rank " << mTag.winnerRank << std::endl;
+        std::cout << tag.name << " --> Match tag with match num " << mTag.bracketMatchNum.get()
+                  << ", round " << mTag.roundNum.get() << ", loser rank " << mTag.loserRank.get()
+                  << " and winner rank " << mTag.winnerRank.get() << std::endl;
 
         result.push_back(std::move(p));
         continue;
@@ -252,9 +262,9 @@ namespace QTournament::SvgBracket
         auto pTag = parsePlayerTag(tag.name);
         //ParsedTag p{type, tag, MatchTag{}, pTag, RankTag{}};
         ParsedTag p{type, tag, pTag};
-        std::cout << tag.name << " --> Player tag with match num " << pTag.bracketMatchNum
+        std::cout << tag.name << " --> Player tag with match num " << pTag.bracketMatchNum.get()
                   << ", player " << pTag.playerPos << ", label pos " << ((pTag.pos == LabelPos::First) ? "First" : "Second")
-                  << " source match " << pTag.srcMatch << " and initial rank " << pTag.initialRank << std::endl;
+                  << " source match " << pTag.srcMatch.get() << " and initial rank " << pTag.initialRank.get() << std::endl;
 
         result.push_back(std::move(p));
         continue;
@@ -265,7 +275,7 @@ namespace QTournament::SvgBracket
         auto rTag = parseRankTag(tag.name);
         //ParsedTag p{type, tag, MatchTag{}, PlayerTag{}, rTag};
         ParsedTag p{type, tag, rTag};
-        std::cout << tag.name << " --> Rank tag with for rank " << rTag.rank
+        std::cout << tag.name << " --> Rank tag with for rank " << rTag.rank.get()
                   << ", label pos " << ((rTag.pos == LabelPos::First) ? "First" : "Second") << std::endl;
 
         result.push_back(std::move(p));
@@ -373,7 +383,7 @@ namespace QTournament::SvgBracket
     // (1): matches must have consecutive match numbers
     //
     // (2): the round number must be equal or higher compared to the previous match
-    int prevRound{1};
+    Round prevRound{1};
     for (int n=1; n <= ma.size(); ++n)
     {
       const auto& mTag = get<MatchTag>(ma.at(n-1).content);
@@ -384,12 +394,12 @@ namespace QTournament::SvgBracket
 
       if (mTag.roundNum < 1)
       {
-        return "Round number for match " + to_string(mTag.bracketMatchNum) + " invalid";
+        return "Round number for match " + to_string(mTag.bracketMatchNum.get()) + " invalid";
       }
 
       if (mTag.roundNum < prevRound)
       {
-        return "Round number for match " + to_string(mTag.bracketMatchNum) + " inconsistent";
+        return "Round number for match " + to_string(mTag.bracketMatchNum.get()) + " inconsistent";
       }
 
       prevRound = mTag.roundNum;
@@ -513,9 +523,9 @@ namespace QTournament::SvgBracket
         throw std::runtime_error("SvgBracket::checkRule04(): Sorting error!!");
       }
 
-      if ((p1.initialRank + p2.initialRank) != (frp.size() + 1))
+      if ((p1.initialRank.get() + p2.initialRank.get()) != (frp.size() + 1))
       {
-        return "Inconsistent initial ranks in match " + to_string(p1.bracketMatchNum) + " (rank sum incorrect)";
+        return "Inconsistent initial ranks in match " + to_string(p1.bracketMatchNum.get()) + " (rank sum incorrect)";
       }
     }
 
@@ -533,7 +543,7 @@ namespace QTournament::SvgBracket
 
       if ((pl.initialRank > 0) && (pl.bracketMatchNum > frm.size()))
       {
-        return "Player " + to_string(pl.playerPos) + " of match " + to_string(pl.bracketMatchNum) +
+        return "Player " + to_string(pl.playerPos) + " of match " + to_string(pl.bracketMatchNum.get()) +
                " has an initial rank although the match is not in round 1";
       }
     }
@@ -554,19 +564,19 @@ namespace QTournament::SvgBracket
     {
       const auto& pl = get<PlayerTag>(tag.content);
 
-      if (abs(pl.srcMatch) >= allMatches.size())
+      if (abs(pl.srcMatch.get()) >= allMatches.size())
       {
-        return "Player " + to_string(pl.playerPos) + " of match " + to_string(pl.bracketMatchNum) +
+        return "Player " + to_string(pl.playerPos) + " of match " + to_string(pl.bracketMatchNum.get()) +
                " references an invalid match number";
       }
 
       if (pl.srcMatch > 0)
       {
-        winnerRefs.at(pl.srcMatch - 1) += 1;
+        winnerRefs.at(pl.srcMatch.get() - 1) += 1;
       }
       if (pl.srcMatch < 0)
       {
-        loserRefs.at(-pl.srcMatch - 1) += 1;
+        loserRefs.at(-pl.srcMatch.get() - 1) += 1;
       }
     }
 
@@ -600,7 +610,7 @@ namespace QTournament::SvgBracket
 
       if ((pl.initialRank < 1) && (pl.srcMatch == 0))
       {
-        return "Player " + to_string(pl.playerPos) + " of match " + to_string(pl.bracketMatchNum) +
+        return "Player " + to_string(pl.playerPos) + " of match " + to_string(pl.bracketMatchNum.get()) +
                " has neither an initial rank nor a source match";
       }
     }
@@ -648,13 +658,13 @@ namespace QTournament::SvgBracket
       {
         if (ma.loserRank > nPlayers)
         {
-          return "Match " + to_string(ma.bracketMatchNum) + " has an invalid loser rank";
+          return "Match " + to_string(ma.bracketMatchNum.get()) + " has an invalid loser rank";
         }
-        cntRank.at(ma.loserRank - 1) += 1;
+        cntRank.at(ma.loserRank.get() - 1) += 1;
       } else {
-        if (!hasFollowUpMatch(-ma.bracketMatchNum))
+        if (!hasFollowUpMatch(-ma.bracketMatchNum.get()))
         {
-          return "Loser of match " + to_string(ma.bracketMatchNum) + " has no final rank and no follow-up match";
+          return "Loser of match " + to_string(ma.bracketMatchNum.get()) + " has no final rank and no follow-up match";
         }
       }
 
@@ -662,13 +672,13 @@ namespace QTournament::SvgBracket
       {
         if (ma.winnerRank > nPlayers)
         {
-          return "Match " + to_string(ma.bracketMatchNum) + " has an invalid winner rank";
+          return "Match " + to_string(ma.bracketMatchNum.get()) + " has an invalid winner rank";
         }
-        cntRank.at(ma.winnerRank - 1) += 1;
+        cntRank.at(ma.winnerRank.get() - 1) += 1;
       } else {
-        if (!hasFollowUpMatch(ma.bracketMatchNum))
+        if (!hasFollowUpMatch(ma.bracketMatchNum.get()))
         {
-          return "Winner of match " + to_string(ma.bracketMatchNum) + " has no final rank and no follow-up match";
+          return "Winner of match " + to_string(ma.bracketMatchNum.get()) + " has no final rank and no follow-up match";
         }
       }
     }
@@ -702,6 +712,7 @@ namespace QTournament::SvgBracket
             297.0,
             210.0,
             ":/brackets/RankSys16.svg",
+            "",
             10.0,
             findRawTagsInResource(":/brackets/RankSys16.svg"),
           }
@@ -824,10 +835,10 @@ namespace QTournament::SvgBracket
 
       // match in all rounds later than round 1
       const auto role1 = (p1.srcMatch > 0) ? PairRole::AsWinner : PairRole::AsLoser;
-      const BracketMatchNumber srcMatch1{abs(p1.srcMatch)};
+      const BracketMatchNumber srcMatch1{abs(p1.srcMatch.get())};
       const IncomingBracketLink in1{srcMatch1, role1};
       const auto role2 = (p2.srcMatch > 0) ? PairRole::AsWinner : PairRole::AsLoser;
-      const BracketMatchNumber srcMatch2{abs(p2.srcMatch)};
+      const BracketMatchNumber srcMatch2{abs(p2.srcMatch.get())};
       const IncomingBracketLink in2{srcMatch2, role1};
 
       return BracketMatchData{n, r, in1, in2, winnerAction, loserAction};
@@ -1159,6 +1170,250 @@ namespace QTournament::SvgBracket
     });
 
     return allMatches;
+  }
+
+  //----------------------------------------------------------------------------
+
+  std::pair<string, string> pair2bracketLabel(const PlayerPair& pp)
+  {
+    const string a{QString2StdString(pp.getPlayer1().getDisplayName())};
+    if (pp.hasPlayer2())
+    {
+      const string b{QString2StdString(pp.getPlayer2().getDisplayName())};
+      return std::pair{a, b};
+    }
+
+    return std::pair{a, std::string{}};
+  }
+
+  //----------------------------------------------------------------------------
+
+  std::vector<SvgPageDescr> substSvgBracketTags(SvgBracketMatchSys msys, const PlayerPairList& seed, const CommonBracketTags& cbt, bool includeMatchNumbers)
+  {
+    // retrieve the bracket definition for the selected system
+    // and the required number of players
+    auto brDef = SvgBracket::findSvgBracket(msys, seed.size());
+    if (!brDef)
+    {
+      throw std::runtime_error("substSvgBracketTags(): no suitable bracket"); // this should never happen
+    }
+
+    // merge all tags into one large list and parse it
+    std::vector<SvgBracket::TagData> allTags;
+    for (const auto& pg : brDef->pages)
+    {
+      std::copy(begin(pg.rawTags), end(pg.rawTags), back_inserter(allTags));
+    }
+    auto parsedTags = SvgBracket::parseRawTagList(allTags);
+
+    // generate the bracket data for the player list
+    //
+    // matches come already sorted by match number
+    auto allMatches = SvgBracket::convertToBracketMatches(*brDef);
+
+    // assign the intial seeding to the bracket.
+    // this automatically tags all unused matches as either "fast forward" (only
+    // one player) or "empty" (no players at all)
+    allMatches.applySeeding(seed);
+
+    // a lambda for a reverse-search in the seeding list:
+    // find a player pair by its ID, not by its rank
+    auto pairById = [&](const PlayerPairRefId& ppId)
+    {
+      const int id = ppId.get();
+      auto it = find_if(begin(seed), end(seed), [&](const PlayerPair& pp)
+      {
+        return (pp.getPairId() == id);
+      });
+
+      return *it;
+    };
+
+    // iterate over all matches that have a player pair assigned
+    // and store the substitution string in a dictionary
+    std::unordered_map<std::string, std::string> dict;
+    addCommonTagsToSubstDict(dict, cbt);
+    for (const auto& ma : allMatches)
+    {
+      auto pair1Id = ma.assignedPair1();
+      auto pair2Id = ma.assignedPair2();
+
+      // skip matches that don't have any players assigned
+      if ((pair1Id.get() <= 0) && (pair2Id.get() <= 0)) continue;
+
+      // get the player tags for this match
+      auto [p1a, p1b, p2a, p2b] = findPlayerTagsforMatchNum(parsedTags, ma.matchNum());
+
+      if (pair1Id.get() > 0)
+      {
+        auto pp1 = pairById(pair1Id);
+        dict[p1a.src.name] = QString2StdString(pp1.getPlayer1().getDisplayName());
+        if (pp1.hasPlayer2())
+        {
+          dict[p1b.src.name] = QString2StdString(pp1.getPlayer2().getDisplayName());
+        }
+      }
+      if (pair2Id.get() > 0)
+      {
+        auto pp2 = pairById(pair2Id);
+        dict[p2a.src.name] = QString2StdString(pp2.getPlayer1().getDisplayName());
+        if (pp2.hasPlayer2())
+        {
+          dict[p2b.src.name] = QString2StdString(pp2.getPlayer2().getDisplayName());
+        }
+      }
+    }
+
+    return applySvgSubstitution(brDef->pages, dict);
+  }
+
+  //----------------------------------------------------------------------------
+
+  std::tuple<ParsedTag, ParsedTag, ParsedTag, ParsedTag> findPlayerTagsforMatchNum(const std::vector<ParsedTag>& tagList, BracketMatchNumber brNum)
+  {
+    using namespace std::placeholders;
+
+    // a generic predicate for finding players in a list
+    // of parsed tags
+    auto playerPred = [&brNum](const ParsedTag& t, int playerPos, LabelPos lp)
+    {
+      if (t.type != TagType::Player) return false;
+
+      const PlayerTag& p = std::get<PlayerTag>(t.content);
+      if (p.bracketMatchNum != brNum) return false;
+      if (p.playerPos != playerPos) return false;
+      return (p.pos == lp);
+    };
+
+    // lambda for the actual search function incl.
+    // exception throwing
+    auto findPlayer = [&](int playerPos, LabelPos pos) -> ParsedTag
+    {
+      auto pred = bind(playerPred, _1, playerPos, pos);
+      auto it = std::find_if(begin(tagList), end(tagList), pred);
+      if (it == end(tagList))
+      {
+        throw std::invalid_argument("findPlayerTagsforMatchNum(): invalid match number, no players found");
+      }
+
+      return *it;
+    };
+
+    // find all players
+    const ParsedTag p1a = findPlayer(1, LabelPos::First);
+    const ParsedTag p1b = findPlayer(1, LabelPos::Second);
+    const ParsedTag p2a = findPlayer(2, LabelPos::First);
+    const ParsedTag p2b = findPlayer(2, LabelPos::Second);
+
+    return std::tuple{p1a, p1b, p2a, p2b};
+  }
+
+  //----------------------------------------------------------------------------
+
+  std::vector<SvgPageDescr> applySvgSubstitution(const std::vector<SvgBracketPage>& pages, const std::unordered_map<string, string>& dict)
+  {
+    std::vector<SvgPageDescr> result;
+
+    for (const auto& srcPage : pages)
+    {
+      SvgPageDescr dstPage{srcPage};
+
+      // calculate the net size difference that
+      // results from replacing tags with content
+      int sizeDiff{0};
+      for (const auto& tag : srcPage.rawTags)
+      {
+        // substract the tag itself plus the surrounding brackets
+        sizeDiff -= tag.name.size();
+        sizeDiff -= 4;
+
+        // do we have a substitution string?
+        auto it = dict.find(tag.name);
+        if (it != end(dict))
+        {
+          sizeDiff += it->second.size();
+        }
+      }
+
+      // read the input data
+      QFile svgFile{stdString2QString(srcPage.resName)};
+      if (!svgFile.open(QIODevice::OpenModeFlag::ReadOnly))
+      {
+        throw std::runtime_error("applySvgSubstitution(): resource not found"); // should never happen
+      }
+      auto allContent = svgFile.readAll();
+      Sloppy::MemView contentView{allContent.data(), static_cast<size_t>(allContent.size())};
+
+      // prepare the memory for the target data
+      dstPage.content.clear();
+      dstPage.content.reserve(contentView.size() + sizeDiff);
+
+      // replace all tags with data
+      size_t srcIdx{0};
+      for (const auto& tag : srcPage.rawTags)
+      {
+        // copy everything up to the tag
+        if (srcIdx < tag.idxStart)
+        {
+          auto slice = contentView.slice_byIdx(srcIdx, tag.idxStart - 1);
+          dstPage.content.append(slice.to_charPtr(), slice.size());
+        }
+
+        // if we have a replacement string, insert it
+        auto it = dict.find(tag.name);
+        if (it != end(dict))
+        {
+          dstPage.content.append(it->second);
+        }
+
+        // forward the source to the character right
+        // after the tag
+        srcIdx = tag.idxEnd + 1;
+      }
+
+      // append everything after the last tag
+      if (srcIdx < contentView.size())
+      {
+        auto slice = contentView.slice_byIdx(srcIdx, contentView.size() - 1);
+        dstPage.content.append(slice.to_charPtr(), slice.size());
+      }
+
+      // store the page, done
+      result.push_back(std::move(dstPage));
+    }
+
+    return result;
+  }
+
+  //----------------------------------------------------------------------------
+
+  void addCommonTagsToSubstDict(std::unordered_map<string, string>& dict, const CommonBracketTags& cbt)
+  {
+    static const auto tzDb = Sloppy::DateTime::getPopulatedTzDatabase();
+    static const auto tzPtr = tzDb.time_zone_from_region("Europe/Berlin");
+
+    dict.insert_or_assign("tnmtName", cbt.tnmtName);
+    dict.insert_or_assign("club", cbt.club);
+    dict.insert_or_assign("catName", cbt.catName);
+    dict.insert_or_assign("subtitle", cbt.subtitle);
+
+    Sloppy::DateTime::LocalTimestamp now{tzPtr};
+
+    if (cbt.time)
+    {
+      dict.insert_or_assign("time", cbt.time->getFormattedString("%R"));
+    } else {
+      dict.insert_or_assign("time", now.getFormattedString("%R"));
+    }
+
+    if (cbt.date)
+    {
+      auto [y,m,d] = Sloppy::DateTime::YearMonthDayFromInt(cbt.date.value());
+      Sloppy::DateTime::UTCTimestamp tmp{y, m, d, 12, 0, 0};
+      dict.insert_or_assign("date", tmp.getFormattedString("%d.%m.%Y"));
+    } else {
+      dict.insert_or_assign("date", now.getFormattedString("%d.%m.%Y"));
+    }
   }
 
 

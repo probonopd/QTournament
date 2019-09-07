@@ -18,9 +18,14 @@
 
 #include <QList>
 
-#include "SvgBracketSheet.h"
 #include <SimpleReportGeneratorLib/SimpleReportGenerator.h>
 #include <SimpleReportGeneratorLib/TableWriter.h>
+
+#include "SvgBracketSheet.h"
+#include "SvgBracket.h"
+#include "MatchMngr.h"
+#include "CatMngr.h"
+#include "../HelperFunc.h"
 
 namespace QTournament
 {
@@ -44,7 +49,26 @@ upSimpleReport SvgBracketSheet::regenerateReport()
 {
   upSimpleReport result = createEmptyReport_Landscape();
 
-  result->writeLine("Hello " + cat.getName() + ", Round " + QString::number(round));
+  // get the bracket configuration
+  auto brMatchSys = static_cast<SvgBracketMatchSys>(cat.getParameter_int(CatParameter::BracketMatchSystem));
+  CatMngr cm{db};
+  const auto seeding = cm.getSeeding(cat);
+
+  // generate the resulting SVG for several cases
+  std::vector<SvgPageDescr> pages;
+  if (round == 0)
+  {
+    pages = SvgBracket::substSvgBracketTags(brMatchSys, seeding, commonTags(), true);
+  }
+
+  // append all pages to the report
+  bool needsNewPage{false};
+  for (const auto& pg : pages)
+  {
+    if (needsNewPage) result->startNextPage();
+    result->addSVG_byData_setW(QPointF{0,0}, SimpleReportLib::RECT_CORNER::TOP_LEFT, pg.content, pg.width_mm);
+    needsNewPage = true;
+  }
 
   return result;
 }
@@ -72,6 +96,37 @@ QStringList SvgBracketSheet::getReportLocators() const
   }
 
   result.append(loc);
+  return result;
+}
+
+//----------------------------------------------------------------------------
+
+SvgBracket::CommonBracketTags SvgBracketSheet::commonTags() const
+{
+  SvgBracket::CommonBracketTags result;
+
+  auto cfg = SqliteOverlay::KeyValueTab{db, TabCfg};
+  result.tnmtName = cfg[CfgKey_TnmtName];
+  result.club = cfg[CfgKey_TnmtOrga];
+  result.catName = QString2StdString(cat.getName());
+
+  if (round == 0)
+  {
+    result.subtitle = QString2StdString(tr("Initial seeding"));
+  }
+  if (round < 0)
+  {
+    result.subtitle = QString2StdString(tr("Current status"));
+  }
+  if (round > 0)
+  {
+    QString tmp = tr("After round %1");
+    tmp = tmp.arg(round);
+    result.subtitle = QString2StdString(tmp);
+  }
+
+  // leave date and time empty
+
   return result;
 }
 

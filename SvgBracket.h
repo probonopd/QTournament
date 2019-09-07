@@ -7,6 +7,8 @@
 #include <string_view>
 #include <optional>
 
+#include <Sloppy/DateTime/DateAndTime.h>
+
 #include "TournamentDataDefs.h"
 #include "PlayerPair.h"
 
@@ -19,6 +21,7 @@ namespace QTournament
     double width_mm{0};   ///< the page width in mm
     double height_mm{0};   ///< the page height in mm
     std::string resName;   ///< the name of the resource containing the SVG data
+    std::string content;   ///< the content of the SVG file; mostly empty and only used to transport readily substituted SVG content
   };
 }
 
@@ -61,10 +64,10 @@ namespace QTournament::SvgBracket
    */
   struct MatchTag
   {
-    int bracketMatchNum{-1};   ///< the number of the match within the bracket (1-based)
-    int roundNum{-1};    ///< the round within the bracket when this match is played (1-based)
-    int winnerRank{-1};   ///< the rank for the match winner (-1 = no rank)
-    int loserRank{-1};   ///< the rank for the match loser (-1 = no rank)
+    BracketMatchNumber bracketMatchNum{-1};   ///< the number of the match within the bracket (1-based)
+    Round roundNum{-1};    ///< the round within the bracket when this match is played (1-based)
+    Rank winnerRank{-1};   ///< the rank for the match winner (-1 = no rank)
+    Rank loserRank{-1};   ///< the rank for the match loser (-1 = no rank)
   };
 
   //----------------------------------------------------------------------------
@@ -73,11 +76,11 @@ namespace QTournament::SvgBracket
    */
   struct PlayerTag
   {
-    int bracketMatchNum{-1};   ///< the number of the match within the bracket (1-based)
+    BracketMatchNumber bracketMatchNum{-1};   ///< the number of the match within the bracket (1-based)
     int playerPos{-1};   ///< "1" or "2" for player 1 / player 2
     LabelPos pos{LabelPos::First};
-    int srcMatch{0};   ///< "-xxx": this is the loser of match xxx, "xxx": this is the winner of match xxx; only set for the primary label
-    int initialRank{-1};   ///< initial rank for the seeding, if any
+    BracketMatchNumber srcMatch{0};   ///< "-xxx": this is the loser of match xxx, "xxx": this is the winner of match xxx; only set for the primary label
+    Rank initialRank{-1};   ///< initial rank for the seeding, if any
   };
 
   //----------------------------------------------------------------------------
@@ -86,7 +89,7 @@ namespace QTournament::SvgBracket
    */
   struct RankTag
   {
-    int rank{-1};
+    Rank rank{-1};
     LabelPos pos{LabelPos::First};   ///< "1" for the primary label position, "2" for the secondary label
   };
 
@@ -164,6 +167,15 @@ namespace QTournament::SvgBracket
       const std::string_view& svgData,   ///< the SVG data to parse
       const std::string& openingBracket = "{{",   ///< the opening tag character
       const std::string& closingBracket = "}}"   ///< the closing tag character
+      );
+
+  /** \brief Takes a list of raw tags (e.g., as returned by findRawTags) and
+   * converts it into a list of parsed tags.
+   *
+   * \returns the list of parsed tags
+   */
+  std::vector<ParsedTag> parseRawTagList(
+      const std::vector<TagData>& tagList   ///< the list of raw tags
       );
 
   //----------------------------------------------------------------------------
@@ -377,7 +389,9 @@ namespace QTournament::SvgBracket
      * \pre The list of bracket matches stems from a SvgDef that has passed all checks in SvgBracket::consistencyCheck()
      *
      */
-    void applySeeding(const QTournament::PlayerPairList& seed);
+    void applySeeding(
+        const QTournament::PlayerPairList& seed   ///< the sorted list of initial player pairs
+        );
 
     /** \brief Follows the bracket in forward direction (==> towards higher rounds)
      * until it finds the next playable match (==> both branches non-dead) starting
@@ -493,6 +507,79 @@ namespace QTournament::SvgBracket
    * \return all bracket matches, sorted by match number (and thus by round)
    */
   BracketMatchDataList convertToBracketMatches(const SvgBracketDef& def);
+
+  //----------------------------------------------------------------------------
+
+  struct CommonBracketTags
+  {
+    std::string tnmtName;   ///< the tournament name
+    std::string club;   ///< the organizing club
+    std::string catName;   ///< the category name
+    std::string subtitle;   ///< e.g., "After round 1" or "Initial matches"
+    std::optional<Sloppy::DateTime::LocalTimestamp> time;   ///< timestamp; use current time if empty
+    std::optional<int> date;   ///< integer date, e.g. 20190916; use current date if empty
+  };
+
+  //----------------------------------------------------------------------------
+
+  /** \brief Converts a player pair into a two-line representation for the bracket
+   *
+   * \returns the "a" and "b" strings of a player pair for a bracket label
+   */
+  std::pair<std::string, std::string> pair2bracketLabel(const PlayerPair& pp);
+
+  //----------------------------------------------------------------------------
+
+  /** \brief Takes an SvgBracketMatchSys along with a given seeding list and returns
+   * the ready-to-print SVG sheets for bracket with all tags substituted.
+   *
+   * All tags without substitution data will be erased (= replaced by an empty string).
+   *
+   * \returns a vector of SVG pages (empty on error)
+   */
+  std::vector<SvgPageDescr> substSvgBracketTags(
+      SvgBracketMatchSys msys,   ///< the match system for which we need a bracket
+      const QTournament::PlayerPairList& seed,   ///< the sorted list of initial player pairs
+      const CommonBracketTags& cbt,   ///< common metadata used on all bracket sheets
+      bool includeMatchNumbers    ///< if `true` the match numbers for the first round will be included as well (if available)
+      );
+
+  //----------------------------------------------------------------------------
+
+  /** \returns the four player tags (1a, 1b, 2a, 2b) for a given bracket match number
+   *
+   * \throws std::invalid_argument if the match number was invalid
+   */
+  std::tuple<ParsedTag, ParsedTag, ParsedTag, ParsedTag> findPlayerTagsforMatchNum(
+      const std::vector<ParsedTag>& tagList,
+      BracketMatchNumber brNum
+      );
+
+  //----------------------------------------------------------------------------
+
+  /** \brief Applies a substitution dictionary to bracket definition and
+   * returns the ready-to-print SVG sheets
+   */
+  std::vector<SvgPageDescr> applySvgSubstitution(
+      const std::vector<SvgBracketPage>& pages,   ///< the input bracket
+      const std::unordered_map<std::string, std::string>& dict   ///< dictionary with the substitution strings; tag names are the keys
+      );
+
+  //----------------------------------------------------------------------------
+
+  /** \brief Add the CommonBracketTags (date, time, title, ...) to an already
+   * existing dictionary with substitution strings.
+   *
+   * The dictionary is modified in place.
+   */
+  void addCommonTagsToSubstDict(
+      std::unordered_map<std::string, std::string>& dict,   ///< dictionary with the substitution strings; tag names are the keys
+      const CommonBracketTags& cbt   ///< the common meta tags to add
+      );
+
+  //----------------------------------------------------------------------------
+
+
 }
 
 #endif // SVGBRACKET_H

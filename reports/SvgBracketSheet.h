@@ -20,12 +20,15 @@
 #define SVGBRACKETSHEET_H
 
 #include <functional>
+#include <unordered_map>
+#include <string>
 
 #include <QObject>
 
 #include "reports/AbstractReport.h"
 #include "TournamentDB.h"
 #include "TournamentDataDefs.h"
+#include "SvgBracket.h"
 
 namespace QTournament
 {
@@ -39,6 +42,11 @@ namespace QTournament
 
     virtual upSimpleReport regenerateReport() override;
     virtual QStringList getReportLocators() const override;
+
+  protected:
+    /** \returns a set of common bracket tags for this report
+     */
+    SvgBracket::CommonBracketTags commonTags() const;
 
   private:
     const Category cat;
