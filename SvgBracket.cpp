@@ -11,6 +11,7 @@
 #include "HelperFunc.h"
 #include "SvgBracket.h"
 #include "MatchMngr.h"
+#include "BracketMatchData.h"
 
 using namespace std;
 
@@ -301,405 +302,6 @@ namespace QTournament::SvgBracket
 
   //----------------------------------------------------------------------------
 
-  std::optional<string> consistencyCheck(const std::vector<ParsedTag> allTags)
-  {
-    // dissect the input into players, matches and ranks
-    std::vector<ParsedTag> allMatches;
-    std::copy_if(begin(allTags), end(allTags), std::back_inserter(allMatches), [](const ParsedTag& pt)
-    {
-      return (pt.type == TagType::Match);
-    });
-
-    std::vector<ParsedTag> allPlayers;
-    std::copy_if(begin(allTags), end(allTags), std::back_inserter(allPlayers), [](const ParsedTag& pt)
-    {
-      return (pt.type == TagType::Player);
-    });
-
-    std::vector<ParsedTag> allRanks;
-    std::copy_if(begin(allTags), end(allTags), std::back_inserter(allRanks), [](const ParsedTag& pt)
-    {
-      return (pt.type == TagType::Rank);
-    });
-
-    // collect all rules
-    using ruleCheckSig = std::function<std::optional<std::string>(const std::vector<ParsedTag>&, const std::vector<ParsedTag>&, const std::vector<ParsedTag>&)>;
-    std::vector<ruleCheckSig> allChecks;
-    allChecks.push_back(checkRule01);
-    allChecks.push_back(checkRule02);
-    allChecks.push_back(checkRule03);
-    allChecks.push_back(checkRule04);
-    allChecks.push_back(checkRule05);
-    allChecks.push_back(checkRule06);
-    //allChecks.push_back(checkRule01);
-    //allChecks.push_back(checkRule01);
-    //allChecks.push_back(checkRule01);
-
-    // execute all checks
-    for (const auto& rule : allChecks)
-    {
-      auto result = rule(allMatches, allPlayers, allRanks);
-      if (result)
-      {
-        return result;
-      }
-    }
-
-    return {};
-  }
-
-  //----------------------------------------------------------------------------
-
-  std::optional<std::string> checkRule01(const std::vector<ParsedTag>& allMatches, const std::vector<ParsedTag>& allPlayers, const std::vector<ParsedTag>& allRanks)
-  {
-    std::cout << "Rule 01 called" << std::endl;
-
-    if (allMatches.empty())
-    {
-      return "The list of matches in the bracket is empty";
-    }
-
-    return {};
-  }
-
-  //----------------------------------------------------------------------------
-
-  std::optional<string> checkRule02(const std::vector<ParsedTag>& allMatches, const std::vector<ParsedTag>& allPlayers, const std::vector<ParsedTag>& allRanks)
-  {
-    std::cout << "Rule 02 called" << std::endl;
-
-    // copy the match list
-    std::vector<ParsedTag> ma{allMatches.begin(), allMatches.end()};
-
-    // sort the list in ascending match number order
-    std::sort(begin(ma), end(ma), [](const ParsedTag& t1, const ParsedTag& t2)
-    {
-      const auto& ma1 = get<MatchTag>(t1.content);
-      const auto& ma2 = get<MatchTag>(t2.content);
-      return (ma1.bracketMatchNum < ma2.bracketMatchNum);
-    });
-
-    // perform two checks at once:
-    //
-    // (1): matches must have consecutive match numbers
-    //
-    // (2): the round number must be equal or higher compared to the previous match
-    Round prevRound{1};
-    for (int n=1; n <= ma.size(); ++n)
-    {
-      const auto& mTag = get<MatchTag>(ma.at(n-1).content);
-      if (mTag.bracketMatchNum != n)
-      {
-        return "Inconsistent match numbers";
-      }
-
-      if (mTag.roundNum < 1)
-      {
-        return "Round number for match " + to_string(mTag.bracketMatchNum.get()) + " invalid";
-      }
-
-      if (mTag.roundNum < prevRound)
-      {
-        return "Round number for match " + to_string(mTag.bracketMatchNum.get()) + " inconsistent";
-      }
-
-      prevRound = mTag.roundNum;
-    }
-
-    return {};
-  }
-
-  //----------------------------------------------------------------------------
-
-  std::optional<string> checkRule03(const std::vector<ParsedTag>& allMatches, const std::vector<ParsedTag>& allPlayers, const std::vector<ParsedTag>& allRanks)
-  {
-    std::cout << "Rule 03 called" << std::endl;
-
-    if (allPlayers.size() != (4 * allMatches.size()))
-    {
-      return "Expected " + to_string(4 * allMatches.size()) + " player labels but got only " + to_string(allPlayers.size());
-    }
-
-    // a helper that checks whether a given player tag exists
-    auto hasPlayerTag = [&](int matchNum, int playerNum, LabelPos lp)
-    {
-      auto it = std::find_if(begin(allPlayers), end(allPlayers), [&](const ParsedTag& pt)
-      {
-        const auto& pl = get<PlayerTag>(pt.content);
-
-        return ((pl.bracketMatchNum == matchNum) && (pl.playerPos == playerNum) && (pl.pos == lp));
-      });
-
-      return (it != end(allPlayers));
-    };
-
-    // check that the four player labels per match are of the correct type
-    for (int n = 1; n <= allMatches.size(); ++n)
-    {
-      for (int pp : {1, 2})
-      {
-        if (!hasPlayerTag(n, pp, LabelPos::First))
-        {
-          return "No player " + to_string(pp) + " for match " + to_string(n) + " (first row) found";
-        }
-        if (!hasPlayerTag(n, pp, LabelPos::Second))
-        {
-          return "No player " + to_string(pp) + " for match " + to_string(n) + " (second row) found";
-        }
-      }
-    }
-
-    return {};
-  }
-
-  //----------------------------------------------------------------------------
-
-  std::optional<string> checkRule04(const std::vector<ParsedTag>& allMatches, const std::vector<ParsedTag>& allPlayers, const std::vector<ParsedTag>& allRanks)
-  {
-    std::cout << "Rule 04 called" << std::endl;
-
-    // filter for all first round matches
-    std::vector<ParsedTag> frm;
-    std::copy_if(begin(allMatches), end(allMatches), std::back_inserter(frm), [](const ParsedTag& pt)
-    {
-      const auto& ma = get<MatchTag>(pt.content);
-      return (ma.roundNum == 1);
-    });
-
-    // filter for all first round players
-    std::vector<ParsedTag> frp;
-    for (const auto& maTag : frm)
-    {
-      const auto& ma = get<MatchTag>(maTag.content);
-
-      std::copy_if(begin(allPlayers), end(allPlayers), std::back_inserter(frp), [&ma](const ParsedTag& pt)
-      {
-        const auto& pl = get<PlayerTag>(pt.content);
-        return ((pl.bracketMatchNum == ma.bracketMatchNum) && (pl.pos == LabelPos::First));
-      });
-    }
-
-    if ((frm.size() * 2) != frp.size())
-    {
-      return "Got " + to_string(frm.size()) + " matches in the first round but " + to_string(frp.size()) + " players";
-    }
-
-    // sort by initial rank
-    std::sort(begin(frp), end(frp), [](const ParsedTag& t1, const ParsedTag& t2)
-    {
-      const auto& pl1 = get<PlayerTag>(t1.content);
-      const auto& pl2 = get<PlayerTag>(t2.content);
-
-      return (pl1.initialRank < pl2.initialRank);
-    });
-
-    // must have consecutive initial ranks starting at "1"
-    for (int n = 1; n <= frp.size(); ++n)
-    {
-      const auto& pTag = get<PlayerTag>(frp.at(n-1).content);
-
-      if (pTag.initialRank != n)
-      {
-        return "No player with initial rank " + to_string(n);
-      }
-    }
-
-    // sort by match number
-    std::sort(begin(frp), end(frp), [](const ParsedTag& t1, const ParsedTag& t2)
-    {
-      const auto& pl1 = get<PlayerTag>(t1.content);
-      const auto& pl2 = get<PlayerTag>(t2.content);
-
-      return (pl1.bracketMatchNum < pl2.bracketMatchNum);
-    });
-
-    // the sum of the initial ranks in a match must
-    // always be equal to "number of player in first round + 1"
-    for (int i=0; i < frm.size(); ++i)
-    {
-      const auto& p1 = get<PlayerTag>(frp.at(2 * i).content);
-      const auto& p2 = get<PlayerTag>(frp.at(2 * i + 1).content);
-      if (p1.bracketMatchNum != p2.bracketMatchNum)
-      {
-        throw std::runtime_error("SvgBracket::checkRule04(): Sorting error!!");
-      }
-
-      if ((p1.initialRank.get() + p2.initialRank.get()) != (frp.size() + 1))
-      {
-        return "Inconsistent initial ranks in match " + to_string(p1.bracketMatchNum.get()) + " (rank sum incorrect)";
-      }
-    }
-
-    // initial rank after round 1 are illegal
-    for (const auto& tag : allPlayers)
-    {
-      const auto& pl = get<PlayerTag>(tag.content);
-
-      // "frm.size()" is identical with the number of the last match
-      // in round 1. This is correct because we checked the correct
-      // consecutive numbering of matches before
-      //
-      // thus, "bracketMatchNumber > frm.size" is identical with
-      // "match later than round 1"
-
-      if ((pl.initialRank > 0) && (pl.bracketMatchNum > frm.size()))
-      {
-        return "Player " + to_string(pl.playerPos) + " of match " + to_string(pl.bracketMatchNum.get()) +
-               " has an initial rank although the match is not in round 1";
-      }
-    }
-
-    return {};
-  }
-
-  //----------------------------------------------------------------------------
-
-  std::optional<string> checkRule05(const std::vector<ParsedTag>& allMatches, const std::vector<ParsedTag>& allPlayers, const std::vector<ParsedTag>& allRanks)
-  {
-    std::cout << "Rule 05 called" << std::endl;
-
-    // count how often a match is referenced as a source match
-    vector<int> winnerRefs(static_cast<int>(allMatches.size()), 0);
-    vector<int> loserRefs(static_cast<int>(allMatches.size()), 0);
-    for (const auto& tag : allPlayers)
-    {
-      const auto& pl = get<PlayerTag>(tag.content);
-
-      if (abs(pl.srcMatch.get()) >= allMatches.size())
-      {
-        return "Player " + to_string(pl.playerPos) + " of match " + to_string(pl.bracketMatchNum.get()) +
-               " references an invalid match number";
-      }
-
-      if (pl.srcMatch > 0)
-      {
-        winnerRefs.at(pl.srcMatch.get() - 1) += 1;
-      }
-      if (pl.srcMatch < 0)
-      {
-        loserRefs.at(-pl.srcMatch.get() - 1) += 1;
-      }
-    }
-
-    // checks occurencies
-    auto it = std::find_if(begin(winnerRefs), end(winnerRefs), [](const int& i)
-    {
-      return (i > 1);
-    });
-    if (it != end(winnerRefs))
-    {
-      return "Match " + to_string(std::distance(begin(winnerRefs), it) + 1) + " was referenced "
-             " more than once as a source game (winner)";
-    }
-    it = std::find_if(begin(loserRefs), end(loserRefs), [](const int& i)
-    {
-      return (i > 1);
-    });
-    if (it != end(loserRefs))
-    {
-      return "Match " + to_string(std::distance(begin(loserRefs), it) + 1) + " was referenced "
-             " more than once as a source game (loser)";
-    }
-
-    // check that each player without an initial rank
-    // has a source match
-    for (const auto& tag : allPlayers)
-    {
-      const auto& pl = get<PlayerTag>(tag.content);
-
-      if (pl.pos != LabelPos::First) continue;
-
-      if ((pl.initialRank < 1) && (pl.srcMatch == 0))
-      {
-        return "Player " + to_string(pl.playerPos) + " of match " + to_string(pl.bracketMatchNum.get()) +
-               " has neither an initial rank nor a source match";
-      }
-    }
-
-    return {};
-  }
-
-  //----------------------------------------------------------------------------
-
-  std::optional<string> checkRule06(const std::vector<ParsedTag>& allMatches, const std::vector<ParsedTag>& allPlayers, const std::vector<ParsedTag>& allRanks)
-  {
-    std::cout << "Rule 06 called" << std::endl;
-
-    // helper function
-    auto hasFollowUpMatch = [&](int srcMatchNum)
-    {
-      auto it = find_if(begin(allPlayers), end(allPlayers), [&srcMatchNum](const ParsedTag& tag)
-      {
-        const auto& pl = get<PlayerTag>(tag.content);
-        return (pl.srcMatch == srcMatchNum);
-      });
-
-      return (it != end(allPlayers));
-    };
-
-    // filter for all first round matches
-    std::vector<ParsedTag> frm;
-    std::copy_if(begin(allMatches), end(allMatches), std::back_inserter(frm), [](const ParsedTag& pt)
-    {
-      const auto& ma = get<MatchTag>(pt.content);
-      return (ma.roundNum == 1);
-    });
-    auto nPlayers = frm.size() * 2;
-
-    // count how often a rank has been assigned
-    vector<int> cntRank(nPlayers, 0);
-
-    // loop over all matches, check winner/loser references
-    // and rank assignment
-    for (const auto& tag : allMatches)
-    {
-      const auto& ma = get<MatchTag>(tag.content);
-
-      if (ma.loserRank > 0)
-      {
-        if (ma.loserRank > nPlayers)
-        {
-          return "Match " + to_string(ma.bracketMatchNum.get()) + " has an invalid loser rank";
-        }
-        cntRank.at(ma.loserRank.get() - 1) += 1;
-      } else {
-        if (!hasFollowUpMatch(-ma.bracketMatchNum.get()))
-        {
-          return "Loser of match " + to_string(ma.bracketMatchNum.get()) + " has no final rank and no follow-up match";
-        }
-      }
-
-      if (ma.winnerRank > 0)
-      {
-        if (ma.winnerRank > nPlayers)
-        {
-          return "Match " + to_string(ma.bracketMatchNum.get()) + " has an invalid winner rank";
-        }
-        cntRank.at(ma.winnerRank.get() - 1) += 1;
-      } else {
-        if (!hasFollowUpMatch(ma.bracketMatchNum.get()))
-        {
-          return "Winner of match " + to_string(ma.bracketMatchNum.get()) + " has no final rank and no follow-up match";
-        }
-      }
-    }
-
-    // checks occurencies
-    auto it = std::find_if(begin(cntRank), end(cntRank), [](const int& i)
-    {
-      return (i > 1);
-    });
-    if (it != end(cntRank))
-    {
-      return "Rank " + to_string(std::distance(begin(cntRank), it) + 1) + " was assigned "
-             " more than once as winner/loser rank";
-    }
-
-    return {};
-  }
-
-  //----------------------------------------------------------------------------
-
   std::optional<SvgBracketDef> findSvgBracket(SvgBracketMatchSys msys, int nPlayers)
   {
     // statically store all available bracket definitions here
@@ -752,366 +354,6 @@ namespace QTournament::SvgBracket
     }
 
     return (bestIdx >= 0) ? allBrackets.at(bestIdx) : std::optional<SvgBracketDef>{};
-  }
-
-  //----------------------------------------------------------------------------
-
-  BracketMatchDataList convertToBracketMatches(const SvgBracketDef& def)
-  {
-    // create a merged list of all tags on all pages
-    vector<TagData> allTags;
-    for (const auto& pg : def.pages)
-    {
-      std::copy(begin(pg.rawTags), end(pg.rawTags), back_inserter(allTags));
-    }
-
-    // extract player and match data
-    auto allPlayers = sortedPlayersFromTagList(allTags);
-    auto allMatches = sortedMatchesFromTagList(allTags);
-
-    // helper that determines where a winner / loser of a given match goes to
-    auto findNextMatch = [&](const BracketMatchNumber& srcMatch, PairRole ro) -> std::optional<OutgoingBracketLink>
-    {
-      const int mNum = (ro == PairRole::AsWinner) ? srcMatch.get() : -srcMatch.get();
-
-      auto it = find_if(allPlayers.begin(), allPlayers.end(), [&](const PlayerTag& p)
-      {
-        return (p.srcMatch == mNum);
-      });
-
-      if (it == end(allPlayers)) return std::optional<OutgoingBracketLink>{};
-
-      return OutgoingBracketLink{BracketMatchNumber{it->bracketMatchNum}, it->playerPos};
-    };
-
-    // helper function that finds the player tag for a given
-    // match and position
-    auto findPlayerTag = [&](const BracketMatchNumber& ma, int pos) -> PlayerTag&
-    {
-      auto it = find_if(begin(allPlayers), end(allPlayers), [&](const PlayerTag& p)
-      {
-        return ((p.bracketMatchNum == ma.get()) && (p.playerPos == pos));
-      });
-
-      return *it;
-    };
-
-    // create the match data skeleton
-    BracketMatchDataList result;
-    std::transform(begin(allMatches), end(allMatches), back_inserter(result), [&](const MatchTag& m)
-    {
-      // basic match data
-      BracketMatchNumber n{m.bracketMatchNum};
-      Round r{m.roundNum};
-
-      // what happens to the winner / loser
-      std::variant<OutgoingBracketLink, Rank> winnerAction{Rank{-1}};  // dummy
-      std::variant<OutgoingBracketLink, Rank> loserAction{Rank{-1}};  // dummy
-      if (m.loserRank > 0)
-      {
-        loserAction = Rank{m.loserRank};
-      } else {
-        loserAction = findNextMatch(n, PairRole::AsLoser).value();
-      }
-      if (m.winnerRank > 0)
-      {
-        winnerAction = Rank{m.winnerRank};
-      } else {
-        winnerAction = findNextMatch(n, PairRole::AsWinner).value();
-      }
-
-      // find the player for this match
-      auto p1 = findPlayerTag(n, 1);
-      auto p2 = findPlayerTag(n, 2);
-
-      // initial ranks in round 1
-      if (m.roundNum == 1)
-      {
-        Rank ini1{Rank{p1.initialRank}};
-        Rank ini2{Rank{p2.initialRank}};
-
-        // insert a bracket match with initial ranks
-        return BracketMatchData{n, ini1, ini2, winnerAction, loserAction};
-      }
-
-      // match in all rounds later than round 1
-      const auto role1 = (p1.srcMatch > 0) ? PairRole::AsWinner : PairRole::AsLoser;
-      const BracketMatchNumber srcMatch1{abs(p1.srcMatch.get())};
-      const IncomingBracketLink in1{srcMatch1, role1};
-      const auto role2 = (p2.srcMatch > 0) ? PairRole::AsWinner : PairRole::AsLoser;
-      const BracketMatchNumber srcMatch2{abs(p2.srcMatch.get())};
-      const IncomingBracketLink in2{srcMatch2, role1};
-
-      return BracketMatchData{n, r, in1, in2, winnerAction, loserAction};
-    });
-
-    for (const auto& bmd : result)
-    {
-      cout << "#" << bmd.matchNum().get() << ": Round = " << bmd.round().get() << ", ";
-      if (bmd.round().get() == 1)
-      {
-        cout << "P1.ini = " << bmd.initialRank(1).value().get() << ", P2.ini = " << bmd.initialRank(2).value().get() << ", ";
-      } else {
-        cout << "P1 = ";
-        const auto in1 = bmd.inLink1();
-        if (in1.role == SvgBracket::PairRole::AsWinner) cout << "W";
-        else cout << "L";
-        cout << in1.srcMatch.get() << ", ";
-
-        cout << "P2 = ";
-        const auto in2 = bmd.inLink2();
-        if (in2.role == SvgBracket::PairRole::AsWinner) cout << "W";
-        else cout << "L";
-        cout << in2.srcMatch.get() << ", ";
-      }
-
-      if (bmd.winnerRank())
-      {
-        cout << "WR = " << bmd.winnerRank()->get() << ", ";
-      } else {
-        cout << "W --> ";
-        const auto& out = bmd.nextWinnerMatch();
-        cout << out.dstMatch.get() << "." << out.pos << ", ";
-      }
-      if (bmd.loserRank())
-      {
-        cout << "LR = " << bmd.loserRank()->get();
-      } else {
-        cout << "L --> ";
-        const auto& out = bmd.nextLoserMatch();
-        cout << out.dstMatch.get() << "." << out.pos;
-      }
-
-      cout << endl;
-    }
-
-    return result;
-  }
-
-  //----------------------------------------------------------------------------
-
-  BracketMatchData::BracketMatchData(const BracketMatchNumber& n, const Rank& p1InitialRank, const Rank& p2InitialRank, const std::variant<OutgoingBracketLink, Rank>& dstWinner, const std::variant<OutgoingBracketLink, Rank>& dstLoser)
-    :brMaNum{n}, _round{1}, winnerAction{dstWinner}, loserAction{dstLoser}, src1{p1InitialRank}, src2{p2InitialRank},
-      p1State{BranchState::Alive}, p2State{BranchState::Alive}
-  {
-
-  }
-
-  //----------------------------------------------------------------------------
-
-  BracketMatchData::BracketMatchData(const BracketMatchNumber& n, const Round& r, const IncomingBracketLink& inLink1, const IncomingBracketLink& inLink2, const std::variant<OutgoingBracketLink, Rank>& dstWinner, const std::variant<OutgoingBracketLink, Rank>& dstLoser)
-    :brMaNum{n}, _round{r}, winnerAction{dstWinner}, loserAction{dstLoser}, src1{inLink1}, src2{inLink2},
-      p1State{BranchState::Alive}, p2State{BranchState::Alive}
-  {
-
-  }
-
-  //----------------------------------------------------------------------------
-
-  std::optional<Rank> BracketMatchData::initialRank(int pos) const
-  {
-    if (_round.get() != 1) return std::optional<Rank>{};
-
-    return (pos == 1) ? get<Rank>(src1) : get<Rank>(src2);
-  }
-
-  //----------------------------------------------------------------------------
-
-  void BracketMatchData::assignPlayerPair(const PlayerPairRefId& ppId, int pos)
-  {
-    if (pos == 1)
-    {
-      p1Pair = ppId;
-      p1State = BranchState::Assigned;
-    } else {
-      p2Pair = ppId;
-      p2State = BranchState::Assigned;
-    }
-  }
-
-  //----------------------------------------------------------------------------
-
-  void BracketMatchData::setPairUnused(int pos)
-  {
-    if (pos == 1)
-    {
-      p1Pair = PlayerPairRefId{-1};;
-      p1State = BranchState::Dead;
-    } else {
-      p2Pair = PlayerPairRefId{-1};;
-      p2State = BranchState::Dead;
-    }
-    cout << "M " << brMaNum.get() << "." << pos << " = DEAD" << endl;
-  }
-
-  //----------------------------------------------------------------------------
-
-  void BracketMatchDataList::applySeeding(const PlayerPairList& seed)
-  {
-    // step 1:
-    // assign player pairs as far as possible
-    std::for_each(begin(), end(), [&](BracketMatchData& bmd)
-    {
-      if (bmd.round().get() == 1)
-      {
-        for (int pos=1; pos < 3; ++pos)
-        {
-          Rank iniRank = bmd.initialRank(pos).value();
-          if (iniRank.get() <= seed.size())
-          {
-            const auto& pp = seed.at(iniRank.get() - 1);
-            const PlayerPairRefId ppId{pp.getPairId()};
-            bmd.assignPlayerPair(ppId, pos);
-            cout << "Seed assignment: M " << bmd.matchNum().get() << "." << pos << " = PlayerPair " << ppId.get() << endl;
-          } else {
-            bmd.setPairUnused(pos);
-          }
-        }
-      }
-    });
-
-    // step 2:
-    // apply all "fast forwards" in all rounds
-    //
-    // matches are sorted by number and thus implicitly by rounds ==> it is sufficient to iterate
-    // over all matches
-    std::for_each(begin(), end(), [&](BracketMatchData& bmd)
-    {
-      using bs = BracketMatchData::BranchState;
-
-      const auto& p1State = bmd.pair1State();
-      const auto& p2State = bmd.pair2State();
-
-      // Case 1: both branches have assigned players
-      // ==> nothing to do for us
-
-
-      // Case 2: both branches are "alive"
-      // ==> nothing to do for us, the players depend on
-      // other matches
-
-
-      // Case 3: one branch assigned, one branch dead
-      // ==> forward the assigned player to the winner match
-      if ((p1State == bs::Assigned) && (p2State == bs::Dead))
-      {
-        fastForward(bmd, 1);
-      }
-      if ((p1State == bs::Dead) && (p2State == bs::Assigned))
-      {
-        fastForward(bmd, 2);
-      }
-
-
-      // Case 4: one branch alive, one branch dead
-      // ==> declare the loser branch dead because the
-      // one alive player will be "passed through" as winner
-      if (((p1State == bs::Alive) && (p2State == bs::Dead)) || ((p1State == bs::Dead) && (p2State == bs::Alive)))
-      {
-        declareLoserBranchDead(bmd);
-      }
-
-
-      // Case 5: both branches dead
-      // ==> declare the winner and loser branches dead as well
-      if ((p1State == bs::Dead) && (p2State == bs::Dead))
-      {
-        if (bmd.hasWinnerMatch())
-        {
-          const auto& winnerMatchInfo = bmd.nextWinnerMatch();
-          auto& winnerMatch = at(winnerMatchInfo.dstMatch.get() - 1);  // only works because the list is SORTED by match number
-          winnerMatch.setPairUnused(winnerMatchInfo.pos);
-        }
-
-        // declare the loser branch dead
-        if (bmd.hasLoserMatch())
-        {
-          declareLoserBranchDead(bmd);
-        }
-      }
-    });
-  }
-
-  //----------------------------------------------------------------------------
-
-  void BracketMatchDataList::fastForward(BracketMatchData& ma, int pos)
-  {
-    PlayerPairRefId pairToForward = (pos == 1) ? ma.assignedPair1() : ma.assignedPair2();
-    assert(pairToForward.get() > 0);
-
-    // assign the player pair 1 of this match to the linked
-    // player pair of the winner match
-    if (ma.hasWinnerMatch())
-    {
-      const auto& winnerMatchInfo = ma.nextWinnerMatch();
-      auto& winnerMatch = at(winnerMatchInfo.dstMatch.get() - 1);  // only works because the list is SORTED by match number
-      winnerMatch.assignPlayerPair(pairToForward, winnerMatchInfo.pos);
-
-      cout << "FastForward " << ma.matchNum().get() << "." << pos << " --> " << winnerMatchInfo.dstMatch.get() << "." << winnerMatchInfo.pos << endl;
-    }
-
-    // declare the loser branch dead
-    if (ma.hasLoserMatch())
-    {
-      declareLoserBranchDead(ma);
-    }
-  }
-
-  //----------------------------------------------------------------------------
-
-  void BracketMatchDataList::declareLoserBranchDead(const BracketMatchData& ma)
-  {
-    const auto& loserMatchInfo = ma.nextLoserMatch();
-    auto& loserMatch = at(loserMatchInfo.dstMatch.get() - 1);
-    loserMatch.setPairUnused(loserMatchInfo.pos);
-  }
-
-  //----------------------------------------------------------------------------
-
-  std::variant<OutgoingBracketLink, Rank> BracketMatchDataList::traverseForward(const BracketMatchData& ma, PairRole role) const
-  {
-    using bs = BracketMatchData::BranchState;
-
-    // check whether we can start the traversal at all
-    if ((role == PairRole::AsWinner) && !ma.hasWinnerMatch())
-    {
-      return ma.winnerRank().value();
-    }
-    if ((role == PairRole::AsLoser) && !ma.hasLoserMatch())
-    {
-      return ma.loserRank().value();
-    }
-
-    // initialize the traversal with the next match number,
-    // based on whether we start as a winner or loser
-    OutgoingBracketLink curMatchLink = (role == PairRole::AsWinner) ? ma.nextWinnerMatch() : ma.nextLoserMatch();
-
-    // the iteration
-    while (true)
-    {
-      const auto& curMatch = at(curMatchLink.dstMatch.get() - 1);  // only works because the list is SORTED by match number
-
-      const auto& p1State = curMatch.pair1State();
-      const auto& p2State = curMatch.pair2State();
-
-      // both branches should NEVER be dead because then
-      // we should have never reached them
-      assert( ! ((p1State == bs::Dead) && (p2State == bs::Dead)));
-
-      // this is a regular match that can be played
-      if ((p1State != bs::Dead) && (p2State != bs::Dead))
-      {
-        return curMatchLink;
-      }
-
-      // one of the branches is dead and thus we traverse
-      // in winner direction
-      if (!curMatch.hasWinnerMatch())
-      {
-        return curMatch.winnerRank().value();
-      }
-      curMatchLink = curMatch.nextWinnerMatch();
-    }
   }
 
   //----------------------------------------------------------------------------
@@ -1185,108 +427,6 @@ namespace QTournament::SvgBracket
     }
 
     return std::pair{a, std::string{}};
-  }
-
-  //----------------------------------------------------------------------------
-
-  std::vector<SvgPageDescr> substSvgBracketTags(SvgBracketMatchSys msys, const PlayerPairList& seed, const CommonBracketTags& cbt, const std::vector<std::pair<BracketMatchNumber, int> >& maNumMapping)
-  {
-    // retrieve the bracket definition for the selected system
-    // and the required number of players
-    auto brDef = SvgBracket::findSvgBracket(msys, seed.size());
-    if (!brDef)
-    {
-      throw std::runtime_error("substSvgBracketTags(): no suitable bracket"); // this should never happen
-    }
-
-    // merge all tags into one large list and parse it
-    std::vector<SvgBracket::TagData> allTags;
-    for (const auto& pg : brDef->pages)
-    {
-      std::copy(begin(pg.rawTags), end(pg.rawTags), back_inserter(allTags));
-    }
-    auto parsedTags = SvgBracket::parseRawTagList(allTags);
-
-    // generate the bracket data for the player list
-    //
-    // matches come already sorted by match number
-    auto allMatches = SvgBracket::convertToBracketMatches(*brDef);
-
-    // assign the intial seeding to the bracket.
-    // this automatically tags all unused matches as either "fast forward" (only
-    // one player) or "empty" (no players at all)
-    allMatches.applySeeding(seed);
-
-    // a lambda for a reverse-search in the seeding list:
-    // find a player pair by its ID, not by its rank
-    auto pairById = [&](const PlayerPairRefId& ppId)
-    {
-      const int id = ppId.get();
-      auto it = find_if(begin(seed), end(seed), [&](const PlayerPair& pp)
-      {
-        return (pp.getPairId() == id);
-      });
-
-      return *it;
-    };
-
-    // iterate over all matches that have a player pair assigned
-    // and store the substitution string in a dictionary
-    std::unordered_map<std::string, std::string> dict;
-    addCommonTagsToSubstDict(dict, cbt);
-    for (const auto& ma : allMatches)
-    {
-      auto pair1Id = ma.assignedPair1();
-      auto pair2Id = ma.assignedPair2();
-
-      // skip matches that don't have any players assigned
-      if ((pair1Id.get() <= 0) && (pair2Id.get() <= 0)) continue;
-
-      // get the player tags for this match
-      auto [p1a, p1b, p2a, p2b] = findPlayerTagsforMatchNum(parsedTags, ma.matchNum());
-
-      if (pair1Id.get() > 0)
-      {
-        auto pp1 = pairById(pair1Id);
-        dict[p1a.src.name] = QString2StdString(pp1.getPlayer1().getDisplayName());
-        if (pp1.hasPlayer2())
-        {
-          dict[p1b.src.name] = QString2StdString(pp1.getPlayer2().getDisplayName());
-        }
-      }
-      if (pair2Id.get() > 0)
-      {
-        auto pp2 = pairById(pair2Id);
-        dict[p2a.src.name] = QString2StdString(pp2.getPlayer1().getDisplayName());
-        if (pp2.hasPlayer2())
-        {
-          dict[p2b.src.name] = QString2StdString(pp2.getPlayer2().getDisplayName());
-        }
-      }
-    }
-
-    // include match numbers, if available
-    for (const auto& maNumMap : maNumMapping)
-    {
-      auto pred = [](const ParsedTag& tag, const BracketMatchNumber n)
-      {
-        if (tag.type != TagType::Match) return false;
-
-        const MatchTag& ma = std::get<MatchTag>(tag.content);
-        return (ma.bracketMatchNum == n);
-      };
-
-      auto _pred = bind(pred, std::placeholders::_1, maNumMap.first);
-
-      // find the tag for "brNum"
-      auto it = find_if(begin(parsedTags), end(parsedTags), _pred);
-      if (it != end(parsedTags))
-      {
-        dict[it->src.name] = "#" + to_string(maNumMap.second);
-      }
-    }
-
-    return applySvgSubstitution(brDef->pages, dict);
   }
 
   //----------------------------------------------------------------------------
@@ -1438,7 +578,216 @@ namespace QTournament::SvgBracket
     }
   }
 
+  //----------------------------------------------------------------------------
 
+  std::vector<SvgPageDescr> substSvgBracketTags(SvgBracketMatchSys msys, const PlayerPairList& seed, const std::vector<MatchDispInfo>& maList, const CommonBracketTags& cbt)
+  {
+    // retrieve the bracket definition for the selected system
+    // and the required number of players
+    auto brDef = SvgBracket::findSvgBracket(msys, seed.size());
+    if (!brDef)
+    {
+      throw std::runtime_error("substSvgBracketTags(): no suitable bracket"); // this should never happen
+    }
 
+    // merge all tags into one large list and parse it
+    std::vector<SvgBracket::TagData> allTags;
+    for (const auto& pg : brDef->pages)
+    {
+      std::copy(begin(pg.rawTags), end(pg.rawTags), back_inserter(allTags));
+    }
+    auto parsedTags = SvgBracket::parseRawTagList(allTags);
+
+    // generate the bracket data for the player list
+    //
+    // matches come already sorted by match number
+    auto allMatches = SvgBracket::convertToBracketMatches(*brDef);
+
+    // assign the intial seeding to the bracket.
+    // this automatically tags all unused matches as either "fast forward" (only
+    // one player) or "empty" (no players at all)
+    allMatches.applySeeding(seed);
+
+    // assign the matches
+    std::vector<Match> basicMatchList;
+    for (const auto& ma : maList)
+    {
+      basicMatchList.push_back(ma.ma);
+    }
+    allMatches.applyMatches(basicMatchList);
+
+    // prepare a mapping between bracket match number
+    // and real match
+    std::unordered_map<int, MatchDispInfo> brNum2MatchDispInfo;
+    for (const auto& mdi : maList)
+    {
+      brNum2MatchDispInfo.insert_or_assign(mdi.ma.bracketMatchNum()->get(), mdi);
+    }
+
+    // a lambda for a reverse-search in the seeding list:
+    // find a player pair by its ID, not by its rank
+    auto pairById = [&](const PlayerPairRefId& ppId)
+    {
+      const int id = ppId.get();
+      auto it = find_if(begin(seed), end(seed), [&](const PlayerPair& pp)
+      {
+        return (pp.getPairId() == id);
+      });
+
+      return *it;
+    };
+
+    // a lambda for finding a match tag based on the
+    // bracket match number
+    auto matchTagByMatchNum = [&](const BracketMatchNumber& brNum)
+    {
+      auto pred = [&](const ParsedTag& tag)
+      {
+        if (tag.type != TagType::Match) return false;
+
+        const MatchTag& ma = std::get<MatchTag>(tag.content);
+        return (ma.bracketMatchNum == brNum);
+      };
+
+      // find the tag for "brNum"
+      auto it = find_if(begin(parsedTags), end(parsedTags), pred);
+      return *it;
+    };
+
+    // iterate over all matches
+    // and store the substitution strings in a dictionary
+    std::unordered_map<std::string, std::string> dict;
+    addCommonTagsToSubstDict(dict, cbt);
+    for (const auto& bmd : allMatches)
+    {
+      // find the associated display info
+      // and the match tag
+      const auto& mdi = brNum2MatchDispInfo.at(bmd.matchNum().get());
+      const auto& maTag = matchTagByMatchNum(bmd.matchNum());
+
+      // get the tag names for which we need substitution strings
+      BracketElementTagNames betl;
+      auto [p1a, p1b, p2a, p2b] = findPlayerTagsforMatchNum(parsedTags, bmd.matchNum());
+      {}
+      betl.p1aTagName = p1a.src.name;
+      betl.p1bTagName = p1b.src.name;
+      betl.p2aTagName = p2a.src.name;
+      betl.p2bTagName = p2b.src.name;
+      betl.matchTagName = maTag.src.name;
+
+      // assign all substitution strings
+      defSubstStringsForBracketElement(dict, betl, bmd, mdi);
+    }
+
+    return applySvgSubstitution(brDef->pages, dict);
+  }
+
+  //----------------------------------------------------------------------------
+
+  void defSubstStringsForBracketElement(std::unordered_map<string, string>& dict, const BracketElementTagNames& betl, const BracketMatchData& bmd, const MatchDispInfo& mdi)
+  {
+    //
+    // deal with the pair tags
+    //
+    for (int pos=1; pos < 3; ++pos)
+    {
+      if (mdi.pairRep == MatchDispInfo::PairRepresentation::None)
+      {
+        // Do nothing; tags without subst string will be implicitly erased later
+        continue;
+      }
+
+      auto pairId = (pos == 1) ? bmd.assignedPair1() : bmd.assignedPair2();
+
+      // print nothing if we need real names but don't have one
+      if ((pairId.get() <= 0) && (mdi.pairRep == MatchDispInfo::PairRepresentation::RealNamesOnly))
+      {
+        continue;
+      }
+
+      int symName = mdi.ma.getSymbolicPlayerPair1Name();
+
+      // print nothing if we have neither real names nor symbolic names
+      if ((pairId.get() <= 0) && (symName == 0))
+      {
+        continue;
+      }
+
+      string a;
+      string b;
+
+      // always use real names, if available
+      if (pairId.get() > 0)
+      {
+        PlayerPair pp{mdi.ma.getDatabaseHandle(), pairId.get()};
+        a = QString2StdString(pp.getPlayer1().getDisplayName());
+        if (pp.hasPlayer2())
+        {
+          b = QString2StdString(pp.getPlayer2().getDisplayName());
+        }
+      } else {
+        // use symbolic names otherwise
+        QString tmp;
+        if (symName > 0)
+        {
+          tmp = QObject::tr("Winner of #");
+        } else {
+          tmp = QObject::tr("Loser of #");
+        }
+        tmp += QString::number(abs(symName));
+        a = QString2StdString(tmp);
+      }
+
+      dict.insert_or_assign( (pos == 1) ? betl.p1aTagName : betl.p2aTagName, a);
+      if (!b.empty())
+      {
+        dict.insert_or_assign( (pos == 1) ? betl.p1bTagName : betl.p2bTagName, b);
+      }
+    }
+
+    //
+    // Deal with the match tag
+    //
+
+    if (mdi.resultRep == MatchDispInfo::ResultFieldContent::None)
+    {
+      return;
+    }
+
+    auto score = mdi.ma.getScore();
+    if (mdi.resultRep == MatchDispInfo::ResultFieldContent::ResultOnly)
+    {
+      if (score)
+      {
+        dict[betl.matchTagName] = QString2StdString(score->toString());
+      }
+      return;
+    }
+
+    auto maNum = mdi.ma.getMatchNumber();
+    if (mdi.resultRep == MatchDispInfo::ResultFieldContent::ResultOnly)
+    {
+      if (maNum != MatchNumNotAssigned)
+      {
+        dict[betl.matchTagName] = "#" + to_string(maNum);
+      }
+      return;
+    }
+
+    //
+    // print score or match number, with a priority on the score
+    //
+    if (score)
+    {
+      dict[betl.matchTagName] = QString2StdString(score->toString());
+      return;
+    }
+
+    if (maNum != MatchNumNotAssigned)
+    {
+      dict[betl.matchTagName] = "#" + to_string(maNum);
+      return;
+    }
+  }
 
 }

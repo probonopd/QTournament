@@ -63,9 +63,23 @@ namespace QTournament
      */
     SvgBracket::CommonBracketTags commonTags() const;
 
+    /** \brief prepares the bracket for the report mode "Seeding"
+     */
+    std::vector<SvgPageDescr> prepReport_Seeding(SimpleReportLib::SimpleReportGenerator* rep,   ///< pointer to the report we should be writing to
+        const PlayerPairList& seeding   ///< the seeding for the category; is needed by all reports
+        ) const;
+
+    /** \brief prepares the bracket for the report mode "After round XXX"
+     */
+    std::vector<SvgPageDescr> prepReport_AfterRound(
+        SimpleReportLib::SimpleReportGenerator* rep,   ///< pointer to the report we should be writing to
+        const PlayerPairList& seeding   ///< the seeding for the category; is needed by all reports
+        ) const;
+
   private:
     const BracketReportType repType;
     const Category cat;
+    const SvgBracketMatchSys msys;
     Round round;
   };
 

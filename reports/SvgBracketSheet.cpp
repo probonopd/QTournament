@@ -34,7 +34,8 @@ namespace QTournament
 
 
 SvgBracketSheet::SvgBracketSheet(const TournamentDB& _db, const QString& _name, BracketReportType reportType, const Category& _cat, Round _round)
-  :AbstractReport(_db, _name), repType{reportType}, cat{_cat}, round{_round}
+  :AbstractReport(_db, _name), repType{reportType}, cat{_cat}, round{_round},
+    msys{static_cast<SvgBracketMatchSys>(cat.getParameter_int(CatParameter::BracketMatchSystem))}
 {
   // For the report type "seeding" our first round
   // the might be something != 1 if
@@ -65,37 +66,22 @@ upSimpleReport SvgBracketSheet::regenerateReport()
 {
   upSimpleReport result = createEmptyReport_Landscape();
 
-  // get the bracket configuration
-  auto brMatchSys = static_cast<SvgBracketMatchSys>(cat.getParameter_int(CatParameter::BracketMatchSystem));
-
   CatMngr cm{db};
   MatchMngr mm{db};
+
+  // for any report, we need the seeding
+  const auto seeding = cm.getSeeding(cat);
 
   // generate the resulting SVG for several cases
   std::vector<SvgPageDescr> pages;
   if (repType == BracketReportType::Seeding)
   {
-    // get the seeding
-    const auto seeding = cm.getSeeding(cat);
+    pages = prepReport_Seeding(result.get(), seeding);
+  }
 
-    // prepare a list of mappings betwenn
-    // bracket match number and "real" match number,
-    // if available
-    std::vector<std::pair<BracketMatchNumber, int>> bracket2realMatchNum;
-    auto mgl = mm.getMatchGroupsForCat(cat, round.get());
-    if (!mgl.empty())
-    {
-      for (const auto& ma : mgl[0].getMatches())
-      {
-        auto brNum = ma.bracketMatchNum();
-        int maNum = ma.getMatchNumber();
-        if ((maNum != MatchNumNotAssigned) && (brNum.has_value()))
-        {
-          bracket2realMatchNum.push_back(std::pair{*brNum, maNum});
-        }
-      }
-    }
-    pages = SvgBracket::substSvgBracketTags(brMatchSys, seeding, commonTags(), bracket2realMatchNum);
+  if (repType == BracketReportType::AfterRound)
+  {
+    pages = prepReport_AfterRound(result.get(), seeding);
   }
 
   // append all pages to the report
@@ -165,6 +151,76 @@ SvgBracket::CommonBracketTags SvgBracketSheet::commonTags() const
   // leave date and time empty
 
   return result;
+}
+
+//----------------------------------------------------------------------------
+
+std::vector<SvgPageDescr> SvgBracketSheet::prepReport_Seeding(SimpleReportLib::SimpleReportGenerator* rep, const PlayerPairList& seeding) const
+{
+  MatchMngr mm{db};
+
+  // prepare a list bracket matches for the first
+  std::vector<SvgBracket::MatchDispInfo> firstRoundMatches;
+  auto mgl = mm.getMatchGroupsForCat(cat, round.get());
+  if (!mgl.empty())
+  {
+    for (const auto& ma : mgl[0].getMatches())
+    {
+      SvgBracket::MatchDispInfo mdi{ma};
+      mdi.pairRep = SvgBracket::MatchDispInfo::PairRepresentation::RealNamesOnly;
+      mdi.resultRep = SvgBracket::MatchDispInfo::ResultFieldContent::MatchNumberOnly;
+      firstRoundMatches.push_back(mdi);
+    }
+  }
+  return SvgBracket::substSvgBracketTags(msys, seeding, firstRoundMatches, commonTags());
+}
+
+//----------------------------------------------------------------------------
+
+std::vector<SvgPageDescr> SvgBracketSheet::prepReport_AfterRound(SimpleReportLib::SimpleReportGenerator* rep, const PlayerPairList& seeding) const
+{
+  // determine the first round that contains bracket matches
+  Round curRound{1};
+  if (cat.getMatchSystem() == MatchSystem::GroupsWithKO)
+  {
+    KO_Config ko{cat.getParameter_string(CatParameter::GroupConfig)};
+    curRound = Round{ko.getNumRounds() + 1};
+  }
+
+  // prepare a list bracket matches for the all
+  // bracket matches up to "our" round
+  std::vector<SvgBracket::MatchDispInfo> bracketMatches;
+  MatchMngr mm{db};
+  for (; curRound <= round; curRound = Round{curRound.get() + 1})
+  {
+    auto mgl = mm.getMatchGroupsForCat(cat, curRound.get());
+    if (!mgl.empty())
+    {
+      for (const auto& ma : mgl[0].getMatches())
+      {
+        SvgBracket::MatchDispInfo mdi{ma};
+        mdi.pairRep = SvgBracket::MatchDispInfo::PairRepresentation::RealNamesOnly;
+        mdi.resultRep = SvgBracket::MatchDispInfo::ResultFieldContent::ResultOnly;
+        bracketMatches.push_back(mdi);
+      }
+    }
+  }
+
+  // if possible, add also the matches of the following round
+  // in order to show the next match numbers
+  auto mgl = mm.getMatchGroupsForCat(cat, curRound.get());
+  if (!mgl.empty())
+  {
+    for (const auto& ma : mgl[0].getMatches())
+    {
+      SvgBracket::MatchDispInfo mdi{ma};
+      mdi.pairRep = SvgBracket::MatchDispInfo::PairRepresentation::RealNamesOnly;
+      mdi.resultRep = SvgBracket::MatchDispInfo::ResultFieldContent::MatchNumberOnly;
+      bracketMatches.push_back(mdi);
+    }
+  }
+
+  return SvgBracket::substSvgBracketTags(msys, seeding, bracketMatches, commonTags());
 }
 
 //----------------------------------------------------------------------------

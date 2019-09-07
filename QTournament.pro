@@ -27,6 +27,7 @@ DEFINES += "BOOST_LOG_DYN_LINK=1"
 
 HEADERS += \
     BackendAPI.h \
+    BracketMatchData.h \
     Category.h \
     CatMngr.h \
     GroupDef.h \
@@ -39,6 +40,7 @@ HEADERS += \
     RoundRobinCategory.h \
     SvgBracket.h \
     SvgBracketCategory.h \
+    SvgRuleChecks.h \
     Team.h \
     TeamMngr.h \
     TournamentDataDefs.h \
@@ -166,12 +168,14 @@ HEADERS += \
 SOURCES += \
     BackendAPI_Getters.cpp \
     BackendAPI_MatchGen.cpp \
+    BracketMatchData.cpp \
     Category.cpp \
     CatMngr.cpp \
     GroupDef.cpp \
     KO_Config.cpp \
     SvgBracket.cpp \
     SvgBracketCategory.cpp \
+    SvgRuleChecks.cp \
     main.cpp \
     MatchGroup.cpp \
     MatchMngr.cpp \

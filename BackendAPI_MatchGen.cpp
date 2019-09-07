@@ -29,6 +29,7 @@
 #include "MatchMngr.h"
 
 #include "BackendAPI.h"
+#include "BracketMatchData.h"
 
 using namespace SqliteOverlay;
 
