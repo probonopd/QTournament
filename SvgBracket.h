@@ -541,7 +541,7 @@ namespace QTournament::SvgBracket
       SvgBracketMatchSys msys,   ///< the match system for which we need a bracket
       const QTournament::PlayerPairList& seed,   ///< the sorted list of initial player pairs
       const CommonBracketTags& cbt,   ///< common metadata used on all bracket sheets
-      bool includeMatchNumbers    ///< if `true` the match numbers for the first round will be included as well (if available)
+      const std::vector<std::pair<BracketMatchNumber, int>>& maNumMapping  ///< any "real" match numbers that should be included in the bracket visualization
       );
 
   //----------------------------------------------------------------------------

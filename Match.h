@@ -91,6 +91,10 @@ namespace QTournament
     bool hasRefereeAssigned() const;
     Error canAssignReferee(RefereeAction refAction) const;
 
+    /** \returns the bracket match numer related to this match, if any
+     */
+    std::optional<BracketMatchNumber> bracketMatchNum() const;
+
     Match (const TournamentDB& _db, int rowId);
     Match (const TournamentDB& _db, const SqliteOverlay::TabRow& _row);
 

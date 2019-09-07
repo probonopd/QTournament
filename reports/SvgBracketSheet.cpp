@@ -26,14 +26,30 @@
 #include "MatchMngr.h"
 #include "CatMngr.h"
 #include "../HelperFunc.h"
+#include "KO_Config.h"
+
 
 namespace QTournament
 {
 
 
-SvgBracketSheet::SvgBracketSheet(const TournamentDB& _db, const QString& _name, const Category& _cat, int _round)
-  :AbstractReport(_db, _name), cat{_cat}, round{_round}
+SvgBracketSheet::SvgBracketSheet(const TournamentDB& _db, const QString& _name, BracketReportType reportType, const Category& _cat, Round _round)
+  :AbstractReport(_db, _name), repType{reportType}, cat{_cat}, round{_round}
 {
+  // For the report type "seeding" our first round
+  // the might be something != 1 if
+  // we're in group matches with KO
+  if (repType == BracketReportType::Seeding)
+  {
+    if (cat.getMatchSystem() == MatchSystem::GroupsWithKO)
+    {
+      KO_Config ko{cat.getParameter_string(CatParameter::GroupConfig)};
+      round = Round{ko.getNumRounds() + 1};
+    }
+    else {
+      round = Round{1};
+    }
+  }
 }
 
 //----------------------------------------------------------------------------
@@ -51,14 +67,35 @@ upSimpleReport SvgBracketSheet::regenerateReport()
 
   // get the bracket configuration
   auto brMatchSys = static_cast<SvgBracketMatchSys>(cat.getParameter_int(CatParameter::BracketMatchSystem));
+
   CatMngr cm{db};
-  const auto seeding = cm.getSeeding(cat);
+  MatchMngr mm{db};
 
   // generate the resulting SVG for several cases
   std::vector<SvgPageDescr> pages;
-  if (round == 0)
+  if (repType == BracketReportType::Seeding)
   {
-    pages = SvgBracket::substSvgBracketTags(brMatchSys, seeding, commonTags(), true);
+    // get the seeding
+    const auto seeding = cm.getSeeding(cat);
+
+    // prepare a list of mappings betwenn
+    // bracket match number and "real" match number,
+    // if available
+    std::vector<std::pair<BracketMatchNumber, int>> bracket2realMatchNum;
+    auto mgl = mm.getMatchGroupsForCat(cat, round.get());
+    if (!mgl.empty())
+    {
+      for (const auto& ma : mgl[0].getMatches())
+      {
+        auto brNum = ma.bracketMatchNum();
+        int maNum = ma.getMatchNumber();
+        if ((maNum != MatchNumNotAssigned) && (brNum.has_value()))
+        {
+          bracket2realMatchNum.push_back(std::pair{*brNum, maNum});
+        }
+      }
+    }
+    pages = SvgBracket::substSvgBracketTags(brMatchSys, seeding, commonTags(), bracket2realMatchNum);
   }
 
   // append all pages to the report
@@ -82,17 +119,17 @@ QStringList SvgBracketSheet::getReportLocators() const
   QString loc = tr("Brackets::");
   loc += cat.getName() + "::";
 
-  if (round == 0)
+  if (repType == BracketReportType::Seeding)
   {
     loc += tr("Initial seeding");
   }
-  if (round < 0)
+  if (repType == BracketReportType::Current)
   {
     loc += tr("Current");
   }
-  if (round > 0)
+  if (repType == BracketReportType::AfterRound)
   {
-    loc += tr("after round ") + QString::number(round);
+    loc += tr("after round ") + QString::number(round.get());
   }
 
   result.append(loc);
@@ -110,18 +147,18 @@ SvgBracket::CommonBracketTags SvgBracketSheet::commonTags() const
   result.club = cfg[CfgKey_TnmtOrga];
   result.catName = QString2StdString(cat.getName());
 
-  if (round == 0)
+  if (repType == BracketReportType::Seeding)
   {
     result.subtitle = QString2StdString(tr("Initial seeding"));
   }
-  if (round < 0)
+  if (repType == BracketReportType::Current)
   {
     result.subtitle = QString2StdString(tr("Current status"));
   }
-  if (round > 0)
+  if (repType == BracketReportType::AfterRound)
   {
     QString tmp = tr("After round %1");
-    tmp = tmp.arg(round);
+    tmp = tmp.arg(round.get());
     result.subtitle = QString2StdString(tmp);
   }
 

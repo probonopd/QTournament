@@ -32,12 +32,27 @@
 
 namespace QTournament
 {
+  enum class BracketReportType
+  {
+    Seeding,   ///< show the initial seeding
+    AfterRound,  ///< show the status after a given round
+    Current   ///< show the status with all available matches filled in
+  };
+
   class SvgBracketSheet : public QObject, public AbstractReport
   {
     Q_OBJECT
 
   public:
-    SvgBracketSheet(const QTournament::TournamentDB& _db, const QString& _name, const Category& _cat, int _round);
+    /** \brief Ctor for a new bracket report
+     */
+    SvgBracketSheet(
+        const QTournament::TournamentDB& _db,   ///< the database we're working on
+        const QString& _name,   ///< the internal report name that uniquely identifies the report
+        BracketReportType reportType,   ///< the type of bracket report
+        const Category& _cat,   ///< the category for which we create the bracket
+        Round _round   ///< the applicable round, if necessary
+        );
     virtual ~SvgBracketSheet() override;
 
     virtual upSimpleReport regenerateReport() override;
@@ -49,8 +64,9 @@ namespace QTournament
     SvgBracket::CommonBracketTags commonTags() const;
 
   private:
+    const BracketReportType repType;
     const Category cat;
-    const int round;
+    Round round;
   };
 
 }

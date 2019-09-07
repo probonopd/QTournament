@@ -189,8 +189,14 @@ namespace QTournament
       // for the current status ("round -1") and for each
       // finished round
       result.append(genRepName(REP_Bracket, catId, 0));
+      int firstBracketRound = 1;
+      if (cat.getMatchSystem() == MatchSystem::GroupsWithKO)
+      {
+        KO_Config ko{cat.getParameter_string(CatParameter::GroupConfig)};
+        firstBracketRound = ko.getNumRounds() + 1;
+      }
       CatRoundStatus crs = cat.getRoundStatus();
-      for (int round=1; round <= crs.getFinishedRoundsCount(); ++round)
+      for (int round=firstBracketRound; round <= crs.getFinishedRoundsCount(); ++round)
       {
         result.append(genRepName(REP_Bracket, catId, round));
       }
@@ -300,7 +306,16 @@ namespace QTournament
       int catId = intParam1;
       int round = intParam2;
       Category cat = cm.getCategoryById(catId);
-      return upAbstractReport(new SvgBracketSheet(db, repName, cat, round));
+
+      if (round < 0)
+      {
+        return upAbstractReport(new SvgBracketSheet(db, repName, BracketReportType::Current, cat, Round{-1}));
+      }
+      if (round == 0)
+      {
+        return upAbstractReport(new SvgBracketSheet(db, repName, BracketReportType::Seeding, cat, Round{-1}));
+      }
+      return upAbstractReport(new SvgBracketSheet(db, repName, BracketReportType::AfterRound, cat, Round{round}));
     }
 
     // matrix with standings

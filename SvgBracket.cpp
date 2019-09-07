@@ -10,6 +10,7 @@
 
 #include "HelperFunc.h"
 #include "SvgBracket.h"
+#include "MatchMngr.h"
 
 using namespace std;
 
@@ -1188,7 +1189,7 @@ namespace QTournament::SvgBracket
 
   //----------------------------------------------------------------------------
 
-  std::vector<SvgPageDescr> substSvgBracketTags(SvgBracketMatchSys msys, const PlayerPairList& seed, const CommonBracketTags& cbt, bool includeMatchNumbers)
+  std::vector<SvgPageDescr> substSvgBracketTags(SvgBracketMatchSys msys, const PlayerPairList& seed, const CommonBracketTags& cbt, const std::vector<std::pair<BracketMatchNumber, int> >& maNumMapping)
   {
     // retrieve the bracket definition for the selected system
     // and the required number of players
@@ -1261,6 +1262,27 @@ namespace QTournament::SvgBracket
         {
           dict[p2b.src.name] = QString2StdString(pp2.getPlayer2().getDisplayName());
         }
+      }
+    }
+
+    // include match numbers, if available
+    for (const auto& maNumMap : maNumMapping)
+    {
+      auto pred = [](const ParsedTag& tag, const BracketMatchNumber n)
+      {
+        if (tag.type != TagType::Match) return false;
+
+        const MatchTag& ma = std::get<MatchTag>(tag.content);
+        return (ma.bracketMatchNum == n);
+      };
+
+      auto _pred = bind(pred, std::placeholders::_1, maNumMap.first);
+
+      // find the tag for "brNum"
+      auto it = find_if(begin(parsedTags), end(parsedTags), _pred);
+      if (it != end(parsedTags))
+      {
+        dict[it->src.name] = "#" + to_string(maNumMap.second);
       }
     }
 

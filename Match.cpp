@@ -479,6 +479,14 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
+  std::optional<BracketMatchNumber> Match::bracketMatchNum() const
+  {
+    auto brNum = row.getInt2(MA_BracketMatchNum);
+    return (brNum.has_value()) ? BracketMatchNumber{brNum.value()} : std::optional<BracketMatchNumber>{};
+  }
+
+  //----------------------------------------------------------------------------
+
   int Match::getSymbolicPlayerPairName(int playerPos) const
   {
     // if we have a regular PP, don't return a symbolic name
