@@ -8,11 +8,14 @@
         <file>txt/match_call.html</file>
         <file>brackets/RankSys16.svg</file>
         <file>brackets/SingleElim16.svg</file>
+        <file>brackets/SingleElim8.svg</file>
     </qresource>
     <qresource prefix="/" lang="de">
         <file alias="txt/match_result_confirmation.html">txt/match_result_confirmation_de.html</file>
         <file alias="txt/consent.html">txt/consent_de.html</file>
         <file alias="txt/match_call.html">txt/match_call_de.html</file>
         <file alias="brackets/RankSys16.svg">brackets/RankSys16_de.svg</file>
+        <file alias="brackets/SingleElim16.svg">brackets/SingleElim16_de.svg</file>
+        <file alias="brackets/SingleElim8.svg">brackets/SingleElim8_de.svg</file>
     </qresource>
 </RCC>

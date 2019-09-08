@@ -26,7 +26,7 @@
 
 int main(int argc, char *argv[])
 {
-  auto is = std::ifstream("/home/volker/src/Qt/QTournament/resources/brackets/SingleElim16.svg");
+  auto is = std::ifstream("/home/volker/src/Qt/QTournament/resources/brackets/SingleElim8.svg");
 
   std::string str;
   is.seekg(0, std::ios::end);

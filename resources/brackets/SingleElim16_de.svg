@@ -15,7 +15,7 @@
    version="1.1"
    id="svg4655"
    inkscape:version="0.92.4 5da689c313, 2019-01-14"
-   sodipodi:docname="SingleElim16.svg">
+   sodipodi:docname="SingleElim16_de.svg">
   <defs
      id="defs4649" />
   <sodipodi:namedview
@@ -25,9 +25,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.98994949"
-     inkscape:cx="532.18702"
-     inkscape:cy="411.73171"
+     inkscape:zoom="1.979899"
+     inkscape:cx="798.79659"
+     inkscape:cy="297.50044"
      inkscape:document-units="mm"
      inkscape:current-layer="layer4"
      showgrid="false"
@@ -38,28 +38,28 @@
        position="10,103.4333"
        orientation="1,0"
        id="guide1395"
-       inkscape:locked="true"
+       inkscape:locked="false"
        inkscape:label=""
        inkscape:color="rgb(0,0,255)" />
     <sodipodi:guide
        position="287,287"
        orientation="1,0"
        id="guide1397"
-       inkscape:locked="true"
+       inkscape:locked="false"
        inkscape:label=""
        inkscape:color="rgb(0,0,255)" />
     <sodipodi:guide
        position="234.128,195"
        orientation="0,1"
        id="guide1399"
-       inkscape:locked="true"
+       inkscape:locked="false"
        inkscape:label=""
        inkscape:color="rgb(0,0,255)" />
     <sodipodi:guide
        position="266.46773,15"
        orientation="0,1"
        id="guide1401"
-       inkscape:locked="true"
+       inkscape:locked="false"
        inkscape:label=""
        inkscape:color="rgb(0,0,255)" />
   </sodipodi:namedview>
@@ -100,7 +100,7 @@
          y="19.978313"
          x="286.57339"
          id="tspan4677"
-         sodipodi:role="line">{{catName}} -- Bracket</tspan></text>
+         sodipodi:role="line">{{catName}} -- Turnierbaum</tspan></text>
     <text
        id="text4702"
        y="24.568966"
@@ -297,14 +297,14 @@
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.29305553px;line-height:61.69999838%;font-family:'Bitstream Vera Sans';-inkscape-font-specification:'Bitstream Vera Sans, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       x="250.57242"
+       x="251.50398"
        y="107.9426"
        id="text1959"><tspan
          sodipodi:role="line"
          id="tspan1957"
-         x="250.57242"
+         x="251.50398"
          y="107.9426"
-         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:2.29305553px;font-family:'Bitstream Vera Sans';-inkscape-font-specification:'Bitstream Vera Sans Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332px">Winner</tspan></text>
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:2.29305553px;font-family:'Bitstream Vera Sans';-inkscape-font-specification:'Bitstream Vera Sans Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332px">Sieger</tspan></text>
     <text
        id="text1963"
        y="179.58791"
@@ -315,7 +315,7 @@
          y="179.58791"
          x="255.83971"
          id="tspan1961"
-         sodipodi:role="line">3. Place</tspan></text>
+         sodipodi:role="line">3. Platz</tspan></text>
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222223px;line-height:61.69999838%;font-family:'Bitstream Vera Sans';-inkscape-font-specification:'Bitstream Vera Sans, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
