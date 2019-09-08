@@ -131,9 +131,14 @@ namespace QTournament::API::Internal
       const auto winnerAction = allMatches.traverseForward(bmd, SvgBracket::PairRole::AsWinner);
       if (std::holds_alternative<Rank>(winnerAction))
       {
-        err = mm.setRankForWinnerOrLoser(ma, true, std::get<Rank>(winnerAction).get());
-
-        std::cout << "R " << ma.getId() << ": set WR = " << std::get<Rank>(winnerAction).get() << std::endl;
+        const auto rank = std::get<Rank>(winnerAction);
+        if (rank > 0)
+        {
+          err = mm.setRankForWinnerOrLoser(ma, true, rank.get());
+          std::cout << "R " << ma.getId() << ": set WR = " << rank.get() << std::endl;
+        } else {
+          std::cout << "R " << ma.getId() << ": winner will drop out of the tournament WITHOUT FINAL RANK!" << std::endl;
+        }
       } else {
         auto& outLink = std::get<SvgBracket::OutgoingBracketLink>(winnerAction);
         int realNextMatchId = bracket2regularMatchNum.at(outLink.dstMatch.get());
@@ -147,8 +152,14 @@ namespace QTournament::API::Internal
       const auto loserAction = allMatches.traverseForward(bmd, SvgBracket::PairRole::AsLoser);
       if (std::holds_alternative<Rank>(loserAction))
       {
-        err = mm.setRankForWinnerOrLoser(ma, false, std::get<Rank>(loserAction).get());
-        std::cout << "R " << ma.getId() << ": set LR = " << std::get<Rank>(loserAction).get() << std::endl;
+        const auto rank = std::get<Rank>(loserAction);
+        if (rank > 0)
+        {
+          err = mm.setRankForWinnerOrLoser(ma, false, rank.get());
+          std::cout << "R " << ma.getId() << ": set LR = " << rank.get() << std::endl;
+        } else {
+          std::cout << "R " << ma.getId() << ": loser will drop out of the tournament" << std::endl;
+        }
       } else {
         auto& outLink = std::get<SvgBracket::OutgoingBracketLink>(loserAction);
         int realNextMatchId = bracket2regularMatchNum.at(outLink.dstMatch.get());

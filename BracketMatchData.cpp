@@ -486,13 +486,13 @@ namespace QTournament::SvgBracket
       // what happens to the winner / loser
       std::variant<OutgoingBracketLink, Rank> winnerAction{Rank{-1}};  // dummy
       std::variant<OutgoingBracketLink, Rank> loserAction{Rank{-1}};  // dummy
-      if (m.loserRank > 0)
+      if (m.loserRank >= 0)
       {
         loserAction = Rank{m.loserRank};
       } else {
         loserAction = findNextMatch(n, PairRole::AsLoser).value();
       }
-      if (m.winnerRank > 0)
+      if (m.winnerRank >= 0)
       {
         winnerAction = Rank{m.winnerRank};
       } else {

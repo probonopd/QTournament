@@ -371,10 +371,18 @@ namespace QTournament::SvgBracket
           return "Match " + to_string(ma.bracketMatchNum.get()) + " has an invalid loser rank";
         }
         cntRank.at(ma.loserRank.get() - 1) += 1;
-      } else {
+      }
+      if (ma.loserRank < 0) {
         if (!hasFollowUpMatch(-ma.bracketMatchNum.get()))
         {
           return "Loser of match " + to_string(ma.bracketMatchNum.get()) + " has no final rank and no follow-up match";
+        }
+      }
+      if (ma.loserRank == 0)
+      {
+        if (hasFollowUpMatch(-ma.bracketMatchNum.get()))
+        {
+          return "Loser of match " + to_string(ma.bracketMatchNum.get()) + " shall drop-out but has a follow-up match";
         }
       }
 

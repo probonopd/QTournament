@@ -317,7 +317,7 @@ namespace QTournament::SvgBracket
             210.0,
             ":/brackets/RankSys16.svg",
             "",
-            10.0,
+            25.0,
             findRawTagsInResource(":/brackets/RankSys16.svg"),
           }
         },
@@ -327,6 +327,26 @@ namespace QTournament::SvgBracket
           GroupNum_Iteration,
           GroupNum_Iteration,
           GroupNum_Iteration,
+        }
+      },
+      {
+        SvgBracketMatchSys::SingleElim,
+        16,
+        {
+          {
+            297.0,
+            210.0,
+            ":/brackets/SingleElim16.svg",
+            "",
+            51.5,
+            findRawTagsInResource(":/brackets/SingleElim16.svg"),
+          }
+        },
+        {
+          GroupNum_L16,
+          GroupNum_Quarter,
+          GroupNum_Semi,
+          GroupNum_Final,
         }
       }
     };

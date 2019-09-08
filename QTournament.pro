@@ -40,7 +40,7 @@ HEADERS += \
     RoundRobinCategory.h \
     SvgBracket.h \
     SvgBracketCategory.h \
-    SvgRuleChecks.h \
+    svgBracketChecker/SvgRuleChecks.h \
     Team.h \
     TeamMngr.h \
     TournamentDataDefs.h \
@@ -175,8 +175,7 @@ SOURCES += \
     KO_Config.cpp \
     SvgBracket.cpp \
     SvgBracketCategory.cpp \
-    SvgRuleChecks.cpp \
-    main.cpp \
+    svgBracketChecker/SvgRuleChecks.cpp \
     MatchGroup.cpp \
     MatchMngr.cpp \
     Player.cpp \
@@ -304,6 +303,13 @@ SOURCES += \
     ui/commonCommands/cmdConnectionSettings.cpp \
     ui/procedures/Proc_RoundComplete.cpp \
     ui/procedures/Proc_MatchCallAndFinish.cpp
+
+#
+# Pick the appropriate main file for either
+# QTournament itself or for the bracket rule checker
+#
+SOURCES += main.cpp
+#SOURCES += svgBracketChecker/main.cpp
 
 RESOURCES += resources/tournament.qrc
 

@@ -17,6 +17,8 @@
  */
 
 #include "../SvgBracket.h"
+#include "SvgRuleChecks.h"
+#include "../TournamentDataDefs.h"
 
 #include <iostream>
 #include <fstream>
@@ -24,7 +26,7 @@
 
 int main(int argc, char *argv[])
 {
-  auto is = std::ifstream("/home/volker/src/Qt/QTournament/resources/brackets/RankSys16.svg");
+  auto is = std::ifstream("/home/volker/src/Qt/QTournament/resources/brackets/SingleElim16.svg");
 
   std::string str;
   is.seekg(0, std::ios::end);
@@ -42,7 +44,7 @@ int main(int argc, char *argv[])
     return 1;
   }
 
-  auto br = QTournament::SvgBracket::findSvgBracket(QTournament::SvgBracket::SvgBracketMatchSys::SingleElim, 10);
+  auto br = QTournament::SvgBracket::findSvgBracket(QTournament::SvgBracketMatchSys::SingleElim, 10);
   std::cout << br.has_value() << std::endl;
 
   return 0;
