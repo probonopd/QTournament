@@ -186,12 +186,14 @@ bool InOutList::isValidCatRoundCombination(const Category& _cat, int _round)
     return true;
   }
 
-  // for elimination contests, we can always generate in-out-lists
+  // for elimination contests, we can almost always generate in-out-lists
   //
-  // FIX ME: make a more precise decision here based on the bracket mode
+  // in-out-lists are okay, as long as we're not using the ranking system
   if (mSys == MatchSystem::Bracket)
   {
-    return true;
+    auto brSys = static_cast<SvgBracketMatchSys>(_cat.getParameter_int(CatParameter::BracketMatchSystem));
+
+    return (brSys != SvgBracketMatchSys::RankSys);
   }
 
   // a "catch all":

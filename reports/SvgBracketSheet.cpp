@@ -140,7 +140,7 @@ SvgBracket::CommonBracketTags SvgBracketSheet::commonTags() const
 
   if (repType == BracketReportType::Seeding)
   {
-    result.subtitle = QString2StdString(tr("Initial seeding"));
+    result.subtitle = QString2StdString(tr("Initial seeding and first matches"));
   }
   if (repType == BracketReportType::Current)
   {
@@ -148,7 +148,7 @@ SvgBracket::CommonBracketTags SvgBracketSheet::commonTags() const
   }
   if (repType == BracketReportType::AfterRound)
   {
-    QString tmp = tr("After round %1");
+    QString tmp = tr("After round %1 and next matches");
     tmp = tmp.arg(round.get());
     result.subtitle = QString2StdString(tmp);
   }
@@ -173,6 +173,7 @@ std::vector<SvgPageDescr> SvgBracketSheet::prepReport_Seeding(SimpleReportLib::S
     {
       SvgBracket::MatchDispInfo mdi{
         ma,
+        false,
         SvgBracket::MatchDispInfo::PairRepresentation::RealNamesOnly,
         SvgBracket::MatchDispInfo::ResultFieldContent::MatchNumberOnly
       };
@@ -202,6 +203,7 @@ std::vector<SvgPageDescr> SvgBracketSheet::prepReport_AfterRound(SimpleReportLib
       {
         SvgBracket::MatchDispInfo mdi{
           ma,
+          true,
           SvgBracket::MatchDispInfo::PairRepresentation::RealNamesOnly,
           SvgBracket::MatchDispInfo::ResultFieldContent::ResultOnly
         };
@@ -219,6 +221,7 @@ std::vector<SvgPageDescr> SvgBracketSheet::prepReport_AfterRound(SimpleReportLib
     {
       SvgBracket::MatchDispInfo mdi{
         ma,
+        false,
         SvgBracket::MatchDispInfo::PairRepresentation::RealNamesOnly,
         SvgBracket::MatchDispInfo::ResultFieldContent::MatchNumberOnly
       };
@@ -227,9 +230,10 @@ std::vector<SvgPageDescr> SvgBracketSheet::prepReport_AfterRound(SimpleReportLib
   }
 
   // if possible, add also matches for all further rounds
-  // for which we already have fixed names; don't show match
-  // numbers, though. This is only to display we players have
-  // moved to
+  // so that we show the (possibly already assigned) match
+  // numbers.
+  // Names should only be symbolic, though, because we pretend
+  // that no further matches have been played
   while (true)
   {
     curRound = Round{curRound.get() + 1};
@@ -239,8 +243,9 @@ std::vector<SvgPageDescr> SvgBracketSheet::prepReport_AfterRound(SimpleReportLib
     {
       SvgBracket::MatchDispInfo mdi{
         ma,
-        SvgBracket::MatchDispInfo::PairRepresentation::RealNamesOnly,
-        SvgBracket::MatchDispInfo::ResultFieldContent::None
+        false,
+        SvgBracket::MatchDispInfo::PairRepresentation::RealOrSymbolic,
+        SvgBracket::MatchDispInfo::ResultFieldContent::MatchNumberOnly
       };
       bracketMatches.push_back(mdi);
     }
@@ -266,6 +271,7 @@ std::vector<SvgPageDescr> SvgBracketSheet::prepReport_Current(SimpleReportLib::S
     {
       SvgBracket::MatchDispInfo mdi{
         ma,
+        true,
         SvgBracket::MatchDispInfo::PairRepresentation::RealOrSymbolic,
         SvgBracket::MatchDispInfo::ResultFieldContent::ResultOrNumber
       };

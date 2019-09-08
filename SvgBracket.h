@@ -12,6 +12,7 @@
 #include "TournamentDataDefs.h"
 #include "PlayerPair.h"
 #include "Match.h"
+#include "BracketMatchData.h"
 
 namespace QTournament
 {
@@ -155,18 +156,20 @@ namespace QTournament::SvgBracket
     {
       None,   ///< do not print any pair information
       RealNamesOnly,   ///< only print real names, no symbolic names
+      SymbolicOnly,   ///< only symbolic names, even if we have real ones
       RealOrSymbolic  ///< real or symbolic names
     };
 
     enum class ResultFieldContent
     {
       None,   ///< leave the result field empty
-      MatchNumberOnly,   ///< print the assigned match number, if any
+      MatchNumberOnly,   ///< print the real match number only, if available; if not, use the canonical number
       ResultOnly,   ///< print the match result only, if any
-      ResultOrNumber   ///< print the result, if any; if no result, print match number, if any; if no number, do nothing
+      ResultOrNumber   ///< print the result, if any; if no result, print real match number, if any; if no real number, use the canonical number
     };
 
     Match ma;   ///< the affected match
+    bool propagateWinnerLoser;   ///< forward winner/losers along the tree?
     PairRepresentation pairRep;   ///< how to display the player pairs
     ResultFieldContent resultRep;   ///< what to print in the bracket center
   };
@@ -305,6 +308,31 @@ namespace QTournament::SvgBracket
 
   //----------------------------------------------------------------------------
 
+  /** \brief Determines the actual data assignment for a bracket match
+   * for visualization purposes
+   */
+  struct BracketMatchVisData
+  {
+    struct PlayerDescr
+    {
+      std::optional<PlayerPairRefId> pairId{};  ///< either the assigned pair, if any
+      PairRole role;  ///< how we got there
+      std::string srcCanonicalName;  ///< the canonical name of the source match for the player
+      std::optional<int> srcRealMatchNum;  ///< the real match number of the source match for the player, if known
+    };
+
+    BracketMatchNumber brNum{BracketMatchNumber{-1}};
+    std::string canonicalName;   ///< the canonical name of this bracket match
+    std::optional<int> realMatchNum;   ///< the real match number, if known
+
+    std::optional<MatchDispInfo> mdi;   ///< real match representation data, if knowm
+
+    PlayerDescr p1;
+    PlayerDescr p2;
+  };
+
+  //----------------------------------------------------------------------------
+
   /** \brief Takes an SvgBracketMatchSys along with a given seeding list and
    * match list and returns the ready-to-print SVG sheets for bracket with all tags substituted.
    *
@@ -371,10 +399,12 @@ namespace QTournament::SvgBracket
   /** \brief Determines the substituion strings for a single bracket element and
    * adds them to a dictionary
    */
-  void defSubstStringsForBracketElement(const TournamentDB& db, std::unordered_map<std::string, std::string>& dict,   ///< dictionary for the substitution strings
+  void defSubstStringsForBracketElement(
+      const TournamentDB& db,
+      std::unordered_map<std::string, std::string>& dict,   ///< dictionary for the substitution strings
       const BracketElementTagNames& betl,   ///< tag names (keys) for this bracket for the dictionary
       const BracketMatchData& bmd,   ///< the BracketMatchData that represents the bracket element
-      const std::optional<MatchDispInfo>& mdi   ///< how match and player pairs should be represented
+      const BracketMatchVisData& vis   ///< all related data around the bracket element
       );
 
 }

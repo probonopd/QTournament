@@ -608,11 +608,11 @@ namespace QTournament::SvgBracket
     // one player) or "empty" (no players at all)
     allMatches.applySeeding(seed);
 
-    // assign the matches
+    // assign the matches, if requested
     std::vector<Match> basicMatchList;
     for (const auto& ma : maList)
     {
-      basicMatchList.push_back(ma.ma);
+      if (ma.propagateWinnerLoser) basicMatchList.push_back(ma.ma);
     }
     allMatches.applyMatches(basicMatchList);
 
@@ -658,17 +658,55 @@ namespace QTournament::SvgBracket
     // and store the substitution strings in a dictionary
     std::unordered_map<std::string, std::string> dict;
     addCommonTagsToSubstDict(dict, cbt);
+    cout << "#################################" << endl;
+    cout << "## substSvgBracketTags (final) ##" << endl;
+    cout << "##################################" << endl;
     for (const auto& bmd : allMatches)
     {
-      // find the associated display info
-      // and the match tag
-      std::optional<MatchDispInfo> mdi{};
-      auto it = brNum2MatchDispInfo.find(bmd.matchNum().get());
-      if (it != end(brNum2MatchDispInfo))
+      cout << bmd << endl;
+
+      // collect all data about this bracket match
+      BracketMatchVisData vis;
+      vis.brNum = bmd.matchNum();
+      vis.canonicalName = bmd.canoName();
+      auto itMatchDispData = brNum2MatchDispInfo.find(vis.brNum.get());
+      if (itMatchDispData != brNum2MatchDispInfo.end())
       {
-        mdi = it->second;
+        int maNum = itMatchDispData->second.ma.getMatchNumber();
+        if (maNum != MatchNumNotAssigned) vis.realMatchNum = maNum;
+
+        vis.mdi = itMatchDispData->second;
       }
-      const auto& maTag = matchTagByMatchNum(bmd.matchNum());
+      for (int pos = 1; pos != 3; ++pos)
+      {
+        auto& descr = (pos == 1) ? vis.p1 : vis.p2;
+        const auto ppId = (pos == 1) ? bmd.assignedPair1() : bmd.assignedPair2();
+
+        if (ppId.get() > 0)
+        {
+          descr.pairId = ppId;
+        }
+        if (bmd.round() == 1)
+        {
+          descr.role = PairRole::Initial;
+        } else {
+          descr.role = (pos == 1) ? bmd.inLink1().role : bmd.inLink2().role;
+        }
+
+        if (bmd.round() > 1)
+        {
+          const auto& inLink = (pos == 1) ? bmd.inLink1() : bmd.inLink2();
+
+          const auto& srcMatch = allMatches.at(inLink.srcMatch.get() - 1);
+          descr.srcCanonicalName = srcMatch.canoName();
+          auto it = brNum2MatchDispInfo.find(inLink.srcMatch.get());
+          if (it != brNum2MatchDispInfo.end())
+          {
+            int maNum = it->second.ma.getMatchNumber();
+            if (maNum != MatchNumNotAssigned) descr.srcRealMatchNum = maNum;
+          }
+        }
+      }
 
       // get the tag names for which we need substitution strings
       BracketElementTagNames betl;
@@ -677,10 +715,11 @@ namespace QTournament::SvgBracket
       betl.p1bTagName = p1b.src.name;
       betl.p2aTagName = p2a.src.name;
       betl.p2bTagName = p2b.src.name;
+      const auto& maTag = matchTagByMatchNum(bmd.matchNum());
       betl.matchTagName = maTag.src.name;
 
       // assign all substitution strings
-      defSubstStringsForBracketElement(db, dict, betl, bmd, mdi);
+      defSubstStringsForBracketElement(db, dict, betl, bmd, vis);
     }
 
     return applySvgSubstitution(brDef->pages, dict);
@@ -688,17 +727,25 @@ namespace QTournament::SvgBracket
 
   //----------------------------------------------------------------------------
 
-  void defSubstStringsForBracketElement(const TournamentDB& db, std::unordered_map<string, string>& dict, const BracketElementTagNames& betl, const BracketMatchData& bmd, const std::optional<MatchDispInfo>& mdi)
+  void defSubstStringsForBracketElement(const TournamentDB& db, std::unordered_map<string, string>& dict, const BracketElementTagNames& betl, const BracketMatchData& bmd, const BracketMatchVisData& vis)
   {
     // if this is a bracket without match, display pair names or symbolic names
-    MatchDispInfo::PairRepresentation pairRep = (mdi.has_value()) ? mdi->pairRep : MatchDispInfo::PairRepresentation::RealOrSymbolic;
+    MatchDispInfo::PairRepresentation pairRep = (vis.mdi.has_value()) ? vis.mdi->pairRep : MatchDispInfo::PairRepresentation::RealOrSymbolic;
+    MatchDispInfo::ResultFieldContent resultRep = (vis.mdi.has_value()) ? vis.mdi->resultRep : MatchDispInfo::ResultFieldContent::MatchNumberOnly;
 
     //
     // deal with the pair tags
     //
     for (int pos=1; pos < 3; ++pos)
     {
-      auto pairId = (pos == 1) ? bmd.assignedPair1() : bmd.assignedPair2();
+      // don't print anything for dead branches
+      BracketMatchData::BranchState bState = (pos == 1) ? bmd.pair1State() : bmd.pair2State();
+      if (bState == BracketMatchData::BranchState::Dead)
+      {
+        continue;
+      }
+
+      const auto& pairDescr = (pos == 1) ? vis.p1 : vis.p2;
 
       if (pairRep == MatchDispInfo::PairRepresentation::None)
       {
@@ -707,19 +754,7 @@ namespace QTournament::SvgBracket
       }
 
       // print nothing if we need real names but don't have one
-      if ((pairId.get() <= 0) && (pairRep == MatchDispInfo::PairRepresentation::RealNamesOnly))
-      {
-        continue;
-      }
-
-      int symName{0};
-      if (mdi)
-      {
-        symName = (pos == 1) ? mdi->ma.getSymbolicPlayerPair1Name() : mdi->ma.getSymbolicPlayerPair2Name();
-      }
-
-      // print nothing if we have neither real names nor symbolic names
-      if ((pairId.get() <= 0) && (symName == 0))
+      if (!pairDescr.pairId && (pairRep == MatchDispInfo::PairRepresentation::RealNamesOnly))
       {
         continue;
       }
@@ -727,26 +762,43 @@ namespace QTournament::SvgBracket
       string a;
       string b;
 
-      // always use real names, if available
-      if (pairId.get() > 0)
+      // print the real name, if we need one and have one
+      if (pairDescr.pairId &&
+          ((pairRep == MatchDispInfo::PairRepresentation::RealNamesOnly) || (pairRep == MatchDispInfo::PairRepresentation::RealOrSymbolic)))
       {
-        PlayerPair pp{db, pairId.get()};
+        PlayerPair pp{db, pairDescr.pairId->get()};
         a = QString2StdString(pp.getPlayer1().getDisplayName());
         if (pp.hasPlayer2())
         {
           b = QString2StdString(pp.getPlayer2().getDisplayName());
         }
-      } else {
-        // use symbolic names otherwise
-        QString tmp;
-        if (symName > 0)
+      }
+
+      // if "a" is still empty, we definitely need the symbolic name
+      if (a.empty())
+      {
+        if (pairDescr.role == PairRole::Initial)
         {
-          tmp = QObject::tr("(Winner of #");
+          a = "--";  // no better symbolic name for un-seeded players in the first round...
         } else {
-          tmp = QObject::tr("(Loser of #");
+          a = "(";
+          if (pairDescr.role == PairRole::AsWinner)
+          {
+            a += QString2StdString(QObject::tr("Winner of "));
+          } else {
+            a += QString2StdString(QObject::tr("Loser of "));
+          }
+
+          // do we have a real match including match number
+          // connected with the incoming link?
+          if (pairDescr.srcRealMatchNum)
+          {
+            a += "#" + to_string(pairDescr.srcRealMatchNum.value());
+          } else {
+            a += pairDescr.srcCanonicalName;
+          }
+          a += ")";
         }
-        tmp += QString::number(abs(symName)) + ")";
-        a = QString2StdString(tmp);
       }
 
       dict.insert_or_assign( (pos == 1) ? betl.p1aTagName : betl.p2aTagName, a);
@@ -760,51 +812,48 @@ namespace QTournament::SvgBracket
     // Deal with the match tag
     //
 
-    if (!mdi) return;
+    if (resultRep == MatchDispInfo::ResultFieldContent::None) return;
 
-    if (mdi->resultRep == MatchDispInfo::ResultFieldContent::None)
-    {
-      return;
-    }
+    std::optional<MatchScore> score;
+    if (vis.mdi.has_value()) score = vis.mdi->ma.getScore();
 
-    auto score = mdi->ma.getScore();
-    if (mdi->resultRep == MatchDispInfo::ResultFieldContent::ResultOnly)
-    {
-      if (score)
-      {
-        QString tmp = score->toString();
-        tmp = tmp.replace(",", ", ");
-        dict[betl.matchTagName] = QString2StdString(tmp);
-      }
-      return;
-    }
+    // print match number or score?
+    bool useScore = (score.has_value() && (resultRep != MatchDispInfo::ResultFieldContent::MatchNumberOnly));
 
-    auto maNum = mdi->ma.getMatchNumber();
-    if (mdi->resultRep == MatchDispInfo::ResultFieldContent::MatchNumberOnly)
-    {
-      if (maNum != MatchNumNotAssigned)
-      {
-        dict[betl.matchTagName] = "#" + to_string(maNum);
-      }
-      return;
-    }
-
-    //
-    // print score or match number, with a priority on the score
-    //
-    if (score)
+    if (useScore)
     {
       QString tmp = score->toString();
       tmp = tmp.replace(",", ", ");
       dict[betl.matchTagName] = QString2StdString(tmp);
-      return;
-    }
+    } else {
+      BracketMatchData::BranchState b1State = bmd.pair1State();
+      BracketMatchData::BranchState b2State = bmd.pair2State();
 
-    if (maNum != MatchNumNotAssigned)
-    {
-      dict[betl.matchTagName] = "#" + to_string(maNum);
-      return;
+      // if both branches are dead, print no match number
+      if ((b1State == BracketMatchData::BranchState::Dead) && (b2State == BracketMatchData::BranchState::Dead))
+      {
+        return;
+      }
+
+      // if one branch is assigned and the other is dead
+      // print no match number because it's a "fast-forward" match
+      // with already known winner
+      if ((b1State == BracketMatchData::BranchState::Assigned) && (b2State == BracketMatchData::BranchState::Dead))
+      {
+        return;
+      }
+      if ((b1State == BracketMatchData::BranchState::Dead) && (b2State == BracketMatchData::BranchState::Assigned))
+      {
+        return;
+      }
+
+      // do we have a real match including match number?
+      if (vis.realMatchNum)
+      {
+        dict[betl.matchTagName] = "#" + to_string(vis.realMatchNum.value());
+      } else {
+        dict[betl.matchTagName] = "(" + vis.canonicalName + ")";
+      }
     }
   }
-
 }

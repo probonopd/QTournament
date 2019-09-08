@@ -17,7 +17,8 @@ namespace QTournament::SvgBracket
   enum class PairRole
   {
     AsWinner,
-    AsLoser
+    AsLoser,
+    Initial
   };
 
   /** \brief Information on where a player came from in a bracket
@@ -58,6 +59,7 @@ namespace QTournament::SvgBracket
      */
     BracketMatchData(
         const BracketMatchNumber& n,   ///< the bracket-internal, 1-based number of this match
+        const std::string& canoName, ///< the canonical name for this match
         const Rank& p1InitialRank,   ///< the initial rank of player pair 1
         const Rank& p2InitialRank,   ///< the initial rank of player pair 2
         const std::variant<OutgoingBracketLink, Rank>& dstWinner,   ///< what happens to the winner
@@ -69,6 +71,7 @@ namespace QTournament::SvgBracket
     BracketMatchData(
         const BracketMatchNumber& n,   ///< the bracket-internal, 1-based number of this match
         const Round& r,   ///< the bracket-internal, 1-based round number for this match
+        const std::string& canoName, ///< the canonical name for this match
         const IncomingBracketLink& inLink1,   ///< where player 1 comes from
         const IncomingBracketLink& inLink2,   ///< where player 2 comes from
         const std::variant<OutgoingBracketLink, Rank>& dstWinner,   ///< what happens to the winner
@@ -100,6 +103,7 @@ namespace QTournament::SvgBracket
     const IncomingBracketLink& inLink2() const { return std::get<IncomingBracketLink>(src2); }
     std::optional<Rank> winnerRank() const { return (std::holds_alternative<Rank>(winnerAction) ? std::get<Rank>(winnerAction) : std::optional<Rank>{}); }
     std::optional<Rank> loserRank() const { return (std::holds_alternative<Rank>(loserAction) ? std::get<Rank>(loserAction) : std::optional<Rank>{}); }
+    const std::string& canoName() const { return canonicalName; }
 
 
     /** \returns an empty optional if the requested player doesn't have
@@ -137,11 +141,20 @@ namespace QTournament::SvgBracket
      */
     constexpr bool canSkip() const { return ((p1State == BranchState::Dead) || (p2State == BranchState::Dead)); }
 
+    /** \returns the object status as a human-friendly string
+     */
+    std::string dump() const;
+
+    /** \brief dumps the object state to a stream (e.g, cout)
+     */
+    friend std::ostream& operator<< (std::ostream& out, const BracketMatchData& bmd);
+
   protected:
 
   private:
     BracketMatchNumber brMaNum{-1};   ///< the number of the associated match in the bracket
     Round _round{-1};   ///< the 1-based, bracket-internal round this match is played in
+    std::string canonicalName;   ///< the unique canonical name of the match like "a2", "b5", "c3", ...
 
     // static structure information
     std::variant<OutgoingBracketLink, Rank> winnerAction{Rank{-1}};   ///< what happens to the winner
@@ -218,9 +231,8 @@ namespace QTournament::SvgBracket
     /** \brief Takes a match and, based on its pair assignments, propagates
      * winners and losers to their next matches and declares unused branches dead
      */
-    void propagateWinnerLoser(
-        BracketMatchData& ma
-        );
+    void propagateWinnerLoser(BracketMatchData& ma
+        , int winnerPos);
 
     /** \brief Takes the player in the given position and promotes it as to the winner
      * match and declares the loser match as "dead".

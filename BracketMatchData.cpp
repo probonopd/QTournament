@@ -1,4 +1,6 @@
 
+#include <sstream>
+
 #include "Match.h"
 
 #include "BracketMatchData.h"
@@ -8,8 +10,8 @@ using namespace std;
 
 namespace QTournament::SvgBracket
 {
-  BracketMatchData::BracketMatchData(const BracketMatchNumber& n, const Rank& p1InitialRank, const Rank& p2InitialRank, const std::variant<OutgoingBracketLink, Rank>& dstWinner, const std::variant<OutgoingBracketLink, Rank>& dstLoser)
-    :brMaNum{n}, _round{1}, winnerAction{dstWinner}, loserAction{dstLoser}, src1{p1InitialRank}, src2{p2InitialRank},
+  BracketMatchData::BracketMatchData(const BracketMatchNumber& n, const std::string& canoName, const Rank& p1InitialRank, const Rank& p2InitialRank, const std::variant<OutgoingBracketLink, Rank>& dstWinner, const std::variant<OutgoingBracketLink, Rank>& dstLoser)
+    :brMaNum{n}, _round{1}, canonicalName{canoName}, winnerAction{dstWinner}, loserAction{dstLoser}, src1{p1InitialRank}, src2{p2InitialRank},
       p1State{BranchState::Alive}, p2State{BranchState::Alive}
   {
 
@@ -17,8 +19,8 @@ namespace QTournament::SvgBracket
 
   //----------------------------------------------------------------------------
 
-  BracketMatchData::BracketMatchData(const BracketMatchNumber& n, const Round& r, const IncomingBracketLink& inLink1, const IncomingBracketLink& inLink2, const std::variant<OutgoingBracketLink, Rank>& dstWinner, const std::variant<OutgoingBracketLink, Rank>& dstLoser)
-    :brMaNum{n}, _round{r}, winnerAction{dstWinner}, loserAction{dstLoser}, src1{inLink1}, src2{inLink2},
+  BracketMatchData::BracketMatchData(const BracketMatchNumber& n, const Round& r, const std::string& canoName, const IncomingBracketLink& inLink1, const IncomingBracketLink& inLink2, const std::variant<OutgoingBracketLink, Rank>& dstWinner, const std::variant<OutgoingBracketLink, Rank>& dstLoser)
+    :brMaNum{n}, _round{r}, canonicalName{canoName}, winnerAction{dstWinner}, loserAction{dstLoser}, src1{inLink1}, src2{inLink2},
       p1State{BranchState::Alive}, p2State{BranchState::Alive}
   {
 
@@ -64,6 +66,66 @@ namespace QTournament::SvgBracket
 
   //----------------------------------------------------------------------------
 
+  string BracketMatchData::dump() const
+  {
+    stringstream buf;
+    buf << *this;
+    return buf.str();
+  }
+
+  //----------------------------------------------------------------------------
+
+  ostream& operator<<(ostream& out, const BracketMatchData& bmd)
+  {
+    out << "#" << bmd.brMaNum.get() << "(" << bmd.canoName() << "): Round = " << bmd._round.get() << ", ";
+    if (bmd._round.get() == 1)
+    {
+      out << "P1.ini = " << bmd.initialRank(1).value().get() << ", P2.ini = " << bmd.initialRank(2).value().get() << ", ";
+    } else {
+      out << "P1 = ";
+      const auto in1 = bmd.inLink1();
+      if (in1.role == SvgBracket::PairRole::AsWinner) out << "W";
+      else out << "L";
+      out << in1.srcMatch.get() << ", ";
+
+      out << "P2 = ";
+      const auto in2 = bmd.inLink2();
+      if (in2.role == SvgBracket::PairRole::AsWinner) out << "W";
+      else out << "L";
+      out << in2.srcMatch.get() << ", ";
+    }
+
+    if (bmd.winnerRank())
+    {
+      out << "WR = " << bmd.winnerRank()->get() << ", ";
+    } else {
+      out << "W --> ";
+      const auto& outLink = bmd.nextWinnerMatch();
+      out << outLink.dstMatch.get() << "." << outLink.pos << ", ";
+    }
+    if (bmd.loserRank())
+    {
+      out << "LR = " << bmd.loserRank()->get();
+    } else {
+      out << "L --> ";
+      const auto& outLink = bmd.nextLoserMatch();
+      out << outLink.dstMatch.get() << "." << outLink.pos;
+    }
+
+    out << ", Br1 = ";
+    if (bmd.p1State == BracketMatchData::BranchState::Alive) out << "alive";
+    if (bmd.p1State == BracketMatchData::BranchState::Assigned) out << "assigned";
+    if (bmd.p1State == BracketMatchData::BranchState::Dead) out << "dead";
+    out << ", Br2 = ";
+    if (bmd.p2State == BracketMatchData::BranchState::Alive) out << "alive";
+    if (bmd.p2State == BracketMatchData::BranchState::Assigned) out << "assigned";
+    if (bmd.p2State == BracketMatchData::BranchState::Dead) out << "dead";
+
+    return out;
+  }
+
+  //----------------------------------------------------------------------------
+
   void BracketMatchDataList::applySeeding(const PlayerPairList& seed)
   {
     // step 1:
@@ -93,7 +155,7 @@ namespace QTournament::SvgBracket
     //
     // matches are sorted by number and thus implicitly by rounds ==> it is sufficient to iterate
     // over all matches
-    std::for_each(begin(), end(), [&](BracketMatchData& bmd) { propagateWinnerLoser(bmd); });
+    std::for_each(begin(), end(), [&](BracketMatchData& bmd) { propagateWinnerLoser(bmd, 0); });
   }
 
   //----------------------------------------------------------------------------
@@ -126,14 +188,29 @@ namespace QTournament::SvgBracket
         const PlayerPairRefId ppId{ma.getPlayerPair2().getPairId()};
         bmd.assignPlayerPair(ppId, 2);
       }
+
+      // is there already a winner?
+      int winnerPos = 0;
+      auto sc = ma.getScore();
+      if (sc)
+      {
+        winnerPos = sc->getWinner();
+      }
+
+      // propagate players to the next round
+      propagateWinnerLoser(bmd, winnerPos);
     }
 
-    // step 2:
-    // apply all "fast forwards" in all rounds
+    // call "propagate" once again for all matches
+    // to include those bracket elements that don't
+    // have matches assigned
     //
-    // matches are sorted by number and thus implicitly by rounds ==> it is sufficient to iterate
-    // over all matches
-    std::for_each(begin(), end(), [&](BracketMatchData& bmd) { propagateWinnerLoser(bmd); });
+    // it does no harm to call "propagate" for a
+    // second on those elements that had a match assigned
+    for (auto& bmd : *this)
+    {
+      propagateWinnerLoser(bmd, 0);
+    }
   }
 
   //----------------------------------------------------------------------------
@@ -217,7 +294,7 @@ namespace QTournament::SvgBracket
 
   //----------------------------------------------------------------------------
 
-  void BracketMatchDataList::propagateWinnerLoser(BracketMatchData& ma)
+  void BracketMatchDataList::propagateWinnerLoser(BracketMatchData& ma, int winnerPos)
   {
     using bs = BracketMatchData::BranchState;
 
@@ -225,8 +302,55 @@ namespace QTournament::SvgBracket
     const auto& p2State = ma.pair2State();
 
     // Case 1: both branches have assigned players
-    // ==> nothing to do for us
-    if ((p1State == bs::Assigned) && (p2State == bs::Assigned)) return;
+    if ((p1State == bs::Assigned) && (p2State == bs::Assigned))
+    {
+      // there is no winner/loser yet
+      // ==> nothing to do for us
+      if ((winnerPos != 1) && (winnerPos != 2)) return;
+
+      PlayerPairRefId winner = (winnerPos == 1) ? ma.assignedPair1() : ma.assignedPair2();
+      PlayerPairRefId loser = (winnerPos == 1) ? ma.assignedPair2() : ma.assignedPair1();
+
+      // shift the winner to its next match
+      if (ma.hasWinnerMatch())
+      {
+        const auto& winnerMatchInfo = ma.nextWinnerMatch();
+        auto& winnerMatch = at(winnerMatchInfo.dstMatch.get() - 1);  // only works because the list is SORTED by match number
+
+        winnerMatch.assignPlayerPair(winner, winnerMatchInfo.pos);
+        cout << "Promoted " << ma.matchNum().get() << "." << winnerPos << " --> ";
+        cout << winnerMatchInfo.dstMatch.get() << "." << winnerMatchInfo.pos << " as winner" << endl;
+
+        // only pre-assign players if the other target branch is
+        // dead; otherwise we would mess up bracket report that only
+        // display results up to a certain round, although further rounds
+        // have already been played
+        const auto otherState = (winnerMatchInfo.pos == 1) ? winnerMatch.pair2State() : winnerMatch.pair1State();
+        if (otherState == BracketMatchData::BranchState::Dead)
+        {
+        }
+      }
+
+      // shift the loser to its next match
+      if (ma.hasLoserMatch())
+      {
+        const auto& loserMatchInfo = ma.nextLoserMatch();
+        auto& loserMatch = at(loserMatchInfo.dstMatch.get() - 1);  // only works because the list is SORTED by match number
+
+        loserMatch.assignPlayerPair(loser, loserMatchInfo.pos);
+        cout << "Promoted " << ma.matchNum().get() << "." << ((winnerPos == 1) ? 2 : 1) << " --> ";
+        cout << loserMatchInfo.dstMatch.get() << "." << loserMatchInfo.pos << " as loser" << endl;
+
+        // only pre-assign players if the other target branch is
+        // dead; otherwise we would mess up bracket report that only
+        // display results up to a certain round, although further rounds
+        // have already been played
+        const auto otherState = (loserMatchInfo.pos == 1) ? loserMatch.pair2State() : loserMatch.pair1State();
+        if (otherState == BracketMatchData::BranchState::Dead)
+        {
+        }
+      }
+    }
 
     // Case 2: both branches are "alive"
     // ==> nothing to do for us, the players depend on
@@ -363,11 +487,23 @@ namespace QTournament::SvgBracket
 
     // create the match data skeleton
     BracketMatchDataList result;
+    int canonicalNumber{1};
+    Round curRound{1};
     std::transform(begin(allMatches), end(allMatches), back_inserter(result), [&](const MatchTag& m)
     {
       // basic match data
       BracketMatchNumber n{m.bracketMatchNum};
       Round r{m.roundNum};
+
+      // build the canonical match name
+      if (r > curRound)
+      {
+        curRound = r;
+        canonicalNumber = 1;
+      }
+      string canonicalName = " " + to_string(canonicalNumber);
+      canonicalName[0] = char('a' + m.roundNum.get() - 1);
+      ++canonicalNumber;
 
       // what happens to the winner / loser
       std::variant<OutgoingBracketLink, Rank> winnerAction{Rank{-1}};  // dummy
@@ -396,7 +532,7 @@ namespace QTournament::SvgBracket
         Rank ini2{Rank{p2.initialRank}};
 
         // insert a bracket match with initial ranks
-        return BracketMatchData{n, ini1, ini2, winnerAction, loserAction};
+        return BracketMatchData{n, canonicalName, ini1, ini2, winnerAction, loserAction};
       }
 
       // match in all rounds later than round 1
@@ -405,49 +541,14 @@ namespace QTournament::SvgBracket
       const IncomingBracketLink in1{srcMatch1, role1};
       const auto role2 = (p2.srcMatch > 0) ? PairRole::AsWinner : PairRole::AsLoser;
       const BracketMatchNumber srcMatch2{abs(p2.srcMatch.get())};
-      const IncomingBracketLink in2{srcMatch2, role1};
+      const IncomingBracketLink in2{srcMatch2, role2};
 
-      return BracketMatchData{n, r, in1, in2, winnerAction, loserAction};
+      return BracketMatchData{n, r, canonicalName, in1, in2, winnerAction, loserAction};
     });
 
     for (const auto& bmd : result)
     {
-      cout << "#" << bmd.matchNum().get() << ": Round = " << bmd.round().get() << ", ";
-      if (bmd.round().get() == 1)
-      {
-        cout << "P1.ini = " << bmd.initialRank(1).value().get() << ", P2.ini = " << bmd.initialRank(2).value().get() << ", ";
-      } else {
-        cout << "P1 = ";
-        const auto in1 = bmd.inLink1();
-        if (in1.role == SvgBracket::PairRole::AsWinner) cout << "W";
-        else cout << "L";
-        cout << in1.srcMatch.get() << ", ";
-
-        cout << "P2 = ";
-        const auto in2 = bmd.inLink2();
-        if (in2.role == SvgBracket::PairRole::AsWinner) cout << "W";
-        else cout << "L";
-        cout << in2.srcMatch.get() << ", ";
-      }
-
-      if (bmd.winnerRank())
-      {
-        cout << "WR = " << bmd.winnerRank()->get() << ", ";
-      } else {
-        cout << "W --> ";
-        const auto& out = bmd.nextWinnerMatch();
-        cout << out.dstMatch.get() << "." << out.pos << ", ";
-      }
-      if (bmd.loserRank())
-      {
-        cout << "LR = " << bmd.loserRank()->get();
-      } else {
-        cout << "L --> ";
-        const auto& out = bmd.nextLoserMatch();
-        cout << out.dstMatch.get() << "." << out.pos;
-      }
-
-      cout << endl;
+      cout << bmd << endl;
     }
 
     return result;
