@@ -171,14 +171,27 @@ namespace QTournament
       }
     }
 
-    // show brackets for all bracket categories
+    // show brackets for all bracket categories and for
+    // the elimination phase in RoundRobins
     for (Category cat : cm.getAllCategories())
     {
       MatchSystem msys = cat.getMatchSystem();
-      if (msys != MatchSystem::Bracket) continue;
+      if ((msys != MatchSystem::Bracket) && (msys != MatchSystem::GroupsWithKO)) continue;
+
+      CatRoundStatus crs = cat.getRoundStatus();
+
+      // in round robins wait for the elimination phase
+      int firstBracketRound = 1;
+      if (cat.getMatchSystem() == MatchSystem::GroupsWithKO)
+      {
+        KO_Config ko{cat.getParameter_string(CatParameter::GroupConfig)};
+        firstBracketRound = ko.getNumRounds() + 1;
+
+        if (crs.getFinishedRoundsCount() < (firstBracketRound - 1)) continue;
+      }
 
       auto stat = cat.getState();
-      if ((stat == ObjState::CAT_Config) || (stat == ObjState::CAT_Frozen))
+      if ((stat == ObjState::CAT_Config) || (stat == ObjState::CAT_Frozen) || (stat == ObjState::CAT_WaitForIntermediateSeeding))
       {
         continue;  // no brackets for "un-seeded" categories
       }
@@ -192,13 +205,6 @@ namespace QTournament
       result.append(genRepName(REP_Bracket, catId, -1));
 
       // a bracket for the situation after a finished round
-      int firstBracketRound = 1;
-      if (cat.getMatchSystem() == MatchSystem::GroupsWithKO)
-      {
-        KO_Config ko{cat.getParameter_string(CatParameter::GroupConfig)};
-        firstBracketRound = ko.getNumRounds() + 1;
-      }
-      CatRoundStatus crs = cat.getRoundStatus();
       for (int round=firstBracketRound; round <= crs.getFinishedRoundsCount(); ++round)
       {
         result.append(genRepName(REP_Bracket, catId, round));

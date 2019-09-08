@@ -177,6 +177,7 @@ namespace QTournament::SvgBracket
 
       auto brNum = ma.bracketMatchNum();
       BracketMatchData& bmd = findByMatchNumber(*brNum);
+      cout << "Apply matches: working on real match " << ma.getMatchNumber() << " = bracket match " << brNum->get() << endl;
 
       if (ma.hasPlayerPair1())
       {

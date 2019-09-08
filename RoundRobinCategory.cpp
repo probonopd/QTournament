@@ -385,7 +385,27 @@ namespace QTournament
       return Error::InvalidSeedingList;
     }
 
-    // okay, the list is valid. Now lets generate single-KO matches
+    // okay, the list is valid.
+    //
+    // store the initial ranks as seeding in the database
+    // FIX ME: merge this with "applyInitialRanking()" in the category class
+    DbTab pairTab{db, TabPairs, false};
+    int rank{1}; // we start counting ranks at "1"
+    try
+    {
+      auto trans = db.get().startTransaction();
+      for (const auto& pp : seed)
+      {
+        int ppId = pp.getPairId();
+        pairTab[ppId].update(Pairs_InitialRank, rank);
+        ++rank;
+      }
+      trans.commit();
+    } catch (...) {
+      return Error::DatabaseError;
+    }
+
+    // Now lets generate single-KO matches
     // for the second phase of the tournament
     KO_Config cfg = KO_Config(getParameter_string(CatParameter::GroupConfig));
     int numGroupRounds = cfg.getNumRounds();

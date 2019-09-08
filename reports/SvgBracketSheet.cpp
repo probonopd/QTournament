@@ -176,7 +176,7 @@ std::vector<SvgPageDescr> SvgBracketSheet::prepReport_Seeding(SimpleReportLib::S
 
   // prepare a list bracket matches for the first
   std::vector<SvgBracket::MatchDispInfo> firstRoundMatches;
-  auto mgl = mm.getMatchGroupsForCat(cat, round.get());
+  const auto mgl = mm.getMatchGroupsForCat(cat, round.get());
   if (!mgl.empty())
   {
     for (const auto& ma : mgl[0].getMatches())
@@ -207,7 +207,7 @@ std::vector<SvgPageDescr> SvgBracketSheet::prepReport_AfterRound(SimpleReportLib
   MatchMngr mm{db};
   for (; curRound <= round; curRound = Round{curRound.get() + 1})
   {
-    auto mgl = mm.getMatchGroupsForCat(cat, curRound.get());
+    const auto mgl = mm.getMatchGroupsForCat(cat, curRound.get());
     if (!mgl.empty())
     {
       for (const auto& ma : mgl[0].getMatches())
@@ -226,7 +226,7 @@ std::vector<SvgPageDescr> SvgBracketSheet::prepReport_AfterRound(SimpleReportLib
 
   // if possible, add also the matches of the following round
   // in order to show the next match numbers
-  auto mgl = mm.getMatchGroupsForCat(cat, curRound.get());
+  const auto mgl = mm.getMatchGroupsForCat(cat, curRound.get());
   if (!mgl.empty())
   {
     for (const auto& ma : mgl[0].getMatches())
@@ -250,7 +250,7 @@ std::vector<SvgPageDescr> SvgBracketSheet::prepReport_AfterRound(SimpleReportLib
   while (true)
   {
     curRound = Round{curRound.get() + 1};
-    auto mgl = mm.getMatchGroupsForCat(cat, curRound.get());
+    const auto mgl = mm.getMatchGroupsForCat(cat, curRound.get());
     if (mgl.empty()) break; // no more rounds
     for (const auto& ma : mgl[0].getMatches())
     {
@@ -279,19 +279,25 @@ std::vector<SvgPageDescr> SvgBracketSheet::prepReport_Current(SimpleReportLib::S
   // available bracket matches up to "our" round
   std::vector<SvgBracket::MatchDispInfo> bracketMatches;
   MatchMngr mm{db};
-  for (const auto& mg : mm.getMatchGroupsForCat(cat))
+  while (true)
   {
-    for (const auto& ma : mg.getMatches())
+    const auto mgl = mm.getMatchGroupsForCat(cat, curRound.get());
+    if (mgl.empty()) break; // done, no more rounds
+    for (const auto& mg : mgl)
     {
-      SvgBracket::MatchDispInfo mdi{
-        ma,
-        true,
-        true,
-        SvgBracket::MatchDispInfo::PairRepresentation::RealOrSymbolic,
-        SvgBracket::MatchDispInfo::ResultFieldContent::ResultOrNumber
-      };
-      bracketMatches.push_back(mdi);
+      for (const auto& ma : mg.getMatches())
+      {
+        SvgBracket::MatchDispInfo mdi{
+          ma,
+          true,
+          true,
+          SvgBracket::MatchDispInfo::PairRepresentation::RealOrSymbolic,
+          SvgBracket::MatchDispInfo::ResultFieldContent::ResultOrNumber
+        };
+        bracketMatches.push_back(mdi);
+      }
     }
+    curRound = Round{curRound.get() + 1};
   }
 
   return SvgBracket::substSvgBracketTags(db, msys, seeding, bracketMatches, commonTags());
