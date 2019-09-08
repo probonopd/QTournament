@@ -170,6 +170,7 @@ namespace QTournament::SvgBracket
 
     Match ma;   ///< the affected match
     bool propagateWinnerLoser;   ///< forward winner/losers along the tree?
+    bool showRanks;   ///< include final ranks resulting from this match yes/no
     PairRepresentation pairRep;   ///< how to display the player pairs
     ResultFieldContent resultRep;   ///< what to print in the bracket center
   };
@@ -319,6 +320,7 @@ namespace QTournament::SvgBracket
       PairRole role;  ///< how we got there
       std::string srcCanonicalName;  ///< the canonical name of the source match for the player
       std::optional<int> srcRealMatchNum;  ///< the real match number of the source match for the player, if known
+      std::optional<Rank> rank;   ///< the final rank for the player, if any
     };
 
     BracketMatchNumber brNum{BracketMatchNumber{-1}};
@@ -357,6 +359,15 @@ namespace QTournament::SvgBracket
   std::tuple<ParsedTag, ParsedTag, ParsedTag, ParsedTag> findPlayerTagsforMatchNum(
       const std::vector<ParsedTag>& tagList,
       BracketMatchNumber brNum
+      );
+
+  /** \returns the a/b tags for a rank
+   *
+   * \throws std::invalid_argument if the rank was invalid
+   */
+  std::tuple<std::string, std::string> findRankTags(
+      const std::vector<ParsedTag>& tagList,
+      Rank r
       );
 
   //----------------------------------------------------------------------------

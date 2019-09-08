@@ -232,41 +232,21 @@ namespace QTournament::SvgBracket
     }
 
     // declare the loser branch dead
-    if (ma.hasLoserMatch())
-    {
-      declareLoserBranchDead(ma);
-    }
+    // (the existence of the loser branch is checked by the callee)
+    declareLoserBranchDead(ma);
   }
 
   //----------------------------------------------------------------------------
 
   void BracketMatchDataList::declareLoserBranchDead(const BracketMatchData& ma)
   {
-    const auto& loserMatchInfo = ma.nextLoserMatch();
-    auto& loserMatch = at(loserMatchInfo.dstMatch.get() - 1);
-    loserMatch.setPairUnused(loserMatchInfo.pos);
-  }
-
-  //----------------------------------------------------------------------------
-
-  /*
-  void BracketMatchDataList::propagateBackwardsAlongWinnerPath(const BracketMatchData& ma, int pos)
-  {
-    if (ma.round().get() == 1) return; // nothing to do for us
-
-    const auto& inLink = (pos == 1) ? ma.inLink1() : ma.inLink2();
-    if (inLink.role == PairRole::AsLoser)
+    if (ma.hasLoserMatch())
     {
-      // nothing to do for us, because if we came here as a loser
-      // the previous match has been played as "real" match and thus
-      // the previous match has fully assigned players
-      return;
+      const auto& loserMatchInfo = ma.nextLoserMatch();
+      auto& loserMatch = at(loserMatchInfo.dstMatch.get() - 1);
+      loserMatch.setPairUnused(loserMatchInfo.pos);
     }
-
-    const BracketMatchData& prevMatch = findByMatchNumber(inLink.srcMatch);
-
   }
-  */
 
   //----------------------------------------------------------------------------
 
@@ -388,10 +368,8 @@ namespace QTournament::SvgBracket
       }
 
       // declare the loser branch dead
-      if (ma.hasLoserMatch())
-      {
-        declareLoserBranchDead(ma);
-      }
+      // (the existence of the loser branch is checked by the callee)
+      declareLoserBranchDead(ma);
     }
   }
 

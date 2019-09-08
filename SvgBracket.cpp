@@ -3,6 +3,7 @@
 #include <regex>
 #include <algorithm>
 #include <functional>
+#include <tuple>
 
 #include <QFile>
 
@@ -472,6 +473,50 @@ namespace QTournament::SvgBracket
 
   //----------------------------------------------------------------------------
 
+  std::tuple<std::string, std::string> findRankTags(const std::vector<ParsedTag>& tagList, Rank r)
+  {
+    using namespace std::placeholders;
+
+    // a generic predicate for finding ranks in a list
+    // of parsed tags
+    auto rankPred = [&r](const ParsedTag& t, LabelPos lp)
+    {
+      if (t.type != TagType::Rank) return false;
+
+      const RankTag& rt = std::get<RankTag>(t.content);
+      if (rt.rank != r) return false;
+      return (rt.pos == lp);
+    };
+
+    // lambda for the actual search function incl.
+    // exception throwing
+    auto findRank = [&](LabelPos pos) -> std::string
+    {
+      auto pred = bind(rankPred, _1, pos);
+      auto it = std::find_if(begin(tagList), end(tagList), pred);
+      if (it == end(tagList))
+      {
+        return "";
+      }
+
+      return it->src.name;
+    };
+
+    // find all tags
+    const string tagName1 = findRank(LabelPos::First);
+
+    if (tagName1.empty())
+    {
+      return {"", ""};  // no tag for this rank
+    }
+
+    const string tagName2 = findRank(LabelPos::Second);
+
+    return std::tuple{tagName1, tagName2};
+  }
+
+  //----------------------------------------------------------------------------
+
   std::vector<SvgPageDescr> applySvgSubstitution(const std::vector<SvgBracketPage>& pages, const std::unordered_map<string, string>& dict)
   {
     std::vector<SvgPageDescr> result;
@@ -618,24 +663,34 @@ namespace QTournament::SvgBracket
 
     // prepare a mapping between bracket match number
     // and real match
+    //
+    // and while we're at it, we also collect ranking information
     std::unordered_map<int, MatchDispInfo> brNum2MatchDispInfo;
+    std::vector<std::tuple<PlayerPairRefId, Rank>> ranks;
     for (const auto& mdi : maList)
     {
       brNum2MatchDispInfo.insert_or_assign(mdi.ma.bracketMatchNum()->get(), mdi);
-    }
 
-    // a lambda for a reverse-search in the seeding list:
-    // find a player pair by its ID, not by its rank
-    auto pairById = [&](const PlayerPairRefId& ppId)
-    {
-      const int id = ppId.get();
-      auto it = find_if(begin(seed), end(seed), [&](const PlayerPair& pp)
+      // don't evaluate ranks if not requested to
+      if (!mdi.showRanks) continue;
+
+      // winner / loser rank
+      const auto& ma = mdi.ma;
+      auto r = ma.getWinnerRank();
+      auto pp = ma.getWinner();
+      if (pp && (r > 0))
       {
-        return (pp.getPairId() == id);
-      });
-
-      return *it;
-    };
+        ranks.push_back(std::pair{PlayerPairRefId{pp->getPairId()}, Rank{r}});
+        cout << "Rank " << r << " for PairID " << pp->getPairId() << endl;
+      }
+      r = ma.getLoserRank();
+      pp = ma.getLoser();
+      if (pp && (r > 0))
+      {
+        ranks.push_back(std::pair{PlayerPairRefId{pp->getPairId()}, Rank{r}});
+        cout << "Rank " << r << " for PairID " << pp->getPairId() << endl;
+      }
+    }
 
     // a lambda for finding a match tag based on the
     // bracket match number
@@ -720,6 +775,24 @@ namespace QTournament::SvgBracket
 
       // assign all substitution strings
       defSubstStringsForBracketElement(db, dict, betl, bmd, vis);
+    }
+
+    // fill the rank tags
+    for (const auto [pairRefId, rank] : ranks)
+    {
+      auto [tagName1, tagName2] = findRankTags(parsedTags, rank);
+      if (tagName1.empty()) continue;  // no tag for this rank
+
+      PlayerPair pp{db, pairRefId.get()};
+      auto [a, b] = pair2bracketLabel(pp);
+      if (b.empty())
+      {
+        dict[tagName2] = a;  // single players on the bottom row, leave the top row empty
+      } else {
+        // doubles
+        dict[tagName1] = a;
+        dict[tagName2] = b;
+      }
     }
 
     return applySvgSubstitution(brDef->pages, dict);

@@ -174,6 +174,7 @@ std::vector<SvgPageDescr> SvgBracketSheet::prepReport_Seeding(SimpleReportLib::S
       SvgBracket::MatchDispInfo mdi{
         ma,
         false,
+        false,
         SvgBracket::MatchDispInfo::PairRepresentation::RealNamesOnly,
         SvgBracket::MatchDispInfo::ResultFieldContent::MatchNumberOnly
       };
@@ -204,6 +205,7 @@ std::vector<SvgPageDescr> SvgBracketSheet::prepReport_AfterRound(SimpleReportLib
         SvgBracket::MatchDispInfo mdi{
           ma,
           true,
+          true,
           SvgBracket::MatchDispInfo::PairRepresentation::RealNamesOnly,
           SvgBracket::MatchDispInfo::ResultFieldContent::ResultOnly
         };
@@ -221,6 +223,7 @@ std::vector<SvgPageDescr> SvgBracketSheet::prepReport_AfterRound(SimpleReportLib
     {
       SvgBracket::MatchDispInfo mdi{
         ma,
+        false,
         false,
         SvgBracket::MatchDispInfo::PairRepresentation::RealNamesOnly,
         SvgBracket::MatchDispInfo::ResultFieldContent::MatchNumberOnly
@@ -243,6 +246,7 @@ std::vector<SvgPageDescr> SvgBracketSheet::prepReport_AfterRound(SimpleReportLib
     {
       SvgBracket::MatchDispInfo mdi{
         ma,
+        false,
         false,
         SvgBracket::MatchDispInfo::PairRepresentation::RealOrSymbolic,
         SvgBracket::MatchDispInfo::ResultFieldContent::MatchNumberOnly
@@ -271,6 +275,7 @@ std::vector<SvgPageDescr> SvgBracketSheet::prepReport_Current(SimpleReportLib::S
     {
       SvgBracket::MatchDispInfo mdi{
         ma,
+        true,
         true,
         SvgBracket::MatchDispInfo::PairRepresentation::RealOrSymbolic,
         SvgBracket::MatchDispInfo::ResultFieldContent::ResultOrNumber

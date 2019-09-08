@@ -134,6 +134,7 @@ namespace QTournament
     // return the number of match groups for this category.
     static const std::string sql{"SELECT COUNT(*) FROM " + std::string{TabMatchGroup} + " WHERE " + std::string{MG_CatRef} + "=?"};
     auto stmt = db.get().prepStatement(sql);
+    stmt.bind(1, getId());
     int nRounds = db.get().execScalarQueryInt(stmt);
 
     return (nRounds > 0) ? nRounds : -1;
