@@ -29,6 +29,7 @@
 #include "TournamentDB.h"
 #include "TournamentDataDefs.h"
 #include "SvgBracket.h"
+#include "SvgBracketCategory.h"
 
 namespace QTournament
 {
@@ -85,8 +86,8 @@ namespace QTournament
 
   private:
     const BracketReportType repType;
-    const Category cat;
     const SvgBracketMatchSys msys;
+    const Category cat;
     Round round;
     Round firstBracketRound{1};
   };

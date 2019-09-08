@@ -34,8 +34,9 @@ namespace QTournament
 
 
 SvgBracketSheet::SvgBracketSheet(const TournamentDB& _db, const QString& _name, BracketReportType reportType, const Category& _cat, Round _round)
-  :AbstractReport(_db, _name), repType{reportType}, cat{_cat}, round{_round},
-    msys{static_cast<SvgBracketMatchSys>(cat.getParameter_int(CatParameter::BracketMatchSystem))}
+  :AbstractReport(_db, _name), repType{reportType},
+    msys{static_cast<SvgBracketMatchSys>(_cat.getParameter_int(CatParameter::BracketMatchSystem))},
+    cat{_cat}, round{_round}
 {
   // in "groups with KO", the first round of bracket matches is not "1"
   if (cat.getMatchSystem() == MatchSystem::GroupsWithKO)
@@ -148,8 +149,17 @@ SvgBracket::CommonBracketTags SvgBracketSheet::commonTags() const
   }
   if (repType == BracketReportType::AfterRound)
   {
-    QString tmp = tr("After round %1 and next matches");
-    tmp = tmp.arg(round.get());
+    auto special = cat.convertToSpecializedObject();
+
+    QString tmp;
+    if (round < special->calcTotalRoundsCount())
+    {
+      tmp = tr("After round %1 and next matches");
+      tmp = tmp.arg(round.get());
+    } else {
+      tmp = tr("Final results");
+    }
+
     result.subtitle = QString2StdString(tmp);
   }
 

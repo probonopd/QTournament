@@ -12,5 +12,6 @@
         <file alias="txt/match_result_confirmation.html">txt/match_result_confirmation_de.html</file>
         <file alias="txt/consent.html">txt/consent_de.html</file>
         <file alias="txt/match_call.html">txt/match_call_de.html</file>
+        <file alias="brackets/RankSys16.svg">brackets/RankSys16_de.svg</file>
     </qresource>
 </RCC>

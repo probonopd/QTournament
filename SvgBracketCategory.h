@@ -31,6 +31,9 @@ namespace QTournament
     friend class Category;
 
   public:
+    SvgBracketCategory (const TournamentDB& _db, int rowId, SvgBracketMatchSys brMatchSys);
+    SvgBracketCategory (const TournamentDB& _db, const SqliteOverlay::TabRow& _row, SvgBracketMatchSys brMatchSys);
+
     virtual Error canFreezeConfig() override;
     virtual bool needsInitialRanking() override;
     virtual bool needsGroupInitialization() override;
@@ -48,9 +51,6 @@ namespace QTournament
     Error rewriteFinalRankForMultipleRounds(int minRound = 1, int maxRound = -1) const;
 
   private:
-    SvgBracketCategory (const TournamentDB& _db, int rowId, SvgBracketMatchSys brMatchSys);
-    SvgBracketCategory (const TournamentDB& _db, const SqliteOverlay::TabRow& _row, SvgBracketMatchSys brMatchSys);
-
     SvgBracketMatchSys bracketMatchSys;
 
   };
