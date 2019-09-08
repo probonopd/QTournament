@@ -368,6 +368,42 @@ namespace QTournament::SvgBracket
           GroupNum_Final,
         }
       },
+      {
+        SvgBracketMatchSys::SingleElim,
+        4,
+        {
+          {
+            297.0,
+            210.0,
+            ":/brackets/SingleElim4.svg",
+            "",
+            72.0,
+            findRawTagsInResource(":/brackets/SingleElim4.svg"),
+          }
+        },
+        {
+          GroupNum_Semi,
+          GroupNum_Final,
+        }
+      },
+      {
+        SvgBracketMatchSys::SingleElim,
+        2,
+        {
+          {
+            297.0,
+            210.0,
+            ":/brackets/SingleElim4.svg",
+            "",
+            72.0,
+            findRawTagsInResource(":/brackets/SingleElim4.svg"),
+          }
+        },
+        {
+          GroupNum_Semi,
+          GroupNum_Final,
+        }
+      },
     };
 
     // for all brackets we need at least two players
