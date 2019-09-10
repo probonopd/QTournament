@@ -37,11 +37,11 @@
           </widget>
          </item>
          <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_4">
+          <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="1,2">
            <item>
             <widget class="QGroupBox" name="groupBox">
              <property name="title">
-              <string>Move players</string>
+              <string>Move player</string>
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_7">
               <item>
@@ -99,7 +99,7 @@
                   <item>
                    <widget class="QRadioButton" name="rbShuffleRange">
                     <property name="text">
-                     <string>From</string>
+                     <string>Only from</string>
                     </property>
                     <attribute name="buttonGroup">
                      <string notr="true">bgSuffleRange</string>
