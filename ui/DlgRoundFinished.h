@@ -32,6 +32,7 @@
 #include "reports/ResultsAndNextMatches.h"
 #include "reports/MatrixAndStandings.h"
 #include "reports/Standings.h"
+#include "reports/SvgBracketSheet.h"
 
 
 namespace Ui {
@@ -61,7 +62,7 @@ private:
   const QTournament::Category& cat;
   int round;
 
-  //std::optional<QTournament::BracketSheet> optBracket;
+  std::optional<QTournament::SvgBracketSheet> optBracket;
   std::optional<QTournament::InOutList> optInOut;
   std::optional<QTournament::ResultsAndNextMatches> optResults;
   std::optional<QTournament::MatrixAndStandings> optMatrix;

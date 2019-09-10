@@ -41,6 +41,15 @@ namespace QTournament
     std::optional<Match> nextCallableMatch(
         const TournamentDB& db
         );
+
+    /** \returns `true` if the given round for the given category is a valid
+     * bracket round (==> we can draw a bracket for that round).
+     */
+    bool isBracketRound(
+        const TournamentDB& db,
+        const Category& cat,
+        Round r
+        );
   }
 
   /** \brief Helper function for the API functions itself; what's inside "API::Internal"

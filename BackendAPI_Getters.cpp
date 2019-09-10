@@ -25,6 +25,7 @@
 #include "TournamentDataDefs.h"
 #include "TournamentDB.h"
 #include "TournamentErrorCodes.h"
+#include "CatRoundStatus.h"
 
 
 using namespace SqliteOverlay;
@@ -48,7 +49,37 @@ namespace QTournament::API::Qry
   }
 
 //----------------------------------------------------------------------------
+  bool isBracketRound(const TournamentDB& db, const Category& cat, Round r)
+  {
+    // check the match system
+    const auto msys = cat.getMatchSystem();
+    if ((msys != MatchSystem::Bracket) && (msys != MatchSystem::GroupsWithKO))
+    {
+      return false;
+    }
 
+    //
+    // check the round validity
+    //
+
+    if (r < 1) return false;
+    auto special = cat.convertToSpecializedObject();
+    int rMax = special->calcTotalRoundsCount();
+    if (r > rMax) return false;
+
+    if (msys == MatchSystem::GroupsWithKO)
+    {
+      KO_Config cfg{cat.getParameter_string(CatParameter::GroupConfig)};
+      return (r > cfg.getNumRounds());
+    }
+
+    if (msys == MatchSystem::Bracket)
+    {
+      return true;
+    }
+
+    return false;
+  }
 //----------------------------------------------------------------------------
 
 

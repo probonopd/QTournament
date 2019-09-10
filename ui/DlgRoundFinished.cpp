@@ -22,6 +22,7 @@
 
 #include "DlgRoundFinished.h"
 #include "ui_DlgRoundFinished.h"
+#include "BackendAPI.h"
 
 using namespace QTournament;
 
@@ -52,14 +53,16 @@ DlgRoundFinished::DlgRoundFinished(QWidget *parent, const QTournament::Category&
   ui->laTitle->setText(msg);
 
   // decide which reports to offer
-  /*try
+  try
   {
     optBracket.reset();
-    optBracket.emplace(db, "dummy", cat);
+    if (API::Qry::isBracketRound(db, cat, Round{round}))
+    {
+      optBracket.emplace(db, "dummy", BracketReportType::AfterRound, cat, Round{round});
+    }
   }
   catch (...) {}
-  ui->btnBracket->setVisible(optBracket.has_value());*/
-  ui->btnBracket->setVisible(false);  // FIX ME: temporary default
+  ui->btnBracket->setVisible(optBracket.has_value());
 
   try
   {
@@ -129,8 +132,7 @@ void DlgRoundFinished::printReport(AbstractReport* rep)
 
 void DlgRoundFinished::onBtnBracketClicked()
 {
-  // FIX ME
-  //printReport(&(*optBracket));
+  printReport(&(*optBracket));
 }
 
 //----------------------------------------------------------------------------
