@@ -88,12 +88,13 @@ void GroupAssignmentListWidget::setup(const TournamentDB* _db, const QList<QTour
     {
       QListWidgetItem* lwi = new QListWidgetItem(lw);
       lwi->setData(Qt::UserRole, pp.getPairId());
-      lwi->setData(Qt::DisplayRole, pp.getDisplayName());
+      lwi->setData(PairItemDelegate::PairNameRole, pp.getDisplayName());
+      lwi->setData(PairItemDelegate::TeamNameRole, pp.getDisplayName_Team());
     }
     
     // assign a delegate to the list widget for drawing the entries
     QAbstractItemDelegate* oldDefaultDelegate = lw->itemDelegate();
-    delegate[i] = std::make_unique<PairItemDelegate>(db);
+    delegate[i] = std::make_unique<PairItemDelegate>();
     lw->setItemDelegate(delegate[i].get());
     delete oldDefaultDelegate;   // will never be restored, because the complete widget will be deleted when a new database is activated
     

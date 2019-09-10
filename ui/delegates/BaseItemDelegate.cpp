@@ -20,8 +20,8 @@
 
 using namespace QTournament;
 
-BaseItemDelegate::BaseItemDelegate(const TournamentDB* _db, int _defaultRowHeight, int _selectedRowHeight, QObject* parent)
-  :QStyledItemDelegate{parent}, db{_db}, proxy{nullptr},
+BaseItemDelegate::BaseItemDelegate(int _defaultRowHeight, int _selectedRowHeight, QObject* parent)
+  :QStyledItemDelegate{parent}, proxy{nullptr},
     normalFont{QFont{}}, largeFont{QFont{}}, smallFont{QFont{}}, normalFontBold{QFont{}}, largeFontBold{QFont{}}, fntMetrics{normalFont},
     fntMetricsLarge{QFont{}}, fntMetricsSmall{QFont{}}, selectedRow{-1},
     defaultRowHeight{_defaultRowHeight}, selectedRowHeight{_selectedRowHeight}

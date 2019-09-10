@@ -44,10 +44,8 @@ void PairItemDelegate::paintUnselectedCell(QPainter* painter, const QStyleOption
 
 void PairItemDelegate::commonPaint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index, const QColor& teamFontColor) const
 {
-  PlayerMngr pm{*db};
-  PlayerPair pp = pm.getPlayerPair(index.data(Qt::UserRole).toInt());
-  QString playerName = pp.getDisplayName();
-  QString teamName = pp.getDisplayName_Team();
+  QString playerName = index.data(PairNameRole).toString();
+  QString teamName = index.data(TeamNameRole).toString();
 
   // get the rectangle that's available for painting the pair item
   QRect r = option.rect;

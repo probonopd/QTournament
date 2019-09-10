@@ -27,6 +27,8 @@
 #include "Category.h"
 #include "CatMngr.h"
 #include "PlayerMngr.h"
+#include "RankingMngr.h"
+#include "RankingEntry.h"
 #include "ui/delegates/CatItemDelegate.h"
 #include "ui/DlgSeedingEditor.h"
 #include "ui/dlgGroupAssignment.h"
@@ -34,7 +36,7 @@
 #include "ui/commonCommands/cmdBulkRemovePlayersFromCat.h"
 #include "ui/commonCommands/cmdCreateNewPlayerInCat.h"
 #include "ui/commonCommands/cmdImportSinglePlayerFromExternalDatabase.h"
-
+#include "CatRoundStatus.h"
 #include "CatMngr.h"
 
 using namespace QTournament;
@@ -83,6 +85,24 @@ void CategoryTableView::hook_onDatabaseOpened()
   emit catModelChanged();
 }
 
+//----------------------------------------------------------------------------
+
+std::vector<SeedingListWidget::AnnotatedSeedEntry> CategoryTableView::pp2Annotated(const PlayerPairList& ppList)
+{
+  vector<SeedingListWidget::AnnotatedSeedEntry> result;
+
+  for (const auto& pp : ppList)
+  {
+    result.push_back(SeedingListWidget::AnnotatedSeedEntry{
+          pp.getPairId(),
+          pp.getDisplayName(),
+          pp.getDisplayName_Team(),
+          QString{}
+          });
+  }
+
+  return result;
+}
 
 //----------------------------------------------------------------------------
 
@@ -345,8 +365,9 @@ void CategoryTableView::onRunCategory()
   PlayerPairList initialRanking;
   if (selectedCat->needsInitialRanking())
   {
-    DlgSeedingEditor dlg{*db, this};
-    dlg.initSeedingList(selectedCat->getPlayerPairs());
+    DlgSeedingEditor dlg{this};
+
+    dlg.initSeedingList(pp2Annotated(selectedCat->getPlayerPairs()));
     dlg.setModal(true);
     int result = dlg.exec();
 
@@ -356,13 +377,14 @@ void CategoryTableView::onRunCategory()
       return;
     }
 
-    initialRanking = dlg.getSeeding();
-    if (initialRanking.empty())
+    auto pairIdList = dlg.getSeeding();
+    if (pairIdList.empty())
     {
       QMessageBox::warning(this, tr("Run Category"), tr("Can't read seeding.\nOperation cancelled."));
       unfreezeAndCleanup(*selectedCat);
       return;
     }
+    for (int pairId : pairIdList) initialRanking.emplace_back(*db, pairId);
   }
 
   /*
@@ -558,8 +580,38 @@ void CategoryTableView::handleIntermediateSeedingForSelectedCat()
   PlayerPairList seedCandidates = selectedCat->getPlayerPairsForIntermediateSeeding();
   if (seedCandidates.empty()) return;
 
-  DlgSeedingEditor dlg{*db, this};
-  dlg.initSeedingList(seedCandidates);
+  std::vector<SeedingListWidget::AnnotatedSeedEntry> annotatedList = pp2Annotated(seedCandidates);
+
+  // find for each player pair the final rank within its group
+  RankingMngr rm{*db};
+  CatRoundStatus crs{*db, *selectedCat};
+  const auto rll = rm.getSortedRanking(*selectedCat, crs.getFinishedRoundsCount());   // assumption: seeding takes place after the last finished round
+  int grpNum{0};
+  for (const auto& rl : rll)
+  {
+    ++grpNum;
+    for (const auto& re : rl)
+    {
+      auto pp = re.getPlayerPair();
+      if (!pp) continue;
+
+      // is this player pair part of the seeding?
+      auto it = std::find_if(begin(annotatedList), end(annotatedList), [&pp](const SeedingListWidget::AnnotatedSeedEntry& annoPair)
+      {
+        return (pp->getPairId() == annoPair.playerPairId);
+      });
+      if (it != end(annotatedList))
+      {
+        QString hint{tr("%1. Group %2")};
+        hint = hint.arg(re.getRank());
+        hint = hint.arg(grpNum);
+        it->groupHint = hint;
+      }
+    }
+  }
+
+  DlgSeedingEditor dlg{this};
+  dlg.initSeedingList(annotatedList);
   dlg.setModal(true);
   int result = dlg.exec();
 
@@ -568,12 +620,14 @@ void CategoryTableView::handleIntermediateSeedingForSelectedCat()
     return;
   }
 
-  PlayerPairList seeding = dlg.getSeeding();
-  if (seeding.empty())
+  std::vector<int> pairIdList = dlg.getSeeding();
+  if (pairIdList.empty())
   {
     QMessageBox::warning(this, tr("Intermediate Seeding"), tr("Can't read seeding.\nOperation cancelled."));
     return;
   }
+  PlayerPairList seeding;
+  for (int pairId : pairIdList) seeding.emplace_back(*db, pairId);
 
   /*
    * If we made it to this point, we can generate matches for the next round(s)

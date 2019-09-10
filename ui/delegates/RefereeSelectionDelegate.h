@@ -41,12 +41,15 @@ public:
 
 
   RefereeSelectionDelegate(const QTournament::TournamentDB* _db, QObject* parent = nullptr)
-    :BaseItemDelegate{_db, ItemRowHeight, -1, parent} {}
+    :BaseItemDelegate{ItemRowHeight, -1, parent}, db{_db} {}
 
 protected:
   virtual void paintSelectedCell(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index, int srcRowId) const override;
   virtual void paintUnselectedCell(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index, int srcRowId) const override;
   void commonPaint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index, bool isSelected) const;
+
+private:
+  const QTournament::TournamentDB* db;
 };
 
 #endif // MATCHLOGITEMDELEGATE_H

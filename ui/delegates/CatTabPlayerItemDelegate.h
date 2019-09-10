@@ -33,7 +33,7 @@ public:
   static constexpr int ItemLeftMargin = 5;
   static constexpr int NumberTextGap = 3;
   CatTabPlayerItemDelegate(QObject* parent = nullptr, bool _showListIndex = true)
-    :BaseItemDelegate{nullptr, ItemHeight, -1, parent}, showListIndex{_showListIndex},
+    :BaseItemDelegate{ItemHeight, -1, parent}, showListIndex{_showListIndex},
       maxNumberColumnWidth{fntMetrics.horizontalAdvance("88.")} {}
 
 protected:

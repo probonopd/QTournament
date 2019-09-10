@@ -29,6 +29,7 @@
 #include "models/CatTableModel.h"
 #include "delegates/CatItemDelegate.h"
 #include "AutoSizingTable.h"
+#include "SeedingListWidget.h"
 
 
 class CategoryTableView : public GuiHelpers::AutoSizingTableView_WithDatabase<QTournament::CategoryTableModel>
@@ -42,7 +43,16 @@ public:
 
 protected:
   void hook_onDatabaseOpened() override;
-  
+
+  /** \brief Converts a list of player pairs into
+   * a list of annotated seed items for the seeding dialog.
+   *
+   * WE DON'T FILL IN THE GROUP HINT HERE!
+   *
+   * \returns a list of AnnotatedSeedingEntrys
+   */
+  std::vector<SeedingListWidget::AnnotatedSeedEntry> pp2Annotated(const QTournament::PlayerPairList& ppList);
+
 public slots:
   void onCategoryDoubleClicked(const QModelIndex& index);
   void onAddCategory();

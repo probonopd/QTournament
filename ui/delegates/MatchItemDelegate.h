@@ -44,7 +44,7 @@ public:
   static constexpr int ItemMargin = 5;
 
   MatchItemDelegate(const QTournament::TournamentDB* _db, QObject* parent = nullptr)
-    :BaseItemDelegate{_db, ItemRowHeight, ItemRowHeightSelected, parent} {}
+    :BaseItemDelegate{ItemRowHeight, ItemRowHeightSelected, parent}, db{_db} {}
 
 private:
   static constexpr double LINE_SKIP_PERC = 0.2;
@@ -57,7 +57,9 @@ private:
 
   void drawPlayerStatus(QPainter* painter, const QRectF& r, const QTournament::Player& p) const;
   void drawMatchStatus(QPainter* painter, const QRectF& r, int matchNum) const;
-} ;
+
+  const QTournament::TournamentDB* db;
+};
 
 #endif	/* MATCHITEMDELEGATE_H */
 

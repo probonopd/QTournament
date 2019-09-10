@@ -23,11 +23,10 @@
 
 using namespace QTournament;
 
-DlgSeedingEditor::DlgSeedingEditor(const QTournament::TournamentDB& _db, QWidget *parent) :
-  QDialog(parent), ui(new Ui::DlgSeedingEditor), db(_db)
+DlgSeedingEditor::DlgSeedingEditor(QWidget *parent) :
+  QDialog(parent), ui(new Ui::DlgSeedingEditor)
 {
   ui->setupUi(this);
-  ui->lwSeeding->setDatabase(&db);
 
   // set the window title
   setWindowTitle(tr("Define seeding"));
@@ -60,7 +59,7 @@ DlgSeedingEditor::~DlgSeedingEditor()
 
 //----------------------------------------------------------------------------
 
-void DlgSeedingEditor::initSeedingList(const PlayerPairList& _seed)
+void DlgSeedingEditor::initSeedingList(const std::vector<SeedingListWidget::AnnotatedSeedEntry>& _seed)
 {
   ui->lwSeeding->clearListAndFillFromSeed(_seed);
 
@@ -113,7 +112,7 @@ void DlgSeedingEditor::onSelectionChanged()
   updateButtons();
 }
 
-PlayerPairList DlgSeedingEditor::getSeeding()
+std::vector<int> DlgSeedingEditor::getSeeding()
 {
   return ui->lwSeeding->getSeedList();
 }
@@ -130,16 +129,16 @@ void DlgSeedingEditor::onKeypressTimerElapsed()
 
 void DlgSeedingEditor::updateButtons()
 {
-  bool hasItems = (ui->lwSeeding->count() > 0);
+  bool hasItems = (ui->lwSeeding->rowCount() > 0);
 
   // okay is only possible if there are items
   ui->btnOkay->setEnabled(hasItems);
 
   // shuffling is only possible with at least two items
-  ui->gbShuffle->setEnabled(ui->lwSeeding->count() > 1);
+  ui->gbShuffle->setEnabled(ui->lwSeeding->rowCount() > 1);
 
   // shuffling in a certain range only possible with at least three items
-  ui->btnShuffle->setEnabled(ui->lwSeeding->count() > 2);
+  ui->btnShuffle->setEnabled(ui->lwSeeding->rowCount() > 2);
 
   // up / down availability depends on the selected item
   ui->btnUp->setEnabled(ui->lwSeeding->canMoveSelectedPlayerUp());

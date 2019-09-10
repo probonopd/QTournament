@@ -40,7 +40,7 @@ public:
   static constexpr double ItemTextRowSkip_Perc = 0.2;
 
   CourtItemDelegate(const QTournament::TournamentDB* _db, QObject* parent = nullptr)
-    :BaseItemDelegate{_db, ItemRowHeight, ItemRowHeightSelected, parent} {}
+    :BaseItemDelegate{ItemRowHeight, ItemRowHeightSelected, parent}, db{_db} {}
 
 protected:
   virtual void paintSelectedCell(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index, int srcRowId) const override;
@@ -49,6 +49,8 @@ protected:
 
 private:
   void paintMatchInfoCell_Selected(QPainter* painter, const QStyleOptionViewItem& option, const QTournament::Match& ma) const;
+
+  const QTournament::TournamentDB* db;
 } ;
 
 #endif	/* COURTITEMDELEGATE_H */
