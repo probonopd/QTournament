@@ -365,7 +365,20 @@ void CategoryTableView::onRunCategory()
   PlayerPairList initialRanking;
   if (selectedCat->needsInitialRanking())
   {
-    DlgSeedingEditor dlg{this};
+    // do we need a bracket preview?
+    std::optional<SvgBracketMatchSys> brSys;
+    switch (selectedCat->getMatchSystem())
+    {
+    case MatchSystem::Bracket:
+      brSys = static_cast<SvgBracketMatchSys>(selectedCat->getParameter_int(CatParameter::BracketMatchSystem));
+      break;
+
+    default:
+      brSys = std::optional<SvgBracketMatchSys>{};  // no bracket
+    }
+    DlgSeedingEditor dlg{db, selectedCat->getName(), brSys, this};
+    dlg.show();  // this is necessary for the report view...
+    dlg.hide();  // ... to get the scaling factors right (no show() --> no proper windows dimensions)
 
     dlg.initSeedingList(pp2Annotated(selectedCat->getPlayerPairs()));
     dlg.setModal(true);
@@ -610,7 +623,9 @@ void CategoryTableView::handleIntermediateSeedingForSelectedCat()
     }
   }
 
-  DlgSeedingEditor dlg{this};
+  DlgSeedingEditor dlg{db, selectedCat->getName(), SvgBracketMatchSys::SingleElim, this};
+  dlg.show();  // this is necessary for the report view...
+  dlg.hide();  // ... to get the scaling factors right (no show() --> no proper windows dimensions)
   dlg.initSeedingList(annotatedList);
   dlg.setModal(true);
   int result = dlg.exec();

@@ -18,18 +18,40 @@
 
 #include <QKeyEvent>
 
+#include <SqliteOverlay/KeyValueTab.h>
+
 #include "DlgSeedingEditor.h"
 #include "ui_DlgSeedingEditor.h"
+#include "SvgBracket.h"
+#include "HelperFunc.h"
 
 using namespace QTournament;
 
-DlgSeedingEditor::DlgSeedingEditor(QWidget *parent) :
-  QDialog(parent), ui(new Ui::DlgSeedingEditor)
+DlgSeedingEditor::DlgSeedingEditor(const TournamentDB* _db, const QString& catName, std::optional<QTournament::SvgBracketMatchSys> brackSys, QWidget *parent) :
+  QDialog(parent), ui(new Ui::DlgSeedingEditor), db{_db}, msys{brackSys}
 {
   ui->setupUi(this);
 
   // set the window title
   setWindowTitle(tr("Define seeding"));
+
+  // hide the report view, if necessary and resize
+  // the widget to a proper size
+  if (brackSys)
+  {
+    resize(WidthWithBracket, height());
+
+    // initialize the meta tags
+    auto cfg = SqliteOverlay::KeyValueTab{*db, TabCfg};
+    cbt.tnmtName = cfg[CfgKey_TnmtName];
+    cbt.club = cfg[CfgKey_TnmtOrga];
+    cbt.catName = QString2StdString(catName);
+    cbt.subtitle = QString2StdString(tr("Preview for initial seeding"));
+
+  } else {
+    resize(WidthWitouthBracket, height());
+    ui->repView->hide();
+  }
 
   updateButtons();
 
@@ -69,6 +91,7 @@ void DlgSeedingEditor::initSeedingList(const std::vector<SeedingListWidget::Anno
   }
 
   updateButtons();
+  updateBracket();
 }
 
 //----------------------------------------------------------------------------
@@ -76,6 +99,7 @@ void DlgSeedingEditor::initSeedingList(const std::vector<SeedingListWidget::Anno
 void DlgSeedingEditor::onBtnUpClicked()
 {
   ui->lwSeeding->moveSelectedPlayerUp();
+  updateBracket();
 }
 
 //----------------------------------------------------------------------------
@@ -83,6 +107,7 @@ void DlgSeedingEditor::onBtnUpClicked()
 void DlgSeedingEditor::onBtnDownClicked()
 {
   ui->lwSeeding->moveSelectedPlayerDown();
+  updateBracket();
 }
 
 //----------------------------------------------------------------------------
@@ -95,6 +120,7 @@ void DlgSeedingEditor::onBtnShuffleClicked()
     fromIndex = ui->sbRangeMin->value() - 1;
   }
   ui->lwSeeding->shufflePlayers(fromIndex);
+  updateBracket();
 }
 
 //----------------------------------------------------------------------------
@@ -123,6 +149,61 @@ void DlgSeedingEditor::onKeypressTimerElapsed()
 {
   ui->lwSeeding->warpSelectedPlayerTo(positionInput-1);
   positionInput = 0;
+  updateBracket();
+}
+
+//----------------------------------------------------------------------------
+
+void DlgSeedingEditor::updateBracket()
+{
+  if (!msys) return;
+
+  // convert the current seeding list to player pairs
+  //
+  // FIX ME: the svgBracket should be redesigned to get only
+  // pre-filled structs instead of database objects; the bracket and the
+  // SVG representation should not need to deal with the database
+  PlayerPairList sortedSeed;
+  for (const auto& pairId : ui->lwSeeding->getSeedList())
+  {
+    sortedSeed.push_back(PlayerPair{*db, pairId});
+  }
+
+  // prepare a bracket
+  try
+  {
+    auto pages = SvgBracket::substSvgBracketTags(*db, *msys, sortedSeed, {}, cbt);
+
+    if (pages.empty())
+    {
+      ui->repView->setReport(nullptr);
+      bracketRep.reset();
+      ui->repView->setEnabled(false);
+      return;
+    }
+
+    // append all pages to a new report
+    auto newBracketReport = std::make_unique<SimpleReportLib::SimpleReportGenerator>(pages[0].width_mm, pages[0].height_mm, 10);
+    for (const auto& pg : pages)
+    {
+      newBracketReport->startNextPage();
+      newBracketReport->addSVG_byData_setW(QPointF{0,0}, SimpleReportLib::RECT_CORNER::TOP_LEFT, pg.content, pg.width_mm);
+    }
+
+    // replace the current report with the new one
+    ui->repView->setReport(newBracketReport.get());
+    ui->repView->showPage(0);
+
+    // store the new report and properly delete the old one
+    bracketRep = std::move(newBracketReport);
+  }
+  catch (std::runtime_error&)
+  {
+    ui->repView->setReport(nullptr);
+    bracketRep.reset();
+    ui->repView->setEnabled(false);
+  }
+
 }
 
 //----------------------------------------------------------------------------
