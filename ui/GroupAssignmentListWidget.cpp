@@ -231,21 +231,44 @@ PlayerPairList GroupAssignmentListWidget::getSelectedPlayerPairs()
 void GroupAssignmentListWidget::swapSelectedPlayers()
 {
   if (!isInitialized) return;
+
+  auto lw1 = selectionQueue.first();
+  auto lw2 = selectionQueue.last();
   
+  int row1 = lw1->currentRow();
+  int row2 = lw2->currentRow();
+  if ((row1 < 0) || (row2 < 0)) return;
+
+  QListWidgetItem* firstItem = lw1->takeItem(row1);
+  QListWidgetItem* secondItem = lw2->takeItem(row2);
+
+  lw1->insertItem(row1, secondItem);
+  lw2->insertItem(row2, firstItem);
+
+  // restore the original selection
+  lw1->setCurrentRow(row1);
+  lw2->setCurrentRow(row2);
+
+  /*
   QListWidgetItem* firstItem = selectionQueue.first()->selectedItems()[0];
   QListWidgetItem* secondItem = selectionQueue.last()->selectedItems()[0];
+
   
   // temp. store the contents of the first item
   int tmpPairId = firstItem->data(Qt::UserRole).toInt();
-  QString tmpName = firstItem->data(Qt::DisplayRole).toString();
-  
+  QString tmpPairName = firstItem->data(PairItemDelegate::PairNameRole).toString();
+  QString tmpTeamName = firstItem->data(PairItemDelegate::TeamNameRole).toString();
+
   // overwrite the contents of the first item with the data of the second item
   firstItem->setData(Qt::UserRole, secondItem->data(Qt::UserRole));
-  firstItem->setData(Qt::DisplayRole, secondItem->data(Qt::DisplayRole));
-  
+  firstItem->setData(PairItemDelegate::PairNameRole, secondItem->data(PairItemDelegate::PairNameRole));
+  firstItem->setData(PairItemDelegate::TeamNameRole, secondItem->data(PairItemDelegate::TeamNameRole));
+
   // overwrite the second item with the temp. data of the first
   secondItem->setData(Qt::UserRole, tmpPairId);
-  secondItem->setData(Qt::DisplayRole, tmpName);
+  secondItem->setData(PairItemDelegate::PairNameRole, tmpPairName);
+  secondItem->setData(PairItemDelegate::TeamNameRole, tmpTeamName);
+  */
 }
 
 //----------------------------------------------------------------------------
