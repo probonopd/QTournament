@@ -104,6 +104,7 @@ public slots:
   void onCategoryRemoved();
   void onTwoIterationsChanged();
   void onBracketSysChanged(int newIndex);
+  void onFirstRoundChanged(int newVal);
 } ;
 
 #endif	/* _CATTABWIDGET_H */

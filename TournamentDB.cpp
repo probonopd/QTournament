@@ -136,6 +136,7 @@ namespace QTournament
     tc.addCol(CAT_GroupConfig, cdt::Text, cc::NotUsed, cc::NotUsed);
     tc.addCol(CAT_BracketMatchSys, cdt::Integer, cc::NotUsed, cc::Abort, 0);
     tc.addCol(CAT_RoundRobinIterations, cdt::Integer, cc::NotUsed, cc::Abort, 1);
+    tc.addCol(CAT_RoundOffset, cdt::Integer, cc::NotUsed, cc::Abort, 0);
     tc.createTableAndResetCreator(*this, TabCategory);
     
     // Generate the table holding the player-to-category mapping

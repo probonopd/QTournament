@@ -57,6 +57,9 @@ GroupConfigWidget::GroupConfigWidget(QWidget* parent)
   }
     
   rangeControlEnabled = true;
+
+  // hide the currently unused "Auto Conf" button
+  ui.btnAutoConf->hide();
   
   applyDefaultConfig();
 }

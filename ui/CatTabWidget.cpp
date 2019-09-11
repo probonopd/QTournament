@@ -97,6 +97,11 @@ CatTabWidget::CatTabWidget(QWidget* parent)
   playerItemDelegate = make_unique<CatTabPlayerItemDelegate>(this, true);
   ui.lwUnpaired->setItemDelegate(playerItemDelegate.get());
   ui.lwPaired->setItemDelegate(playerItemDelegate.get());
+
+  // hide unused controls (which will be used in future releases)
+  ui.sbDrawScore->hide();
+  ui.sbWinScore->hide();
+  ui.cbDraw->hide();
 }
 
 //----------------------------------------------------------------------------
@@ -166,6 +171,10 @@ void CatTabWidget::updateControls()
   // update the list box showing the match system
   int matchSysId = static_cast<int>(selectedCat.getMatchSystem());
   ui.cbMatchSystem->setCurrentIndex(ui.cbMatchSystem->findData(matchSysId, Qt::UserRole));
+
+  // set the spin box for the first round offset
+  const int roundOffset = selectedCat.getParameter_int(CatParameter::FirstRoundOffset);
+  ui.cbFirstRound->setValue(roundOffset + 1);
   
   // activate the applicable group with the special settings
   MatchSystem ms = selectedCat.getMatchSystem();
@@ -297,11 +306,6 @@ void CatTabWidget::updateControls()
     ui.sbDrawScore->hide();
   }
   
-  // FIX ME / TO DO: playing "draw" is not yet implemented, so for now
-  // we hardwire the checkbox to "hidden".
-  ui.sbDrawScore->hide();
-  ui.sbWinScore->hide();
-
   // group box for configuring player pairs
   if (mt == MatchType::Singles)
   {
@@ -1218,6 +1222,16 @@ void CatTabWidget::onBracketSysChanged(int newIndex)
 
   Category selectedCat = ui.catTableView->getSelectedCategory();
   selectedCat.setParameter(CatParameter::BracketMatchSystem, brackSysId);
+}
+
+//----------------------------------------------------------------------------
+
+void CatTabWidget::onFirstRoundChanged(int newVal)
+{
+  if (!(ui.catTableView->hasCategorySelected())) return;
+
+  Category selectedCat = ui.catTableView->getSelectedCategory();
+  selectedCat.setParameter(CatParameter::FirstRoundOffset, newVal - 1);
 }
 
 //----------------------------------------------------------------------------

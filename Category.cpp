@@ -251,6 +251,9 @@ namespace QTournament
     case CatParameter::BracketMatchSystem:
       return row.getInt(CAT_BracketMatchSys);
 
+    case CatParameter::FirstRoundOffset:
+      return row.getInt(CAT_RoundOffset);
+
       /*
       case :
 	return row[];

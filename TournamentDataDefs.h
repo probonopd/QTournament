@@ -143,6 +143,7 @@ namespace QTournament
 #define CAT_GroupConfig "GroupConfig"
 #define CAT_BracketMatchSys "BracketMatchSys"
 #define CAT_RoundRobinIterations "RoundRobinIterations"
+#define CAT_RoundOffset "RoundOffset"
 //#define CAT_ ""
   
 //----------------------------------------------------------------------------
@@ -280,7 +281,8 @@ namespace QTournament
     DrawScore,
     GroupConfig,
     RoundRobinIterations,
-    BracketMatchSystem
+    BracketMatchSystem,
+    FirstRoundOffset
   };
   
 //----------------------------------------------------------------------------

@@ -722,6 +722,18 @@ namespace QTournament
       }
     }
 
+    if (p == CatParameter::FirstRoundOffset)
+    {
+      bool isOk;
+      const int offset = v.toInt(&isOk);
+      if (!isOk) return false;
+
+      if (offset < 0) return false;
+
+      cat.rowRef().update(CAT_RoundOffset, offset);
+      return true;
+    }
+
     return false;
   }
 
