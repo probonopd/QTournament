@@ -70,8 +70,10 @@ CatTabWidget::CatTabWidget(QWidget* parent)
 
   // initialize the entries in the drop-down box for the bracket mode
   ui.cbBracketSys->addItem(tr("Single Elimination"), static_cast<int>(SvgBracketMatchSys::SingleElim));
-  ui.cbBracketSys->addItem(tr("Double Elimination"), static_cast<int>(SvgBracketMatchSys::DoubleElim));
+  //ui.cbBracketSys->addItem(tr("Double Elimination"), static_cast<int>(SvgBracketMatchSys::DoubleElim));
   ui.cbBracketSys->addItem(tr("Ranking System"), static_cast<int>(SvgBracketMatchSys::RankSys));
+  ui.cbBracketSys->addItem(tr("Finals + further ranks"), static_cast<int>(SvgBracketMatchSys::FinalsWithRanks));
+  ui.cbBracketSys->addItem(tr("Semi finals + further ranks"), static_cast<int>(SvgBracketMatchSys::SemiWithRanks));
 
   // setup the context menu(s)
   initContextMenu();

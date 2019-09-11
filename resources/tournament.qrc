@@ -11,6 +11,8 @@
         <file>brackets/SingleElim8.svg</file>
         <file>brackets/SingleElim4.svg</file>
         <file>brackets/SingleElim2.svg</file>
+        <file>brackets/SemiWithRanks.svg</file>
+        <file>brackets/FinalsWithRanks.svg</file>
     </qresource>
     <qresource prefix="/" lang="de">
         <file alias="txt/match_result_confirmation.html">txt/match_result_confirmation_de.html</file>
@@ -21,5 +23,7 @@
         <file alias="brackets/SingleElim8.svg">brackets/SingleElim8_de.svg</file>
         <file alias="brackets/SingleElim4.svg">brackets/SingleElim4_de.svg</file>
         <file alias="brackets/SingleElim2.svg">brackets/SingleElim2_de.svg</file>
+        <file alias="brackets/SemiWithRanks.svg">brackets/SemiWithRanks_de.svg</file>
+        <file alias="brackets/FinalsWithRanks.svg">brackets/FinalsWithRanks_de.svg</file>
     </qresource>
 </RCC>
