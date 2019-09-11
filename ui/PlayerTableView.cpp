@@ -348,8 +348,11 @@ void PlayerTableView::onShowNextMatchesForPlayerTriggered()
     {
       QString maTxt = tr("   Match %1, %2, round %3 ; estimated call at %4\n\n");
       maTxt = maTxt.arg(ma.getMatchNumber());
-      maTxt = maTxt.arg(ma.getCategory().getName());
-      maTxt = maTxt.arg(ma.getMatchGroup().getRound());
+
+      const Category cat = ma.getCategory();
+      const int roundOffset = cat.getParameter_int(CatParameter::FirstRoundOffset);
+      maTxt = maTxt.arg(cat.getName());
+      maTxt = maTxt.arg(ma.getMatchGroup().getRound() + roundOffset);
 
       MatchTimePrediction mtp = predictor.getPredictionForMatch(ma);
       if (mtp.estStartTime__UTC > 0)

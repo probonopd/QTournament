@@ -51,7 +51,7 @@ namespace QTournament
 
     int numMatches;
     int firstMatchNum{-1};
-    void printMatchData(upSimpleReport& rep, const Match& ma) const;
+    void printMatchData(upSimpleReport& rep, const Match& ma);
   };
 
 }

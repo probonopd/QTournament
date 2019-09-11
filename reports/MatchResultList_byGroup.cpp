@@ -43,6 +43,9 @@ MatchResultList_ByGroup::MatchResultList_ByGroup(const TournamentDB& _db, const 
   {
     throw std::runtime_error("Requested match results report for invalid group.");
   }
+
+  roundOffset = cat.getParameter_int(CatParameter::FirstRoundOffset);
+
   MatchMngr mm{db};
   for (MatchGroup mg : mm.getMatchGroupsForCat(cat, 1))
   {
@@ -82,7 +85,7 @@ upSimpleReport MatchResultList_ByGroup::regenerateReport()
   for (MatchGroup mg : filteredList)
   {
     int round = mg.getRound();
-    printIntermediateHeader(result, tr("Round ") + QString::number(round));
+    printIntermediateHeader(result, tr("Round ") + QString::number(round + roundOffset));
 
     MatchList maList = mg.getMatches();
     std::sort(maList.begin(), maList.end(), [](Match& ma1, Match& ma2)
@@ -90,7 +93,7 @@ upSimpleReport MatchResultList_ByGroup::regenerateReport()
       return ma1.getMatchNumber() < ma2.getMatchNumber();
     });
 
-    printMatchList(result, maList, PlayerPairList(), tr("Results of round ") + QString::number(round) + tr(" (cont.)"), true, false);
+    printMatchList(result, maList, PlayerPairList(), tr("Results of round ") + QString::number(round + roundOffset) + tr(" (cont.)"), true, false);
 
     if (mg.is_NOT_InState(ObjState::MG_Finished))
     {

@@ -84,6 +84,8 @@ void CommonMatchTableWidget::insertMatch(int beforeRowIdx, const Match& ma)
 {
   insertRow(beforeRowIdx);
   int matchId = ma.getId();
+  
+  int roundOffset = ma.getCategory().getParameter_int(CatParameter::FirstRoundOffset);  
 
   // a helper lamba for setting the content of a cell
   auto setCellItem = [&](int col, const QString& txt, int userData)
@@ -107,7 +109,7 @@ void CommonMatchTableWidget::insertMatch(int beforeRowIdx, const Match& ma)
   // add category and round
   setCellItem(IdxConfigCol, ma.getCategory().getName(), matchId);
   auto grp = ma.getMatchGroup();
-  setCellItem(IdxRoundCol, QString::number(grp.getRound()), matchId);
+  setCellItem(IdxRoundCol, QString::number(grp.getRound() + roundOffset), matchId);
 
   // add the group number, if any
   int grpNum = grp.getGroupNumber();

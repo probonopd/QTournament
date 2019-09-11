@@ -48,8 +48,9 @@ DlgRoundFinished::DlgRoundFinished(QWidget *parent, const QTournament::Category&
   }
 
   // set the title
+  int roundOffset = cat.getParameter_int(CatParameter::FirstRoundOffset);
   QString msg = tr("Round %1 of category %2 finished!");
-  msg = msg.arg(round).arg(cat.getName());
+  msg = msg.arg(round + roundOffset).arg(cat.getName());
   ui->laTitle->setText(msg);
 
   // decide which reports to offer

@@ -73,6 +73,7 @@ namespace QTournament
     const QTournament::TournamentDB& db;
     QString name;
     SqliteOverlay::KeyValueTab cfg;
+    int roundOffset{0};
 
     void prepStyles(upSimpleReport& rep) const;
     void printIntermediateHeader(upSimpleReport& rep, const QString& txt, double skipBefore__MM=SkipBeforeIntermediaHeader_mm) const;

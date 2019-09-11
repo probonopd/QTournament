@@ -493,8 +493,11 @@ QString GuiHelpers::getStatusSummaryForPlayer(const QTournament::Player& p, cons
       txt = txt.arg(sTime.isValid() ? qdt2durationString(sTime) : "??");
 
       txt = txt.arg(ma->getMatchNumber());
-      txt = txt.arg(ma->getCategory().getName());
-      txt = txt.arg(ma->getMatchGroup().getRound());
+
+      const Category cat = ma->getCategory();
+      const int roundOffset = cat.getParameter_int(CatParameter::FirstRoundOffset);
+      txt = txt.arg(cat.getName());
+      txt = txt.arg(ma->getMatchGroup().getRound() + roundOffset);
     } else {
       txt = "Waaaaah!!! Database inconsistency!!! Panic!!";
     }

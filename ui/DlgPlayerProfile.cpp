@@ -63,11 +63,14 @@ void DlgPlayerProfile::fillLabels()
   txt.clear();
   if (ma)
   {
+    const Category cat = ma->getCategory();
+    const int roundOffset = cat.getParameter_int(CatParameter::FirstRoundOffset);
+
     txt = tr("#%1: %2 (%3, Round %4)");
     txt = txt.arg(ma->getMatchNumber());
     txt = txt.arg(ma->getDisplayName(tr("Winner"), tr("Loser")));
-    txt = txt.arg(ma->getCategory().getName());
-    txt = txt.arg(ma->getMatchGroup().getRound());
+    txt = txt.arg(cat.getName());
+    txt = txt.arg(ma->getMatchGroup().getRound() + roundOffset);
   } else {
     txt = "--";
   }
@@ -80,11 +83,14 @@ void DlgPlayerProfile::fillLabels()
   txt.clear();
   if (ma)
   {
+    const Category cat = ma->getCategory();
+    const int roundOffset = cat.getParameter_int(CatParameter::FirstRoundOffset);
+
     txt = tr("#%1: %2 (%3, Round %4)");
     txt = txt.arg(ma->getMatchNumber());
     txt = txt.arg(ma->getDisplayName(tr("Winner"), tr("Loser")));
-    txt = txt.arg(ma->getCategory().getName());
-    txt = txt.arg(ma->getMatchGroup().getRound());
+    txt = txt.arg(cat.getName());
+    txt = txt.arg(ma->getMatchGroup().getRound() + roundOffset);
   } else {
     txt = "--";
   }

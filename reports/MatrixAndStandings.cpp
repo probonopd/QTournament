@@ -42,6 +42,7 @@ MatrixAndStandings::MatrixAndStandings(const TournamentDB& _db, const QString& _
 {
   MatchSystem msys = cat.getMatchSystem();
   CatRoundStatus crs = cat.getRoundStatus();
+  roundOffset = cat.getParameter_int(CatParameter::FirstRoundOffset);
 
   // make sure this category is eligible for a matrix view
   if ((msys != MatchSystem::GroupsWithKO) && (msys != MatchSystem::RoundRobin))
@@ -119,7 +120,7 @@ upSimpleReport MatrixAndStandings::regenerateReport()
       subHead.clear();
     }
   } else {
-    repName += tr("Match matrix and standings after round ") + QString::number(round);
+    repName += tr("Match matrix and standings after round ") + QString::number(round + roundOffset);
   }
 
   upSimpleReport result = createEmptyReport_Portrait();
@@ -218,7 +219,7 @@ QStringList MatrixAndStandings::getReportLocators() const
 
   if (round > 0)
   {
-    loc += tr("after round ") + QString::number(round);
+    loc += tr("after round ") + QString::number(round + roundOffset);
   } else {
     loc += tr("initial matches");
   }

@@ -41,13 +41,14 @@ InOutList::InOutList(const TournamentDB& _db, const QString& _name, const Catego
   {
     throw std::runtime_error("Requested in-out-list for invalid category and/or round");
   }
+  roundOffset = cat.getParameter_int(CatParameter::FirstRoundOffset);
 }
 
 //----------------------------------------------------------------------------
 
 upSimpleReport InOutList::regenerateReport()
 {
-  QString repName = cat.getName() + " -- " + tr("Knocked-out players after round ") + QString::number(round);
+  QString repName = cat.getName() + " -- " + tr("Knocked-out players after round ") + QString::number(round + roundOffset);
   upSimpleReport result = createEmptyReport_Portrait();
 
   setHeaderAndHeadline(result.get(), repName);
@@ -103,7 +104,7 @@ upSimpleReport InOutList::regenerateReport()
       QStringList rowContent;
       rowContent << pp.getDisplayName();
       rowContent << pp.getDisplayName_Team();
-      rowContent << QString::number(ppId2Rounds.value(pp.getPairId()));
+      rowContent << QString::number(ppId2Rounds.value(pp.getPairId()) + roundOffset);
       tw.appendRow(rowContent);
     }
 
@@ -146,7 +147,7 @@ QStringList InOutList::getReportLocators() const
 
   QString loc = tr("In-Out-List::");
   loc += cat.getName() + "::";
-  loc += tr("after round ") + QString::number(round);
+  loc += tr("after round ") + QString::number(round + roundOffset);
 
   result.append(loc);
 

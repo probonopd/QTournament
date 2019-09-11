@@ -90,7 +90,9 @@ QVariant MatchGroupTableModel::data(const QModelIndex& index, int role) const
     // second column: round
     if (index.column() == 1)
     {
-      return mg->getRound();
+      Category c = mg->getCategory();
+      const int roundOffset = c.getParameter_int(CatParameter::FirstRoundOffset);
+      return mg->getRound() + roundOffset;
     }
 
     // third column: group number

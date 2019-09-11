@@ -41,6 +41,7 @@ Standings::Standings(const TournamentDB& _db, const QString& _name, const Catego
 {
   // make sure that the requested round is already finished
   CatRoundStatus crs = cat.getRoundStatus();
+  roundOffset = cat.getParameter_int(CatParameter::FirstRoundOffset);
   if (round <= crs.getFinishedRoundsCount()) return; // okay, we're in one of the finished rounds
 
   throw std::runtime_error("Requested standings report for unfinished round.");
@@ -54,7 +55,7 @@ upSimpleReport Standings::regenerateReport()
   RankingMngr rm{db};
   RankingEntryListList rll = rm.getSortedRanking(cat, round);
 
-  QString repName = cat.getName() + " -- " + tr("Standings after round ") + QString::number(round);
+  QString repName = cat.getName() + " -- " + tr("Standings after round ") + QString::number(round + roundOffset);
   upSimpleReport result = createEmptyReport_Portrait();
 
   // return an empty report if we have no standings yet
@@ -88,7 +89,7 @@ upSimpleReport Standings::regenerateReport()
   // dump all rankings to the report
   for (RankingEntryList rl : rll)
   {
-    QString tableName = tr("Standings in category ") + cat.getName() + tr(" after round ") + QString::number(round);
+    QString tableName = tr("Standings in category ") + cat.getName() + tr(" after round ") + QString::number(round + roundOffset);
     if (isRoundRobin)
     {
       // determine the group number
@@ -128,7 +129,7 @@ QStringList Standings::getReportLocators() const
 
   QString loc = tr("Standings::");
   loc += cat.getName() + "::";
-  loc += tr("after round ") + QString::number(round);
+  loc += tr("after round ") + QString::number(round + roundOffset);
 
   result.append(loc);
 

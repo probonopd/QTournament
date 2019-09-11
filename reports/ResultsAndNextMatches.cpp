@@ -38,6 +38,8 @@ namespace QTournament
 ResultsAndNextMatches::ResultsAndNextMatches(const TournamentDB& _db, const QString& _name, const Category& _cat, int _round)
   :AbstractReport(_db, _name), cat(_cat), round(_round)
 {
+  roundOffset = cat.getParameter_int(CatParameter::FirstRoundOffset);
+
   // if "round" is zero, we only print the first matches
   // if round is greater than zero, we print a normal report
 
@@ -54,6 +56,7 @@ ResultsAndNextMatches::ResultsAndNextMatches(const TournamentDB& _db, const QStr
 
     throw std::runtime_error("Requested results / NextMatches for unfinished round.");
   }
+  
 }
 
 //----------------------------------------------------------------------------
@@ -80,7 +83,7 @@ upSimpleReport ResultsAndNextMatches::regenerateReport()
   QString repName = cat.getName() + " -- ";
   if (round > 0)
   {
-    repName += tr("Results of Round ") + QString::number(round) + tr(" and Next Matches");
+    repName += tr("Results of Round ") + QString::number(round + roundOffset) + tr(" and Next Matches");
   } else {
     repName += tr("First Matches");
   }
@@ -112,7 +115,7 @@ QStringList ResultsAndNextMatches::getReportLocators() const
   loc += cat.getName() + "::";
   if (round > 0)
   {
-    loc += tr("after round ") + QString::number(round);
+    loc += tr("after round ") + QString::number(round + roundOffset);
   } else {
     loc += tr("initial matches");
   }
@@ -137,8 +140,8 @@ void ResultsAndNextMatches::printResultPart(upSimpleReport& rep) const
 
   std::sort(allMatches.begin(), allMatches.end(), getSortFunction_MatchByGroupAndNumber());
 
-  printIntermediateHeader(rep, tr("Results of Round ") + QString::number(round));
-  printMatchList(rep, allMatches, PlayerPairList(), tr("Results of Round ") + QString::number(round) + tr(" (cont.)"), true, true);
+  printIntermediateHeader(rep, tr("Results of Round ") + QString::number(round + roundOffset));
+  printMatchList(rep, allMatches, PlayerPairList(), tr("Results of Round ") + QString::number(round + roundOffset) + tr(" (cont.)"), true, true);
 }
 
 //----------------------------------------------------------------------------

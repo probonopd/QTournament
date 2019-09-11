@@ -52,6 +52,8 @@ SvgBracketSheet::SvgBracketSheet(const TournamentDB& _db, const QString& _name, 
   {
     round = firstBracketRound;
   }
+  
+  roundOffset = cat.getParameter_int(CatParameter::FirstRoundOffset);
 }
 
 //----------------------------------------------------------------------------
@@ -121,7 +123,7 @@ QStringList SvgBracketSheet::getReportLocators() const
   }
   if (repType == BracketReportType::AfterRound)
   {
-    loc += tr("after round ") + QString::number(round.get());
+    loc += tr("after round ") + QString::number(round.get() + roundOffset);
   }
 
   result.append(loc);
@@ -155,7 +157,7 @@ SvgBracket::CommonBracketTags SvgBracketSheet::commonTags() const
     if (round < special->calcTotalRoundsCount())
     {
       tmp = tr("After round %1 and next matches");
-      tmp = tmp.arg(round.get());
+      tmp = tmp.arg(round.get() + roundOffset);
     } else {
       tmp = tr("Final results");
     }

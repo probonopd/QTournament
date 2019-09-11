@@ -102,7 +102,9 @@ QVariant MatchTableModel::data(const QModelIndex& index, int role) const
     // fourth column: round
     if (index.column() == 3)
     {
-      return mg.getRound();
+      Category c = mg.getCategory();
+      const int roundOffset = c.getParameter_int(CatParameter::FirstRoundOffset);
+      return mg.getRound() + roundOffset;
     }
 
     // fifth column: players group, if applicable

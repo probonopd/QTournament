@@ -67,9 +67,12 @@ void CourtItemDelegate::paintMatchInfoCell_Selected(QPainter *painter, const QSt
   // draw the first info line with the match number and the category
   QString txt = tr("Match number:");
   txt += " " + QString::number(ma.getMatchNumber()) + "    ";
+
+  const Category cat = ma.getCategory();
+  const int roundOffset = cat.getParameter_int(CatParameter::FirstRoundOffset);
   txt += tr("Category:");
-  txt += " " + ma.getCategory().getName() + "    ";
-  txt += tr("Round: ") + QString::number(ma.getMatchGroup().getRound());
+  txt += " " + cat.getName() + "    ";
+  txt += tr("Round: ") + QString::number(ma.getMatchGroup().getRound() + roundOffset);
   double baseline = y0 + playerNameHeight + fntMetrics.ascent();
   GuiHelpers::drawFormattedText(painter, x0, baseline, txt, true, false, normalFont, QColor(Qt::white));
 

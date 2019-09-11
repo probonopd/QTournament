@@ -176,7 +176,7 @@ void ResultSheets::onMatchSelectionChanged(int newlySelectedMatchId)
 
 //----------------------------------------------------------------------------
 
-void ResultSheets::printMatchData(upSimpleReport& rep, const Match& ma) const
+void ResultSheets::printMatchData(upSimpleReport& rep, const Match& ma)
 {
   // if the match already a court assigned, we print the court number. Otherwise,
   // we simple print some underscores for putting in the court number manually
@@ -191,7 +191,9 @@ void ResultSheets::printMatchData(upSimpleReport& rep, const Match& ma) const
   header += "\t\t\t\t" + tr("Court: ") + courtNumString;
   rep->writeLine(header);
 
-  header = tr("%1, Round %2").arg(ma.getCategory().getName()).arg(ma.getMatchGroup().getRound());
+  const Category cat = ma.getCategory();
+  roundOffset = cat.getParameter_int(CatParameter::FirstRoundOffset);
+  header = tr("%1, Round %2").arg(cat.getName()).arg(ma.getMatchGroup().getRound() + roundOffset);
   rep->writeLine(header);
 
   // write player name(s)

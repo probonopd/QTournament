@@ -68,6 +68,8 @@ QVariant CategoryTableModel::data(const QModelIndex& index, int role) const
     
     CatMngr cm{db};
     Category c = cm.getCategoryBySeqNum(index.row());
+
+    const int roundOffset = c.getParameter_int(CatParameter::FirstRoundOffset);
     
     // name
     if (index.column() == ColName)
@@ -106,12 +108,12 @@ QVariant CategoryTableModel::data(const QModelIndex& index, int role) const
         QString result = "";
         for (int round : runningRounds)
         {
-          result += QString::number(round) + ", ";
+          result += QString::number(round + roundOffset) + ", ";
         }
         return result.left(result.length() - 2);
       }
 
-      return currentRoundNum;
+      return currentRoundNum + roundOffset;
     }
 
     // total number of matches in the current round
