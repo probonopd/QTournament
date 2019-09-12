@@ -3,10 +3,13 @@
 
 #include <vector>
 #include <string>
+#include <functional>
 
 #include <Sloppy/String.h>
 
 #include <QDialog>
+
+#include "TournamentDB.h"
 
 namespace Ui {
   class DlgImportCSV_Step1;
