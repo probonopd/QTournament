@@ -7,7 +7,7 @@
 
 apt-get -y update
 apt-get -y upgrade
-apt-get install -y g++-8 make cmake libsodium23 libsodium-dev git wget libboost-all-dev sqlite3 libsqlite3-dev qt5-default fuse
+apt-get install -y g++-8 make cmake libsodium23 libsodium-dev git wget libboost-all-dev sqlite3 libsqlite3-dev qt5-default fuse libqt5svg5 libqt5svg5-dev
 
 # for some weird reason, debian doesn't link
 # the actuall compiler "g++-8" to the standard name "g++"
