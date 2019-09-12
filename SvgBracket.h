@@ -9,6 +9,8 @@
 
 #include <Sloppy/DateTime/DateAndTime.h>
 
+#include <SimpleReportGeneratorLib/SimpleReportGenerator.h>
+
 #include "TournamentDataDefs.h"
 #include "PlayerPair.h"
 #include "Match.h"
@@ -127,7 +129,8 @@ namespace QTournament::SvgBracket
    */
   struct SvgBracketPage : public SvgPageDescr
   {
-    double maxNameLen_mm;   ///< the maximum length of a page that fits on a line of the bracket
+    double maxNameLen_mm;   ///< the maximum length of a name that fits on a line of the bracket
+    double bracketTextHeight_mm;   ///< text height of the bracket text; necessary to determine text widths
     std::vector<TagData> rawTags;   ///< a list of all tags on that page
   };
 
@@ -305,7 +308,7 @@ namespace QTournament::SvgBracket
    *
    * \returns the "a" and "b" strings of a player pair for a bracket label
    */
-  std::pair<std::string, std::string> pair2bracketLabel(const PlayerPair& pp);
+  std::pair<QString, QString> pair2bracketLabel(const PlayerPair& pp);
 
   //----------------------------------------------------------------------------
 
@@ -377,7 +380,7 @@ namespace QTournament::SvgBracket
    */
   std::vector<SvgPageDescr> applySvgSubstitution(
       const std::vector<SvgBracketPage>& pages,   ///< the input bracket
-      const std::unordered_map<std::string, std::string>& dict   ///< dictionary with the substitution strings; tag names are the keys
+      const std::unordered_map<std::string, QString>& dict   ///< dictionary with the substitution strings; tag names are the keys
       );
 
   //----------------------------------------------------------------------------
@@ -388,32 +391,28 @@ namespace QTournament::SvgBracket
    * The dictionary is modified in place.
    */
   void addCommonTagsToSubstDict(
-      std::unordered_map<std::string, std::string>& dict,   ///< dictionary with the substitution strings; tag names are the keys
+      std::unordered_map<std::string, QString>& dict,   ///< dictionary with the substitution strings; tag names are the keys
       const CommonBracketTags& cbt   ///< the common meta tags to add
       );
 
   //----------------------------------------------------------------------------
 
-  /** \brief A struct that contains a tag names for a single bracket element
+  /** \brief A struct that contains replacement strings for a single bracket element
    */
-  struct BracketElementTagNames
+  struct BracketElementTextItems
   {
-    std::string matchTagName;
-    std::string p1aTagName;
-    std::string p1bTagName;
-    std::string p2aTagName;
-    std::string p2bTagName;
-    std::string winnerRankTagName;
-    std::string loserRankTagName;
+    QString matchText;
+    QString p1aName;
+    QString p1bName;
+    QString p2aName;
+    QString p2bName;
   };
 
   /** \brief Determines the substituion strings for a single bracket element and
    * adds them to a dictionary
    */
-  void defSubstStringsForBracketElement(
+  BracketElementTextItems defSubstStringsForBracketElement(
       const TournamentDB& db,
-      std::unordered_map<std::string, std::string>& dict,   ///< dictionary for the substitution strings
-      const BracketElementTagNames& betl,   ///< tag names (keys) for this bracket for the dictionary
       const BracketMatchData& bmd,   ///< the BracketMatchData that represents the bracket element
       const BracketMatchVisData& vis   ///< all related data around the bracket element
       );

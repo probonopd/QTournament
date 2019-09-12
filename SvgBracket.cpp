@@ -9,6 +9,8 @@
 
 #include <Sloppy/Memory.h>
 
+#include <SimpleReportGeneratorLib/SimpleReportGenerator.h>
+
 #include "HelperFunc.h"
 #include "SvgBracket.h"
 #include "MatchMngr.h"
@@ -317,7 +319,8 @@ namespace QTournament::SvgBracket
             210.0,
             ":/brackets/RankSys16.svg",
             "",
-            25.0,
+            27.0,
+            2.1,
             findRawTagsInResource(":/brackets/RankSys16.svg"),
           }
         },
@@ -339,6 +342,7 @@ namespace QTournament::SvgBracket
             ":/brackets/SingleElim16.svg",
             "",
             51.5,
+            2.6,
             findRawTagsInResource(":/brackets/SingleElim16.svg"),
           }
         },
@@ -359,6 +363,7 @@ namespace QTournament::SvgBracket
             ":/brackets/SingleElim8.svg",
             "",
             62.0,
+            3.2,
             findRawTagsInResource(":/brackets/SingleElim8.svg"),
           }
         },
@@ -378,6 +383,7 @@ namespace QTournament::SvgBracket
             ":/brackets/SingleElim4.svg",
             "",
             72.0,
+            3.2,
             findRawTagsInResource(":/brackets/SingleElim4.svg"),
           }
         },
@@ -396,6 +402,7 @@ namespace QTournament::SvgBracket
             ":/brackets/SingleElim4.svg",
             "",
             72.0,
+            3.2,
             findRawTagsInResource(":/brackets/SingleElim4.svg"),
           }
         },
@@ -414,6 +421,7 @@ namespace QTournament::SvgBracket
             ":/brackets/SemiWithRanks.svg",
             "",
             65.0,
+            3.2,
             findRawTagsInResource(":/brackets/SemiWithRanks.svg"),
           }
         },
@@ -432,6 +440,7 @@ namespace QTournament::SvgBracket
             ":/brackets/FinalsWithRanks.svg",
             "",
             65.0,
+            3.2,
             findRawTagsInResource(":/brackets/FinalsWithRanks.svg"),
           }
         },
@@ -528,16 +537,16 @@ namespace QTournament::SvgBracket
 
   //----------------------------------------------------------------------------
 
-  std::pair<string, string> pair2bracketLabel(const PlayerPair& pp)
+  std::pair<QString, QString> pair2bracketLabel(const PlayerPair& pp)
   {
-    const string a{QString2StdString(pp.getPlayer1().getDisplayName())};
+    const QString a{pp.getPlayer1().getDisplayName()};
     if (pp.hasPlayer2())
     {
-      const string b{QString2StdString(pp.getPlayer2().getDisplayName())};
+      const QString b{pp.getPlayer2().getDisplayName()};
       return std::pair{a, b};
     }
 
-    return std::pair{a, std::string{}};
+    return std::pair{a, QString{}};
   }
 
   //----------------------------------------------------------------------------
@@ -627,7 +636,7 @@ namespace QTournament::SvgBracket
 
   //----------------------------------------------------------------------------
 
-  std::vector<SvgPageDescr> applySvgSubstitution(const std::vector<SvgBracketPage>& pages, const std::unordered_map<string, string>& dict)
+  std::vector<SvgPageDescr> applySvgSubstitution(const std::vector<SvgBracketPage>& pages, const std::unordered_map<string, QString>& dict)
   {
     std::vector<SvgPageDescr> result;
 
@@ -680,7 +689,7 @@ namespace QTournament::SvgBracket
         auto it = dict.find(tag.name);
         if (it != end(dict))
         {
-          dstPage.content.append(it->second);
+          dstPage.content.append(it->second.toStdString());
         }
 
         // forward the source to the character right
@@ -704,32 +713,32 @@ namespace QTournament::SvgBracket
 
   //----------------------------------------------------------------------------
 
-  void addCommonTagsToSubstDict(std::unordered_map<string, string>& dict, const CommonBracketTags& cbt)
+  void addCommonTagsToSubstDict(std::unordered_map<string, QString>& dict, const CommonBracketTags& cbt)
   {
     static const auto tzDb = Sloppy::DateTime::getPopulatedTzDatabase();
     static const auto tzPtr = tzDb.time_zone_from_region("Europe/Berlin");
 
-    dict.insert_or_assign("tnmtName", cbt.tnmtName);
-    dict.insert_or_assign("club", cbt.club);
-    dict.insert_or_assign("catName", cbt.catName);
-    dict.insert_or_assign("subtitle", cbt.subtitle);
+    dict.insert_or_assign("tnmtName", stdString2QString(cbt.tnmtName));
+    dict.insert_or_assign("club", stdString2QString(cbt.club));
+    dict.insert_or_assign("catName", stdString2QString(cbt.catName));
+    dict.insert_or_assign("subtitle", stdString2QString(cbt.subtitle));
 
     Sloppy::DateTime::LocalTimestamp now{tzPtr};
 
     if (cbt.time)
     {
-      dict.insert_or_assign("time", cbt.time->getFormattedString("%R"));
+      dict.insert_or_assign("time", stdString2QString(cbt.time->getFormattedString("%R")));
     } else {
-      dict.insert_or_assign("time", now.getFormattedString("%R"));
+      dict.insert_or_assign("time", stdString2QString(now.getFormattedString("%R")));
     }
 
     if (cbt.date)
     {
       auto [y,m,d] = Sloppy::DateTime::YearMonthDayFromInt(cbt.date.value());
       Sloppy::DateTime::UTCTimestamp tmp{y, m, d, 12, 0, 0};
-      dict.insert_or_assign("date", tmp.getFormattedString("%d.%m.%Y"));
+      dict.insert_or_assign("date", stdString2QString(tmp.getFormattedString("%d.%m.%Y")));
     } else {
-      dict.insert_or_assign("date", now.getFormattedString("%d.%m.%Y"));
+      dict.insert_or_assign("date", stdString2QString(now.getFormattedString("%d.%m.%Y")));
     }
   }
 
@@ -819,9 +828,18 @@ namespace QTournament::SvgBracket
       return *it;
     };
 
+    // determine font size and text width for names
+    //
+    // FIX ME: we use constant values for all tags; in a proper
+    // implementation this should be tag-specific or at least page-specific
+    auto dummyRep = make_unique<SimpleReportLib::SimpleReportGenerator>(100, 100, 10);
+    dummyRep->startNextPage();
+    const double fntHeight = brDef->pages[0].bracketTextHeight_mm;
+    const double maxNameWidth = brDef->pages[0].maxNameLen_mm;
+
     // iterate over all matches
     // and store the substitution strings in a dictionary
-    std::unordered_map<std::string, std::string> dict;
+    std::unordered_map<std::string, QString> dict;
     addCommonTagsToSubstDict(dict, cbt);
     cout << "#################################" << endl;
     cout << "## substSvgBracketTags (final) ##" << endl;
@@ -874,17 +892,24 @@ namespace QTournament::SvgBracket
       }
 
       // get the tag names for which we need substitution strings
-      BracketElementTagNames betl;
       auto [p1a, p1b, p2a, p2b] = findPlayerTagsforMatchNum(parsedTags, bmd.matchNum());
-      betl.p1aTagName = p1a.src.name;
-      betl.p1bTagName = p1b.src.name;
-      betl.p2aTagName = p2a.src.name;
-      betl.p2bTagName = p2b.src.name;
       const auto& maTag = matchTagByMatchNum(bmd.matchNum());
-      betl.matchTagName = maTag.src.name;
 
       // assign all substitution strings
-      defSubstStringsForBracketElement(db, dict, betl, bmd, vis);
+      auto items = defSubstStringsForBracketElement(db, bmd, vis);
+      const std::vector<std::pair<std::string, QString>> tag2value {
+        {p1a.src.name, items.p1aName},
+        {p1b.src.name, items.p1bName},
+        {p2a.src.name, items.p2aName},
+        {p2b.src.name, items.p2bName},
+      };
+      for (const auto& [tagName, tagVal] : tag2value)
+      {
+        if (tagVal.isEmpty()) continue;
+
+        dict[tagName] = dummyRep->shortenTextToWidth(tagVal, fntHeight, false, maxNameWidth);
+      }
+      if (!items.matchText.isEmpty()) dict[maTag.src.name] = items.matchText;
     }
 
     // fill the rank tags
@@ -895,13 +920,14 @@ namespace QTournament::SvgBracket
 
       PlayerPair pp{db, pairRefId.get()};
       auto [a, b] = pair2bracketLabel(pp);
-      if (b.empty())
+      if (b.isEmpty())
       {
-        dict[tagName2] = a;  // single players on the bottom row, leave the top row empty
+        // single players on the bottom row, leave the top row empty
+        dict[tagName2] = dummyRep->shortenTextToWidth(a, fntHeight, false, maxNameWidth);
       } else {
         // doubles
-        dict[tagName1] = a;
-        dict[tagName2] = b;
+        dict[tagName1] = dummyRep->shortenTextToWidth(a, fntHeight, false, maxNameWidth);
+        dict[tagName2] = dummyRep->shortenTextToWidth(b, fntHeight, false, maxNameWidth);
       }
     }
 
@@ -910,8 +936,10 @@ namespace QTournament::SvgBracket
 
   //----------------------------------------------------------------------------
 
-  void defSubstStringsForBracketElement(const TournamentDB& db, std::unordered_map<string, string>& dict, const BracketElementTagNames& betl, const BracketMatchData& bmd, const BracketMatchVisData& vis)
+  BracketElementTextItems defSubstStringsForBracketElement(const TournamentDB& db, const BracketMatchData& bmd, const BracketMatchVisData& vis)
   {
+    BracketElementTextItems result;
+
     // if this is a bracket without match, display pair names or symbolic names
     MatchDispInfo::PairRepresentation pairRep = (vis.mdi.has_value()) ? vis.mdi->pairRep : MatchDispInfo::PairRepresentation::RealOrSymbolic;
     MatchDispInfo::ResultFieldContent resultRep = (vis.mdi.has_value()) ? vis.mdi->resultRep : MatchDispInfo::ResultFieldContent::MatchNumberOnly;
@@ -942,23 +970,19 @@ namespace QTournament::SvgBracket
         continue;
       }
 
-      string a;
-      string b;
+      QString a;
+      QString b;
 
       // print the real name, if we need one and have one
       if (pairDescr.pairId &&
           ((pairRep == MatchDispInfo::PairRepresentation::RealNamesOnly) || (pairRep == MatchDispInfo::PairRepresentation::RealOrSymbolic)))
       {
         PlayerPair pp{db, pairDescr.pairId->get()};
-        a = QString2StdString(pp.getPlayer1().getDisplayName());
-        if (pp.hasPlayer2())
-        {
-          b = QString2StdString(pp.getPlayer2().getDisplayName());
-        }
+        tie(a, b) = pair2bracketLabel(pp);
       }
 
       // if "a" is still empty, we definitely need the symbolic name
-      if (a.empty())
+      if (a.isEmpty())
       {
         if (pairDescr.role == PairRole::Initial)
         {
@@ -967,27 +991,29 @@ namespace QTournament::SvgBracket
           a = "(";
           if (pairDescr.role == PairRole::AsWinner)
           {
-            a += QString2StdString(QObject::tr("Winner of "));
+            a += QObject::tr("Winner of ");
           } else {
-            a += QString2StdString(QObject::tr("Loser of "));
+            a += QObject::tr("Loser of ");
           }
 
           // do we have a real match including match number
           // connected with the incoming link?
           if (pairDescr.srcRealMatchNum)
           {
-            a += "#" + to_string(pairDescr.srcRealMatchNum.value());
+            a += "#" + QString::number(pairDescr.srcRealMatchNum.value());
           } else {
-            a += pairDescr.srcCanonicalName;
+            a += stdString2QString(pairDescr.srcCanonicalName);
           }
           a += ")";
         }
       }
 
-      dict.insert_or_assign( (pos == 1) ? betl.p1aTagName : betl.p2aTagName, a);
-      if (!b.empty())
+      if (pos == 1) result.p1aName = a;
+      else result.p2aName = a;
+      if (!b.isEmpty())
       {
-        dict.insert_or_assign( (pos == 1) ? betl.p1bTagName : betl.p2bTagName, b);
+        if (pos == 1) result.p1bName = b;
+        else result.p2bName = b;
       }
     }
 
@@ -995,7 +1021,7 @@ namespace QTournament::SvgBracket
     // Deal with the match tag
     //
 
-    if (resultRep == MatchDispInfo::ResultFieldContent::None) return;
+    if (resultRep == MatchDispInfo::ResultFieldContent::None) return result;;
 
     std::optional<MatchScore> score;
     if (vis.mdi.has_value()) score = vis.mdi->ma.getScore();
@@ -1007,7 +1033,7 @@ namespace QTournament::SvgBracket
     {
       QString tmp = score->toString();
       tmp = tmp.replace(",", ", ");
-      dict[betl.matchTagName] = QString2StdString(tmp);
+      result.matchText = tmp;
     } else {
       BracketMatchData::BranchState b1State = bmd.pair1State();
       BracketMatchData::BranchState b2State = bmd.pair2State();
@@ -1015,7 +1041,7 @@ namespace QTournament::SvgBracket
       // if both branches are dead, print no match number
       if ((b1State == BracketMatchData::BranchState::Dead) && (b2State == BracketMatchData::BranchState::Dead))
       {
-        return;
+        return result;
       }
 
       // if one branch is assigned and the other is dead
@@ -1023,20 +1049,22 @@ namespace QTournament::SvgBracket
       // with already known winner
       if ((b1State == BracketMatchData::BranchState::Assigned) && (b2State == BracketMatchData::BranchState::Dead))
       {
-        return;
+        return result;
       }
       if ((b1State == BracketMatchData::BranchState::Dead) && (b2State == BracketMatchData::BranchState::Assigned))
       {
-        return;
+        return result;
       }
 
       // do we have a real match including match number?
       if (vis.realMatchNum)
       {
-        dict[betl.matchTagName] = "#" + to_string(vis.realMatchNum.value());
+        result.matchText = "#" + QString::number(vis.realMatchNum.value());
       } else {
-        dict[betl.matchTagName] = "(" + vis.canonicalName + ")";
+        result.matchText = "(" + stdString2QString(vis.canonicalName) + ")";
       }
     }
+
+    return result;
   }
 }
