@@ -19,6 +19,8 @@
 #ifndef TOURNAMENTDATADEFS_H
 #define	TOURNAMENTDATADEFS_H
 
+#include <unordered_map>
+
 #include <QString>
 
 #include <Sloppy/NamedType.h>
