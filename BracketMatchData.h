@@ -254,16 +254,6 @@ namespace QTournament::SvgBracket
         const BracketMatchData& ma   ///< the match of which the loser's branch will be declared "dead"
         );
 
-    /** \brief Takes the player in the given position and propagates it backwards
-     * along the winner path in the tree until we find a match find assigned
-     * pairs; whenever we "back-assign" the pair to a previous match, the loser
-     * branch is declared dead.
-     *
-     * \pre The given position has an assigned pair.
-     */
-    /*void propagateBackwardsAlongWinnerPath(const BracketMatchData& ma,   ///< the match from which to start
-        int pos   ///< the position (1 or 2) that contains the to-be-back-propagated pair
-        );*/
   };
 
   //----------------------------------------------------------------------------
@@ -274,6 +264,8 @@ namespace QTournament::SvgBracket
    * \return all bracket matches, sorted by match number (and thus by round)
    */
   BracketMatchDataList convertToBracketMatches(const SvgBracketDef& def);
+
+  //----------------------------------------------------------------------------
 
 }
 

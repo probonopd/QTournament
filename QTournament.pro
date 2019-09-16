@@ -168,6 +168,7 @@ HEADERS += \
 SOURCES += \
     BackendAPI_Getters.cpp \
     BackendAPI_MatchGen.cpp \
+    BackendAPI_NonDatabaseOps.cpp \
     BracketMatchData.cpp \
     Category.cpp \
     CatMngr.cpp \

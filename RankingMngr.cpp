@@ -478,6 +478,8 @@ namespace QTournament
           ++round;
         }
       }
+
+      trans.commit();
     }
     catch (SqliteOverlay::BusyException&)
     {

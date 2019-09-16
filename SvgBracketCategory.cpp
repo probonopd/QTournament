@@ -155,9 +155,13 @@ namespace QTournament
 
   Error SvgBracketCategory::onRoundCompleted(int round)
   {
-    // create ranking entries for everyone who played
-    // and for everyone who achieved a final rank in a
-    // previous round
+    //
+    // create ranking entries for everyone who survived
+    // the previous round and for everyone who achieved
+    // a final rank in any previous round
+    //
+
+    // determine players who survived the previous round
     Error err;
     RankingMngr rm{db};
     PlayerPairList ppList;
@@ -168,32 +172,33 @@ namespace QTournament
       ppList = this->getRemainingPlayersAfterRound(round - 1, &err);
       if (err != Error::OK) return err;
     }
+
+    // determine players who achieved a final rank
+    // in any previous round
     auto rll = rm.getSortedRanking(*this, round-1);
     for (auto rl : rll)
     {
       for (RankingEntry re : rl)
       {
-        if (re.getRank() != RankingEntry::NoRankAssigned)
+        if (re.getRank() == RankingEntry::NoRankAssigned) continue;
+
+        const auto pp = re.getPlayerPair();
+        assert(pp);
+        bool hasPair = Sloppy::isInVector<PlayerPair>(ppList, *pp);
+        if (!hasPair)
         {
-          auto pp = re.getPlayerPair();
-          assert(pp);
-          bool hasPair = (std::find(ppList.begin(), ppList.end(), *pp) != ppList.end());
-          if (!hasPair)
-          {
-            ppList.push_back(*pp);
-          }
+          ppList.push_back(*pp);
         }
       }
     }
 
-    // create unsorted entries for everyone who played in this round
-    // or who achieved a final rank in a previous round
+    // create unsorted entries for this set of players
     rm.createUnsortedRankingEntriesForLastRound(*this, &err, ppList);
     if (err != Error::OK) return err;
 
     // set the rank for all players that ended up at a final rank
     // in this or any prior round
-    err = rewriteFinalRankForMultipleRounds(round, round);
+    err = rewriteFinalRankForMultipleRounds(Round{round}, Round{round});
 
     return err;
   }
@@ -440,7 +445,7 @@ namespace QTournament
       CatRoundStatus crs = getRoundStatus();
       if (ma.getMatchGroup().getRound() <= crs.getFinishedRoundsCount())
       {
-        e = rewriteFinalRankForMultipleRounds(ma.getMatchGroup().getRound());
+        e = rewriteFinalRankForMultipleRounds(Round{ma.getMatchGroup().getRound()});
         if (e != Error::OK) return ModMatchResult::NotPossible;  // triggers implicit rollback
       }
 
@@ -508,79 +513,56 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  Error SvgBracketCategory::rewriteFinalRankForMultipleRounds(int minRound, int maxRound) const
+  Error SvgBracketCategory::rewriteFinalRankForMultipleRounds(const Round& firstRound, const Round& lastRound) const
   {
     // some boundary checks
-    if (minRound < 1) return Error::InvalidRound;
+    if (firstRound < 1) return Error::InvalidRound;
     CatRoundStatus crs = getRoundStatus();
-    int lastCompletedRound = crs.getFinishedRoundsCount();
+    Round lastCompletedRound{crs.getFinishedRoundsCount()};
     if (lastCompletedRound < 1) return Error::InvalidRound;
-    if (minRound > lastCompletedRound) return Error::InvalidRound;
-    if (maxRound < 1) maxRound = lastCompletedRound;
-    if (maxRound < minRound) return Error::InvalidRound;
-    if (maxRound > lastCompletedRound) return Error::InvalidRound;
+    if (firstRound > lastCompletedRound) return Error::InvalidRound;
+    Round actualLastRound{ (lastRound < 1) ? lastCompletedRound : lastRound};
+    if (actualLastRound < firstRound) return Error::InvalidRound;
+    if (actualLastRound > lastCompletedRound) return Error::InvalidRound;
 
-    // start a pretty inefficient algorithm that goes through
-    // all rounds from "min" to "max" and loop over all
-    // round from "1" to "current" in every itegration...
-    MatchMngr mm{db};
+    // get all rankings for all affected round
+    auto allRankings = API::Qry::getBracketRanks(*this, firstRound, actualLastRound);
+
+    // overwrite all ranks for all affected rounds
     RankingMngr rm{db};
-    for (int curRound = minRound; curRound <= maxRound; ++curRound)
+    for (auto& sr : allRankings)
     {
-      std::vector<int> pairsWithRank;
-
-      for (int r=1; r <= curRound; ++r)
+      auto rell = rm.getSortedRanking(*this, sr.round.get());
+      if (rell.size() != 1)
       {
-        for (const MatchGroup& mg : mm.getMatchGroupsForCat(*this, r))
-        {
-          for (const Match& ma : mg.getMatches())
-          {
-            int winnerRank = ma.getWinnerRank();
-            if (winnerRank > 0)
-            {
-              // we never go beyong the last completed round,
-              // so we should always have a winner and an
-              // associated (unsorted) ranking entry
-              auto w = ma.getWinner();
-              assert(w);
-              auto re = rm.getRankingEntry(*w, curRound);
-              assert(re);
-              rm.forceRank(*re, winnerRank);
-              pairsWithRank.push_back(w->getPairId());
-            }
+        throw std::runtime_error("SvgBracketCategory::rewriteFinalRankForMultipleRounds(): error, no ranking entries found");
+      }
 
-            int loserRank = ma.getLoserRank();
-            if (loserRank > 0)
-            {
-              // we never go beyong the last completed round,
-              // so we should always have a loser and an
-              // associated (unsorted) ranking entry
-              auto l = ma.getLoser();
-              assert(l);
-              auto re = rm.getRankingEntry(*l, curRound);
-              assert(re);
-              rm.forceRank(*re, loserRank);
-              pairsWithRank.push_back(l->getPairId());
-            }
-          }
+      // update all existing ranking entries
+      for (const auto& re : rell[0])
+      {
+        const PlayerPairRefId curPairId{re.getPlayerPair()->getPairId()};
+
+        auto it = std::find_if(begin(sr.ranks), end(sr.ranks), [&curPairId](const SimplifiedRankingEntry& sre)
+        {
+          return (sre.ppId == curPairId);
+        });
+
+        if (it != end(sr.ranks))
+        {
+          rm.forceRank(re, it->rank.get());
+          sr.ranks.erase(it);  // shorten the list for faster searching
+        } else {
+          rm.clearRank(re);
         }
       }
 
-      // clear the rank of all "unranked" pairs, just be sure
-      // (otherwise, stale ranks might survive a
-      // change of a match result)
-      for (const PlayerPair& pp : getPlayerPairs())
+      // now all ranks should have been "consumed"
+      if (!sr.ranks.empty())
       {
-        // skip all PlayerPairs with an already assigned rank
-        if (Sloppy::isInVector<int>(pairsWithRank, pp.getPairId())) continue;
-
-        // set the rank to "Not assigned"
-        auto re = rm.getRankingEntry(pp, curRound);
-        if (re)
-        {
-          rm.clearRank(*re);
-        }
+        throw std::runtime_error("SvgBracketCategory::rewriteFinalRankForMultipleRounds(): error, got ranks without ranking entry");
       }
+
     }
 
     return Error::OK;

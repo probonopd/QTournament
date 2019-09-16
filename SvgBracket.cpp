@@ -15,6 +15,7 @@
 #include "SvgBracket.h"
 #include "MatchMngr.h"
 #include "BracketMatchData.h"
+#include "BackendAPI.h"
 
 using namespace std;
 
@@ -782,34 +783,27 @@ namespace QTournament::SvgBracket
 
     // prepare a mapping between bracket match number
     // and real match
-    //
-    // and while we're at it, we also collect ranking information
     std::unordered_map<int, MatchDispInfo> brNum2MatchDispInfo;
-    std::vector<std::tuple<PlayerPairRefId, Rank>> ranks;
     for (const auto& mdi : maList)
     {
       brNum2MatchDispInfo.insert_or_assign(mdi.ma.bracketMatchNum()->get(), mdi);
-
-      // don't evaluate ranks if not requested to
-      if (!mdi.showRanks) continue;
-
-      // winner / loser rank
-      const auto& ma = mdi.ma;
-      auto r = ma.getWinnerRank();
-      auto pp = ma.getWinner();
-      if (pp && (r > 0))
-      {
-        ranks.push_back(std::pair{PlayerPairRefId{pp->getPairId()}, Rank{r}});
-        cout << "Rank " << r << " for PairID " << pp->getPairId() << endl;
-      }
-      r = ma.getLoserRank();
-      pp = ma.getLoser();
-      if (pp && (r > 0))
-      {
-        ranks.push_back(std::pair{PlayerPairRefId{pp->getPairId()}, Rank{r}});
-        cout << "Rank " << r << " for PairID " << pp->getPairId() << endl;
-      }
     }
+
+    // extract ranks from the matches
+    MatchList matchesWithRankDisplay;
+    for (const auto& mdi : maList)
+    {
+      if (mdi.showRanks) matchesWithRankDisplay.push_back(mdi.ma);
+    }
+    std::vector<SimplifiedRankingEntry> ranks = API::Qry::extractSortedRanksFromMatchList(matchesWithRankDisplay);
+
+
+    // for rare cases in which a players earns a rank without
+    // playing a match (e.g., short bracket, one round only,
+    // and an odd number of players), we need to check for
+    // "assigned player + dead branch + winner rank"
+    const auto ranksFromBracket = API::Qry::extractSortedRanksFromBracket(allMatches);
+    std::copy(begin(ranksFromBracket), end(ranksFromBracket), back_inserter(ranks));
 
     // a lambda for finding a match tag based on the
     // bracket match number
@@ -913,12 +907,12 @@ namespace QTournament::SvgBracket
     }
 
     // fill the rank tags
-    for (const auto [pairRefId, rank] : ranks)
+    for (const auto& sre : ranks)
     {
-      auto [tagName1, tagName2] = findRankTags(parsedTags, rank);
+      auto [tagName1, tagName2] = findRankTags(parsedTags, sre.rank);
       if (tagName1.empty()) continue;  // no tag for this rank
 
-      PlayerPair pp{db, pairRefId.get()};
+      PlayerPair pp{db, sre.ppId.get()};
       auto [a, b] = pair2bracketLabel(pp);
       if (b.isEmpty())
       {

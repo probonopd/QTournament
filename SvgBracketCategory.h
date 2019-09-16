@@ -48,7 +48,20 @@ namespace QTournament
 
   protected:
     std::optional<Match> getFollowUpMatch(const Match& ma, bool searchLoserNotWinner) const;
-    Error rewriteFinalRankForMultipleRounds(int minRound = 1, int maxRound = -1) const;
+
+    /** \brief Determines the final ranks for all player in each Round between `firstRound` and
+     * `lastRound' and overwrites/updates the rank in the associated ranking entry of
+     * each player pair.
+     *
+     * If the player pair has a ranking entry but no rank in the bracket, the rank for that entry
+     * is cleared by calling `clearRank()` on that entry.
+     *
+     * \returns error code
+     */
+    Error rewriteFinalRankForMultipleRounds(
+        const Round& firstRound,   ///< the first round for which to rewrite the ranks
+        const Round& lastRound = Round{-1}   ///< the last round for which to rewrite the ranks (last completed round if < 1)
+        ) const;
 
   private:
     SvgBracketMatchSys bracketMatchSys;
