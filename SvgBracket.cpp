@@ -255,9 +255,9 @@ namespace QTournament::SvgBracket
         auto mTag = parseMatchTag(tag.name);
         //ParsedTag p{type, tag, mTag, PlayerTag{}, RankTag{}};
         ParsedTag p{type, tag, mTag};
-        std::cout << tag.name << " --> Match tag with match num " << mTag.bracketMatchNum.get()
+        /*std::cout << tag.name << " --> Match tag with match num " << mTag.bracketMatchNum.get()
                   << ", round " << mTag.roundNum.get() << ", loser rank " << mTag.loserRank.get()
-                  << " and winner rank " << mTag.winnerRank.get() << std::endl;
+                  << " and winner rank " << mTag.winnerRank.get() << std::endl;*/
 
         result.push_back(std::move(p));
         continue;
@@ -268,9 +268,9 @@ namespace QTournament::SvgBracket
         auto pTag = parsePlayerTag(tag.name);
         //ParsedTag p{type, tag, MatchTag{}, pTag, RankTag{}};
         ParsedTag p{type, tag, pTag};
-        std::cout << tag.name << " --> Player tag with match num " << pTag.bracketMatchNum.get()
+        /*std::cout << tag.name << " --> Player tag with match num " << pTag.bracketMatchNum.get()
                   << ", player " << pTag.playerPos << ", label pos " << ((pTag.pos == LabelPos::First) ? "First" : "Second")
-                  << " source match " << pTag.srcMatch.get() << " and initial rank " << pTag.initialRank.get() << std::endl;
+                  << " source match " << pTag.srcMatch.get() << " and initial rank " << pTag.initialRank.get() << std::endl;*/
 
         result.push_back(std::move(p));
         continue;
@@ -281,8 +281,8 @@ namespace QTournament::SvgBracket
         auto rTag = parseRankTag(tag.name);
         //ParsedTag p{type, tag, MatchTag{}, PlayerTag{}, rTag};
         ParsedTag p{type, tag, rTag};
-        std::cout << tag.name << " --> Rank tag with for rank " << rTag.rank.get()
-                  << ", label pos " << ((rTag.pos == LabelPos::First) ? "First" : "Second") << std::endl;
+        /*std::cout << tag.name << " --> Rank tag with for rank " << rTag.rank.get()
+                  << ", label pos " << ((rTag.pos == LabelPos::First) ? "First" : "Second") << std::endl;*/
 
         result.push_back(std::move(p));
         continue;
@@ -292,7 +292,7 @@ namespace QTournament::SvgBracket
       {
         //ParsedTag p{type, tag, MatchTag{}, PlayerTag{}, RankTag{}};
         ParsedTag p{type, tag, std::string{tag.name}};
-        std::cout << tag.name << " --> Other tag" << std::endl;
+        //std::cout << tag.name << " --> Other tag" << std::endl;
 
         result.push_back(std::move(p));
         continue;
@@ -834,12 +834,12 @@ namespace QTournament::SvgBracket
     // and store the substitution strings in a dictionary
     std::unordered_map<std::string, QString> dict;
     addCommonTagsToSubstDict(dict, cbt);
-    cout << "#################################" << endl;
+    /*cout << "#################################" << endl;
     cout << "## substSvgBracketTags (final) ##" << endl;
-    cout << "##################################" << endl;
+    cout << "##################################" << endl;*/
     for (const auto& bmd : allMatches)
     {
-      cout << bmd << endl;
+      //cout << bmd << endl;
 
       // collect all data about this bracket match
       BracketMatchVisData vis;

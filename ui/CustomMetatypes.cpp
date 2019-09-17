@@ -24,7 +24,7 @@
 void registerCustomTypes()
 {
   int id = qRegisterMetaType<QTournament::ObjState>();
-  std::cout << "Register Metatype = " << id << std::endl;
+  //std::cout << "Register Metatype = " << id << std::endl;
 }
 
 //----------------------------------------------------------------------------

@@ -193,12 +193,6 @@ void SeedingListWidget::swapListItems(int row1, int row2)
   auto tmp = seedList[row2];
   seedList[row2] = seedList[row1];
   seedList[row1] = tmp;
-
-  for (const auto& ai : seedList)
-  {
-    std::cout << ai.pairName.toStdString() << std::endl;
-  }
-  std::cout << std::endl;
 }
 
 //----------------------------------------------------------------------------

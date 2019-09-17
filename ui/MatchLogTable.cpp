@@ -71,8 +71,6 @@ std::optional<Match> MatchLogTable::getSelectedMatch() const
 
 void MatchLogTable::onMatchStatusChanged(int maId, int maSeqNum, ObjState oldStat, ObjState newStat)
 {
-  std::cerr << "MatchLogTable: onMatchStatusChanged!" << std::endl;
-
   if (newStat != ObjState::MA_Finished) return;
   if (db == nullptr) return;
 

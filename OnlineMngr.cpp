@@ -333,7 +333,7 @@ namespace QTournament
     db.get().disableChangeLog(true);
     syncState = SyncState{};  // reset all clocks, session keys, etc.
 
-    cout << "Terminate Session, server said: " << response.constData() << endl;
+    //cout << "Terminate Session, server said: " << response.constData() << endl;
 
     string errCodeOut = string{response.constData()};
 
@@ -451,9 +451,9 @@ namespace QTournament
     RankingMngr rm{db};
     csv += rm.getSyncString({});
 
-    cout << csv << endl;
+    //cout << csv << endl;
 
-    cout << endl << "Total size: " << csv.size() << endl;
+    //cout << endl << "Total size: " << csv.size() << endl;
 
     QByteArray response;
     OnlineError err = execSignedServerRequest("/fullSync", true, QByteArray(csv.c_str()), response);

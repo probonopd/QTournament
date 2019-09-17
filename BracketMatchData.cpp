@@ -61,7 +61,7 @@ namespace QTournament::SvgBracket
       p2Pair = PlayerPairRefId{-1};;
       p2State = BranchState::Dead;
     }
-    cout << "M " << brMaNum.get() << "." << pos << " = DEAD" << endl;
+    //cout << "M " << brMaNum.get() << "." << pos << " = DEAD" << endl;
   }
 
   //----------------------------------------------------------------------------
@@ -142,7 +142,7 @@ namespace QTournament::SvgBracket
             const auto& pp = seed.at(iniRank.get() - 1);
             const PlayerPairRefId ppId{pp.getPairId()};
             bmd.assignPlayerPair(ppId, pos);
-            cout << "Seed assignment: M " << bmd.matchNum().get() << "." << pos << " = PlayerPair " << ppId.get() << endl;
+            //cout << "Seed assignment: M " << bmd.matchNum().get() << "." << pos << " = PlayerPair " << ppId.get() << endl;
           } else {
             bmd.setPairUnused(pos);
           }
@@ -177,7 +177,7 @@ namespace QTournament::SvgBracket
 
       auto brNum = ma.bracketMatchNum();
       BracketMatchData& bmd = findByMatchNumber(*brNum);
-      cout << "Apply matches: working on real match " << ma.getMatchNumber() << " = bracket match " << brNum->get() << endl;
+      //cout << "Apply matches: working on real match " << ma.getMatchNumber() << " = bracket match " << brNum->get() << endl;
 
       if (ma.hasPlayerPair1())
       {
@@ -229,7 +229,7 @@ namespace QTournament::SvgBracket
       auto& winnerMatch = at(winnerMatchInfo.dstMatch.get() - 1);  // only works because the list is SORTED by match number
       winnerMatch.assignPlayerPair(pairToForward, winnerMatchInfo.pos);
 
-      cout << "FastForward " << ma.matchNum().get() << "." << pos << " --> " << winnerMatchInfo.dstMatch.get() << "." << winnerMatchInfo.pos << endl;
+      //cout << "FastForward " << ma.matchNum().get() << "." << pos << " --> " << winnerMatchInfo.dstMatch.get() << "." << winnerMatchInfo.pos << endl;
     }
 
     // declare the loser branch dead
@@ -299,8 +299,8 @@ namespace QTournament::SvgBracket
         auto& winnerMatch = at(winnerMatchInfo.dstMatch.get() - 1);  // only works because the list is SORTED by match number
 
         winnerMatch.assignPlayerPair(winner, winnerMatchInfo.pos);
-        cout << "Promoted " << ma.matchNum().get() << "." << winnerPos << " --> ";
-        cout << winnerMatchInfo.dstMatch.get() << "." << winnerMatchInfo.pos << " as winner" << endl;
+        //cout << "Promoted " << ma.matchNum().get() << "." << winnerPos << " --> ";
+        //cout << winnerMatchInfo.dstMatch.get() << "." << winnerMatchInfo.pos << " as winner" << endl;
 
         // only pre-assign players if the other target branch is
         // dead; otherwise we would mess up bracket report that only
@@ -319,8 +319,8 @@ namespace QTournament::SvgBracket
         auto& loserMatch = at(loserMatchInfo.dstMatch.get() - 1);  // only works because the list is SORTED by match number
 
         loserMatch.assignPlayerPair(loser, loserMatchInfo.pos);
-        cout << "Promoted " << ma.matchNum().get() << "." << ((winnerPos == 1) ? 2 : 1) << " --> ";
-        cout << loserMatchInfo.dstMatch.get() << "." << loserMatchInfo.pos << " as loser" << endl;
+        //cout << "Promoted " << ma.matchNum().get() << "." << ((winnerPos == 1) ? 2 : 1) << " --> ";
+        //cout << loserMatchInfo.dstMatch.get() << "." << loserMatchInfo.pos << " as loser" << endl;
 
         // only pre-assign players if the other target branch is
         // dead; otherwise we would mess up bracket report that only
@@ -525,10 +525,10 @@ namespace QTournament::SvgBracket
       return BracketMatchData{n, r, canonicalName, in1, in2, winnerAction, loserAction};
     });
 
-    for (const auto& bmd : result)
+    /*for (const auto& bmd : result)
     {
       cout << bmd << endl;
-    }
+    }*/
 
     return result;
   }

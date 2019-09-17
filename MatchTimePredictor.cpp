@@ -268,8 +268,8 @@ namespace QTournament {
       int avgMatchTime = getAverageMatchDurationForCat__secs(*ma);
 
       // get the earliest available court
-      auto itNextAvailCout = std::min_element(begin(courtFreeList), end(courtFreeList), courtCmpFunc_less);
-      auto [coNum, coFree] = *itNextAvailCout;
+      auto itNextAvailCourt = std::min_element(begin(courtFreeList), end(courtFreeList), courtCmpFunc_less);
+      auto [coNum, coFree] = *itNextAvailCourt;
 
       // calc start and finish time
       //
@@ -292,7 +292,7 @@ namespace QTournament {
 
       // virtually allocate the court until the predicted
       // match finish time
-      *itNextAvailCout = std::tuple{coNum, finish};
+      *itNextAvailCourt = std::tuple{coNum, finish};
     }
 
     // inform everyone about the latest statistics

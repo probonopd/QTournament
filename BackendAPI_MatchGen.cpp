@@ -108,7 +108,7 @@ namespace QTournament::API::Internal
       }
       mm.setBrackMatchLink(*ma, bmd.matchNum());
       bracket2regularMatchNum[bmd.matchNum().get()] = ma->getId();
-      std::cout << "M " << bmd.matchNum().get() << ": created as real match (" << ma->getId() << ")" << std::endl;
+      //std::cout << "M " << bmd.matchNum().get() << ": created as real match (" << ma->getId() << ")" << std::endl;
     }
 
     // close the last group
@@ -135,16 +135,16 @@ namespace QTournament::API::Internal
         if (rank > 0)
         {
           err = mm.setRankForWinnerOrLoser(ma, true, rank.get());
-          std::cout << "R " << ma.getId() << ": set WR = " << rank.get() << std::endl;
+          //std::cout << "R " << ma.getId() << ": set WR = " << rank.get() << std::endl;
         } else {
-          std::cout << "R " << ma.getId() << ": winner will drop out of the tournament WITHOUT FINAL RANK!" << std::endl;
+          //std::cout << "R " << ma.getId() << ": winner will drop out of the tournament WITHOUT FINAL RANK!" << std::endl;
         }
       } else {
         auto& outLink = std::get<SvgBracket::OutgoingBracketLink>(winnerAction);
         int realNextMatchId = bracket2regularMatchNum.at(outLink.dstMatch.get());
         Match nextMatch = mm.getMatch(realNextMatchId).value();
         err = mm.setSymbolicPlayerForMatch(ma, nextMatch, true, outLink.pos);
-        std::cout << "Linking R " << ma.getId() << ".W --> R " << nextMatch.getId() << "." << outLink.pos << std::endl;
+        //std::cout << "Linking R " << ma.getId() << ".W --> R " << nextMatch.getId() << "." << outLink.pos << std::endl;
       }
       if (err != Error::OK) return err;
 
@@ -156,16 +156,16 @@ namespace QTournament::API::Internal
         if (rank > 0)
         {
           err = mm.setRankForWinnerOrLoser(ma, false, rank.get());
-          std::cout << "R " << ma.getId() << ": set LR = " << rank.get() << std::endl;
+          //std::cout << "R " << ma.getId() << ": set LR = " << rank.get() << std::endl;
         } else {
-          std::cout << "R " << ma.getId() << ": loser will drop out of the tournament" << std::endl;
+          //std::cout << "R " << ma.getId() << ": loser will drop out of the tournament" << std::endl;
         }
       } else {
         auto& outLink = std::get<SvgBracket::OutgoingBracketLink>(loserAction);
         int realNextMatchId = bracket2regularMatchNum.at(outLink.dstMatch.get());
         Match nextMatch = mm.getMatch(realNextMatchId).value();
         err = mm.setSymbolicPlayerForMatch(ma, nextMatch, false, outLink.pos);
-        std::cout << "Linking R " << ma.getId() << ".L --> R " << nextMatch.getId() << "." << outLink.pos << std::endl;
+        //std::cout << "Linking R " << ma.getId() << ".L --> R " << nextMatch.getId() << "." << outLink.pos << std::endl;
       }
       if (err != Error::OK) return err;
 
@@ -174,7 +174,7 @@ namespace QTournament::API::Internal
       {
         PlayerPair pp{db, bmd.assignedPair1().get()};
         auto err = mm.setPlayerPairForMatch(ma, pp, 1);
-        std::cout << "R " << ma.getId() << ".1: assigned pair" << std::endl;
+        //std::cout << "R " << ma.getId() << ".1: assigned pair" << std::endl;
         if (err != Error::OK) return err;
       } else {
         // special case, rare: only one player is used and the match does not need to be played,
@@ -191,7 +191,7 @@ namespace QTournament::API::Internal
       {
         PlayerPair pp{db, bmd.assignedPair2().get()};
         auto err = mm.setPlayerPairForMatch(ma, pp, 2);
-        std::cout << "R " << ma.getId() << ".2: assigned pair" << std::endl;
+        //std::cout << "R " << ma.getId() << ".2: assigned pair" << std::endl;
         if (err != Error::OK) return err;
       } else {
         // special case, rare: only one player is used and the match does not need to be played,
