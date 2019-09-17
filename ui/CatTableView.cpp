@@ -300,7 +300,8 @@ void CategoryTableView::onRunCategory()
   else if (e == Error::InvalidPlayerCount)
   {
     QMessageBox::critical(this, tr("Run Category"),
-      tr("The number of players / player pairs in this category is not sufficient\nto start the category."));
+      tr("Cannot start this category with the current number of players or player pairs, respectively.\n") +
+      tr("Maybe you have too many players for the selected match system or the selected tournament bracket."));
   }
   else if (e == Error::InvalidKoConfig)
   {
