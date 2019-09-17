@@ -924,59 +924,45 @@ namespace QTournament
 
   std::vector<Match> PlayerMngr::getAllScheduledMatchesForPlayer(const Player &p, bool findFirstOnly)
   {
-    std::vector<Match> result;
+    // find all player pairs for the requested player
+    Sloppy::estring pairWhere = std::string{Pairs_Player1Ref} + "=%1 or " + std::string{Pairs_Player2Ref} + "=%1";
+    pairWhere.arg(p.getId());
+    DbTab pairTab{db, TabPairs, false};
+    const auto allPairRows = pairTab.getRowsByWhereClause(pairWhere);
 
-    // get all scheduled matches
-    WhereClause wc;
-    wc.addCol(MA_Num, ">", 0);
-    wc.addCol(GenericStateFieldName, "!=", static_cast<int>(ObjState::MA_Running));
-    wc.addCol(GenericStateFieldName, "!=", static_cast<int>(ObjState::MA_Finished));
-    wc.setOrderColumn_Asc(MA_Num);
+    if (allPairRows.empty()) return {};
+
+    // build a giant SQL request for all matches that reference
+    // any of the pairs we found
+    static const Sloppy::estring baseWhere{
+      std::string{MA_Num} + ">0 AND " +
+      std::string{GenericStateFieldName} + "!=" + std::to_string(static_cast<int>(ObjState::MA_Running)) + " AND " +
+      std::string{GenericStateFieldName} + "!=" + std::to_string(static_cast<int>(ObjState::MA_Finished)) + " AND ("
+    };
+    static const Sloppy::estring orFragment{
+      std::string{MA_Pair1Ref} + "=%1 OR " + std::string{MA_Pair2Ref} + "=%1 OR "
+    };
+
+    Sloppy::estring where{baseWhere};
+    for (const auto& pairRow : allPairRows)
+    {
+      Sloppy::estring orClause{orFragment};
+      orClause.arg(pairRow.id());
+      where += orClause;
+    }
+    where.chopRight(3);  // the last "OR"
+    where += ") ORDER BY " + std::string{MA_Num} + " ASC";
+    if (findFirstOnly)
+    {
+      where += " LIMIT 1";
+    }
 
     DbTab matchTab{db, TabMatch, false};
-    MatchMngr mm{db};
-    for (const Match& ma : SqliteOverlay::getObjectsByWhereClause<Match>(db, matchTab, wc))
+    const auto allMatchRows = matchTab.getRowsByWhereClause(where);
+    std::vector<Match> result;
+    for (const auto& pairRow : allMatchRows)
     {
-      // stop the loop if we only need one match
-      if (findFirstOnly && (!(result.empty()))) return result;
-
-      if (ma.hasPlayerPair1())
-      {
-        PlayerPair pp = ma.getPlayerPair1();
-        if (pp.getPlayer1() == p)
-        {
-          result.push_back(ma);
-          continue;
-        }
-
-        if (pp.hasPlayer2())
-        {
-          if (pp.getPlayer2() == p)
-          {
-            result.push_back(ma);
-            continue;
-          }
-        }
-      }
-
-      if (ma.hasPlayerPair2())
-      {
-        PlayerPair pp = ma.getPlayerPair2();
-        if (pp.getPlayer1() == p)
-        {
-          result.push_back(ma);
-          continue;
-        }
-
-        if (pp.hasPlayer2())
-        {
-          if (pp.getPlayer2() == p)
-          {
-            result.push_back(ma);
-            continue;
-          }
-        }
-      }
+      result.push_back(Match{db, pairRow});
     }
 
     return result;

@@ -492,8 +492,8 @@ void RefereeTableWidget::rebuildPlayerList(const TaggedPlayerList& pList, int se
     setItem(idxRow, StateColId, newItem);
 
     // add the offset to the next match for the player
-    ma = pm.getNextMatchForPlayer(p);
     txt = "--";
+    ma = pm.getNextMatchForPlayer(p);
     if (ma)
     {
       int matchNumOffset = ma->getMatchNumber() - selectedMatchNumer;

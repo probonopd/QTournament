@@ -345,7 +345,7 @@ void MainFrame::onSaveCopy()
   QString dstFileName = askForTournamentFileName(tr("Save a copy"));
   if (dstFileName.isEmpty()) return;
 
-  bool isOkay = saveCurrentDatabaseToFile(dstFileName);
+  bool isOkay = saveCurrentDatabaseToFile(dstFileName, false, true);
   if (isOkay)
   {
     onAutosaveTimerElapsed();  // update the status line
@@ -382,9 +382,11 @@ void MainFrame::onCreateBaseline()
     ++cnt;
   }
 
-  bool isOkay = saveCurrentDatabaseToFile(dstName);
+  bool isOkay = saveCurrentDatabaseToFile(dstName, false, true);
   if (isOkay)
   {
+    onAutosaveTimerElapsed();
+
     QString msg = tr("A snapshot of the current tournament status has been saved to:\n\n%1");
     msg = msg.arg(dstName);
     QMessageBox::information(this, "Create baseline", msg);
@@ -503,7 +505,7 @@ void MainFrame::distributeCurrentDatabasePointerToWidgets(bool forceNullptr)
 
 //----------------------------------------------------------------------------
 
-bool MainFrame::saveCurrentDatabaseToFile(const QString& dstFileName)
+bool MainFrame::saveCurrentDatabaseToFile(const QString& dstFileName, bool resetDirtyFlagOnSuccess, bool showErrorOnFailure)
 {
   // Precondition:
   // All checks for valid filenames, overwriting of files etc. have to
@@ -518,30 +520,40 @@ bool MainFrame::saveCurrentDatabaseToFile(const QString& dstFileName)
   try
   {
     bool isOkay = currentDb->backupToFile(QString2StdString(dstFileName));
-    currentDb->resetDirtyFlag();
-    currentDb->resetLocalChangeCounter();
+
+    if (isOkay && resetDirtyFlagOnSuccess)
+    {
+      currentDb->resetDirtyFlag();
+      currentDb->resetLocalChangeCounter();
+    }
 
     return isOkay;
   }
   catch (SqliteOverlay::BusyException&)
   {
-    QString msg;
-    msg = tr("Could not write to %1 because the file is locked by some other application.\n\n");
-    msg += tr("The tournament has not been saved.");
-    msg = msg.arg(dstFileName);
+    if (showErrorOnFailure)
+    {
+      QString msg;
+      msg = tr("Could not write to %1 because the file is locked by some other application.\n\n");
+      msg += tr("The tournament has not been saved.");
+      msg = msg.arg(dstFileName);
 
-    QMessageBox::warning(this, tr("Saving failed"), msg);
+      QMessageBox::warning(this, tr("Saving failed"), msg);
+    }
     return false;
   }
   catch (SqliteOverlay::GenericSqliteException& ex)
   {
-    QString msg;
+    if (showErrorOnFailure)
+    {
+      QString msg;
 
-    msg = tr("A database error occured while saving.\n\n");
-    msg += tr("Internal hint: SQLite error code = %1");
-    msg = msg.arg(static_cast<int>(ex.errCode()));
+      msg = tr("A database error occured while saving.\n\n");
+      msg += tr("Internal hint: SQLite error code = %1");
+      msg = msg.arg(static_cast<int>(ex.errCode()));
 
-    QMessageBox::warning(this, tr("Saving failed"), msg);
+      QMessageBox::warning(this, tr("Saving failed"), msg);
+    }
     return false;
   }
 }
@@ -557,10 +569,9 @@ bool MainFrame::execCmdSave()
     return execCmdSaveAs();
   }
 
-  bool isOkay = saveCurrentDatabaseToFile(currentDatabaseFileName);
+  bool isOkay = saveCurrentDatabaseToFile(currentDatabaseFileName, true, true);
   if (isOkay)
   {
-    currentDb->resetDirtyFlag();
     onAutosaveTimerElapsed();
   }
 
@@ -576,11 +587,10 @@ bool MainFrame::execCmdSaveAs()
   QString dstFileName = askForTournamentFileName(tr("Save tournament as"));
   if (dstFileName.isEmpty()) return false;  // user abort counts as "failed"
 
-  bool isOkay = saveCurrentDatabaseToFile(dstFileName);
+  bool isOkay = saveCurrentDatabaseToFile(dstFileName, true, true);
 
   if (isOkay)
   {
-    currentDb->resetDirtyFlag();
     currentDatabaseFileName = dstFileName;
     ui.actionCreate_baseline->setEnabled(true);
 
@@ -1128,7 +1138,7 @@ void MainFrame::onAutosaveTimerElapsed()
   if (currentDb->getLocalChangeCounter_total() > lastAutosaveDirtyCounterValue)
   {
     QString fname = currentDatabaseFileName + ".autosave";
-    bool isOkay = saveCurrentDatabaseToFile(fname);
+    bool isOkay = saveCurrentDatabaseToFile(fname, false, false);
 
     if (isOkay)
     {

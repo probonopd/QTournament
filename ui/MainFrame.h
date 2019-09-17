@@ -72,7 +72,30 @@ private:
   
 
   void distributeCurrentDatabasePointerToWidgets(bool forceNullptr = false);
-  bool saveCurrentDatabaseToFile(const QString& dstFileName);
+
+  /** \brief Writes the contents of the current (in-memory) database to
+   * a file on disk. The active database remains the same.
+   *
+   * Optionally, the internal dirty flags will be reset upon successful
+   * completion of the write operation.
+   *
+   * Optionally, we can show an error message if the database was busy or
+   * a SQLite exception occured.
+   *
+   * \pre All checks for valid filenames, overwriting of files etc. have to
+   * be done before calling this function.
+   *
+   * \warning This function unconditionally writes to the destination file,
+   * whether it exists or not.
+   *
+   * \returns `true` if the data was written successfully
+   */
+  bool saveCurrentDatabaseToFile(
+      const QString& dstFileName,   ///< the name / path of the destination file
+      bool resetDirtyFlagOnSuccess,    ///< if `true` the local databases' dirty flags will be reset after successful storage
+      bool showErrorOnFailure   ///< whether to show an error message if writing failed
+      );
+
   bool execCmdSave();
   bool execCmdSaveAs();
   QString askForTournamentFileName(const QString& dlgTitle);
