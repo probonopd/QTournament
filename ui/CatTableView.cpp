@@ -623,7 +623,8 @@ void CategoryTableView::handleIntermediateSeedingForSelectedCat()
     }
   }
 
-  DlgSeedingEditor dlg{db, selectedCat->getName(), SvgBracketMatchSys::SingleElim, this};
+  auto brSys = static_cast<SvgBracketMatchSys>(selectedCat->getParameter_int(CatParameter::BracketMatchSystem));
+  DlgSeedingEditor dlg{db, selectedCat->getName(), brSys, this};
   dlg.show();  // this is necessary for the report view...
   dlg.hide();  // ... to get the scaling factors right (no show() --> no proper windows dimensions)
   dlg.initSeedingList(annotatedList);

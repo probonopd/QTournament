@@ -72,6 +72,7 @@ CatTabWidget::CatTabWidget(QWidget* parent)
   ui.cbBracketSys->addItem(tr("Single Elimination"), static_cast<int>(SvgBracketMatchSys::SingleElim));
   //ui.cbBracketSys->addItem(tr("Double Elimination"), static_cast<int>(SvgBracketMatchSys::DoubleElim));
   ui.cbBracketSys->addItem(tr("Ranking System"), static_cast<int>(SvgBracketMatchSys::RankSys));
+  ui.cbBracketSys->addItem(tr("Finals + 3rd place"), static_cast<int>(SvgBracketMatchSys::FinalAnd3rd));
   ui.cbBracketSys->addItem(tr("Finals + further ranks"), static_cast<int>(SvgBracketMatchSys::FinalsWithRanks));
   ui.cbBracketSys->addItem(tr("Semi finals + further ranks"), static_cast<int>(SvgBracketMatchSys::SemiWithRanks));
 
@@ -833,7 +834,21 @@ void CatTabWidget::onGroupConfigChanged(const KO_Config& newCfg)
   if (!(ui.catTableView->hasCategorySelected())) return;
   
   Category selectedCat = ui.catTableView->getSelectedCategory();
-  selectedCat.setParameter(CatParameter::GroupConfig, newCfg.toString());
+
+  // get the currently stored config parameters
+  QString curCfgString = selectedCat.getParameter_string(CatParameter::GroupConfig);
+  SvgBracketMatchSys curBrackSys = static_cast<SvgBracketMatchSys>(selectedCat.getParameter_int(CatParameter::BracketMatchSystem));
+  SvgBracketMatchSys requiredBrackSys = (newCfg.getStartLevel() == KO_Start::Final) ? SvgBracketMatchSys::FinalAnd3rd : SvgBracketMatchSys::SingleElim;
+
+  // update parameters if necessary
+  if (curCfgString != newCfg.toString())
+  {
+    selectedCat.setParameter(CatParameter::GroupConfig, newCfg.toString());
+  }
+  if (curBrackSys != requiredBrackSys)
+  {
+    selectedCat.setParameter(CatParameter::BracketMatchSystem, static_cast<int>(requiredBrackSys));
+  }
 }
 
 //----------------------------------------------------------------------------

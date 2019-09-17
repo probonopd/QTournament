@@ -104,7 +104,7 @@ void GroupConfigWidget::applyConfig(const KO_Config& cfg)
   
   // if we proceed directly with the finals, we actually don't have a
   // choice if the group second's should survive or not
-  ui.cbSecondSurvives->setEnabled(lvl != KO_Start::Final);
+  //ui.cbSecondSurvives->setEnabled(lvl != KO_Start::Final);
   
   // update the spin boxes for the group count / size values
 
@@ -161,7 +161,7 @@ void GroupConfigWidget::updateLabels()
 }
 
 //----------------------------------------------------------------------------
-    
+
 KO_Config GroupConfigWidget::getConfig()
 {
   int lvl = ui.cbKOStart->currentIndex();

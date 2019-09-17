@@ -369,6 +369,7 @@ namespace QTournament
     RankSys,   ///< used in official ranking tournaments
     SemiWithRanks,   ///< semifinals plus "one-one-one" matches for additional ranks
     FinalsWithRanks,   ///< "one-on-one" matches for all ranks (directly; just one round)
+    FinalAnd3rd,   ///< only a final and the match for 3rd place
   };
 
 

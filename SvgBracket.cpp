@@ -394,21 +394,20 @@ namespace QTournament::SvgBracket
         }
       },
       {
-        SvgBracketMatchSys::SingleElim,
-        2,
+        SvgBracketMatchSys::FinalAnd3rd,
+        4,
         {
           {
             297.0,
             210.0,
-            ":/brackets/SingleElim4.svg",
+            ":/brackets/SingleElim2.svg",
             "",
             72.0,
             3.2,
-            findRawTagsInResource(":/brackets/SingleElim4.svg"),
+            findRawTagsInResource(":/brackets/SingleElim2.svg"),
           }
         },
         {
-          GroupNum_Semi,
           GroupNum_Final,
         }
       },

@@ -37,7 +37,7 @@ namespace QTournament {
     
     // If we dive directly into the finals, then we always need the second
     // of each group for the match for 3rd place
-    if (startLvl == KO_Start::Final) secondSurvives = true;
+    //if (startLvl == KO_Start::Final) secondSurvives = true;
   }
 
 //----------------------------------------------------------------------------
@@ -243,7 +243,7 @@ namespace QTournament {
   void KO_Config::setSecondSurvives(bool newSurvive)
   {
     secondSurvives = newSurvive;
-    if (startLvl == KO_Start::Final) secondSurvives = true;
+    //if (startLvl == KO_Start::Final) secondSurvives = true;
   }
 
 //----------------------------------------------------------------------------
@@ -255,7 +255,11 @@ namespace QTournament {
     int reqGroups = 16;
     if (startLvl == KO_Start::Final)
     {
-      reqGroups = 2;
+      // If we start with directly with finals,
+      // we always need exactly two groups.
+      // If the second survives, we play for a third place,
+      // but that's optional.
+      return 2;
     }
     if (startLvl == KO_Start::Semi)
     {
@@ -269,7 +273,9 @@ namespace QTournament {
     // if also the second-placed player of each group
     // qualifies for the KO rounds, we only need half
     // as many groups
-    if ((secondSurvives) && (startLvl != KO_Start::Final))
+    //
+    // Exception: finals, see above
+    if (secondSurvives)
     {
       reqGroups = reqGroups / 2;
     }

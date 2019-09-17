@@ -409,7 +409,8 @@ namespace QTournament
     // for the second phase of the tournament
     KO_Config cfg = KO_Config(getParameter_string(CatParameter::GroupConfig));
     int numGroupRounds = cfg.getNumRounds();
-    return API::Internal::generateBracketMatches(*this, SvgBracketMatchSys::SingleElim, seed, numGroupRounds+1);
+    auto brSys = static_cast<SvgBracketMatchSys>(getParameter_int(CatParameter::BracketMatchSystem));
+    return API::Internal::generateBracketMatches(*this, brSys, seed, numGroupRounds+1);
   }
 
 //----------------------------------------------------------------------------
