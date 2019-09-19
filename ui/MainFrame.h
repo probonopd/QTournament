@@ -28,7 +28,7 @@
 #include "ui_MainFrame.h"
 #include "TournamentDB.h"
 
-#define PRG_VERSION_STRING "0.7.0-RC1"
+#define PRG_VERSION_STRING "0.7.0"
 
 class MainFrame : public QMainWindow
 {

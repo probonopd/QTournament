@@ -11,7 +11,7 @@ TEMPLATE = app
 QMAKE_CXXFLAGS += -Wno-unused-parameter
 CONFIG += c++17
 
-VERSION = 0.7.0-RC1
+VERSION = 0.7.0
 
 # Detect the platform we are running on
 win32 {
