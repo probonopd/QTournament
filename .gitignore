@@ -11,4 +11,7 @@ qrc_*
 debug
 svgBracketChecker/debug
 svgBracketChecker/release
+ReleasedVersions
+*~
+*pro.user*
 
