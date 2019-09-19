@@ -19,86 +19,155 @@
 #ifndef TOURNAMENTERRORCODES_H
 #define	TOURNAMENTERRORCODES_H
 
+#include <optional>
+
+#include <Sloppy/BasicException.h>
+
 namespace QTournament
 {
-    enum ERR {
+    enum class Error {
         OK = 0,
-        INVALID_NAME = -10000,
-        NAME_EXISTS,
-        NOT_USING_TEAMS,
-        INVALID_SEX,
-        INVALID_TEAM,
-        CATEGORY_CLOSED_FOR_MORE_PLAYERS,
-        PLAYER_NOT_SUITABLE,
-        PLAYER_ALREADY_IN_CATEGORY,
-        PLAYER_NOT_IN_CATEGORY,
-        PLAYER_NOT_REMOVABLE_FROM_CATEGORY,
-        PLAYER_ALREADY_PAIRED,
-        NO_CATEGORY_FOR_PAIRING,
-        CATEGORY_NOT_CONFIGURALE_ANYMORE,
-        PLAYERS_NOT_A_PAIR,
-        PLAYERS_IDENTICAL,
-        INVALID_ID,
-        INVALID_RECONFIG,
-        INVALID_ROUND,
-        INVALID_GROUP_NUM,
-        MATCH_GROUP_EXISTS,
-        NO_SUCH_MATCH_GROUP,
-        CONFIG_ALREADY_FROZEN,
-        UNPAIRED_PLAYERS,
-        INVALID_KO_CONFIG,
-        CATEGORY_NOT_YET_FROZEN,
-        CATEGORY_UNFREEZEABLE,
-        CATEGORY_NEEDS_NO_GROUP_ASSIGNMENTS,
-        INVALID_PLAYER_COUNT,
-        CATEGORY_NEEDS_NO_SEEDING,
-        MATCH_GROUP_NOT_CONFIGURALE_ANYMORE,
-        MATCH_NOT_CONFIGURALE_ANYMORE,
-        PLAYER_ALREADY_ASSIGNED_TO_OTHER_MATCH_IN_THE_SAME_ROUND_AND_CATEGORY,
-        CATEGORY_STILL_CONFIGURABLE,
-        GROUP_NUMBER_MISMATCH,
-        WRONG_STATE,
-        MATCH_GROUP_ALREADY_CLOSED,
-        MATCH_GROUP_EMPTY,
-        MATCH_GROUP_NOT_UNSTAGEABLE,
-        COURT_NUMBER_EXISTS,
-        NO_MATCH_AVAIL,
-        NO_COURT_AVAIL,
-        ONLY_MANUAL_COURT_AVAIL,
-        MATCH_NOT_RUNNABLE,
-        COURT_BUSY,
-        COURT_DISABLED,
-        NO_MATCH_RESULT_SET,
-        INVALID_MATCH_RESULT_FOR_CATEGORY_SETTINGS,
-        INCONSISTENT_MATCH_RESULT_STRING,
-        MATCH_NOT_RUNNING,
-        NO_COURT_ASSIGNED,
-        PLAYER_NOT_IDLE,
-        PLAYER_NOT_PLAYING,
-        ROUND_NOT_FINISHED,
-        RANKING_ALREADY_EXISTS,
-        MISSING_RANKING_ENTRIES,
-        INVALID_SEEDING_LIST,
-        INVALID_PLAYER_PAIR,
-        INVALID_MATCH_LINK,
-        INVALID_RANK,
-        PLAYER_ALREADY_IN_MATCHES,
-        NOT_ALL_PLAYERS_REGISTERED,
-        EPD__NOT_FOUND,
-        EPD__NOT_OPENED,
-        EPD__NOT_CONFIGURED,
-        EPD__CREATION_FAILED,
-        EPD__NO_SEX_FOR_PLAYER_DEFINED,
-        EPD__INVALID_DATABASE_NAME,
-        FILE_ALREADY_EXISTS,
-        FILE_NOT_EXISTING,
-        INCOMPATIBLE_FILE_FORMAT,
-        DATABASE_ERROR,
-        MATCH_NEEDS_NO_REFEREE,
-        MATCH_NEEDS_REFEREE,
-        REFEREE_NOT_IDLE,
-        COURT_NOT_DISABLED,
-        COURT_ALREADY_USED,
+        InvalidName = -10000,
+        NameExists,
+        NotUsingTeams,
+        InvalidSex,
+        InvalidTeam,
+        CategoryClosedForMorePlayers,
+        PlayerNotSuitable,
+        PlayerAlreadyInCategory,
+        PlayerNotInCategory,
+        PlayerNotRemovableFromCategory,
+        PlayerAlreadyPaired,
+        NoCategoryForPairing,
+        CategoryNotConfiguraleAnymore,
+        PlayersNotAPair,
+        PlayersIdentical,
+        InvalidId,
+        InvalidReconfig,
+        InvalidRound,
+        InvalidGroupNum,
+        MatchGroupExists,
+        NoSuchMatchGroup,
+        ConfigAlreadyFrozen,
+        UnpairedPlayers,
+        InvalidKoConfig,
+        CategoryNotYetFrozen,
+        CategoryNotUnfreezeable,
+        CategoryNeedsNoGroupAssignments,
+        InvalidPlayerCount,
+        CategoryNeedsNoSeeding,
+        MatchGroupNotConfiguraleAnymore,
+        MatchNotConfiguraleAnymore,
+        PlayerAlreadyAssignedToOtherMatchInTheSameRoundAndCategory,
+        CategoryStillConfigurable,
+        GroupNumberMismatch,
+        WrongState,
+        MatchGroupAlreadyClosed,
+        MatchGroupEmpty,
+        MatchGroupNotUnstageable,
+        CourtNumberExists,
+        NoMatchAvail,
+        NoCourtAvail,
+        OnlyManualCourtAvail,
+        MatchNotRunnable,
+        CourtBusy,
+        CourtDisabled,
+        NoMatchResultSet,
+        InvalidMatchResultForCategorySettings,
+        InconsistentMatchResultString,
+        MatchNotRunning,
+        NoCourtAssigned,
+        PlayerNotIdle,
+        PlayerNotPlaying,
+        RoundNotFinished,
+        RankingAlreadyExists,
+        MissingRankingEntries,
+        InvalidSeedingList,
+        InvalidPlayerPair,
+        InvalidMatchLink,
+        InvalidRank,
+        PlayerAlreadyInMatches,
+        NotAllPlayersRegistered,
+        EPD_NotFound,
+        EPD_NotOpened,
+        EPD_NotConfigured,
+        EPD_CreationFailed,
+        EPD_NoSexForPlayerDefined,
+        EPD_InvalidDatabaseName,
+        FileAlreadyExists,
+        FileNotExisting,
+        IncompatibleFileFormat,
+        DatabaseError,
+        MatchNeedsNoReferee,
+        MatchNeedsReferee,
+        RefereeNotIdle,
+        CourtNotDisabled,
+        CourtAlreadyUsed,
+    };
+
+    //----------------------------------------------------------------------------
+
+    class TournamentException : public Sloppy::BasicException
+    {
+    public:
+      TournamentException(const std::string& sender, const std::string& context, Error errorCode)
+        :Sloppy::BasicException{
+           "QTournament logic exception", sender, context,
+           "Error code = " + std::to_string(static_cast<int>(errorCode))},
+         err{errorCode} {}
+
+      Error error() const { return err; }
+
+    private:
+      Error err;
+    };
+
+    //----------------------------------------------------------------------------
+
+    /** \brief A combination of error code and object for function return values;
+     * enforces the invariant that "containing an object" always means "OK" and
+     * that "containing an error code other than OK" always means "no object".
+     */
+    template<typename T>
+    class ObjectOrError : public std::optional<T>
+    {
+    public:
+      template<class... Args>
+      ObjectOrError(Args&&... args)
+        :std::optional<T>(std::in_place, std::forward<Args>(args)...), e{Error::OK}
+        //:std::optional<T>{std::in_place, args...}, e{Error::OK}
+        //:std::optional<T>(T{args...}), e{Error::OK}
+      {
+      }
+
+      ObjectOrError(const T& obj)
+        :std::optional<T>{obj}, e{Error::OK} {}
+
+      ObjectOrError(const std::optional<T>& obj)
+        :std::optional<T>{obj}, e{Error::OK} {}
+
+      ObjectOrError(std::optional<T>&& obj)
+        :std::optional<T>(std::move(obj)), e{Error::OK} {}
+
+      ObjectOrError(T&& obj)
+        :std::optional<T>(std::forward<T>(obj)), e{Error::OK} {}
+
+      ObjectOrError(Error errorCode)
+        :std::optional<T>{}, e{errorCode}
+      {
+        if (errorCode == Error::OK)
+        {
+          throw std::invalid_argument("ErrorOrObject ctor: initialized with OK but without object");
+        }
+      }
+
+
+      constexpr Error err() const noexcept { return e; }
+
+      constexpr bool err(Error compareError) const noexcept { return (e == compareError); }
+
+    private:
+      Error e;
     };
 }
 

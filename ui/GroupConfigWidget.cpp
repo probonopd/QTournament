@@ -19,7 +19,9 @@
 #include "GroupConfigWidget.h"
 
 #include <stdexcept>
-#include <QtWidgets/qmessagebox.h>
+#include <QMessageBox>
+
+using namespace QTournament;
 
 GroupConfigWidget::~GroupConfigWidget()
 {
@@ -28,7 +30,7 @@ GroupConfigWidget::~GroupConfigWidget()
 //----------------------------------------------------------------------------
     
 GroupConfigWidget::GroupConfigWidget(QWidget* parent)
-    : QWidget(parent), db(nullptr), pointersInitialized(false), rangeControlEnabled(true)
+    : QWidget(parent)
 {
   ui.setupUi(this);
   
@@ -46,15 +48,18 @@ GroupConfigWidget::GroupConfigWidget(QWidget* parent)
   for (int i=0; i<3; i++)
   {
     spGroupSize[i]->setMinimum(3);
-    spGroupSize[i]->setMaximum(MAX_GROUP_SIZE);
+    spGroupSize[i]->setMaximum(MaxGroupSize);
     spGroupSize[i]->setValue(i+3);
     oldGroupSize[i] = i+3;
     
     spGroupCount[i]->setMinimum(0);
-    spGroupCount[i]->setMaximum(MAX_GROUP_COUNT);
+    spGroupCount[i]->setMaximum(MaxGroupCount);
   }
     
   rangeControlEnabled = true;
+
+  // hide the currently unused "Auto Conf" button
+  ui.btnAutoConf->hide();
   
   applyDefaultConfig();
 }
@@ -63,7 +68,7 @@ GroupConfigWidget::GroupConfigWidget(QWidget* parent)
     
 void GroupConfigWidget::applyDefaultConfig()
 {
-  KO_Config cfg = KO_Config(QUARTER, false);
+  KO_Config cfg = KO_Config(KO_Start::Quarter, false);
   applyConfig(cfg);
 }
 
@@ -72,20 +77,20 @@ void GroupConfigWidget::applyDefaultConfig()
 void GroupConfigWidget::applyConfig(const KO_Config& cfg)
 {
   // Set the combobox with the start level
-  KO_START lvl = cfg.getStartLevel();
-  if (lvl == FINAL)
+  KO_Start lvl = cfg.getStartLevel();
+  if (lvl == KO_Start::Final)
   {
     ui.cbKOStart->setCurrentIndex(0);
   }
-  else if (lvl == SEMI)
+  else if (lvl == KO_Start::Semi)
   {
     ui.cbKOStart->setCurrentIndex(1);
   }
-  else if (lvl == QUARTER)
+  else if (lvl == KO_Start::Quarter)
   {
     ui.cbKOStart->setCurrentIndex(2);
   }
-  else if (lvl == L16)
+  else if (lvl == KO_Start::L16)
   {
     ui.cbKOStart->setCurrentIndex(3);
   }
@@ -99,7 +104,7 @@ void GroupConfigWidget::applyConfig(const KO_Config& cfg)
   
   // if we proceed directly with the finals, we actually don't have a
   // choice if the group second's should survive or not
-  ui.cbSecondSurvives->setEnabled(lvl != FINAL);
+  //ui.cbSecondSurvives->setEnabled(lvl != KO_Start::Final);
   
   // update the spin boxes for the group count / size values
 
@@ -156,14 +161,14 @@ void GroupConfigWidget::updateLabels()
 }
 
 //----------------------------------------------------------------------------
-    
+
 KO_Config GroupConfigWidget::getConfig()
 {
   int lvl = ui.cbKOStart->currentIndex();
-  KO_START koLvl = FINAL;
-  if (lvl == 1) koLvl = SEMI;
-  else if (lvl == 2) koLvl = QUARTER;
-  else if (lvl == 3) koLvl = L16;
+  KO_Start koLvl = KO_Start::Final;
+  if (lvl == 1) koLvl = KO_Start::Semi;
+  else if (lvl == 2) koLvl = KO_Start::Quarter;
+  else if (lvl == 3) koLvl = KO_Start::L16;
   else if (lvl > 3)
   {
     throw std::invalid_argument("Illegal dropbox index!");
@@ -190,7 +195,7 @@ void GroupConfigWidget::onStartLevelChanged(int newIndex)
   if (!pointersInitialized) return;
   
   // fake a complete update of the widget, because if we switch to/from
-  // FINALS as the start level, we have to activate / deactivate some
+  // KO_Start::FinalS as the start level, we have to activate / deactivate some
   // widgets
   KO_Config cfg = getConfig();
   applyConfig(cfg);
@@ -259,7 +264,7 @@ void GroupConfigWidget::setRequiredPlayersCount(int cnt)
 
 //----------------------------------------------------------------------------
 
-void GroupConfigWidget::setDatabase(TournamentDB* _db)
+void GroupConfigWidget::setDatabase(const TournamentDB* _db)
 {
   db = _db;
 
@@ -275,7 +280,7 @@ void GroupConfigWidget::onSpinBoxGroupCountChanged(int spinBoxIndex, int newVal)
   QSpinBox* sb = spGroupCount[spinBoxIndex];
   
   if (newVal < 0) sb->setValue(0);
-  if (newVal > MAX_GROUP_COUNT) sb->setValue(MAX_GROUP_COUNT);
+  if (newVal > MaxGroupCount) sb->setValue(MaxGroupCount);
   updateLabels();
   emit groupConfigChanged(getConfig());
 }
@@ -307,7 +312,7 @@ void GroupConfigWidget::onSpinBoxGroupSizeChanged(int spinBoxIndex, int newVal)
   }
   
   // avoid too small or too large values
-  if ((newVal < 3) || (newVal > MAX_GROUP_SIZE))
+  if ((newVal < 3) || (newVal > MaxGroupSize))
   {
     sb->setValue(oldGroupSize[spinBoxIndex]);
     return;

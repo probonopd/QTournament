@@ -42,31 +42,24 @@ namespace QTournament
 
   class Player : public TournamentDatabaseObject
   {
-    friend class PlayerMngr;
-    friend class TeamMngr;
-    friend class SqliteOverlay::GenericObjectManager<TournamentDB>;
-    friend class TournamentDatabaseObjectManager;
-    
   public:
     QString getDisplayName(int maxLen = 0) const;
     QString getDisplayName_FirstNameFirst() const;
     QString getFirstName() const;
     QString getLastName() const;
-    ERR rename(const QString& newFirst, const QString& newLast);
-    SEX getSex() const;
+    Error rename(const QString& newFirst, const QString& newLast);
+    Sex getSex() const;
     Team getTeam() const;
-    vector<Category> getAssignedCategories() const;
+    std::vector<Category> getAssignedCategories() const;
     int getRefereeCount() const;
-    unique_ptr<Court> getRefereeCourt() const;
-    unique_ptr<Court> getMatchCourt() const;
+    std::optional<Court> getRefereeCourt() const;
+    std::optional<Court> getMatchCourt() const;
 
-  private:
-    Player (TournamentDB* db, int rowId);
-    Player (TournamentDB* db, SqliteOverlay::TabRow row);
+    Player (const TournamentDB& _db, int rowId);
+    Player (const TournamentDB& _db, const SqliteOverlay::TabRow& _row);
   };
 
-  typedef vector<Player> PlayerList;
-  typedef unique_ptr<Player> upPlayer;
+  using PlayerList = std::vector<Player>;
 
 }
 #endif	/* TEAM_H */

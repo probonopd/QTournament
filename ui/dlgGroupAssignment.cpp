@@ -22,14 +22,15 @@
 #include "dlgGroupAssignment.h"
 #include "Category.h"
 
-dlgGroupAssignment::dlgGroupAssignment(TournamentDB* _db, QWidget* p, Category& _cat)
-  :QDialog(p), db(_db),
-    cfg(KO_Config(QUARTER, false)), cat(_cat)    // dummy, just for formal initialization
+using namespace QTournament;
+
+dlgGroupAssignment::dlgGroupAssignment(const QTournament::TournamentDB& _db, QWidget* p, const QTournament::Category& _cat)
+  :QDialog(p), db{_db}, cat{_cat},
+    cfg(KO_Config(KO_Start::Quarter, false))    // dummy, just for formal initialization
 {
   ui.setupUi(this);
-  cfg = KO_Config(cat.getParameter(GROUP_CONFIG).toString());
-
-  ui.grpWidget->setDatabase(db);
+  ui.grpWidget->setDatabase(&db);
+  cfg = KO_Config(cat.getParameter(CatParameter::GroupConfig).toString());
 
   // set the window title
   setWindowTitle(tr("Group assignment for ") + cat.getName());
@@ -91,7 +92,7 @@ void dlgGroupAssignment::done(int result)
 
 void dlgGroupAssignment::onBtnRandomizeClicked()
 {
-  ui.grpWidget->setup(db, getRandomizedPlayerPairListList());
+  ui.grpWidget->setup(&db, getRandomizedPlayerPairListList());
 }
 
 //----------------------------------------------------------------------------
@@ -103,10 +104,12 @@ void dlgGroupAssignment::onBtnSwapClicked()
 
 //----------------------------------------------------------------------------
 
-vector<PlayerPairList> dlgGroupAssignment::getGroupAssignments()
+std::vector<PlayerPairList> dlgGroupAssignment::getGroupAssignments()
 {
   return ui.grpWidget->getGroupAssignments();
 }
+
+//----------------------------------------------------------------------------
 
 //----------------------------------------------------------------------------
 

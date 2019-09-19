@@ -33,9 +33,9 @@ using namespace QTournament;
 
 void PlayerItemDelegate::paintSelectedCell(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index, int srcRowId) const
 {
-  PlayerMngr pm{db};
+  PlayerMngr pm{*db};
   auto p = pm.getPlayerBySeqNum(srcRowId);
-  if (p == nullptr) return;
+  if (!p) return;
 
   // draw text in highlighted cells in white bold text
   painter->setPen(QPen(QColor(Qt::white)));
@@ -48,13 +48,13 @@ void PlayerItemDelegate::paintSelectedCell(QPainter* painter, const QStyleOption
 
 void PlayerItemDelegate::paintUnselectedCell(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index, int srcRowId) const
 {
-  PlayerMngr pm{db};
+  PlayerMngr pm{*db};
   auto p = pm.getPlayerBySeqNum(srcRowId);
-  if (p == nullptr) return;
+  if (!p) return;
 
   // Paint the background in a color related
   // to the participant's sex
-  QColor bgColor = (p->getSex() == F) ? QColor(PLAYER_ITEM_FEMALE_BG_COL) : QColor(PLAYER_ITEM_MALE_BG_COL);
+  QColor bgColor = (p->getSex() == Sex::F) ? QColor(PLAYER_ITEM_FEMALE_BG_COL) : QColor(PLAYER_ITEM_MALE_BG_COL);
   painter->fillRect(option.rect, bgColor);
 
   commonPaint(painter, option, index, *p);
@@ -66,8 +66,8 @@ void PlayerItemDelegate::commonPaint(QPainter* painter, const QStyleOptionViewIt
 {
   // overwrite the pre-set text color in case we have an
   // unregistered player
-  OBJ_STATE plStat = p.getState();
-  if (plStat == STAT_PL_WAIT_FOR_REGISTRATION)
+  ObjState plStat = p.getState();
+  if (plStat == ObjState::PL_WaitForRegistration)
   {
     QColor txtCol = (option.state & QStyle::State_Selected) ? Qt::lightGray : Qt::darkGray;
     painter->setPen(txtCol);

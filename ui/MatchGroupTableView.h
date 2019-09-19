@@ -29,24 +29,22 @@
 #include "models/MatchGroupTabModel.h"
 #include "AutoSizingTable.h"
 
-using namespace QTournament;
-
-class MatchGroupTableView : public GuiHelpers::AutoSizingTableView_WithDatabase<MatchGroupTableModel>
+class MatchGroupTableView : public GuiHelpers::AutoSizingTableView_WithDatabase<QTournament::MatchGroupTableModel>
 {
   Q_OBJECT
   
 public:
-  enum class FilterType : std::int8_t { IDLE = 1, STAGED = 2, NONE = 0 };
+  enum class FilterType : std::int8_t { IDLE = 1, STAGED = 2, None = 0 };
 
   MatchGroupTableView (QWidget* parent);
   virtual ~MatchGroupTableView () {}
   void setFilter(FilterType ft);
   void clearFilter();
-  unique_ptr<MatchGroup> getSelectedMatchGroup();
+  std::optional<QTournament::MatchGroup> getSelectedMatchGroup();
   
 protected:
-  static constexpr int REL_NUMERIC_COL_WIDTH = 2;
-  static constexpr int REL_CATEGORY_COL_WIDTH = 3;
+  static constexpr int NumericColRelWidth = 2;
+  static constexpr int CategoryColRelWidth = 3;
 
   void hook_onDatabaseOpened() override;
 

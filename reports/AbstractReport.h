@@ -34,34 +34,34 @@
 namespace QTournament
 {
 
-  typedef unique_ptr<SimpleReportLib::SimpleReportGenerator> upSimpleReport;
-  typedef shared_ptr<SimpleReportLib::SimpleReportGenerator> spSimpleReport;
+  using upSimpleReport = std::unique_ptr<SimpleReportLib::SimpleReportGenerator>;
+  using spSimpleReport = shared_ptr<SimpleReportLib::SimpleReportGenerator>;
 
   class AbstractReport
   {
   public:
-    static constexpr double A4_WIDTH__MM = 210.0;
-    static constexpr double A4_HEIGHT__MM = 297.0;
-    static constexpr double DEFAULT_MARGIN__MM = 10.0;
-    static constexpr double BEFORE_HEADLINE_SKIP__MM = 2.0;
-    static constexpr double AFTER_HEADLINE_SKIP__MM = 5.0;
-    static constexpr double HEAD_SUBHEAD_SKIP__MM = 0.5;
-    static constexpr double SKIP_BEFORE_INTERMEDIATE_HEADER__MM = 4.0;
-    static constexpr double SKIP_AFTER_INTERMEDIATE_HEADER__MM = 1.0;
+    static constexpr double WidthA4_mm = 210.0;
+    static constexpr double HeightA4_mm = 297.0;
+    static constexpr double DefaultMargin_mm = 10.0;
+    static constexpr double BeforeHeadlineSkip_mm = 2.0;
+    static constexpr double AfterHeadlineSkip_mm = 5.0;
+    static constexpr double HeadSubheadSkip_mm = 0.5;
+    static constexpr double SkipBeforeIntermediaHeader_mm = 4.0;
+    static constexpr double SkipAfterIntermediateHeader_mm = 1.0;
 
-    static constexpr char HEADLINE_STYLE[] = "Headline";
-    static constexpr char SUBHEADLINE_STYLE[] = "SubHeadline";
-    static constexpr char INTERMEDIATEHEADLINE_STYLE[] = "IntermediateHeadline";
-    static constexpr char RESULTSHEET_NAME_STYLE[] = "ResultSheet_Name";
-    static constexpr char RESULTSHEET_TEAM_STYLE[] = "ResultSheet_Team";
-    static constexpr char RESULTSHEET_GAMELABEL_STYLE[] = "ResultSheet_GameLabel";
-    static constexpr char BOLD_STYLE[] = "Bold";
+    static constexpr char HeadlineStyle[] = "Headline";
+    static constexpr char SubheadStyle[] = "SubHeadline";
+    static constexpr char IntermediateHeadlineStyle[] = "IntermediateHeadline";
+    static constexpr char ResultsheetNameStyle[] = "ResultSheet_Name";
+    static constexpr char ResultsheetTeamStyle[] = "ResultSheet_Team";
+    static constexpr char ResultsheetGamelabelStyle[] = "ResultSheet_GameLabel";
+    static constexpr char BoldStyle[] = "Bold";
 
-    AbstractReport(TournamentDB* _db, const QString& _name);
+    AbstractReport(const QTournament::TournamentDB& _db, const QString& _name);
     virtual ~AbstractReport();
 
-    virtual upSimpleReport regenerateReport() { throw std::runtime_error("Unimplemented Method: regenerateReport"); };
-    virtual QStringList getReportLocators() const { throw std::runtime_error("Unimplemented Method: getReportLocators"); };
+    virtual upSimpleReport regenerateReport() { throw std::runtime_error("Unimplemented Method: regenerateReport"); }
+    virtual QStringList getReportLocators() const { throw std::runtime_error("Unimplemented Method: getReportLocators"); }
 
     upSimpleReport createEmptyReport_Portrait() const;
     upSimpleReport createEmptyReport_Landscape() const;
@@ -70,18 +70,19 @@ namespace QTournament
     void setHeaderAndHeadline(SimpleReportLib::SimpleReportGenerator* rep, const QString& headline, const QString& subHead=QString()) const;
 
   protected:
-    TournamentDB* db;
+    const QTournament::TournamentDB& db;
     QString name;
-    unique_ptr<KeyValueTab> cfg;
+    SqliteOverlay::KeyValueTab cfg;
+    int roundOffset{0};
 
     void prepStyles(upSimpleReport& rep) const;
-    void printIntermediateHeader(upSimpleReport& rep, const QString& txt, double skipBefore__MM=SKIP_BEFORE_INTERMEDIATE_HEADER__MM) const;
+    void printIntermediateHeader(upSimpleReport& rep, const QString& txt, double skipBefore__MM=SkipBeforeIntermediaHeader_mm) const;
     void printMatchList(upSimpleReport& rep, const MatchList& maList, const PlayerPairList& byeList, const QString& continuationString, bool withResults=false, bool withGroupColumn=false) const;
-    void setHeaderAndFooter(upSimpleReport& rep, const QString& reportName) const;
+    void setHeaderAndFooter(upSimpleReport& rep, const QString& reportName);
   };
 
-  typedef unique_ptr<AbstractReport> upAbstractReport;
-  typedef shared_ptr<AbstractReport> spAbstractReport;
+  using upAbstractReport = std::unique_ptr<AbstractReport>;
+  using spAbstractReport = shared_ptr<AbstractReport>;
 
 }
 

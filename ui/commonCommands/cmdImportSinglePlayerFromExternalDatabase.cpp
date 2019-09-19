@@ -27,7 +27,9 @@
 #include "PlayerMngr.h"
 #include "CatMngr.h"
 
-cmdImportSinglePlayerFromExternalDatabase::cmdImportSinglePlayerFromExternalDatabase(TournamentDB* _db, QWidget* p, int _preselectedCatId)
+using namespace QTournament;
+
+cmdImportSinglePlayerFromExternalDatabase::cmdImportSinglePlayerFromExternalDatabase(const TournamentDB& _db, QWidget* p, int _preselectedCatId)
   :AbstractCommand(_db, p), preselectedCatId(_preselectedCatId)
 {
 
@@ -35,7 +37,7 @@ cmdImportSinglePlayerFromExternalDatabase::cmdImportSinglePlayerFromExternalData
 
 //----------------------------------------------------------------------------
 
-ERR cmdImportSinglePlayerFromExternalDatabase::exec()
+Error cmdImportSinglePlayerFromExternalDatabase::exec()
 {
   // make sure we have an external database open
   PlayerMngr pm{db};
@@ -44,14 +46,14 @@ ERR cmdImportSinglePlayerFromExternalDatabase::exec()
     QString msg = tr("No valid database for player export available.\n\n");
     msg +=tr("Is the database configured and the file existing?");
     QMessageBox::warning(parentWidget, tr("Export player"), msg);
-    return EPD__NOT_OPENED;
+    return Error::EPD_NotOpened;
   }
-  ERR e = pm.openConfiguredExternalPlayerDatabase();
-  if (!(pm.hasExternalPlayerDatabaseOpen()) || (e != OK))
+  Error e = pm.openConfiguredExternalPlayerDatabase();
+  if (!(pm.hasExternalPlayerDatabaseOpen()) || (e != Error::OK))
   {
     QString msg = tr("Could not open database for player export!");
     QMessageBox::warning(parentWidget, tr("Export player"), msg);
-    return EPD__NOT_OPENED;
+    return Error::EPD_NotOpened;
   }
 
   ExternalPlayerDB* extDb = pm.getExternalPlayerDatabaseHandle();
@@ -60,7 +62,7 @@ ERR cmdImportSinglePlayerFromExternalDatabase::exec()
   DlgImportPlayer dlg{parentWidget, extDb};
   if (dlg.exec() != QDialog::Accepted)
   {
-    return OK;
+    return Error::OK;
   }
 
   // get the selected ID
@@ -69,36 +71,36 @@ ERR cmdImportSinglePlayerFromExternalDatabase::exec()
   {
     QString msg = tr("No valid player selection found");
     QMessageBox::warning(parentWidget, tr("Import player"), msg);
-    return INVALID_ID;
+    return Error::InvalidId;
   }
 
   // get the selected player from the database
   auto extPlayer = extDb->getPlayer(extId);
-  if (extPlayer == nullptr)
+  if (!extPlayer)
   {
     QString msg = tr("No valid player selection found");
     QMessageBox::warning(parentWidget, tr("Import player"), msg);
-    return INVALID_ID;
+    return Error::InvalidId;
   }
 
   // if the player has no valid sex assigned,
   // show a selection dialog
-  upExternalPlayerDatabaseEntry finalPlayerData;
-  if (extPlayer->getSex() == DONT_CARE)
+  std::optional<ExternalPlayerDatabaseEntry> finalPlayerData;
+  if (extPlayer->getSex() == Sex::DontCare)
   {
     DlgPickPlayerSex dlgPickSex{parentWidget, extPlayer->getFirstname() + " " + extPlayer->getLastname()};
     if (dlgPickSex.exec() != QDialog::Accepted)
     {
-      return OK;
+      return Error::OK;
     }
 
-    finalPlayerData = make_unique<ExternalPlayerDatabaseEntry>(
+    finalPlayerData.emplace(
           extPlayer->getFirstname(),
           extPlayer->getLastname(),
           dlgPickSex.getSelectedSex()
           );
   } else {
-    finalPlayerData = std::move(extPlayer);
+    finalPlayerData = extPlayer;
   }
 
   // make sure the player's sex fits to a possibly preselected
@@ -109,16 +111,16 @@ ERR cmdImportSinglePlayerFromExternalDatabase::exec()
     auto cat = cm.getCategory(preselectedCatId);
 
     // was the provided ID valid? If not, invalidate it
-    if (cat == nullptr) preselectedCatId = -1;
+    if (!cat) preselectedCatId = -1;
 
     // may we add a player of the selected sex to this category?
-    SEX selSex = finalPlayerData->getSex();
-    if (cat->getAddState(selSex) != CAN_JOIN)
+    Sex selSex = finalPlayerData->getSex();
+    if (cat->getAddState(selSex) != CatAddState::CanJoin)
     {
       QString msg = tr("%1 cannot be added to this category.");
-      msg = msg.arg((selSex == M) ? tr("A male player") : tr("A female player"));
+      msg = msg.arg((selSex == Sex::M) ? tr("A male player") : tr("A female player"));
       QMessageBox::warning(parentWidget, tr("Import player"), msg);
-      return INVALID_SEX;
+      return Error::InvalidSex;
     }
   }
 

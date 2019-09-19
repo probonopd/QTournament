@@ -27,8 +27,6 @@
 
 #include <QList>
 
-using namespace std;
-
 namespace QTournament
 {
   class SwissLadderGenerator
@@ -37,28 +35,28 @@ namespace QTournament
     static constexpr int SOLUTION_FOUND = 0;
     static constexpr int NO_MORE_ROUNDS = -1;
     static constexpr int DEADLOCK = -2;
-    SwissLadderGenerator(const vector<int>& _ranking, const vector<tuple<int, int>>& _pastMatches);
-    int getNextMatches(vector<tuple<int, int>>& resultVector);
+    SwissLadderGenerator(const std::vector<int>& _ranking, const std::vector<std::tuple<int, int>>& _pastMatches);
+    int getNextMatches(std::vector<std::tuple<int, int>>& resultVector);
 
   protected:
     bool hasMatchBeenPlayed(int pair1Id, int pair2Id) const;
-    pair<int, vector<int>> getEffectivePlayerList(int curByeRank);
-    int getNextUnusedRank(const vector<bool>& isRankUsed, int minRank) const;
-    int findOpponentRank(int pair1Rank, int minPair2Rank, const vector<bool>& isRankUsed, const vector<int> effPairList) const;
-    bool matchSelectionCausesDeadlock(const vector<tuple<int, int>>& nextMatches);
-    bool canBuildAnotherRound(const vector<tuple<int, int>>& remain, const vector<tuple<int, int>>& nextMatches) const;
-    void flagMatchesWithPlayerPairOccurence(const vector<tuple<int, int> >& matchSet, vector<bool>& flagList, const tuple<int, int>& refMatch, bool newState) const;
-    vector<int> getPotentialByePairs(const vector<tuple<int, int> >& optionalAdditionalMatches) const;
-    int findByePlayerInMatchSet(const vector<tuple<int, int>>& matchSet = vector<tuple<int, int>>()) const;
+    std::pair<int, std::vector<int>> getEffectivePlayerList(int curByeRank);
+    int getNextUnusedRank(const std::vector<bool>& isRankUsed, int minRank) const;
+    int findOpponentRank(int pair1Rank, int minPair2Rank, const std::vector<bool>& isRankUsed, const std::vector<int> effPairList) const;
+    bool matchSelectionCausesDeadlock(const std::vector<std::tuple<int, int>>& nextMatches);
+    bool canBuildAnotherRound(const std::vector<std::tuple<int, int>>& remain, const std::vector<std::tuple<int, int>>& nextMatches) const;
+    void flagMatchesWithPlayerPairOccurence(const std::vector<std::tuple<int, int> >& matchSet, std::vector<bool>& flagList, const std::tuple<int, int>& refMatch, bool newState) const;
+    std::vector<int> getPotentialByePairs(const std::vector<std::tuple<int, int> >& optionalAdditionalMatches) const;
+    int findByePlayerInMatchSet(const std::vector<std::tuple<int, int>>& matchSet = std::vector<std::tuple<int, int>>()) const;
 
   private:
-    vector<int> ranking;
-    vector<tuple<int, int>> pastMatches;
+    std::vector<int> ranking;
+    std::vector<std::tuple<int, int>> pastMatches;
     int roundsPlayed;
     int matchesPerRound;
     size_t nPairs;
-    unordered_map<int, int> matchCount;
-    vector<tuple<int, int>> remainingMatches;  // will be initialized upon the first call of matchSelectionCausesDeadlock()
+    std::unordered_map<int, int> matchCount;
+    std::vector<std::tuple<int, int>> remainingMatches;  // will be initialized upon the first call of matchSelectionCausesDeadlock()
   };
 
 }

@@ -252,27 +252,27 @@ void DatabaseTestScenario::prepScenario02(bool useTeams)
   CatMngr* cmngr = Tournament::getCatMngr();
   CPPUNIT_ASSERT(cmngr->createNewCategory("MS") == OK);
   Category ms = cmngr->getCategory("MS");
-  CPPUNIT_ASSERT(ms.setMatchType(SINGLES) == OK);
+  CPPUNIT_ASSERT(ms.setMatchType(MatchType::Singles) == OK);
   CPPUNIT_ASSERT(ms.setSex(M) == OK);
   
   CPPUNIT_ASSERT(cmngr->createNewCategory("MD") == OK);
   Category md = cmngr->getCategory("MD");
-  CPPUNIT_ASSERT(md.setMatchType(DOUBLES) == OK);
+  CPPUNIT_ASSERT(md.setMatchType(MatchType::Doubles) == OK);
   CPPUNIT_ASSERT(md.setSex(M) == OK);
   
   CPPUNIT_ASSERT(cmngr->createNewCategory("LS") == OK);
   Category ls = cmngr->getCategory("LS");
-  CPPUNIT_ASSERT(ls.setMatchType(SINGLES) == OK);
+  CPPUNIT_ASSERT(ls.setMatchType(MatchType::Singles) == OK);
   CPPUNIT_ASSERT(ls.setSex(F) == OK);
   
   CPPUNIT_ASSERT(cmngr->createNewCategory("LD") == OK);
   Category ld = cmngr->getCategory("LD");
-  CPPUNIT_ASSERT(ld.setMatchType(DOUBLES) == OK);
+  CPPUNIT_ASSERT(ld.setMatchType(MatchType::Doubles) == OK);
   CPPUNIT_ASSERT(ld.setSex(F) == OK);
   
   CPPUNIT_ASSERT(cmngr->createNewCategory("MX") == OK);
   Category mx = cmngr->getCategory("MX");
-  CPPUNIT_ASSERT(mx.setMatchType(MIXED) == OK);
+  CPPUNIT_ASSERT(mx.setMatchType(MatchType::Mixed) == OK);
   CPPUNIT_ASSERT(mx.setSex(M) == OK);   // shouldn't matter at all
 }
 
@@ -352,9 +352,9 @@ void DatabaseTestScenario::prepScenario04(bool useTeams)
 
   // fake a valid category state
   TournamentDB db{getSqliteFileName(), false};
-  TabRow catRow = db[TAB_CATEGORY][5];
-  catRow.update(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_CAT_IDLE));
-  CPPUNIT_ASSERT(mx.getState() == STAT_CAT_IDLE);
+  TabRow catRow = db[TabCategory][5];
+  catRow.update(GenericStateFieldName, static_cast<int>(STAT_CAT_Idle));
+  CPPUNIT_ASSERT(mx.getState() == STAT_CAT_Idle);
 
   // create a match group in mixed doubles
   ERR e;
@@ -398,7 +398,7 @@ void DatabaseTestScenario::prepScenario05(bool useTeams)
   tmngr->createNewTeam("Team 1");
   cmngr->createNewCategory("MS");
   Category ms = cmngr->getCategory("MS");
-  ms.setMatchType(SINGLES);
+  ms.setMatchType(MatchType::Singles);
   ms.setSex(M);
 
 
@@ -420,7 +420,7 @@ void DatabaseTestScenario::prepScenario05(bool useTeams)
   GroupDef d = GroupDef(5, 8);
   GroupDefList gdl;
   gdl.append(d);
-  KO_Config cfg(QUARTER, false, gdl);
+  KO_Config cfg(KO_Start::Quarter, false, gdl);
   ms.setParameter(GROUP_CONFIG, cfg.toString());
 
   // run the category
@@ -534,7 +534,7 @@ bool DatabaseTestScenario::playRound(const Category &cat, int round, int expecte
     {
       for (Match ma : mg.getMatches())
       {
-        if (ma.getState() == STAT_MA_READY)
+        if (ma.getState() == STAT_MA_Ready)
         {
           nextMatchId = ma.getId();
           qDebug() << "   Found match! ID = " << nextMatchId << ", round = " << ma.getMatchGroup().getRound() << ", group = " << ma.getMatchGroup().getGroupNumber();
@@ -550,13 +550,13 @@ bool DatabaseTestScenario::playRound(const Category &cat, int round, int expecte
 
     // start the match
     CPPUNIT_ASSERT(mm->assignMatchToCourt(*ma, *court) == OK);
-    CPPUNIT_ASSERT((*ma).getState() == STAT_MA_RUNNING);
+    CPPUNIT_ASSERT((*ma).getState() == STAT_MA_Running);
 
     // finish the match with a random result
     auto score = MatchScore::genRandomScore();
     CPPUNIT_ASSERT(score != nullptr);
     CPPUNIT_ASSERT(mm->setMatchScoreAndFinalizeMatch(*ma, *score) == OK);
-    CPPUNIT_ASSERT((*ma).getState() == STAT_MA_FINISHED);
+    CPPUNIT_ASSERT((*ma).getState() == STAT_MA_Finished);
     ERR e;
     auto storedScore = ma->getScore(&e);
     CPPUNIT_ASSERT(e == OK);

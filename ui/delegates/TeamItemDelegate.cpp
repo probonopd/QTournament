@@ -27,7 +27,7 @@
 
 using namespace QTournament;
 
-TeamItemDelegate::TeamItemDelegate(TournamentDB* _db, QObject* parent)
+TeamItemDelegate::TeamItemDelegate(const TournamentDB* _db, QObject* parent)
 : QStyledItemDelegate(parent), db(_db), proxy(nullptr), fntMetrics(QFontMetrics(QFont()))
 {
 }
@@ -54,7 +54,7 @@ void TeamItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
   painter->save();
   
   // Paint the background in the selection color, if necessary
-  QColor bgColor = option.palette.color(QPalette::Background);
+  QColor bgColor = option.palette.color(QPalette::Window);
   if(option.state & QStyle::State_Selected)
   {
     bgColor = option.palette.color(QPalette::Highlight);
@@ -72,12 +72,12 @@ void TeamItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
   // paint the cell content and adjust the alignment
   // according to the content
   int align = 0;
-  if (index.column() == TeamTableModel::NAME_COL_ID)
+  if (index.column() == TeamTableModel::NameColId)
   {
     align = Qt::AlignVCenter|Qt::AlignLeft;
 
     // add a margin on the left
-    r.adjust(ITEM_MARGIN, 0, 0, 0);
+    r.adjust(ItemMargin, 0, 0, 0);
 
   } else {
 
@@ -93,10 +93,10 @@ void TeamItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
 
 QSize TeamItemDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index ) const
 {
-  QString txt = index.data(Qt::DisplayRole).toString() + 2 * ITEM_MARGIN;
-  int width = fntMetrics.width(txt);
+  QString txt = index.data(Qt::DisplayRole).toString() + 2 * ItemMargin;
+  int width = fntMetrics.horizontalAdvance(txt);
   
-  return QSize(width, ITEM_HEIGHT);
+  return QSize(width, ItemHeight);
 }
 
 //----------------------------------------------------------------------------

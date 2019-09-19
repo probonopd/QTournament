@@ -22,6 +22,8 @@
 #include "cmdRemovePlayerFromCategory.h"
 #include "CatMngr.h"
 
+using namespace QTournament;
+
 cmdRemovePlayerFromCategory::cmdRemovePlayerFromCategory(QWidget* p, const Player& _pl, const Category& _cat)
   :AbstractCommand(_pl.getDatabaseHandle(), p), pl(_pl), cat(_cat)
 {
@@ -30,17 +32,17 @@ cmdRemovePlayerFromCategory::cmdRemovePlayerFromCategory(QWidget* p, const Playe
 
 //----------------------------------------------------------------------------
 
-ERR cmdRemovePlayerFromCategory::exec()
+Error cmdRemovePlayerFromCategory::exec()
 {
-  ERR err;
+  Error err;
   CatMngr cm{db};
 
   err = cm.removePlayerFromCategory(pl, cat);
 
-  if (err == OK) return OK;
+  if (err == Error::OK) return Error::OK;
 
   QString msg;
-  if (err == PLAYER_NOT_REMOVABLE_FROM_CATEGORY)
+  if (err == Error::PlayerNotRemovableFromCategory)
   {
     msg = tr("The player cannot be removed from the category anymore,\n");
     msg += tr("e.g., because the category has already been started");

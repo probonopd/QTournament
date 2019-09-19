@@ -22,7 +22,6 @@
 #include "RankingEntry.h"
 #include "RankingMngr.h"
 #include "assert.h"
-#include "BracketGenerator.h"
 #include "MatchMngr.h"
 
 #include <QDebug>
@@ -32,15 +31,15 @@ using namespace SqliteOverlay;
 namespace QTournament
 {
 
-  PureRoundRobinCategory::PureRoundRobinCategory(TournamentDB* db, int rowId)
-  : Category(db, rowId)
+  PureRoundRobinCategory::PureRoundRobinCategory(const TournamentDB& _db, int rowId)
+  : Category(_db, rowId)
   {
   }
 
 //----------------------------------------------------------------------------
 
-  PureRoundRobinCategory::PureRoundRobinCategory(TournamentDB* db, SqliteOverlay::TabRow row)
-  : Category(db, row)
+  PureRoundRobinCategory::PureRoundRobinCategory(const TournamentDB& _db, const TabRow& _row)
+  : Category(_db, _row)
   {
   }
 
@@ -48,8 +47,8 @@ namespace QTournament
 
   int PureRoundRobinCategory::getRoundCountPerIteration() const
   {
-    OBJ_STATE stat = getState();
-    if ((stat == STAT_CAT_CONFIG) || (stat == STAT_CAT_FROZEN))
+    ObjState stat = getState();
+    if ((stat == ObjState::CAT_Config) || (stat == ObjState::CAT_Frozen))
     {
       return -1;   // category not yet fully configured; can't calc rounds
     }
@@ -64,16 +63,7 @@ namespace QTournament
 
   int PureRoundRobinCategory::getIterationCount() const
   {
-    return getParameter_int(ROUND_ROBIN_ITERATIONS);  // simple wrapper function
-  }
-
-  //----------------------------------------------------------------------------
-
-  unique_ptr<PureRoundRobinCategory> PureRoundRobinCategory::getFromGenericCat(const Category& cat)
-  {
-    MATCH_SYSTEM msys = cat.getMatchSystem();
-
-    return (msys == ROUND_ROBIN) ? unique_ptr<PureRoundRobinCategory>(new PureRoundRobinCategory(cat.db, cat.row)) : nullptr;
+    return getParameter_int(CatParameter::RoundRobinIterations);  // simple wrapper function
   }
 
   //----------------------------------------------------------------------------
@@ -81,10 +71,10 @@ namespace QTournament
   ModMatchResult PureRoundRobinCategory::canModifyMatchResult(const Match& ma) const
   {
     // the match has to be in FINISHED state
-    if (ma.getState() != STAT_MA_FINISHED) return ModMatchResult::NotPossible;
+    if (ma.is_NOT_InState(ObjState::MA_Finished)) return ModMatchResult::NotPossible;
 
     // if this match does not belong to us, we're not responsible
-    if (ma.getCategory().getMatchSystem() != ROUND_ROBIN) return ModMatchResult::NotPossible;
+    if (ma.getCategory().getMatchSystem() != MatchSystem::RoundRobin) return ModMatchResult::NotPossible;
 
     // in round robins, we can modify the results of all matches
     // at any time
@@ -109,38 +99,38 @@ namespace QTournament
 
     // update the match
     MatchMngr mm{db};
-    ERR e = mm.updateMatchScore(ma, newScore, true);
-    if (e != OK) return ModMatchResult::NotPossible;
+    Error e = mm.updateMatchScore(ma, newScore, true);
+    if (e != Error::OK) return ModMatchResult::NotPossible;
 
     // update all affected ranking entries
     RankingMngr rm{db};
     e = rm.updateRankingsAfterMatchResultChange(ma, oldScore);
-    return (e == OK) ? ModMatchResult::ModDone : ModMatchResult::NotPossible;
+    return (e == Error::OK) ? ModMatchResult::ModDone : ModMatchResult::NotPossible;
   }
 
 //----------------------------------------------------------------------------
 
-  ERR PureRoundRobinCategory::canFreezeConfig()
+  Error PureRoundRobinCategory::canFreezeConfig()
   {
-    if (getState() != STAT_CAT_CONFIG)
+    if (is_NOT_InState(ObjState::CAT_Config))
     {
-      return CONFIG_ALREADY_FROZEN;
+      return Error::ConfigAlreadyFrozen;
     }
     
     // make sure there no unpaired players in singles or doubles
-    if ((getMatchType() != SINGLES) && (hasUnpairedPlayers()))
+    if ((getMatchType() != MatchType::Singles) && (hasUnpairedPlayers()))
     {
-      return UNPAIRED_PLAYERS;
+      return Error::UnpairedPlayers;
     }
     
     // make sure we have at least three players
     PlayerPairList pp = getPlayerPairs();
     if (pp.size() < 3)
     {
-      return INVALID_PLAYER_COUNT;
+      return Error::InvalidPlayerCount;
     }
     
-    return OK;
+    return Error::OK;
   }
 
 //----------------------------------------------------------------------------
@@ -159,9 +149,9 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  ERR PureRoundRobinCategory::prepareFirstRound(ProgressQueue *progressNotificationQueue)
+  Error PureRoundRobinCategory::prepareFirstRound()
   {
-    if (getState() != STAT_CAT_IDLE) return WRONG_STATE;
+    if (is_NOT_InState(ObjState::CAT_Idle)) return Error::WrongState;
 
     MatchMngr mm{db};
 
@@ -171,27 +161,21 @@ namespace QTournament
     // do not return an error here, because obviously we have been
     // called successfully before and we only want to avoid
     // double initialization
-    if (allGrp.size() != 0) return OK;
+    if (allGrp.size() != 0) return Error::OK;
 
     // alright, this is a virgin category. Generate
     // all round robin matches at once
     PlayerPairList allPairs = getPlayerPairs();
-    if (progressNotificationQueue != nullptr)
-    {
-      int nPlayers = allPairs.size();
-      int nMatches = (nPlayers / 2) * calcTotalRoundsCount();
-      progressNotificationQueue->reset(nMatches);
-    }
     int iterationCount = getIterationCount();
     int roundsPerIteration = getRoundCountPerIteration();
-    ERR e;
+    Error e;
     for (int i=0; i < iterationCount; ++i)
     {
       int firstRoundNum = (i * roundsPerIteration) + 1;
-      e = generateGroupMatches(allPairs, GROUP_NUM__ITERATION, firstRoundNum, progressNotificationQueue);
-      if (e != OK) return e;
+      e = generateGroupMatches(allPairs, GroupNum_Iteration, firstRoundNum);
+      if (e != Error::OK) return e;
     }
-    return OK;
+    return Error::OK;
   }
 
 //----------------------------------------------------------------------------
@@ -213,26 +197,26 @@ namespace QTournament
   {
     return [](RankingEntry& a, RankingEntry& b) {
       // first criterion: delta between won and lost matches
-      tuple<int, int, int, int> matchStatsA = a.getMatchStats();
-      tuple<int, int, int, int> matchStatsB = b.getMatchStats();
-      int deltaA = get<0>(matchStatsA) - get<2>(matchStatsA);
-      int deltaB = get<0>(matchStatsB) - get<2>(matchStatsB);
+      std::tuple<int, int, int, int> matchStatsA = a.getMatchStats();
+      std::tuple<int, int, int, int> matchStatsB = b.getMatchStats();
+      int deltaA = std::get<0>(matchStatsA) - std::get<2>(matchStatsA);
+      int deltaB = std::get<0>(matchStatsB) - std::get<2>(matchStatsB);
       if (deltaA > deltaB) return true;
       if (deltaA < deltaB) return false;
 
       // second criteria: delta between won and lost games
-      tuple<int, int, int> gameStatsA = a.getGameStats();
-      tuple<int, int, int> gameStatsB = b.getGameStats();
-      deltaA = get<0>(gameStatsA) - get<1>(gameStatsA);
-      deltaB = get<0>(gameStatsB) - get<1>(gameStatsB);
+      std::tuple<int, int, int> gameStatsA = a.getGameStats();
+      std::tuple<int, int, int> gameStatsB = b.getGameStats();
+      deltaA = std::get<0>(gameStatsA) - std::get<1>(gameStatsA);
+      deltaB = std::get<0>(gameStatsB) - std::get<1>(gameStatsB);
       if (deltaA > deltaB) return true;
       if (deltaA < deltaB) return false;
 
       // second criteria: delta between won and lost points
-      tuple<int, int> pointStatsA = a.getPointStats();
-      tuple<int, int> pointStatsB = b.getPointStats();
-      deltaA = get<0>(pointStatsA) - get<1>(pointStatsA);
-      deltaB = get<0>(pointStatsB) - get<1>(pointStatsB);
+      std::tuple<int, int> pointStatsA = a.getPointStats();
+      std::tuple<int, int> pointStatsB = b.getPointStats();
+      deltaA = std::get<0>(pointStatsA) - std::get<1>(pointStatsA);
+      deltaB = std::get<0>(pointStatsB) - std::get<1>(pointStatsB);
       if (deltaA > deltaB) return true;
       if (deltaA < deltaB) return false;
 
@@ -245,25 +229,25 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  ERR PureRoundRobinCategory::onRoundCompleted(int round)
+  Error PureRoundRobinCategory::onRoundCompleted(int round)
   {
     RankingMngr rm{db};
-    ERR err;
+    Error err;
 
     rm.createUnsortedRankingEntriesForLastRound(*this, &err);
-    if (err != OK) return err;  // shouldn't happen
+    if (err != Error::OK) return err;  // shouldn't happen
     rm.sortRankingEntriesForLastRound(*this, &err);
-    if (err != OK) return err;  // shouldn't happen
+    if (err != Error::OK) return err;  // shouldn't happen
 
-    return OK;
+    return Error::OK;
   }
 
 //----------------------------------------------------------------------------
 
-  PlayerPairList PureRoundRobinCategory::getRemainingPlayersAfterRound(int round, ERR* err) const
+  PlayerPairList PureRoundRobinCategory::getRemainingPlayersAfterRound(int round, Error* err) const
   {
     // No knock-outs, never
-    if (err != nullptr) *err = OK;
+    if (err != nullptr) *err = Error::OK;
     return getPlayerPairs();
   }
 

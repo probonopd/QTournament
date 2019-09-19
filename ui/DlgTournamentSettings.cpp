@@ -21,6 +21,10 @@
 #include "DlgTournamentSettings.h"
 #include "ui_DlgTournamentSettings.h"
 
+#include "HelperFunc.h"
+
+using namespace QTournament;
+
 DlgTournamentSettings::DlgTournamentSettings(QWidget *parent) :
   QDialog(parent),
   ui(new Ui::DlgTournamentSettings), db(nullptr)
@@ -34,21 +38,21 @@ DlgTournamentSettings::DlgTournamentSettings(QWidget *parent) :
 
 //----------------------------------------------------------------------------
 
-DlgTournamentSettings::DlgTournamentSettings(TournamentDB* _db, QWidget* parent) :
+DlgTournamentSettings::DlgTournamentSettings(const QTournament::TournamentDB& _db, QWidget* parent) :
   QDialog(parent),
-  ui(new Ui::DlgTournamentSettings), db(_db)
+  ui(new Ui::DlgTournamentSettings), db(&_db)
 {
   ui->setupUi(this);
 
   fillRefereeComboBox(false);
 
   // initialize the controls with the existing values
-  auto cfg = SqliteOverlay::KeyValueTab::getTab(db, TAB_CFG, false);
-  string tmp = (*cfg)[CFG_KEY_TNMT_ORGA];
-  ui->leOrgaClub->setText(QString::fromUtf8(tmp.c_str()));
-  tmp = (*cfg)[CFG_KEY_TNMT_NAME];
-  ui->leTournamentName->setText(QString::fromUtf8(tmp.c_str()));
-  int tnmtDefaultRefereeModeId = cfg->getInt(CFG_KEY_DEFAULT_REFEREE_MODE);
+  SqliteOverlay::KeyValueTab cfg{*db, TabCfg};
+  std::string tmp = cfg[CfgKey_TnmtOrga];
+  ui->leOrgaClub->setText(stdString2QString(tmp));
+  tmp = cfg[CfgKey_TnmtName];
+  ui->leTournamentName->setText(stdString2QString(tmp));
+  int tnmtDefaultRefereeModeId = cfg.getInt(CfgKey_DefaultRefereemode);
   int idx = ui->cbUmpire->findData(tnmtDefaultRefereeModeId);
   ui->cbUmpire->setCurrentIndex(idx);
 
@@ -65,29 +69,31 @@ DlgTournamentSettings::~DlgTournamentSettings()
   delete ui;
 }
 
-std::unique_ptr<QTournament::TournamentSettings> DlgTournamentSettings::getTournamentSettings() const
+//----------------------------------------------------------------------------
+
+std::optional<QTournament::TournamentSettings> DlgTournamentSettings::getTournamentSettings() const
 {
   QString tName = ui->leTournamentName->text().trimmed();
-  if (tName.isEmpty()) return nullptr;
+  if (tName.isEmpty()) return {};
 
   QString orgName = ui->leOrgaClub->text().trimmed();
-  if (orgName.isEmpty()) return nullptr;
+  if (orgName.isEmpty()) return {};
 
   int refereeModeId = ui->cbUmpire->currentData().toInt();
-  if (refereeModeId < 0) return nullptr;
+  if (refereeModeId < 0) return {};
 
   // the next attribute is always "1" for the time being;
   // maybe I'll add the possibility of having a "team-free"
   // tournament sometime later
   bool useTeams = true;
 
-  QTournament::TournamentSettings* result = new QTournament::TournamentSettings();
-  result->organizingClub = orgName;
-  result->tournamentName = tName;
-  result->useTeams = useTeams;
-  result->refereeMode = static_cast<QTournament::REFEREE_MODE>(refereeModeId);
+  QTournament::TournamentSettings result;
+  result.organizingClub = orgName;
+  result.tournamentName = tName;
+  result.useTeams = useTeams;
+  result.refereeMode = static_cast<QTournament::RefereeMode>(refereeModeId);
 
-  return std::unique_ptr<QTournament::TournamentSettings>(result);
+  return result;
 }
 
 //----------------------------------------------------------------------------
@@ -143,11 +149,11 @@ void DlgTournamentSettings::fillRefereeComboBox(bool includeSelectHint)
 {
   ui->cbUmpire->clear();
   if (includeSelectHint) ui->cbUmpire->addItem(tr("<Please select>"), -1);
-  ui->cbUmpire->addItem(tr("No umpires"), static_cast<int>(QTournament::REFEREE_MODE::NONE));
-  ui->cbUmpire->addItem(tr("Handwritten assignment"), static_cast<int>(QTournament::REFEREE_MODE::HANDWRITTEN));
-  ui->cbUmpire->addItem(tr("Pick from all players"), static_cast<int>(QTournament::REFEREE_MODE::ALL_PLAYERS));
-  ui->cbUmpire->addItem(tr("Pick from recent finishers"), static_cast<int>(QTournament::REFEREE_MODE::RECENT_FINISHERS));
-  ui->cbUmpire->addItem(tr("Pick from special team"), static_cast<int>(QTournament::REFEREE_MODE::SPECIAL_TEAM));
+  ui->cbUmpire->addItem(tr("No umpires"), static_cast<int>(QTournament::RefereeMode::None));
+  ui->cbUmpire->addItem(tr("Handwritten assignment"), static_cast<int>(QTournament::RefereeMode::HandWritten));
+  ui->cbUmpire->addItem(tr("Pick from all players"), static_cast<int>(QTournament::RefereeMode::AllPlayers));
+  ui->cbUmpire->addItem(tr("Pick from recent finishers"), static_cast<int>(QTournament::RefereeMode::RecentFinishers));
+  ui->cbUmpire->addItem(tr("Pick from special team"), static_cast<int>(QTournament::RefereeMode::SpecialTeam));
 }
 
 //----------------------------------------------------------------------------

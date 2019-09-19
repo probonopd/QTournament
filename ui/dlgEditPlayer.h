@@ -16,8 +16,8 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _DLGEDITPLAYER_H
-#define	_DLGEDITPLAYER_H
+#ifndef DLGEDITPLAYER_H
+#define	DLGEDITPLAYER_H
 
 #include "ui_dlgEditPlayer.h"
 
@@ -25,33 +25,32 @@
 #include "ExternalPlayerDB.h"
 #include "TournamentDB.h"
 
-using namespace QTournament;
 
 class DlgEditPlayer : public QDialog
 {
   Q_OBJECT
 public:
-  DlgEditPlayer (TournamentDB* _db, QWidget *parent, Player* _selectedPlayer = nullptr);
-  DlgEditPlayer (TournamentDB* _db, QWidget *parent, SEX _sexPreset, const Category& _catPreset);
-  DlgEditPlayer (TournamentDB* _db, QWidget *parent, const ExternalPlayerDatabaseEntry& nameAndSexPreset, int _presetCatId=-1);
+  DlgEditPlayer (const QTournament::TournamentDB& _db, QWidget *parent, std::optional<QTournament::Player> _selectedPlayer = {});
+  DlgEditPlayer (const QTournament::TournamentDB& _db, QWidget *parent, QTournament::Sex _sexPreset, const QTournament::Category& _catPreset);
+  DlgEditPlayer (const QTournament::TournamentDB& _db, QWidget *parent, const QTournament::ExternalPlayerDatabaseEntry& nameAndSexPreset, int _presetCatId=-1);
   virtual ~DlgEditPlayer ();
   QString getFirstName();
   QString getLastName();
   bool hasNameChange();
-  SEX getSex();
-  Team getTeam();
-  QHash<Category, bool> getCategoryCheckState();
+  QTournament::Sex getSex();
+  QTournament::Team getTeam();
+  QHash<QTournament::Category, bool> getCategoryCheckState();
   
 private:
   Ui::dlgEditPlayer ui;
-  TournamentDB* db;
-  Player* selectedPlayer;
+  std::reference_wrapper<const QTournament::TournamentDB> db;
+  std::optional<QTournament::Player> selectedPlayer{};
   void initFromPlayerData();
   void initTeamList();
   bool _hasNameChange;
-  void updateCatList(QHash<Category, CAT_ADD_STATE> catStatus, int preselectCatId = -1);
+  void updateCatList(QHash<QTournament::Category, QTournament::CatAddState> catStatus, int preselectCatId = -1);
 
-  SEX sexPreset;
+  QTournament::Sex sexPreset;
   int presetCatId = -1;
 
 public slots:

@@ -18,8 +18,10 @@
 
 #include "BaseItemDelegate.h"
 
-BaseItemDelegate::BaseItemDelegate(TournamentDB* _db, int _defaultRowHeight, int _selectedRowHeight, QObject* parent)
-  :QStyledItemDelegate{parent}, db{_db}, proxy{nullptr},
+using namespace QTournament;
+
+BaseItemDelegate::BaseItemDelegate(int _defaultRowHeight, int _selectedRowHeight, QObject* parent)
+  :QStyledItemDelegate{parent}, proxy{nullptr},
     normalFont{QFont{}}, largeFont{QFont{}}, smallFont{QFont{}}, normalFontBold{QFont{}}, largeFontBold{QFont{}}, fntMetrics{normalFont},
     fntMetricsLarge{QFont{}}, fntMetricsSmall{QFont{}}, selectedRow{-1},
     defaultRowHeight{_defaultRowHeight}, selectedRowHeight{_selectedRowHeight}
@@ -73,7 +75,7 @@ void BaseItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
 QSize BaseItemDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
   QString txt = index.data(Qt::DisplayRole).toString();
-  int width = fntMetrics.width(txt);  // this is wrong if we use the large font, but hey...
+  int width = fntMetrics.horizontalAdvance(txt);  // this is wrong if we use the large font, but hey...
 
   int height = defaultRowHeight;
   if (selectedRowHeight >= 0)

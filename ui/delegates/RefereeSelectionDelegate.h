@@ -25,7 +25,6 @@
 #include "TournamentDB.h"
 #include "BaseItemDelegate.h"
 
-using namespace QTournament;
 
 class RefereeSelectionDelegate : public BaseItemDelegate
 {
@@ -41,13 +40,16 @@ public:
   static constexpr int NeutralTag = 0;
 
 
-  RefereeSelectionDelegate(TournamentDB* _db, QObject* parent = 0)
-    :BaseItemDelegate{_db, ItemRowHeight, -1, parent} {}
+  RefereeSelectionDelegate(const QTournament::TournamentDB* _db, QObject* parent = nullptr)
+    :BaseItemDelegate{ItemRowHeight, -1, parent}, db{_db} {}
 
 protected:
   virtual void paintSelectedCell(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index, int srcRowId) const override;
   virtual void paintUnselectedCell(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index, int srcRowId) const override;
   void commonPaint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index, bool isSelected) const;
+
+private:
+  const QTournament::TournamentDB* db;
 };
 
 #endif // MATCHLOGITEMDELEGATE_H

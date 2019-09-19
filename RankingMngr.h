@@ -20,49 +20,49 @@
 #define	RANKINGMNGR_H
 
 #include <memory>
+#include <vector>
 
 #include <QList>
 #include <QObject>
 
+#include <SqliteOverlay/DbTab.h>
+
 #include "TournamentDB.h"
 #include "TournamentDataDefs.h"
 #include "TournamentErrorCodes.h"
-#include <SqliteOverlay/DbTab.h>
 #include "TournamentDatabaseObjectManager.h"
 #include "Category.h"
 #include "PlayerPair.h"
 
 
-using namespace SqliteOverlay;
-
 namespace QTournament
 {
   class RankingEntry;
 
-  typedef vector<RankingEntry> RankingEntryList;
-  typedef vector<RankingEntryList> RankingEntryListList;
+  using RankingEntryList = std::vector<RankingEntry>;
+  using RankingEntryListList = std::vector<RankingEntryList>;
 
   class RankingMngr : public QObject, public TournamentDatabaseObjectManager
   {
     Q_OBJECT
     
   public:
-    RankingMngr (TournamentDB* _db);
-    RankingEntryList createUnsortedRankingEntriesForLastRound(const Category &cat, ERR *err=nullptr, PlayerPairList _ppList=PlayerPairList(), bool reset=false);
-    RankingEntryListList sortRankingEntriesForLastRound(const Category &cat, ERR *err=nullptr) const;
-    ERR forceRank(const RankingEntry& re, int rank) const;
-    ERR clearRank(const RankingEntry& re) const;
+    RankingMngr (const TournamentDB& _db);
+    RankingEntryList createUnsortedRankingEntriesForLastRound(const Category &cat, Error *err=nullptr, const PlayerPairList& _ppList={}, bool reset=false);
+    RankingEntryListList sortRankingEntriesForLastRound(const Category &cat, Error *err=nullptr) const;
+    Error forceRank(const RankingEntry& re, int rank) const;
+    Error clearRank(const RankingEntry& re) const;
     void fillRankGaps(const Category& cat, int round, int maxRank);
 
-    unique_ptr<RankingEntry> getRankingEntry(const PlayerPair &pp, int round) const;
-    unique_ptr<RankingEntry> getRankingEntry(const Category &cat, int round, int grpNum, int rank) const;
+    std::optional<RankingEntry> getRankingEntry(const PlayerPair &pp, int round) const;
+    std::optional<RankingEntry> getRankingEntry(const Category &cat, int round, int grpNum, int rank) const;
     RankingEntryListList getSortedRanking(const Category &cat, int round) const;
 
     int getHighestRoundWithRankingEntryForPlayerPair(const Category &cat, const PlayerPair &pp) const;
 
-    ERR updateRankingsAfterMatchResultChange(const Match& ma, const MatchScore& oldScore, bool skipSorting=false) const;
+    Error updateRankingsAfterMatchResultChange(const Match& ma, const MatchScore& oldScore, bool skipSorting=false) const;
 
-    string getSyncString(vector<int> rows) override;
+    std::string getSyncString(const std::vector<int>& rows) const override;
 
   private:
 
@@ -70,5 +70,5 @@ namespace QTournament
   };
 }
 
-#endif	/* RANKINGMNGR_H */
+#endif	/* MatchSystem::RankingMNGR_H */
 

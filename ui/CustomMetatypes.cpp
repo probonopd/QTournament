@@ -16,28 +16,20 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CMDASSIGNREFEREETOMATCH_H
-#define CMDASSIGNREFEREETOMATCH_H
+#include <iostream>
 
-#include <QObject>
+#include "CustomMetatypes.h"
 
-#include "AbstractCommand.h"
-#include "Match.h"
 
-using namespace QTournament;
-
-class cmdAssignRefereeToMatch : public QObject, AbstractCommand
+void registerCustomTypes()
 {
-  Q_OBJECT
+  int id = qRegisterMetaType<QTournament::ObjState>();
+  //std::cout << "Register Metatype = " << id << std::endl;
+}
 
-public:
-  cmdAssignRefereeToMatch(QWidget* p, const Match& _ma, REFEREE_ACTION _refAction);
-  virtual ERR exec() override;
-  virtual ~cmdAssignRefereeToMatch() {}
+//----------------------------------------------------------------------------
 
-protected:
-  Match ma;
-  REFEREE_ACTION refAction;
-};
 
-#endif // CMDASSIGNREFEREETOMATCH_H
+//----------------------------------------------------------------------------
+
+

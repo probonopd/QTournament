@@ -1,0 +1,29 @@
+<RCC>
+    <qresource prefix="/">
+        <file>icons/document-new-5.png</file>
+        <file>icons/edit-rename.png</file>
+        <file>icons/edit-delete-9.png</file>
+        <file>txt/consent.html</file>
+        <file>txt/match_result_confirmation.html</file>
+        <file>txt/match_call.html</file>
+        <file>brackets/RankSys16.svg</file>
+        <file>brackets/SingleElim16.svg</file>
+        <file>brackets/SingleElim8.svg</file>
+        <file>brackets/SingleElim4.svg</file>
+        <file>brackets/SingleElim2.svg</file>
+        <file>brackets/SemiWithRanks.svg</file>
+        <file>brackets/FinalsWithRanks.svg</file>
+    </qresource>
+    <qresource prefix="/" lang="de">
+        <file alias="txt/match_result_confirmation.html">txt/match_result_confirmation_de.html</file>
+        <file alias="txt/consent.html">txt/consent_de.html</file>
+        <file alias="txt/match_call.html">txt/match_call_de.html</file>
+        <file alias="brackets/RankSys16.svg">brackets/RankSys16_de.svg</file>
+        <file alias="brackets/SingleElim16.svg">brackets/SingleElim16_de.svg</file>
+        <file alias="brackets/SingleElim8.svg">brackets/SingleElim8_de.svg</file>
+        <file alias="brackets/SingleElim4.svg">brackets/SingleElim4_de.svg</file>
+        <file alias="brackets/SingleElim2.svg">brackets/SingleElim2_de.svg</file>
+        <file alias="brackets/SemiWithRanks.svg">brackets/SemiWithRanks_de.svg</file>
+        <file alias="brackets/FinalsWithRanks.svg">brackets/FinalsWithRanks_de.svg</file>
+    </qresource>
+</RCC>

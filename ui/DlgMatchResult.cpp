@@ -23,6 +23,8 @@
 #include "Match.h"
 #include "MatchGroup.h"
 
+using namespace QTournament;
+
 DlgMatchResult::DlgMatchResult(QWidget *parent, const Match& _ma) :
   QDialog(parent),
   ui(new Ui::DlgMatchResult), ma(_ma)
@@ -79,11 +81,11 @@ DlgMatchResult::~DlgMatchResult()
 
 //----------------------------------------------------------------------------
 
-unique_ptr<MatchScore> DlgMatchResult::getMatchScore() const
+std::optional<QTournament::MatchScore> DlgMatchResult::getMatchScore() const
 {
   if (!hasValidResult())
   {
-    return nullptr;
+    return {};
   }
 
   GameScoreList gsl;
@@ -118,7 +120,7 @@ void DlgMatchResult::onRandomResultTriggered()
   //
   // TODO: "2" win games hardcoded again
   auto randomResult = MatchScore::genRandomScore(2, isDrawPossible);
-  assert(randomResult != nullptr);
+  assert(randomResult);
 
   ui->game1Widget->setScore(*(randomResult->getGame(0)));
   ui->game2Widget->setScore(*(randomResult->getGame(1)));
@@ -155,8 +157,8 @@ void DlgMatchResult::updateControls()
   } else {
     auto sc1 = ui->game1Widget->getScore();
     auto sc2 = ui->game2Widget->getScore();
-    assert(sc1 != nullptr);
-    assert(sc2 != nullptr);
+    assert(sc1);
+    assert(sc2);
 
     // switch the "draw" label on or off
     bool isDraw = (!game3Necessary && (sc1->getWinner() != sc2->getWinner()));
@@ -164,7 +166,7 @@ void DlgMatchResult::updateControls()
 
     // switch / set the winner label
     auto matchScore = getMatchScore();
-    assert(matchScore != nullptr);
+    assert(matchScore);
     QString winnerLabel;
     QString loserLabel;
     if (matchScore->getWinner() == 1)
@@ -210,8 +212,8 @@ bool DlgMatchResult::isGame3Necessary() const
   {
     auto sc1 = ui->game1Widget->getScore();
     auto sc2 = ui->game2Widget->getScore();
-    assert(sc1 != nullptr);
-    assert(sc2 != nullptr);
+    assert(sc1);
+    assert(sc2);
 
     return (sc1->getWinner() != sc2->getWinner());
   }
@@ -238,9 +240,9 @@ bool DlgMatchResult::hasValidResult() const
 
 void DlgMatchResult::fillControlsFromExistingMatchResult()
 {
-  if (ma.getState() != STAT_MA_FINISHED) return;
+  if (ma.is_NOT_InState(ObjState::MA_Finished)) return;
   auto result = ma.getScore();
-  if (result == nullptr) return;
+  if (!result) return;
 
   ui->game1Widget->setScore(*(result->getGame(0)));
   ui->game2Widget->setScore(*(result->getGame(1)));

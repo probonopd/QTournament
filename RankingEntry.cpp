@@ -29,15 +29,15 @@
 namespace QTournament
 {
 
-  RankingEntry::RankingEntry(TournamentDB* db, int rowId)
-  :TournamentDatabaseObject(db, TAB_RANKING, rowId)
+  RankingEntry::RankingEntry(const TournamentDB& _db, int rowId)
+  :TournamentDatabaseObject(_db, TabMatchSystem, rowId)
   {
   }
 
 //----------------------------------------------------------------------------
 
-  RankingEntry::RankingEntry(TournamentDB* db, SqliteOverlay::TabRow row)
-  :TournamentDatabaseObject(db, row)
+  RankingEntry::RankingEntry(const TournamentDB& _db, const SqliteOverlay::TabRow& _row)
+  :TournamentDatabaseObject(_db, _row)
   {
   }
 
@@ -45,35 +45,34 @@ namespace QTournament
 
   int RankingEntry::getRound() const
   {
-    return row.getInt(RA_ROUND);
+    return row.getInt(RA_Round);
   }
 
 //----------------------------------------------------------------------------
 
   Category RankingEntry::getCategory() const
   {
-    int catId = row.getInt(RA_CAT_REF);
+    int catId = row.getInt(RA_CatRef);
     CatMngr cm{db};
     return cm.getCategoryById(catId);
   }
 
 //----------------------------------------------------------------------------
 
-  unique_ptr<PlayerPair> RankingEntry::getPlayerPair() const
+  std::optional<PlayerPair> RankingEntry::getPlayerPair() const
   {
-    auto _ppId = row.getInt2(RA_PAIR_REF);
-    if (_ppId->isNull()) return nullptr;
+    auto ppId = row.getInt2(RA_PairRef);
+    if (!ppId.has_value()) return std::optional<PlayerPair>{};
 
-    int ppId = _ppId->get();
-    return unique_ptr<PlayerPair>(new PlayerPair(db, ppId));
+    return PlayerPair{db, *ppId};
   }
 
 //----------------------------------------------------------------------------
 
   int RankingEntry::getRank() const
   {
-    int rank = ScalarQueryResult2Int_WithDefault(row.getInt2(RA_RANK), -1);
-    if (rank <= 0) return NO_RANK_ASSIGNED;
+    int rank = row.getInt2(RA_Rank).value_or(-1);
+    if (rank <= 0) return NoRankAssigned;
 
     return rank;
   }
@@ -82,50 +81,38 @@ namespace QTournament
 
   int RankingEntry::getGroupNumber() const
   {
-    return row.getInt(RA_GRP_NUM);
+    return row.getInt(RA_GrpNum);
   }
 
 //----------------------------------------------------------------------------
 
-  tuple<int, int, int, int> RankingEntry::getMatchStats() const
+  std::tuple<int, int, int, int> RankingEntry::getMatchStats() const
   {
-    int won = ScalarQueryResult2Int_WithDefault(row.getInt2(RA_MATCHES_WON));
-    int draw = ScalarQueryResult2Int_WithDefault(row.getInt2(RA_MATCHES_DRAW));
-    int lost = ScalarQueryResult2Int_WithDefault(row.getInt2(RA_MATCHES_LOST));
+    int won = row.getInt2(RA_MatchesWon).value_or(0);
+    int draw = row.getInt2(RA_MatchesDraw).value_or(0);
+    int lost = row.getInt2(RA_MatchesLost).value_or(0);
 
-    return make_tuple(won, draw, lost, won+draw+lost);
+    return std::tuple{won, draw, lost, won+draw+lost};
   }
 
 //----------------------------------------------------------------------------
 
-  int RankingEntry::ScalarQueryResult2Int_WithDefault(const unique_ptr<SqliteOverlay::ScalarQueryResult<int>> &v, int defaultVal) const
+  std::tuple<int, int, int> RankingEntry::getGameStats() const
   {
-    if (v->isNull())
-    {
-      return defaultVal;
-    }
+    int won = row.getInt2(RA_GamesWon).value_or(0);
+    int lost = row.getInt2(RA_GamesLost).value_or(0);
 
-    return v->get();
+    return std::tuple{won, lost, won+lost};
   }
 
 //----------------------------------------------------------------------------
 
-  tuple<int, int, int> RankingEntry::getGameStats() const
+  std::tuple<int, int> RankingEntry::getPointStats() const
   {
-    int won = ScalarQueryResult2Int_WithDefault(row.getInt2(RA_GAMES_WON));
-    int lost = ScalarQueryResult2Int_WithDefault(row.getInt2(RA_GAMES_LOST));
+    int won = row.getInt2(RA_PointsWon).value_or(0);
+    int lost = row.getInt2(RA_PointsLost).value_or(0);
 
-    return make_tuple(won, lost, won+lost);
-  }
-
-//----------------------------------------------------------------------------
-
-  tuple<int, int> RankingEntry::getPointStats() const
-  {
-    int won = ScalarQueryResult2Int_WithDefault(row.getInt2(RA_POINTS_WON));
-    int lost = ScalarQueryResult2Int_WithDefault(row.getInt2(RA_POINTS_LOST));
-
-    return make_tuple(won, lost);
+    return std::tuple{won, lost};
   }
 
 //----------------------------------------------------------------------------

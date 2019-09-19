@@ -16,26 +16,24 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef ABSTRACT_REPORT_ELEMENT__H
-#define ABSTRACT_REPORT_ELEMENT__H
+#ifndef ABSTRACT_REPORT_ELEMENT_H
+#define ABSTRACT_REPORT_ELEMENT_H
 
 #include <QPointF>
 #include <QRectF>
 
 #include <SimpleReportGeneratorLib/SimpleReportGenerator.h>
 
-using namespace SimpleReportLib;
-
 class AbstractReportElement
 {
 
 public:
-  AbstractReportElement(SimpleReportGenerator* _rep);
+  AbstractReportElement(SimpleReportLib::SimpleReportGenerator* _rep);
   virtual QRectF plot(const QPointF& topLeft = QPointF(-1, -1)) = 0;
   virtual ~AbstractReportElement() {}
 
 protected:
-  SimpleReportGenerator* rep;
+  SimpleReportLib::SimpleReportGenerator* rep;
 };
 
 #endif

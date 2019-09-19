@@ -30,7 +30,6 @@
 #include "TournamentDatabaseObjectManager.h"
 #include "Category.h"
 #include "PlayerPair.h"
-#include "ThreadSafeQueue.h"
 
 namespace QTournament
 {
@@ -41,54 +40,54 @@ namespace QTournament
     
   public:
     // constructor
-    CatMngr (TournamentDB* _db);
+    CatMngr (const TournamentDB& _db);
 
     // creation of categories
-    ERR createNewCategory (const QString& catName);
-    ERR cloneCategory(const Category& src, const QString& catNamePostfix);
+    Error createNewCategory (const QString& catName);
+    Error cloneCategory(const Category& src, const QString& catNamePostfix);
 
     // boolean queries
     bool hasCategory (const QString& catName) const;
 
     // getters
     Category getCategory(const QString& name);
-    unique_ptr<Category> getCategory(int id);
+    std::optional<Category> getCategory(int id);
     Category getCategoryById(int id);
     Category getCategoryBySeqNum(int seqNum);
     CategoryList getAllCategories();
-    QHash<Category, CAT_ADD_STATE> getAllCategoryAddStates(SEX s);
-    QHash<Category, CAT_ADD_STATE> getAllCategoryAddStates(const Player& p);
+    QHash<Category, CatAddState> getAllCategoryAddStates(Sex s);
+    QHash<Category, CatAddState> getAllCategoryAddStates(const Player& p);
     static std::function<bool (Category&, Category&)> getCategorySortFunction_byName();
-    vector<PlayerPair> getSeeding(const Category& c) const;
-    ERR canDeleteCategory(const Category& cat) const;
+    std::vector<PlayerPair> getSeeding(const Category& cat) const;
+    Error canDeleteCategory(const Category& cat) const;
 
     // setters
-    ERR setMatchType(Category& c, MATCH_TYPE t);
-    ERR setMatchSystem(Category& c, MATCH_SYSTEM s);
-    ERR setSex(Category& c, SEX s);
-    bool setCatParameter( Category& c, CAT_PARAMETER p, const QVariant& v);
+    Error setMatchType(Category& cat, MatchType newMatchType);
+    Error setMatchSystem(Category& cat, MatchSystem newMatchSystem);
+    Error setSex(Category& cat, Sex newSex);
+    bool setCatParameter(Category& cat, CatParameter p, const QVariant& v);
 
     // modifications
-    ERR renameCategory(Category& c, const QString& newName);
-    ERR addPlayerToCategory(const Player& p, const Category& c);
-    ERR removePlayerFromCategory(const Player& p, const Category& c) const;
-    ERR deleteCategory(const Category& cat) const;
-    ERR deleteRunningCategory(const Category& cat) const;
+    Error renameCategory(Category& cat, const QString& newName);
+    Error addPlayerToCategory(const Player& p, const Category& cat);
+    Error removePlayerFromCategory(const Player& p, const Category& cat) const;
+    Error deleteCategory(const Category& cat) const;
+    Error deleteRunningCategory(const Category& cat) const;
 
     // pairing
-    ERR pairPlayers(const Category c, const Player& p1, const Player& p2);
-    ERR splitPlayers(const Category c, const Player& p1, const Player& p2) const;
-    ERR splitPlayers(const Category c, int pairId) const;
+    Error pairPlayers(const Category c, const Player& p1, const Player& p2);
+    Error splitPlayers(const Category c, const Player& p1, const Player& p2) const;
+    Error splitPlayers(const Category c, int pairId) const;
 
     // freezing, starting, updating while running
-    ERR freezeConfig(const Category& c);
-    ERR unfreezeConfig(const Category& c);
-    ERR startCategory(const Category& c, vector<PlayerPairList> grpCfg, PlayerPairList seed, ProgressQueue* progressNotificationQueue=nullptr);
-    void updateCatStatusFromMatchStatus(const Category& c);
+    Error freezeConfig(const Category& c);
+    Error unfreezeConfig(const Category& c);
+    Error startCategory(const Category& c, const std::vector<PlayerPairList>& grpCfg, const PlayerPairList& seed);
+    void updateCatStatusFromMatchStatus(const Category& cat);
     bool switchCatToWaitForSeeding(const Category& cat);
-    ERR continueWithIntermediateSeeding(const Category& c, const PlayerPairList& seeding, ProgressQueue* progressNotificationQueue=nullptr);
+    Error continueWithIntermediateSeeding(const Category& c, const PlayerPairList& seeding);
 
-    string getSyncString(vector<int> rows) override;
+    std::string getSyncString(const std::vector<int>& rows) const override;
 
   private:
     bool setCatParam_AllowDraw( Category& c, const QVariant& v);

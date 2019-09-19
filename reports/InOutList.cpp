@@ -34,35 +34,36 @@ namespace QTournament
 {
 
 
-InOutList::InOutList(TournamentDB* _db, const QString& _name, const Category& _cat, int _round)
+InOutList::InOutList(const TournamentDB& _db, const QString& _name, const Category& _cat, int _round)
   :AbstractReport(_db, _name), cat(_cat), round(_round)
 {
   if (!isValidCatRoundCombination(_cat, _round))
   {
     throw std::runtime_error("Requested in-out-list for invalid category and/or round");
   }
+  roundOffset = cat.getParameter_int(CatParameter::FirstRoundOffset);
 }
 
 //----------------------------------------------------------------------------
 
 upSimpleReport InOutList::regenerateReport()
 {
-  QString repName = cat.getName() + " -- " + tr("Knocked-out players after round ") + QString::number(round);
+  QString repName = cat.getName() + " -- " + tr("Knocked-out players after round ") + QString::number(round + roundOffset);
   upSimpleReport result = createEmptyReport_Portrait();
 
   setHeaderAndHeadline(result.get(), repName);
 
   // retrieve the "in and out" lists
-  ERR err;
+  Error err;
   auto specialCat = cat.convertToSpecializedObject();
   PlayerPairList inList = specialCat->getRemainingPlayersAfterRound(round, &err);
-  if (err != OK)
+  if (err != Error::OK)
   {
     result->writeLine(tr("An error occurred during report generation."));
     return result;
   }
   PlayerPairList outList = specialCat->getEliminatedPlayersAfterRound(round, &err);
-  if (err != OK)
+  if (err != Error::OK)
   {
     result->writeLine(tr("An error occurred during report generation."));
     return result;
@@ -103,7 +104,7 @@ upSimpleReport InOutList::regenerateReport()
       QStringList rowContent;
       rowContent << pp.getDisplayName();
       rowContent << pp.getDisplayName_Team();
-      rowContent << QString::number(ppId2Rounds.value(pp.getPairId()));
+      rowContent << QString::number(ppId2Rounds.value(pp.getPairId()) + roundOffset);
       tw.appendRow(rowContent);
     }
 
@@ -146,7 +147,7 @@ QStringList InOutList::getReportLocators() const
 
   QString loc = tr("In-Out-List::");
   loc += cat.getName() + "::";
-  loc += tr("after round ") + QString::number(round);
+  loc += tr("after round ") + QString::number(round + roundOffset);
 
   result.append(loc);
 
@@ -158,8 +159,8 @@ QStringList InOutList::getReportLocators() const
 bool InOutList::isValidCatRoundCombination(const Category& _cat, int _round)
 {
   // we must be beyond CONFIG for this report to make any sense at all
-  OBJ_STATE catState = _cat.getState();
-  if ((catState == STAT_CAT_CONFIG) || (catState == STAT_CAT_FROZEN))
+  ObjState catState = _cat.getState();
+  if ((catState == ObjState::CAT_Config) || (catState == ObjState::CAT_Frozen))
   {
     return false;
   }
@@ -173,10 +174,10 @@ bool InOutList::isValidCatRoundCombination(const Category& _cat, int _round)
 
   // if we're in match system "round robin with KO rounds", this report
   // makes only sense after the last round robin round
-  MATCH_SYSTEM mSys = _cat.getMatchSystem();
-  if (mSys == GROUPS_WITH_KO)
+  MatchSystem mSys = _cat.getMatchSystem();
+  if (mSys == MatchSystem::GroupsWithKO)
   {
-    KO_Config cfg = KO_Config(_cat.getParameter_string(GROUP_CONFIG));
+    KO_Config cfg = KO_Config(_cat.getParameter_string(CatParameter::GroupConfig));
     if (_round < cfg.getNumRounds())
     {
       return false;
@@ -186,10 +187,14 @@ bool InOutList::isValidCatRoundCombination(const Category& _cat, int _round)
     return true;
   }
 
-  // for elimination contests, we can always generate in-out-lists
-  if (mSys == SINGLE_ELIM)
+  // for elimination contests, we can almost always generate in-out-lists
+  //
+  // in-out-lists are okay, as long as we're not using the ranking system
+  if (mSys == MatchSystem::Bracket)
   {
-    return true;
+    auto brSys = static_cast<SvgBracketMatchSys>(_cat.getParameter_int(CatParameter::BracketMatchSystem));
+
+    return (brSys != SvgBracketMatchSys::RankSys);
   }
 
   // a "catch all":

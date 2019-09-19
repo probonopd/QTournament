@@ -27,11 +27,19 @@
 #include "CentralSignalEmitter.h"
 #include "DlgMatchResult.h"
 
+using namespace QTournament;
+
 MatchLogTable::MatchLogTable(QWidget* parent)
   :CommonMatchTableWidget{parent}
 {
-  connect(CentralSignalEmitter::getInstance(), SIGNAL(matchStatusChanged(int,int,OBJ_STATE,OBJ_STATE)),
-          this, SLOT(onMatchStatusChanged(int,int,OBJ_STATE,OBJ_STATE)), Qt::DirectConnection);
+  CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
+
+  QObject::connect(
+        cse,
+        SIGNAL(matchStatusChanged(int,int,ObjState,ObjState)),
+        this, SLOT(onMatchStatusChanged(int,int,ObjState,ObjState)),
+        Qt::DirectConnection
+        );
 
   // handle context menu requests
   setContextMenuPolicy(Qt::CustomContextMenu);
@@ -49,26 +57,26 @@ MatchLogTable::MatchLogTable(QWidget* parent)
 
 //----------------------------------------------------------------------------
 
-unique_ptr<Match> MatchLogTable::getSelectedMatch() const
+std::optional<Match> MatchLogTable::getSelectedMatch() const
 {
-  if ((currentRow() < 0) || (currentItem() == nullptr)) return nullptr;
+  if ((currentRow() < 0) || (currentItem() == nullptr)) return {};
 
   int maId = currentItem()->data(Qt::UserRole).toInt();
 
-  MatchMngr mm{db};
+  MatchMngr mm{*db};
   return mm.getMatch(maId);
 }
 
 //----------------------------------------------------------------------------
 
-void MatchLogTable::onMatchStatusChanged(int maId, int maSeqNum, OBJ_STATE oldStat, OBJ_STATE newStat)
+void MatchLogTable::onMatchStatusChanged(int maId, int maSeqNum, ObjState oldStat, ObjState newStat)
 {
-  if (newStat != STAT_MA_FINISHED) return;
+  if (newStat != ObjState::MA_Finished) return;
   if (db == nullptr) return;
 
-  MatchMngr mm{db};
+  MatchMngr mm{*db};
   auto ma = mm.getMatch(maId);
-  if (ma != nullptr) insertMatch(0, *ma);
+  if (ma) insertMatch(0, *ma);
   resizeRowToContents(0);
 }
 
@@ -85,8 +93,8 @@ void MatchLogTable::onCategoryRemoved()
 
 void MatchLogTable::onModMatchResultTriggered()
 {
-  upMatch ma = getSelectedMatch();
-  if (ma == nullptr) return;
+  auto ma = getSelectedMatch();
+  if (!ma) return;
 
   // test if we can modify the match result at all
   Category cat = ma->getCategory();
@@ -135,7 +143,7 @@ void MatchLogTable::onModMatchResultTriggered()
   // the following check should never trigger,
   // because if there was no valid result, the user
   // should not be able to hit the "Okay" button
-  if (matchResult == nullptr)
+  if (!matchResult)
   {
     msg = tr("An error has occurred. The match result has not been changed.");
     QMessageBox::critical(this, "Modify match result", msg);
@@ -183,7 +191,7 @@ void MatchLogTable::onContextMenuRequested(const QPoint& pos)
 
   // find out which match is selected
   auto ma = getSelectedMatch();
-  if (ma == nullptr) return;  // shouldn't happen
+  if (!ma) return;  // shouldn't happen
 
   // show the context menu
   QAction* selectedItem = contextMenu->exec(globalPos);
@@ -208,7 +216,7 @@ void MatchLogTable::fillFromDatabase()
 {
   if (db == nullptr) return;
 
-  MatchMngr mm{db};
+  MatchMngr mm{*db};
   MatchList ml = mm.getFinishedMatches();
 
   // sort matches by finish time, earliest finisher first
@@ -231,7 +239,7 @@ void MatchLogTable::initContextMenu()
   actModMatchResult = new QAction(tr("Modify match result..."), this);
 
   // create the context menu and connect it to the actions
-  contextMenu = make_unique<QMenu>();
+  contextMenu = std::make_unique<QMenu>();
   contextMenu->addAction(actModMatchResult);
 
   // connect actions and slots

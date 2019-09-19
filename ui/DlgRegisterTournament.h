@@ -18,7 +18,7 @@ class DlgRegisterTournament : public QDialog
   Q_OBJECT
 
 public:
-  explicit DlgRegisterTournament(QWidget *parent, const QString& tnmtName, const QString club);
+  explicit DlgRegisterTournament(QWidget *parent, const QString& tnmtName, const QString& club);
   ~DlgRegisterTournament();
 
   QTournament::OnlineRegistrationData getValidatedRegistrationData() const;

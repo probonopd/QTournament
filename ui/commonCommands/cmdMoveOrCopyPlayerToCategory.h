@@ -16,8 +16,8 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CMDMOVEORCOPYPLAYERTOCAT_H
-#define CMDMOVEORCOPYPLAYERTOCAT_H
+#ifndef CMDMOVEORCOPYPLAYERTOCONFIGH
+#define CMDMOVEORCOPYPLAYERTOCONFIGH
 
 #include <QObject>
 
@@ -25,21 +25,19 @@
 #include "Category.h"
 #include "Player.h"
 
-using namespace QTournament;
 
 class cmdMoveOrCopyPlayerToCategory : public QObject, AbstractCommand
 {
   Q_OBJECT
 
 public:
-  cmdMoveOrCopyPlayerToCategory(QWidget* p, const Player& _pl, const Category& _srcCat, const Category& _dstCat, bool _isMove=false);
-  virtual ERR exec() override;
-  virtual ~cmdMoveOrCopyPlayerToCategory() {}
+  cmdMoveOrCopyPlayerToCategory(QWidget* p, const QTournament::Player& _pl, const QTournament::Category& _srcCat, const QTournament::Category& _dstCat, bool _isMove=false);
+  virtual QTournament::Error exec() override;
 
 protected:
-  Player pl;
-  Category srcCat;
-  Category dstCat;
+  const QTournament::Player pl;
+  const QTournament::Category srcCat;
+  const QTournament::Category dstCat;
   bool isMove;
 };
 

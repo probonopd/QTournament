@@ -20,6 +20,8 @@
 
 #include "plotStandings.h"
 
+using namespace SimpleReportLib;
+using namespace QTournament;
 
 plotStandings::plotStandings(SimpleReportGenerator* _rep, const RankingEntryList& _rel, const QString& tabName)
   :AbstractReportElement(_rep), rel(_rel), tableName(tabName)
@@ -60,16 +62,16 @@ QRectF plotStandings::plot(const QPointF& topLeft)
 
     // skip entries without a valid rank
     int curRank = re.getRank();
-    if (curRank == RankingEntry::NO_RANK_ASSIGNED) continue;
+    if (curRank == RankingEntry::NoRankAssigned) continue;
     hasAtLeastOneEntry = true;
 
     rowContent << QString::number(curRank);
 
     auto pp = re.getPlayerPair();
-    rowContent << ((pp != nullptr) ? (*pp).getDisplayName(53) : "??");
-    rowContent << ((pp != nullptr) ? (*pp).getDisplayName_Team(53) : "??");
+    rowContent << (pp ? pp->getDisplayName(53) : "??");
+    rowContent << (pp ? pp->getDisplayName_Team(53) : "??");
 
-    if (pp != nullptr)
+    if (pp)
     {
       // TODO: this doesn't work if draw matches are allowed!
       auto matchStats = re.getMatchStats();

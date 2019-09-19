@@ -27,8 +27,6 @@
 #include "TournamentDB.h"
 #include "TournamentDataDefs.h"
 
-using namespace SqliteOverlay;
-
 namespace QTournament
 {
   class MatchResultList_ByGroup : public QObject, public AbstractReport
@@ -36,13 +34,13 @@ namespace QTournament
     Q_OBJECT
 
   public:
-    MatchResultList_ByGroup(TournamentDB* _db, const QString& _name, const Category& _cat, int _grpNum);
+    MatchResultList_ByGroup(const QTournament::TournamentDB& _db, const QString& _name, const Category& _cat, int _grpNum);
 
     virtual upSimpleReport regenerateReport() override;
     virtual QStringList getReportLocators() const override;
 
   private:
-    Category cat;
+    const Category cat;  // DO NOT USE REFERENCES HERE, because this report might out-live the caller and its local objects
     int grpNum;
   };
 

@@ -3,10 +3,13 @@
 
 #include <vector>
 #include <string>
+#include <functional>
+
+#include <Sloppy/String.h>
 
 #include <QDialog>
 
-using namespace std;
+#include "TournamentDB.h"
 
 namespace Ui {
   class DlgImportCSV_Step1;
@@ -22,9 +25,9 @@ class DlgImportCSV_Step1 : public QDialog
   Q_OBJECT
 
 public:
-  explicit DlgImportCSV_Step1(QWidget *parent, QTournament::TournamentDB* _db);
+  explicit DlgImportCSV_Step1(QWidget *parent, const QTournament::TournamentDB& _db);
   ~DlgImportCSV_Step1();
-  vector<vector<string>> getSplitData() const;
+  std::vector<std::vector<Sloppy::estring> > getSplitData() const;
 
 
 protected slots:
@@ -33,7 +36,7 @@ protected slots:
 
 private:
   Ui::DlgImportCSV_Step1 *ui;
-  QTournament::TournamentDB* db;
+  std::reference_wrapper<const QTournament::TournamentDB> db;
 };
 
 #endif // DLGIMPORTCSV_STEP1_H

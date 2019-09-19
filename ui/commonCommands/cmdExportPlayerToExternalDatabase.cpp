@@ -22,6 +22,8 @@
 #include "cmdExportPlayerToExternalDatabase.h"
 #include "PlayerMngr.h"
 
+using namespace QTournament;
+
 cmdExportPlayerToExternalDatabase::cmdExportPlayerToExternalDatabase(QWidget* p, const Player& _pl)
   :AbstractCommand(_pl.getDatabaseHandle(), p), pl(_pl)
 {
@@ -30,7 +32,7 @@ cmdExportPlayerToExternalDatabase::cmdExportPlayerToExternalDatabase(QWidget* p,
 
 //----------------------------------------------------------------------------
 
-ERR cmdExportPlayerToExternalDatabase::exec()
+Error cmdExportPlayerToExternalDatabase::exec()
 {
   // make sure we have an external database open
   PlayerMngr pm{db};
@@ -39,23 +41,23 @@ ERR cmdExportPlayerToExternalDatabase::exec()
     QString msg = tr("No valid database for player export available.\n\n");
     msg +=tr("Is the database configured and the file existing?");
     QMessageBox::warning(parentWidget, tr("Export player"), msg);
-    return EPD__NOT_OPENED;
+    return Error::EPD_NotOpened;
   }
-  ERR e = pm.openConfiguredExternalPlayerDatabase();
-  if (!(pm.hasExternalPlayerDatabaseOpen()) || (e != OK))
+  Error e = pm.openConfiguredExternalPlayerDatabase();
+  if (!(pm.hasExternalPlayerDatabaseOpen()) || (e != Error::OK))
   {
     QString msg = tr("Could not open database for player export!");
     QMessageBox::warning(parentWidget, tr("Export player"), msg);
-    return EPD__NOT_OPENED;
+    return Error::EPD_NotOpened;
   }
 
-  ERR err = pm.exportPlayerToExternalDatabase(pl);
-  if (err == OK) return OK;
+  Error err = pm.exportPlayerToExternalDatabase(pl);
+  if (err == Error::OK) return Error::OK;
 
   QString msg;
   switch (err)
   {
-  case EPD__CREATION_FAILED:
+  case Error::EPD_CreationFailed:
     msg = tr("Could not export the player data to the database.");
     break;
 

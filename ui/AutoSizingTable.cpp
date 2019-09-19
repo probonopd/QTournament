@@ -39,7 +39,7 @@ namespace GuiHelpers
 
   //----------------------------------------------------------------------------
 
-  vector<int> ColumnAutoSizer::getColWidths(int useableWidth) const
+  std::vector<int> ColumnAutoSizer::getColWidths(int useableWidth) const
   {
     // sum up all relative column widths
     int totalWidthUnits = 0;
@@ -52,7 +52,7 @@ namespace GuiHelpers
     double widthUnit = (useableWidth * 1.0) / (totalWidthUnits * 1.0);
 
     // prepare the result vector
-    vector<int> result;
+    std::vector<int> result;
     double usedWidth = 0;
     int usedWidth_int = 0;
 

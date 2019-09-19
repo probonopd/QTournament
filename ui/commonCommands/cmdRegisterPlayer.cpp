@@ -22,6 +22,8 @@
 #include "cmdRegisterPlayer.h"
 #include "PlayerMngr.h"
 
+using namespace QTournament;
+
 cmdRegisterPlayer::cmdRegisterPlayer(QWidget* p, const Player& _pl)
   :AbstractCommand(_pl.getDatabaseHandle(), p), pl(_pl)
 {
@@ -30,14 +32,14 @@ cmdRegisterPlayer::cmdRegisterPlayer(QWidget* p, const Player& _pl)
 
 //----------------------------------------------------------------------------
 
-ERR cmdRegisterPlayer::exec()
+Error cmdRegisterPlayer::exec()
 {
-  ERR err;
+  Error err;
   PlayerMngr pm{db};
 
   err = pm.setWaitForRegistration(pl, false);
 
-  if (err != OK)   // this shouldn't happen
+  if (err != Error::OK)   // this shouldn't happen
   {
     QString msg = tr("Something went wrong during player registration. This shouldn't happen.\n\n");
     msg += tr("For the records: error code = ") + QString::number(static_cast<int> (err));

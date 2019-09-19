@@ -24,16 +24,14 @@
 #include "AbstractCommand.h"
 #include "Player.h"
 
-using namespace QTournament;
 
 class cmdUnlockKeystore : public QObject, AbstractCommand
 {
   Q_OBJECT
 
 public:
-  cmdUnlockKeystore(QWidget* p, TournamentDB* _db);
-  virtual ERR exec() override;
-  virtual ~cmdUnlockKeystore() {}
+  cmdUnlockKeystore(QWidget* p, const QTournament::TournamentDB& _db);
+  virtual QTournament::Error exec() override;
 
 };
 

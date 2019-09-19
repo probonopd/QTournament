@@ -25,26 +25,27 @@
 #include "RankingEntry.h"
 #include "RankingMngr.h"
 #include "assert.h"
-#include "BracketGenerator.h"
 #include "CatMngr.h"
 #include "PlayerMngr.h"
 #include "CentralSignalEmitter.h"
 #include "SwissLadderGenerator.h"
+#include "MatchMngr.h"
 
+using namespace std;
 using namespace SqliteOverlay;
 
 namespace QTournament
 {
 
-  SwissLadderCategory::SwissLadderCategory(TournamentDB* db, int rowId)
-  : Category(db, rowId)
+  SwissLadderCategory::SwissLadderCategory(const TournamentDB& _db, int rowId)
+  : Category(_db, rowId)
   {
   }
 
 //----------------------------------------------------------------------------
 
-  SwissLadderCategory::SwissLadderCategory(TournamentDB* db, SqliteOverlay::TabRow row)
-  : Category(db, row)
+  SwissLadderCategory::SwissLadderCategory(const TournamentDB& _db, const TabRow _row)
+  : Category(_db, _row)
   {
   }
 
@@ -63,7 +64,7 @@ namespace QTournament
     // a list of ranked player pairs and a list of all
     // matches played so far
     PlayerPairList rankedPairs;
-    vector<int> rankedPairs_Int;
+    std::vector<int> rankedPairs_Int;
     CatMngr cm{db};
     if (lastRound == 0)
     {
@@ -87,14 +88,14 @@ namespace QTournament
     assert(pairCount == getPlayerPairs().size());
 
     MatchMngr mm{db};
-    vector<tuple<int,int>> pastMatches;
+    std::vector<std::tuple<int,int>> pastMatches;
     for (MatchGroup mg : mm.getMatchGroupsForCat(*this))
     {
       for (Match ma : mg.getMatches())
       {
         // ignore unfinished matches. However, there
         // shouldn't be any when this function is called
-        if (ma.getState() != STAT_MA_FINISHED)
+        if (ma.is_NOT_InState(ObjState::MA_Finished))
         {
           continue;
         }
@@ -110,7 +111,7 @@ namespace QTournament
     // instantiate the SwissLadderGenerator and let it
     // generate the next set of matches
     SwissLadderGenerator slg{rankedPairs_Int, pastMatches};
-    vector<tuple<int, int>> nextMatches;
+    std::vector<std::tuple<int, int>> nextMatches;
     int errCode = slg.getNextMatches(nextMatches);
 
     // if we encountered a deadlock, remove all prepared future
@@ -131,23 +132,21 @@ namespace QTournament
     //
     // let's fill the already prepared, "empty" matches with the
     // match information from newMatches
-    ERR e;
-    auto mg = mm.getMatchGroup(*this, lastRound+1, GROUP_NUM__ITERATION, &e);
-    assert(mg != nullptr);
-    assert(e == OK);
+    auto mg = mm.getMatchGroup(*this, lastRound+1, GroupNum_Iteration);
+    assert(mg.has_value());
     assert(mg->getMatches().size() == nextMatches.size());
     int cnt = 0;
     PlayerMngr pm{db};
     for (Match ma : mg->getMatches())
     {
-      tuple<int, int> matchDef = nextMatches.at(cnt);
+      std::tuple<int, int> matchDef = nextMatches.at(cnt);
       int pp1Id = get<0>(matchDef);
       int pp2Id = get<1>(matchDef);
       PlayerPair pp1 = pm.getPlayerPair(pp1Id);
       PlayerPair pp2 = pm.getPlayerPair(pp2Id);
 
-      e = mm.setPlayerPairsForMatch(ma, pp1, pp2);
-      assert(e == OK);
+      Error e = mm.setPlayerPairsForMatch(ma, pp1, pp2);
+      assert(e == Error::OK);
       ++cnt;
     }
 
@@ -156,7 +155,7 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  ERR SwissLadderCategory::handleDeadlock() const
+  Error SwissLadderCategory::handleDeadlock() const
   {
     // genMatchesForNextRound() has found that there NO POSSIBLE combination
     // of matches for the next round without repeating an already played
@@ -177,8 +176,8 @@ namespace QTournament
     {
       if (mg.getCategory().getId() != catId) continue;
 
-      ERR err = mm.unstageMatchGroup(mg);
-      if (err != OK) return err;   // shouldn't happen
+      Error err = mm.unstageMatchGroup(mg);
+      if (err != Error::OK) return err;   // shouldn't happen
     }
 
     // step 2: tell everyone that something baaaad is about to happen
@@ -189,20 +188,16 @@ namespace QTournament
     // now the actual deletion starts
     //
 
-    // deletion 1: bracket vis data, because it has only outgoing refs
-    //
-    // not necessary here because Swiss Ladder does not have any bracket vis data
-
-    // deletion 2: ranking data, because it has only outgoing refs
+    // deletion 1: ranking data, because it has only outgoing refs
     //
     // not necessary here because we only delete matches for future rounds
     // that do not yet have any ranking data assigned
 
-    // deletion 3a: matches of future match groups (rounds > last finished round; equivalent to: groups that are not yet FINISHED)
-    // deletion 3b: match groups for these future matches
+    // deletion 2a: matches of future match groups (rounds > last finished round; equivalent to: groups that are not yet FINISHED)
+    // deletion 2b: match groups for these future matches
     for (const MatchGroup& mg : mm.getMatchGroupsForCat(*this))
     {
-      if (mg.getState() != STAT_MG_FINISHED)
+      if (mg.is_NOT_InState(ObjState::MG_Finished))
       {
         mm.deleteMatchGroupAndMatch(mg);
       }
@@ -219,33 +214,33 @@ namespace QTournament
     CatMngr cm{db};
     cm.updateCatStatusFromMatchStatus(*this);
 
-    return OK;
+    return Error::OK;
   }
 
 
 //----------------------------------------------------------------------------
 
-  ERR SwissLadderCategory::canFreezeConfig()
+  Error SwissLadderCategory::canFreezeConfig()
   {
-    if (getState() != STAT_CAT_CONFIG)
+    if (is_NOT_InState(ObjState::CAT_Config))
     {
-      return CONFIG_ALREADY_FROZEN;
+      return Error::ConfigAlreadyFrozen;
     }
     
     // make sure there no unpaired players in singles or doubles
-    if ((getMatchType() != SINGLES) && (hasUnpairedPlayers()))
+    if ((getMatchType() != MatchType::Singles) && (hasUnpairedPlayers()))
     {
-      return UNPAIRED_PLAYERS;
+      return Error::UnpairedPlayers;
     }
     
     // make sure we have at least three players
     PlayerPairList pp = getPlayerPairs();
     if (pp.size() < 3)
     {
-      return INVALID_PLAYER_COUNT;
+      return Error::InvalidPlayerCount;
     }
     
-    return OK;
+    return Error::OK;
   }
 
 //----------------------------------------------------------------------------
@@ -264,9 +259,9 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  ERR SwissLadderCategory::prepareFirstRound(ProgressQueue *progressNotificationQueue)
+  Error SwissLadderCategory::prepareFirstRound()
   {
-    if (getState() != STAT_CAT_IDLE) return WRONG_STATE;
+    if (is_NOT_InState(ObjState::CAT_Idle)) return Error::WrongState;
 
     MatchMngr mm{db};
 
@@ -276,7 +271,7 @@ namespace QTournament
     // do not return an error here, because obviously we have been
     // called successfully before and we only want to avoid
     // double initialization
-    if (allGrp.size() != 0) return OK;
+    if (allGrp.size() != 0) return Error::OK;
 
     // alright, this is a virgin category.
     // Assume that we play all possible rounds (very much like a
@@ -288,16 +283,13 @@ namespace QTournament
 
     for (int r=1; r <= nRounds; ++r)
     {
-      ERR e;
-      auto mg = mm.createMatchGroup(*this, r, GROUP_NUM__ITERATION, &e);
-      assert(mg != nullptr);
-      assert(e == OK);
+      auto mg = mm.createMatchGroup(*this, r, GroupNum_Iteration);
+      assert(mg.has_value());
 
       for (int m=0; m < nMatchesPerRound; ++m)
       {
-        auto ma = mm.createMatch(*mg, &e);
-        assert(ma != nullptr);
-        assert(e == OK);
+        auto ma = mm.createMatch(*mg);
+        assert(ma.has_value());
       }
 
       mm.closeMatchGroup(*mg);
@@ -306,15 +298,15 @@ namespace QTournament
     // Fill the first round of matches based on the initial seeding
     genMatchesForNextRound();
 
-    return OK;
+    return Error::OK;
   }
 
 //----------------------------------------------------------------------------
 
   int SwissLadderCategory::calcTotalRoundsCount() const
   {
-    OBJ_STATE stat = getState();
-    if ((stat == STAT_CAT_CONFIG) || (stat == STAT_CAT_FROZEN))
+    ObjState stat = getState();
+    if ((stat == ObjState::CAT_Config) || (stat == ObjState::CAT_Frozen))
     {
       return -1;   // category not yet fully configured; can't calc rounds
     }
@@ -349,24 +341,24 @@ namespace QTournament
   {
     return [](RankingEntry& a, RankingEntry& b) {
       // first criterion: delta between won and lost matches
-      tuple<int, int, int, int> matchStatsA = a.getMatchStats();
-      tuple<int, int, int, int> matchStatsB = b.getMatchStats();
+      std::tuple<int, int, int, int> matchStatsA = a.getMatchStats();
+      std::tuple<int, int, int, int> matchStatsB = b.getMatchStats();
       int deltaA = get<0>(matchStatsA) - get<2>(matchStatsA);
       int deltaB = get<0>(matchStatsB) - get<2>(matchStatsB);
       if (deltaA > deltaB) return true;
       if (deltaA < deltaB) return false;
 
       // second criteria: delta between won and lost games
-      tuple<int, int, int> gameStatsA = a.getGameStats();
-      tuple<int, int, int> gameStatsB = b.getGameStats();
+      std::tuple<int, int, int> gameStatsA = a.getGameStats();
+      std::tuple<int, int, int> gameStatsB = b.getGameStats();
       deltaA = get<0>(gameStatsA) - get<1>(gameStatsA);
       deltaB = get<0>(gameStatsB) - get<1>(gameStatsB);
       if (deltaA > deltaB) return true;
       if (deltaA < deltaB) return false;
 
       // second criteria: delta between won and lost points
-      tuple<int, int> pointStatsA = a.getPointStats();
-      tuple<int, int> pointStatsB = b.getPointStats();
+      std::tuple<int, int> pointStatsA = a.getPointStats();
+      std::tuple<int, int> pointStatsB = b.getPointStats();
       deltaA = get<0>(pointStatsA) - get<1>(pointStatsA);
       deltaB = get<0>(pointStatsB) - get<1>(pointStatsB);
       if (deltaA > deltaB) return true;
@@ -381,31 +373,31 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  ERR SwissLadderCategory::onRoundCompleted(int round)
+  Error SwissLadderCategory::onRoundCompleted(int round)
   {
     RankingMngr rm{db};
-    ERR err;
+    Error err;
     PlayerPairList allPairs = getPlayerPairs();
 
     rm.createUnsortedRankingEntriesForLastRound(*this, &err, allPairs);
-    if (err != OK) return err;  // shouldn't happen
+    if (err != Error::OK) return err;  // shouldn't happen
     rm.sortRankingEntriesForLastRound(*this, &err);
-    if (err != OK) return err;  // shouldn't happen
+    if (err != Error::OK) return err;  // shouldn't happen
 
     if (round != calcTotalRoundsCount())
     {
       genMatchesForNextRound();
     }
 
-    return OK;
+    return Error::OK;
   }
 
 //----------------------------------------------------------------------------
 
-  PlayerPairList SwissLadderCategory::getRemainingPlayersAfterRound(int round, ERR* err) const
+  PlayerPairList SwissLadderCategory::getRemainingPlayersAfterRound(int round, Error* err) const
   {
     // No knock-outs, never
-    if (err != nullptr) *err = OK;
+    if (err != nullptr) *err = Error::OK;
     return getPlayerPairs();
   }
 
@@ -414,10 +406,10 @@ namespace QTournament
   ModMatchResult SwissLadderCategory::canModifyMatchResult(const Match& ma) const
   {
     // the match has to be in FINISHED state
-    if (ma.getState() != STAT_MA_FINISHED) return ModMatchResult::NotPossible;
+    if (ma.is_NOT_InState(ObjState::MA_Finished)) return ModMatchResult::NotPossible;
 
     // if this match does not belong to us, we're not responsible
-    if (ma.getCategory().getMatchSystem() != SWISS_LADDER) return ModMatchResult::NotPossible;
+    if (ma.getCategory().getMatchSystem() != MatchSystem::SwissLadder) return ModMatchResult::NotPossible;
 
     // in Swiss Ladder, we can modify the results of
     // matches in the currently running round BEFORE the round is finished
@@ -445,9 +437,9 @@ namespace QTournament
     // IF we can modify the score, we can also change winner/loser
     // information. Thus, we can set any score that's presented to us
     MatchMngr mm{db};
-    ERR e = mm.updateMatchScore(ma, newScore, true);
+    Error e = mm.updateMatchScore(ma, newScore, true);
 
-    return (e == OK) ? ModMatchResult::ModDone : ModMatchResult::NotPossible;
+    return (e == Error::OK) ? ModMatchResult::ModDone : ModMatchResult::NotPossible;
   }
 
 //----------------------------------------------------------------------------

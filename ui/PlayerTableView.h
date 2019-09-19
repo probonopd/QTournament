@@ -31,26 +31,23 @@
 #include "models/PlayerTableModel.h"
 #include "AutoSizingTable.h"
 
-using namespace QTournament;
-
-class PlayerTableView : public GuiHelpers::AutoSizingTableView_WithDatabase<PlayerTableModel>
+class PlayerTableView : public GuiHelpers::AutoSizingTableView_WithDatabase<QTournament::PlayerTableModel>
 {
   Q_OBJECT
   
 public:
   PlayerTableView (QWidget* parent);
-  virtual ~PlayerTableView () {}
-  unique_ptr<Player> getSelectedPlayer() const;
+  std::optional<QTournament::Player> getSelectedPlayer() const;
     
 protected:
-  static constexpr int REL_NAME_COL_WIDTH = 10;
-  static constexpr int REL_SEX_COL_WIDTH = 1;
-  static constexpr int REL_TEAM_COL_WIDTH = 10;
-  static constexpr int REL_CAT_COL_WIDTH = 7;
-  static constexpr int MAX_NAME_COL_WIDTH = 350;
-  static constexpr int MAX_SEX_COL_WIDTH = 30;
-  static constexpr int MAX_TEAM_COL_WIDTH = 300;
-  static constexpr int MAX_CAT_COL_WIDTH = 300;
+  static constexpr int NameColRelWidth = 10;
+  static constexpr int SexColRelWidth = 1;
+  static constexpr int TeamColRelWidth = 10;
+  static constexpr int CatColRelWidth = 7;
+  static constexpr int NameColMaxWidth = 350;
+  static constexpr int SexColMaxWidth = 30;
+  static constexpr int TeamColMaxWidth = 300;
+  static constexpr int CatColMaxWidth = 300;
   void hook_onDatabaseOpened() override;
 
 public slots:
@@ -74,7 +71,7 @@ private slots:
 private:
   PlayerItemDelegate* playerItemDelegate;
 
-  unique_ptr<QMenu> contextMenu;
+  std::unique_ptr<QMenu> contextMenu;
   QAction* actAddPlayer;
   QAction* actEditPlayer;
   QAction* actRemovePlayer;

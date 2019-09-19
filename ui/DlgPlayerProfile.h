@@ -20,12 +20,12 @@ class DlgPlayerProfile : public QDialog
   Q_OBJECT
 
 public:
-  explicit DlgPlayerProfile(const QTournament::Player& _p, QWidget *parent = 0);
+  explicit DlgPlayerProfile(const QTournament::Player& _p, QWidget *parent = nullptr);
   ~DlgPlayerProfile();
 
 protected:
   QTournament::Player p;
-  QTournament::TournamentDB* db;
+  const QTournament::TournamentDB& db;
   QTournament::PlayerProfile pp;
 
   void fillLabels();

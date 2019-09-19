@@ -42,9 +42,9 @@ unique_ptr<Match> tstMatch::initMatchGroup()
   TournamentDB db{getSqliteFileName(), false};
 
   // fake a valid category state
-  TabRow catRow = db[TAB_CATEGORY][1];
-  catRow.update(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_CAT_IDLE));
-  CPPUNIT_ASSERT(ms.getState() == STAT_CAT_IDLE);
+  TabRow catRow = db[TabCategory][1];
+  catRow.update(GenericStateFieldName, static_cast<int>(STAT_CAT_Idle));
+  CPPUNIT_ASSERT(ms.getState() == STAT_CAT_Idle);
 
   // create a new match group
   ERR e;
@@ -123,7 +123,7 @@ void tstMatch::testGetPairs()
 
   // (artificially) assign one pair
   PlayerPair pp1 = Tournament::getPlayerMngr()->getPlayerPair(1);
-  (*db)[TAB_MATCH][ma.getId()].update(MA_PAIR1_REF, pp1.getPairId());
+  (*db)[TabMatch][ma.getId()].update(MA_Pair1Ref, pp1.getPairId());
 
   // test again
   CPPUNIT_ASSERT(ma.hasPlayerPair1() == true);
@@ -133,7 +133,7 @@ void tstMatch::testGetPairs()
 
   // (artificially) assign the second pair
   PlayerPair pp2 = Tournament::getPlayerMngr()->getPlayerPair(2);
-  (*db)[TAB_MATCH][ma.getId()].update(MA_PAIR2_REF, pp2.getPairId());
+  (*db)[TabMatch][ma.getId()].update(MA_Pair2Ref, pp2.getPairId());
 
   // test again
   CPPUNIT_ASSERT(ma.hasPlayerPair1() == true);
@@ -142,7 +142,7 @@ void tstMatch::testGetPairs()
   CPPUNIT_ASSERT(ma.getPlayerPair2().getPairId() == pp2.getPairId());
 
   // remove the first one
-  (*db)[TAB_MATCH][ma.getId()].update(MA_PAIR1_REF, QVariant());
+  (*db)[TabMatch][ma.getId()].update(MA_Pair1Ref, QVariant());
 
   // test again
   CPPUNIT_ASSERT(ma.hasPlayerPair1() == false);

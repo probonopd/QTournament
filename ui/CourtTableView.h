@@ -24,6 +24,7 @@
 #include <QTableView>
 #include <QSortFilterProxyModel>
 #include <QStringListModel>
+#include <QMenu>
 
 #include "TournamentDB.h"
 #include "delegates/CourtItemDelegate.h"
@@ -31,21 +32,18 @@
 #include "models/CourtTabModel.h"
 #include "AutoSizingTable.h"
 
-using namespace QTournament;
-
-class CourtTableView : public GuiHelpers::AutoSizingTableView_WithDatabase<CourtTableModel>
+class CourtTableView : public GuiHelpers::AutoSizingTableView_WithDatabase<QTournament::CourtTableModel>
 {
   Q_OBJECT
   
 public:
   CourtTableView (QWidget* parent);
-  virtual ~CourtTableView ();
-  unique_ptr<Court> getSelectedCourt() const;
-  unique_ptr<Match> getSelectedMatch() const;
+  std::optional<QTournament::Court> getSelectedCourt() const;
+  std::optional<QTournament::Match> getSelectedMatch() const;
 
 protected:
-  static constexpr int ABS_COURT_COL_WIDTH = 40;
-  static constexpr int ABS_DURATION_COL_WIDTH = 60;
+  static constexpr int AbsCourtColWidth = 40;
+  static constexpr int AbsDurationColWidth = 60;
 
   void hook_onDatabaseOpened() override;
 
@@ -65,10 +63,10 @@ private slots:
   void onReprintResultSheetTriggered();
 
 private:
-  static constexpr int MAX_NUM_ADD_CALL = 3;
+  static constexpr int MaxNumAdditionalCalls = 3;
   CourtItemDelegate* courtItemDelegate;
 
-  unique_ptr<QMenu> contextMenu;
+  std::unique_ptr<QMenu> contextMenu;
   QAction* actAddCourt;
   QAction* actDelCourt;
   QAction* actUndoCall;

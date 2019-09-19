@@ -23,6 +23,8 @@
 #include "PlayerMngr.h"
 #include "CatMngr.h"
 
+using namespace SqliteOverlay;
+
 namespace QTournament {
 
   // ctor for a player pair with a single player only and without database entry
@@ -50,34 +52,34 @@ namespace QTournament {
 
 //----------------------------------------------------------------------------
 
-  // ctor for a PlayerPair constructed from a row in TAB_PAIRS
-  PlayerPair::PlayerPair(TournamentDB* _db, const TabRow& row)
-    :id1(row.getInt(PAIRS_PLAYER1_REF)), id2(-1), pairId(row.getId()), db(_db)
+  // ctor for a PlayerPair constructed from a row in TabPairs
+  PlayerPair::PlayerPair(const TournamentDB& _db, const TabRow& row)
+    :id1(row.getInt(Pairs_Player1Ref)), id2(-1), pairId(row.id()), db(_db)
   {
-    auto _id2 = row.getInt2(PAIRS_PLAYER2_REF);
-    if (!(_id2->isNull()))
+    auto _id2 = row.getInt2(Pairs_Player2Ref);
+    if (_id2.has_value())
     {
-      id2 = _id2->get();
+      id2 = *_id2;
       sortPlayers();
     }
   }
 
 //----------------------------------------------------------------------------
 
-  // ctor for a PlayerPair constructed from a row in TAB_PAIRS identified by its ID
-  PlayerPair::PlayerPair(TournamentDB* _db, int ppId)
+  // ctor for a PlayerPair constructed from a row in TabPairs identified by its ID
+  PlayerPair::PlayerPair(const TournamentDB& _db, int ppId)
     :db(_db)
   {
-    TabRow row = db->getTab(TAB_PAIRS)->operator [](ppId);
+    TabRow row{db, TabPairs, ppId};
 
-    pairId = row.getId();
-    id1 = row.getInt(PAIRS_PLAYER1_REF);
+    pairId = ppId;
+    id1 = row.getInt(Pairs_Player1Ref);
     id2 = -1;
 
-    auto _id2 = row.getInt2(PAIRS_PLAYER2_REF);
-    if (!(_id2->isNull()))
+    auto _id2 = row.getInt2(Pairs_Player2Ref);
+    if (_id2.has_value())
     {
-      id2 = _id2->get();
+      id2 = *_id2;
       sortPlayers();
     }
   }
@@ -93,7 +95,7 @@ namespace QTournament {
     {
       Player p1 = pm.getPlayer(id1);
       Player p2 = pm.getPlayer(id2);
-      if ((p2.getSex() == M) && (p1.getSex() == F))
+      if ((p2.getSex() == Sex::M) && (p1.getSex() == Sex::F))
       {
         id1 = p2.getId();
         id2 = p1.getId();
@@ -143,7 +145,7 @@ namespace QTournament {
     QString result;
 
     Player p1 = getPlayer1();
-    OBJ_STATE p1Stat = p1.getState();
+    ObjState p1Stat = p1.getState();
 
     QString p2Name;
     if (hasPlayer2())
@@ -160,25 +162,25 @@ namespace QTournament {
 
       Player p2 = getPlayer2();
       p2Name = p2.getDisplayName(maxLen);
-      OBJ_STATE p2Stat = p2.getState();
+      ObjState p2Stat = p2.getState();
 
       result = "%2 / %1";
       if (unregisteredPlayersInBrackets)
       {
-        if ((p1Stat == STAT_PL_WAIT_FOR_REGISTRATION) && (p2Stat == STAT_PL_WAIT_FOR_REGISTRATION))
+        if ((p1Stat == ObjState::PL_WaitForRegistration) && (p2Stat == ObjState::PL_WaitForRegistration))
         {
           result = "(%2 / %1)";
-        } else if (p1Stat == STAT_PL_WAIT_FOR_REGISTRATION)
+        } else if (p1Stat == ObjState::PL_WaitForRegistration)
         {
           result = "(%2) / %1";
-        } else if (p2Stat == STAT_PL_WAIT_FOR_REGISTRATION)
+        } else if (p2Stat == ObjState::PL_WaitForRegistration)
         {
           result = "%2 / (%1)";
         }
       }
       result = result.arg(p2Name);
     } else {
-      result = (unregisteredPlayersInBrackets && (p1Stat == STAT_PL_WAIT_FOR_REGISTRATION)) ? "(%1)" : "%1";
+      result = (unregisteredPlayersInBrackets && (p1Stat == ObjState::PL_WaitForRegistration)) ? "(%1)" : "%1";
     }
 
     result = result.arg(p1.getDisplayName(maxLen));
@@ -272,17 +274,13 @@ namespace QTournament {
 //----------------------------------------------------------------------------
 
   // this serves only as a hot fix until this class will be re-factored to inherit GenericDatabaseObject
-  unique_ptr<Category> PlayerPair::getCategory(TournamentDB* db) const
+  std::optional<Category> PlayerPair::getCategory(const TournamentDB& db) const
   {
-    assert(db != nullptr);
+    if (pairId <= 0) return {};
 
-    if (pairId <= 0) return nullptr;
-
-    TabRow pairRow = db->getTab(TAB_PAIRS)->operator [](pairId);
+    TabRow pairRow{db, TabPairs, pairId};
     CatMngr cm{db};
-    Category cat = cm.getCategoryById(pairRow.getInt(PAIRS_CAT_REF));
-
-    return unique_ptr<Category>(new Category(cat));
+    return cm.getCategoryById(pairRow.getInt(Pairs_CatRef));
   }
 
 //----------------------------------------------------------------------------
@@ -292,19 +290,14 @@ namespace QTournament {
   // for debugging and unit testing only
   bool PlayerPair::isConsistent() const
   {
-    assert(db != nullptr);
-
     if (pairId > 0)
     {
-      TabRow pairRow = db->getTab(TAB_PAIRS)->operator [](pairId);
-      if (pairRow.getInt(PAIRS_PLAYER1_REF) != id1) return false;
+      TabRow pairRow{db, TabPairs, pairId};
+      if (pairRow.getInt(Pairs_Player1Ref) != id1) return false;
 
-      auto p2Id = pairRow.getInt2(PAIRS_PLAYER2_REF);
-      if (p2Id->isNull() && (id2 > 0)) return false;
-      if (!(p2Id->isNull()))
-      {
-        if (id2 != p2Id->get()) return false;
-      }
+      auto p2Id = pairRow.getInt2(Pairs_Player2Ref);
+      if (!p2Id.has_value() && (id2 > 0)) return false;
+      if ((p2Id.has_value()) && (id2 != *p2Id)) return false;
     }
 
     return true;
@@ -315,15 +308,13 @@ namespace QTournament {
   // this serves only as a hot fix until this class will be re-factored to inherit GenericDatabaseObject
   int PlayerPair::getPairsGroupNum() const
   {
-    assert(db != nullptr);
-
     if (pairId <= 0)
     {
       throw std::runtime_error("Queried PlayerPair does not yet exist in the database");
     }
 
-    TabRow pairRow = db->getTab(TAB_PAIRS)->operator [](pairId);
-    return pairRow.getInt(PAIRS_GRP_NUM);
+    TabRow pairRow{db, TabPairs, pairId};
+    return pairRow.getInt(Pairs_GrpNum);
   }
 
 //----------------------------------------------------------------------------
@@ -331,11 +322,11 @@ namespace QTournament {
   bool PlayerPair::areAllPlayersIdle() const
   {
     auto p = getPlayer1();
-    if (p.getState() != STAT_PL_IDLE) return false;
+    if (p.is_NOT_InState(ObjState::PL_Idle)) return false;
     if (hasPlayer2())
     {
       p = getPlayer2();
-      if (p.getState() != STAT_PL_IDLE) return false;
+      if (p.is_NOT_InState(ObjState::PL_Idle)) return false;
     }
     return true;
   }

@@ -43,44 +43,44 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  unique_ptr<Match> PlayerProfile::getLastPlayedMatch() const
+  std::optional<Match> PlayerProfile::getLastPlayedMatch() const
   {
-    return returnMatchOrNullptr(lastPlayedMatchId);
+    return returnMatchOrEmpty(lastPlayedMatchId);
   }
 
   //----------------------------------------------------------------------------
 
-  unique_ptr<Match> PlayerProfile::getCurrentMatch() const
+  std::optional<Match> PlayerProfile::getCurrentMatch() const
   {
-    return returnMatchOrNullptr(currentMatchId);
+    return returnMatchOrEmpty(currentMatchId);
   }
 
   //----------------------------------------------------------------------------
 
-  unique_ptr<Match> PlayerProfile::getNextMatch() const
+  std::optional<Match> PlayerProfile::getNextMatch() const
   {
-    return returnMatchOrNullptr(nextMatchId);
+    return returnMatchOrEmpty(nextMatchId);
   }
 
   //----------------------------------------------------------------------------
 
-  unique_ptr<Match> PlayerProfile::getLastUmpireMatch() const
+  std::optional<Match> PlayerProfile::getLastUmpireMatch() const
   {
-    return returnMatchOrNullptr(lastUmpireMatchId);
+    return returnMatchOrEmpty(lastUmpireMatchId);
   }
 
   //----------------------------------------------------------------------------
 
-  unique_ptr<Match> PlayerProfile::getCurrentUmpireMatch() const
+  std::optional<Match> PlayerProfile::getCurrentUmpireMatch() const
   {
-    return returnMatchOrNullptr(currentUmpireMatchId);
+    return returnMatchOrEmpty(currentUmpireMatchId);
   }
 
   //----------------------------------------------------------------------------
 
-  unique_ptr<Match> PlayerProfile::getNextUmpireMatch() const
+  std::optional<Match> PlayerProfile::getNextUmpireMatch() const
   {
-    return returnMatchOrNullptr(nextUmpireMatchId);
+    return returnMatchOrEmpty(nextUmpireMatchId);
   }
 
   //----------------------------------------------------------------------------
@@ -95,17 +95,17 @@ namespace QTournament
     int nextMatchNum = -1;
     for (const Match& ma : matchesAsUmpire)
     {
-      OBJ_STATE stat = ma.getState();
+      ObjState stat = ma.getState();
 
-      if (stat == STAT_MA_FINISHED) ++umpireFinishedCount;
+      if (stat == ObjState::MA_Finished) ++umpireFinishedCount;
 
-      if (ma.getState() == STAT_MA_RUNNING)
+      if (ma.isInState(ObjState::MA_Running))
       {
         currentUmpireMatchId = ma.getId();
         continue;
       }
 
-      if (stat == STAT_MA_FINISHED)
+      if (stat == ObjState::MA_Finished)
       {
         QDateTime fTime = ma.getFinishTime();
         if (fTime.isValid())
@@ -120,7 +120,7 @@ namespace QTournament
       }
 
       int maNum = ma.getMatchNumber();
-      if ((maNum != MATCH_NUM_NOT_ASSIGNED) && ((maNum < nextMatchNum) || (nextMatchNum < 0)))
+      if ((maNum != MatchNumNotAssigned) && ((maNum < nextMatchNum) || (nextMatchNum < 0)))
       {
         nextMatchNum = maNum;
         nextUmpireMatchId = ma.getId();
@@ -134,19 +134,19 @@ namespace QTournament
     nextMatchNum = -1;
     for (const Match& ma : matchesAsPlayer)
     {
-      OBJ_STATE stat = ma.getState();
+      ObjState stat = ma.getState();
       int maNum = ma.getMatchNumber();
 
       // count all scheduled matches
-      if (maNum != MATCH_NUM_NOT_ASSIGNED) ++scheduledCount;
+      if (maNum != MatchNumNotAssigned) ++scheduledCount;
 
-      if (stat == STAT_MA_RUNNING)
+      if (stat == ObjState::MA_Running)
       {
         currentMatchId = ma.getId();
         continue;
       }
 
-      if (stat == STAT_MA_FINISHED)
+      if (stat == ObjState::MA_Finished)
       {
         ++finishCount;
         QDateTime fTime = ma.getFinishTime();
@@ -164,7 +164,7 @@ namespace QTournament
         continue;
       }
 
-      if ((maNum != MATCH_NUM_NOT_ASSIGNED) && ((maNum < nextMatchNum) || (nextMatchNum < 0)))
+      if ((maNum != MatchNumNotAssigned) && ((maNum < nextMatchNum) || (nextMatchNum < 0)))
       {
         nextMatchNum = maNum;
         nextMatchId = ma.getId();
@@ -182,53 +182,44 @@ namespace QTournament
 
     // step 1: search via PlayerPairs
     QString where = "%1=%2 OR %3=%2";
-    where = where.arg(PAIRS_PLAYER1_REF);
+    where = where.arg(Pairs_Player1Ref);
     where = where.arg(p.getId());
-    where = where.arg(PAIRS_PLAYER2_REF);
-    DbTab* pairsTab = db->getTab(TAB_PAIRS);
-    auto it = pairsTab->getRowsByWhereClause(where.toUtf8().constData());
-    vector<int> matchIdList;
+    where = where.arg(Pairs_Player2Ref);
+    DbTab pairsTab{db, TabPairs, false};
+    auto rows = pairsTab.getRowsByWhereClause(where.toUtf8().constData());
+    std::vector<int> matchIdList;
 
-    DbTab* matchTab = db->getTab(TAB_MATCH);
+    DbTab matchTab{db, TabMatch, false};
     MatchMngr mm{db};
-    while (!(it.isEnd()))
+    for (const auto& r : rows)
     {
-      TabRow r = *it;
-      int ppId = r.getId();
+      int ppId = r.id();
 
       // search for all matches involving this player pair
       where = "%1=%2 OR %3=%2";
-      where = where.arg(MA_PAIR1_REF);
+      where = where.arg(MA_Pair1Ref);
       where = where.arg(ppId);
-      where = where.arg(MA_PAIR2_REF);
-      auto matchIt = matchTab->getRowsByWhereClause(where.toUtf8().constData());
-      while (!(matchIt.isEnd()))
+      where = where.arg(MA_Pair2Ref);
+      auto matchRows = matchTab.getRowsByWhereClause(where.toUtf8().constData());
+      for (const auto& matchRow : matchRows)
       {
-        int maId = (*matchIt).getId();
-
+        int maId = matchRow.id();
         if (!(Sloppy::isInVector<int>(matchIdList, maId))) matchIdList.push_back(maId);
-
-        ++matchIt;
       }
-
-      ++it;
     }
 
     // step 2: search via ACTUAL_PLAYER
     where = "%1=%2 OR %3=%2 OR %4=%2 OR %5=%2";
-    where = where.arg(MA_ACTUAL_PLAYER1A_REF);
+    where = where.arg(MA_ActualPlayer1aRef);
     where = where.arg(p.getId());
-    where = where.arg(MA_ACTUAL_PLAYER1B_REF);
-    where = where.arg(MA_ACTUAL_PLAYER2A_REF);
-    where = where.arg(MA_ACTUAL_PLAYER2B_REF);
-    it = matchTab->getRowsByWhereClause(where.toUtf8().constData());
-    while (!(it.isEnd()))
+    where = where.arg(MA_ActualPlayer1bRef);
+    where = where.arg(MA_ActualPlayer2aRef);
+    where = where.arg(MA_ActualPlayer2bRef);
+    auto matchRows = matchTab.getRowsByWhereClause(where.toUtf8().constData());
+    for (const auto& matchRow : matchRows)
     {
-      int maId = (*it).getId();
-
+      int maId = matchRow.id();
       if (!(Sloppy::isInVector<int>(matchIdList, maId))) matchIdList.push_back(maId);
-
-      ++it;
     }
 
     // copy the results to the matchesAsPlayer-list
@@ -249,15 +240,13 @@ namespace QTournament
     // find all matches involving the participant as an UMPIRE
     //
     matchIdList.clear();
-    it = matchTab->getRowsByColumnValue(MA_REFEREE_REF, p.getId());
-    while (!(it.isEnd()))
+    matchRows = matchTab.getRowsByColumnValue(MA_RefereeRef, p.getId());
+    for (const auto& matchRow : matchRows)
     {
-      int maId = (*it).getId();
+      int maId = matchRow.id();
 
       auto ma = mm.getMatch(maId);
       matchesAsUmpire.push_back(*ma);
-
-      ++it;
     }
 
     // sort by match number
@@ -270,9 +259,9 @@ namespace QTournament
 
   //----------------------------------------------------------------------------
 
-  unique_ptr<Match> PlayerProfile::returnMatchOrNullptr(int maId) const
+  std::optional<Match> PlayerProfile::returnMatchOrEmpty(int maId) const
   {
-    if (maId < 1) return nullptr;
+    if (maId < 1) return {};
 
     MatchMngr mm{db};
     return mm.getMatch(maId);

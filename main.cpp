@@ -28,11 +28,13 @@
 #include <QStyleFactory>
 
 #include "ui/MainFrame.h"
+#include "TournamentDataDefs.h"
+#include "ui/CustomMetatypes.h"
 
 int main(int argc, char *argv[])
 {
-  // initialize resources, if needed
-  Q_INIT_RESOURCE(tournament);
+  // register my custom types as metatypes
+  registerCustomTypes();
 
   QApplication app(argc, argv);
 
@@ -47,7 +49,6 @@ int main(int argc, char *argv[])
     app.setStyle(fusionStyle);
   }
   
-  cout << "System locale: " << QLocale().name().toStdString() << endl;
   QTranslator qtTranslator;
   // Only temporary: hard-coded German translation while in debug mode
   //qtTranslator.load("qt_de", QLibraryInfo::location(QLibraryInfo::TranslationsPath));
@@ -78,8 +79,6 @@ int main(int argc, char *argv[])
   
   MainFrame w;
   w.show();
-
-  // create and show your widgets here
 
   return app.exec();
 }

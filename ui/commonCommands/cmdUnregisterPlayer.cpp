@@ -22,6 +22,8 @@
 #include "cmdUnregisterPlayer.h"
 #include "PlayerMngr.h"
 
+using namespace QTournament;
+
 cmdUnregisterPlayer::cmdUnregisterPlayer(QWidget* p, const Player& _pl)
   :AbstractCommand(_pl.getDatabaseHandle(), p), pl(_pl)
 {
@@ -30,15 +32,15 @@ cmdUnregisterPlayer::cmdUnregisterPlayer(QWidget* p, const Player& _pl)
 
 //----------------------------------------------------------------------------
 
-ERR cmdUnregisterPlayer::exec()
+Error cmdUnregisterPlayer::exec()
 {
   // set the "wait for registration"-flag
-  ERR err;
+  Error err;
   PlayerMngr pm{db};
 
   err = pm.setWaitForRegistration(pl, true);
 
-  if (err == OK) return OK; // no error
+  if (err == Error::OK) return Error::OK; // no error
 
   QString msg = tr("The player is already assigned to matches\n");
   msg += tr("and/or currently running categories.\n\n");

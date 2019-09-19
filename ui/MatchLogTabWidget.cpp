@@ -1,5 +1,8 @@
 #include "MatchLogTabWidget.h"
 #include "ui_MatchLogTabWidget.h"
+#include "CentralSignalEmitter.h"
+
+using namespace QTournament;
 
 MatchLogTabWidget::MatchLogTabWidget(QWidget *parent) :
   QWidget(parent),
@@ -19,7 +22,7 @@ MatchLogTabWidget::~MatchLogTabWidget()
 
 //----------------------------------------------------------------------------
 
-void MatchLogTabWidget::setDatabase(TournamentDB* _db)
+void MatchLogTabWidget::setDatabase(const TournamentDB* _db)
 {
   db = _db;
 

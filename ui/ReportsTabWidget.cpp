@@ -26,9 +26,11 @@
 #include "MainFrame.h"
 #include "CentralSignalEmitter.h"
 
+using namespace QTournament;
+
 ReportsTabWidget::ReportsTabWidget(QWidget *parent) :
-  QWidget(parent), db(nullptr),
-  ui(new Ui::ReportsTabWidget), treeRoot(nullptr), isInResetProcedure(false)
+  QWidget(parent),
+  ui(new Ui::ReportsTabWidget)
 {
   ui->setupUi(this);
 
@@ -55,7 +57,7 @@ void ReportsTabWidget::updateRepPool()
 {
   if (db == nullptr) return;
 
-  ReportFactory repFab{db};
+  ReportFactory repFab{*db};
 
   QStringList existingReports;
   for_each(repPool.cbegin(), repPool.cend(), [&existingReports](const upAbstractReport& rep)
@@ -87,7 +89,7 @@ void ReportsTabWidget::updateRepPool()
 
 //----------------------------------------------------------------------------
 
-void ReportsTabWidget::setDatabase(TournamentDB* _db)
+void ReportsTabWidget::setDatabase(const TournamentDB* _db)
 {
   db = _db;
   onResetRequested();

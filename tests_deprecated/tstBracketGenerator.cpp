@@ -20,7 +20,7 @@ void tstBracketGenerator::testSingleElim()
 
   printStartMsg("tstBracketGenerator::testSingleElim");
   
-  BracketGenerator bg{BracketGenerator::BRACKET_SINGLE_ELIM};
+  BracketGenerator bg{BracketGenerator::BracketSingleElim};
 
   // Test all brackets for 2 to 32 players
   for (int numPlayers=2; numPlayers <= UPPER_PLAYER_LIMIT; ++numPlayers)

@@ -16,11 +16,14 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "GuiHelpers.h"
+#include <iostream>
 
 #include <QObject>
 #include <QMessageBox>
 #include <QFontMetricsF>
+#include <QLocale>
+#include <QFile>
+#include <QRegExp>
 
 #include "TournamentDataDefs.h"
 #include "MatchMngr.h"
@@ -31,6 +34,9 @@
 #include "Player.h"
 #include "PlayerProfile.h"
 
+#include "GuiHelpers.h"
+
+using namespace QTournament;
 
 QString GuiHelpers::groupNumToString(int grpNum)
 {
@@ -38,15 +44,15 @@ QString GuiHelpers::groupNumToString(int grpNum)
 
   switch (grpNum)
   {
-  case GROUP_NUM__ITERATION:
+  case GroupNum_Iteration:
     return "--";
-  case GROUP_NUM__L16:
+  case GroupNum_L16:
     return QObject::tr("L16");
-  case GROUP_NUM__QUARTERFINAL:
+  case GroupNum_Quarter:
     return QObject::tr("QF");
-  case GROUP_NUM__SEMIFINAL:
+  case GroupNum_Semi:
     return QObject::tr("SF");
-  case GROUP_NUM__FINAL:
+  case GroupNum_Final:
     return QObject::tr("FI");
   }
 
@@ -62,15 +68,15 @@ QString GuiHelpers::groupNumToLongString(int grpNum)
 
   switch (grpNum)
   {
-  case GROUP_NUM__ITERATION:
+  case GroupNum_Iteration:
     return "--";
-  case GROUP_NUM__L16:
+  case GroupNum_L16:
     return QObject::tr("Round of Last 16");
-  case GROUP_NUM__QUARTERFINAL:
+  case GroupNum_Quarter:
     return QObject::tr("Quarter Finals");
-  case GROUP_NUM__SEMIFINAL:
+  case GroupNum_Semi:
     return QObject::tr("Semi Finals");
-  case GROUP_NUM__FINAL:
+  case GroupNum_Final:
     return QObject::tr("Finals");
   }
 
@@ -90,82 +96,59 @@ QString GuiHelpers::groupNumToLongString(int grpNum)
  */
 QString GuiHelpers::prepCall(const QTournament::Match &ma, const QTournament::Court &co, int nCall)
 {
-  int maNum = ma.getMatchNumber();
-  int coNum = co.getNumber();
+  // get the (translated) pattern for the call message
+  QString call = getLocaleDependedResource(":/txt/match_call.html");
 
-  QString call = "<i><font color=\"blue\">" + QObject::tr("Please announce:") + "</font></i><br><br><br>";
-
-  call += "<big>";
-
+  // Pick the right opening phrase  (arg #1, optional)
   if (nCall == 0)
   {
-    call += QObject::tr("Next match,<br><br>");
+    enableTextOption(call, "InitialCall");
+    disableTextOption(call, "RepCall");
   } else {
-    call += "<b><font color=\"darkRed\">%1. ";
-    call = call.arg(QString::number(nCall + 1));
-    call += QObject::tr("call");
-    call += "</font></b>";
-    call += QObject::tr(" for ");
-  }
-
-  call += QObject::tr("match number ") + "<b><font color=\"darkRed\">%1</font></b>";
-  call += QObject::tr(" on court number ") + "<b><font color=\"darkRed\">%2</font></b><br><br>";
-  call = call.arg(maNum);
-  call = call.arg(coNum);
-
-  call += "<center><b>";
-
-  call += ma.getCategory().getName() + ",<br><br>";
-
-  int winnerRank = ma.getWinnerRank();
-  if (winnerRank > 0)
-  {
-    call += "<font color=\"darkRed\">";
-    if (winnerRank == 1)
-    {
-      call += QObject::tr("FINAL");
-    } else {
-      call += QObject::tr("MATCH FOR PLACE %1");
-      call = call.arg(winnerRank);
-    }
-    call += "</font>";
-    call +=  ",<br><br>";
-  }
-
-  call += ma.getPlayerPair1().getCallName(QObject::tr("and")) + "<br><br>";
-  call += QObject::tr("versus<br><br>");
-  call += ma.getPlayerPair2().getCallName(QObject::tr("and")) + ",<br><br></b></center>";
-  call += QObject::tr("match number ") + "<b><font color=\"darkRed\">%1</font></b>";
-  call += QObject::tr(" on court number ") + "<b><font color=\"darkRed\">%2</font></b>";
-  call = call.arg(maNum);
-  call = call.arg(coNum);
-  call += ".";
-
-  // add the umpire's name, if necessary
-  QTournament::REFEREE_MODE refMode = ma.get_EFFECTIVE_RefereeMode();
-  if ((refMode != QTournament::REFEREE_MODE::NONE) && ((refMode != QTournament::REFEREE_MODE::HANDWRITTEN)))
-  {
-    QTournament::upPlayer referee = ma.getAssignedReferee();
-    if (referee != nullptr)
-    {
-      call += "<br><br><br><b>";
-      call += QObject::tr("Umpire is %1.");
-      call = call.arg(referee->getDisplayName_FirstNameFirst());
-      call += "</b><br>";
-    }
-  }
-
-  // add additional calls, if applicable
-  if (nCall > 0)
-  {
-    call += "<br><br>";
-    call += "<b><font color=\"darkRed\">";
-    call += QObject::tr("THIS IS THE %1. CALL!");
-    call += "</font></b>";
+    disableTextOption(call, "InitialCall");
+    enableTextOption(call, "RepCall");
     call = call.arg(nCall + 1);
   }
-  call += "</big><br><br><br>";
-  call += "<i><font color=\"blue\">" + QObject::tr("Call executed?") + "</font></i><br><br><br>";
+
+  // set match number and court number
+  call = call.arg(ma.getMatchNumber()); // arg #2
+  call = call.arg(co.getNumber());   // arg #3
+
+  // set the category name
+  call = call.arg(ma.getCategory().getName());  // arg #4
+
+  // is this a match for a final rank?
+  int winnerRank = ma.getWinnerRank();
+  enableTextOption(call, "RankMatch", (winnerRank > 0));
+  if (winnerRank > 0)
+  {
+    if (winnerRank == 1)
+    {
+      enableTextOption(call, "FinalMatch");
+      disableTextOption(call, "RankNumber");
+    } else {
+      disableTextOption(call, "FinalMatch");
+      enableTextOption(call, "RankNumber");
+      call = call.arg(winnerRank);  // arg #5, optional
+    }
+  }
+
+  // set player pair names
+  call = call.arg(ma.getPlayerPair1().getCallName(QObject::tr("and")));  // arg #6
+  call = call.arg(ma.getPlayerPair2().getCallName(QObject::tr("and")));  // arg #7
+
+  // add the umpire's name, if necessary
+  QTournament::RefereeMode refMode = ma.get_EFFECTIVE_RefereeMode();
+  const bool useUmpire = ((refMode != QTournament::RefereeMode::None) && ((refMode != QTournament::RefereeMode::HandWritten)));
+  const auto referee = ma.getAssignedReferee();
+  const bool hasUmpire = referee.has_value();
+  if (useUmpire && hasUmpire)
+  {
+    enableTextOption(call, "Umpire");
+    call = call.arg(referee->getDisplayName_FirstNameFirst());  // arg #8
+  } else {
+    disableTextOption(call, "Umpire");
+  }
 
   return call;
 }
@@ -355,12 +338,12 @@ void GuiHelpers::drawTwoLinePlayerPairNames_Centered(QPainter* painter, const QR
   // determine the colors for the left and the right block
   QColor leftColor{fntColor};
   QColor rightColor{fntColor};
-  if (ma.getState() == QTournament::OBJ_STATE::STAT_MA_FINISHED)
+  if (ma.isInState(ObjState::MA_Finished))
   {
     auto w = ma.getWinner();
     auto l = ma.getLoser();
 
-    if ((w != nullptr) && (l != nullptr))
+    if (w && l)
     {
       auto pp1 = ma.getPlayerPair1();
       if (*w == pp1)
@@ -403,8 +386,8 @@ void GuiHelpers::drawTwoLinePlayerPairNames_Centered(QPainter* painter, const QR
   double r2LeftWidth = fm.width(row2Left);
   double r1RightWidth = fm.width(row1Right);
   double r2RightWidth = fm.width(row2Right);
-  double maxLeftWidth = max(r1LeftWidth, r2LeftWidth);
-  double maxRightWidth = max(r1RightWidth, r2RightWidth);
+  double maxLeftWidth = std::max(r1LeftWidth, r2LeftWidth);
+  double maxRightWidth = std::max(r1RightWidth, r2RightWidth);
   double totalWidth = maxLeftWidth + fm.width(colon) + maxRightWidth;
 
   // calculate the side margin
@@ -458,34 +441,6 @@ void GuiHelpers::drawTwoLinePlayerPairNames_Centered(QPainter* painter, const QR
 
 //----------------------------------------------------------------------------
 
-void GuiHelpers::execWalkover(QWidget* parent, const QTournament::Match& ma, int playerNum)
-{
-  if ((playerNum != 1) && (playerNum != 2)) return; // shouldn't happen
-  if (!(ma.isWalkoverPossible())) return;
-
-  // get a user confirmation
-  QString msg = QObject::tr("This will be a walkover for\n\n\t");
-  if (playerNum == 1)
-  {
-    msg += ma.getPlayerPair1().getDisplayName();
-  } else {
-    msg += ma.getPlayerPair2().getDisplayName();
-  }
-  msg += "\n\n";
-  msg += QObject::tr("All games will be 21:0.") + "\n\n";
-  msg += QObject::tr("WARNING: this step is irrevocable!") + "\n\n";
-  msg += QObject::tr("Proceed?");
-  int result = QMessageBox::question(parent, QObject::tr("Confirm walkover"), msg);
-  if (result != QMessageBox::Yes)
-  {
-    return;
-  }
-  QTournament::MatchMngr mm{ma.getDatabaseHandle()};
-  mm.walkover(ma, playerNum);
-}
-
-//----------------------------------------------------------------------------
-
 QString GuiHelpers::getStatusSummaryForPlayer(const QTournament::Player& p)
 {
   QTournament::PlayerProfile pp{p};
@@ -498,15 +453,15 @@ QString GuiHelpers::getStatusSummaryForPlayer(const QTournament::Player& p, cons
 {
   using namespace QTournament;
 
-  QTournament::OBJ_STATE plStat = p.getState();
+  QTournament::ObjState plStat = p.getState();
 
   QString txt;
-  if (plStat == QTournament::OBJ_STATE::STAT_PL_IDLE)
+  if (plStat == QTournament::ObjState::PL_Idle)
   {
     txt = QObject::tr(" is idle");
 
     auto ma = pp.getLastPlayedMatch();
-    if (ma != nullptr)
+    if (ma)
     {
       txt += QObject::tr(". The last match ended %1 ago.");
       txt = txt.arg(qdt2durationString(ma->getFinishTime()));
@@ -514,37 +469,40 @@ QString GuiHelpers::getStatusSummaryForPlayer(const QTournament::Player& p, cons
       txt += QObject::tr("; no played matches yet.");
     }
   }
-  unique_ptr<Match> ma;
-  if ((plStat == QTournament::OBJ_STATE::STAT_PL_PLAYING) ||
-      (plStat == QTournament::OBJ_STATE::STAT_PL_REFEREE))
+  std::optional<Match> ma;
+  if ((plStat == QTournament::ObjState::PL_Playing) ||
+      (plStat == QTournament::ObjState::PL_Referee))
   {
-    if (plStat == QTournament::OBJ_STATE::STAT_PL_PLAYING)
+    if (plStat == QTournament::ObjState::PL_Playing)
     {
       txt = QObject::tr(" is playing on court %1 for %2 (match %3, %4, Round %5)");
       ma = pp.getCurrentMatch();
     }
-    if (plStat == QTournament::OBJ_STATE::STAT_PL_REFEREE)
+    if (plStat == QTournament::ObjState::PL_Referee)
     {
       txt = QObject::tr(" is umpire on court %1 for %2 (match %3, %4, Round %5)");
       ma = pp.getCurrentUmpireMatch();
     }
 
-    if (ma != nullptr)
+    if (ma)
     {
-      auto co = ma->getCourt();
-      txt = txt.arg(co != nullptr ? QString::number(co->getNumber()) : "??");
+      auto co = ma->getCourt(nullptr);
+      txt = txt.arg(co ? QString::number(co->getNumber()) : "??");
 
       QDateTime sTime = ma->getStartTime();
       txt = txt.arg(sTime.isValid() ? qdt2durationString(sTime) : "??");
 
       txt = txt.arg(ma->getMatchNumber());
-      txt = txt.arg(ma->getCategory().getName());
-      txt = txt.arg(ma->getMatchGroup().getRound());
+
+      const Category cat = ma->getCategory();
+      const int roundOffset = cat.getParameter_int(CatParameter::FirstRoundOffset);
+      txt = txt.arg(cat.getName());
+      txt = txt.arg(ma->getMatchGroup().getRound() + roundOffset);
     } else {
       txt = "Waaaaah!!! Database inconsistency!!! Panic!!";
     }
   }
-  if (plStat == QTournament::OBJ_STATE::STAT_PL_WAIT_FOR_REGISTRATION)
+  if (plStat == QTournament::ObjState::PL_WaitForRegistration)
   {
     txt = QObject::tr(" has not yet shown up for registration.");
   }
@@ -578,6 +536,111 @@ QString GuiHelpers::qdt2string(const QDateTime& qdt)
 
 //----------------------------------------------------------------------------
 
+QString GuiHelpers::getLocaleDependedResource(const QString& resName)
+{
+  QFile binData{resName};
+  if (!binData.open(QIODevice::ReadOnly)) return QString{};
+
+  return binData.readAll();
+}
+
+//----------------------------------------------------------------------------
+
+bool GuiHelpers::showAndConfirmMatchResult(QWidget* parent, const Match& ma, const std::optional<MatchScore>& matchResult)
+{
+  auto pp1Name = ma.getPlayerPair1().getDisplayName();
+  auto pp2Name = ma.getPlayerPair2().getDisplayName();
+  QString sResult = matchResult->toString();
+  sResult = sResult.replace(",", "  ,  ");
+  QString msg = getLocaleDependedResource(":/txt/match_result_confirmation.html");
+  msg = msg.arg(pp1Name);
+  msg = msg.arg(pp2Name);
+  msg = msg.arg(sResult);
+
+  int winner = matchResult->getWinner();
+  enableTextOption(msg, "Winner", (winner != 0));
+  enableTextOption(msg, "Draw", (winner == 0));
+  if (matchResult->getWinner() == 1)
+  {
+    msg = msg.arg(pp1Name);
+    msg = msg.arg(pp2Name);
+  }
+  if (matchResult->getWinner() == 2)
+  {
+    msg = msg.arg(pp2Name);
+    msg = msg.arg(pp1Name);
+  }
+
+  QMessageBox dlgConfirm{parent};
+  dlgConfirm.setText(msg);
+  dlgConfirm.setStandardButtons(QMessageBox::No | QMessageBox::Yes);
+  dlgConfirm.setDefaultButton(QMessageBox::Yes);
+  dlgConfirm.setWindowTitle(QObject::tr("Please confirm match result"));
+
+  return (dlgConfirm.exec() == QMessageBox::Yes);
+}
+
+//----------------------------------------------------------------------------
+
+bool GuiHelpers::enableTextOption(QString& src, const QString& optName, bool enable)
+{
+  static const QString baseRePattern{"<option_%1>(.*)</option_%1>"};
+
+  // construct the matching regexp pattern
+  QString rePattern = baseRePattern.arg(optName);
+
+  return enableOrDisableTextOption(src, rePattern, enable);
+}
+
+//----------------------------------------------------------------------------
+
+bool GuiHelpers::disableTextOption(QString& src, const QString& optName)
+{
+  return enableTextOption(src, optName, false);
+}
+
+//----------------------------------------------------------------------------
+
+bool GuiHelpers::enableAllTextOptions(QString& src, bool enable)
+{
+  static const QString rePattern{"<option_[\\d\\w]+>(.*)</option_[\\d\\w]+>"};
+
+  return enableOrDisableTextOption(src, rePattern, enable);
+}
+
+//----------------------------------------------------------------------------
+
+bool GuiHelpers::disableAllTextOptions(QString& src)
+{
+  return enableAllTextOptions(src, false);
+}
+
+//----------------------------------------------------------------------------
+
+bool GuiHelpers::enableOrDisableTextOption(QString& src, const QString& pattern, bool enable)
+{
+  // construct the matching regexp
+  QRegExp re{pattern};
+  re.setMinimal(true);
+
+  bool patternFound{false};
+
+  for (int startIdx = re.indexIn(src) ; startIdx >= 0; startIdx = re.indexIn(src))
+  {
+    int matchLen = re.matchedLength();
+
+    if (enable)
+    {
+      src.replace(startIdx, matchLen, re.cap(1));  // remove the tags
+    } else {
+      src.remove(startIdx, matchLen);   // remove tags and text between tags
+    }
+
+    patternFound = true;
+  }
+
+  return patternFound;
+}
 
 //----------------------------------------------------------------------------
 
@@ -612,17 +675,4 @@ QString GuiHelpers::qdt2string(const QDateTime& qdt)
 //----------------------------------------------------------------------------
 
 
-//----------------------------------------------------------------------------
-
-
-//----------------------------------------------------------------------------
-
-
-//----------------------------------------------------------------------------
-
-
-//----------------------------------------------------------------------------
-
-
-//----------------------------------------------------------------------------
 

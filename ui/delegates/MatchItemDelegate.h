@@ -26,7 +26,6 @@
 #include "TournamentDB.h"
 #include "BaseItemDelegate.h"
 
-using namespace QTournament;
 
 namespace QTournament
 {
@@ -44,8 +43,8 @@ public:
   static constexpr int ItemStatusIndicatorSize = 15;
   static constexpr int ItemMargin = 5;
 
-  MatchItemDelegate(TournamentDB* _db, QObject* parent = 0)
-    :BaseItemDelegate{_db, ItemRowHeight, ItemRowHeightSelected, parent} {}
+  MatchItemDelegate(const QTournament::TournamentDB* _db, QObject* parent = nullptr)
+    :BaseItemDelegate{ItemRowHeight, ItemRowHeightSelected, parent}, db{_db} {}
 
 private:
   static constexpr double LINE_SKIP_PERC = 0.2;
@@ -56,9 +55,11 @@ private:
   void paintSelectedMatchCell(QPainter* painter, const QStyleOptionViewItem& option, int srcRowId) const;
   void paintUnselectedMatchCell(QPainter* painter, const QStyleOptionViewItem& option, int srcRowId) const;
 
-  void drawPlayerStatus(QPainter* painter, const QRectF& r, const Player& p) const;
+  void drawPlayerStatus(QPainter* painter, const QRectF& r, const QTournament::Player& p) const;
   void drawMatchStatus(QPainter* painter, const QRectF& r, int matchNum) const;
-} ;
+
+  const QTournament::TournamentDB* db;
+};
 
 #endif	/* MATCHITEMDELEGATE_H */
 

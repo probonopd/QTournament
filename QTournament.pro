@@ -4,14 +4,14 @@
 #
 #-------------------------------------------------
 
-QT       += widgets network
+QT       += widgets network svg
 
 TARGET = QTournament
 TEMPLATE = app
 QMAKE_CXXFLAGS += -Wno-unused-parameter
-CONFIG += c++14
+CONFIG += c++17
 
-VERSION = 0.6.0
+VERSION = 0.7.0-RC1
 
 # Detect the platform we are running on
 win32 {
@@ -26,6 +26,8 @@ CONFIG(release, debug|release) {
 DEFINES += "BOOST_LOG_DYN_LINK=1"
 
 HEADERS += \
+    BackendAPI.h \
+    BracketMatchData.h \
     Category.h \
     CatMngr.h \
     GroupDef.h \
@@ -36,13 +38,20 @@ HEADERS += \
     PlayerMngr.h \
     PlayerPair.h \
     RoundRobinCategory.h \
+    SvgBracket.h \
+    SvgBracketCategory.h \
+    svgBracketChecker/SvgRuleChecks.h \
     Team.h \
     TeamMngr.h \
     TournamentDataDefs.h \
     TournamentDB.h \
     TournamentErrorCodes.h \
+    reports/SvgBracketSheet.h \
+    ui/BuiltinTestScenarios.h \
     ui/CatTableView.h \
     ui/CatTabWidget.h \
+    ui/CustomMetatypes.h \
+    ui/Procedures.h \
     ui/dlgEditPlayer.h \
     ui/dlgGroupAssignment.h \
     ui/GroupAssignmentListWidget.h \
@@ -59,7 +68,6 @@ HEADERS += \
     RoundRobinGenerator.h \
     ui/delegates/CatItemDelegate.h \
     ui/delegates/DelegateItemLED.h \
-    ThreadSafeQueue.h \
     ui/ScheduleTabWidget.h \
     models/MatchGroupTabModel.h \
     ui/MatchGroupTableView.h \
@@ -76,7 +84,6 @@ HEADERS += \
     CatRoundStatus.h \
     RankingMngr.h \
     RankingEntry.h \
-    BracketGenerator.h \
     reports/AbstractReport.h \
     reports/ParticipantsList.h \
     ui/ReportsTabWidget.h \
@@ -84,7 +91,6 @@ HEADERS += \
     reports/MatchResultList.h \
     reports/MatchResultList_byGroup.h \
     reports/Standings.h \
-    ElimCategory.h \
     reports/InOutList.h \
     ui/SeedingListWidget.h \
     ui/DlgSeedingEditor.h \
@@ -96,8 +102,6 @@ HEADERS += \
     reports/ResultsAndNextMatches.h \
     PureRoundRobinCategory.h \
     SwissLadderCategory.h \
-    reports/BracketSheet.h \
-    reports/BracketVisData.h \
     ui/commonCommands/AbstractCommand.h \
     ui/commonCommands/cmdRegisterPlayer.h \
     ui/commonCommands/cmdUnregisterPlayer.h \
@@ -125,8 +129,6 @@ HEADERS += \
     TournamentDatabaseObject.h \
     CentralSignalEmitter.h \
     ui/DlgSelectReferee.h \
-    ui/commonCommands/cmdAssignRefereeToMatch.h \
-    ui/commonCommands/cmdCallMatch.h \
     ui/delegates/TeamItemDelegate.h \
     models/TeamTableModel.h \
     ui/TeamTableView.h \
@@ -160,14 +162,21 @@ HEADERS += \
     ui/commonCommands/cmdFullSync.h \
     ui/commonCommands/cmdDeleteFromServer.h \
     ui/DlgConnectionSettings.h \
-    ui/commonCommands/cmdConnectionSettings.h
+    ui/commonCommands/cmdConnectionSettings.h \
+    SqliteQverlayForwards.h
 
 SOURCES += \
+    BackendAPI_Getters.cpp \
+    BackendAPI_MatchGen.cpp \
+    BackendAPI_NonDatabaseOps.cpp \
+    BracketMatchData.cpp \
     Category.cpp \
     CatMngr.cpp \
     GroupDef.cpp \
     KO_Config.cpp \
-    main.cpp \
+    SvgBracket.cpp \
+    SvgBracketCategory.cpp \
+    svgBracketChecker/SvgRuleChecks.cpp \
     MatchGroup.cpp \
     MatchMngr.cpp \
     Player.cpp \
@@ -177,8 +186,11 @@ SOURCES += \
     Team.cpp \
     TeamMngr.cpp \
     TournamentDB.cpp \
+    reports/SvgBracketSheet.cpp \
+    ui/BuiltinTestScenarios.cpp \
     ui/CatTableView.cpp \
     ui/CatTabWidget.cpp \
+    ui/CustomMetatypes.cpp \
     ui/dlgEditPlayer.cpp \
     ui/dlgGroupAssignment.cpp \
     ui/GroupAssignmentListWidget.cpp \
@@ -195,7 +207,6 @@ SOURCES += \
     RoundRobinGenerator.cpp \
     ui/delegates/CatItemDelegate.cpp \
     ui/delegates/DelegateItemLED.cpp \
-    ThreadSafeQueue.cpp \
     ui/ScheduleTabWidget.cpp \
     models/MatchGroupTabModel.cpp \
     ui/MatchGroupTableView.cpp \
@@ -212,7 +223,6 @@ SOURCES += \
     CatRoundStatus.cpp \
     RankingMngr.cpp \
     RankingEntry.cpp \
-    BracketGenerator.cpp \
     reports/AbstractReport.cpp \
     reports/ParticipantsList.cpp \
     ui/ReportsTabWidget.cpp \
@@ -220,7 +230,6 @@ SOURCES += \
     reports/MatchResultList.cpp \
     reports/MatchResultList_byGroup.cpp \
     reports/Standings.cpp \
-    ElimCategory.cpp \
     reports/InOutList.cpp \
     ui/SeedingListWidget.cpp \
     ui/DlgSeedingEditor.cpp \
@@ -232,8 +241,6 @@ SOURCES += \
     reports/ResultsAndNextMatches.cpp \
     PureRoundRobinCategory.cpp \
     SwissLadderCategory.cpp \
-    reports/BracketSheet.cpp \
-    reports/BracketVisData.cpp \
     ui/commonCommands/AbstractCommand.cpp \
     ui/commonCommands/cmdRegisterPlayer.cpp \
     ui/commonCommands/cmdUnregisterPlayer.cpp \
@@ -261,8 +268,6 @@ SOURCES += \
     TournamentDatabaseObject.cpp \
     CentralSignalEmitter.cpp \
     ui/DlgSelectReferee.cpp \
-    ui/commonCommands/cmdAssignRefereeToMatch.cpp \
-    ui/commonCommands/cmdCallMatch.cpp \
     ui/delegates/TeamItemDelegate.cpp \
     models/TeamTableModel.cpp \
     ui/TeamTableView.cpp \
@@ -296,10 +301,18 @@ SOURCES += \
     ui/commonCommands/cmdFullSync.cpp \
     ui/commonCommands/cmdDeleteFromServer.cpp \
     ui/DlgConnectionSettings.cpp \
-    ui/commonCommands/cmdConnectionSettings.cpp
+    ui/commonCommands/cmdConnectionSettings.cpp \
+    ui/procedures/Proc_RoundComplete.cpp \
+    ui/procedures/Proc_MatchCallAndFinish.cpp
 
-RESOURCES += \
-    tournament.qrc
+#
+# Pick the appropriate main file for either
+# QTournament itself or for the bracket rule checker
+#
+SOURCES += main.cpp
+#SOURCES += svgBracketChecker/main.cpp
+
+RESOURCES += resources/tournament.qrc
 
 OTHER_FILES +=
 
@@ -351,4 +364,4 @@ unix {
   CONFIG(release, debug|release): LIBS += -lSimpleReportGenerator
 }
 
-LIBS += -lSqliteOverlay -lSloppy  
+LIBS += -lSqliteOverlay -lSloppy  -lsqlite3

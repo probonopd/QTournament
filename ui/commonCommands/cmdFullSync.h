@@ -24,16 +24,14 @@
 #include "AbstractCommand.h"
 #include "Player.h"
 
-using namespace QTournament;
 
 class cmdFullSync : public QObject, AbstractCommand
 {
   Q_OBJECT
 
 public:
-  cmdFullSync(QWidget* p, TournamentDB* _db);
-  virtual ERR exec() override;
-  virtual ~cmdFullSync() {}
+  cmdFullSync(QWidget* p, const QTournament::TournamentDB& _db);
+  virtual QTournament::Error exec() override;
 
 };
 

@@ -31,16 +31,14 @@ namespace Ui {
   class DlgMatchResult;
 }
 
-using namespace QTournament;
-
 class DlgMatchResult : public QDialog
 {
   Q_OBJECT
 
 public:
-  explicit DlgMatchResult(QWidget *parent, const Match& _ma);
+  explicit DlgMatchResult(QWidget *parent, const QTournament::Match& _ma);
   ~DlgMatchResult();
-  unique_ptr<MatchScore> getMatchScore() const;
+  std::optional<QTournament::MatchScore> getMatchScore() const;
 
 
 private slots:
@@ -49,7 +47,7 @@ private slots:
 
 private:
   Ui::DlgMatchResult *ui;
-  Match ma;
+  const QTournament::Match& ma;
   void updateControls();
   bool isGame3Necessary() const;
   bool hasValidResult() const;

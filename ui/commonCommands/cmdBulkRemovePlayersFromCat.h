@@ -16,26 +16,24 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CMDBULKREMOVEPLAYERSFROMCAT_H
-#define CMDBULKREMOVEPLAYERSFROMCAT_H
+#ifndef CMDBULKREMOVEPLAYERSFROMCONFIGH
+#define CMDBULKREMOVEPLAYERSFROMCONFIGH
 
 #include <QObject>
 
 #include "AbstractCommand.h"
 #include "Category.h"
 
-using namespace QTournament;
 
 class cmdBulkRemovePlayersFromCategory : public QObject, AbstractCommand
 {
   Q_OBJECT
 public:
-  cmdBulkRemovePlayersFromCategory(QWidget* p, const Category& _cat);
-  virtual ERR exec() override;
-  virtual ~cmdBulkRemovePlayersFromCategory() {}
+  cmdBulkRemovePlayersFromCategory(QWidget* p, const QTournament::Category& _cat);
+  virtual QTournament::Error exec() override;
 
 protected:
-  Category cat;
+  const QTournament::Category cat;
 };
 
 #endif // CMDREGISTERPLAYER_H

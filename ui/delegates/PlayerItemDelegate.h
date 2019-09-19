@@ -27,13 +27,12 @@
 #include "Player.h"
 #include "BaseItemDelegate.h"
 
-using namespace QTournament;
 
 class PlayerItemDelegate : public BaseItemDelegate
 {
 public:
-  PlayerItemDelegate(TournamentDB* _db, QObject* parent = 0)
-    :BaseItemDelegate{_db, PlayerItemRowHeight, -1, parent} {}
+  PlayerItemDelegate(const QTournament::TournamentDB* _db, QObject* parent = nullptr)
+    :BaseItemDelegate{PlayerItemRowHeight, -1, parent}, db{_db} {}
   
 protected:
   static constexpr int PlayerItemRowHeight = 30;
@@ -42,7 +41,10 @@ protected:
 
   virtual void paintSelectedCell(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index, int srcRowId) const override;
   virtual void paintUnselectedCell(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index, int srcRowId) const override;
-  void commonPaint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index, const Player& p) const;
+  void commonPaint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index, const QTournament::Player& p) const;
+
+private:
+  const QTournament::TournamentDB* db;
 } ;
 
 #endif	/* PLAYERITEMDELEGATE_H */

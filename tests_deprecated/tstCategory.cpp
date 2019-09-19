@@ -42,44 +42,44 @@ void tstCategory::testGetAddState()
   Category mx = cmngr->getCategory("MX");
   
   // check player suitability for men's single
-  CPPUNIT_ASSERT(ms.getAddState(m1) == CAN_JOIN);
-  CPPUNIT_ASSERT(ms.getAddState(f1) == WRONG_SEX);
-  ms.setSex(DONT_CARE);   // disable checking
-  CPPUNIT_ASSERT(ms.getAddState(m1) == CAN_JOIN);
-  CPPUNIT_ASSERT(ms.getAddState(f1) == CAN_JOIN);
+  CPPUNIT_ASSERT(ms.getAddState(m1) == CatAddState::CanJoin);
+  CPPUNIT_ASSERT(ms.getAddState(f1) == CatAddState::WrongSex);
+  ms.setSex(Sex::DontCare);   // disable checking
+  CPPUNIT_ASSERT(ms.getAddState(m1) == CatAddState::CanJoin);
+  CPPUNIT_ASSERT(ms.getAddState(f1) == CatAddState::CanJoin);
   
   // check player suitability for men's doubles
-  CPPUNIT_ASSERT(md.getAddState(m1) == CAN_JOIN);
-  CPPUNIT_ASSERT(md.getAddState(f1) == WRONG_SEX);
-  md.setSex(DONT_CARE);   // disable checking
-  CPPUNIT_ASSERT(md.getAddState(m1) == CAN_JOIN);
-  CPPUNIT_ASSERT(md.getAddState(f1) == CAN_JOIN);
+  CPPUNIT_ASSERT(md.getAddState(m1) == CatAddState::CanJoin);
+  CPPUNIT_ASSERT(md.getAddState(f1) == CatAddState::WrongSex);
+  md.setSex(Sex::DontCare);   // disable checking
+  CPPUNIT_ASSERT(md.getAddState(m1) == CatAddState::CanJoin);
+  CPPUNIT_ASSERT(md.getAddState(f1) == CatAddState::CanJoin);
   
   // check player suitability for ladies' single
-  CPPUNIT_ASSERT(ls.getAddState(m1) == WRONG_SEX);
-  CPPUNIT_ASSERT(ls.getAddState(f1) == CAN_JOIN);
-  ls.setSex(DONT_CARE);   // disable checking
-  CPPUNIT_ASSERT(ls.getAddState(m1) == CAN_JOIN);
-  CPPUNIT_ASSERT(ls.getAddState(f1) == CAN_JOIN);
+  CPPUNIT_ASSERT(ls.getAddState(m1) == CatAddState::WrongSex);
+  CPPUNIT_ASSERT(ls.getAddState(f1) == CatAddState::CanJoin);
+  ls.setSex(Sex::DontCare);   // disable checking
+  CPPUNIT_ASSERT(ls.getAddState(m1) == CatAddState::CanJoin);
+  CPPUNIT_ASSERT(ls.getAddState(f1) == CatAddState::CanJoin);
   
   // check player suitability for ladies' doubles
-  CPPUNIT_ASSERT(ld.getAddState(m1) == WRONG_SEX);
-  CPPUNIT_ASSERT(ld.getAddState(f1) == CAN_JOIN);
-  ld.setSex(DONT_CARE);   // disable checking
-  CPPUNIT_ASSERT(ld.getAddState(m1) == CAN_JOIN);
-  CPPUNIT_ASSERT(ld.getAddState(f1) == CAN_JOIN);
+  CPPUNIT_ASSERT(ld.getAddState(m1) == CatAddState::WrongSex);
+  CPPUNIT_ASSERT(ld.getAddState(f1) == CatAddState::CanJoin);
+  ld.setSex(Sex::DontCare);   // disable checking
+  CPPUNIT_ASSERT(ld.getAddState(m1) == CatAddState::CanJoin);
+  CPPUNIT_ASSERT(ld.getAddState(f1) == CatAddState::CanJoin);
   
   // check player suitability for mixed doubles
-  CPPUNIT_ASSERT(mx.getAddState(m1) == CAN_JOIN);
-  CPPUNIT_ASSERT(mx.getAddState(f1) == CAN_JOIN);
-  mx.setSex(DONT_CARE);   // disable checking
-  CPPUNIT_ASSERT(mx.getAddState(m1) == CAN_JOIN);
-  CPPUNIT_ASSERT(mx.getAddState(f1) == CAN_JOIN);
+  CPPUNIT_ASSERT(mx.getAddState(m1) == CatAddState::CanJoin);
+  CPPUNIT_ASSERT(mx.getAddState(f1) == CatAddState::CanJoin);
+  mx.setSex(Sex::DontCare);   // disable checking
+  CPPUNIT_ASSERT(mx.getAddState(m1) == CatAddState::CanJoin);
+  CPPUNIT_ASSERT(mx.getAddState(f1) == CatAddState::CanJoin);
   
   // TODO:
   // add test cases for when a category is closed
   // or for previously added players
-  // (return values "ALREADY_MEMBER" and "CAT_CLOSED")
+  // (return values "CatAddState::AlreadyMember" and "CatAddState::CatClosed")
   
   delete db;
   printEndMsg();
@@ -143,22 +143,22 @@ void tstCategory::testCanPair()
   Category mx = cmngr->getCategory("MX");
   
   // try to pair players in a non-pairable category
-  CPPUNIT_ASSERT(ms.canPairPlayers(m1, m2) == NO_CATEGORY_FOR_PAIRING);
+  CPPUNIT_ASSERT(ms.canPairPlayers(m1, m2) == NoCategoryForPairing);
   
   // try to pair with a player not in the category
-  CPPUNIT_ASSERT(md.canPairPlayers(m1, m3) == PLAYER_NOT_IN_CATEGORY);
-  CPPUNIT_ASSERT(md.canPairPlayers(m3, m1) == PLAYER_NOT_IN_CATEGORY);
+  CPPUNIT_ASSERT(md.canPairPlayers(m1, m3) == PlayerNotInCategory);
+  CPPUNIT_ASSERT(md.canPairPlayers(m3, m1) == PlayerNotInCategory);
   
   // try identical players
-  CPPUNIT_ASSERT(md.canPairPlayers(m1, m1) == PLAYERS_IDENTICAL);
+  CPPUNIT_ASSERT(md.canPairPlayers(m1, m1) == PlayersIdentical);
   
   // try to pair same-sex players in mixed categories
-  CPPUNIT_ASSERT(mx.canPairPlayers(m1, m2) == INVALID_SEX);
-  CPPUNIT_ASSERT(mx.canPairPlayers(f1, f2) == INVALID_SEX);
+  CPPUNIT_ASSERT(mx.canPairPlayers(m1, m2) == InvalidSex);
+  CPPUNIT_ASSERT(mx.canPairPlayers(f1, f2) == InvalidSex);
   
   // try to pair same-sex players in mixed categories
   // after setting it to "Don't care"
-  cmngr->setSex(mx, DONT_CARE);
+  cmngr->setSex(mx, Sex::DontCare);
   CPPUNIT_ASSERT(mx.canPairPlayers(m1, m2) == OK);
   CPPUNIT_ASSERT(mx.canPairPlayers(f1, f2) == OK);
   
@@ -167,12 +167,12 @@ void tstCategory::testCanPair()
   
   // make sure existing pairs can't be paired again
   CPPUNIT_ASSERT(cmngr->pairPlayers(md, m1,m2) == OK);
-  CPPUNIT_ASSERT(md.canPairPlayers(m1, m2) == PLAYER_ALREADY_PAIRED);
+  CPPUNIT_ASSERT(md.canPairPlayers(m1, m2) == PlayerAlreadyPaired);
   CPPUNIT_ASSERT(cmngr->addPlayerToCategory(m3, md) == OK);
-  CPPUNIT_ASSERT(md.canPairPlayers(m1, m3) == PLAYER_ALREADY_PAIRED);
-  CPPUNIT_ASSERT(md.canPairPlayers(m3, m1) == PLAYER_ALREADY_PAIRED);
-  CPPUNIT_ASSERT(md.canPairPlayers(m2, m3) == PLAYER_ALREADY_PAIRED);
-  CPPUNIT_ASSERT(md.canPairPlayers(m3, m2) == PLAYER_ALREADY_PAIRED);
+  CPPUNIT_ASSERT(md.canPairPlayers(m1, m3) == PlayerAlreadyPaired);
+  CPPUNIT_ASSERT(md.canPairPlayers(m3, m1) == PlayerAlreadyPaired);
+  CPPUNIT_ASSERT(md.canPairPlayers(m2, m3) == PlayerAlreadyPaired);
+  CPPUNIT_ASSERT(md.canPairPlayers(m3, m2) == PlayerAlreadyPaired);
   
   delete db;
   printEndMsg();
@@ -199,24 +199,24 @@ void tstCategory::testCanSplit()
   Category md = cmngr->getCategory("MD");
   Category ms = cmngr->getCategory("MS");
   Category mx = cmngr->getCategory("MX");
-  mx.setSex(DONT_CARE);
+  mx.setSex(Sex::DontCare);
   
   // create a valid player pair and an identical pair in another
   // category
   CPPUNIT_ASSERT(cmngr->pairPlayers(md, m1,m2) == OK);
   
   // try to split non-paired players
-  CPPUNIT_ASSERT(cmngr->splitPlayers(md, m1, m3) == PLAYERS_NOT_A_PAIR);
-  CPPUNIT_ASSERT(cmngr->splitPlayers(md, m3, m1) == PLAYERS_NOT_A_PAIR);
+  CPPUNIT_ASSERT(cmngr->splitPlayers(md, m1, m3) == PlayersNotAPair);
+  CPPUNIT_ASSERT(cmngr->splitPlayers(md, m3, m1) == PlayersNotAPair);
   
   // try to split identical players
-  CPPUNIT_ASSERT(cmngr->splitPlayers(md, m1, m1) == PLAYERS_NOT_A_PAIR);
+  CPPUNIT_ASSERT(cmngr->splitPlayers(md, m1, m1) == PlayersNotAPair);
   
   // valid request
   CPPUNIT_ASSERT(cmngr->splitPlayers(md, m1, m2) == OK);
 
   // similar request, but for another category  
-  CPPUNIT_ASSERT(cmngr->splitPlayers(mx, m1, m2) == PLAYERS_NOT_A_PAIR);
+  CPPUNIT_ASSERT(cmngr->splitPlayers(mx, m1, m2) == PlayersNotAPair);
   
   delete db;
   printEndMsg();

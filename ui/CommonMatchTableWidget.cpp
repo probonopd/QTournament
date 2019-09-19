@@ -25,21 +25,23 @@
 #include "MatchMngr.h"
 #include "CentralSignalEmitter.h"
 
+using namespace QTournament;
+
 CommonMatchTableWidget::CommonMatchTableWidget(QWidget* parent)
   :GuiHelpers::AutoSizingTableWidget_WithDatabase{GuiHelpers::AutosizeColumnDescrList{
-{tr("Number"), REL_WIDTH_NUMERIC_COL, -1, MAX_NUMERIC_COL_WIDTH},
-{tr("Category"), REL_WIDTH_NUMERIC_COL, -1, MAX_NUMERIC_COL_WIDTH},
-{tr("Round"), REL_WIDTH_NUMERIC_COL, -1, MAX_NUMERIC_COL_WIDTH},
-{tr("Group"), REL_WIDTH_NUMERIC_COL, -1, MAX_NUMERIC_COL_WIDTH},
-{tr("Match Info"), REL_WIDTH_MATCH_INFO, -1, -1},
-{tr("Start"), REL_WIDTH_NUMERIC_COL, -1, MAX_NUMERIC_COL_WIDTH},
-{tr("Finish"), REL_WIDTH_NUMERIC_COL, -1, MAX_NUMERIC_COL_WIDTH},
-{tr("Duration"), REL_WIDTH_NUMERIC_COL, -1, MAX_NUMERIC_COL_WIDTH},
-{tr("Court"), REL_WIDTH_NUMERIC_COL, -1, MAX_NUMERIC_COL_WIDTH},
-{tr("Umpire"), REL_WIDTH_UMPIRE_COL, -1, -1}
-     }}
+{tr("Number"), RelNumericColWidth, -1, MaxNumericColWidth},
+{tr("Category"), RelNumericColWidth, -1, MaxNumericColWidth},
+{tr("Round"), RelNumericColWidth, -1, MaxNumericColWidth},
+{tr("Group"), RelNumericColWidth, -1, MaxNumericColWidth},
+{tr("Match Info"), RelMatchInfoColWidth, -1, -1},
+{tr("Start"), RelNumericColWidth, -1, MaxNumericColWidth},
+{tr("Finish"), RelNumericColWidth, -1, MaxNumericColWidth},
+{tr("Duration"), RelNumericColWidth, -1, MaxNumericColWidth},
+{tr("Court"), RelNumericColWidth, -1, MaxNumericColWidth},
+{tr("Umpire"), RelUmpireColWidth, -1, -1}
+     }, parent}
 {
-  setRubberBandCol(IDX_MATCH_INFO_COL);
+  setRubberBandCol(IdxMatchInfoCol);
 
   // react on selection changes
   connect(selectionModel(),
@@ -82,6 +84,8 @@ void CommonMatchTableWidget::insertMatch(int beforeRowIdx, const Match& ma)
 {
   insertRow(beforeRowIdx);
   int matchId = ma.getId();
+  
+  int roundOffset = ma.getCategory().getParameter_int(CatParameter::FirstRoundOffset);  
 
   // a helper lamba for setting the content of a cell
   auto setCellItem = [&](int col, const QString& txt, int userData)
@@ -94,42 +98,42 @@ void CommonMatchTableWidget::insertMatch(int beforeRowIdx, const Match& ma)
 
   // add the match number
   int maNum = ma.getMatchNumber();
-  if (maNum != MATCH_NUM_NOT_ASSIGNED)
+  if (maNum != MatchNumNotAssigned)
   {
-    setCellItem(IDX_MATCH_NUM_COL, QString::number(maNum), matchId);
+    setCellItem(IdxMatchNumCol, QString::number(maNum), matchId);
   } else {
-    setCellItem(IDX_MATCH_NUM_COL, "--", matchId);
+    setCellItem(IdxMatchNumCol, "--", matchId);
   }
 
 
   // add category and round
-  setCellItem(IDX_CAT_COL, ma.getCategory().getName(), matchId);
+  setCellItem(IdxConfigCol, ma.getCategory().getName(), matchId);
   auto grp = ma.getMatchGroup();
-  setCellItem(IDX_ROUND_COL, QString::number(grp.getRound()), matchId);
+  setCellItem(IdxRoundCol, QString::number(grp.getRound() + roundOffset), matchId);
 
   // add the group number, if any
   int grpNum = grp.getGroupNumber();
   if (grpNum > 0)
   {
-    setCellItem(IDX_GRP_COL, QString::number(grpNum), matchId);
+    setCellItem(IdxGrpCol, QString::number(grpNum), matchId);
   } else {
-    setCellItem(IDX_GRP_COL, "--", matchId);
+    setCellItem(IdxGrpCol, "--", matchId);
   }
 
   // add only empty text for the match info. the content will be displayed
   // by the delegate
-  setCellItem(IDX_MATCH_INFO_COL, "", matchId);
+  setCellItem(IdxMatchInfoCol, "", matchId);
 
   // start and finish time
   QDateTime startTime = ma.getStartTime();
   if (startTime.isValid())
   {
-    setCellItem(IDX_START_TIME_COL, ma.getStartTime().toString("HH:mm"), matchId);
-    setCellItem(IDX_FINISH_TIME_COL, ma.getFinishTime().toString("HH:mm"), matchId);
+    setCellItem(IdxStartTimeCol, ma.getStartTime().toString("HH:mm"), matchId);
+    setCellItem(IdxFinishTimeCol, ma.getFinishTime().toString("HH:mm"), matchId);
   } else {
     // walkover
-    setCellItem(IDX_START_TIME_COL, "--", matchId);
-    setCellItem(IDX_FINISH_TIME_COL, "--", matchId);
+    setCellItem(IdxStartTimeCol, "--", matchId);
+    setCellItem(IdxFinishTimeCol, "--", matchId);
   }
 
   // the duration
@@ -140,33 +144,33 @@ void CommonMatchTableWidget::insertMatch(int beforeRowIdx, const Match& ma)
     int minutes = (duration % 3600) / 60;
     QString sDuration = "%1:%2";
     sDuration = sDuration.arg(hours).arg(minutes, 2, 10, QLatin1Char('0'));
-    setCellItem(IDX_DURATION_COL, sDuration, matchId);
+    setCellItem(IdxDurationCol, sDuration, matchId);
   } else {
     if (ma.isWonByWalkover())
     {
-      setCellItem(IDX_DURATION_COL, tr("walkover"), matchId);
+      setCellItem(IdxDurationCol, tr("walkover"), matchId);
     } else {
-      setCellItem(IDX_DURATION_COL, "--", matchId);
+      setCellItem(IdxDurationCol, "--", matchId);
     }
   }
 
   // the court
-  auto co = ma.getCourt();
-  if (co != nullptr)
+  auto co = ma.getCourt(nullptr);
+  if (co)
   {
     QString cn = QString::number(co->getNumber());
-    setCellItem(IDX_COURT_COL, cn, matchId);
+    setCellItem(IdxCourtCol, cn, matchId);
   } else {
-    setCellItem(IDX_COURT_COL, "--", matchId);
+    setCellItem(IdxCourtCol, "--", matchId);
   }
 
   // the umpire
   auto ump = ma.getAssignedReferee();
-  if (ump != nullptr)
+  if (ump)
   {
-    setCellItem(IDX_UMPIRE_COL, ump->getDisplayName_FirstNameFirst(), matchId);
+    setCellItem(IdxUmpireCol, ump->getDisplayName_FirstNameFirst(), matchId);
   } else {
-    setCellItem(IDX_UMPIRE_COL, "--", matchId);
+    setCellItem(IdxUmpireCol, "--", matchId);
   }
 
   resizeRowToContents(beforeRowIdx);

@@ -19,6 +19,9 @@
 #ifndef TEAMMNGR_H
 #define	TEAMMNGR_H
 
+#include <vector>
+#include <optional>
+
 #include <QObject>
 #include <QList>
 
@@ -27,10 +30,7 @@
 #include "Player.h"
 #include "TournamentDataDefs.h"
 #include "TournamentErrorCodes.h"
-#include <SqliteOverlay/DbTab.h>
 #include "TournamentDatabaseObjectManager.h"
-
-using namespace SqliteOverlay;
 
 namespace QTournament
 {
@@ -40,20 +40,20 @@ namespace QTournament
     Q_OBJECT
   
   public:
-    TeamMngr (TournamentDB* _db);
-    ERR createNewTeam (const QString& teamName);
+    TeamMngr (const TournamentDB& _db);
+    Error createNewTeam (const QString& teamName);
     bool hasTeam (const QString& teamName);
     Team getTeam (const QString& name);
-    vector<Team> getAllTeams();
-    ERR renameTeam (Team& t, const QString& nn);
+    std::vector<Team> getAllTeams();
+    Error renameTeam (const Team& t, const QString& nn);
     Team getTeamBySeqNum (int seqNum);
-    unique_ptr<Team> getTeamBySeqNum_up(int seqNum);
+    std::optional<Team> getTeamBySeqNum2(int seqNum);
     Team getTeamById (int id);
-    ERR changeTeamAssigment(const Player& p, const Team& newTeam);
+    Error changeTeamAssigment(const Player& p, const Team& newTeam);
 
     PlayerList getPlayersForTeam(const Team& t) const;
 
-    string getSyncString(vector<int> rows) override;
+    std::string getSyncString(const std::vector<int>& rows) const override;
 
     static std::function<bool (Team&, Team&)> getTeamSortFunction_byName();
 

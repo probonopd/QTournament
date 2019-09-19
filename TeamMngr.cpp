@@ -32,60 +32,58 @@ using namespace SqliteOverlay;
 namespace QTournament
 {
 
-  TeamMngr::TeamMngr(TournamentDB* _db)
-    : TournamentDatabaseObjectManager(_db, TAB_TEAM)
+  TeamMngr::TeamMngr(const TournamentDB& _db)
+    : TournamentDatabaseObjectManager(_db, TabTeam)
   {
   }
 
 //----------------------------------------------------------------------------
 
-  ERR TeamMngr::createNewTeam(const QString& tm)
+  Error TeamMngr::createNewTeam(const QString& tm)
   {
-    auto cfg = KeyValueTab::getTab(db, TAB_CFG);
+    auto cfg = SqliteOverlay::KeyValueTab{db, TabCfg};
 
-    if (!(cfg->getBool(CFG_KEY_USE_TEAMS)))
+    if (!(cfg.getBool(CfgKey_UseTeams)))
     {
-      return NOT_USING_TEAMS;
+      return Error::NotUsingTeams;
     }
     
     QString teamName = tm.trimmed();
     
     if (teamName.isEmpty())
     {
-      return INVALID_NAME;
+      return Error::InvalidName;
     }
     
-    if (teamName.length() > MAX_NAME_LEN)
+    if (teamName.length() > MaxNameLen)
     {
-      return INVALID_NAME;
+      return Error::InvalidName;
     }
     
     if (hasTeam(teamName))
     {
-      return NAME_EXISTS;
+      return Error::NameExists;
     }
     
     // create a new table row
     ColumnValueClause cvc;
-    cvc.addStringCol(GENERIC_NAME_FIELD_NAME, teamName.toUtf8().constData());
+    cvc.addCol(GenericNameFieldName, teamName.toUtf8().constData());
+    cvc.addCol(GenericSeqnumFieldName, InvalidInitialSequenceNumber);  // will be fixed immediately; this is just for satisfying a not-NULL constraint
     
-    // lock the database before writing
-    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
-
     CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
     cse->beginCreateTeam();
-    tab->insertRow(cvc);
+    tab.insertRow(cvc);
     fixSeqNumberAfterInsert();
-    cse->endCreateTeam(tab->length() - 1);  // the new sequence number is always the greatest
+    cse->endCreateTeam(tab.length() - 1);  // the new sequence number is always the greatest
     
-    return OK;
+    return Error::OK;
   }
 
 //----------------------------------------------------------------------------
 
   bool TeamMngr::hasTeam(const QString& teamName)
   {
-    return (tab->getMatchCountForColumnValue(GENERIC_NAME_FIELD_NAME, teamName.toUtf8().constData()) > 0);
+    return (tab.getMatchCountForColumnValue(GenericNameFieldName, teamName.toUtf8().constData()) > 0);
   }
 
 //----------------------------------------------------------------------------
@@ -106,9 +104,9 @@ namespace QTournament
       throw std::invalid_argument("The team '" + QString2StdString(name) + "' does not exist");
     }
     
-    TabRow r = tab->getSingleRowByColumnValue(GENERIC_NAME_FIELD_NAME, name.toUtf8().constData());
+    TabRow r = tab.getSingleRowByColumnValue(GenericNameFieldName, name.toUtf8().constData());
     
-    return Team(db, r);
+    return Team{db, r};
   }
 
 //----------------------------------------------------------------------------
@@ -118,36 +116,33 @@ namespace QTournament
    *
    * @Return QList holding all Teams
    */
-  vector<Team> TeamMngr::getAllTeams()
+  std::vector<Team> TeamMngr::getAllTeams()
   {
     return getAllObjects<Team>();
   }
 
 //----------------------------------------------------------------------------
 
-  ERR TeamMngr::renameTeam(Team& t, const QString& nn)
+  Error TeamMngr::renameTeam(const Team& t, const QString& nn)
   {
     QString newName = nn.trimmed();
     
     // Ensure the new name is valid
-    if ((newName.isEmpty()) || (newName.length() > MAX_NAME_LEN))
+    if ((newName.isEmpty()) || (newName.length() > MaxNameLen))
     {
-      return INVALID_NAME;
+      return Error::InvalidName;
     }
     
     // make sure the new name doesn't exist yet
     if (hasTeam(newName))
     {
-      return NAME_EXISTS;
+      return Error::NameExists;
     }
     
-    // lock the database before writing
-    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
-
-    t.row.update(GENERIC_NAME_FIELD_NAME, newName.toUtf8().constData());
+    t.rowRef().update(GenericNameFieldName, newName.toUtf8().constData());
     CentralSignalEmitter::getInstance()->teamRenamed(t.getSeqNum());
     
-    return OK;
+    return Error::OK;
   }
 
 //----------------------------------------------------------------------------
@@ -164,20 +159,20 @@ namespace QTournament
   Team TeamMngr::getTeamBySeqNum(int seqNum)
   {
     try {
-      TabRow r = tab->getSingleRowByColumnValue(GENERIC_SEQNUM_FIELD_NAME, seqNum);
-      return Team(db, r);
+      TabRow r = tab.getSingleRowByColumnValue(GenericSeqnumFieldName, seqNum);
+      return Team{db, r};
     }
-    catch (std::exception e)
+    catch (SqliteOverlay::NoDataException&)
     {
-     throw std::invalid_argument("The team with sequence number " + to_string(seqNum) + " does not exist");
+     throw std::invalid_argument("The team with sequence number " + std::to_string(seqNum) + " does not exist");
     }
   }
 
   //----------------------------------------------------------------------------
 
-  unique_ptr<Team> TeamMngr::getTeamBySeqNum_up(int seqNum)
+  std::optional<Team> TeamMngr::getTeamBySeqNum2(int seqNum)
   {
-    return getSingleObjectByColumnValue<Team>(GENERIC_SEQNUM_FIELD_NAME, seqNum);
+    return getSingleObjectByColumnValue<Team>(GenericSeqnumFieldName, seqNum);
   }
 
 //----------------------------------------------------------------------------
@@ -185,41 +180,37 @@ namespace QTournament
   Team TeamMngr::getTeamById(int id)
   {
     try {
-      TabRow r = tab->operator [](id);
+      TabRow r = tab.operator [](id);
       return Team(db, r);
     }
-    catch (std::exception e)
+    catch (SqliteOverlay::NoDataException&)
     {
-     throw std::invalid_argument("The team with ID " + to_string(id) + " does not exist");
+     throw std::invalid_argument("The team with ID " + std::to_string(id) + " does not exist");
     }
   }
 
 //----------------------------------------------------------------------------
 
-  ERR TeamMngr::changeTeamAssigment(const Player& p, const Team& newTeam)
+  Error TeamMngr::changeTeamAssigment(const Player& p, const Team& newTeam)
   {
-    auto cfg = KeyValueTab::getTab(db, TAB_CFG);
+    auto cfg = SqliteOverlay::KeyValueTab{db, TabCfg};
 
-    if (!(cfg->getBool(CFG_KEY_USE_TEAMS)))
+    if (!(cfg.getBool(CfgKey_UseTeams)))
     {
-      return NOT_USING_TEAMS;
+      return Error::NotUsingTeams;
     }
     
     Team oldTeam = p.getTeam();
     
     if (oldTeam.getId() == newTeam.getId())
     {
-      return OK;  // no database access necessary
+      return Error::OK;  // no database access necessary
     }
     
-    // lock the database before writing
-    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
-
-    TabRow r = p.row;
-    r.update(PL_TEAM_REF, newTeam.getId());
+    p.rowRef().update(PL_TeamRef, newTeam.getId());
     CentralSignalEmitter::getInstance()->teamAssignmentChanged(p, oldTeam, newTeam);
     
-    return OK;
+    return Error::OK;
   }
 
 //----------------------------------------------------------------------------
@@ -235,17 +226,17 @@ namespace QTournament
 
   PlayerList TeamMngr::getPlayersForTeam(const Team& t) const
   {
-    DbTab* playerTab = db->getTab(TAB_PLAYER);
-    return getObjectsByColumnValue<Player>(playerTab, PL_TEAM_REF, t.getId());
+    DbTab playerTab = DbTab{db, TabPlayer, false};
+    return SqliteOverlay::getObjectsByColumnValue<Player>(db, playerTab, PL_TeamRef, t.getId());
   }
 
   //----------------------------------------------------------------------------
 
-  string TeamMngr::getSyncString(vector<int> rows)
+  std::string TeamMngr::getSyncString(const std::vector<int>& rows) const
   {
-    vector<string> cols = {"id", GENERIC_NAME_FIELD_NAME};
+    std::vector<Sloppy::estring> cols = {"id", GenericNameFieldName};
 
-    return db->getSyncStringForTable(TAB_TEAM, cols, rows);
+    return db.getSyncStringForTable(TabTeam, cols, rows);
   }
 
 //----------------------------------------------------------------------------

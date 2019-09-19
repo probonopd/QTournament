@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1128</width>
+    <width>1366</width>
     <height>858</height>
    </rect>
   </property>
@@ -69,9 +69,6 @@
            <string>Generic Settings</string>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_2">
-           <item>
-            <widget class="QComboBox" name="cbMatchSystem"/>
-           </item>
            <item>
             <layout class="QHBoxLayout" name="horizontalLayout_2">
              <item>
@@ -168,6 +165,55 @@
             </layout>
            </item>
            <item>
+            <spacer name="verticalSpacer_6">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="sizeType">
+              <enum>QSizePolicy::Fixed</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item>
+            <widget class="QLabel" name="label_4">
+             <property name="text">
+              <string>Match system:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QComboBox" name="cbMatchSystem"/>
+           </item>
+           <item>
+            <widget class="QSpinBox" name="cbFirstRound">
+             <property name="prefix">
+              <string>Show first round as: </string>
+             </property>
+             <property name="minimum">
+              <number>1</number>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <spacer name="verticalSpacer_5">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>40</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item>
             <widget class="QCheckBox" name="cbDraw">
              <property name="text">
               <string>Allow Draw</string>
@@ -204,6 +250,51 @@
          </widget>
         </item>
        </layout>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="gbBracket">
+        <property name="title">
+         <string>Settings for Bracket Matches</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_10">
+         <item>
+          <spacer name="verticalSpacer_3">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>40</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_3">
+           <property name="text">
+            <string>Bracket Type:</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QComboBox" name="cbBracketSys"/>
+         </item>
+         <item>
+          <spacer name="verticalSpacer_4">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>40</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
+       </widget>
       </item>
       <item>
        <widget class="QGroupBox" name="gbGroups">
@@ -605,6 +696,38 @@ for each round</string>
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>cbBracketSys</sender>
+   <signal>currentIndexChanged(int)</signal>
+   <receiver>CatTabWidget</receiver>
+   <slot>onBracketSysChanged(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>539</x>
+     <y>249</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>682</x>
+     <y>428</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cbFirstRound</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>CatTabWidget</receiver>
+   <slot>onFirstRoundChanged(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>319</x>
+     <y>387</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>682</x>
+     <y>428</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>onCbDrawChanged(bool)</slot>
@@ -619,6 +742,8 @@ for each round</string>
   <slot>onMatchSystemChanged(int)</slot>
   <slot>onBtnRunCatClicked()</slot>
   <slot>onTwoIterationsChanged()</slot>
+  <slot>onBracketSysChanged(int)</slot>
+  <slot>onFirstRoundChanged(int)</slot>
  </slots>
  <buttongroups>
   <buttongroup name="rbgMatchType"/>

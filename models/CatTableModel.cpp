@@ -27,8 +27,8 @@
 using namespace QTournament;
 using namespace SqliteOverlay;
 
-CategoryTableModel::CategoryTableModel(TournamentDB* _db)
-:QAbstractTableModel(0), db(_db), catTab((db->getTab(TAB_CATEGORY)))
+CategoryTableModel::CategoryTableModel(const TournamentDB& _db)
+  :QAbstractTableModel{nullptr}, db{_db}, catTab{DbTab{db, TabCategory, false}}
 {
   CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
   connect(cse, SIGNAL(beginCreateCategory()), this, SLOT(onBeginCreateCategory()), Qt::DirectConnection);
@@ -43,14 +43,14 @@ CategoryTableModel::CategoryTableModel(TournamentDB* _db)
 
 int CategoryTableModel::rowCount(const QModelIndex& parent) const
 {
-  return catTab->length();
+  return catTab.length();
 }
 
 //----------------------------------------------------------------------------
 
 int CategoryTableModel::columnCount(const QModelIndex& parent) const
 {
-  return COLUMN_COUNT;
+  return ColumnCount;
 }
 
 //----------------------------------------------------------------------------
@@ -60,7 +60,7 @@ QVariant CategoryTableModel::data(const QModelIndex& index, int role) const
     if (!index.isValid())
       return QVariant();
 
-    if (index.row() >= catTab->length())
+    if (index.row() >= catTab.length())
       return QVariant();
 
     if (role != Qt::DisplayRole)
@@ -68,19 +68,21 @@ QVariant CategoryTableModel::data(const QModelIndex& index, int role) const
     
     CatMngr cm{db};
     Category c = cm.getCategoryBySeqNum(index.row());
+
+    const int roundOffset = c.getParameter_int(CatParameter::FirstRoundOffset);
     
     // name
-    if (index.column() == COL_NAME)
+    if (index.column() == ColName)
     {
       return c.getName();
     }
 
     // number of finished rounds
-    if (index.column() == COL_FINISHED_ROUNDS)
+    if (index.column() == ColFinishedRounds)
     {
       CatRoundStatus crs = c.getRoundStatus();
       int finishedRounds = crs.getFinishedRoundsCount();
-      if (finishedRounds == CatRoundStatus::NO_ROUNDS_FINISHED_YET)
+      if (finishedRounds == CatRoundStatus::NoRoundsFinishedYet)
       {
         return "--";
       }
@@ -89,38 +91,38 @@ QVariant CategoryTableModel::data(const QModelIndex& index, int role) const
     }
 
     // number of currently played round
-    if (index.column() == COL_CURRENT_ROUND)
+    if (index.column() == ColCurrentRound)
     {
       CatRoundStatus crs = c.getRoundStatus();
       int currentRoundNum = crs.getCurrentlyRunningRoundNumber();
 
-      if (currentRoundNum == CatRoundStatus::NO_CURRENTLY_RUNNING_ROUND)
+      if (currentRoundNum == CatRoundStatus::NoCurrentlyRunningRounds)
       {
         return "--";
       }
 
-      if (currentRoundNum == CatRoundStatus::MULTIPLE_ROUNDS_RUNNING)
+      if (currentRoundNum == CatRoundStatus::MultipleRoundsRunning)
       {
         // generate a comma-separated list of currently running rounds
         QList<int> runningRounds = crs.getCurrentlyRunningRoundNumbers();
         QString result = "";
         for (int round : runningRounds)
         {
-          result += QString::number(round) + ", ";
+          result += QString::number(round + roundOffset) + ", ";
         }
         return result.left(result.length() - 2);
       }
 
-      return currentRoundNum;
+      return currentRoundNum + roundOffset;
     }
 
     // total number of matches in the current round
-    if (index.column() == COL_TOTAL_MATCHES)
+    if (index.column() == ColTotalMatches)
     {
       CatRoundStatus crs = c.getRoundStatus();
       auto matchStat = crs.getMatchCountForCurrentRound();
-      int total = get<0>(matchStat);
-      if (total == CatRoundStatus::NO_CURRENTLY_RUNNING_ROUND)
+      int total = std::get<0>(matchStat);
+      if (total == CatRoundStatus::NoCurrentlyRunningRounds)
       {
         return "--";
       }
@@ -129,12 +131,12 @@ QVariant CategoryTableModel::data(const QModelIndex& index, int role) const
     }
 
     // number of unfinished matches in the current round
-    if (index.column() == COL_UNFINISHED_MATCHES)
+    if (index.column() == ColUnfinishedMatches)
     {
       CatRoundStatus crs = c.getRoundStatus();
       auto matchStat = crs.getMatchCountForCurrentRound();
-      int unfinished = get<1>(matchStat);
-      if (unfinished == CatRoundStatus::NO_CURRENTLY_RUNNING_ROUND)
+      int unfinished = std::get<1>(matchStat);
+      if (unfinished == CatRoundStatus::NoCurrentlyRunningRounds)
       {
         return "--";
       }
@@ -143,12 +145,12 @@ QVariant CategoryTableModel::data(const QModelIndex& index, int role) const
     }
 
     // number of running matches in the current round
-    if (index.column() == COL_RUNNING_MATCHES)
+    if (index.column() == ColRunningMatches)
     {
       CatRoundStatus crs = c.getRoundStatus();
       auto matchStat = crs.getMatchCountForCurrentRound();
-      int runningMatches = get<2>(matchStat);
-      if (runningMatches == CatRoundStatus::NO_CURRENTLY_RUNNING_ROUND)
+      int runningMatches = std::get<2>(matchStat);
+      if (runningMatches == CatRoundStatus::NoCurrentlyRunningRounds)
       {
         return "--";
       }
@@ -157,13 +159,13 @@ QVariant CategoryTableModel::data(const QModelIndex& index, int role) const
     }
 
     // number of waiting matches in the current round
-    if (index.column() == COL_WAITING_MATCHES)
+    if (index.column() == ColWaitingMatches)
     {
       CatRoundStatus crs = c.getRoundStatus();
       auto matchStat = crs.getMatchCountForCurrentRound();
 
       // Waiting = unfinished - running
-      int waitingMatches = get<1>(matchStat) - get<2>(matchStat);
+      int waitingMatches = std::get<1>(matchStat) - std::get<2>(matchStat);
 
       if (waitingMatches <= 0)
       {
@@ -174,7 +176,7 @@ QVariant CategoryTableModel::data(const QModelIndex& index, int role) const
     }
 
     // total number of rounds
-    if (index.column() == COL_TOTAL_ROUNDS)
+    if (index.column() == ColTotalRounds)
     {
       auto specialCat = c.convertToSpecializedObject();
       int result = specialCat->calcTotalRoundsCount();
@@ -196,35 +198,35 @@ QVariant CategoryTableModel::headerData(int section, Qt::Orientation orientation
   
   if (orientation == Qt::Horizontal)
   {
-    if (section == COL_NAME) {
+    if (section == ColName) {
       return tr("Name");
     }
     
-    if (section == COL_FINISHED_ROUNDS) {
+    if (section == ColFinishedRounds) {
       return tr("Finished rounds");
     }
 
-    if (section == COL_CURRENT_ROUND) {
+    if (section == ColCurrentRound) {
       return tr("Current round");
     }
 
-    if (section == COL_TOTAL_MATCHES) {
+    if (section == ColTotalMatches) {
       return tr("Total matches\nin current round");
     }
 
-    if (section == COL_UNFINISHED_MATCHES) {
+    if (section == ColUnfinishedMatches) {
       return tr("Unfinished matches\nin current round");
     }
 
-    if (section == COL_RUNNING_MATCHES) {
+    if (section == ColRunningMatches) {
       return tr("Running matches\nin current round");
     }
 
-    if (section == COL_WAITING_MATCHES) {
+    if (section == ColWaitingMatches) {
       return tr("Waiting matches\nin current round");
     }
 
-    if (section == COL_TOTAL_ROUNDS) {
+    if (section == ColTotalRounds) {
       return tr("Total rounds");
     }
 
@@ -238,7 +240,7 @@ QVariant CategoryTableModel::headerData(int section, Qt::Orientation orientation
 
 void CategoryTableModel::onBeginCreateCategory()
 {
-  int newPos = catTab->length();
+  int newPos = catTab.length();
   beginInsertRows(QModelIndex(), newPos, newPos);
 }
 //----------------------------------------------------------------------------

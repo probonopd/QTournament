@@ -19,90 +19,114 @@
 #ifndef TOURNAMENTDATADEFS_H
 #define	TOURNAMENTDATADEFS_H
 
+#include <unordered_map>
+
 #include <QString>
+
+#include <Sloppy/NamedType.h>
 
 namespace QTournament
 {
-#define DB_VERSION_MAJOR 2
-#define DB_VERSION_MINOR 3
-#define MIN_REQUIRED_DB_VERSION 2
+  constexpr int DbVersionMajor = 3;
+  constexpr int DbVersionMinor = 0;
+  constexpr int MinRequiredDbVersion = 3;
 
 //----------------------------------------------------------------------------
 
-#define GENERIC_NAME_FIELD_NAME "Name"
-#define MAX_NAME_LEN 50
+#define GenericNameFieldName "Name"
+  constexpr int MaxNameLen = 50;
   
-#define GENERIC_STATE_FIELD_NAME "ObjState"
+#define GenericStateFieldName "ObjState"
   
-#define GENERIC_SEQNUM_FIELD_NAME "SequenceNumber"
+#define GenericSeqnumFieldName "SequenceNumber"
 
 //----------------------------------------------------------------------------
 
-#define MAX_GROUP_SIZE 50
-#define MAX_GROUP_COUNT 50
+  constexpr int MaxGroupSize = 50;
+  constexpr int MaxGroupCount = 50;
   
 //----------------------------------------------------------------------------
 
-#define MAX_RANDOMIZATION_ROUNDS 100    // for group assignments, player pairs, etc.
+  constexpr int MaxRandomizationRounds = 100;    // for group assignments, player pairs, etc.
+
+//----------------------------------------------------------------------------
+
+  // Named types as aliases from simple types like int, etc.
+  //
+  // Not yet used consistently throughout the app
+  using PlayerPairRefId = Sloppy::NamedType<int, struct PlayerPairRefIdTag>;   ///< reference ID of a player pair
+  using BracketMatchNumber = Sloppy::NamedType<int, struct BracketMatchNumberTag>;   ///< the 1-based, bracket-internal number of a match
+  using Rank  = Sloppy::NamedType<int, struct RankTag>;   ///< the 1-based rank of a player pair in a ranking / in an initial seeding
+  using Round  = Sloppy::NamedType<int, struct RoundTag>;   ///< the 1-based round a match is played in
+
+  // for using NamedTypes as keys in unordered maps
+  template<typename NT>
+  struct NamedTypeHasher
+  {
+    std::size_t operator()(const NT& x) const noexcept
+    {
+      return std::hash<typename NT::UnderlyingType>{}(x.get());
+    }
+  };
+
+  template<typename NT_Key, typename V>
+  using unordered_map_NT = std::unordered_map<NT_Key, V, NamedTypeHasher<NT_Key>>;
 
 //----------------------------------------------------------------------------
     
+    
+#define DbNull QVariant::Int
 
 //----------------------------------------------------------------------------
     
-    
-#define DB_NULL QVariant::Int
-
-//----------------------------------------------------------------------------
-    
-#define TAB_CFG "Config"
-#define CFG_KEY_DB_VERSION "DatabaseVersion"
-#define CFG_KEY_TNMT_NAME "TournamentName"
-#define CFG_KEY_TNMT_ORGA "OrganizingClub"
-#define CFG_KEY_USE_TEAMS "UseTeams"
-#define CFG_KEY_EXT_PLAYER_DB "ExternalPlayerDatabase"
-#define CFG_KEY_DEFAULT_REFEREE_MODE "DefaultRefereeMode"
-#define CFG_KEY_REFEREE_TEAM_ID "RefereeTeamId"
-#define CFG_KEY_KEYSTORE "Keystore"
-#define CFG_KEY_REGISTRATION_TIMESTAMP "RegistrationTimestamp"
+#define TabCfg "Config"
+#define CfgKey_DbVersion "DatabaseVersion"
+#define CfgKey_TnmtName "TournamentName"
+#define CfgKey_TnmtOrga "OrganizingClub"
+#define CfgKey_UseTeams "UseTeams"
+#define CfgKey_ExtPlayerDb "ExternalPlayerDatabase"
+#define CfgKey_DefaultRefereemode "DefaultRefereeMode"
+#define CfgKey_RefereeTeamId "RefereeTeamId"
+#define CfgKey_Keystore "Keystore"
+#define CfgKey_RegistrationTimestamp "RegistrationTimestamp"
 //#define CFG_KEY_ ""
 
 //----------------------------------------------------------------------------
     
-#define TAB_PLAYER "Player"
-#define PL_FNAME "FirstName"
-#define PL_LNAME "LastName"
-#define PL_TEAM_REF "TeamRefId"
-#define PL_SEX "Sex"
-#define PL_REFEREE_COUNT "RefereeCount"
-//#define PL_ ""
-//#define PL_ ""
-//#define PL_ ""
-//#define PL_ ""
-//#define PL_ ""
-//#define PL_ ""
-//#define PL_ ""
-//#define PL_ ""
-//#define PL_ ""
-//#define PL_ ""
-//#define PL_ ""
-//#define PL_ ""
-//#define PL_ ""
-//#define PL_ ""
-//#define PL_ ""
-//#define PL_ ""
-//#define PL_ ""
+#define TabPlayer "Player"
+#define PL_Fname "FirstName"
+#define PL_Lname "LastName"
+#define PL_TeamRef "TeamRefId"
+#define PL_Sex "Sex"
+#define PL_RefereeCount "RefereeCount"
+//#define PLAYING ""
+//#define PLAYING ""
+//#define PLAYING ""
+//#define PLAYING ""
+//#define PLAYING ""
+//#define PLAYING ""
+//#define PLAYING ""
+//#define PLAYING ""
+//#define PLAYING ""
+//#define PLAYING ""
+//#define PLAYING ""
+//#define PLAYING ""
+//#define PLAYING ""
+//#define PLAYING ""
+//#define PLAYING ""
+//#define PLAYING ""
+//#define PLAYING ""
 
 //----------------------------------------------------------------------------
     
-#define TAB_TEAM "Team"
+#define TabTeam "Team"
 //#define TE_ ""
 
 //----------------------------------------------------------------------------
     
-#define TAB_COURT "Court"
-#define CO_NUMBER "Number"
-#define CO_IS_MANUAL_ASSIGNMENT "IsManualAssignment"
+#define TabCourt "Court"
+#define CO_Number "Number"
+#define CO_IsManualAssignment "IsManualAssignment"
 //#define CO_ ""
 //#define CO_ ""
 //#define CO_ ""
@@ -111,76 +135,68 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
     
-#define TAB_CATEGORY "Category"
-#define CAT_MATCH_TYPE "MatchType"
-#define CAT_SEX "Sex"
-#define CAT_SYS "System"
-#define CAT_ACCEPT_DRAW "AcceptDraw"
-#define CAT_WIN_SCORE "WinScore"
-#define CAT_DRAW_SCORE "DrawScore"
-#define CAT_GROUP_CONFIG "GroupConfig"
-#define CAT_BRACKET_VIS_DATA "BracketVisData"
-#define CAT_ROUND_ROBIN_ITERATIONS "RoundRobinIterations"
-//#define CAT_ ""
-//#define CAT_ ""
-//#define CAT_ ""
-//#define CAT_ ""
-//#define CAT_ ""
-//#define CAT_ ""
-//#define CAT_ ""
-//#define CAT_ ""
-//#define CAT_ ""
+#define TabCategory "Category"
+#define CAT_MatchType "MatchType"
+#define CAT_Sex "Sex"
+#define CAT_Sys "System"
+#define CAT_AcceptDraw "AcceptDraw"
+#define CAT_WinScore "WinScore"
+#define CAT_DrawScore "DrawScore"
+#define CAT_GroupConfig "GroupConfig"
+#define CAT_BracketMatchSys "BracketMatchSys"
+#define CAT_RoundRobinIterations "RoundRobinIterations"
+#define CAT_RoundOffset "RoundOffset"
 //#define CAT_ ""
   
 //----------------------------------------------------------------------------
 
-#define TAB_P2C "Player2Category"
-#define P2C_PLAYER_REF "PlayerRefId"
-#define P2C_CAT_REF "CategoryRefId"
+#define TabP2C "Player2Category"
+#define P2C_PlayerRef "PlayerRefId"
+#define P2C_CatRef "CategoryRefId"
   
 //----------------------------------------------------------------------------
 
-#define TAB_PAIRS "PlayerPair"
-#define PAIRS_PLAYER1_REF "Player1RefId"
-#define PAIRS_PLAYER2_REF "Player2RefId"
-#define PAIRS_CAT_REF "CategoryRefId"
-#define PAIRS_GRP_NUM "GroupNumber"
-#define PAIRS_INITIAL_RANK "InitialRank"
+#define TabPairs "PlayerPair"
+#define Pairs_Player1Ref "Player1RefId"
+#define Pairs_Player2Ref "Player2RefId"
+#define Pairs_CatRef "CategoryRefId"
+#define Pairs_GrpNum "GroupNumber"
+#define Pairs_InitialRank "InitialRank"
   
 //----------------------------------------------------------------------------
 
-#define TAB_MATCH "Match"
-#define MA_GRP_REF  "MatchGroupRefId"
-#define MA_NUM  "Number"
-#define MA_PAIR1_REF  "PlayerPair1RefId"
-#define MA_PAIR2_REF  "PlayerPair2RefId"
-#define MA_ACTUAL_PLAYER1A_REF  "ActualPlayer1aRefId"
-#define MA_ACTUAL_PLAYER1B_REF  "ActualPlayer1bRefId"
-#define MA_ACTUAL_PLAYER2A_REF  "ActualPlayer2aRefId"
-#define MA_ACTUAL_PLAYER2B_REF  "ActualPlayer2bRefId"
-#define MA_RESULT  "Result"
-#define MA_COURT_REF  "CourtRefId"
-#define MA_START_TIME  "StartTime"
-#define MA_ADDITIONAL_CALL_TIMES  "CallTimes"
-#define MA_FINISH_TIME  "FinishTime"
-#define MA_PAIR1_SYMBOLIC_VAL  "PlayerPair1SymbolicValue"
-#define MA_PAIR2_SYMBOLIC_VAL  "PlayerPair2SymbolicValue"
-#define MA_WINNER_RANK  "WinnerRank"
-#define MA_LOSER_RANK  "LoserRank"
-#define MA_REFEREE_MODE  "RefereeMode"
-#define MA_REFEREE_REF  "RefereeRefId"
-//#define MA_  ""
+#define TabMatch "Match"
+#define MA_GrpRef  "MatchGroupRefId"
+#define MA_Num  "Number"
+#define MA_Pair1Ref  "PlayerPair1RefId"
+#define MA_Pair2Ref  "PlayerPair2RefId"
+#define MA_ActualPlayer1aRef  "ActualPlayer1aRefId"
+#define MA_ActualPlayer1bRef  "ActualPlayer1bRefId"
+#define MA_ActualPlayer2aRef  "ActualPlayer2aRefId"
+#define MA_ActualPlayer2bRef  "ActualPlayer2bRefId"
+#define MA_Result  "Result"
+#define MA_CourtRef  "CourtRefId"
+#define MA_StartTime  "StartTime"
+#define MA_AdditionalCallTimes  "CallTimes"
+#define MA_FinishTime  "FinishTime"
+#define MA_Pair1SymbolicVal  "PlayerPair1SymbolicValue"
+#define MA_Pair2SymbolicVal  "PlayerPair2SymbolicValue"
+#define MA_WinnerRank  "WinnerRank"
+#define MA_LoserRank  "LoserRank"
+#define MA_RefereeMode  "RefereeMode"
+#define MA_RefereeRef  "RefereeRefId"
+#define MA_BracketMatchNum  "BracketMatchNum"
 //#define MA_  ""
 //#define MA_  ""
 //#define MA_  ""
   
 //----------------------------------------------------------------------------
 
-#define TAB_MATCH_GROUP "MatchGroup"
-#define MG_CAT_REF  "CategoryRefId"
-#define MG_ROUND  "Round"
-#define MG_GRP_NUM  "RoundRobinGroupNumber"
-#define MG_STAGE_SEQ_NUM  "StageSequenceNumber"
+#define TabMatchGroup "MatchGroup"
+#define MG_CatRef  "CategoryRefId"
+#define MG_Round  "Round"
+#define MG_GrpNum  "RoundRobinGroupNumber"
+#define MG_StageSeqNum  "StageSequenceNumber"
 //#define MG_  ""
 //#define MG_  ""
 //#define MG_  ""
@@ -203,48 +219,25 @@ namespace QTournament
   
 //----------------------------------------------------------------------------
 
-#define TAB_RANKING "Ranking"
-#define RA_ROUND  "Round"
-#define RA_PAIR_REF  "PlayerPairRef"
-#define RA_GAMES_WON  "GamesWon"
-#define RA_GAMES_LOST  "GamesLost"
-#define RA_MATCHES_WON  "MatchesWon"
-#define RA_MATCHES_LOST  "MatchesLost"
-#define RA_MATCHES_DRAW  "MatchesDraw"
-#define RA_POINTS_WON  "PointsWon"
-#define RA_POINTS_LOST  "PointsLost"
-#define RA_RANK  "Rank"
-#define RA_CAT_REF  "CategoryRef"
-#define RA_GRP_NUM  "MatchGroupNumber"
+#define TabMatchSystem "Ranking"
+#define RA_Round  "Round"
+#define RA_PairRef  "PlayerPairRef"
+#define RA_GamesWon  "GamesWon"
+#define RA_GamesLost  "GamesLost"
+#define RA_MatchesWon  "MatchesWon"
+#define RA_MatchesLost  "MatchesLost"
+#define RA_MatchesDraw  "MatchesDraw"
+#define RA_PointsWon  "PointsWon"
+#define RA_PointsLost  "PointsLost"
+#define RA_Rank  "Rank"
+#define RA_CatRef  "CategoryRef"
+#define RA_GrpNum  "MatchGroupNumber"
 //#define RA_  ""
 //#define RA_  ""
 //#define RA_  ""
 
 //----------------------------------------------------------------------------
 
-#define TAB_BRACKET_VIS "BracketVisualization"
-#define BV_MATCH_REF "MatchRefId"
-#define BV_CAT_REF "CategoryRefId"
-#define BV_PAGE "PageNumber"
-#define BV_GRID_X0 "GridX0"
-#define BV_GRID_Y0 "GridY0"
-#define BV_SPAN_Y "SpanY"
-#define BV_ORIENTATION "Orientation"
-#define BV_TERMINATOR "Terminator"
-#define BV_INITIAL_RANK1 "InitialRank1"
-#define BV_INITIAL_RANK2 "InitialRank2"
-#define BV_PAIR1_REF "PlayerPair1RefId"
-#define BV_PAIR2_REF "PlayerPair2RefId"
-#define BV_Y_PAGEBREAK_SPAN "PagebreakOffsetY"
-#define BV_NEXT_PAGE_NUM "NextPageNum"
-#define BV_TERMINATOR_OFFSET_Y "TerminatorOffset"
-#define BV_ELEMENT_ID "BracketElementId"
-#define BV_NEXT_WINNER_MATCH "NextWinnerMatch"
-#define BV_NEXT_LOSER_MATCH "NextLoserMatch"
-#define BV_NEXT_MATCH_POS_FOR_WINNER "NextMatchPosForWinner"
-#define BV_NEXT_MATCH_POS_FOR_LOSER "NextMatchPosForLoser"
-//#define BV_ ""
-//#define BV_ ""
 
 //----------------------------------------------------------------------------
 
@@ -284,22 +277,23 @@ namespace QTournament
   
 //----------------------------------------------------------------------------
 
-  enum CAT_PARAMETER {
-    ALLOW_DRAW,
-    WIN_SCORE,
-    DRAW_SCORE,
-    GROUP_CONFIG,
-    ROUND_ROBIN_ITERATIONS
-    
+  enum class CatParameter {
+    AllowDraw,
+    WinScore,
+    DrawScore,
+    GroupConfig,
+    RoundRobinIterations,
+    BracketMatchSystem,
+    FirstRoundOffset
   };
   
 //----------------------------------------------------------------------------
 
-  enum CAT_ADD_STATE {
-    WRONG_SEX,         // Player may not join because the sex doesn't fit
-    CAN_JOIN,          // Player can join the category now and participate in matches
-    CAT_CLOSED,        // Player WOULD fit, but the category doesn't accept any more players
-    ALREADY_MEMBER     // Player is already assigned to this category
+  enum class CatAddState {
+    WrongSex,         // Player may not join because the sex doesn't fit
+    CanJoin,          // Player can join the category now and participate in matches
+    CatClosed,        // Player WOULD fit, but the category doesn't accept any more players
+    AlreadyMember     // Player is already assigned to this category
   };
   
 //----------------------------------------------------------------------------
@@ -308,72 +302,87 @@ namespace QTournament
   // IMPORTANT: only append new states AT THE END of the list or otherwise the
   // state IDs change and we break compatibility with older database versions!
   //
-  enum OBJ_STATE {
-    STAT_PL_IDLE,
-    STAT_PL_PLAYING,
-    STAT_PL_WAIT_FOR_REGISTRATION,  // player has to report to match control before considered "ready"
-    STAT_CAT_CONFIG,
-    STAT_CAT_FROZEN,  // intermediate state in which the category can be configured for the first round
-    STAT_CAT_IDLE,
-    STAT_CAT_PLAYING,  // at least one match in this category is currently being played
-    STAT_CAT_FINALIZED, // no more rounds or matches to come
-    STAT_CAT_WAIT_FOR_INTERMEDIATE_SEEDING,  // we need user-controlled seeding / match generation before we can continue
-    STAT_MG_CONFIG,   // Match group has been created, matches can still be added or removed
-    STAT_MG_FROZEN,   // No more adding or removing of matches; match group CANNOT be staged because earlier rounds/groups have to be staged / scheduled first
-    STAT_MG_IDLE,     // No more adding or removing of matches; match group can be staged and waits for being staged
-    STAT_MG_STAGED,     // No more adding or removing of matches; match group is selected to be scheduled and waits for being scheduled
-    STAT_MG_SCHEDULED, // Match numbers have been assigned
-    STAT_MG_FINISHED,  // All matches in this group are finished
-    STAT_MA_INCOMPLETE,   // Match is not yet fully defined (e.g., player names or match number are missing)
-    STAT_MA_FUZZY,        // Player names are defined by symbolic values (e.g., winner of match XYZ); match number is assigned; match cannot be called
-    STAT_MA_WAITING,      // Player names and match number are assigned but match cannot be called because earlier rounds have to be played first
-    STAT_MA_READY,        // Opponents and match number are fully defined and all players are idle; match can be called
-    STAT_MA_BUSY,         // Opponents and match number are fully defined but some players are busy; match cannot be called
-    STAT_MA_RUNNING,      // The match is currently being played
-    STAT_MA_FINISHED,     // The match is finished and the result has been entered
-    STAT_MA_POSTPONED,    // The match is postponed and cannot be called
-    STAT_CO_AVAIL,        // The court is empty and can be assigned to a match
-    STAT_CO_BUSY,         // The court is being used by a match
-    STAT_CO_DISABLED,     // The court cannot be used (temporarily)
-    STAT_PL_REFEREE,      // Player is currently acting as a referee/umpire for a match
+  enum class ObjState {
+    PL_Idle,
+    PL_Playing,
+    PL_WaitForRegistration,  // player has to report to match control before considered "ready"
+    CAT_Config,
+    CAT_Frozen,  // intermediate state in which the category can be configured for the first round
+    CAT_Idle,
+    CAT_Playing,  // at least one match in this category is currently being played
+    CAT_Finalized, // no more rounds or matches to come
+    CAT_WaitForIntermediateSeeding,  // we need user-controlled seeding / match generation before we can continue
+    MG_Config,   // Match group has been created, matches can still be added or removed
+    MG_Frozen,   // No more adding or removing of matches; match group CANNOT be staged because earlier rounds/groups have to be staged / scheduled first
+    MG_Idle,     // No more adding or removing of matches; match group can be staged and waits for being staged
+    MG_Staged,     // No more adding or removing of matches; match group is selected to be scheduled and waits for being scheduled
+    MG_Scheduled, // Match numbers have been assigned
+    MG_Finished,  // All matches in this group are finished
+    MA_Incomplete,   // Match is not yet fully defined (e.g., player names or match number are missing)
+    MA_Fuzzy,        // Player names are defined by symbolic values (e.g., winner of match XYZ); match number is assigned; match cannot be called
+    MA_Waiting,      // Player names and match number are assigned but match cannot be called because earlier rounds have to be played first
+    MA_Ready,        // Opponents and match number are fully defined and all players are idle; match can be called
+    MA_Busy,         // Opponents and match number are fully defined but some players are busy; match cannot be called
+    MA_Running,      // The match is currently being played
+    MA_Finished,     // The match is finished and the result has been entered
+    MA_Postponed,    // The match is postponed and cannot be called
+    CO_Avail,        // The court is empty and can be assigned to a match
+    CO_Busy,         // The court is being used by a match
+    CO_Disabled,     // The court cannot be used (temporarily)
+    PL_Referee,      // Player is currently acting as a referee/umpire for a match
   };
   
 //----------------------------------------------------------------------------
   
-  enum MATCH_TYPE {
-    SINGLES,
-    DOUBLES,
-    MIXED
+  enum class MatchType {
+    Singles,
+    Doubles,
+    Mixed
   };  
   
 //----------------------------------------------------------------------------
-  enum SEX
+  enum class Sex
   {
     M,
     F,
-    DONT_CARE
+    DontCare
   };  
   
 //----------------------------------------------------------------------------
     
-  enum MATCH_SYSTEM {
-    SWISS_LADDER,
-    GROUPS_WITH_KO,
-    RANDOMIZE,
-    RANKING,
-    SINGLE_ELIM,
-    ROUND_ROBIN,
+  enum class MatchSystem {
+    SwissLadder,
+    GroupsWithKO,
+    Randomize,
+    RoundRobin,
+    Bracket
   };
-  
+
+  //----------------------------------------------------------------------------
+
+  /** \brief A list of all match systems that are available as SVG bracket
+   */
+  enum SvgBracketMatchSys
+  {
+    SingleElim,   ///< single elimination bracket (KO rounds)
+    DoubleElim,   ///< double elimination
+    RankSys,   ///< used in official ranking tournaments
+    SemiWithRanks,   ///< semifinals plus "one-one-one" matches for additional ranks
+    FinalsWithRanks,   ///< "one-on-one" matches for all ranks (directly; just one round)
+    FinalAnd3rd,   ///< only a final and the match for 3rd place
+  };
+
+
+
 //----------------------------------------------------------------------------
 
-  enum class REFEREE_MODE {
-    NONE = 0,           // no umpire for the match
-    HANDWRITTEN,    // the umpire's name is inserted manually be the user on the match sheet
-    ALL_PLAYERS,    // the umpire is selected upon match start among all players
-    RECENT_FINISHERS,  // the umpire is selected upon match start among the recent match finishers
-    SPECIAL_TEAM,    // the umpire is selected upon match start among the members of a special team (--> dedicated umpires)
-    USE_DEFAULT = -1,  // use the current tournament default
+  enum class RefereeMode {
+    None = 0,           // no umpire for the match
+    HandWritten,    // the umpire's name is inserted manually be the user on the match sheet
+    AllPlayers,    // the umpire is selected upon match start among all players
+    RecentFinishers,  // the umpire is selected upon match start among the recent match finishers
+    SpecialTeam,    // the umpire is selected upon match start among the members of a special team (--> dedicated umpires)
+    UseDefault = -1,  // use the current tournament default
   };
 
 //----------------------------------------------------------------------------
@@ -383,43 +392,47 @@ namespace QTournament
   public:
     QString tournamentName;
     QString organizingClub;
-    REFEREE_MODE refereeMode;
+    RefereeMode refereeMode;
     bool useTeams;
   } ;
 
 //----------------------------------------------------------------------------
 
-  enum KO_START {
-    FINAL,
-    SEMI,
-    QUARTER,
+  enum KO_Start {
+    Final,
+    Semi,
+    Quarter,
     L16
   };
 
 //----------------------------------------------------------------------------
 
-// Special group numbers for MatchGroup objects
-// Positive numbers indicate the number of the round robin group within a category,
-// Negative numbers have a special meaning for MatchGroups of non-round-robin matches
-#define GROUP_NUM__FINAL -1
-#define GROUP_NUM__SEMIFINAL -2
-#define GROUP_NUM__QUARTERFINAL -4
-#define GROUP_NUM__L16 -8
-#define GROUP_NUM__ITERATION -100  // just a normal round in Swiss Ladder, Random Matches, ...
+  // Special group numbers for MatchGroup objects
+  // Positive numbers indicate the number of the round robin group within a category,
+  // Negative numbers have a special meaning for MatchGroups of non-round-robin matches
+  constexpr int GroupNum_Final = -1;
+  constexpr int GroupNum_Semi = -2;
+  constexpr int GroupNum_Quarter = -4;
+  constexpr int GroupNum_L16 = -8;
+  constexpr int GroupNum_Iteration = -100;  // just a normal round in Swiss Ladder, Random Matches, ...
   
-// A special group number indicating that the match is
-// not in any group at all
-#define GRP_NUM__NOT_ASSIGNED -1
+  // A special group number indicating that the match is
+  // not in any group at all
+  constexpr int GroupNum_NotAssigned = -1;
 
-// A special value that matches any players group
-// Is only used for return values of functions
-#define ANY_PLAYERS_GROUP_NUMBER -200
-    
-//----------------------------------------------------------------------------
+  // A special initial rank indicating that a player pair
+  // does not (yet) have an initial rank assigned
+  static constexpr int InitialRankNotAssigned = -1;
 
-// A special match number, indicating that a match number
-// has not yet been assigned
-#define MATCH_NUM_NOT_ASSIGNED -1
+  // A special value that matches any players group
+  // Is only used for return values of functions
+  constexpr int AnyPlayersGroupNumber = -200;
+
+  //----------------------------------------------------------------------------
+
+  // A special match number, indicating that a match number
+  // has not yet been assigned
+  constexpr int MatchNumNotAssigned = -1;
 
 //----------------------------------------------------------------------------
 
@@ -446,7 +459,6 @@ namespace QTournament
   };
 
 //----------------------------------------------------------------------------
-    
 
 //----------------------------------------------------------------------------
     

@@ -38,44 +38,37 @@ namespace QTournament
 {
   class RankingEntry : public TournamentDatabaseObject
   {
-
-    friend class RankingMngr;
-    friend class SqliteOverlay::GenericObjectManager<TournamentDB>;
-    friend class TournamentDatabaseObjectManager;
-
   public:
-    static constexpr int NO_RANK_ASSIGNED = -1;
-    static constexpr int NO_GROUP_ASSIGNED = -999;
+    static constexpr int NoRankAssigned = -1;
+    static constexpr int NoGroupAssigned = -999;
 
     int getRound() const;
     Category getCategory() const;
-    unique_ptr<PlayerPair> getPlayerPair() const;
+    std::optional<PlayerPair> getPlayerPair() const;
     int getRank() const;
     int getGroupNumber() const;
 
     // sequence: won, draw, lost, total
-    tuple<int, int, int, int> getMatchStats() const;
+    std::tuple<int, int, int, int> getMatchStats() const;
 
     // sequence: won, lost, total
-    tuple<int, int, int> getGameStats() const;
+    std::tuple<int, int, int> getGameStats() const;
 
     // sequence: won, lost
-    tuple<int, int> getPointStats() const;
+    std::tuple<int, int> getPointStats() const;
 
     // required for sort()
     friend void swap(RankingEntry& a, RankingEntry& b) noexcept
     {
       // only swap the row member; no need to swap the DB-pointer
       // because it is identical for both instances
-      swap(a.row, b.row);
+      std::swap(a.row, b.row);
     }
 
-  private:
-    RankingEntry (TournamentDB* db, int rowId);
-    RankingEntry (TournamentDB* db, SqliteOverlay::TabRow row);
-    int ScalarQueryResult2Int_WithDefault(const unique_ptr<SqliteOverlay::ScalarQueryResult<int> >& v, int defaultVal=0) const;
+    RankingEntry (const TournamentDB& _db, int rowId);
+    RankingEntry (const TournamentDB& _db, const SqliteOverlay::TabRow& _row);
   };
 
 }
-#endif	/* RANKINGENTRY_H */
+#endif	/* MatchSystem::RankingENTRY_H */
 

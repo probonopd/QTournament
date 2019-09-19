@@ -19,27 +19,40 @@
 #ifndef TOURNAMENTDATABASEOBJECTMANAGER_H
 #define	TOURNAMENTDATABASEOBJECTMANAGER_H
 
+#include <string>
+#include <vector>
+
 #include <QString>
 
 #include <SqliteOverlay/GenericObjectManager.h>
-#include <SqliteOverlay/DbTab.h>
 
-#include "TournamentDB.h"
+namespace SqliteOverlay
+{
+  class DbTab;
+}
 
 namespace QTournament
 {
+  class TournamentDB;
+
   class TournamentDatabaseObjectManager : public SqliteOverlay::GenericObjectManager<TournamentDB>
   {
   public:
-    TournamentDatabaseObjectManager (TournamentDB* _db, const QString& _tabName)
-      : SqliteOverlay::GenericObjectManager<TournamentDB>(_db, _tabName.toUtf8().constData()) {}
+    TournamentDatabaseObjectManager (const TournamentDB& _db, const std::string& _tabName)
+      : SqliteOverlay::GenericObjectManager<TournamentDB>(_db, _tabName, false) {}
 
-    virtual string getSyncString(int rowId = -1);
-    virtual string getSyncString(vector<int> rows) { return ""; }
+    virtual ~TournamentDatabaseObjectManager() {}
+
+    virtual std::string getSyncString(int rowId = -1) const;
+    virtual std::string getSyncString(const std::vector<int>& rows) const { return ""; }
 
   protected:
-    void fixSeqNumberAfterInsert(SqliteOverlay::DbTab* tabPtr = nullptr) const;
-    void fixSeqNumberAfterDelete(SqliteOverlay::DbTab* tabPtr, int deletedSeqNum) const;
+    static constexpr int InvalidInitialSequenceNumber = -1;
+
+    void fixSeqNumberAfterInsert() const;
+    void fixSeqNumberAfterDelete(int deletedSeqNum) const;
+    void fixSeqNumberAfterInsert(const SqliteOverlay::DbTab& otherTab) const;
+    void fixSeqNumberAfterDelete(const SqliteOverlay::DbTab& otherTab, int deletedSeqNum) const;
   };
 
 }

@@ -6,23 +6,23 @@
 
 using namespace QTournament;
 
-DlgPickCategory::DlgPickCategory(QWidget *parent, QTournament::TournamentDB* _db,
-                                 QTournament::SEX sex) :
+DlgPickCategory::DlgPickCategory(QWidget *parent, const QTournament::TournamentDB& _db,
+                                 QTournament::Sex sex) :
   QDialog(parent),
   ui(new Ui::DlgPickCategory), db{_db}
 {
   ui->setupUi(this);
 
   // build a list of available categories
-  vector<Category> availCats;
+  std::vector<Category> availCats;
   CatMngr cm{db};
   for (const Category& cat : cm.getAllCategories())
   {
     if (cat.canAddPlayers())
     {
-      if (sex != DONT_CARE)
+      if (sex != Sex::DontCare)
       {
-        if (cat.getAddState(sex) != CAN_JOIN) continue;
+        if (cat.getAddState(sex) != CatAddState::CanJoin) continue;
       }
 
       availCats.push_back(cat);
@@ -46,7 +46,7 @@ DlgPickCategory::DlgPickCategory(QWidget *parent, QTournament::TournamentDB* _db
 
 //----------------------------------------------------------------------------
 
-void DlgPickCategory::applyPreselection(const vector<Category>& preSelection)
+void DlgPickCategory::applyPreselection(const std::vector<Category>& preSelection)
 {
   CatMngr cm{db};
 
@@ -70,7 +70,7 @@ void DlgPickCategory::applyPreselection(const vector<Category>& preSelection)
 void DlgPickCategory::applyPreselection(const QString& commaSepCatNames)
 {
   CatMngr cm{db};
-  vector<Category> catSelection;
+  std::vector<Category> catSelection;
 
   for (const QString& catName : commaSepCatNames.split(","))
   {
@@ -89,7 +89,7 @@ void DlgPickCategory::applyPreselection(const QString& commaSepCatNames)
 QString DlgPickCategory::getSelection_CommaSep() const
 {
   QString result;
-  vector<Category> selection = getSelection();
+  std::vector<Category> selection = getSelection();
   for (const Category& cat : selection)
   {
     result += cat.getName() + ", ";
@@ -104,9 +104,9 @@ QString DlgPickCategory::getSelection_CommaSep() const
 
 //----------------------------------------------------------------------------
 
-vector<int> DlgPickCategory::getSelection_Id() const
+std::vector<int> DlgPickCategory::getSelection_Id() const
 {
-  vector<int> result;
+  std::vector<int> result;
 
   for (int row = 0; row < ui->catList->count(); ++row)
   {
@@ -122,10 +122,10 @@ vector<int> DlgPickCategory::getSelection_Id() const
 
 //----------------------------------------------------------------------------
 
-vector<QString> DlgPickCategory::getSelection_strVec() const
+std::vector<QString> DlgPickCategory::getSelection_strVec() const
 {
   CatMngr cm{db};
-  vector<QString> result;
+  std::vector<QString> result;
 
   for (int row = 0; row < ui->catList->count(); ++row)
   {
@@ -142,10 +142,10 @@ vector<QString> DlgPickCategory::getSelection_strVec() const
 
 //----------------------------------------------------------------------------
 
-vector<Category> DlgPickCategory::getSelection() const
+std::vector<Category> DlgPickCategory::getSelection() const
 {
   CatMngr cm{db};
-  vector<Category> result;
+  std::vector<Category> result;
 
   for (int row = 0; row < ui->catList->count(); ++row)
   {

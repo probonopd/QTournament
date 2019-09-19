@@ -24,15 +24,15 @@
 namespace QTournament
 {
 
-  MatchGroup::MatchGroup(TournamentDB* db, int rowId)
-  :TournamentDatabaseObject(db, TAB_MATCH_GROUP, rowId), matchTab(db->getTab(TAB_MATCH))
+  MatchGroup::MatchGroup(const TournamentDB& _db, int rowId)
+    :TournamentDatabaseObject(_db, TabMatchGroup, rowId), matchTab{db, TabMatch, false}
   {
   }
 
 //----------------------------------------------------------------------------
 
-  MatchGroup::MatchGroup(TournamentDB* db, SqliteOverlay::TabRow row)
-  :TournamentDatabaseObject(db, row), matchTab(db->getTab(TAB_MATCH))
+  MatchGroup::MatchGroup(const TournamentDB& _db, const SqliteOverlay::TabRow& _row)
+  :TournamentDatabaseObject(_db, _row), matchTab{db, TabMatch, false}
   {
   }
 
@@ -40,7 +40,7 @@ namespace QTournament
 
   Category MatchGroup::getCategory() const
   {
-    int catId = row.getInt(MG_CAT_REF);
+    int catId = row.getInt(MG_CatRef);
     CatMngr cm{db};
     return cm.getCategoryById(catId);
   }
@@ -49,14 +49,14 @@ namespace QTournament
 
   int MatchGroup::getGroupNumber() const
   {
-    return row.getInt(MG_GRP_NUM);
+    return row.getInt(MG_GrpNum);
   }
 
 //----------------------------------------------------------------------------
 
   int MatchGroup::getRound() const
   {
-    return row.getInt(MG_ROUND);
+    return row.getInt(MG_Round);
   }  
 
 //----------------------------------------------------------------------------
@@ -71,45 +71,41 @@ namespace QTournament
 
   int MatchGroup::getMatchCount() const
   {
-    return matchTab->getMatchCountForColumnValue(MA_GRP_REF, getId());
+    return matchTab.getMatchCountForColumnValue(MA_GrpRef, getId());
   }
 
 //----------------------------------------------------------------------------
 
   int MatchGroup::getStageSequenceNumber() const
   {
-    auto result = row.getInt2(MG_STAGE_SEQ_NUM);
-    if (result->isNull())
-    {
-      return -1;  // group not staged
-    }
-
-    return result->get();
+    auto result = row.getInt2(MG_StageSeqNum);
+    return result.value_or(-1);
   }
 
 //----------------------------------------------------------------------------
 
-  bool MatchGroup::hasMatchesInState(OBJ_STATE stat) const
+  bool MatchGroup::hasMatchesInState(ObjState stat) const
   {
     // for performance reasons, we issue a single SQL-statement here
     // instead of looping through all matches in the group
-    WhereClause wc;
-    wc.addIntCol(MA_GRP_REF, getId());
-    wc.addIntCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(stat));
-    return (matchTab->getMatchCountForWhereClause(wc) > 0);
+    SqliteOverlay::WhereClause wc;
+    wc.addCol(MA_GrpRef, getId());
+    wc.addCol(GenericStateFieldName, static_cast<int>(stat));
+
+    return (matchTab.getMatchCountForWhereClause(wc) > 0);
   }
 
 //----------------------------------------------------------------------------
 
-  bool MatchGroup::hasMatches__NOT__InState(OBJ_STATE stat) const
+  bool MatchGroup::hasMatches__NOT__InState(ObjState stat) const
   {
     // for performance reasons, we issue a single SQL-statement here
     // instead of looping through all matches in the group
-    QString where = "%1 = %2 AND %3 != %4";
-    where = where.arg(MA_GRP_REF).arg(getId());
-    where = where.arg(GENERIC_STATE_FIELD_NAME).arg(static_cast<int>(stat));
+    SqliteOverlay::WhereClause wc;
+    wc.addCol(MA_GrpRef, getId());
+    wc.addCol(GenericStateFieldName, "!=", static_cast<int>(stat));
 
-    return (matchTab->getMatchCountForWhereClause(where.toUtf8().constData()) > 0);
+    return (matchTab.getMatchCountForWhereClause(wc) > 0);
   }
 
 //----------------------------------------------------------------------------

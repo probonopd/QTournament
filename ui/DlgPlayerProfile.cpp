@@ -10,14 +10,15 @@
 #include "ui_DlgPlayerProfile.h"
 #include "GuiHelpers.h"
 
+using namespace QTournament;
 
 DlgPlayerProfile::DlgPlayerProfile(const Player& _p, QWidget *parent) :
   QDialog(parent), p{_p}, db{p.getDatabaseHandle()}, pp{p},
   ui(new Ui::DlgPlayerProfile)
 {
   ui->setupUi(this);
-  ui->playerTab->setDatabase(db);
-  ui->umpireTab->setDatabase(db);
+  ui->playerTab->setDatabase(&db);
+  ui->umpireTab->setDatabase(&db);
 
   fillTables();
   fillLabels();
@@ -34,7 +35,7 @@ DlgPlayerProfile::~DlgPlayerProfile()
 
 void DlgPlayerProfile::fillLabels()
 {
-  OBJ_STATE plStat = p.getState();
+  ObjState plStat = p.getState();
 
   //
   // set the title
@@ -58,16 +59,18 @@ void DlgPlayerProfile::fillLabels()
   //
   // set the next match
   //
-  unique_ptr<Match> ma;
-  ma = pp.getNextMatch();
+  std::optional<Match> ma = pp.getNextMatch();
   txt.clear();
-  if (ma != nullptr)
+  if (ma)
   {
+    const Category cat = ma->getCategory();
+    const int roundOffset = cat.getParameter_int(CatParameter::FirstRoundOffset);
+
     txt = tr("#%1: %2 (%3, Round %4)");
     txt = txt.arg(ma->getMatchNumber());
     txt = txt.arg(ma->getDisplayName(tr("Winner"), tr("Loser")));
-    txt = txt.arg(ma->getCategory().getName());
-    txt = txt.arg(ma->getMatchGroup().getRound());
+    txt = txt.arg(cat.getName());
+    txt = txt.arg(ma->getMatchGroup().getRound() + roundOffset);
   } else {
     txt = "--";
   }
@@ -78,13 +81,16 @@ void DlgPlayerProfile::fillLabels()
   //
   ma = pp.getNextUmpireMatch();
   txt.clear();
-  if (ma != nullptr)
+  if (ma)
   {
+    const Category cat = ma->getCategory();
+    const int roundOffset = cat.getParameter_int(CatParameter::FirstRoundOffset);
+
     txt = tr("#%1: %2 (%3, Round %4)");
     txt = txt.arg(ma->getMatchNumber());
     txt = txt.arg(ma->getDisplayName(tr("Winner"), tr("Loser")));
-    txt = txt.arg(ma->getCategory().getName());
-    txt = txt.arg(ma->getMatchGroup().getRound());
+    txt = txt.arg(cat.getName());
+    txt = txt.arg(ma->getMatchGroup().getRound() + roundOffset);
   } else {
     txt = "--";
   }
@@ -143,7 +149,7 @@ void DlgPlayerProfile::fillLabels()
   //
   // set the waiting matches count
   //
-  if (plStat == STAT_PL_PLAYING)
+  if (plStat == ObjState::PL_Playing)
   {
     txt = tr("%1 further matches scheduled and 1 match currently running");
     txt = txt.arg(pp.getScheduledAndNotFinishedCount() - 1);
@@ -166,7 +172,7 @@ void DlgPlayerProfile::fillLabels()
   txt = tr("%1 services (%2 finished, %3 running, %4 waiting)");
   txt = txt.arg(pp.getMatchesAsUmpire().length());
   txt = txt.arg(pp.getUmpireFinishedCount());
-  if (plStat == STAT_PL_REFEREE)
+  if (plStat == ObjState::PL_Referee)
   {
     txt = txt.arg(1);
     txt = txt.arg(pp.getUmpireScheduledAndNotFinishedCount() - 1);
@@ -191,12 +197,12 @@ void DlgPlayerProfile::fillTables()
   auto maList = pp.getMatchesAsPlayer();
   for (const Match& ma : maList)
   {
-    if (ma.getMatchNumber() == MATCH_NUM_NOT_ASSIGNED) continue;
+    if (ma.getMatchNumber() == MatchNumNotAssigned) continue;
     ui->playerTab->appendMatch(ma);
   }
   for (const Match& ma : maList)
   {
-    if (ma.getMatchNumber() != MATCH_NUM_NOT_ASSIGNED) continue;
+    if (ma.getMatchNumber() != MatchNumNotAssigned) continue;
     ui->playerTab->appendMatch(ma);
   }
 }

@@ -31,13 +31,13 @@ namespace QTournament
 {
 
 
-ParticipantsList::ParticipantsList(TournamentDB* _db, const QString& _name, int _sortCriterion)
+ParticipantsList::ParticipantsList(const TournamentDB& _db, const QString& _name, int _sortCriterion)
   :AbstractReport(_db, _name), sortCriterion(_sortCriterion)
 {
   // apply a default criterion if no reasonable argument was provided
-  if ((sortCriterion != SORT_BY_NAME) && (sortCriterion != SORT_BY_TEAM) && (sortCriterion != SORT_BY_CATEGORY))
+  if ((sortCriterion != SortByName) && (sortCriterion != SortByTeam) && (sortCriterion != SortByCategory))
   {
-    sortCriterion = SORT_BY_NAME;
+    sortCriterion = SortByName;
   }
 }
 
@@ -66,15 +66,15 @@ upSimpleReport ParticipantsList::regenerateReport()
   }
 
   // generate the actual report, depending on the sorting criterion
-  if (sortCriterion == SORT_BY_NAME)
+  if (sortCriterion == SortByName)
   {
     createNameSortedReport(result);
   }
-  if (sortCriterion == SORT_BY_TEAM)
+  if (sortCriterion == SortByTeam)
   {
     createTeamSortedReport(result);
   }
-  if (sortCriterion == SORT_BY_CATEGORY)
+  if (sortCriterion == SortByCategory)
   {
     createCategorySortedReport(result);
   }
@@ -92,15 +92,15 @@ QStringList ParticipantsList::getReportLocators() const
   QStringList result;
 
   QString loc = tr("Participants::");
-  if (sortCriterion == SORT_BY_NAME)
+  if (sortCriterion == SortByName)
   {
     loc += tr("by name");
   }
-  if (sortCriterion == SORT_BY_TEAM)
+  if (sortCriterion == SortByTeam)
   {
     loc += tr("by team");
   }
-  if (sortCriterion == SORT_BY_CATEGORY)
+  if (sortCriterion == SortByCategory)
   {
     loc += tr("by category");
   }
@@ -154,7 +154,7 @@ void ParticipantsList::createTeamSortedReport(upSimpleReport &rep) const
 {
   TeamMngr tm{db};
 
-  vector<Team> tl = tm.getAllTeams();
+  std::vector<Team> tl = tm.getAllTeams();
 
   // do we have any teams at all?
   if (tl.size() == 0) return;
@@ -172,13 +172,13 @@ void ParticipantsList::createTeamSortedReport(upSimpleReport &rep) const
   for (Team t : tl)
   {
     // start a new team section
-    double skip = SKIP_BEFORE_INTERMEDIATE_HEADER__MM;
+    double skip = SkipBeforeIntermediaHeader_mm;
     if (isFirstTeam)
     {
       skip = 0.0;
       isFirstTeam = false;
     }
-    if (!(rep->hasSpaceForAnotherLine(INTERMEDIATEHEADLINE_STYLE, skip)))
+    if (!(rep->hasSpaceForAnotherLine(IntermediateHeadlineStyle, skip)))
     {
       rep->startNextPage();
     }

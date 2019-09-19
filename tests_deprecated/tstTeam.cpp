@@ -35,12 +35,12 @@ void tstTeam::testRename()
   Team t2 = tmngr->getTeam("t2");
   
   // try to rename to an invalid name
-  CPPUNIT_ASSERT(t2.rename("") == INVALID_NAME);
-  CPPUNIT_ASSERT(t2.rename(" ") == INVALID_NAME);
-  CPPUNIT_ASSERT(t2.rename(QString::null) == INVALID_NAME);
+  CPPUNIT_ASSERT(t2.rename("") == InvalidName);
+  CPPUNIT_ASSERT(t2.rename(" ") == InvalidName);
+  CPPUNIT_ASSERT(t2.rename(QString::null) == InvalidName);
   
   // try to rename to an existing name
-  CPPUNIT_ASSERT(t2.rename("t1") == NAME_EXISTS);
+  CPPUNIT_ASSERT(t2.rename("t1") == NameExists);
   
   // valid rename
   CPPUNIT_ASSERT(t2.rename("xx") == OK);

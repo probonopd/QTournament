@@ -16,8 +16,8 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _MAINFRAME_H
-#define	_MAINFRAME_H
+#ifndef MAINFRAME_H
+#define	MAINFRAME_H
 
 #include <memory>
 
@@ -26,39 +26,76 @@
 #include <QTimer>
 
 #include "ui_MainFrame.h"
+#include "TournamentDB.h"
 
-#define PRG_VERSION_STRING "0.6.0"
-
-using namespace QTournament;
+#define PRG_VERSION_STRING "0.7.0-RC1"
 
 class MainFrame : public QMainWindow
 {
   Q_OBJECT
 public:
   MainFrame ();
-  virtual ~MainFrame ();
+  virtual ~MainFrame () override;
   
 protected:
   virtual void closeEvent(QCloseEvent *ev) override;
 
 private:
   Ui::MainFrame ui;
-  
-  void enableControls(bool doEnable = true);
-  void setupTestScenario(int scenarioID);
-  
-  unique_ptr<TournamentDB> currentDb;
-  
-  QString testFileName;
+  std::unique_ptr<QTournament::TournamentDB> currentDb{nullptr};
   QString currentDatabaseFileName;
-  
-  bool closeCurrentTournament();
-  
+
+  // the test menu
   QShortcut* scToggleTestMenuVisibility;
   bool isTestMenuVisible;
 
+  // timers for polling the database's dirty flag
+  // and triggering the autosave function
+  static constexpr int DirtyFlagPollIntervall_ms = 1000;
+  static constexpr int AutosaveIntervall_ms = 120 * 1000;
+  std::unique_ptr<QTimer> dirtyFlagPollTimer;
+  std::unique_ptr<QTimer> autosaveTimer;
+
+  // a label for the status bar that shows the last autosave
+  QLabel* lastAutosaveTimeStatusLabel;
+
+  // a timer and label for server syncs
+  static constexpr int ServerSyncStatusInterval_ms = 1000;
+  std::unique_ptr<QTimer> serverSyncTimer;
+  QLabel* syncStatLabel;
+  QPushButton* btnPingTest;
+
+  void enableControls(bool doEnable = true);
+  void setupTestScenario(int scenarioID);
+  
+  bool closeCurrentTournament();
+  
+
   void distributeCurrentDatabasePointerToWidgets(bool forceNullptr = false);
-  bool saveCurrentDatabaseToFile(const QString& dstFileName);
+
+  /** \brief Writes the contents of the current (in-memory) database to
+   * a file on disk. The active database remains the same.
+   *
+   * Optionally, the internal dirty flags will be reset upon successful
+   * completion of the write operation.
+   *
+   * Optionally, we can show an error message if the database was busy or
+   * a SQLite exception occured.
+   *
+   * \pre All checks for valid filenames, overwriting of files etc. have to
+   * be done before calling this function.
+   *
+   * \warning This function unconditionally writes to the destination file,
+   * whether it exists or not.
+   *
+   * \returns `true` if the data was written successfully
+   */
+  bool saveCurrentDatabaseToFile(
+      const QString& dstFileName,   ///< the name / path of the destination file
+      bool resetDirtyFlagOnSuccess,    ///< if `true` the local databases' dirty flags will be reset after successful storage
+      bool showErrorOnFailure   ///< whether to show an error message if writing failed
+      );
+
   bool execCmdSave();
   bool execCmdSaveAs();
   QString askForTournamentFileName(const QString& dlgTitle);
@@ -67,23 +104,6 @@ private:
 
   void updateOnlineMenu();
 
-  // timers for polling the database's dirty flag
-  // and triggering the autosave function
-  static constexpr int DIRTY_FLAG_POLL_INTERVALL__MS = 1000;
-  static constexpr int AUTOSAVE_INTERVALL__MS = 120000;
-  unique_ptr<QTimer> dirtyFlagPollTimer;
-  unique_ptr<QTimer> autosaveTimer;
-  bool lastDirtyState;
-  int lastAutosaveDirtyCounterValue;
-
-  // a label for the status bar that shows the last autosave
-  QLabel* lastAutosaveTimeStatusLabel;
-
-  // a timer and label for server syncs
-  static constexpr int ServerSyncStatusInterval_ms = 1000;
-  unique_ptr<QTimer> serverSyncTimer;
-  QLabel* syncStatLabel;
-  QPushButton* btnPingTest;
 
 public slots:
   void newTournament();

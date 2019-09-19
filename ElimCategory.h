@@ -20,11 +20,7 @@
 #define	ELIMCATEGORY_H
 
 #include "Category.h"
-#include "ThreadSafeQueue.h"
 #include "RankingEntry.h"
-
-
-using namespace SqliteOverlay;
 
 namespace QTournament
 {
@@ -34,25 +30,25 @@ namespace QTournament
     friend class Category;
 
   public:
-    virtual ERR canFreezeConfig() override;
+    virtual Error canFreezeConfig() override;
     virtual bool needsInitialRanking() override;
     virtual bool needsGroupInitialization() override;
-    virtual ERR prepareFirstRound(ProgressQueue* progressNotificationQueue=nullptr) override;
+    virtual Error prepareFirstRound() override;
     virtual int calcTotalRoundsCount() const override;
     virtual std::function<bool(RankingEntry& a, RankingEntry& b)> getLessThanFunction() override;
-    virtual ERR onRoundCompleted(int round) override;
-    virtual PlayerPairList getRemainingPlayersAfterRound(int round, ERR *err) const override;
+    virtual Error onRoundCompleted(int round) override;
+    virtual PlayerPairList getRemainingPlayersAfterRound(int round, Error *err) const override;
     
     ModMatchResult canModifyMatchResult(const Match& ma) const override;
     ModMatchResult modifyMatchResult(const Match& ma, const MatchScore& newScore) const override;
 
   protected:
-    unique_ptr<Match> getFollowUpMatch(const Match& ma, bool searchLoserNotWinner) const;
-    ERR rewriteFinalRankForMultipleRounds(int minRound = 1, int maxRound = -1) const;
+    std::optional<Match> getFollowUpMatch(const Match& ma, bool searchLoserNotWinner) const;
+    Error rewriteFinalRankForMultipleRounds(int minRound = 1, int maxRound = -1) const;
 
   private:
-    EliminationCategory (TournamentDB* db, int rowId, int eliminationMode);
-    EliminationCategory (TournamentDB* db, SqliteOverlay::TabRow row, int eliminationMode);
+    EliminationCategory (const TournamentDB& _db, int rowId, int eliminationMode);
+    EliminationCategory (const TournamentDB& _db, const SqliteOverlay::TabRow& _row, int eliminationMode);
 
     int elimMode;
 

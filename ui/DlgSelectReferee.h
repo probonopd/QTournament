@@ -33,9 +33,7 @@ namespace Ui {
   class DlgSelectReferee;
 }
 
-using namespace QTournament;
-
-using TaggedPlayer = pair<Player, int>;
+using TaggedPlayer = std::pair<QTournament::Player, int>;
 using TaggedPlayerList = QList<TaggedPlayer>;
 
 class DlgSelectReferee : public QDialog
@@ -43,10 +41,10 @@ class DlgSelectReferee : public QDialog
   Q_OBJECT
 
 public:
-  static constexpr int MAX_NUM_LOSERS = 30;
-  explicit DlgSelectReferee(TournamentDB* _db, const Match& _ma, REFEREE_ACTION _refAction, QWidget *parent = 0);
+  static constexpr int MaxNumLosers = 30;
+  explicit DlgSelectReferee(const QTournament::TournamentDB& _db, const QTournament::Match& _ma, QTournament::RefereeAction _refAction, QWidget *parent = nullptr);
   ~DlgSelectReferee();
-  upPlayer getFinalPlayerSelection();
+  std::optional<QTournament::Player> getFinalPlayerSelection();
 
 public slots:
   void onFilterModeChanged();
@@ -58,9 +56,9 @@ public slots:
 
 private:
   Ui::DlgSelectReferee *ui;
-  TournamentDB* db;
-  Match ma;
-  REFEREE_ACTION refAction;
+  const QTournament::TournamentDB& db;
+  const QTournament::Match& ma;
+  QTournament::RefereeAction refAction;
   void updateControls();
 
   void initTeamList(int defaultTeamId = -1);
@@ -69,7 +67,7 @@ private:
 
   TaggedPlayerList getPlayerList_recentFinishers();
 
-  upPlayer finalPlayerSelection;
+  std::optional<QTournament::Player> finalPlayerSelection;
 };
 
 //----------------------------------------------------------------------------
@@ -79,29 +77,29 @@ class RefereeTableWidget : public GuiHelpers::AutoSizingTableWidget_WithDatabase
   Q_OBJECT
 
 public:
-  static constexpr int STAT_COL_ID = 0;
-  static constexpr int NAME_COL_ID = 1;
-  static constexpr int TEAM_COL_ID = 2;
-  static constexpr int REFEREE_COUNT_COL_ID = 3;
-  static constexpr int LAST_FINISH_TIME_COL_ID = 4;
-  static constexpr int NEXT_MATCH_DIST_COL_ID = 5;
+  static constexpr int StateColId = 0;
+  static constexpr int NameColId = 1;
+  static constexpr int TeamColId = 2;
+  static constexpr int RefereeCountColId = 3;
+  static constexpr int LastFinishTimeColId = 4;
+  static constexpr int NextMatchDistColId = 5;
   RefereeTableWidget(QWidget* parent=0);
   virtual ~RefereeTableWidget() {}
 
-  void rebuildPlayerList(const TaggedPlayerList& pList, int selectedMatchNumer, REFEREE_MODE _refMode);
-  upPlayer getSelectedPlayer();
+  void rebuildPlayerList(const TaggedPlayerList& pList, int selectedMatchNumer, QTournament::RefereeMode _refMode);
+  std::optional<QTournament::Player> getSelectedPlayer();
   bool hasPlayerSelected();
 
 protected:
-  static constexpr int REL_WIDTH_NAME = 25;
-  static constexpr int REL_WIDTH_TEAM = 25;
-  static constexpr int REL_WIDTH_OTHER = 10;
-  static constexpr int REL_WIDTH_STATE = 1;
-  static constexpr int MAX_OTHER_COL_WIDTH = 90;
+  static constexpr int RelWidthNameCol = 25;
+  static constexpr int RelWidthTeamCol = 25;
+  static constexpr int RelWidthOtherCol = 10;
+  static constexpr int RelWidthStateCol = 1;
+  static constexpr int MaxOtherColWidth = 90;
 
   void hook_onDatabaseOpened() override;
 
-  REFEREE_MODE refMode;
+  QTournament::RefereeMode refMode;
 };
 
 #endif // DLGSELECTREFEREE_H

@@ -36,11 +36,12 @@ namespace QTournament
 {
 
 
-Standings::Standings(TournamentDB* _db, const QString& _name, const Category& _cat, int _round)
+Standings::Standings(const TournamentDB& _db, const QString& _name, const Category& _cat, int _round)
   :AbstractReport(_db, _name), cat(_cat), round(_round)
 {
   // make sure that the requested round is already finished
   CatRoundStatus crs = cat.getRoundStatus();
+  roundOffset = cat.getParameter_int(CatParameter::FirstRoundOffset);
   if (round <= crs.getFinishedRoundsCount()) return; // okay, we're in one of the finished rounds
 
   throw std::runtime_error("Requested standings report for unfinished round.");
@@ -54,7 +55,7 @@ upSimpleReport Standings::regenerateReport()
   RankingMngr rm{db};
   RankingEntryListList rll = rm.getSortedRanking(cat, round);
 
-  QString repName = cat.getName() + " -- " + tr("Standings after round ") + QString::number(round);
+  QString repName = cat.getName() + " -- " + tr("Standings after round ") + QString::number(round + roundOffset);
   upSimpleReport result = createEmptyReport_Portrait();
 
   // return an empty report if we have no standings yet
@@ -76,9 +77,9 @@ upSimpleReport Standings::regenerateReport()
     MatchMngr mm{db};
     MatchGroupList mgl = mm.getMatchGroupsForCat(cat, round);
     int matchGroupNumber = mgl.at(0).getGroupNumber();
-    MATCH_SYSTEM mSys = cat.getMatchSystem();
-    if ((matchGroupNumber < 0) && (matchGroupNumber != GROUP_NUM__ITERATION) &&
-        ((mSys == GROUPS_WITH_KO) || (mSys == SINGLE_ELIM)))
+    MatchSystem mSys = cat.getMatchSystem();
+    if ((matchGroupNumber < 0) && (matchGroupNumber != GroupNum_Iteration) &&
+        ((mSys == MatchSystem::GroupsWithKO) || (mSys == MatchSystem::Bracket)))
     {
       subHeader = GuiHelpers::groupNumToLongString(mgl.at(0).getGroupNumber());
     }
@@ -88,7 +89,7 @@ upSimpleReport Standings::regenerateReport()
   // dump all rankings to the report
   for (RankingEntryList rl : rll)
   {
-    QString tableName = tr("Standings in category ") + cat.getName() + tr(" after round ") + QString::number(round);
+    QString tableName = tr("Standings in category ") + cat.getName() + tr(" after round ") + QString::number(round + roundOffset);
     if (isRoundRobin)
     {
       // determine the group number
@@ -107,8 +108,8 @@ upSimpleReport Standings::regenerateReport()
     result->skip(3.0);
   }
 
-  // if we are in ranking matches, print a list of all best-case reachable places
-  if ((cat.getMatchSystem() == RANKING) && (round != cat.getRoundStatus().getTotalRoundsCount()))
+  // if we are in bracket matches, print a list of all best-case reachable places
+  if ((cat.getMatchSystem() == MatchSystem::Bracket) && (round != cat.getRoundStatus().getTotalRoundsCount()))
   {
     printIntermediateHeader(result, tr("Best case reachable places after this round"));
     printBestCaseList(result);
@@ -128,7 +129,7 @@ QStringList Standings::getReportLocators() const
 
   QString loc = tr("Standings::");
   loc += cat.getName() + "::";
-  loc += tr("after round ") + QString::number(round);
+  loc += tr("after round ") + QString::number(round + roundOffset);
 
   result.append(loc);
 
@@ -140,8 +141,8 @@ QStringList Standings::getReportLocators() const
 int Standings::determineBestPossibleRankForPlayerAfterRound(const PlayerPair& pp, int round) const
 {
   // we can only determine the best possible final rank if we
-  // are in the RANKING match system
-  if (cat.getMatchSystem() != RANKING)
+  // are in the MatchSystem::Ranking match system
+  if (cat.getMatchSystem() != MatchSystem::Bracket)
   {
     return -1;
   }
@@ -168,20 +169,20 @@ int Standings::determineBestPossibleRankForPlayerAfterRound(const PlayerPair& pp
   // determine the last FINISHED match that this player has played.
   // Note: this must not be in this round because the player
   // could have had a bye
-  unique_ptr<Match> lastMatch = nullptr;
+  std::optional<Match> lastMatch{};
   int _r = round;
   MatchMngr mm{db};
-  while ((lastMatch == nullptr) && (_r > 0))
+  while (!lastMatch  && (_r > 0))
   {
     lastMatch = mm.getMatchForPlayerPairAndRound(pp, _r);
-    if ((lastMatch != nullptr) && (lastMatch->getState() != STAT_MA_FINISHED))
+    if (lastMatch && (lastMatch->is_NOT_InState(ObjState::MA_Finished)))
     {
-      lastMatch = nullptr;   // skip all matches that are not finished
+      lastMatch.reset();   // skip all matches that are not finished
     }
     --_r;
   }
 
-  if (lastMatch == nullptr)
+  if (!lastMatch)
   {
     // the player had no match yet (or none finished), so the first place is still
     // possible
@@ -210,23 +211,23 @@ int Standings::determineBestPossibleRankForPlayerAfterRound(const PlayerPair& pp
 
   // a little helper function to get the next match for a match winner
   int finalRound = crs.getTotalRoundsCount();
-  auto getNextWinnerMatch = [this, &finalRound, &mm](const Match& ma) -> unique_ptr<Match> {
+  auto getNextWinnerMatch = [this, &finalRound, &mm](const Match& ma) -> std::optional<Match> {
     if (ma.getWinnerRank() > 0)
     {
-      return nullptr;  // no next match
+      return {};  // no next match
     }
 
     // maybe we already HAVE winner. then we must search for real
     // pair IDs
-    if (ma.getState() == STAT_MA_FINISHED)
+    if (ma.isInState(ObjState::MA_Finished))
     {
       auto w = ma.getWinner();
-      assert(w != nullptr);
+      assert(w);
       int r = ma.getMatchGroup().getRound();
 
       ++r;
-      unique_ptr<Match> nextMatch = nullptr;
-      while ((nextMatch == nullptr) && (r <= finalRound))
+      std::optional<Match> nextMatch{};
+      while (!nextMatch && (r <= finalRound))
       {
         nextMatch = mm.getMatchForPlayerPairAndRound(*w, r);
         ++r;
@@ -237,12 +238,15 @@ int Standings::determineBestPossibleRankForPlayerAfterRound(const PlayerPair& pp
 
     // the match is not yet finished, so we need to search for symbolic
     // player values. In this case, it is the positive ID of our match
-    QString where = QString("%1 = %2 OR %3 = %4").arg(MA_PAIR1_SYMBOLIC_VAL).arg(ma.getId());
-    where = where.arg(MA_PAIR2_SYMBOLIC_VAL).arg(ma.getId());
+    Sloppy::estring where{"%1 = %2 OR %3 = %4"};
+    where.arg(MA_Pair1SymbolicVal);
+    where.arg(ma.getId());
+    where.arg(MA_Pair2SymbolicVal);
+    where.arg(ma.getId());
 
-    TabRow winnerMatchRow = db->getTab(TAB_MATCH)->getSingleRowByWhereClause(where.toUtf8().constData());  // this query must always yield exactly one match
+    auto winnerMatchRow = SqliteOverlay::DbTab{db, TabMatch, false}.getSingleRowByWhereClause(where);  // this query must always yield exactly one match
 
-    return mm.getMatch(winnerMatchRow.getId());
+    return mm.getMatch(winnerMatchRow.id());
   };
 
   //
@@ -254,14 +258,14 @@ int Standings::determineBestPossibleRankForPlayerAfterRound(const PlayerPair& pp
   // and the match must be identifiable by the pair ID, not by a symbolic name (the symbolic
   // name should be resolved by now).
   _r = round + 1;
-  unique_ptr<Match> nextMatch = nullptr;
-  while ((nextMatch == nullptr) && (_r <= finalRound))
+  std::optional<Match> nextMatch{};
+  while (!nextMatch && (_r <= finalRound))
   {
     nextMatch = mm.getMatchForPlayerPairAndRound(pp, _r);
     ++_r;
   }
 
-  if (nextMatch == nullptr)
+  if (!nextMatch)
   {
     // this shouldn't happen. There should always be a next match.
     // I give up.
@@ -271,7 +275,7 @@ int Standings::determineBestPossibleRankForPlayerAfterRound(const PlayerPair& pp
   // no we follow the bracket tree, assuming that the player wins all
   // subsequent matches. Let's see where it takes us...
   Match oldNextMatch = *nextMatch;
-  while (nextMatch != nullptr)
+  while (nextMatch)
   {
     oldNextMatch = *nextMatch;
     nextMatch = getNextWinnerMatch(*nextMatch);
@@ -287,7 +291,7 @@ int Standings::determineBestPossibleRankForPlayerAfterRound(const PlayerPair& pp
 
 void Standings::printBestCaseList(upSimpleReport& rep) const
 {
-  if (cat.getMatchSystem() != RANKING)
+  if (cat.getMatchSystem() != MatchSystem::Bracket)
   {
     return;
   }

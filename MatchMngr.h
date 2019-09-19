@@ -21,13 +21,15 @@
 
 #include <memory>
 #include <tuple>
+#include <optional>
 
 #include <QList>
 #include <QString>
 
+#include <SqliteOverlay/DbTab.h>
+
 #include "TournamentDataDefs.h"
 #include "TournamentErrorCodes.h"
-#include <SqliteOverlay/DbTab.h>
 #include "TournamentDatabaseObjectManager.h"
 #include "Category.h"
 #include "MatchGroup.h"
@@ -35,23 +37,33 @@
 #include "Court.h"
 #include "Score.h"
 
-using namespace SqliteOverlay;
-
 namespace QTournament
 {
 
-  typedef vector<MatchGroup> MatchGroupList;
-  
+  using MatchOrError = ObjectOrError<Match>;
+  using MatchGroupOrError = ObjectOrError<MatchGroup>;
+
+  //----------------------------------------------------------------------------
+
+  struct MatchFinalizationResult
+  {
+    Error err;
+    std::optional<int> completedRound{};   ///< contains the number of the round that was completed by finalizing the match, if any
+    bool hasSwissLadderDeadlock{false};   ///< only for Swiss Ladder: did we encounter a deadlock situation after a match has been finished?
+  };
+
+  //----------------------------------------------------------------------------
+
   class MatchMngr : public QObject, public TournamentDatabaseObjectManager
   {
     Q_OBJECT
   public:
     // ctor
-    MatchMngr(TournamentDB* _db);
+    MatchMngr(const TournamentDB& _db);
 
     // creators
-    unique_ptr<MatchGroup> createMatchGroup(const Category& cat, const int round, const int grpNum, ERR* err);
-    unique_ptr<Match> createMatch(const MatchGroup& grp, ERR* err);
+    MatchGroupOrError createMatchGroup(const Category& cat, const int round, const int grpNum);
+    MatchOrError createMatch(const MatchGroup& grp);
 
     // deletion
     void deleteMatchGroupAndMatch(const MatchGroup& mg) const;
@@ -60,12 +72,12 @@ namespace QTournament
     MatchList getCurrentlyRunningMatches() const;
     MatchList getFinishedMatches() const;
     MatchList getMatchesForMatchGroup(const MatchGroup& grp) const;
-    unique_ptr<Match> getMatchForCourt(const Court& court);
-    unique_ptr<Match> getMatchForPlayerPairAndRound(const PlayerPair& pp, int round) const;
-    unique_ptr<Match> getMatchBySeqNum(int maSeqNum) const;
-    unique_ptr<Match> getMatchByMatchNum(int maNum) const;
-    unique_ptr<Match> getMatch(int id) const;
-    tuple<int, int, int, int> getMatchStats() const;
+    std::optional<Match> getMatchForCourt(const Court& court);
+    std::optional<Match> getMatchForPlayerPairAndRound(const PlayerPair& pp, int round) const;
+    std::optional<Match> getMatchBySeqNum(int maSeqNum) const;
+    std::optional<Match> getMatchByMatchNum(int maNum) const;
+    std::optional<Match> getMatch(int id) const;
+    std::tuple<int, int, int, int> getMatchStats() const;
 
     // boolean hasXXXXX functions for MATCHES
     bool hasMatchesInCategory(const Category& cat, int round=-1) const;
@@ -73,19 +85,19 @@ namespace QTournament
     // retrievers / enumerators for MATCH GROUPS
     MatchGroupList getMatchGroupsForCat(const Category& cat, int round=-1) const;
     MatchGroupList getAllMatchGroups() const;
-    unique_ptr<MatchGroup> getMatchGroup(const Category& cat, const int round, const int grpNum,  ERR* err);
-    unique_ptr<MatchGroup> getMatchGroupBySeqNum(int mgSeqNum);
+    MatchGroupOrError getMatchGroup(const Category& cat, const int round, const int grpNum);
+    std::optional<MatchGroup> getMatchGroupBySeqNum(int mgSeqNum);
     MatchGroupList getStagedMatchGroupsOrderedBySequence() const;
 
     // boolean hasXXXXX functions for MATCH GROUPS
-    bool hasMatchGroup(const Category& cat, const int round, const int grpNum, ERR* err=nullptr);
+    //bool hasMatchGroup(const Category& cat, const int round, const int grpNum, Error* err=nullptr);
 
     // staging of match groups
-    ERR stageMatchGroup(const MatchGroup& grp);
+    Error stageMatchGroup(const MatchGroup& grp);
     int getMaxStageSeqNum() const;
-    ERR canUnstageMatchGroup(const MatchGroup& grp);
-    ERR canStageMatchGroup(const MatchGroup& grp);
-    ERR unstageMatchGroup(const MatchGroup& grp);
+    Error canUnstageMatchGroup(const MatchGroup& grp);
+    Error canStageMatchGroup(const MatchGroup& grp);
+    Error unstageMatchGroup(const MatchGroup& grp);
 
     // scheduling of match groups
     int getMaxMatchNum() const;
@@ -93,51 +105,51 @@ namespace QTournament
     int getHighestUsedRoundNumberInCategory(const Category& cat) const;
 
     // starting / finishing matches
-    ERR canAssignPlayerPairToMatch(const Match& ma, const PlayerPair& pp) const;
-    ERR setPlayerPairsForMatch(const Match& ma, const PlayerPair& pp1, const PlayerPair& pp2);
-    ERR setPlayerPairForMatch(const Match& ma, const PlayerPair& pp, int ppPos) const;
-    ERR setSymbolicPlayerForMatch(const Match& fromMatch, const Match& toMatch, bool asWinner, int dstPlayerPosInMatch) const;
-    ERR setPlayerToUnused(const Match& ma, int unusedPlayerPos, int winnerRank) const;   // use only if this is the last match for the winner!
-    ERR setRankForWinnerOrLoser(const Match& ma, bool isWinner, int rank) const;
-    ERR getNextViableMatchCourtPair(int* matchId, int* courtId, bool includeManualCourts=false) const;
-    ERR canAssignMatchToCourt(const Match& ma, const Court &court) const;
-    ERR assignMatchToCourt(const Match& ma, const Court& court) const;
-    unique_ptr<Court> autoAssignMatchToNextAvailCourt(const Match& ma, ERR* err, bool includeManualCourts=false) const;
-    ERR setMatchScoreAndFinalizeMatch(const Match& ma, const MatchScore& score, bool isWalkover=false) const;
-    ERR updateMatchScore(const Match& ma, const MatchScore& newScore, bool winnerLoserChangePermitted) const;
-    ERR setNextMatchForWinner(const Match& fromMatch, const Match& toMatch, int playerNum) const;
-    ERR setNextMatchForLoser(const Match& fromMatch, const Match& toMatch, int playerNum) const;
-    ERR walkover(const Match& ma, int playerNum) const;
-    ERR undoMatchCall(const Match& ma) const;
+    Error canAssignPlayerPairToMatch(const Match& ma, const PlayerPair& pp) const;
+    Error setPlayerPairsForMatch(const Match& ma, const PlayerPair& pp1, const PlayerPair& pp2);
+    Error setPlayerPairForMatch(const Match& ma, const PlayerPair& pp, int ppPos) const;
+    Error setSymbolicPlayerForMatch(const Match& fromMatch, const Match& toMatch, bool asWinner, int dstPlayerPosInMatch) const;
+    Error setPlayerToUnused(const Match& ma, int unusedPlayerPos, int winnerRank) const;   // use only if this is the last match for the winner!
+    Error setRankForWinnerOrLoser(const Match& ma, bool isWinner, int rank) const;
+    Error canAssignMatchToCourt(const Match& ma, const Court &court) const;
+    Error assignMatchToCourt(const Match& ma, const Court& court) const;
+    void setBrackMatchLink(const Match& ma, const BracketMatchNumber& bm) const;
+    std::optional<Court> autoAssignMatchToNextAvailCourt(const Match& ma, Error* err, bool includeManualCourts=false) const;
+    MatchFinalizationResult setMatchScoreAndFinalizeMatch(const Match& ma, const MatchScore& score, bool isWalkover=false) const;
+    Error updateMatchScore(const Match& ma, const MatchScore& newScore, bool winnerLoserChangePermitted) const;
+    Error setNextMatchForWinner(const Match& fromMatch, const Match& toMatch, int playerNum) const;
+    Error setNextMatchForLoser(const Match& fromMatch, const Match& toMatch, int playerNum) const;
+    MatchFinalizationResult walkover(const Match& ma, int winningPlayerNum) const;
+    Error undoMatchCall(const Match& ma) const;
     // configuration of MATCH GROUPS
-    ERR closeMatchGroup(const MatchGroup& grp);
+    Error closeMatchGroup(const MatchGroup& grp);
 
     // referee/umpire handling
-    ERR setRefereeMode(const Match& ma, REFEREE_MODE newMode) const;
-    ERR assignReferee(const Match& ma, const Player& p, REFEREE_ACTION refAction) const;
-    ERR removeReferee(const Match& ma) const;
+    Error setRefereeMode(const Match& ma, RefereeMode newMode) const;
+    Error assignReferee(const Match& ma, const Player& p, RefereeAction refAction) const;
+    Error removeReferee(const Match& ma) const;
 
     // swap player between matches if match results are
     // changed after a match has finished
-    ERR swapPlayer(const Match& ma, const PlayerPair& ppOld, const PlayerPair& ppNew) const;
-    ERR swapPlayers(const Match& ma1, const PlayerPair& ma1PlayerPair,
+    Error swapPlayer(const Match& ma, const PlayerPair& ppOld, const PlayerPair& ppNew) const;
+    Error swapPlayers(const Match& ma1, const PlayerPair& ma1PlayerPair,
                     const Match& ma2, const PlayerPair& ma2PlayerPair) const;
 
-    string getSyncString(vector<int> rows) override;
-    string getSyncString_MatchGroups(vector<int> rows);
+    std::string getSyncString(const std::vector<int>& rows) const override;
+    std::string getSyncString_MatchGroups(std::vector<int> rows);
 
   private:
-    DbTab* groupTab;
+    SqliteOverlay::DbTab groupTab;
     void updateAllMatchGroupStates(const Category& cat) const;
     bool hasUnfinishedMandatoryPredecessor(const Match& ma) const;
     void resolveSymbolicNamesAfterFinishedMatch(const Match& ma) const;
     void updateMatchStatus(const Match& ma) const;
-    static constexpr int SYMBOLIC_ID_FOR_UNUSED_PLAYER_PAIR_IN_MATCH = 999999;
+    static constexpr int SymbolicIdForUnusedPlayerPairInMatch = 999999;
     
   signals:
 
   public slots:
-    void onPlayerStatusChanged(int playerId, int playerSeqNum, OBJ_STATE fromState, OBJ_STATE toState);
+    void onPlayerStatusChanged(int playerId, int playerSeqNum, ObjState fromState, ObjState toState);
 } ;
 
 }

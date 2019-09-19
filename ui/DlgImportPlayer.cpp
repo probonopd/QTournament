@@ -20,6 +20,9 @@
 
 #include "DlgImportPlayer.h"
 #include "ui_DlgImportPlayer.h"
+#include "ExternalPlayerDB.h"
+
+using namespace QTournament;
 
 DlgImportPlayer::DlgImportPlayer(QWidget *parent, ExternalPlayerDB* _extDb) :
   QDialog(parent),

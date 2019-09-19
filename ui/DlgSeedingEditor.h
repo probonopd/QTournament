@@ -22,23 +22,29 @@
 #include <QDialog>
 #include <QTimer>
 
+#include <SimpleReportGeneratorLib/SimpleReportGenerator.h>
+
 #include "PlayerPair.h"
 #include "TournamentDB.h"
+#include "SeedingListWidget.h"
+#include "SvgBracket.h"
 
 namespace Ui {
   class DlgSeedingEditor;
 }
 
-using namespace QTournament;
 
 class DlgSeedingEditor : public QDialog
 {
   Q_OBJECT
 
 public:
-  explicit DlgSeedingEditor(TournamentDB* _db, QWidget *parent = 0);
+  explicit DlgSeedingEditor(const QTournament::TournamentDB* _db, const QString& catName,
+      std::optional<QTournament::SvgBracketMatchSys> brackSys = std::optional<QTournament::SvgBracketMatchSys>{},
+      QWidget *parent = nullptr
+      );
   ~DlgSeedingEditor();
-  void initSeedingList(const PlayerPairList& _seed);
+  void initSeedingList(const std::vector<SeedingListWidget::AnnotatedSeedEntry>& _seed);
 
 public slots:
   void onBtnUpClicked();
@@ -46,19 +52,27 @@ public slots:
   void onBtnShuffleClicked();
   void onShuffleModeChange();
   void onSelectionChanged();
-  PlayerPairList getSeeding();
+  std::vector<int> getSeeding();
 
 private slots:
   void onKeypressTimerElapsed();
 
+protected:
+  void updateBracket();
+
 private:
-  static constexpr int SUBSEQUENT_KEYPRESS_TIMEOUT__MS = 1000;
+  static constexpr int SubsequentKeypressTimeout_ms = 1000;
+  static constexpr int WidthWitouthBracket = 500;
+  static constexpr int WidthWithBracket = 3 * WidthWitouthBracket;
   Ui::DlgSeedingEditor *ui;
-  TournamentDB* db;
+  const QTournament::TournamentDB* db;
+  std::optional<QTournament::SvgBracketMatchSys> msys;
   void updateButtons();
   bool eventFilter(QObject *target, QEvent *event);
-  int positionInput;
+  int positionInput{0};
   QTimer* keypressTimer;
+  std::unique_ptr<SimpleReportLib::SimpleReportGenerator> bracketRep;
+  QTournament::SvgBracket::CommonBracketTags cbt;
 };
 
 #endif // DLGSEEDINGEDITOR_H

@@ -37,23 +37,23 @@
 
 using namespace QTournament;
 
-class MatchTableView : public GuiHelpers::AutoSizingTableView_WithDatabase<MatchTableModel>
+class MatchTableView : public GuiHelpers::AutoSizingTableView_WithDatabase<QTournament::MatchTableModel>
 {
   Q_OBJECT
   
 public:
   MatchTableView (QWidget* parent);
-  virtual ~MatchTableView ();
-  unique_ptr<Match> getSelectedMatch() const;
+  virtual ~MatchTableView () override;
+  std::optional<QTournament::Match> getSelectedMatch() const;
   void updateSelectionAfterDataChange();
   void updateRefereeColumn();
   
 protected:
-  static constexpr int MAX_NUMERIC_COL_WIDTH = 90;
-  static constexpr int REL_NUMERIC_COL_WIDTH = 8;
-  static constexpr int REL_CAT_COL_WIDTH = 9;
-  static constexpr int REL_MATCH_COL_WIDTH = 63;
-  static constexpr int REL_REFEREE_COL_WIDTH = 20;
+  static constexpr int MaxNumericColWidth = 90;
+  static constexpr int NumericColRelWidth = 8;
+  static constexpr int CategoryColRelWidth = 9;
+  static constexpr int MatchColRelWidth = 63;
+  static constexpr int RefereeColRelWidth = 20;
 
   void hook_onDatabaseOpened() override;
 
@@ -67,7 +67,7 @@ private slots:
   void onRemoveRefereeTriggered();
   void onSectionHeaderDoubleClicked();
   void onMatchTimePredictionUpdate();
-  void onMatchStatusChanged(int maId, int maSeqNum, OBJ_STATE oldStat, OBJ_STATE newStat);
+  void onMatchStatusChanged(int maId, int maSeqNum, ObjState oldStat, ObjState newStat);
   void onPrint1Selected();
   void onPrint4Selected();
   void onPrint8Selected();
@@ -77,10 +77,10 @@ signals:
   void matchSelectionChanged(int newlySelectedMatchId);
 
 private:
-  static constexpr int PREDICTION_UPDATE_INTERVAL__MS = 10 * 1000; // update every 10 secs
+  static constexpr int PredictionUpdateInterval_ms = 10 * 1000; // update every 10 secs
   MatchItemDelegate* matchItemDelegate;
 
-  unique_ptr<QMenu> contextMenu;
+  std::unique_ptr<QMenu> contextMenu;
   QAction* actPostponeMatch;
   QMenu* walkoverSelectionMenu;
   QMenu* courtSelectionMenu;
@@ -97,12 +97,12 @@ private:
   QAction* printResultSheet8;
   QAction* printResultSheet12;
 
-  unique_ptr<QTimer> predictionUpdateTimer;
+  std::unique_ptr<QTimer> predictionUpdateTimer;
 
   void initContextMenu();
   void updateContextMenu();
   void execWalkover(int playerNum);
-  void showMatchBusyReason(const Match& ma);
+  void showMatchBusyReason(const QTournament::Match& ma);
   void printResultSheets(int matchCount);
 };
 

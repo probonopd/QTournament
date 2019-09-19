@@ -68,7 +68,7 @@ build_QTournament()
   
   mkdir tnmt
   cd tnmt
-  qmake CONFIG+="release" "$SRC_DIR"/tnmt/patched.pro
+  qmake CONFIG+="release c++1z" "$SRC_DIR"/tnmt/patched.pro
   make -j$(nproc)
   
   popd

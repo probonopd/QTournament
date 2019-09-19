@@ -25,20 +25,22 @@
 #include "TournamentDB.h"
 #include "BaseItemDelegate.h"
 
-using namespace QTournament;
 
 class PairItemDelegate : public BaseItemDelegate
 {
 public:
-  PairItemDelegate(TournamentDB* _db, QObject* parent = nullptr, bool _showListIndex = false)
-    :BaseItemDelegate{_db, PairItemRowHeight, -1, parent}, showListIndex{_showListIndex},
+  static constexpr int PairItemRowHeight = 40;
+  static constexpr int PairNameRole = Qt::UserRole + 1;
+  static constexpr int TeamNameRole = Qt::UserRole + 2;
+
+  PairItemDelegate(QObject* parent = nullptr, bool _showListIndex = false)
+    :BaseItemDelegate{PairItemRowHeight, -1, parent}, showListIndex{_showListIndex},
      teamFont{smallFont}
   {
     teamFont.setItalic(true);
   }
 
 protected:
-  static constexpr int PairItemRowHeight = 40;
   static constexpr int PairItemStatusIndicatorSize = 15;
   static constexpr int PairItemMargin = 5;
   static constexpr int PairItemIndexNumberSpace = 25;

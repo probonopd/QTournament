@@ -16,27 +16,25 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CMDBULKADDPLAYERTOCAT_H
-#define CMDBULKADDPLAYERTOCAT_H
+#ifndef CMDBULKADDPLAYERTOCONFIGH
+#define CMDBULKADDPLAYERTOCONFIGH
 
 #include <QObject>
 
 #include "AbstractCommand.h"
 #include "Category.h"
 
-using namespace QTournament;
 
 class cmdBulkAddPlayerToCategory : public QObject, AbstractCommand
 {
   Q_OBJECT
 
 public:
-  cmdBulkAddPlayerToCategory(QWidget* p, const Category& _cat);
-  virtual ERR exec() override;
-  virtual ~cmdBulkAddPlayerToCategory() {}
+  cmdBulkAddPlayerToCategory(QWidget* p, const QTournament::Category& _cat);
+  virtual QTournament::Error exec() override;
 
 protected:
-  Category cat;
+  const QTournament::Category cat;
 };
 
 #endif // CMDREGISTERPLAYER_H

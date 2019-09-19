@@ -29,13 +29,12 @@ class CatRoundStatus
 {
 public:
 
-  static constexpr int TOTAL_ROUNDS_COUNT_UNKNOWN = -1;
-  static constexpr int NO_CURRENTLY_RUNNING_ROUND = -1;
-  static constexpr int NO_ROUNDS_FINISHED_YET = -1;
-  static constexpr int MULTIPLE_ROUNDS_RUNNING = -2;
+  static constexpr int TotalRoundsCountUnknown = -1;
+  static constexpr int NoCurrentlyRunningRounds = -1;
+  static constexpr int NoRoundsFinishedYet = -1;
+  static constexpr int MultipleRoundsRunning = -2;
 
-  CatRoundStatus(TournamentDB* _db, const Category& _cat);
-  ~CatRoundStatus();
+  CatRoundStatus(const TournamentDB& _db, const Category& _cat);
 
   int getFinishedRoundsCount() const;
   int getCurrentlyRunningRoundNumber() const;
@@ -43,10 +42,10 @@ public:
   QList<int> getCurrentlyRunningRoundNumbers() const;
   int getHighestGeneratedMatchRound() const;
 
-  tuple<int, int, int> getMatchCountForCurrentRound() const;
+  std::tuple<int, int, int> getMatchCountForCurrentRound() const;
 
 private:
-  TournamentDB* db;
+  std::reference_wrapper<const QTournament::TournamentDB> db;
   Category cat;
 };
 

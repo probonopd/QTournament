@@ -29,22 +29,30 @@
 #include "models/CatTableModel.h"
 #include "delegates/CatItemDelegate.h"
 #include "AutoSizingTable.h"
+#include "SeedingListWidget.h"
 
-using namespace QTournament;
 
-class CategoryTableView : public GuiHelpers::AutoSizingTableView_WithDatabase<CategoryTableModel>
+class CategoryTableView : public GuiHelpers::AutoSizingTableView_WithDatabase<QTournament::CategoryTableModel>
 {
   Q_OBJECT
   
 public:
   CategoryTableView (QWidget* parent);
-  virtual ~CategoryTableView () {}
-  Category getSelectedCategory();
+  QTournament::Category getSelectedCategory();
   bool hasCategorySelected();
 
 protected:
   void hook_onDatabaseOpened() override;
-  
+
+  /** \brief Converts a list of player pairs into
+   * a list of annotated seed items for the seeding dialog.
+   *
+   * WE DON'T FILL IN THE GROUP HINT HERE!
+   *
+   * \returns a list of AnnotatedSeedingEntrys
+   */
+  std::vector<SeedingListWidget::AnnotatedSeedEntry> pp2Annotated(const QTournament::PlayerPairList& ppList);
+
 public slots:
   void onCategoryDoubleClicked(const QModelIndex& index);
   void onAddCategory();
@@ -65,7 +73,7 @@ signals:
 private:
   CatItemDelegate* catItemDelegate;
 
-  unique_ptr<QMenu> contextMenu;
+  std::unique_ptr<QMenu> contextMenu;
   QAction* actAddCategory;
   QAction* actCloneCategory;
   QAction* actRunCategory;
@@ -78,7 +86,7 @@ private:
   void initContextMenu();
 
   void handleIntermediateSeedingForSelectedCat();
-  bool unfreezeAndCleanup(unique_ptr<Category> selectedCat);
+  bool unfreezeAndCleanup(const QTournament::Category& selectedCat);
 
 };
 

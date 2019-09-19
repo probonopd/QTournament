@@ -29,15 +29,15 @@
 namespace QTournament
 {
 
-  Court::Court(TournamentDB* db, int rowId)
-    :TournamentDatabaseObject(db, TAB_COURT, rowId)
+  Court::Court(const TournamentDB& _db, int& rowId)
+    :TournamentDatabaseObject(_db, TabCourt, rowId)
   {
   }
 
 //----------------------------------------------------------------------------
 
-  Court::Court(TournamentDB* db, const SqliteOverlay::TabRow& row)
-  :TournamentDatabaseObject(db, row)
+  Court::Court(const TournamentDB& _db, const SqliteOverlay::TabRow& _row)
+  :TournamentDatabaseObject(_db, _row)
   {
   }
 
@@ -45,10 +45,10 @@ namespace QTournament
 
   QString Court::getName(int maxLen) const
   {
-    auto _result = row.getString2(GENERIC_NAME_FIELD_NAME);
-    if (_result->isNull()) return QString();  // empty name field
+    auto _result = row.getString2(GenericNameFieldName);
+    if (!_result) return QString();  // empty name field
 
-    QString result = stdString2QString(_result->get());
+    QString result = stdString2QString(*_result);
 
     if ((maxLen > 0) && (result.length() > maxLen))
     {
@@ -60,7 +60,7 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  ERR Court::rename(const QString &newName)
+  Error Court::rename(const QString &newName)
   {
     CourtMngr cm{db};
     return cm.renameCourt(*this, newName);
@@ -70,29 +70,26 @@ namespace QTournament
 
   int Court::getNumber() const
   {
-    return row.getInt(CO_NUMBER);
+    return row.getInt(CO_Number);
   }
 
 //----------------------------------------------------------------------------
 
   bool Court::isManualAssignmentOnly() const
   {
-    return (row.getInt(CO_IS_MANUAL_ASSIGNMENT) == 1);
+    return (row.getInt(CO_IsManualAssignment) == 1);
   }
 
 //----------------------------------------------------------------------------
 
   void Court::setManualAssignment(bool isManual)
   {
-    // lock the database before writing
-    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
-
-    row.update(CO_IS_MANUAL_ASSIGNMENT, isManual ? 1 : 0);
+    row.update(CO_IsManualAssignment, isManual ? 1 : 0);
   }
 
 //----------------------------------------------------------------------------
 
-  unique_ptr<Match> Court::getMatch() const
+  std::optional<Match> Court::getMatch() const
   {
     MatchMngr mm{db};
     return mm.getMatchForCourt(*this);

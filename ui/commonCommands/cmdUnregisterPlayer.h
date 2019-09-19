@@ -24,19 +24,17 @@
 #include "AbstractCommand.h"
 #include "Player.h"
 
-using namespace QTournament;
 
 class cmdUnregisterPlayer : public QObject, AbstractCommand
 {
   Q_OBJECT
 
 public:
-  cmdUnregisterPlayer(QWidget* p, const Player& _pl);
-  virtual ERR exec() override;
-  virtual ~cmdUnregisterPlayer() {}
+  cmdUnregisterPlayer(QWidget* p, const QTournament::Player& _pl);
+  virtual QTournament::Error exec() override;
 
 protected:
-  Player pl;
+  const QTournament::Player pl;
 };
 
 #endif // CMDREGISTERPLAYER_H

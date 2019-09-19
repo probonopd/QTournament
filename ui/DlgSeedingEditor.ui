@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>685</width>
-    <height>728</height>
+    <width>1158</width>
+    <height>863</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,117 +17,74 @@
    <item>
     <layout class="QVBoxLayout" name="verticalLayout">
      <item>
-      <layout class="QHBoxLayout" name="horizontalLayout">
+      <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,2">
        <item>
-        <widget class="SeedingListWidget" name="lwSeeding"/>
-       </item>
-       <item>
-        <layout class="QVBoxLayout" name="verticalLayout_3" stretch="0,0,0,0,0,0,0,0">
+        <layout class="QVBoxLayout" name="verticalLayout_6">
          <item>
-          <spacer name="verticalSpacer_4">
-           <property name="orientation">
-            <enum>Qt::Vertical</enum>
+          <widget class="SeedingListWidget" name="lwSeeding">
+           <property name="horizontalScrollBarPolicy">
+            <enum>Qt::ScrollBarAlwaysOff</enum>
            </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>20</width>
-             <height>40</height>
-            </size>
+           <property name="selectionMode">
+            <enum>QAbstractItemView::SingleSelection</enum>
            </property>
-          </spacer>
-         </item>
-         <item>
-          <widget class="QPushButton" name="btnUp">
-           <property name="text">
-            <string>▲</string>
+           <property name="selectionBehavior">
+            <enum>QAbstractItemView::SelectRows</enum>
            </property>
-          </widget>
-         </item>
-         <item>
-          <spacer name="verticalSpacer_3">
-           <property name="orientation">
-            <enum>Qt::Vertical</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>20</width>
-             <height>40</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-         <item>
-          <widget class="QPushButton" name="btnDown">
-           <property name="text">
-            <string>▼</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <spacer name="verticalSpacer_2">
-           <property name="orientation">
-            <enum>Qt::Vertical</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>20</width>
-             <height>40</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-         <item>
-          <spacer name="verticalSpacer">
-           <property name="orientation">
-            <enum>Qt::Vertical</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>20</width>
-             <height>40</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-         <item>
-          <widget class="QGroupBox" name="gbShuffle">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="title">
-            <string>Shuffle players</string>
-           </property>
-           <property name="flat">
+           <property name="showGrid">
             <bool>false</bool>
            </property>
-           <layout class="QVBoxLayout" name="verticalLayout_5">
-            <item>
-             <layout class="QVBoxLayout" name="verticalLayout_4" stretch="0,0,0">
+          </widget>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="1,2">
+           <item>
+            <widget class="QGroupBox" name="groupBox">
+             <property name="title">
+              <string>Move player</string>
+             </property>
+             <layout class="QVBoxLayout" name="verticalLayout_7">
               <item>
-               <widget class="QRadioButton" name="rbShuffleAll">
+               <widget class="QPushButton" name="btnUp">
                 <property name="text">
-                 <string>All positions</string>
+                 <string>▲</string>
                 </property>
-                <property name="checked">
-                 <bool>true</bool>
-                </property>
-                <attribute name="buttonGroup">
-                 <string notr="true">bgSuffleRange</string>
-                </attribute>
                </widget>
               </item>
               <item>
-               <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="0,0">
-                <property name="sizeConstraint">
-                 <enum>QLayout::SetDefaultConstraint</enum>
+               <widget class="QPushButton" name="btnDown">
+                <property name="text">
+                 <string>▼</string>
                 </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
+            <widget class="QGroupBox" name="gbShuffle">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="title">
+              <string>Shuffle players</string>
+             </property>
+             <property name="flat">
+              <bool>false</bool>
+             </property>
+             <layout class="QVBoxLayout" name="verticalLayout_5">
+              <item>
+               <layout class="QVBoxLayout" name="verticalLayout_4" stretch="0,0,0">
                 <item>
-                 <widget class="QRadioButton" name="rbShuffleRange">
+                 <widget class="QRadioButton" name="rbShuffleAll">
                   <property name="text">
-                   <string>From</string>
+                   <string>All positions</string>
+                  </property>
+                  <property name="checked">
+                   <bool>true</bool>
                   </property>
                   <attribute name="buttonGroup">
                    <string notr="true">bgSuffleRange</string>
@@ -135,40 +92,47 @@
                  </widget>
                 </item>
                 <item>
-                 <widget class="QSpinBox" name="sbRangeMin">
-                  <property name="enabled">
-                   <bool>false</bool>
+                 <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="0,0">
+                  <property name="sizeConstraint">
+                   <enum>QLayout::SetDefaultConstraint</enum>
+                  </property>
+                  <item>
+                   <widget class="QRadioButton" name="rbShuffleRange">
+                    <property name="text">
+                     <string>Only from</string>
+                    </property>
+                    <attribute name="buttonGroup">
+                     <string notr="true">bgSuffleRange</string>
+                    </attribute>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QSpinBox" name="sbRangeMin">
+                    <property name="enabled">
+                     <bool>false</bool>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="btnShuffle">
+                  <property name="text">
+                   <string>Shuffle Now</string>
                   </property>
                  </widget>
                 </item>
                </layout>
               </item>
-              <item>
-               <widget class="QPushButton" name="btnShuffle">
-                <property name="text">
-                 <string>Shuffle Now</string>
-                </property>
-               </widget>
-              </item>
              </layout>
-            </item>
-           </layout>
-          </widget>
-         </item>
-         <item>
-          <spacer name="verticalSpacer_5">
-           <property name="orientation">
-            <enum>Qt::Vertical</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>20</width>
-             <height>40</height>
-            </size>
-           </property>
-          </spacer>
+            </widget>
+           </item>
+          </layout>
          </item>
         </layout>
+       </item>
+       <item>
+        <widget class="SimpleReportLib::SimpleReportViewer" name="repView" native="true"/>
        </item>
       </layout>
      </item>
@@ -196,8 +160,14 @@
  </widget>
  <customwidgets>
   <customwidget>
+   <class>SimpleReportLib::SimpleReportViewer</class>
+   <extends>QWidget</extends>
+   <header location="global">SimpleReportGeneratorLib/SimpleReportViewer.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
    <class>SeedingListWidget</class>
-   <extends>QListWidget</extends>
+   <extends>QTableWidget</extends>
    <header>ui/SeedingListWidget.h</header>
   </customwidget>
  </customwidgets>
@@ -301,17 +271,17 @@
   </connection>
   <connection>
    <sender>lwSeeding</sender>
-   <signal>itemSelectionChanged()</signal>
+   <signal>currentCellChanged(int,int,int,int)</signal>
    <receiver>DlgSeedingEditor</receiver>
    <slot>onSelectionChanged()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>265</x>
-     <y>223</y>
+     <x>267</x>
+     <y>347</y>
     </hint>
     <hint type="destinationlabel">
      <x>342</x>
-     <y>240</y>
+     <y>363</y>
     </hint>
    </hints>
   </connection>

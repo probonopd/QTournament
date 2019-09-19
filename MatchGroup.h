@@ -31,20 +31,11 @@
 #include "Category.h"
 #include "Match.h"
 
-using namespace SqliteOverlay;
-
 namespace QTournament
 {
 
-  typedef vector<Match> MatchList;
-
   class MatchGroup : public TournamentDatabaseObject
   {
-    friend class MatchMngr;
-    friend class Match;
-    friend class SqliteOverlay::GenericObjectManager<TournamentDB>;
-    friend class TournamentDatabaseObjectManager;
-    
   public:
     Category getCategory() const;
     int getGroupNumber() const;
@@ -52,15 +43,17 @@ namespace QTournament
     MatchList getMatches() const;
     int getMatchCount() const;
     int getStageSequenceNumber() const;
-    bool hasMatchesInState(OBJ_STATE stat) const;
-    bool hasMatches__NOT__InState(OBJ_STATE stat) const;
+    bool hasMatchesInState(ObjState stat) const;
+    bool hasMatches__NOT__InState(ObjState stat) const;
+
+    MatchGroup(const TournamentDB& _db, int rowId);
+    MatchGroup(const TournamentDB& _db, const SqliteOverlay::TabRow& _row);
 
   private:
-    DbTab* matchTab;
-    MatchGroup(TournamentDB* db, int rowId);
-    MatchGroup(TournamentDB* db, SqliteOverlay::TabRow row);
+    SqliteOverlay::DbTab matchTab;
   } ;
 
+  using MatchGroupList = std::vector<MatchGroup> ;
 }
 #endif	/* MATCHGROUP_H */
 

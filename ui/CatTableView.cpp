@@ -27,6 +27,8 @@
 #include "Category.h"
 #include "CatMngr.h"
 #include "PlayerMngr.h"
+#include "RankingMngr.h"
+#include "RankingEntry.h"
 #include "ui/delegates/CatItemDelegate.h"
 #include "ui/DlgSeedingEditor.h"
 #include "ui/dlgGroupAssignment.h"
@@ -34,8 +36,10 @@
 #include "ui/commonCommands/cmdBulkRemovePlayersFromCat.h"
 #include "ui/commonCommands/cmdCreateNewPlayerInCat.h"
 #include "ui/commonCommands/cmdImportSinglePlayerFromExternalDatabase.h"
-
+#include "CatRoundStatus.h"
 #include "CatMngr.h"
+
+using namespace QTournament;
 
 CategoryTableView::CategoryTableView(QWidget* parent)
   :GuiHelpers::AutoSizingTableView_WithDatabase<CategoryTableModel>{
@@ -50,7 +54,7 @@ CategoryTableView::CategoryTableView(QWidget* parent)
        {"", 1, -1, -1}}, true, parent}, catItemDelegate{nullptr}
 {
   // set an initial default sorting column
-  sortByColumn(CategoryTableModel::COL_NAME, Qt::AscendingOrder);
+  sortByColumn(CategoryTableModel::ColName, Qt::AscendingOrder);
 
   // handle context menu requests
   setContextMenuPolicy(Qt::CustomContextMenu);
@@ -68,6 +72,8 @@ bool CategoryTableView::hasCategorySelected()
   return (getSelectedSourceRow() >= 0);
 }
 
+//----------------------------------------------------------------------------
+
 void CategoryTableView::hook_onDatabaseOpened()
 {
   AutoSizingTableView_WithDatabase::hook_onDatabaseOpened();
@@ -79,6 +85,24 @@ void CategoryTableView::hook_onDatabaseOpened()
   emit catModelChanged();
 }
 
+//----------------------------------------------------------------------------
+
+std::vector<SeedingListWidget::AnnotatedSeedEntry> CategoryTableView::pp2Annotated(const PlayerPairList& ppList)
+{
+  vector<SeedingListWidget::AnnotatedSeedEntry> result;
+
+  for (const auto& pp : ppList)
+  {
+    result.push_back(SeedingListWidget::AnnotatedSeedEntry{
+          pp.getPairId(),
+          pp.getDisplayName(),
+          pp.getDisplayName_Team(),
+          QString{}
+          });
+  }
+
+  return result;
+}
 
 //----------------------------------------------------------------------------
 
@@ -90,7 +114,7 @@ Category CategoryTableView::getSelectedCategory()
     throw std::invalid_argument("No category selected");
   }
   
-  CatMngr cm{db};
+  CatMngr cm{*db};
   return cm.getCategoryBySeqNum(srcRow);
 }
 
@@ -100,7 +124,7 @@ void CategoryTableView::onCategoryDoubleClicked(const QModelIndex& index)
 {
   if (!(hasCategorySelected())) return;
 
-  CatMngr cm{db};
+  CatMngr cm{*db};
   Category selectedCat = getSelectedCategory();
   
   QString oldName = selectedCat.getName();
@@ -130,16 +154,16 @@ void CategoryTableView::onCategoryDoubleClicked(const QModelIndex& index)
 
     // okay, we have a valid name. try to rename the category
     newName = newName.trimmed();
-    ERR e = cm.renameCategory(selectedCat, newName);
+    Error e = cm.renameCategory(selectedCat, newName);
 
-    if (e == INVALID_NAME)
+    if (e == Error::InvalidName)
     {
       QMessageBox::critical(this, tr("Rename category"), tr("The name you entered is invalid (e.g., too long)"));
       isOk = false;
       continue;
     }
 
-    if (e == NAME_EXISTS)
+    if (e == Error::NameExists)
     {
       QMessageBox::critical(this, tr("Rename category"), tr("A category of this name already exists"));
       isOk = false;
@@ -154,13 +178,13 @@ void CategoryTableView::onAddCategory()
 {
   // try to create new categories using a
   // canonical name until it finally succeeds
-  ERR e = NAME_EXISTS;
+  Error e = Error::NameExists;
   int cnt = 0;
-  while (e != OK)
+  while (e != Error::OK)
   {
     QString newCatName = tr("New Category ") + QString::number(cnt);
 
-    CatMngr cm{db};
+    CatMngr cm{*db};
     e = cm.createNewCategory(newCatName);
     ++cnt;
   }
@@ -173,14 +197,14 @@ void CategoryTableView::onRemoveCategory()
   if (!(hasCategorySelected())) return;
 
   Category cat = getSelectedCategory();
-  CatMngr cm{db};
+  CatMngr cm{*db};
 
   // can the category be deleted at all?
-  ERR err = cm.canDeleteCategory(cat);
+  Error err = cm.canDeleteCategory(cat);
 
   // category is already beyond config state
   // or not all players are removable
-  if (err != OK)
+  if (err != Error::OK)
   {
     QString msg = tr("The category has already been started.\n\n");
     msg += tr("You can choose to force-delete the category anyway,\n");
@@ -203,7 +227,7 @@ void CategoryTableView::onRemoveCategory()
     QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
     err = cm.deleteRunningCategory(cat);
     QApplication::restoreOverrideCursor();
-    if (err != OK)
+    if (err != Error::OK)
     {
       msg = tr("A database error occurred. The category has not been deleted.");
       QMessageBox::critical(this, tr("Delete category"), msg);
@@ -211,7 +235,7 @@ void CategoryTableView::onRemoveCategory()
     return;
   }
 
-  if (err == PLAYER_NOT_REMOVABLE_FROM_CATEGORY)
+  if (err == Error::PlayerNotRemovableFromCategory)
   {
     QString msg = tr("Cannot remove all players from the category.\n");
     msg += tr("The category cannot be deleted.");
@@ -229,7 +253,7 @@ void CategoryTableView::onRemoveCategory()
 
   // we can actually delete the category. Let's go!
   err = cm.deleteCategory(cat);
-  if (err != OK) {
+  if (err != Error::OK) {
     QString msg = tr("Something went wrong when deleting the category. This shouldn't happen.\n\n");
     msg += tr("For the records: error code = ") + QString::number(static_cast<int> (err));
     QMessageBox::warning(this, tr("WTF??"), msg);
@@ -242,7 +266,7 @@ void CategoryTableView::onRunCategory()
 {
   if (!(hasCategorySelected())) return;
 
-  unique_ptr<Category> selectedCat = getSelectedCategory().convertToSpecializedObject();
+  std::unique_ptr<Category> selectedCat = getSelectedCategory().convertToSpecializedObject();
 
   // make sure that the category contains at least three players
   int playerCount = selectedCat->getAllPlayersInCategory().size();
@@ -254,56 +278,57 @@ void CategoryTableView::onRunCategory()
   }
 
   // branch here to another function if the action was triggered to
-  // continue a category that's waiting in state STAT_CAT_WAIT_FOR_INTERMEDIATE_SEEDING
-  if (selectedCat->getState() == STAT_CAT_WAIT_FOR_INTERMEDIATE_SEEDING)
+  // continue a category that's waiting in state ObjState::CAT_WaitForIntermediateSeeding
+  if (selectedCat->isInState(ObjState::CAT_WaitForIntermediateSeeding))
   {
     handleIntermediateSeedingForSelectedCat();
     return;
   }
 
   // pre-test category-specific conditions
-  ERR e = selectedCat->canFreezeConfig();
-  if (e == CONFIG_ALREADY_FROZEN)
+  Error e = selectedCat->canFreezeConfig();
+  if (e == Error::ConfigAlreadyFrozen)
   {
     QMessageBox::critical(this, tr("Run Category"),
       tr("This category has already been started (STAT != Config)"));
   }
-  else if (e == UNPAIRED_PLAYERS)
+  else if (e == Error::UnpairedPlayers)
   {
     QMessageBox::critical(this, tr("Run Category"),
       tr("This category has unpaired players!\nPlease pair all players before starting the matches."));
   }
-  else if (e == INVALID_PLAYER_COUNT)
+  else if (e == Error::InvalidPlayerCount)
   {
     QMessageBox::critical(this, tr("Run Category"),
-      tr("The number of players / player pairs in this category is not sufficient\nto start the category."));
+      tr("Cannot start this category with the current number of players or player pairs, respectively.\n") +
+      tr("Maybe you have too many players for the selected match system or the selected tournament bracket."));
   }
-  else if (e == INVALID_KO_CONFIG)
+  else if (e == Error::InvalidKoConfig)
   {
     QMessageBox::critical(this, tr("Run Category"),
       tr("The setup for the round robin phase and the KO rounds are invalid!"));
-  } else if (e != OK)
+  } else if (e != Error::OK)
   {
     QMessageBox::critical(this, tr("Run Category"),
       tr("Uncaptured error. Category has no valid configuration and can't be started"));
   }
 
-  if (e != OK) return;
+  if (e != Error::OK) return;
 
-  CatMngr cm{db};
+  CatMngr cm{*db};
   e = cm.freezeConfig(*selectedCat);
   // after we checked for category-specific errors above, we can only see general errors here
-  if (e == NOT_ALL_PLAYERS_REGISTERED)
+  if (e == Error::NotAllPlayersRegistered)
   {
     QMessageBox::critical(this, tr("Run Category"),
       tr("Some players in this category have not yet registered."));
-  } else if (e != OK)
+  } else if (e != Error::OK)
   {
     QMessageBox::critical(this, tr("Run Category"),
       tr("Uncaptured error. Category has no valid configuration and can't be started"));
   }
 
-  if (e != OK) return;
+  if (e != Error::OK) return;
 
   /**
    * Now the category is in status FROZEN.
@@ -314,16 +339,16 @@ void CategoryTableView::onRunCategory()
    */
 
   // show the dialog for the initial group assignments, if necessary
-  vector<PlayerPairList> ppListList;
+  std::vector<PlayerPairList> ppListList;
   if (selectedCat->needsGroupInitialization())
   {
-    dlgGroupAssignment dlg(db, this, *selectedCat);
+    dlgGroupAssignment dlg(*db, this, *selectedCat);
     dlg.setModal(true);
     int result = dlg.exec();
 
     if (result != QDialog::Accepted)
     {
-      unfreezeAndCleanup(std::move(selectedCat));
+      unfreezeAndCleanup(*selectedCat);
       return;
     }
 
@@ -331,7 +356,7 @@ void CategoryTableView::onRunCategory()
     if (ppListList.empty())
     {
       QMessageBox::warning(this, tr("Run Category"), tr("Can't read group assignments.\nOperation cancelled."));
-      unfreezeAndCleanup(std::move(selectedCat));
+      unfreezeAndCleanup(*selectedCat);
       return;
     }
   }
@@ -341,24 +366,39 @@ void CategoryTableView::onRunCategory()
   PlayerPairList initialRanking;
   if (selectedCat->needsInitialRanking())
   {
-    DlgSeedingEditor dlg{db, this};
-    dlg.initSeedingList(selectedCat->getPlayerPairs());
+    // do we need a bracket preview?
+    std::optional<SvgBracketMatchSys> brSys;
+    switch (selectedCat->getMatchSystem())
+    {
+    case MatchSystem::Bracket:
+      brSys = static_cast<SvgBracketMatchSys>(selectedCat->getParameter_int(CatParameter::BracketMatchSystem));
+      break;
+
+    default:
+      brSys = std::optional<SvgBracketMatchSys>{};  // no bracket
+    }
+    DlgSeedingEditor dlg{db, selectedCat->getName(), brSys, this};
+    dlg.show();  // this is necessary for the report view...
+    dlg.hide();  // ... to get the scaling factors right (no show() --> no proper windows dimensions)
+
+    dlg.initSeedingList(pp2Annotated(selectedCat->getPlayerPairs()));
     dlg.setModal(true);
     int result = dlg.exec();
 
     if (result != QDialog::Accepted)
     {
-      unfreezeAndCleanup(std::move(selectedCat));
+      unfreezeAndCleanup(*selectedCat);
       return;
     }
 
-    initialRanking = dlg.getSeeding();
-    if (initialRanking.empty())
+    auto pairIdList = dlg.getSeeding();
+    if (pairIdList.empty())
     {
       QMessageBox::warning(this, tr("Run Category"), tr("Can't read seeding.\nOperation cancelled."));
-      unfreezeAndCleanup(std::move(selectedCat));
+      unfreezeAndCleanup(*selectedCat);
       return;
     }
+    for (int pairId : pairIdList) initialRanking.emplace_back(*db, pairId);
   }
 
   /*
@@ -370,31 +410,31 @@ void CategoryTableView::onRunCategory()
    */
   if (ppListList.size() != 0)
   {
-    ERR e = selectedCat->canApplyGroupAssignment(ppListList);
-    if (e != OK)
+    Error e = selectedCat->canApplyGroupAssignment(ppListList);
+    if (e != Error::OK)
     {
       QString msg = tr("Something is wrong with the group assignment. This shouldn't happen.\nFault:");
-      if (e == CATEGORY_NOT_YET_FROZEN)
+      if (e == Error::CategoryNotYetFrozen)
       {
         msg += tr("Category state not valid for group assignments (STAT != FROZEN)");
       }
-      else if (e == CATEGORY_NEEDS_NO_GROUP_ASSIGNMENTS)
+      else if (e == Error::CategoryNeedsNoGroupAssignments)
       {
         msg += tr("This category needs no group assignments");
       }
-      else if (e == INVALID_KO_CONFIG)
+      else if (e == Error::InvalidKoConfig)
       {
         msg += tr("The configuration of the groups and the KO rounds is invalid.");
       }
-      else if (e == INVALID_GROUP_NUM)
+      else if (e == Error::InvalidGroupNum)
       {
         msg += tr("The number of assigned groups doesn't match the number of required groups.");
       }
-      else if (e == INVALID_PLAYER_COUNT)
+      else if (e == Error::InvalidPlayerCount)
       {
         msg += tr("The number of assigned players doesn't match the number of players in the category.");
       }
-      else if (e == PLAYER_ALREADY_IN_CATEGORY)
+      else if (e == Error::PlayerAlreadyInCategory)
       {
         msg += tr("There are invalid players in the group assignments.");
       }
@@ -404,30 +444,30 @@ void CategoryTableView::onRunCategory()
       }
       QMessageBox::warning(this, tr("Run Category"), msg);
 
-      unfreezeAndCleanup(std::move(selectedCat));
+      unfreezeAndCleanup(*selectedCat);
       return;
     }
   }
 
   if (initialRanking.size() != 0)
   {
-    ERR e = selectedCat->canApplyInitialRanking(initialRanking);
-    if (e != OK)
+    Error e = selectedCat->canApplyInitialRanking(initialRanking);
+    if (e != Error::OK)
     {
       QString msg = tr("Something is wrong with the initial ranking. This shouldn't happen.\nFault:");
-      if (e == CATEGORY_NOT_YET_FROZEN)
+      if (e == Error::CategoryNotYetFrozen)
       {
         msg += tr("Category state not valid for setting the initial ranking (STAT != FROZEN)");
       }
-      else if (e == CATEGORY_NEEDS_NO_SEEDING)
+      else if (e == Error::CategoryNeedsNoSeeding)
       {
         msg += tr("This category needs no initial ranking.");
       }
-      else if (e == INVALID_PLAYER_COUNT)
+      else if (e == Error::InvalidPlayerCount)
       {
         msg += tr("The number of player in the initial ranking doesn't match the number of players in the category.");
       }
-      else if (e == PLAYER_ALREADY_IN_CATEGORY)
+      else if (e == Error::PlayerAlreadyInCategory)
       {
         msg += tr("There are invalid players in the initial ranking.");
       }
@@ -437,7 +477,7 @@ void CategoryTableView::onRunCategory()
       }
       QMessageBox::warning(this, tr("Run Category"), msg);
 
-      unfreezeAndCleanup(std::move(selectedCat));
+      unfreezeAndCleanup(*selectedCat);
       return;
     }
   }
@@ -449,7 +489,7 @@ void CategoryTableView::onRunCategory()
   QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
   e = cm.startCategory(*selectedCat, ppListList, initialRanking);
   QApplication::restoreOverrideCursor();
-  if (e != OK)  // should never happen
+  if (e != Error::OK)  // should never happen
   {
     throw std::runtime_error("Unexpected error when starting the category");
   }
@@ -464,12 +504,12 @@ void CategoryTableView::onCloneCategory()
   if (!(hasCategorySelected())) return;
 
   Category cat = getSelectedCategory();
-  CatMngr cm{db};
+  CatMngr cm{*db};
 
-  ERR err = cm.cloneCategory(cat, tr("Clone"));
-  if (err == OK) return;
+  Error err = cm.cloneCategory(cat, tr("Clone"));
+  if (err == Error::OK) return;
 
-  if ((err == INVALID_NAME) || (err == NAME_EXISTS))
+  if ((err == Error::InvalidName) || (err == Error::NameExists))
   {
     QString msg = tr("Cloning the category failed due to\n");
     msg += tr("issues defining the clone's name.\n\n");
@@ -534,7 +574,7 @@ void CategoryTableView::onImportPlayer()
     return;
   }
 
-  cmdImportSinglePlayerFromExternalDatabase cmd{db, this, getSelectedCategory().getId()};
+  cmdImportSinglePlayerFromExternalDatabase cmd{*db, this, getSelectedCategory().getId()};
   cmd.exec();
 }
 
@@ -543,10 +583,10 @@ void CategoryTableView::onImportPlayer()
 void CategoryTableView::handleIntermediateSeedingForSelectedCat()
 {
   if (!(hasCategorySelected())) return;
-  unique_ptr<Category> selectedCat = getSelectedCategory().convertToSpecializedObject();
+  std::unique_ptr<Category> selectedCat = getSelectedCategory().convertToSpecializedObject();
   if (selectedCat == nullptr) return;
 
-  if (selectedCat->getState() != STAT_CAT_WAIT_FOR_INTERMEDIATE_SEEDING)
+  if (selectedCat->is_NOT_InState(ObjState::CAT_WaitForIntermediateSeeding))
   {
     return;
   }
@@ -554,8 +594,41 @@ void CategoryTableView::handleIntermediateSeedingForSelectedCat()
   PlayerPairList seedCandidates = selectedCat->getPlayerPairsForIntermediateSeeding();
   if (seedCandidates.empty()) return;
 
-  DlgSeedingEditor dlg{db, this};
-  dlg.initSeedingList(seedCandidates);
+  std::vector<SeedingListWidget::AnnotatedSeedEntry> annotatedList = pp2Annotated(seedCandidates);
+
+  // find for each player pair the final rank within its group
+  RankingMngr rm{*db};
+  CatRoundStatus crs{*db, *selectedCat};
+  const auto rll = rm.getSortedRanking(*selectedCat, crs.getFinishedRoundsCount());   // assumption: seeding takes place after the last finished round
+  int grpNum{0};
+  for (const auto& rl : rll)
+  {
+    ++grpNum;
+    for (const auto& re : rl)
+    {
+      auto pp = re.getPlayerPair();
+      if (!pp) continue;
+
+      // is this player pair part of the seeding?
+      auto it = std::find_if(begin(annotatedList), end(annotatedList), [&pp](const SeedingListWidget::AnnotatedSeedEntry& annoPair)
+      {
+        return (pp->getPairId() == annoPair.playerPairId);
+      });
+      if (it != end(annotatedList))
+      {
+        QString hint{tr("%1. Group %2")};
+        hint = hint.arg(re.getRank());
+        hint = hint.arg(grpNum);
+        it->groupHint = hint;
+      }
+    }
+  }
+
+  auto brSys = static_cast<SvgBracketMatchSys>(selectedCat->getParameter_int(CatParameter::BracketMatchSystem));
+  DlgSeedingEditor dlg{db, selectedCat->getName(), brSys, this};
+  dlg.show();  // this is necessary for the report view...
+  dlg.hide();  // ... to get the scaling factors right (no show() --> no proper windows dimensions)
+  dlg.initSeedingList(annotatedList);
   dlg.setModal(true);
   int result = dlg.exec();
 
@@ -564,21 +637,23 @@ void CategoryTableView::handleIntermediateSeedingForSelectedCat()
     return;
   }
 
-  PlayerPairList seeding = dlg.getSeeding();
-  if (seeding.empty())
+  std::vector<int> pairIdList = dlg.getSeeding();
+  if (pairIdList.empty())
   {
     QMessageBox::warning(this, tr("Intermediate Seeding"), tr("Can't read seeding.\nOperation cancelled."));
     return;
   }
+  PlayerPairList seeding;
+  for (int pairId : pairIdList) seeding.emplace_back(*db, pairId);
 
   /*
    * If we made it to this point, we can generate matches for the next round(s)
    */
   QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
-  CatMngr cm{db};
-  ERR e = cm.continueWithIntermediateSeeding(*selectedCat, seeding);
+  CatMngr cm{*db};
+  Error e = cm.continueWithIntermediateSeeding(*selectedCat, seeding);
   QApplication::restoreOverrideCursor();
-  if (e != OK)  // should never happen
+  if (e != Error::OK)  // should never happen
   {
     throw std::runtime_error("Unexpected error when applying intermediate seeding");
   }
@@ -587,26 +662,21 @@ void CategoryTableView::handleIntermediateSeedingForSelectedCat()
 
 //----------------------------------------------------------------------------
 
-/*
- * NOTE: this method deletes the object that the parameter points to!
- * Do not use the provided pointer anymore after calling this function!
- */
-bool CategoryTableView::unfreezeAndCleanup(unique_ptr<Category> selectedCat)
+bool CategoryTableView::unfreezeAndCleanup(const Category& selectedCat)
 {
-  if (selectedCat == 0) return false;
-  if (selectedCat->getState() != STAT_CAT_FROZEN) return false;
+  if (selectedCat.is_NOT_InState(ObjState::CAT_Frozen)) return false;
 
   // undo all database changes that happened during freezing
-  CatMngr cm{db};
-  ERR e = cm.unfreezeConfig(*selectedCat);
-  if (e != OK) // this should never be true
+  CatMngr cm{*db};
+  Error e = cm.unfreezeConfig(selectedCat);
+  if (e != Error::OK) // this should never be true
   {
     QMessageBox::critical(this, tr("Run Category"),
             tr("Uncaptured error. Category has no valid configuration and can't be started.\nExpect data corruption for this category."));
   }
 
   // clean-up and return
-  return OK;
+  return true;
 }
 
 //----------------------------------------------------------------------------
@@ -623,7 +693,7 @@ void CategoryTableView::onContextMenuRequested(const QPoint& pos)
 
   // check if we have a valid category selection and
   // determine the state of the selected category
-  OBJ_STATE catState = STAT_CO_DISABLED;   // an arbitrary, dummy default... not related to categories
+  ObjState catState = ObjState::CO_Disabled;   // an arbitrary, dummy default... not related to categories
   bool canAddPlayers = false;
   if (hasCategorySelected())
   {
@@ -634,19 +704,19 @@ void CategoryTableView::onContextMenuRequested(const QPoint& pos)
 
   // set the label of the "run" action depending
   // on the category state
-  if (catState == STAT_CAT_WAIT_FOR_INTERMEDIATE_SEEDING)
+  if (catState == ObjState::CAT_WaitForIntermediateSeeding)
   {
     actRunCategory->setText(tr("Continue..."));
   } else {
     actRunCategory->setText(tr("Run..."));
   }
 
-  PlayerMngr pm{db};
+  PlayerMngr pm{*db};
 
   // enable / disable selection-specific actions
   actAddCategory->setEnabled(true);   // always possible
   actRunCategory->setEnabled(isCellClicked &&
-                             ((catState == STAT_CAT_CONFIG) || (catState == STAT_CAT_WAIT_FOR_INTERMEDIATE_SEEDING)));
+                             ((catState == ObjState::CAT_Config) || (catState == ObjState::CAT_WaitForIntermediateSeeding)));
   actRemoveCategory->setEnabled(isCellClicked);
   actCloneCategory->setEnabled(isCellClicked);
   actAddPlayer->setEnabled(canAddPlayers);

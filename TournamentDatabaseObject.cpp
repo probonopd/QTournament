@@ -33,24 +33,21 @@ namespace QTournament
   // THIS FUNCTION WILL FAIL IF THE DATABASE
   // HAS NO "State" COLUMN OR IF THE VALUE IS
   // NOT SET!!!
-  OBJ_STATE TournamentDatabaseObject::getState() const
+  ObjState TournamentDatabaseObject::getState() const
   {
-    int stateInt = row.getInt(GENERIC_STATE_FIELD_NAME);
+    int stateInt = row.getInt(GenericStateFieldName);
     
-    return static_cast<OBJ_STATE>(stateInt);
+    return static_cast<ObjState>(stateInt);
   }
 
 //----------------------------------------------------------------------------
 
   // THIS FUNCTION WILL FAIL IF THE DATABASE
   // HAS NO "State" COLUMN
-  void TournamentDatabaseObject::setState(OBJ_STATE newState) const
+  void TournamentDatabaseObject::setState(ObjState newState) const
   {
-    // lock the database before writing
-    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
-
     int stateInt = static_cast<int>(newState);
-    row.update(GENERIC_STATE_FIELD_NAME, stateInt);
+    row.update(GenericStateFieldName, stateInt);
   }
 
 //----------------------------------------------------------------------------
@@ -59,7 +56,7 @@ namespace QTournament
   // HAS NO "SeqNum" COLUMN OR IF THE COLUMN IS NULL
   int TournamentDatabaseObject::getSeqNum() const
   {
-    return row.getInt(GENERIC_SEQNUM_FIELD_NAME);
+    return row.getInt(GenericSeqnumFieldName);
   }
     
 //----------------------------------------------------------------------------

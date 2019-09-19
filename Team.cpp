@@ -22,18 +22,20 @@
 #include "TournamentErrorCodes.h"
 #include "TeamMngr.h"
 
+using namespace SqliteOverlay;
+
 namespace QTournament
 {
 
-  Team::Team(TournamentDB* db, int rowId)
-  :TournamentDatabaseObject(db, TAB_TEAM, rowId)
+  Team::Team(const TournamentDB& _db, int rowId)
+  :TournamentDatabaseObject(_db, TabTeam, rowId)
   {
   }
 
 //----------------------------------------------------------------------------
 
-  Team::Team(TournamentDB* db, SqliteOverlay::TabRow row)
-  :TournamentDatabaseObject(db, row)
+  Team::Team(const TournamentDB& _db, const SqliteOverlay::TabRow& _row)
+  :TournamentDatabaseObject(_db, _row)
   {
   }
 
@@ -41,7 +43,7 @@ namespace QTournament
 
   QString Team::getName(int maxLen) const
   {
-    QString fullName = QString::fromUtf8(row[GENERIC_NAME_FIELD_NAME].data());
+    QString fullName = QString::fromUtf8(row[GenericNameFieldName].data());
     
     if (maxLen < 1)
     {
@@ -68,7 +70,7 @@ namespace QTournament
 
 //----------------------------------------------------------------------------
 
-  ERR Team::rename(const QString& nn)
+  Error Team::rename(const QString& nn)
   {
     TeamMngr tm{db};
     return tm.renameTeam(*this, nn);
@@ -78,8 +80,8 @@ namespace QTournament
 
   int Team::getMemberCount() const
   {
-    DbTab* playerTab = db->getTab(TAB_PLAYER);
-    return playerTab->getMatchCountForColumnValue(PL_TEAM_REF, getId());
+    DbTab playerTab = DbTab{db.get(), TabPlayer, false};
+    return playerTab.getMatchCountForColumnValue(PL_TeamRef, getId());
   }
 
 //----------------------------------------------------------------------------
@@ -87,10 +89,10 @@ namespace QTournament
   int Team::getUnregisteredMemberCount() const
   {
     WhereClause wc;
-    wc.addIntCol(PL_TEAM_REF, getId());
-    wc.addIntCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_PL_WAIT_FOR_REGISTRATION));
-    DbTab* playerTab = db->getTab(TAB_PLAYER);
-    return playerTab->getMatchCountForWhereClause(wc);
+    wc.addCol(PL_TeamRef, getId());
+    wc.addCol(GenericStateFieldName, static_cast<int>(ObjState::PL_WaitForRegistration));
+    DbTab playerTab = DbTab{db.get(), TabPlayer, false};
+    return playerTab.getMatchCountForWhereClause(wc);
   }
 
 //----------------------------------------------------------------------------

@@ -19,6 +19,8 @@
 #include "DlgPickPlayerSex.h"
 #include "ui_DlgPickPlayerSex.h"
 
+using namespace QTournament;
+
 DlgPickPlayerSex::DlgPickPlayerSex(QWidget *parent, const QString& playerName) :
   QDialog(parent),
   ui(new Ui::DlgPickPlayerSex)
@@ -39,20 +41,20 @@ DlgPickPlayerSex::~DlgPickPlayerSex()
   delete ui;
 }
 
-SEX DlgPickPlayerSex::getSelectedSex()
+Sex DlgPickPlayerSex::getSelectedSex()
 {
   return selectedSex;
 }
 
 void DlgPickPlayerSex::onBtnMaleClicked()
 {
-  selectedSex = M;
+  selectedSex = Sex::M;
   accept();
 }
 
 void DlgPickPlayerSex::onBtnFemaleClicked()
 {
-  selectedSex = F;
+  selectedSex = Sex::F;
   accept();
 }
 

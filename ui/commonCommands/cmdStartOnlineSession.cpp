@@ -34,7 +34,9 @@
 #include "ui/DlgPassword.h"
 #include "cmdFullSync.h"
 
-cmdStartOnlineSession::cmdStartOnlineSession(QWidget* p, TournamentDB* _db)
+using namespace QTournament;
+
+cmdStartOnlineSession::cmdStartOnlineSession(QWidget* p, const TournamentDB& _db)
   :AbstractCommand(_db, p)
 {
 
@@ -42,9 +44,9 @@ cmdStartOnlineSession::cmdStartOnlineSession(QWidget* p, TournamentDB* _db)
 
 //----------------------------------------------------------------------------
 
-ERR cmdStartOnlineSession::exec()
+Error cmdStartOnlineSession::exec()
 {
-  OnlineMngr* om = db->getOnlineManager();
+  OnlineMngr* om = db.getOnlineManager();
 
   // if the user hasn't supplied a password yet,
   // we can't open a session
@@ -52,7 +54,7 @@ ERR cmdStartOnlineSession::exec()
   {
     QString msg = tr("You haven't registered the tournament yet and thus you can't start a server session!");
     QMessageBox::critical(parentWidget, "Start session", msg);
-    return ERR::WRONG_STATE;  // dummy value
+    return Error::WrongState;  // dummy value
   }
 
   // check whether the server is online and whether we
@@ -69,7 +71,7 @@ ERR cmdStartOnlineSession::exec()
   {
     QString msg = tr("The tournament server is currently not available or there is no working internet connection.\n\nPlease try again later.");
     QMessageBox::information(parentWidget, tr("Start session"), msg);
-    return ERR::WRONG_STATE;  // dummy error code; will not be evaluated by caller
+    return Error::WrongState;  // dummy error code; will not be evaluated by caller
   }
 
   // if the secret signing key has not yet been unlocked, ask the
@@ -77,8 +79,8 @@ ERR cmdStartOnlineSession::exec()
   if (!(om->isUnlocked()))
   {
     cmdUnlockKeystore cmd{parentWidget, db};
-    ERR err = cmd.exec();
-    if (err != ERR::OK) return err;
+    Error err = cmd.exec();
+    if (err != Error::OK) return err;
   }
 
   QString errTxt;
@@ -110,7 +112,7 @@ ERR cmdStartOnlineSession::exec()
     }
 
     QMessageBox::warning(parentWidget, tr("Connection failed"), msg);
-    return ERR::WRONG_STATE; // dummy value
+    return Error::WrongState; // dummy value
   }
 
   // at this point, the data exchange with the server was successful (HTTP and Signatures).
@@ -139,11 +141,11 @@ ERR cmdStartOnlineSession::exec()
   if (!(msg.isEmpty()))
   {
     QMessageBox::warning(parentWidget, tr("Connection failed"), msg);
-    return ERR::WRONG_STATE; // dummy value
+    return Error::WrongState; // dummy value
   }
 
   QMessageBox::information(parentWidget, tr("Connection successful"), tr("You are now connected to and in sync with the server!"));
 
-  return ERR::OK;
+  return Error::OK;
 }
 

@@ -25,6 +25,8 @@
 #include "cmdCreatePlayerFromDialog.h"
 #include "CatMngr.h"
 
+using namespace QTournament;
+
 cmdCreateNewPlayerInCat::cmdCreateNewPlayerInCat(QWidget* p, const Category& _cat)
   :AbstractCommand(_cat.getDatabaseHandle(), p), cat(_cat)
 {
@@ -33,7 +35,7 @@ cmdCreateNewPlayerInCat::cmdCreateNewPlayerInCat(QWidget* p, const Category& _ca
 
 //----------------------------------------------------------------------------
 
-ERR cmdCreateNewPlayerInCat::exec()
+Error cmdCreateNewPlayerInCat::exec()
 {
   // check if can add more players anyway
   if (!(cat.canAddPlayers()))
@@ -42,26 +44,26 @@ ERR cmdCreateNewPlayerInCat::exec()
     msg += tr("full or already started.");
     QMessageBox::warning(parentWidget, tr("Create new player in category"), msg);
 
-    return CATEGORY_CLOSED_FOR_MORE_PLAYERS;
+    return Error::CategoryClosedForMorePlayers;
   }
 
   // show a dialog for selecting the new player's sex
   DlgPickPlayerSex dlgSex{parentWidget, QString()};
   if (dlgSex.exec() != QDialog::Accepted)
   {
-    return OK;
+    return Error::OK;
   }
-  SEX selectedSex = dlgSex.getSelectedSex();
+  Sex selectedSex = dlgSex.getSelectedSex();
 
   // check if we can add a player of the selected
   // sex to the category
-  if (cat.getAddState(selectedSex) != CAN_JOIN)
+  if (cat.getAddState(selectedSex) != CatAddState::CanJoin)
   {
     QString msg = tr("Can't add a %1 to the category.");
-    msg = msg.arg((selectedSex == M) ? tr("male player") : tr("female player"));
+    msg = msg.arg((selectedSex == Sex::M) ? tr("male player") : tr("female player"));
     QMessageBox::warning(parentWidget, tr("Create new player in category"), msg);
 
-    return INVALID_SEX;
+    return Error::InvalidSex;
   }
 
   // prepare a dialog for creating a new player

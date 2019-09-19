@@ -37,15 +37,15 @@ namespace QTournament
     Q_OBJECT
 
   public:
-    static constexpr int STATE_COL_ID = 5;  // id of the column with the match state
-    static constexpr int MATCH_NUM_COL_ID = 0;  // id of the column with the match number
-    static constexpr int REFEREE_MODE_COL_ID = 6;  // id of the column with the referee node
-    static constexpr int EST_START_COL_ID = 7;  // id of the column with the estimated start time
-    static constexpr int EST_END_COL_ID = 8;  // id of the column with the estimated finish time
-    static constexpr int EST_COURT_COL_ID = 9;  // id of the column with the estimated court
-    static constexpr int COLUMN_COUNT = 10;  // number of columns in the model
+    static constexpr int StateColId = 5;  // id of the column with the match state
+    static constexpr int MatchNumColId = 0;  // id of the column with the match number
+    static constexpr int RefereeModeColId = 6;  // id of the column with the referee node
+    static constexpr int EstStartColId = 7;  // id of the column with the estimated start time
+    static constexpr int EstEndColId = 8;  // id of the column with the estimated finish time
+    static constexpr int EstCourtColId = 9;  // id of the column with the estimated court
+    static constexpr int ColumnCount = 10;  // number of columns in the model
 
-    MatchTableModel (TournamentDB* _db);
+    MatchTableModel (const QTournament::TournamentDB& _db);
     int rowCount(const QModelIndex & parent = QModelIndex()) const;
     int columnCount(const QModelIndex & parent = QModelIndex()) const;
     QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const;
@@ -54,15 +54,15 @@ namespace QTournament
     QModelIndex getIndex(int row, int col);
 
   private:
-    TournamentDB* db;
-    SqliteOverlay::DbTab* matchTab;
-    unique_ptr<MatchTimePredictor> matchTimePredictor;
+    std::reference_wrapper<const QTournament::TournamentDB> db;
+    SqliteOverlay::DbTab matchTab;
+    std::unique_ptr<MatchTimePredictor> matchTimePredictor{};
     MatchTimePrediction getMatchTimePredictionForMatch(const Match& ma) const;
     
   public slots:
     void onBeginCreateMatch();
     void onEndCreateMatch(int newMatchSeqNum);
-    void onMatchStatusChanged(int matchId, int matchSeqNum, OBJ_STATE fromState, OBJ_STATE toState);
+    void onMatchStatusChanged(int matchId, int matchSeqNum, ObjState fromState, ObjState toState);
     void onBeginResetModel();
     void onEndResetModel();
     void recalcPrediction();

@@ -26,28 +26,26 @@
 #include "PlayerMngr.h"
 
 #define PAIR_ITEM_PLAYERNAME_COL 0, 0, 0
-#define PAIR_ITEM_TEAMNAME_COL__REGULAR 0, 0, 255
-#define PAIR_ITEM_TEAMNAME_COL__HIGHLIGHT 255, 255, 255
+#define PAIR_ITEM_TEAMNAME_COL_REGULAR 0, 0, 255
+#define PAIR_ITEM_TEAMNAME_COL_HIGHLIGHT 255, 255, 255
 
 using namespace QTournament;
 
 
 void PairItemDelegate::paintSelectedCell(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index, int srcRowId) const
 {
-  commonPaint(painter, option, index, QColor(PAIR_ITEM_TEAMNAME_COL__HIGHLIGHT));
+  commonPaint(painter, option, index, QColor(PAIR_ITEM_TEAMNAME_COL_HIGHLIGHT));
 }
 
 void PairItemDelegate::paintUnselectedCell(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index, int srcRowId) const
 {
-  commonPaint(painter, option, index, QColor(PAIR_ITEM_TEAMNAME_COL__REGULAR));
+  commonPaint(painter, option, index, QColor(PAIR_ITEM_TEAMNAME_COL_REGULAR));
 }
 
 void PairItemDelegate::commonPaint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index, const QColor& teamFontColor) const
 {
-  PlayerMngr pm{db};
-  PlayerPair pp = pm.getPlayerPair(index.data(Qt::UserRole).toInt());
-  QString playerName = pp.getDisplayName();
-  QString teamName = pp.getDisplayName_Team();
+  QString playerName = index.data(PairNameRole).toString();
+  QString teamName = index.data(TeamNameRole).toString();
 
   // get the rectangle that's available for painting the pair item
   QRect r = option.rect;

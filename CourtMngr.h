@@ -36,35 +36,37 @@
 namespace QTournament
 {
 
+  using CourtOrError = ObjectOrError<Court>;
+
   class CourtMngr : public QObject, public TournamentDatabaseObjectManager
   {
     Q_OBJECT
     
   public:
-    CourtMngr (TournamentDB* _db);
-    unique_ptr<Court> createNewCourt (const int courtNum, const QString& _name, ERR *err);
+    CourtMngr (const TournamentDB& _db);
+    CourtOrError createNewCourt (const int courtNum, const QString& _name);
     bool hasCourt (const int courtNum);
-    int getHighestUnusedCourtNumber() const;
-    unique_ptr<Court> getCourt(const int courtNum);
-    vector<Court> getAllCourts();
-    ERR renameCourt (Court& c, const QString& _newName);
-    unique_ptr<Court> getCourtBySeqNum(int seqNum);
+    int getHighestUsedCourtNumber() const;
+    std::optional<Court> getCourt(const int courtNum);
+    std::vector<Court> getAllCourts();
+    Error renameCourt (Court& c, const QString& _newName);
+    std::optional<Court> getCourtBySeqNum(int seqNum);
     bool hasCourtById(int id);
-    unique_ptr<Court> getCourtById(int id);
+    std::optional<Court> getCourtById(int id);
     int getActiveCourtCount();
 
-    unique_ptr<Court> getNextUnusedCourt(bool includeManual=false) const;
-    unique_ptr<Court> autoSelectNextUnusedCourt(ERR* err, bool includeManual=false) const;
+    std::optional<Court> getNextUnusedCourt(bool includeManual=false) const;
+    CourtOrError autoSelectNextUnusedCourt(bool includeManual=false) const;
 
     bool acquireCourt(const Court& co);
     bool releaseCourt(const Court& co);
 
-    ERR disableCourt(const Court& co);
-    ERR enableCourt(const Court& co);
+    Error disableCourt(const Court& co);
+    Error enableCourt(const Court& co);
 
-    ERR deleteCourt(const Court& co);
+    Error deleteCourt(const Court& co);
 
-    string getSyncString(vector<int> rows) override;
+    std::string getSyncString(const std::vector<int>& rows) const override;
 
   private:
 

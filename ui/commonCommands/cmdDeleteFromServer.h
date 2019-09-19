@@ -24,15 +24,14 @@
 #include "AbstractCommand.h"
 #include "Player.h"
 
-using namespace QTournament;
 
 class cmdDeleteFromServer : public QObject, AbstractCommand
 {
   Q_OBJECT
 
 public:
-  cmdDeleteFromServer(QWidget* p, TournamentDB* _db);
-  virtual ERR exec() override;
+  cmdDeleteFromServer(QWidget* p, const QTournament::TournamentDB& _db);
+  virtual QTournament::Error exec() override;
   virtual ~cmdDeleteFromServer() {}
 
 };

@@ -24,16 +24,14 @@
 #include "AbstractCommand.h"
 #include "Player.h"
 
-using namespace QTournament;
 
 class cmdStartOnlineSession : public QObject, AbstractCommand
 {
   Q_OBJECT
 
 public:
-  cmdStartOnlineSession(QWidget* p, TournamentDB* _db);
-  virtual ERR exec() override;
-  virtual ~cmdStartOnlineSession() {}
+  cmdStartOnlineSession(QWidget* p, const QTournament::TournamentDB& _db);
+  virtual QTournament::Error exec() override;
 
 };
 

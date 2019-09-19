@@ -16,8 +16,8 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _GROUPASSIGNMENTLISTWIDGET_H
-#define	_GROUPASSIGNMENTLISTWIDGET_H
+#ifndef GROUPASSIGNMENTLISTWIDGET_H
+#define	GROUPASSIGNMENTLISTWIDGET_H
 
 #include "ui_GroupAssignmentListWidget.h"
 
@@ -30,33 +30,31 @@
 #include "PlayerPair.h"
 #include "delegates/PairItemDelegate.h"
 
-#define MIN_PLAYER_LIST_WIDTH 200
-
-using namespace QTournament;
-
 class GroupAssignmentListWidget : public QWidget
 {
   Q_OBJECT
 public:
-  GroupAssignmentListWidget(QWidget* parent = 0);
+  GroupAssignmentListWidget(QWidget* parent = nullptr);
   virtual ~GroupAssignmentListWidget();
   
-  void setup(TournamentDB* _db, QList<PlayerPairList> ppListList);
+  void setup(const QTournament::TournamentDB* _db, const QList<QTournament::PlayerPairList>& ppListList);
   void teardown();
-  PlayerPairList getSelectedPlayerPairs();
+  QTournament::PlayerPairList getSelectedPlayerPairs();
   void swapSelectedPlayers();
-  vector<PlayerPairList> getGroupAssignments();
-  void setDatabase(TournamentDB* _db);
+  std::vector<QTournament::PlayerPairList> getGroupAssignments();
+  void setDatabase(const QTournament::TournamentDB* _db);
 
 public slots:
   void onRowSelectionChanged();
   
 private:
+  static constexpr int MinPlayerListWidth = 200;
+
   Ui::GroupAssignmentListWidget ui;
-  TournamentDB* db;
-  QListWidget* lwGroup[MAX_GROUP_COUNT];
-  QLabel* laGroup[MAX_GROUP_COUNT];
-  unique_ptr<PairItemDelegate> delegate[MAX_GROUP_COUNT];
+  const QTournament::TournamentDB* db{nullptr};
+  QListWidget* lwGroup[QTournament::MaxGroupCount];
+  QLabel* laGroup[QTournament::MaxGroupCount];
+  std::unique_ptr<PairItemDelegate> delegate[QTournament::MaxGroupCount];
   bool isInitialized;
   int getColCountForGroupCount(int grpCount);
   QQueue<QListWidget*> selectionQueue;

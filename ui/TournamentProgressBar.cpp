@@ -6,6 +6,8 @@
 #include "MatchMngr.h"
 #include "CentralSignalEmitter.h"
 
+using namespace QTournament;
+
 TournamentProgressBar::TournamentProgressBar(QWidget* parentWidget)
   :QProgressBar(parentWidget)
 {
@@ -22,9 +24,9 @@ TournamentProgressBar::TournamentProgressBar(QWidget* parentWidget)
 
   // set up a timer that polls the match stats once a second
   // and updates the status bar accordingly
-  statPollTimer = make_unique<QTimer>();
+  statPollTimer = std::make_unique<QTimer>();
   connect(statPollTimer.get(), SIGNAL(timeout()), this, SLOT(updateProgressBar()));
-  statPollTimer->start(STAT_POLL_TIMER_INTERVAL__MS);
+  statPollTimer->start(PollTimerIntervall_ms);
 
   // connect to match time prediction updates and match count updates
   CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
@@ -33,7 +35,7 @@ TournamentProgressBar::TournamentProgressBar(QWidget* parentWidget)
 
 //----------------------------------------------------------------------------
 
-void TournamentProgressBar::setDatabase(TournamentDB* _db)
+void TournamentProgressBar::setDatabase(const TournamentDB* _db)
 {
   db = _db;
 
@@ -62,12 +64,8 @@ void TournamentProgressBar::updateProgressBar()
   if (db == nullptr) return;
 
   // get updated match status counters
-  MatchMngr mm{db};
-  int nTotal;
-  int nScheduled;
-  int nFinished;
-  int nRunning;
-  tie(nTotal, nScheduled, nRunning, nFinished) = mm.getMatchStats();
+  MatchMngr mm{*db};
+  auto [nTotal, nScheduled, nRunning, nFinished] = mm.getMatchStats();
 
   // calculate the completion percent
   int percComplete = (nTotal > 0) ? (nFinished * 100) / nTotal : 0;

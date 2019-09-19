@@ -16,29 +16,22 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CMDCALLMATCH_H
-#define CMDCALLMATCH_H
+#ifndef CUSTOMMETATYPES_H
+#define CUSTOMMETATYPES_H
 
 #include <QObject>
 
-#include "AbstractCommand.h"
-#include "Match.h"
-#include "Court.h"
+#include "../TournamentDataDefs.h"
 
-using namespace QTournament;
+/*
+ * Registration of custom enums to be used with signals and slots
+ */
+Q_DECLARE_METATYPE(QTournament::ObjState)
 
-class cmdCallMatch : public QObject, AbstractCommand
-{
-  Q_OBJECT
+/** \brief Dynamically registers my custom types at runtime; has to
+ * be called once before my custom types are first used in signals or slots
+ */
+void registerCustomTypes();
 
-public:
-  cmdCallMatch(QWidget* p, const Match& _ma, const Court& _co);
-  virtual ERR exec() override;
-  virtual ~cmdCallMatch() {}
 
-protected:
-  Match ma;
-  Court co;
-};
-
-#endif // CMDCALLMATCH_H
+#endif

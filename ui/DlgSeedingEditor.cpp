@@ -18,18 +18,40 @@
 
 #include <QKeyEvent>
 
+#include <SqliteOverlay/KeyValueTab.h>
+
 #include "DlgSeedingEditor.h"
 #include "ui_DlgSeedingEditor.h"
+#include "SvgBracket.h"
+#include "HelperFunc.h"
 
-DlgSeedingEditor::DlgSeedingEditor(TournamentDB* _db, QWidget *parent) :
-  QDialog(parent), db(_db), positionInput(0),
-  ui(new Ui::DlgSeedingEditor)
+using namespace QTournament;
+
+DlgSeedingEditor::DlgSeedingEditor(const TournamentDB* _db, const QString& catName, std::optional<QTournament::SvgBracketMatchSys> brackSys, QWidget *parent) :
+  QDialog(parent), ui(new Ui::DlgSeedingEditor), db{_db}, msys{brackSys}
 {
   ui->setupUi(this);
-  ui->lwSeeding->setDatabase(db);
 
   // set the window title
   setWindowTitle(tr("Define seeding"));
+
+  // hide the report view, if necessary and resize
+  // the widget to a proper size
+  if (brackSys)
+  {
+    resize(WidthWithBracket, height());
+
+    // initialize the meta tags
+    auto cfg = SqliteOverlay::KeyValueTab{*db, TabCfg};
+    cbt.tnmtName = cfg[CfgKey_TnmtName];
+    cbt.club = cfg[CfgKey_TnmtOrga];
+    cbt.catName = QString2StdString(catName);
+    cbt.subtitle = QString2StdString(tr("Preview for initial seeding"));
+
+  } else {
+    resize(WidthWitouthBracket, height());
+    ui->repView->hide();
+  }
 
   updateButtons();
 
@@ -45,7 +67,7 @@ DlgSeedingEditor::DlgSeedingEditor(TournamentDB* _db, QWidget *parent) :
   // combine subsequent keypresses into one number; for this we
   // need a timer
   keypressTimer = new QTimer();
-  keypressTimer->setInterval(SUBSEQUENT_KEYPRESS_TIMEOUT__MS);
+  keypressTimer->setInterval(SubsequentKeypressTimeout_ms);
   keypressTimer->setSingleShot(true);
   connect(keypressTimer, SIGNAL(timeout()), this, SLOT(onKeypressTimerElapsed()));
 }
@@ -59,7 +81,7 @@ DlgSeedingEditor::~DlgSeedingEditor()
 
 //----------------------------------------------------------------------------
 
-void DlgSeedingEditor::initSeedingList(const PlayerPairList& _seed)
+void DlgSeedingEditor::initSeedingList(const std::vector<SeedingListWidget::AnnotatedSeedEntry>& _seed)
 {
   ui->lwSeeding->clearListAndFillFromSeed(_seed);
 
@@ -69,6 +91,7 @@ void DlgSeedingEditor::initSeedingList(const PlayerPairList& _seed)
   }
 
   updateButtons();
+  updateBracket();
 }
 
 //----------------------------------------------------------------------------
@@ -76,6 +99,7 @@ void DlgSeedingEditor::initSeedingList(const PlayerPairList& _seed)
 void DlgSeedingEditor::onBtnUpClicked()
 {
   ui->lwSeeding->moveSelectedPlayerUp();
+  updateBracket();
 }
 
 //----------------------------------------------------------------------------
@@ -83,6 +107,7 @@ void DlgSeedingEditor::onBtnUpClicked()
 void DlgSeedingEditor::onBtnDownClicked()
 {
   ui->lwSeeding->moveSelectedPlayerDown();
+  updateBracket();
 }
 
 //----------------------------------------------------------------------------
@@ -95,6 +120,7 @@ void DlgSeedingEditor::onBtnShuffleClicked()
     fromIndex = ui->sbRangeMin->value() - 1;
   }
   ui->lwSeeding->shufflePlayers(fromIndex);
+  updateBracket();
 }
 
 //----------------------------------------------------------------------------
@@ -112,7 +138,7 @@ void DlgSeedingEditor::onSelectionChanged()
   updateButtons();
 }
 
-PlayerPairList DlgSeedingEditor::getSeeding()
+std::vector<int> DlgSeedingEditor::getSeeding()
 {
   return ui->lwSeeding->getSeedList();
 }
@@ -123,22 +149,77 @@ void DlgSeedingEditor::onKeypressTimerElapsed()
 {
   ui->lwSeeding->warpSelectedPlayerTo(positionInput-1);
   positionInput = 0;
+  updateBracket();
+}
+
+//----------------------------------------------------------------------------
+
+void DlgSeedingEditor::updateBracket()
+{
+  if (!msys) return;
+
+  // convert the current seeding list to player pairs
+  //
+  // FIX ME: the svgBracket should be redesigned to get only
+  // pre-filled structs instead of database objects; the bracket and the
+  // SVG representation should not need to deal with the database
+  PlayerPairList sortedSeed;
+  for (const auto& pairId : ui->lwSeeding->getSeedList())
+  {
+    sortedSeed.push_back(PlayerPair{*db, pairId});
+  }
+
+  // prepare a bracket
+  try
+  {
+    auto pages = SvgBracket::substSvgBracketTags(*db, *msys, sortedSeed, {}, cbt);
+
+    if (pages.empty())
+    {
+      ui->repView->setReport(nullptr);
+      bracketRep.reset();
+      ui->repView->setEnabled(false);
+      return;
+    }
+
+    // append all pages to a new report
+    auto newBracketReport = std::make_unique<SimpleReportLib::SimpleReportGenerator>(pages[0].width_mm, pages[0].height_mm, 10);
+    for (const auto& pg : pages)
+    {
+      newBracketReport->startNextPage();
+      newBracketReport->addSVG_byData_setW(QPointF{0,0}, SimpleReportLib::RECT_CORNER::TOP_LEFT, pg.content, pg.width_mm);
+    }
+
+    // replace the current report with the new one
+    ui->repView->setReport(newBracketReport.get());
+    ui->repView->showPage(0);
+
+    // store the new report and properly delete the old one
+    bracketRep = std::move(newBracketReport);
+  }
+  catch (std::runtime_error&)
+  {
+    ui->repView->setReport(nullptr);
+    bracketRep.reset();
+    ui->repView->setEnabled(false);
+  }
+
 }
 
 //----------------------------------------------------------------------------
 
 void DlgSeedingEditor::updateButtons()
 {
-  bool hasItems = (ui->lwSeeding->count() > 0);
+  bool hasItems = (ui->lwSeeding->rowCount() > 0);
 
   // okay is only possible if there are items
   ui->btnOkay->setEnabled(hasItems);
 
   // shuffling is only possible with at least two items
-  ui->gbShuffle->setEnabled(ui->lwSeeding->count() > 1);
+  ui->gbShuffle->setEnabled(ui->lwSeeding->rowCount() > 1);
 
   // shuffling in a certain range only possible with at least three items
-  ui->btnShuffle->setEnabled(ui->lwSeeding->count() > 2);
+  ui->btnShuffle->setEnabled(ui->lwSeeding->rowCount() > 2);
 
   // up / down availability depends on the selected item
   ui->btnUp->setEnabled(ui->lwSeeding->canMoveSelectedPlayerUp());

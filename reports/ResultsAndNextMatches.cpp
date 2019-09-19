@@ -35,9 +35,11 @@ namespace QTournament
 {
 
 
-ResultsAndNextMatches::ResultsAndNextMatches(TournamentDB* _db, const QString& _name, const Category& _cat, int _round)
+ResultsAndNextMatches::ResultsAndNextMatches(const TournamentDB& _db, const QString& _name, const Category& _cat, int _round)
   :AbstractReport(_db, _name), cat(_cat), round(_round)
 {
+  roundOffset = cat.getParameter_int(CatParameter::FirstRoundOffset);
+
   // if "round" is zero, we only print the first matches
   // if round is greater than zero, we print a normal report
 
@@ -54,6 +56,7 @@ ResultsAndNextMatches::ResultsAndNextMatches(TournamentDB* _db, const QString& _
 
     throw std::runtime_error("Requested results / NextMatches for unfinished round.");
   }
+  
 }
 
 //----------------------------------------------------------------------------
@@ -68,9 +71,9 @@ upSimpleReport ResultsAndNextMatches::regenerateReport()
   if (mgl.size() == 1)
   {
     int grpNum = mgl.at(0).getGroupNumber();
-    MATCH_SYSTEM mSys = cat.getMatchSystem();
-    if ((grpNum < 0) && (grpNum >= GROUP_NUM__L16) &&
-        ((mSys == GROUPS_WITH_KO) || (mSys == SINGLE_ELIM)))
+    MatchSystem mSys = cat.getMatchSystem();
+    if ((grpNum < 0) && (grpNum >= GroupNum_L16) &&
+        ((mSys == MatchSystem::GroupsWithKO) || (mSys == MatchSystem::Bracket)))
     {
       subHeader = GuiHelpers::groupNumToLongString(mgl.at(0).getGroupNumber());
     }
@@ -80,7 +83,7 @@ upSimpleReport ResultsAndNextMatches::regenerateReport()
   QString repName = cat.getName() + " -- ";
   if (round > 0)
   {
-    repName += tr("Results of Round ") + QString::number(round) + tr(" and Next Matches");
+    repName += tr("Results of Round ") + QString::number(round + roundOffset) + tr(" and Next Matches");
   } else {
     repName += tr("First Matches");
   }
@@ -112,7 +115,7 @@ QStringList ResultsAndNextMatches::getReportLocators() const
   loc += cat.getName() + "::";
   if (round > 0)
   {
-    loc += tr("after round ") + QString::number(round);
+    loc += tr("after round ") + QString::number(round + roundOffset);
   } else {
     loc += tr("initial matches");
   }
@@ -137,8 +140,8 @@ void ResultsAndNextMatches::printResultPart(upSimpleReport& rep) const
 
   std::sort(allMatches.begin(), allMatches.end(), getSortFunction_MatchByGroupAndNumber());
 
-  printIntermediateHeader(rep, tr("Results of Round ") + QString::number(round));
-  printMatchList(rep, allMatches, PlayerPairList(), tr("Results of Round ") + QString::number(round) + tr(" (cont.)"), true, true);
+  printIntermediateHeader(rep, tr("Results of Round ") + QString::number(round + roundOffset));
+  printMatchList(rep, allMatches, PlayerPairList(), tr("Results of Round ") + QString::number(round + roundOffset) + tr(" (cont.)"), true, true);
 }
 
 //----------------------------------------------------------------------------
@@ -165,8 +168,8 @@ void ResultsAndNextMatches::printNextMatchPart(upSimpleReport& rep) const
   bool isAllScheduled = true;
   for (MatchGroup mg : mgl)
   {
-    OBJ_STATE mgStat = mg.getState();
-    if ((mgStat != STAT_MG_SCHEDULED) && (mgStat != STAT_MG_FINISHED))
+    ObjState mgStat = mg.getState();
+    if ((mgStat != ObjState::MG_Scheduled) && (mgStat != ObjState::MG_Finished))
     {
       isAllScheduled = false;
       break;
@@ -206,9 +209,9 @@ void ResultsAndNextMatches::printNextMatchPart(upSimpleReport& rep) const
     playingList.push_back(ma.getPlayerPair2());
   }
   auto specialCat = cat.convertToSpecializedObject();
-  ERR e;
+  Error e;
   PlayerPairList remainingPlayers = specialCat->getRemainingPlayersAfterRound(round, &e);
-  if (e == OK)
+  if (e == Error::OK)
   {
     for (PlayerPair pp : remainingPlayers)
     {

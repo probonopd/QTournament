@@ -36,21 +36,21 @@ namespace QTournament
     Q_OBJECT
 
   public:
-    static constexpr int COLUMN_COUNT = 5;  // number of columns in the model
-    static constexpr int COL_NAME = 0;
-    static constexpr int FILL_COL = 4;   // an extra column (empty) just to fill up the empty space in the view
+    static constexpr int ColumnCount = 5;  // number of columns in the model
+    static constexpr int ColNameId = 0;
+    static constexpr int FillColId = 4;   // an extra column (empty) just to fill up the empty space in the view
 
-    PlayerTableModel (TournamentDB* _db);
+    PlayerTableModel (const QTournament::TournamentDB& _db);
     int rowCount(const QModelIndex & parent = QModelIndex()) const;
     int columnCount(const QModelIndex & parent = QModelIndex()) const;
     QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const;
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
 
   private:
-    TournamentDB* db;
-    SqliteOverlay::DbTab* playerTab;
-    SqliteOverlay::DbTab* teamTab;
-    SqliteOverlay::DbTab* catTab;
+    std::reference_wrapper<const QTournament::TournamentDB> db;
+    SqliteOverlay::DbTab playerTab;
+    SqliteOverlay::DbTab teamTab;
+    SqliteOverlay::DbTab catTab;
     
   public slots:
     void onBeginCreatePlayer();

@@ -35,8 +35,8 @@ namespace QTournament
     PlayerPair(const Player& p1, const Player& p2, int _pairId);
     PlayerPair(const Player& p1, int _pairId);
     PlayerPair(const Player& p1);
-    PlayerPair(TournamentDB* _db, const SqliteOverlay::TabRow& row);
-    PlayerPair(TournamentDB* _db, int ppId);
+    PlayerPair(const TournamentDB& _db, const SqliteOverlay::TabRow& row);
+    PlayerPair(const TournamentDB& _db, int ppId);
 
     // boolean queries
     bool hasPlayer2() const;
@@ -51,7 +51,7 @@ namespace QTournament
     QString getDisplayName_Team(int maxLen = 0) const;
     QString getCallName(const QString &sepString) const;
     int getPairId() const;
-    unique_ptr<Category> getCategory(TournamentDB* db) const;  // only as a hot-fix
+    std::optional<Category> getCategory(const TournamentDB& db) const;  // only as a hot-fix
     int getPairsGroupNum() const;  // only as a hot-fix
 
     inline bool operator == (const PlayerPair& other) const {
@@ -73,13 +73,12 @@ namespace QTournament
     int id1;
     int id2;
     int pairId;
-    TournamentDB* db;
+    std::reference_wrapper<const QTournament::TournamentDB> db;
     void sortPlayers();
   } ;
   
-  typedef vector<PlayerPair> PlayerPairList;
-  typedef unique_ptr<PlayerPair> upPlayerPair;
-
+  using PlayerPairList = std::vector<PlayerPair>;
 }
+
 #endif	/* PLAYERPAIR_H */
 

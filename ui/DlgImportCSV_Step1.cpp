@@ -14,10 +14,11 @@
 #include "TournamentDB.h"
 #include "CatMngr.h"
 #include "CSVImporter.h"
+#include "HelperFunc.h"
 
 using namespace QTournament;
 
-DlgImportCSV_Step1::DlgImportCSV_Step1(QWidget *parent, QTournament::TournamentDB* _db) :
+DlgImportCSV_Step1::DlgImportCSV_Step1(QWidget *parent, const TournamentDB& _db) :
   QDialog(parent),
   ui(new Ui::DlgImportCSV_Step1), db{_db}
 {
@@ -53,23 +54,23 @@ DlgImportCSV_Step1::~DlgImportCSV_Step1()
 
 //----------------------------------------------------------------------------
 
-vector<vector<string>> DlgImportCSV_Step1::getSplitData() const
+std::vector<std::vector<Sloppy::estring>> DlgImportCSV_Step1::getSplitData() const
 {
-  vector<vector<string>> result;
+  std::vector<std::vector<std::string>> result;
   QString plain = ui->txtBox->document()->toPlainText();
   plain.replace('"', "");
-  string raw{plain.toUtf8().constData()};
+  Sloppy::estring raw{QString2StdString(plain)};
 
   // is an additional category selected
-  string extraCat;
+  std::string extraCat;
   int extraCatId = ui->cbCat->currentData().toInt();
   if (extraCatId > 0)
   {
-    extraCat = string{ui->cbCat->currentText().toUtf8().constData()};
+    extraCat = QString2StdString(ui->cbCat->currentText());
   }
 
   // determine the delimiter character
-  string delim = ",";
+  std::string delim = ",";
   if (ui->rbSemi->isChecked())
   {
     delim = ";";

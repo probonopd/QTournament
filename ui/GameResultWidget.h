@@ -26,8 +26,6 @@
 
 #include "Score.h"
 
-using namespace std;
-using namespace QTournament;
 
 namespace Ui {
   class GameResultWidget;
@@ -40,12 +38,12 @@ class GameResultWidget : public QWidget
 public:
   static constexpr int AUTO_SCORE = -1;
   static constexpr int EMPTY_SCORE = -2;
-  explicit GameResultWidget(QWidget *parent = 0);
+  explicit GameResultWidget(QWidget *parent = nullptr);
   ~GameResultWidget();
   void setGameNumber(int n);
   bool hasValidScore() const;
-  unique_ptr<GameScore> getScore() const;
-  void setScore(const GameScore& sc);
+  std::optional<QTournament::GameScore> getScore() const;
+  void setScore(const QTournament::GameScore& sc);
 
 private slots:
   void onScoreSelectionChanged();
@@ -54,7 +52,7 @@ signals:
   void scoreSelectionChanged();
 
 private:
-  tuple<int, int> getSelectedScore() const;
+  std::tuple<int, int> getSelectedScore() const;
   Ui::GameResultWidget *ui;
 };
 

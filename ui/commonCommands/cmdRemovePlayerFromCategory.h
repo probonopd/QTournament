@@ -16,8 +16,8 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CMDREMOVE_PLAYER_FROM_CAT__H
-#define CMDREMOVE_PLAYER_FROM_CAT__H
+#ifndef CMDREMOVE_PLAYER_FROM_CONFIG_H
+#define CMDREMOVE_PLAYER_FROM_CONFIG_H
 
 #include <QObject>
 
@@ -25,20 +25,18 @@
 #include "Player.h"
 #include "Category.h"
 
-using namespace QTournament;
 
 class cmdRemovePlayerFromCategory : public QObject, AbstractCommand
 {
   Q_OBJECT
 
 public:
-  cmdRemovePlayerFromCategory(QWidget* p, const Player& _pl, const Category& _cat);
-  virtual ERR exec() override;
-  virtual ~cmdRemovePlayerFromCategory() {}
+  cmdRemovePlayerFromCategory(QWidget* p, const QTournament::Player& _pl, const QTournament::Category& _cat);
+  virtual QTournament::Error exec() override;
 
 protected:
-  Player pl;
-  Category cat;
+  const QTournament::Player pl;
+  const QTournament::Category cat;
 };
 
 #endif // CMDREGISTERPLAYER_H

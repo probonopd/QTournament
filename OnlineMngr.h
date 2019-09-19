@@ -9,12 +9,11 @@
 #include <QObject>
 #include <QDate>
 
-using namespace std;
+#include <SqliteOverlay/KeyValueTab.h>
 
 // forward
 namespace SqliteOverlay
 {
-  class KeyValueTab;
   class ChangeLogEntry;
 }
 
@@ -71,7 +70,7 @@ namespace QTournament
   // all data related to syncs
   struct SyncState
   {
-    string sessionKey;
+    std::string sessionKey;
     Sloppy::DateTime::UTCTimestamp connStart;
     Sloppy::DateTime::UTCTimestamp lastFullSync;
     Sloppy::DateTime::UTCTimestamp lastPartialSync;
@@ -124,15 +123,15 @@ namespace QTournament
     static constexpr const char* CfgKey_CustomServerKey = "CustomServerKey";
     static constexpr const char* CfgKey_CustomServerTimeout = "CustomServerTimeout";
 
-    OnlineMngr(TournamentDB* _db);
+    OnlineMngr(QTournament::TournamentDB& _db);
 
     // transport layer
     OnlineError execSignedServerRequest(const QString& subUrl, bool withSession, const QByteArray& postData, QByteArray& responseOut);
 
     // password / keybox management
-    bool hasSecretInDatabase() const;
+    bool hasSecretInDatabase();
     OnlineError setPassword(const QString& newPassword, const QString& oldPassword="");
-    OnlineError isCorrectPassword(const QString& pw) const;
+    OnlineError isCorrectPassword(const QString& pw);
     OnlineError unlockKeystore(const QString& pw);
     bool isUnlocked() const { return secKeyUnlocked; }
     bool hasRegistrationSubmitted() const;
@@ -155,26 +154,25 @@ namespace QTournament
     int getLastReqTime_ms() const { return lastReqTime_ms; }
 
     // custom connection settings
-    QString getCustomUrl() const;
+    QString getCustomUrl();
     bool setCustomUrl(const QString& url);
-    QString getCustomServerKey() const;
+    QString getCustomServerKey();
     bool setCustomServerKey(const QString& key);
-    int getCustomTimeout_ms() const;
+    int getCustomTimeout_ms();
     bool setCustomTimeout_ms(int newTimeout);
     void applyCustomServerSettings();
 
   protected:
     bool initKeyboxWithFreshKeys(const QString& pw);
-    void compactDatabaseChangeLog(vector<SqliteOverlay::ChangeLogEntry>& log);
-    string log2SyncString(const vector<SqliteOverlay::ChangeLogEntry>& log);
-    bool deleteOptionalConfigKey(const string& keyName);
+    void compactDatabaseChangeLog(std::vector<SqliteOverlay::ChangeLogEntry>& log);
+    std::string log2SyncString(const SqliteOverlay::ChangeLogList& log);
 
   private:
-    TournamentDB* db;
+    std::reference_wrapper<QTournament::TournamentDB> db;
     QString apiBaseUrl;
     int defaultTimeout_ms;
     Sloppy::Crypto::SodiumLib* cryptoLib;
-    unique_ptr<SqliteOverlay::KeyValueTab> cfgTab;
+    SqliteOverlay::KeyValueTab cfgTab;
     SecSignKey secKey;
     PubSignKey pubKey;
     bool secKeyUnlocked;

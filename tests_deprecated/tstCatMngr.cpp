@@ -29,26 +29,26 @@ void tstCatMngr::testCreateNewCategory()
   CatMngr cmngr(db);
   
   // try empty or invalid name
-  CPPUNIT_ASSERT(cmngr.createNewCategory("") == INVALID_NAME);
-  CPPUNIT_ASSERT(cmngr.createNewCategory(QString::null) == INVALID_NAME);
-  CPPUNIT_ASSERT((*db)[TAB_CATEGORY].length() == 0);
+  CPPUNIT_ASSERT(cmngr.createNewCategory("") == InvalidName);
+  CPPUNIT_ASSERT(cmngr.createNewCategory(QString::null) == InvalidName);
+  CPPUNIT_ASSERT((*db)[TabCategory].length() == 0);
   
   // actually create a valid category
   CPPUNIT_ASSERT(cmngr.createNewCategory("c1") == OK);
-  CPPUNIT_ASSERT((*db)[TAB_CATEGORY].length() == 1);
-  TabRow r = (*db)[TAB_CATEGORY][1];
-  CPPUNIT_ASSERT(r[GENERIC_NAME_FIELD_NAME].toString() == "c1");
+  CPPUNIT_ASSERT((*db)[TabCategory].length() == 1);
+  TabRow r = (*db)[TabCategory][1];
+  CPPUNIT_ASSERT(r[GenericNameFieldName].toString() == "c1");
   
   // make sure the default values are set correctly
   Category c = cmngr.getCategory("c1");
-  CPPUNIT_ASSERT(c.getState() == STAT_CAT_CONFIG);
-  CPPUNIT_ASSERT(c.getMatchSystem() == GROUPS_WITH_KO);
-  CPPUNIT_ASSERT(c.getMatchType() == SINGLES);
+  CPPUNIT_ASSERT(c.getState() == STAT_CAT_Config);
+  CPPUNIT_ASSERT(c.getMatchSystem() == MatchSystem::GroupsWithKO);
+  CPPUNIT_ASSERT(c.getMatchType() == MatchType::Singles);
   CPPUNIT_ASSERT(c.getSex() == M);
   
   // name collision
-  CPPUNIT_ASSERT(cmngr.createNewCategory("c1") == NAME_EXISTS);
-  CPPUNIT_ASSERT((*db)[TAB_CATEGORY].length() == 1);
+  CPPUNIT_ASSERT(cmngr.createNewCategory("c1") == NameExists);
+  CPPUNIT_ASSERT((*db)[TabCategory].length() == 1);
   
   delete db;
   printEndMsg();
@@ -162,34 +162,34 @@ void tstCatMngr::testAddPlayerToCategory()
   // add players to men's singles
   CPPUNIT_ASSERT(cmngr->addPlayerToCategory(m1, ms) == OK);
   CPPUNIT_ASSERT(ms.hasPlayer(m1));
-  CPPUNIT_ASSERT(cmngr->addPlayerToCategory(m1, ms) == PLAYER_ALREADY_IN_CATEGORY);
-  CPPUNIT_ASSERT(cmngr->addPlayerToCategory(f1, ms) == PLAYER_NOT_SUITABLE);
+  CPPUNIT_ASSERT(cmngr->addPlayerToCategory(m1, ms) == PlayerAlreadyInCategory);
+  CPPUNIT_ASSERT(cmngr->addPlayerToCategory(f1, ms) == PlayerNotSuitable);
   CPPUNIT_ASSERT(cmngr->addPlayerToCategory(m2, ms) == OK);
   CPPUNIT_ASSERT(ms.hasPlayer(m2));
-  ms.setSex(DONT_CARE);   // relax checks
+  ms.setSex(Sex::DontCare);   // relax checks
   CPPUNIT_ASSERT(cmngr->addPlayerToCategory(f1, ms) == OK);
   CPPUNIT_ASSERT(ms.hasPlayer(f1));
   
   // add players to ladies' doubles
   CPPUNIT_ASSERT(cmngr->addPlayerToCategory(f1, ld) == OK);
   CPPUNIT_ASSERT(ld.hasPlayer(f1));
-  CPPUNIT_ASSERT(cmngr->addPlayerToCategory(f1, ld) == PLAYER_ALREADY_IN_CATEGORY);
-  CPPUNIT_ASSERT(cmngr->addPlayerToCategory(m1, ld) == PLAYER_NOT_SUITABLE);
+  CPPUNIT_ASSERT(cmngr->addPlayerToCategory(f1, ld) == PlayerAlreadyInCategory);
+  CPPUNIT_ASSERT(cmngr->addPlayerToCategory(m1, ld) == PlayerNotSuitable);
   CPPUNIT_ASSERT(cmngr->addPlayerToCategory(f2, ld) == OK);
   CPPUNIT_ASSERT(ld.hasPlayer(f2));
-  ld.setSex(DONT_CARE);   // relax checks
+  ld.setSex(Sex::DontCare);   // relax checks
   CPPUNIT_ASSERT(cmngr->addPlayerToCategory(m1, ld) == OK);
   CPPUNIT_ASSERT(ld.hasPlayer(m1));
   
   // add players to mixed doubles
   CPPUNIT_ASSERT(cmngr->addPlayerToCategory(f1, mx) == OK);
   CPPUNIT_ASSERT(mx.hasPlayer(f1));
-  CPPUNIT_ASSERT(cmngr->addPlayerToCategory(f1, mx) == PLAYER_ALREADY_IN_CATEGORY);
+  CPPUNIT_ASSERT(cmngr->addPlayerToCategory(f1, mx) == PlayerAlreadyInCategory);
   CPPUNIT_ASSERT(cmngr->addPlayerToCategory(m1, mx) == OK);
   CPPUNIT_ASSERT(mx.hasPlayer(m1));
   CPPUNIT_ASSERT(cmngr->addPlayerToCategory(f2, mx) == OK);
   CPPUNIT_ASSERT(mx.hasPlayer(f2));
-  mx.setSex(DONT_CARE);   // relax checks
+  mx.setSex(Sex::DontCare);   // relax checks
   CPPUNIT_ASSERT(cmngr->addPlayerToCategory(m2, mx) == OK);
   CPPUNIT_ASSERT(mx.hasPlayer(m2));
   CPPUNIT_ASSERT(cmngr->addPlayerToCategory(f3, mx) == OK);
@@ -228,8 +228,8 @@ void tstCatMngr::testRemovePlayerFromCategory()
   CPPUNIT_ASSERT(ls.hasPlayer(f2));
   
   // try to remove not-added players
-  CPPUNIT_ASSERT(cmngr->removePlayerFromCategory(f3, ls) == PLAYER_NOT_IN_CATEGORY);
-  CPPUNIT_ASSERT(cmngr->removePlayerFromCategory(m1, ls) == PLAYER_NOT_IN_CATEGORY);
+  CPPUNIT_ASSERT(cmngr->removePlayerFromCategory(f3, ls) == PlayerNotInCategory);
+  CPPUNIT_ASSERT(cmngr->removePlayerFromCategory(m1, ls) == PlayerNotInCategory);
   CPPUNIT_ASSERT(ls.hasPlayer(f1));
   CPPUNIT_ASSERT(ls.hasPlayer(f2));
   
@@ -265,12 +265,12 @@ void tstCatMngr::testFreezeCategory()
   }
 
   // set a valid match system and a valid configuration
-  CPPUNIT_ASSERT(ms.setMatchSystem(GROUPS_WITH_KO) == OK);
-  CPPUNIT_ASSERT(ms.setMatchType(SINGLES) == OK);
+  CPPUNIT_ASSERT(ms.setMatchSystem(MatchSystem::GroupsWithKO) == OK);
+  CPPUNIT_ASSERT(ms.setMatchType(MatchType::Singles) == OK);
   GroupDef gd = GroupDef(4, 10); // 10 groups of four players each
   GroupDefList gdl;
   gdl.append(gd);
-  KO_Config cfg = KO_Config(L16, false, gdl);
+  KO_Config cfg = KO_Config(KO_Start::L16, false, gdl);
   CPPUNIT_ASSERT(cfg.isValid(40));
   CPPUNIT_ASSERT(ms.setParameter(GROUP_CONFIG, cfg.toString()) == true);
   
@@ -279,7 +279,7 @@ void tstCatMngr::testFreezeCategory()
   CPPUNIT_ASSERT(specialObj->canFreezeConfig() == OK);
   
   // some db consistency checks before executing the actual "method under test"
-  DbTab pairTab = (*db)[TAB_PAIRS];
+  DbTab pairTab = (*db)[TabPairs];
   CPPUNIT_ASSERT(pairTab.length() == 0);
   QList<PlayerPair> ppList = ms.getPlayerPairs();
   CPPUNIT_ASSERT(ppList.count() == 40);
@@ -291,7 +291,7 @@ void tstCatMngr::testFreezeCategory()
     CPPUNIT_ASSERT(pp.hasPlayer2() == false);
   }
   
-  CPPUNIT_ASSERT(ms.getState() == STAT_CAT_CONFIG);
+  CPPUNIT_ASSERT(ms.getState() == STAT_CAT_Config);
   
   // do the freeze
   CPPUNIT_ASSERT(cmngr->freezeConfig(ms) == OK);
@@ -309,7 +309,7 @@ void tstCatMngr::testFreezeCategory()
   }
   
   // check the actual state transition
-  CPPUNIT_ASSERT(ms.getState() == STAT_CAT_FROZEN);
+  CPPUNIT_ASSERT(ms.getState() == STAT_CAT_Frozen);
   
   delete db;
   printEndMsg();

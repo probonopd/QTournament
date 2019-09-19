@@ -27,41 +27,39 @@
 #include "delegates/MatchLogItemDelegate.h"
 #include "AutoSizingTable.h"
 
-using namespace QTournament;
 
 class CommonMatchTableWidget : public GuiHelpers::AutoSizingTableWidget_WithDatabase
 {
   Q_OBJECT
 
 public:
-  static constexpr int IDX_MATCH_NUM_COL = 0;
-  static constexpr int IDX_CAT_COL = 1;
-  static constexpr int IDX_ROUND_COL = 2;
-  static constexpr int IDX_GRP_COL = 3;
-  static constexpr int IDX_MATCH_INFO_COL = 4;
-  static constexpr int IDX_START_TIME_COL = 5;
-  static constexpr int IDX_FINISH_TIME_COL = 6;
-  static constexpr int IDX_DURATION_COL = 7;
-  static constexpr int IDX_COURT_COL = 8;
-  static constexpr int IDX_UMPIRE_COL = 9;
+  static constexpr int IdxMatchNumCol = 0;
+  static constexpr int IdxConfigCol = 1;
+  static constexpr int IdxRoundCol = 2;
+  static constexpr int IdxGrpCol = 3;
+  static constexpr int IdxMatchInfoCol = 4;
+  static constexpr int IdxStartTimeCol = 5;
+  static constexpr int IdxFinishTimeCol = 6;
+  static constexpr int IdxDurationCol = 7;
+  static constexpr int IdxCourtCol = 8;
+  static constexpr int IdxUmpireCol = 9;
 
   CommonMatchTableWidget(QWidget* parent);
-  virtual ~CommonMatchTableWidget() {}
 
-  void insertMatch(int beforeRowIdx, const Match& ma);
-  void appendMatch(const Match& ma);
-  void appendMatchList(const QList<Match> maList) {
-    for (const Match& ma : maList) appendMatch(ma);
+  void insertMatch(int beforeRowIdx, const QTournament::Match& ma);
+  void appendMatch(const QTournament::Match& ma);
+  void appendMatchList(const QList<QTournament::Match>& maList) {
+    for (const QTournament::Match& ma : maList) appendMatch(ma);
   }
 
 protected slots:
   void onSelectionChanged(const QItemSelection&selectedItem, const QItemSelection&deselectedItem);
 
 protected:
-  static constexpr int MAX_NUMERIC_COL_WIDTH = 90;
-  static constexpr int REL_WIDTH_NUMERIC_COL = 1;
-  static constexpr int REL_WIDTH_MATCH_INFO = 10;
-  static constexpr int REL_WIDTH_UMPIRE_COL = 2;
+  static constexpr int MaxNumericColWidth = 90;
+  static constexpr int RelNumericColWidth = 1;
+  static constexpr int RelMatchInfoColWidth = 10;
+  static constexpr int RelUmpireColWidth = 2;
 
   MatchLogItemDelegate* logItemDelegate;
 

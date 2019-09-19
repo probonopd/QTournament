@@ -16,8 +16,8 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MARTIXANDSTANDINGS_H
-#define MARTIXANDSTANDINGS_H
+#ifndef MATRIXANDSTANDINGS_H
+#define MATRIXANDSTANDINGS_H
 
 #include <functional>
 
@@ -27,24 +27,22 @@
 #include "TournamentDB.h"
 #include "TournamentDataDefs.h"
 
-using namespace SqliteOverlay;
-
 namespace QTournament
 {
-  class MartixAndStandings : public QObject, public AbstractReport
+  class MatrixAndStandings : public QObject, public AbstractReport
   {
     Q_OBJECT
 
   public:
-    MartixAndStandings(TournamentDB* _db, const QString& _name, const Category& _cat, int _round);
+    MatrixAndStandings(const QTournament::TournamentDB& _db, const QString& _name, const Category& _cat, int _round);
 
     virtual upSimpleReport regenerateReport() override;
     virtual QStringList getReportLocators() const override;
 
   private:
-    Category cat;
+    const Category cat;  // DO NOT USE REFERENCES HERE, because this report might out-live the caller and its local objects
     int round;
   };
 
 }
-#endif // MARTIXANDSTANDINGS_H
+#endif // MATRIXANDSTANDINGS_H

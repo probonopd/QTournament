@@ -26,15 +26,17 @@
 #include "CatMngr.h"
 #include "PlayerMngr.h"
 
-DlgSelectPlayer::DlgSelectPlayer(TournamentDB* _db, QWidget *parent, DLG_CONTEXT _ctxt, Category* _cat) :
-  QDialog(parent), db(_db),
-  ui(new Ui::DlgSelectPlayer), ctxt(_ctxt), cat(_cat)
+using namespace QTournament;
+
+DlgSelectPlayer::DlgSelectPlayer(const QTournament::TournamentDB& _db, QWidget *parent, DlgContext _ctxt, std::optional<Category> _cat) :
+  QDialog(parent), ui(new Ui::DlgSelectPlayer), db(_db),
+  ctxt(_ctxt), cat(_cat)
 {
   ui->setupUi(this);
 
   // we always need a valid cat ref, unless
-  // our context is NONE
-  if ((ctxt != DLG_CONTEXT::NONE) && (cat == nullptr))
+  // our context is RefereeMode::None
+  if ((ctxt != DlgContext::None) && (!cat))
   {
     throw std::invalid_argument("Received empty category reference for player selection dialog!");
   }
@@ -43,23 +45,23 @@ DlgSelectPlayer::DlgSelectPlayer(TournamentDB* _db, QWidget *parent, DLG_CONTEXT
 
   // define the set of players that should be available for selection
   PlayerList applicablePlayers;
-  if (ctxt == DLG_CONTEXT::NONE)
+  if (ctxt == DlgContext::None)
   {
     applicablePlayers = pm.getAllPlayers();
   }
-  else if (ctxt == DLG_CONTEXT::ADD_TO_CATEGORY)
+  else if (ctxt == DlgContext::AddToCategory)
   {
     for (const Player& pl : pm.getAllPlayers())
     {
       if (cat->hasPlayer(pl)) continue;
 
-      if (cat->getAddState(pl.getSex()) == CAN_JOIN)
+      if (cat->getAddState(pl.getSex()) == CatAddState::CanJoin)
       {
         applicablePlayers.push_back(pl);
       }
     }
   }
-  else if (ctxt == DLG_CONTEXT::REMOVE_FROM_CATEGORY)
+  else if (ctxt == DlgContext::RemoveFromCategory)
   {
     for (const Player& pl : cat->getAllPlayersInCategory())
     {

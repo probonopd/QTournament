@@ -29,9 +29,6 @@
 #include "TournamentDB.h"
 #include "Match.h"
 
-using namespace std;
-using namespace SqliteOverlay;
-
 namespace QTournament
 {
   struct MatchTimePrediction
@@ -50,31 +47,31 @@ namespace QTournament
 
   public:
     // ctor
-    MatchTimePredictor(TournamentDB* _db);
+    MatchTimePredictor(const TournamentDB& _db);
 
     // getters
     int getGlobalAverageMatchDuration__secs();
     inline int getAverageMatchDurationForCat__secs(const Match& matchInCat) { return getAverageMatchDurationForCat__secs(matchInCat.getCategory()); }
     int getAverageMatchDurationForCat__secs(const Category& cat);
-    vector<MatchTimePrediction> getMatchTimePrediction();
+    std::vector<MatchTimePrediction> getMatchTimePrediction();
     MatchTimePrediction getPredictionForMatch(const Match& ma, bool refreshCache = false);
     void updatePrediction();
     void resetPrediction();
 
   private:
-    static constexpr int DEFAULT_MATCH_TIME__SECS = 25 * 60;  // 25 minutes
-    static constexpr int GRACE_TIME_BETWEEN_MATCHES__SECS = 60;
-    static constexpr int COURTS_IS_BUSY_AND_PREDICTION_WRONG__CORRECTION_OFFSET__SECS = 5 * 60;
-    static constexpr int NUM_INITIALLY_ASSUMED_MATCHES = 5;
+    static constexpr int DefaultMatchTime_secs = 25 * 60;  // 25 minutes
+    static constexpr int GraceTimeBetweenMatches_secs = 60;
+    static constexpr int CourtIsBusyAndPredictionWrong_CorrectionOffset_secs = 5 * 60;
+    static constexpr int NumInitiallyAssumedMatches = 5;
 
-    TournamentDB* db;
-    unsigned long totalMatchTime_secs;
+    std::reference_wrapper<const QTournament::TournamentDB> db;
+    long totalMatchTime_secs;
     int nMatches;
     time_t lastMatchFinishTime;
 
-    unordered_map<int, tuple<int, unsigned long>> catId2MatchTime;
+    std::unordered_map<int, std::tuple<int, long>> catId2MatchTime;
 
-    vector<MatchTimePrediction> lastPrediction;
+    std::vector<MatchTimePrediction> lastPrediction;
 
     void updateAvgMatchTimeFromDatabase();
   };

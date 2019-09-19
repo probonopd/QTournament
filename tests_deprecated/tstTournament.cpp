@@ -31,11 +31,11 @@ void tstTournament::testConstructor()
   
   // make sure the config values have been set
   TournamentDB db(getSqliteFileName(), false);
-  KeyValueTab kvt = KeyValueTab::getTab(&db, TAB_CFG);
-  CPPUNIT_ASSERT(kvt.getString(CFG_KEY_TNMT_ORGA) == "club");
-  CPPUNIT_ASSERT(kvt.getString(CFG_KEY_TNMT_NAME) == "TestTournament");
-  CPPUNIT_ASSERT(kvt.getBool(CFG_KEY_USE_TEAMS));
-  CPPUNIT_ASSERT(kvt.getInt(CFG_KEY_DB_VERSION) == DB_VERSION);
+  KeyValueTab kvt = KeyValueTab::getTab(&db, TabCfg);
+  CPPUNIT_ASSERT(kvt.getString(CfgKey_TnmtOrga) == "club");
+  CPPUNIT_ASSERT(kvt.getString(CfgKey_TnmtName) == "TestTournament");
+  CPPUNIT_ASSERT(kvt.getBool(CfgKey_UseTeams));
+  CPPUNIT_ASSERT(kvt.getInt(CfgKey_DbVersion) == DB_VERSION);
   
   // try to create a new file although it's already existing
   Tournament* pTnmt;

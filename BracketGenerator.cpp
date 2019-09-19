@@ -29,7 +29,7 @@ namespace QTournament
 {
 
   BracketGenerator::BracketGenerator()
-    : bracketType(BRACKET_SINGLE_ELIM)
+    : bracketType(BracketSingleElim)
   {
   }
 
@@ -37,9 +37,9 @@ namespace QTournament
 
   BracketGenerator::BracketGenerator(int type)
   {
-    if ((type != BRACKET_SINGLE_ELIM) &&
-        (type != BRACKET_DOUBLE_ELIM) &&
-        (type != BRACKET_RANKING1))
+    if ((type != BracketSingleElim) &&
+        (type != BracketDoubleElim) &&
+        (type != BracketRanking1))
     {
       throw std::runtime_error("Request for an invalid bracket type");
     }
@@ -125,13 +125,13 @@ namespace QTournament
         BracketMatchData newBracketMatch1 = BracketMatchData::getNew();
         newBracketMatch1.setInitialRanks(rank1, (nActual+1)-rank1);
         newBracketMatch1.setNextMatchForWinner(prevMatch, 1);
-        newBracketMatch1.nextMatchForLoser = BracketMatchData::NO_NEXT_MATCH;
+        newBracketMatch1.nextMatchForLoser = BracketMatchData::NoNextMatch;
         newBracketMatch1.depthInBracket = curDepth;
 
         BracketMatchData newBracketMatch2 = BracketMatchData::getNew();
         newBracketMatch2.setInitialRanks(rank2, (nActual+1)-rank2);
         newBracketMatch2.setNextMatchForWinner(prevMatch, 2);
-        newBracketMatch2.nextMatchForLoser = BracketMatchData::NO_NEXT_MATCH;
+        newBracketMatch2.nextMatchForLoser = BracketMatchData::NoNextMatch;
         newBracketMatch2.depthInBracket = curDepth;
 
         // a special treatment for semifinals: losers get a match for third place
@@ -456,7 +456,7 @@ namespace QTournament
     if (numPlayers <= 16)
     {
       // prepare the container for the visualization data
-      bvdd__out.addPage(BRACKET_PAGE_ORIENTATION::LANDSCAPE, BRACKET_LABEL_POS::TOP_LEFT);
+      bvdd__out.addPage(BracketPageOrientation::Landscape, BracketLabelPos::TopLeft);
 
       for (int i=0; i < 36; ++i)
       {
@@ -486,9 +486,9 @@ namespace QTournament
       }
     } else {
       // prepare the container for the visualization data
-      bvdd__out.addPage(BRACKET_PAGE_ORIENTATION::LANDSCAPE, BRACKET_LABEL_POS::TOP_LEFT);
-      bvdd__out.addPage(BRACKET_PAGE_ORIENTATION::LANDSCAPE, BRACKET_LABEL_POS::NONE);
-      bvdd__out.addPage(BRACKET_PAGE_ORIENTATION::LANDSCAPE, BRACKET_LABEL_POS::NONE);
+      bvdd__out.addPage(BracketPageOrientation::Landscape, BracketLabelPos::TopLeft);
+      bvdd__out.addPage(BracketPageOrientation::Landscape, BracketLabelPos::None);
+      bvdd__out.addPage(BracketPageOrientation::Landscape, BracketLabelPos::None);
 
       for (int i=0; i < 92; ++i)
       {
@@ -533,10 +533,10 @@ namespace QTournament
 
     switch (bracketType)
     {
-    case BRACKET_SINGLE_ELIM:
+    case BracketSingleElim:
       genBracket__SingleElim(numPlayers, bmdl__out, bvdd__out);
       break;
-    case BRACKET_RANKING1:
+    case BracketRanking1:
       genBracket__Ranking1(numPlayers, bmdl__out, bvdd__out);
       break;
     default:
@@ -622,11 +622,11 @@ namespace QTournament
         {
           if (bmd.nextMatchForWinner > 0)
           {
-            updatePlayer(bmd.nextMatchForWinner, bmd.nextMatchPlayerPosForWinner, BracketMatchData::UNUSED_PLAYER);
+            updatePlayer(bmd.nextMatchForWinner, bmd.nextMatchPlayerPosForWinner, BracketMatchData::UnusedPlayer);
           }
           if (bmd.nextMatchForLoser > 0)
           {
-            updatePlayer(bmd.nextMatchForLoser, bmd.nextMatchPlayerPosForLoser, BracketMatchData::UNUSED_PLAYER);
+            updatePlayer(bmd.nextMatchForLoser, bmd.nextMatchPlayerPosForLoser, BracketMatchData::UnusedPlayer);
           }
           // tag the match as deleted
           //
@@ -684,7 +684,7 @@ namespace QTournament
           // we need to update that match, too
           if (bmd.nextMatchForLoser > 0)
           {
-            updatePlayer(bmd.nextMatchForLoser, bmd.nextMatchPlayerPosForLoser, BracketMatchData::UNUSED_PLAYER);
+            updatePlayer(bmd.nextMatchForLoser, bmd.nextMatchPlayerPosForLoser, BracketMatchData::UnusedPlayer);
           }
 
           // we may only delete this match if the winner does not achieve a final rank.
@@ -738,7 +738,7 @@ namespace QTournament
           // we need to update that match, too
           if (bmd.nextMatchForLoser > 0)
           {
-            updatePlayer(bmd.nextMatchForLoser, bmd.nextMatchPlayerPosForLoser, BracketMatchData::UNUSED_PLAYER);
+            updatePlayer(bmd.nextMatchForLoser, bmd.nextMatchPlayerPosForLoser, BracketMatchData::UnusedPlayer);
             matchesChanged = true;
           }
 
@@ -779,7 +779,7 @@ namespace QTournament
           continue;
         }
 
-        if ((bmd.initialRank_Player1 == BracketMatchData::UNUSED_PLAYER) && (bmd.initialRank_Player2 < 0))
+        if ((bmd.initialRank_Player1 == BracketMatchData::UnusedPlayer) && (bmd.initialRank_Player2 < 0))
         {
           int prevMatchId = -(bmd.initialRank_Player2);
           auto prevMatch = getMatchById(prevMatchId);
@@ -801,7 +801,7 @@ namespace QTournament
           matchesChanged = true;
           continue;
         }
-        if ((bmd.initialRank_Player2 == BracketMatchData::UNUSED_PLAYER) && (bmd.initialRank_Player1 < 0))
+        if ((bmd.initialRank_Player2 == BracketMatchData::UnusedPlayer) && (bmd.initialRank_Player1 < 0))
         {
           int prevMatchId = -(bmd.initialRank_Player1);
           assert(prevMatchId > 0);    // there should never be a final rank for a non-symbolic player
@@ -840,8 +840,8 @@ namespace QTournament
         continue;
       }
 
-      assert(bmd.initialRank_Player1 != BracketMatchData::UNUSED_PLAYER);
-      assert(bmd.initialRank_Player2 != BracketMatchData::UNUSED_PLAYER);
+      assert(bmd.initialRank_Player1 != BracketMatchData::UnusedPlayer);
+      assert(bmd.initialRank_Player2 != BracketMatchData::UnusedPlayer);
       ++i;
     }
 
@@ -906,7 +906,7 @@ namespace QTournament
     // three-point-something which is then rounded up to 4
     //
     // Thus I use a stupid loop here to count up the rounds
-    if (bracketType != BracketGenerator::BRACKET_RANKING1)
+    if (bracketType != BracketGenerator::BracketRanking1)
     {
       int nRounds = 1;
       int n = 2;
@@ -917,9 +917,9 @@ namespace QTournament
       }
       return nRounds;
     }
-    if (bracketType == BracketGenerator::BRACKET_RANKING1)
+    if (bracketType == BracketGenerator::BracketRanking1)
     {
-      // hard-coded values RANKING1
+      // hard-coded values MatchSystem::Ranking1
       if (numPlayers > 16) return 7;
       if (numPlayers > 8) return 5;
       if (numPlayers > 4) return 3;

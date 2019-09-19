@@ -27,7 +27,9 @@
 #include "OnlineMngr.h"
 #include "ui/DlgPassword.h"
 
-cmdSetOrChangePassword::cmdSetOrChangePassword(QWidget* p, TournamentDB* _db)
+using namespace QTournament;
+
+cmdSetOrChangePassword::cmdSetOrChangePassword(QWidget* p, const TournamentDB& _db)
   :AbstractCommand(_db, p)
 {
 
@@ -35,9 +37,9 @@ cmdSetOrChangePassword::cmdSetOrChangePassword(QWidget* p, TournamentDB* _db)
 
 //----------------------------------------------------------------------------
 
-ERR cmdSetOrChangePassword::exec()
+Error cmdSetOrChangePassword::exec()
 {
-  OnlineMngr* om = db->getOnlineManager();
+  OnlineMngr* om = db.getOnlineManager();
   bool hasPw = om->hasSecretInDatabase();
 
   OnlineError oe;
@@ -45,7 +47,7 @@ ERR cmdSetOrChangePassword::exec()
   {
     DlgPassword dlg{parentWidget, DlgPassword::DlgMode_ChangePassword};
     int rc = dlg.exec();
-    if (rc != QDialog::Accepted) return ERR::WRONG_STATE;  // dummy return value
+    if (rc != QDialog::Accepted) return Error::WrongState;  // dummy return value
 
     oe = om->setPassword(dlg.getNewPassword(), dlg.getCurrentPassword());
 
@@ -53,7 +55,7 @@ ERR cmdSetOrChangePassword::exec()
 
     DlgPassword dlg{parentWidget, DlgPassword::DlgMode_SetNewPassword};
     int rc = dlg.exec();
-    if (rc != QDialog::Accepted) return ERR::WRONG_STATE;  // dummy return value;
+    if (rc != QDialog::Accepted) return Error::WrongState;  // dummy return value;
 
     oe = om->setPassword(dlg.getNewPassword());
   }
@@ -62,12 +64,12 @@ ERR cmdSetOrChangePassword::exec()
   {
     QString msg{tr("An error occurred an the password could not be stored.")};
     QMessageBox::warning(parentWidget, tr("Set password"), msg);
-    return ERR::WRONG_STATE;  // dummy return value;
+    return Error::WrongState;  // dummy return value;
   }
 
   QString msg{tr("The password has been set successfully!")};
   QMessageBox::information(parentWidget, tr("Set password"), msg);
 
-  return ERR::OK;
+  return Error::OK;
 }
 

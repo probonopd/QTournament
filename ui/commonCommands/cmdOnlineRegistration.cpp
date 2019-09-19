@@ -32,8 +32,11 @@
 #include "OnlineMngr.h"
 #include "ui/DlgRegisterTournament.h"
 #include "ui/DlgPassword.h"
+#include "../GuiHelpers.h"
 
-cmdOnlineRegistration::cmdOnlineRegistration(QWidget* p, TournamentDB* _db)
+using namespace QTournament;
+
+cmdOnlineRegistration::cmdOnlineRegistration(QWidget* p, const TournamentDB& _db)
   :AbstractCommand(_db, p)
 {
 
@@ -41,17 +44,17 @@ cmdOnlineRegistration::cmdOnlineRegistration(QWidget* p, TournamentDB* _db)
 
 //----------------------------------------------------------------------------
 
-ERR cmdOnlineRegistration::exec()
+Error cmdOnlineRegistration::exec()
 {
-  OnlineMngr* om = db->getOnlineManager();
+  OnlineMngr* om = db.getOnlineManager();
 
   // if the user hasn't supplied a password yet,
   // do that now
   if (!(om->hasSecretInDatabase()))
   {
     cmdSetOrChangePassword cmd{parentWidget, db};
-    ERR e = cmd.exec();
-    if (e != ERR::OK) return ERR::WRONG_STATE;  // dummy value
+    Error e = cmd.exec();
+    if (e != Error::OK) return Error::WrongState;  // dummy value
   }
 
   // check whether the server is online and whether we
@@ -68,7 +71,7 @@ ERR cmdOnlineRegistration::exec()
   {
     QString msg = tr("The tournament server is currently not available or there is no working internet connection.\n\nPlease try again later.");
     QMessageBox::information(parentWidget, tr("Online registration"), msg);
-    return ERR::WRONG_STATE;  // dummy error code; will not be evaluated by caller
+    return Error::WrongState;  // dummy error code; will not be evaluated by caller
   }
 
   // if the secret signing key has not yet been unlocked, ask the
@@ -76,29 +79,27 @@ ERR cmdOnlineRegistration::exec()
   if (!(om->isUnlocked()))
   {
     cmdUnlockKeystore cmd{parentWidget, db};
-    ERR err = cmd.exec();
-    if (err != ERR::OK) return err;
+    Error err = cmd.exec();
+    if (err != Error::OK) return err;
   }
 
   // show the registration form
-  auto cfg = SqliteOverlay::KeyValueTab::getTab(db, TAB_CFG, false);
-  string tName = cfg->operator [](CFG_KEY_TNMT_NAME);
-  string club = cfg->operator [](CFG_KEY_TNMT_ORGA);
+  SqliteOverlay::KeyValueTab cfg{db, TabCfg};
+  std::string tName = cfg[CfgKey_TnmtName];
+  std::string club = cfg[CfgKey_TnmtOrga];
   DlgRegisterTournament dlg{parentWidget, QString::fromUtf8(tName.c_str()), QString::fromUtf8(club.c_str())};
   int rc = dlg.exec();
-  if (rc != QDialog::Accepted) return ERR::WRONG_STATE;  // dummy error code; will not be evaluated by caller
+  if (rc != QDialog::Accepted) return Error::WrongState;  // dummy error code; will not be evaluated by caller
 
   // show a consent form, either in English or German
-  bool isGerman = QLocale().name().startsWith("de", Qt::CaseInsensitive);
-  QResource binData(isGerman ? ":/ui/consent_de.html" : ":/ui/consent.html");
-  QString consentTxt = QString::fromUtf8((const char*)binData.data());
+  const QString consentTxt = GuiHelpers::getLocaleDependedResource(":/txt/consent.html");
   QMessageBox dlgConsent{parentWidget};
   dlgConsent.setText(consentTxt);
   dlgConsent.setStandardButtons(QMessageBox::No | QMessageBox::Yes);
   dlgConsent.setDefaultButton(QMessageBox::Yes);
   dlgConsent.setWindowTitle(tr("Please read carefully"));
   rc = dlgConsent.exec();
-  if (rc != QMessageBox::Yes) return ERR::WRONG_STATE;  // dummy error code; will not be evaluated by caller
+  if (rc != QMessageBox::Yes) return Error::WrongState;  // dummy error code; will not be evaluated by caller
 
   // do the actual registration
   //
@@ -134,7 +135,7 @@ ERR cmdOnlineRegistration::exec()
     }
 
     QMessageBox::warning(parentWidget, tr("Online Registration FAILED"), msg);
-    return ERR::WRONG_STATE; // dummy value
+    return Error::WrongState; // dummy value
   }
 
   // at this point, the data exchange with the server was successful (HTTP and Signatures).
@@ -147,7 +148,7 @@ ERR cmdOnlineRegistration::exec()
     msg += tr("Please click on the link in the email to complete your registration.");
     QMessageBox::information(parentWidget, tr("Online registration"), msg);
 
-    return ERR::OK;
+    return Error::OK;
   }
 
   //
@@ -188,6 +189,6 @@ ERR cmdOnlineRegistration::exec()
 
   QMessageBox::warning(parentWidget, tr("Online Registration FAILED"), msg);
 
-  return ERR::WRONG_STATE; // dummy value
+  return Error::WrongState; // dummy value
 }
 

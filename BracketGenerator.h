@@ -34,9 +34,9 @@ namespace QTournament
   class BracketMatchData
   {
   public:
-    static constexpr int NO_INITIAL_RANK = 0;
-    static constexpr int NO_NEXT_MATCH = 0;
-    static constexpr int UNUSED_PLAYER = 999999;
+    static constexpr int NoInitialRank = 0;
+    static constexpr int NoNextMatch = 0;
+    static constexpr int UnusedPlayer = 999999;
 
     // Explicitly declare a default copy constructor
     BracketMatchData(const BracketMatchData& other) = default;
@@ -78,17 +78,17 @@ namespace QTournament
     int bracketMatchId;
   };
 
-  typedef unique_ptr<BracketMatchData> upBracketMatchData;
+  using upBracketMatchData = std::unique_ptr<BracketMatchData>;
   //typedef QList<BracketMatchData> BracketMatchDataList;
-  typedef vector<BracketMatchData> BracketMatchDataList;
+  using BracketMatchDataList = std::vector<BracketMatchData>;
   //typedef std::vector<upBracketMatchData> upBracketMatchDataVector;
 
   class BracketGenerator
   {
   public:
-    static constexpr int BRACKET_SINGLE_ELIM = 1;
-    static constexpr int BRACKET_DOUBLE_ELIM = 2;
-    static constexpr int BRACKET_RANKING1 = 3;
+    static constexpr int BracketSingleElim = 1;
+    static constexpr int BracketDoubleElim = 2;
+    static constexpr int BracketRanking1 = 3;
 
     BracketGenerator();
     BracketGenerator(int type);

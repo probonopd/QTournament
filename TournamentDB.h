@@ -20,90 +20,88 @@
 #define	TOURNAMENTDB_H
 
 #include <tuple>
+#include <string>
+#include <vector>
+#include <memory>
 
 #include <SqliteOverlay/SqliteDatabase.h>
 #include <SqliteOverlay/Transaction.h>
 
 #include "TournamentDataDefs.h"
 #include "TournamentErrorCodes.h"
+#include "OnlineMngr.h"
 
 namespace QTournament
 {
-  // forward
-  class OnlineMngr;
-
-  enum class TransactionState
-  {
-    Started,
-    AlreadyRunning,
-    Failed,
-  };
-
-  enum class DatabaseAccessRoles
-  {
-    MainThread,
-    SyncThread,
-  };
-  using DbLockHolder = SqliteOverlay::DatabaseLockHolder<DatabaseAccessRoles>;
+  // the default transaction type for all transactional database operations
+  static constexpr SqliteOverlay::TransactionType DefaultTransactionType{SqliteOverlay::TransactionType::Immediate};
 
   class TournamentDB : public SqliteOverlay::SqliteDatabase
   {
     friend class SqliteOverlay::SqliteDatabase;
 
   public:
-    static unique_ptr<TournamentDB> createNew(const QString& fName, const TournamentSettings& cfg, ERR* err=nullptr);
-    static unique_ptr<TournamentDB> openExisting(const QString& fName, ERR* err=nullptr);
+    /** \brief Ctor for an empty, dummy in-memory tournament database with default settings
+     */
+    TournamentDB();
 
-    virtual void populateTables();
-    virtual void populateViews();
+    /** \brief Ctor for creating a new datbase file with user provided settings
+     */
+    TournamentDB(const std::string& fName, const TournamentSettings& cfg);
+
+    /** \brief Ctor for opening an existing datbase
+     */
+    TournamentDB(const std::string& fName);
+
+    ~TournamentDB() override = default;
+
+    void populateTables() override;
+    void populateViews() override;
     void createIndices();
 
-    tuple<int, int> getVersion();
+    std::tuple<int, int> getVersion();
 
     bool isCompatibleDatabaseVersion();
 
     bool needsConversion();
     bool convertToLatestDatabaseVersion();
 
-    // Transaction handling; should primarily be used
-    // by the TransactioGuard
-    bool isTransactionRunning() const;
-    TransactionState beginNewTransaction(int* dbErr = nullptr);
-    bool commitRunningTransaction(int* dbErr = nullptr);
-    bool rollbackRunningTransaction(int* dbErr = nullptr);
-
     // access to the tournament-wide instance of the OnlineMngr
-    OnlineMngr* getOnlineManager();
-
-    class TransactionGuard
-    {
-    public:
-      TransactionGuard(TournamentDB* _db, bool _commitOnDestruction = false);
-      ~TransactionGuard();
-      bool commit(int* dbErr = nullptr);
-      bool rollback(int* dbErr = nullptr);
-
-    private:
-      TournamentDB* db;
-      bool commitOnDestruction;
-    };
-
-    unique_ptr<TransactionGuard> acquireTransactionGuard(bool commitOnDestruction, bool* isDbErr = nullptr, bool* transRunning = nullptr);
+    OnlineMngr* getOnlineManager() const;
 
     // conversion to CSV for syncing with the server
-    tuple<string,int> tableDataToCSV(const string& tabName, const vector<string>& colNames, int rowId=-1);
-    tuple<string,int> tableDataToCSV(const string& tabName, const vector<string>& colNames, const vector<int>& rowList);
-    string getSyncStringForTable(const string& tabName, const vector<string>& colNames, int rowId=-1);
-    string getSyncStringForTable(const string& tabName, const vector<string>& colNames, vector<int> rowList);
+    std::tuple<std::string,int> tableDataToCSV(const std::string& tabName, const std::vector<Sloppy::estring>& colNames, int rowId=-1) const;
+    std::tuple<std::string,int> tableDataToCSV(const std::string& tabName, const std::vector<Sloppy::estring>& colNames, const std::vector<int>& rowList) const;
+    std::string getSyncStringForTable(const std::string& tabName, const std::vector<Sloppy::estring>& colNames, int rowId=-1) const;
+    std::string getSyncStringForTable(const std::string& tabName, const std::vector<Sloppy::estring>& colNames, std::vector<int> rowList) const;
+
+  protected:
+    void initBlankDb(const TournamentSettings& cfg);
 
   private:
-    TournamentDB(string fName, bool createNew);
 
-    unique_ptr<SqliteOverlay::Transaction> curTrans;
-
-    unique_ptr<OnlineMngr> om;
+    std::unique_ptr<OnlineMngr> om;
   };
 
+  /** \brief Creates a new, empty tournament database with a given file name
+   *
+   * \throws TournamentException with error code FileAlreadyExists if a file of the provided name already exists
+   *
+   * \throws TournamentException with error code Error::DatabaseError if the new database could not be created
+   *
+   * \returns the newly created database
+   */
+  TournamentDB createNew(const QString& fName, const TournamentSettings& cfg);
+
+  /** \brief Opens an existing tournament database with a given file name
+   *
+   * \throws TournamentException with error code FileNotExisting if there is no such file
+   *
+   * \throws TournamentException with error code IncompatibleFileFormat if the valid is invalid or incompatible
+   *
+   * \returns a handle for the database file
+   */
+  TournamentDB openExisting(const QString& fName);
 }
 
 #endif	/* TOURNAMENTDB_H */

@@ -20,7 +20,7 @@
 #include <SqliteOverlay/TabRow.h>
 
 #include "TournamentDatabaseObjectManager.h"
-#include "HelperFunc.h"
+#include "TournamentDB.h"
 
 namespace QTournament
 {
@@ -34,49 +34,58 @@ namespace QTournament
    *    * Except for the new row, all other sequence numbers in the table are correct
    *
    */
-  void TournamentDatabaseObjectManager::fixSeqNumberAfterInsert(SqliteOverlay::DbTab* tabPtr) const
+  void TournamentDatabaseObjectManager::fixSeqNumberAfterInsert(const SqliteOverlay::DbTab& otherTab) const
   {
-    SqliteOverlay::DbTab* t = (tabPtr == nullptr) ? tab : tabPtr;
-    auto r = t->getSingleRowByColumnValueNull(GENERIC_SEQNUM_FIELD_NAME);
+    auto r = otherTab.getSingleRowByColumnValue(GenericSeqnumFieldName, InvalidInitialSequenceNumber);
     
-    int newSeqNum = t->length() - 1;
+    int newSeqNum = otherTab.length() - 1;
     
-    // lock the database before writing
-    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
+    r.update(GenericSeqnumFieldName, newSeqNum);
+  }
 
-    r.update(GENERIC_SEQNUM_FIELD_NAME, newSeqNum);
+  //----------------------------------------------------------------------------
+
+  void TournamentDatabaseObjectManager::fixSeqNumberAfterInsert() const
+  {
+    fixSeqNumberAfterInsert(tab);
+  }
+
+  //----------------------------------------------------------------------------
+
+  void TournamentDatabaseObjectManager::fixSeqNumberAfterDelete(int deletedSeqNum) const
+  {
+    fixSeqNumberAfterDelete(tab, deletedSeqNum);
   }
 
 //----------------------------------------------------------------------------
 
-  void TournamentDatabaseObjectManager::fixSeqNumberAfterDelete(SqliteOverlay::DbTab* tabPtr, int deletedSeqNum) const
+  void TournamentDatabaseObjectManager::fixSeqNumberAfterDelete(const SqliteOverlay::DbTab& otherTab, int deletedSeqNum) const
   {
-    SqliteOverlay::DbTab* t = (tabPtr == nullptr) ? tab : tabPtr;
-
     SqliteOverlay::WhereClause wc;
-    wc.addIntCol(GENERIC_SEQNUM_FIELD_NAME, ">", deletedSeqNum);
-    wc.setOrderColumn_Asc(GENERIC_SEQNUM_FIELD_NAME);
+    wc.addCol(GenericSeqnumFieldName, ">", deletedSeqNum);
+    wc.setOrderColumn_Asc(GenericSeqnumFieldName);
 
-    auto it = t->getRowsByWhereClause(wc);
+    // make sure we update all rows in a single transaction
+    auto trans = db.startTransaction(DefaultTransactionType);
+
+    auto rows = otherTab.getRowsByWhereClause(wc);
     
-    // lock the database before writing
-    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
-
     // re-number all items behind the deleted item
     int nextSeqNum = deletedSeqNum;
-    while (!(it.isEnd()))
+    for (const auto& row : rows)
     {
-      (*it).update(GENERIC_SEQNUM_FIELD_NAME, nextSeqNum);
-      nextSeqNum++;
-      ++it;
+      row.update(GenericSeqnumFieldName, nextSeqNum);
+      ++nextSeqNum;
     }
+
+    trans.commit();
   }
 
 //----------------------------------------------------------------------------
 
-  string TournamentDatabaseObjectManager::getSyncString(int rowId)
+  std::string TournamentDatabaseObjectManager::getSyncString(int rowId) const
   {
-    vector<int> v = (rowId > 0) ? vector<int>{rowId} : vector<int>{};
+    std::vector<int> v = (rowId > 0) ? std::vector<int>{rowId} : std::vector<int>{};
     return getSyncString(v);
   }
 

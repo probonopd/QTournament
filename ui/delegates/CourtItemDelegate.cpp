@@ -67,9 +67,12 @@ void CourtItemDelegate::paintMatchInfoCell_Selected(QPainter *painter, const QSt
   // draw the first info line with the match number and the category
   QString txt = tr("Match number:");
   txt += " " + QString::number(ma.getMatchNumber()) + "    ";
+
+  const Category cat = ma.getCategory();
+  const int roundOffset = cat.getParameter_int(CatParameter::FirstRoundOffset);
   txt += tr("Category:");
-  txt += " " + ma.getCategory().getName() + "    ";
-  txt += tr("Round: ") + QString::number(ma.getMatchGroup().getRound());
+  txt += " " + cat.getName() + "    ";
+  txt += tr("Round: ") + QString::number(ma.getMatchGroup().getRound() + roundOffset);
   double baseline = y0 + playerNameHeight + fntMetrics.ascent();
   GuiHelpers::drawFormattedText(painter, x0, baseline, txt, true, false, normalFont, QColor(Qt::white));
 
@@ -93,19 +96,19 @@ void CourtItemDelegate::paintMatchInfoCell_Selected(QPainter *painter, const QSt
 
   // draw the third info line with umpire information
   txt = tr("Umpire: ");
-  REFEREE_MODE refMode = ma.get_RAW_RefereeMode();
-  if (refMode == REFEREE_MODE::NONE)
+  RefereeMode refMode = ma.get_RAW_RefereeMode();
+  if (refMode == RefereeMode::None)
   {
     txt += tr("none");
   }
-  else if (refMode == REFEREE_MODE::HANDWRITTEN)
+  else if (refMode == RefereeMode::HandWritten)
   {
     txt += tr("manually assigned");
   }
   else
   {
-    upPlayer referee = ma.getAssignedReferee();
-    assert(referee != nullptr);
+    auto referee = ma.getAssignedReferee();
+    assert(referee);
     txt += referee->getDisplayName_FirstNameFirst();
   }
   baseline += fntMetrics.height() * (1 + ItemTextRowSkip_Perc);
@@ -116,7 +119,7 @@ void CourtItemDelegate::paintMatchInfoCell_Selected(QPainter *painter, const QSt
 
 void CourtItemDelegate::paintSelectedCell(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index, int srcRowId) const
 {
-  CourtMngr cm{db};
+  CourtMngr cm{*db};
   auto co = cm.getCourtBySeqNum(srcRowId);
   auto ma = co->getMatch();
 
@@ -125,7 +128,7 @@ void CourtItemDelegate::paintSelectedCell(QPainter* painter, const QStyleOptionV
     GuiHelpers::drawFormattedText(painter, option.rect, index.data(Qt::DisplayRole).toString(),
                                   Qt::AlignVCenter|Qt::AlignCenter, true, false, normalFont, QColor(Qt::white), 1.0);
   } else {
-    if (ma != nullptr)
+    if (ma)
     {
       paintMatchInfoCell_Selected(painter, option, *ma);
     } else {
@@ -138,7 +141,7 @@ void CourtItemDelegate::paintSelectedCell(QPainter* painter, const QStyleOptionV
 
 void CourtItemDelegate::paintUnselectedCell(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index, int srcRowId) const
 {
-  CourtMngr cm{db};
+  CourtMngr cm{*db};
   auto co = cm.getCourtBySeqNum(srcRowId);
   auto ma = co->getMatch();
 
@@ -146,7 +149,7 @@ void CourtItemDelegate::paintUnselectedCell(QPainter* painter, const QStyleOptio
   {
     painter->drawText(option.rect, Qt::AlignVCenter|Qt::AlignCenter, index.data(Qt::DisplayRole).toString());
   } else {
-    if (ma != nullptr)
+    if (ma)
     {
       // calculate the position of the text baseline
       double vertMargin = (ItemRowHeight - fntMetrics.height()) / 2.0;
@@ -166,23 +169,23 @@ void CourtItemDelegate::paintUnselectedCell(QPainter* painter, const QStyleOptio
 void CourtItemDelegate::paintCourtStatus(QPainter* painter, const QStyleOptionViewItem& option, const Court& co, bool isSelected) const
 {
   QString label;
-  OBJ_STATE stat = co.getState();
+  ObjState stat = co.getState();
   bool manual = co.isManualAssignmentOnly();
 
   // set a default color for text items
   QColor txtCol = isSelected ? QColor(Qt::white) : QColor(Qt::darkGray);
 
-  if ((stat == STAT_CO_AVAIL) && !manual)
+  if ((stat == ObjState::CO_Avail) && !manual)
   {
     label = tr("(free)");
     txtCol = isSelected ? QColor(Qt::green) : QColor(Qt::darkGreen);
   }
-  else if ((stat == STAT_CO_AVAIL) && manual)
+  else if ((stat == ObjState::CO_Avail) && manual)
   {
     label = tr("(free, manual match assignment only)");
     txtCol = isSelected ? QColor(Qt::green) : QColor(Qt::darkGreen);
   }
-  else if (stat == STAT_CO_DISABLED)
+  else if (stat == ObjState::CO_Disabled)
   {
     label = tr("(disabled)");
     txtCol = QColor(Qt::red);

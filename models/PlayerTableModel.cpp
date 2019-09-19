@@ -26,9 +26,9 @@
 using namespace QTournament;
 using namespace SqliteOverlay;
 
-PlayerTableModel::PlayerTableModel(TournamentDB* _db)
-:QAbstractTableModel(0), db(_db), playerTab(db->getTab(TAB_PLAYER)),
-        teamTab(db->getTab(TAB_TEAM)), catTab((db->getTab(TAB_CATEGORY)))
+PlayerTableModel::PlayerTableModel(const TournamentDB& _db)
+  :QAbstractTableModel{nullptr}, db{_db}, playerTab{DbTab{db, TabPlayer, false}},
+        teamTab{DbTab{db, TabTeam, false}}, catTab{DbTab{db, TabCategory, false}}
 {
   CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
   connect(cse, SIGNAL(teamRenamed(int)), this, SLOT(onTeamRenamed(int)), Qt::DirectConnection);
@@ -36,7 +36,7 @@ PlayerTableModel::PlayerTableModel(TournamentDB* _db)
   connect(cse, SIGNAL(beginCreatePlayer()), this, SLOT(onBeginCreatePlayer()), Qt::DirectConnection);
   connect(cse, SIGNAL(endCreatePlayer(int)), this, SLOT(onEndCreatePlayer(int)), Qt::DirectConnection);
   connect(cse, SIGNAL(playerRenamed(Player)), this, SLOT(onPlayerRenamed(Player)), Qt::DirectConnection);
-  connect(cse, SIGNAL(playerStatusChanged(int,int,OBJ_STATE,OBJ_STATE)), this, SLOT(onPlayerStatusChanged(int,int)), Qt::DirectConnection);
+  connect(cse, SIGNAL(playerStatusChanged(int,int,ObjState,ObjState)), this, SLOT(onPlayerStatusChanged(int,int)), Qt::DirectConnection);
   connect(cse, SIGNAL(beginDeletePlayer(int)), this, SLOT(onBeginDeletePlayer(int)), Qt::DirectConnection);
   connect(cse, SIGNAL(endDeletePlayer()), this, SLOT(onEndDeletePlayer()), Qt::DirectConnection);
 
@@ -48,14 +48,14 @@ PlayerTableModel::PlayerTableModel(TournamentDB* _db)
 
 int PlayerTableModel::rowCount(const QModelIndex& parent) const
 {
-  return playerTab->length();
+  return playerTab.length();
 }
 
 //----------------------------------------------------------------------------
 
 int PlayerTableModel::columnCount(const QModelIndex& parent) const
 {
-  return COLUMN_COUNT;  // four columns: player's name, sex, team and assigned categories
+  return ColumnCount;  // four columns: player's name, sex, team and assigned categories
 }
 
 //----------------------------------------------------------------------------
@@ -65,7 +65,7 @@ QVariant PlayerTableModel::data(const QModelIndex& index, int role) const
     if (!index.isValid())
       return QVariant();
 
-    if (index.row() >= playerTab->length())
+    if (index.row() >= playerTab.length())
       return QVariant();
 
     if (role != Qt::DisplayRole)
@@ -76,7 +76,7 @@ QVariant PlayerTableModel::data(const QModelIndex& index, int role) const
     // no check for a nullptr here, the call above MUST succeed
     
     // first column: name
-    if (index.column() == COL_NAME)
+    if (index.column() == ColNameId)
     {
       return p->getDisplayName();
     }
@@ -84,7 +84,7 @@ QVariant PlayerTableModel::data(const QModelIndex& index, int role) const
     // second column: sex
     if (index.column() == 1)
     {
-      return ((p->getSex() == M) ? QString("♂") : QString("♀"));
+      return ((p->getSex() == Sex::M) ? QString("♂") : QString("♀"));
     }
     
     // third column: team name
@@ -112,7 +112,7 @@ QVariant PlayerTableModel::data(const QModelIndex& index, int role) const
     }
 
     // fifth column: and empty column just for filling the view
-    if (index.column() == FILL_COL)
+    if (index.column() == FillColId)
     {
       return QVariant();
     }
@@ -131,7 +131,7 @@ QVariant PlayerTableModel::headerData(int section, Qt::Orientation orientation, 
   
   if (orientation == Qt::Horizontal)
   {
-    if (section == COL_NAME) {
+    if (section == ColNameId) {
       return tr("Name");
     }
 
@@ -147,7 +147,7 @@ QVariant PlayerTableModel::headerData(int section, Qt::Orientation orientation, 
       return tr("Categories");
     }
 
-    if (section == FILL_COL) {
+    if (section == FillColId) {
       return QVariant();
     }
 
@@ -161,7 +161,7 @@ QVariant PlayerTableModel::headerData(int section, Qt::Orientation orientation, 
 
 void PlayerTableModel::onBeginCreatePlayer()
 {
-  int newPos = playerTab->length();
+  int newPos = playerTab.length();
   beginInsertRows(QModelIndex(), newPos, newPos);
 }
 
@@ -200,7 +200,7 @@ void PlayerTableModel::onPlayerRenamed(const Player& p)
 void PlayerTableModel::onPlayerStatusChanged(int playerId, int playerSeqNum)
 {
   QModelIndex startIdx = createIndex(playerSeqNum, 0);
-  QModelIndex endIdx = createIndex(playerSeqNum, COLUMN_COUNT-1);
+  QModelIndex endIdx = createIndex(playerSeqNum, ColumnCount-1);
   emit dataChanged(startIdx, endIdx);
 }
 

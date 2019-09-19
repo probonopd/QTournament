@@ -34,11 +34,12 @@ namespace QTournament
 {
 
 
-MatchResultList::MatchResultList(TournamentDB* _db, const QString& _name, const Category& _cat, int _round)
+MatchResultList::MatchResultList(const TournamentDB& _db, const QString& _name, const Category& _cat, int _round)
   :AbstractReport(_db, _name), cat(_cat), round(_round)
 {
   // make sure that the requested round is already finished or at least running
   CatRoundStatus crs = cat.getRoundStatus();
+  roundOffset = cat.getParameter_int(CatParameter::FirstRoundOffset);
   QList<int> runningRounds = crs.getCurrentlyRunningRoundNumbers();
   for (int runningRound : runningRounds)
   {
@@ -73,7 +74,7 @@ upSimpleReport MatchResultList::regenerateReport()
   }
 
   upSimpleReport result = createEmptyReport_Portrait();
-  QString repName = cat.getName() + tr(" -- Results of Round ") + QString::number(round);
+  QString repName = cat.getName() + tr(" -- Results of Round ") + QString::number(round + roundOffset);
   setHeaderAndHeadline(result.get(), repName, subHeader);
 
   // print a warning if the round is incomplete
@@ -117,7 +118,7 @@ QStringList MatchResultList::getReportLocators() const
 
   QString loc = tr("Results::");
   loc += cat.getName() + tr("::by round::");
-  loc += tr("Round ") + QString::number(round);
+  loc += tr("Round ") + QString::number(round + roundOffset);
 
   result.append(loc);
 

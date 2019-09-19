@@ -29,74 +29,67 @@ using namespace SqliteOverlay;
 namespace QTournament
 {
 
-  CourtMngr::CourtMngr(TournamentDB* _db)
-  : TournamentDatabaseObjectManager(_db, TAB_COURT)
+  CourtMngr::CourtMngr(const TournamentDB& _db)
+  : TournamentDatabaseObjectManager(_db, TabCourt)
   {
   }
 
 //----------------------------------------------------------------------------
 
-  unique_ptr<Court> CourtMngr::createNewCourt(const int courtNum, const QString& _name, ERR *err)
+  CourtOrError CourtMngr::createNewCourt(const int courtNum, const QString& _name)
   {
     QString name = _name.trimmed();
     
-    if (name.length() > MAX_NAME_LEN)
+    if (name.length() > MaxNameLen)
     {
-      if (err != nullptr) *err = INVALID_NAME;
-      return nullptr;
+      return CourtOrError{Error::InvalidName};
     }
     
     if (hasCourt(courtNum))
     {
-      if (err != nullptr) *err = COURT_NUMBER_EXISTS;
-      return nullptr;
+      return CourtOrError{Error::CourtNumberExists};
     }
     
     // prepare a new table row
     SqliteOverlay::ColumnValueClause cvc;
-    cvc.addIntCol(CO_NUMBER, courtNum);
-    cvc.addStringCol(GENERIC_NAME_FIELD_NAME, QString2StdString(name));
-    cvc.addIntCol(CO_IS_MANUAL_ASSIGNMENT, 0);
-    cvc.addIntCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_CO_AVAIL));
-    
-    // lock the database before writing
-    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
+    cvc.addCol(CO_Number, courtNum);
+    cvc.addCol(GenericNameFieldName, QString2StdString(name));
+    cvc.addCol(CO_IsManualAssignment, 0);
+    cvc.addCol(GenericStateFieldName, static_cast<int>(ObjState::CO_Avail));
+    cvc.addCol(GenericSeqnumFieldName, InvalidInitialSequenceNumber);  // will be fixed immediately; this is just for satisfying a not-NULL constraint
 
     // create the new court row
     CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
     cse->beginCreateCourt();
-    int newId = tab->insertRow(cvc);
+    int newId = tab.insertRow(cvc);
     fixSeqNumberAfterInsert();
-    cse->endCreateCourt(tab->length() - 1); // the new sequence number is always the highest
+    cse->endCreateCourt(tab.length() - 1); // the new sequence number is always the highest
     
     // create a court object for the new court and return a pointer
     // to this new object
-    Court* co_raw = new Court(db, newId);
-    if (err != nullptr) *err = OK;
-    return unique_ptr<Court>(co_raw);
+    return CourtOrError(db, newId);
   }
 
 //----------------------------------------------------------------------------
 
   bool CourtMngr::hasCourt(const int courtNum)
   {
-    return (tab->getMatchCountForColumnValue(CO_NUMBER, courtNum) > 0);
+    return (tab.getMatchCountForColumnValue(CO_Number, courtNum) > 0);
   }
 
 //----------------------------------------------------------------------------
 
-  int CourtMngr::getHighestUnusedCourtNumber() const
+  int CourtMngr::getHighestUsedCourtNumber() const
   {
-    // do we have any courts at all?
-    if (tab->length() == 0) return 1;
+    static const std::string sql{"SELECT max(" + std::string{CO_Number} + ") FROM " + std::string{TabCourt}};
 
-    // okay, get the highest used court number
-    SqliteOverlay::WhereClause wc;
-    wc.addIntCol("id", ">", 0);
-    wc.setOrderColumn_Desc(CO_NUMBER);
-    auto r = tab->getSingleRowByWhereClause(wc);
-
-    return r.getInt(CO_NUMBER) + 1;
+    try
+    {
+      return db.execScalarQueryIntOrNull(sql).value_or(0);
+    }
+    catch (NoDataException&) {
+      return 0;
+    }
   }
 
 //----------------------------------------------------------------------------
@@ -108,9 +101,9 @@ namespace QTournament
    *
    * @return a unique_ptr to the requested court or nullptr if the court doesn't exits
    */
-  unique_ptr<Court> CourtMngr::getCourt(const int courtNum)
+  std::optional<Court> CourtMngr::getCourt(const int courtNum)
   {
-    return getSingleObjectByColumnValue<Court>(CO_NUMBER, courtNum);
+    return getSingleObjectByColumnValue<Court>(CO_Number, courtNum);
   }
 
 //----------------------------------------------------------------------------
@@ -120,31 +113,28 @@ namespace QTournament
    *
    * @Return QList holding all courts
    */
-  vector<Court> CourtMngr::getAllCourts()
+  std::vector<Court> CourtMngr::getAllCourts()
   {
     return getAllObjects<Court>();
   }
 
 //----------------------------------------------------------------------------
 
-  ERR CourtMngr::renameCourt(Court& c, const QString& _newName)
+  Error CourtMngr::renameCourt(Court& c, const QString& _newName)
   {
     QString newName = _newName.trimmed();
     
     // Ensure the new name is valid
-    if (newName.length() > MAX_NAME_LEN)
+    if (newName.length() > MaxNameLen)
     {
-      return INVALID_NAME;
+      return Error::InvalidName;
     }
         
-    // lock the database before writing
-    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
-
-    c.row.update(GENERIC_NAME_FIELD_NAME, QString2StdString(newName));
+    c.rowRef().update(GenericNameFieldName, QString2StdString(newName));
     
     CentralSignalEmitter::getInstance()->courtRenamed(c);
     
-    return OK;
+    return Error::OK;
   }
 
 //----------------------------------------------------------------------------
@@ -156,9 +146,9 @@ namespace QTournament
    *
    * @return a unique_ptr to the requested court or nullptr if the court doesn't exits
    */
-  unique_ptr<Court> CourtMngr::getCourtBySeqNum(int seqNum)
+  std::optional<Court> CourtMngr::getCourtBySeqNum(int seqNum)
   {
-    return getSingleObjectByColumnValue<Court>(GENERIC_SEQNUM_FIELD_NAME, seqNum);
+    return getSingleObjectByColumnValue<Court>(GenericSeqnumFieldName, seqNum);
   }
 
 
@@ -166,12 +156,12 @@ namespace QTournament
 
   bool CourtMngr::hasCourtById(int id)
   {
-    return (tab->getMatchCountForColumnValue("id", id) != 0);
+    return (tab.getMatchCountForColumnValue("id", id) != 0);
   }
 
 //----------------------------------------------------------------------------
 
-  unique_ptr<Court> CourtMngr::getCourtById(int id)
+  std::optional<Court> CourtMngr::getCourtById(int id)
   {
     return getSingleObjectByColumnValue<Court>("id", id);
   }
@@ -180,29 +170,29 @@ namespace QTournament
 
   int CourtMngr::getActiveCourtCount()
   {
-    int allCourts = tab->length();
-    int disabledCourts = tab->getMatchCountForColumnValue(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_CO_DISABLED));
+    int allCourts = tab.length();
+    int disabledCourts = tab.getMatchCountForColumnValue(GenericStateFieldName, static_cast<int>(ObjState::CO_Disabled));
 
     return (allCourts - disabledCourts);
   }
 
 //----------------------------------------------------------------------------
 
-  unique_ptr<Court> CourtMngr::getNextUnusedCourt(bool includeManual) const
+  std::optional<Court> CourtMngr::getNextUnusedCourt(bool includeManual) const
   {
-    int reqState = static_cast<int>(STAT_CO_AVAIL);
+    int reqState = static_cast<int>(ObjState::CO_Avail);
     SqliteOverlay::WhereClause wc;
-    wc.addIntCol(GENERIC_STATE_FIELD_NAME, reqState);
+    wc.addCol(GenericStateFieldName, reqState);
 
     // further restrict the search criteria if courts for manual
     // match assignment are excluded
     if (!includeManual)
     {
-      wc.addIntCol(CO_IS_MANUAL_ASSIGNMENT, 0);
+      wc.addCol(CO_IsManualAssignment, 0);
     }
 
     // always get the court with the lowest number first
-    wc.setOrderColumn_Asc(CO_NUMBER);
+    wc.setOrderColumn_Asc(CO_Number);
 
     return getSingleObjectByWhereClause<Court>(wc);
   }
@@ -211,13 +201,13 @@ namespace QTournament
 
   bool CourtMngr::acquireCourt(const Court &co)
   {
-    if (co.getState() != STAT_CO_AVAIL)
+    if (co.is_NOT_InState(ObjState::CO_Avail))
     {
       return false;
     }
 
-    co.setState(STAT_CO_BUSY);
-    CentralSignalEmitter::getInstance()->courtStatusChanged(co.getId(), co.getSeqNum(), STAT_CO_AVAIL, STAT_CO_BUSY);
+    co.setState(ObjState::CO_Busy);
+    CentralSignalEmitter::getInstance()->courtStatusChanged(co.getId(), co.getSeqNum(), ObjState::CO_Avail, ObjState::CO_Busy);
     return true;
   }
 
@@ -225,7 +215,7 @@ namespace QTournament
 
   bool CourtMngr::releaseCourt(const Court &co)
   {
-    if (co.getState() != STAT_CO_BUSY)
+    if (co.is_NOT_InState(ObjState::CO_Busy))
     {
       return false;
     }
@@ -233,109 +223,101 @@ namespace QTournament
     // make sure there is no currently running match
     // assigned to this court
     SqliteOverlay::WhereClause wc;
-    wc.addIntCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_RUNNING));
-    wc.addIntCol(MA_COURT_REF, co.getId());
-    auto matchTab = db->getTab(TAB_MATCH);
-    if (matchTab->getMatchCountForWhereClause(wc) > 0)
+    wc.addCol(GenericStateFieldName, static_cast<int>(ObjState::MA_Running));
+    wc.addCol(MA_CourtRef, co.getId());
+    DbTab matchTab{db, TabMatch, false};
+    if (matchTab.getMatchCountForWhereClause(wc) > 0)
     {
       return false;   // there is at least one running match assigned to this court
     }
 
     // all fine, we can fall back to AVAIL
-    co.setState(STAT_CO_AVAIL);
-    CentralSignalEmitter::getInstance()->courtStatusChanged(co.getId(), co.getSeqNum(), STAT_CO_BUSY, STAT_CO_AVAIL);
+    co.setState(ObjState::CO_Avail);
+    CentralSignalEmitter::getInstance()->courtStatusChanged(co.getId(), co.getSeqNum(), ObjState::CO_Busy, ObjState::CO_Avail);
     return true;
   }
 
   //----------------------------------------------------------------------------
 
-  ERR CourtMngr::disableCourt(const Court& co)
+  Error CourtMngr::disableCourt(const Court& co)
   {
-    OBJ_STATE stat = co.getState();
+    ObjState stat = co.getState();
 
-    if (stat == STAT_CO_DISABLED) return OK;   // nothing to do for us
+    if (stat == ObjState::CO_Disabled) return Error::OK;   // nothing to do for us
 
     // prohibit a state change if the court is in use
-    if (stat == STAT_CO_BUSY) return COURT_BUSY;
+    if (stat == ObjState::CO_Busy) return Error::CourtBusy;
 
     // change the court state and emit a change event
-    co.setState(STAT_CO_DISABLED);
-    CentralSignalEmitter::getInstance()->courtStatusChanged(co.getId(), co.getSeqNum(), stat, STAT_CO_DISABLED);
-    return OK;
+    co.setState(ObjState::CO_Disabled);
+    CentralSignalEmitter::getInstance()->courtStatusChanged(co.getId(), co.getSeqNum(), stat, ObjState::CO_Disabled);
+    return Error::OK;
   }
 
   //----------------------------------------------------------------------------
 
-  ERR CourtMngr::enableCourt(const Court& co)
+  Error CourtMngr::enableCourt(const Court& co)
   {
-    OBJ_STATE stat = co.getState();
+    ObjState stat = co.getState();
 
-    if (stat != STAT_CO_DISABLED) return COURT_NOT_DISABLED;
+    if (stat != ObjState::CO_Disabled) return Error::CourtNotDisabled;
 
     // change the court state and emit a change event
-    co.setState(STAT_CO_AVAIL);
-    CentralSignalEmitter::getInstance()->courtStatusChanged(co.getId(), co.getSeqNum(), STAT_CO_DISABLED, STAT_CO_AVAIL);
-    return OK;
+    co.setState(ObjState::CO_Avail);
+    CentralSignalEmitter::getInstance()->courtStatusChanged(co.getId(), co.getSeqNum(), ObjState::CO_Disabled, ObjState::CO_Avail);
+    return Error::OK;
   }
 
   //----------------------------------------------------------------------------
 
-  ERR CourtMngr::deleteCourt(const Court& co)
+  Error CourtMngr::deleteCourt(const Court& co)
   {
     // check if the court has already been used in the past
-    auto matchTab = db->getTab(TAB_MATCH);
-    if (matchTab->getMatchCountForColumnValue(MA_COURT_REF, co.getId()) > 0)
+    DbTab matchTab{db, TabMatch, false};
+    if (matchTab.getMatchCountForColumnValue(MA_CourtRef, co.getId()) > 0)
     {
-      return COURT_ALREADY_USED;
+      return Error::CourtAlreadyUsed;
     }
 
     // after this check it is safe to delete to court because we won't
     // harm the database integrity
 
-    // lock the database before writing
-    DbLockHolder lh{db, DatabaseAccessRoles::MainThread};
-
     CentralSignalEmitter* cse =CentralSignalEmitter::getInstance();
     int oldSeqNum = co.getSeqNum();
     cse->beginDeleteCourt(oldSeqNum);
-    int dbErr;
-    tab->deleteRowsByColumnValue("id", co.getId(), &dbErr);
+    tab.deleteRowsByColumnValue("id", co.getId());
     fixSeqNumberAfterDelete(tab, oldSeqNum);
     cse->endDeleteCourt();
 
-    return (dbErr == SQLITE_DONE) ? OK : DATABASE_ERROR;
+    return Error::OK;
   }
 
   //----------------------------------------------------------------------------
 
-  string CourtMngr::getSyncString(vector<int> rows)
+  std::string CourtMngr::getSyncString(const std::vector<int>& rows) const
   {
-    vector<string> cols = {"id", GENERIC_NAME_FIELD_NAME, CO_NUMBER};
+    std::vector<Sloppy::estring> cols = {"id", GenericNameFieldName, CO_Number};
 
-    return db->getSyncStringForTable(TAB_COURT, cols, rows);
+    return db.getSyncStringForTable(TabCourt, cols, rows);
   }
 
   //----------------------------------------------------------------------------
 
-  unique_ptr<Court> CourtMngr::autoSelectNextUnusedCourt(ERR *err, bool includeManual) const
+  CourtOrError CourtMngr::autoSelectNextUnusedCourt(bool includeManual) const
   {
     // find the next free court that is not subject to manual assignment
     auto nextAutoCourt = getNextUnusedCourt(false);
-    if (nextAutoCourt != nullptr)
+    if (nextAutoCourt)
     {
-      // okay, we have a regular court
-      if (err != nullptr) *err = OK;
-      return nextAutoCourt;
+      return *nextAutoCourt;
     }
 
     // Damn, no court for automatic assignment available.
     // So let's check for courts with manual assignment, too.
     auto nextManualCourt = getNextUnusedCourt(true);
-    if (nextManualCourt == nullptr)
+    if (!nextManualCourt)
     {
-      // okay, there is court available at all
-      if (err != nullptr) *err = NO_COURT_AVAIL;
-      return nullptr;
+      return Error::NoCourtAvail;
     }
 
     // great, so there is a free court, but it's for
@@ -343,13 +325,11 @@ namespace QTournament
     // manual courts, everything is fine
     if (includeManual)
     {
-      if (err != nullptr) *err = OK;
-      return nextManualCourt;
+      return *nextManualCourt;
     }
 
     // indicate to the user that there would be a manual court
-    if (err != nullptr) *err = ONLY_MANUAL_COURT_AVAIL;
-    return nullptr;
+    return Error::OnlyManualCourtAvail;
   }
 
 //----------------------------------------------------------------------------

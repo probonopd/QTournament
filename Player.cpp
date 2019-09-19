@@ -32,15 +32,15 @@
 namespace QTournament
 {
 
-  Player::Player(TournamentDB* db, int rowId)
-  :TournamentDatabaseObject(db, TAB_PLAYER, rowId)
+  Player::Player(const TournamentDB& _db, int rowId)
+  :TournamentDatabaseObject(_db, TabPlayer, rowId)
   {
   }
 
 //----------------------------------------------------------------------------
 
-  Player::Player(TournamentDB* db, SqliteOverlay::TabRow row)
-  :TournamentDatabaseObject(db, row)
+  Player::Player(const TournamentDB& _db, const SqliteOverlay::TabRow& _row)
+  :TournamentDatabaseObject(_db, _row)
   {
   }
 
@@ -48,8 +48,8 @@ namespace QTournament
 
   QString Player::getDisplayName(int maxLen) const
   {
-    QString first = QString::fromUtf8(row[PL_FNAME].data());
-    QString last = QString::fromUtf8(row[PL_LNAME].data());
+    QString first = QString::fromUtf8(row[PL_Fname].data());
+    QString last = QString::fromUtf8(row[PL_Lname].data());
     
     QString fullName = last + ", " + first;
     
@@ -90,15 +90,15 @@ namespace QTournament
 
   QString Player::getDisplayName_FirstNameFirst() const
   {
-    QString first = QString::fromUtf8(row[PL_FNAME].data());
-    QString last = QString::fromUtf8(row[PL_LNAME].data());
+    QString first = QString::fromUtf8(row[PL_Fname].data());
+    QString last = QString::fromUtf8(row[PL_Lname].data());
 
     return first + " " + last;
   }
 
 //----------------------------------------------------------------------------
 
-  ERR Player::rename(const QString& newFirst, const QString& newLast)
+  Error Player::rename(const QString& newFirst, const QString& newLast)
   {
     PlayerMngr pm{db};
     return pm.renamePlayer(*this, newFirst, newLast);
@@ -108,55 +108,55 @@ namespace QTournament
 
   QString Player::getFirstName() const
   {
-    return QString::fromUtf8(row[PL_FNAME].data());
+    return QString::fromUtf8(row[PL_Fname].data());
   }
 
 //----------------------------------------------------------------------------
 
   QString Player::getLastName() const
   {
-    return QString::fromUtf8(row[PL_LNAME].data());
+    return QString::fromUtf8(row[PL_Lname].data());
   }
 
 //----------------------------------------------------------------------------
 
-  SEX Player::getSex() const
+  Sex Player::getSex() const
   {
-    int sexInt = row.getInt(PL_SEX);
-    return static_cast<SEX>(sexInt);
+    int sexInt = row.getInt(PL_Sex);
+    return static_cast<Sex>(sexInt);
   }
 
 //----------------------------------------------------------------------------
 
   Team Player::getTeam() const
   {
-    auto teamRef = row.getInt2(PL_TEAM_REF);
+    auto teamRef = row.getInt2(PL_TeamRef);
     
     // if we don't use teams, throw an exception
-    if (teamRef->isNull())
+    if (!teamRef)
     {
       throw std::runtime_error("Query for team of a player occurred; however, we're not using teams in this tournament!");
     }
     
     TeamMngr tm{db};
-    return tm.getTeamById(teamRef->get());
+    return tm.getTeamById(*teamRef);
   }
 
 //----------------------------------------------------------------------------
 
-  vector<Category> Player::getAssignedCategories() const
+  std::vector<Category> Player::getAssignedCategories() const
   {
+    SqliteOverlay::WhereClause wc;
+    wc.addCol(P2C_PlayerRef, getId());
+
     CategoryList result;
-    auto it = db->getTab(TAB_P2C)->getRowsByColumnValue(P2C_PLAYER_REF, getId());
-    
     CatMngr cmngr{db};
-    while (!(it.isEnd()))
+    for (SqliteOverlay::TabRowIterator it{db, TabP2C, wc}; it.hasData(); ++it)
     {
-      int catId = (*it).getInt(P2C_CAT_REF);
+      int catId = it->getInt(P2C_CatRef);
       result.push_back(cmngr.getCategoryById(catId));
-      ++it;
     }
-    
+
     return result;
   }
 
@@ -164,36 +164,37 @@ namespace QTournament
 
   int Player::getRefereeCount() const
   {
-    return row.getInt(PL_REFEREE_COUNT);
+    return row.getInt(PL_RefereeCount);
   }
 
   //----------------------------------------------------------------------------
 
-  unique_ptr<Court> Player::getRefereeCourt() const
+  std::optional<Court> Player::getRefereeCourt() const
   {
-    if (getState() != STAT_PL_REFEREE) return nullptr;
+    if (is_NOT_InState(ObjState::PL_Referee)) return {};
 
     // find the court on which the player is umpire
-    DbTab* matchTab = db->getTab(TAB_MATCH);
-    WhereClause wc;
-    wc.addIntCol(GENERIC_STATE_FIELD_NAME, static_cast<int>(STAT_MA_RUNNING));
-    wc.addIntCol(MA_REFEREE_REF, getId());
+    SqliteOverlay::DbTab matchTab{db, TabMatch, false};
+    SqliteOverlay::WhereClause wc;
+    wc.addCol(GenericStateFieldName, static_cast<int>(ObjState::MA_Running));
+    wc.addCol(MA_RefereeRef, getId());
 
     // do we have a matching match entry?
-    if (matchTab->getMatchCountForWhereClause(wc) == 0) return nullptr;
-    TabRow r = matchTab->getSingleRowByWhereClause(wc);
-    MatchMngr mm{db};
-    upMatch ma = mm.getMatch(r.getId());
-    if (ma == nullptr) return nullptr;
+    auto r = matchTab.getSingleRowByWhereClause2(wc);
+    if (!r) return {};
 
-    return ma->getCourt();
+    MatchMngr mm{db};
+    auto ma = mm.getMatch(r->id());
+    if (!ma) return {};  // shouldn't happen
+
+    return ma->getCourt(nullptr);
   }
 
   //----------------------------------------------------------------------------
 
-  unique_ptr<Court> Player::getMatchCourt() const
+  std::optional<Court> Player::getMatchCourt() const
   {
-    if (getState() != STAT_PL_PLAYING) return nullptr;
+    if (is_NOT_InState(ObjState::PL_Playing)) return {};
 
     // find the court on which the player is playing
     //
@@ -203,17 +204,17 @@ namespace QTournament
     CourtMngr cm{db};
     for (const Court& co : cm.getAllCourts())
     {
-      if (co.getState() != STAT_CO_BUSY) continue;
-      upMatch ma = co.getMatch();
-      if (ma == nullptr) continue;
+      if (co.is_NOT_InState(ObjState::CO_Busy)) continue;
+      auto ma = co.getMatch();
+      if (!ma) continue;
 
       for (const Player& pl : ma->determineActualPlayers())
       {
-        if (pl == *this) return cm.getCourt(co.getId());
+        if (pl == *this) return co;
       }
     }
 
-    return nullptr;
+    return {};
   }
 
 //----------------------------------------------------------------------------

@@ -24,19 +24,17 @@
 #include "AbstractCommand.h"
 #include "Category.h"
 
-using namespace QTournament;
 
 class cmdExportPlayerToExternalDatabase : public QObject, AbstractCommand
 {
   Q_OBJECT
 
 public:
-  cmdExportPlayerToExternalDatabase(QWidget* p, const Player& _pl);
-  virtual ERR exec() override;
-  virtual ~cmdExportPlayerToExternalDatabase() {}
+  cmdExportPlayerToExternalDatabase(QWidget* p, const QTournament::Player& _pl);
+  virtual QTournament::Error exec() override;
 
 protected:
-  Player pl;
+  const QTournament::Player pl;
 };
 
 #endif // CMDEXPORTPLAYERTOEXTERNALDATABASE_H

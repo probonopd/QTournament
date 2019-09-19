@@ -40,20 +40,15 @@ namespace QTournament
 {
   class MatchGroup;
 
-  enum class REFEREE_ACTION
+  enum class RefereeAction
   {
-    PRE_ASSIGN,
-    MATCH_CALL,
-    SWAP,
+    PreAssign,
+    MatchCall,
+    Swap,
   };
 
   class Match : public TournamentDatabaseObject
   {
-    friend class MatchMngr;
-    friend class MatchGroup;
-    friend class SqliteOverlay::GenericObjectManager<TournamentDB>;
-    friend class TournamentDatabaseObjectManager;
-    
   public:
     Category getCategory() const;
     MatchGroup getMatchGroup() const;
@@ -68,11 +63,11 @@ namespace QTournament
                                  QString& row1Right_out, QString& row2Right_out) const;
     QString getDisplayName(const QString& localWinnerName, const QString& localLoserName) const;
 
-    unique_ptr<MatchScore> getScore(ERR *err=nullptr) const;
-    unique_ptr<PlayerPair> getWinner() const;
-    unique_ptr<PlayerPair> getLoser() const;
+    std::optional<MatchScore> getScore(Error *err=nullptr) const;
+    std::optional<PlayerPair> getWinner() const;
+    std::optional<PlayerPair> getLoser() const;
 
-    unique_ptr<Court> getCourt(ERR *err=nullptr) const;
+    std::optional<Court> getCourt(Error *err) const;
     PlayerList determineActualPlayers() const;
 
     int getSymbolicPlayerPair1Name() const;
@@ -86,25 +81,29 @@ namespace QTournament
 
     QDateTime getStartTime() const;
     QDateTime getFinishTime() const;
-    bool addAddtionalCallTime() const;
+    void addAddtionalCallTime() const;
     QList<QDateTime> getAdditionalCallTimes() const;
     int getMatchDuration() const;
 
-    REFEREE_MODE get_RAW_RefereeMode() const;
-    REFEREE_MODE get_EFFECTIVE_RefereeMode() const;
-    upPlayer getAssignedReferee() const;
+    RefereeMode get_RAW_RefereeMode() const;
+    RefereeMode get_EFFECTIVE_RefereeMode() const;
+    std::optional<Player> getAssignedReferee() const;
     bool hasRefereeAssigned() const;
-    ERR canAssignReferee(REFEREE_ACTION refAction) const;
+    Error canAssignReferee(RefereeAction refAction) const;
+
+    /** \returns the bracket match numer related to this match, if any
+     */
+    std::optional<BracketMatchNumber> bracketMatchNum() const;
+
+    Match (const TournamentDB& _db, int rowId);
+    Match (const TournamentDB& _db, const SqliteOverlay::TabRow& _row);
 
   private:
-    Match (TournamentDB* db, int rowId);
-    Match (TournamentDB* db, SqliteOverlay::TabRow row);
     int getSymbolicPlayerPairName(int playerPos) const;
 
   };
 
-  typedef unique_ptr<Match> upMatch;
-
+  using MatchList = std::vector<Match>;
 }
-#endif	/* MATCH_H */
+#endif	/* Error::MATCH_H */
 

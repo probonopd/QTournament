@@ -24,21 +24,8 @@
 namespace QTournament
 {
 
-CatRoundStatus::CatRoundStatus(TournamentDB* _db, const Category& _cat)
-  :db(nullptr), cat(_cat)
-{
-  if (_db == nullptr)
-  {
-    throw std::invalid_argument("Rceived nullptr for database handle");
-  }
-
-  db = _db;
-  cat = _cat;
-}
-
-//----------------------------------------------------------------------------
-
-CatRoundStatus::~CatRoundStatus()
+CatRoundStatus::CatRoundStatus(const TournamentDB& _db, const Category& _cat)
+  :db(_db), cat(_cat)
 {
 }
 
@@ -62,8 +49,8 @@ QList<int> CatRoundStatus::getCurrentlyRunningRoundNumbers() const
   // loop through all applicable rounds and check their status
   while (roundToCheck <= lastRoundToCheck)
   {
-    bool hasFinishedMatches = cat.hasMatchesInState(STAT_MA_FINISHED, roundToCheck);
-    bool hasRunningMatches = cat.hasMatchesInState(STAT_MA_RUNNING, roundToCheck);
+    bool hasFinishedMatches = cat.hasMatchesInState(ObjState::MA_Finished, roundToCheck);
+    bool hasRunningMatches = cat.hasMatchesInState(ObjState::MA_Running, roundToCheck);
 
     if (hasFinishedMatches || hasRunningMatches)
     {
@@ -93,10 +80,10 @@ int CatRoundStatus::getCurrentlyRunningRoundNumber() const
   QList<int> runningRounds = getCurrentlyRunningRoundNumbers();
   int n = runningRounds.count();
 
-  if (n < 1) return NO_CURRENTLY_RUNNING_ROUND;
+  if (n < 1) return NoCurrentlyRunningRounds;
   if (n == 1) return runningRounds.at(0);
 
-  return MULTIPLE_ROUNDS_RUNNING;  // can happen in group match rounds
+  return MultipleRoundsRunning;  // can happen in group match rounds
 }
 
 //----------------------------------------------------------------------------
@@ -106,7 +93,7 @@ int CatRoundStatus::getFinishedRoundsCount() const
   MatchMngr mm{db};
 
   int roundNum = 1;
-  int lastFinishedRound = NO_ROUNDS_FINISHED_YET;
+  int lastFinishedRound = NoRoundsFinishedYet;
 
   // go through rounds one by one
   while (true)
@@ -119,7 +106,7 @@ int CatRoundStatus::getFinishedRoundsCount() const
     bool allGroupsFinished = true;
     for (MatchGroup mg : matchGroupsInThisRound)
     {
-      if (mg.getState() != STAT_MG_FINISHED)
+      if (mg.is_NOT_InState(ObjState::MG_Finished))
       {
         allGroupsFinished = false;
         break;
@@ -142,14 +129,14 @@ int CatRoundStatus::getFinishedRoundsCount() const
 
 //----------------------------------------------------------------------------
 
-tuple<int, int, int> CatRoundStatus::getMatchCountForCurrentRound() const
+std::tuple<int, int, int> CatRoundStatus::getMatchCountForCurrentRound() const
 {
   QList<int> runningRounds = getCurrentlyRunningRoundNumbers();
 
   if (runningRounds.count() == 0)
   {
-    int tmp = NO_CURRENTLY_RUNNING_ROUND;
-    return make_tuple(tmp, tmp, tmp);
+    int tmp = NoCurrentlyRunningRounds;
+    return std::tuple{tmp, tmp, tmp};
   }
 
   int unfinishedMatchCount = 0;
@@ -164,15 +151,15 @@ tuple<int, int, int> CatRoundStatus::getMatchCountForCurrentRound() const
     {
       for (Match ma : mg.getMatches())
       {
-        if (ma.getState() != STAT_MA_FINISHED) ++unfinishedMatchCount;
-        if (ma.getState() == STAT_MA_RUNNING) ++runningMatchCount;
+        if (ma.is_NOT_InState(ObjState::MA_Finished)) ++unfinishedMatchCount;
+        if (ma.isInState(ObjState::MA_Running)) ++runningMatchCount;
         ++totalMatchCount;
       }
     }
   }
 
   // total, unfinished, running
-  return make_tuple(totalMatchCount, unfinishedMatchCount, runningMatchCount);
+  return std::tuple{totalMatchCount, unfinishedMatchCount, runningMatchCount};
 }
 
 //----------------------------------------------------------------------------

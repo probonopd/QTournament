@@ -24,15 +24,14 @@
 #include "AbstractCommand.h"
 #include "Player.h"
 
-using namespace QTournament;
 
 class cmdConnectionSetting : public QObject, AbstractCommand
 {
   Q_OBJECT
 
 public:
-  cmdConnectionSetting(QWidget* p, TournamentDB* _db);
-  virtual ERR exec() override;
+  cmdConnectionSetting(QWidget* p, const QTournament::TournamentDB& _db);
+  virtual QTournament::Error exec() override;
   virtual ~cmdConnectionSetting() {}
 
 };

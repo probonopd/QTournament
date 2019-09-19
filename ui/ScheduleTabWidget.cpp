@@ -28,19 +28,20 @@
 #include "MatchMngr.h"
 #include "CatMngr.h"
 #include "CourtMngr.h"
-#include "ui/commonCommands/cmdCallMatch.h"
-#include "ui/DlgRoundFinished.h"
+#include "Procedures.h"
+#include "../BackendAPI.h"
+
+using namespace QTournament;
 
 ScheduleTabWidget::ScheduleTabWidget(QWidget *parent) :
-    QDialog(parent), db(nullptr),
-    ui(new Ui::ScheduleTabWidget)
+    QDialog(parent), ui(new Ui::ScheduleTabWidget)
 {
     ui->setupUi(this);
 
     // initialize sorting and filtering in the two match group views
     ui->mgIdleView->setFilter(MatchGroupTableView::FilterType::IDLE);
     ui->mgStagedView->setFilter(MatchGroupTableView::FilterType::STAGED);
-    ui->mgStagedView->sortByColumn(MatchGroupTableModel::STAGE_SEQ_COL_ID, Qt::AscendingOrder);
+    ui->mgStagedView->sortByColumn(MatchGroupTableModel::StageSeqColId, Qt::AscendingOrder);
 
     // react on selection changes in the IDLE match groups view
     connect(ui->mgIdleView->selectionModel(),
@@ -51,10 +52,6 @@ ScheduleTabWidget::ScheduleTabWidget(QWidget *parent) :
     connect(ui->mgStagedView->selectionModel(),
       SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
       SLOT(onStagedSelectionChanged(const QItemSelection&, const QItemSelection&)));
-
-    // react to changes in round,  match or category status
-    CentralSignalEmitter* cse = CentralSignalEmitter::getInstance();
-    connect(cse, SIGNAL(roundCompleted(int,int)), this, SLOT(onRoundCompleted(int,int)));
 
     // default all buttons to "disabled"
     ui->btnSchedule->setEnabled(false);
@@ -75,7 +72,7 @@ ScheduleTabWidget::~ScheduleTabWidget()
 
 //----------------------------------------------------------------------------
 
-void ScheduleTabWidget::setDatabase(TournamentDB* _db)
+void ScheduleTabWidget::setDatabase(const TournamentDB* _db)
 {
   db = _db;
 
@@ -108,10 +105,10 @@ void ScheduleTabWidget::onBtnStageClicked()
 {
   // lets check if a valid match group is selected
   auto mg = ui->mgIdleView->getSelectedMatchGroup();
-  if (mg == nullptr) return;
+  if (!mg) return;
 
-  MatchMngr mm{db};
-  if (mm.canStageMatchGroup(*mg) != OK) return;
+  MatchMngr mm{*db};
+  if (mm.canStageMatchGroup(*mg) != Error::OK) return;
 
   mm.stageMatchGroup(*mg);
 }
@@ -122,10 +119,10 @@ void ScheduleTabWidget::onBtnUnstageClicked()
 {
   // lets check if a valid match group is selected
   auto mg = ui->mgStagedView->getSelectedMatchGroup();
-  if (mg == nullptr) return;
+  if (!mg) return;
 
-  MatchMngr mm{db};
-  if (mm.canUnstageMatchGroup(*mg) != OK) return;
+  MatchMngr mm{*db};
+  if (mm.canUnstageMatchGroup(*mg) != Error::OK) return;
 
   mm.unstageMatchGroup(*mg);
 }
@@ -135,7 +132,7 @@ void ScheduleTabWidget::onBtnUnstageClicked()
 void ScheduleTabWidget::onBtnScheduleClicked()
 {
   // is at least one match group staged?
-  MatchMngr mm{db};
+  MatchMngr mm{*db};
   if (mm.getMaxStageSeqNum() == 0) return;
 
   mm.scheduleAllStagedMatchGroups();
@@ -160,11 +157,11 @@ void ScheduleTabWidget::onStagedSelectionChanged(const QItemSelection& selected,
 
 void ScheduleTabWidget::updateButtons()
 {
-  MatchMngr mm{db};
+  MatchMngr mm{*db};
 
   // update the "stage"-button
   auto mg = ui->mgIdleView->getSelectedMatchGroup();
-  if ((mg != nullptr) && (mm.canStageMatchGroup(*mg) == OK))
+  if ((mg.has_value()) && (mm.canStageMatchGroup(*mg) == Error::OK))
   {
     ui->btnStage->setEnabled(true);
   } else {
@@ -173,7 +170,7 @@ void ScheduleTabWidget::updateButtons()
 
   // update the "unstage"-button
   mg = ui->mgStagedView->getSelectedMatchGroup();
-  if ((mg != nullptr) && (mm.canUnstageMatchGroup(*mg) == OK))
+  if ((mg.has_value()) && (mm.canUnstageMatchGroup(*mg) == Error::OK))
   {
     ui->btnUnstage->setEnabled(true);
   } else {
@@ -189,61 +186,15 @@ void ScheduleTabWidget::updateButtons()
 void ScheduleTabWidget::onCourtDoubleClicked(const QModelIndex &index)
 {
   auto court = ui->tvCourts->getSelectedCourt();
-  if (court == nullptr) return;
+  if (!court) return;
 
   auto ma = court->getMatch();
-  if (ma == nullptr)
+  if (!ma)
   {
     return;  // no match assigned to this court
   }
 
   askAndStoreMatchResult(*ma);
-}
-
-//----------------------------------------------------------------------------
-
-void ScheduleTabWidget::onRoundCompleted(int catId, int round)
-{
-  CatMngr cm{db};
-  Category cat = cm.getCategoryById(catId);
-
-  //
-  // --------- Begin BAD HACK ------------
-  //
-
-  // if we're in Swiss Ladder and the number of rounds for
-  // the category suddenly shrinked, we've encountered a
-  // deadlock and we need to inform the user
-
-  if (cat.getMatchSystem() == SWISS_LADDER)
-  {
-    int nPairs = cat.getPlayerPairs().size();
-
-    int nRoundsTheory = ((nPairs % 2) == 0) ? nPairs - 1 : nPairs;
-    int nRoundsActual = cat.convertToSpecializedObject()->calcTotalRoundsCount();
-    if ((nPairs > 4) && (nRoundsActual < nRoundsTheory) && (cat.getState() == STAT_CAT_FINALIZED))
-    {
-      QString msg = tr("<br><center><b><font color=\"red\">SWISS LADDER DEADLOCK</font></b></center><br><br>");
-      msg += tr("Unfortuantely, the sequence of matches in past rounds in the category %3 has lead ");
-      msg += tr("to a deadlock. We can't play any more rounds in this category without repeating already ");
-      msg += tr("played matches.<br><br>");
-      msg += tr("Thus, the category has been reduced from %1 to %2 rounds and ");
-      msg += tr("is now finished.<br><br>");
-      msg += tr("Normally, such a deadlock should not happen... sincere apologies for this!<br><br>");
-      msg = msg.arg(nRoundsTheory).arg(nRoundsActual).arg(cat.getName());
-
-      QMessageBox::warning(this, tr("Swiss Ladder Deadlock"), msg);
-    }
-  }
-
-  //
-  // --------- End BAD HACK ------------
-  //
-
-  // present an info dialog along with the option to directly
-  // print some useful reports
-  DlgRoundFinished dlg{this, cat, round};
-  dlg.exec();
 }
 
 //----------------------------------------------------------------------------
@@ -266,7 +217,7 @@ void ScheduleTabWidget::onBtnHideStagingAreaClicked()
 void ScheduleTabWidget::askAndStoreMatchResult(const Match &ma)
 {
   // only accept results for running matches
-  if (ma.getState() != STAT_MA_RUNNING)
+  if (ma.is_NOT_InState(ObjState::MA_Running))
   {
     return;
   }
@@ -280,49 +231,17 @@ void ScheduleTabWidget::askAndStoreMatchResult(const Match &ma)
     return;
   }
   auto matchResult = dlg.getMatchScore();
-  assert(matchResult != nullptr);
+  assert(matchResult);
 
-  // create a (rather ugly) confirmation message box
-  QString msg = tr("Please confirm:\n\n");
-  msg += ma.getPlayerPair1().getDisplayName() + "\n";
-  msg += "\tvs.\n";
-  msg += ma.getPlayerPair2().getDisplayName() + "\n\n";
-  msg += tr("Result: ");
-  QString sResult = matchResult->toString();
-  sResult = sResult.replace(",", ", ");
-  msg += sResult + "\n\n\n";
-  if (matchResult->getWinner() == 1)
-  {
-    msg += tr("WINNER: ");
-    msg += ma.getPlayerPair1().getDisplayName();
-    msg += "\n\n";
-    msg += tr("LOSER: ");
-    msg += ma.getPlayerPair2().getDisplayName();
-  }
-  if (matchResult->getWinner() == 2)
-  {
-    msg += tr("WINNER: ");
-    msg += ma.getPlayerPair2().getDisplayName();
-    msg += "\n\n";
-    msg += tr("LOSER: ");
-    msg += ma.getPlayerPair1().getDisplayName();
-  }
-  if (matchResult->getWinner() == 0)
-  {
-    msg += tr("The match result is DRAW");
-  }
-  msg += "\n\n";
-
-  int confirm = QMessageBox::question(this, tr("Please confirm match result"), msg);
-  if (confirm != QMessageBox::Yes) return;
+  // let the user confirm the result
+  if (!GuiHelpers::showAndConfirmMatchResult(this, ma, matchResult)) return;
 
   // actually store the data and update the internal object states
-  MatchMngr mm{db};
-  ERR err = mm.setMatchScoreAndFinalizeMatch(ma, *matchResult);
-  if (err != OK)
+  MatchMngr mm{*db};
+  auto finalizationResult = mm.setMatchScoreAndFinalizeMatch(ma, *matchResult);
+  Procedures::afterMatch(this, ma, finalizationResult);
+  if (finalizationResult.err != Error::OK)
   {
-    QString msg = tr("A dabase error occurred. The match result has not been stored.");
-    QMessageBox::critical(this, tr("Store match result"), msg);
     return;
   }
 
@@ -331,31 +250,20 @@ void ScheduleTabWidget::askAndStoreMatchResult(const Match &ma)
   //
   // only do this if the court is not limited to manual match assignment
   //
-  auto oldCourt = ma.getCourt();
-  assert(oldCourt != nullptr);
+  auto oldCourt = ma.getCourt(nullptr);
+  assert(oldCourt);
   if (oldCourt->isManualAssignmentOnly()) return;
 
   // first of all, check if there is a next match available
-  int nextMatchId;
-  int nextCourtId;
-  ERR e = mm.getNextViableMatchCourtPair(&nextMatchId, &nextCourtId, true);
-  if ((e == NO_MATCH_AVAIL) || (nextMatchId < 1))
-  {
-    return;
-  }
+  auto nextMatch = API::Qry::nextCallableMatch(*db);
+  if (!nextMatch) return;
 
   // now ask if the match should be started
-  confirm = QMessageBox::question(this, tr("Next Match"), tr("Start the next available match on the free court?"));
-  if (confirm != QMessageBox::Yes) return;
-
-  // instead of the court determined by getNextViableMatchCourtPair we use
-  // the court of the previous match
+  int rc = QMessageBox::question(this, tr("Next Match"), tr("Start the next available match on the free court?"));
+  if (rc != QMessageBox::Yes) return;
 
   // try to start the match on the old court
-  auto nextMatch = mm.getMatch(nextMatchId);
-  assert(nextMatch != nullptr);
-  cmdCallMatch cmd{this, *nextMatch, *oldCourt};
-  cmd.exec();
+  Procedures::callMatch(this, *nextMatch, *oldCourt);
 }
 
 //----------------------------------------------------------------------------

@@ -25,11 +25,9 @@
 
 #include <QString>
 
-using namespace std;
-
 namespace QTournament
 {
-  inline string QString2StdString(const QString& s) {
+  inline std::string QString2StdString(const QString& s) {
 #ifdef __IS_WINDOWS_BUILD
     return s.toLocal8Bit().constData();
 #else
@@ -37,7 +35,7 @@ namespace QTournament
 #endif
   }
 
-  inline QString stdString2QString(const string& s) {
+  inline QString stdString2QString(const std::string& s) {
 #ifdef __IS_WINDOWS_BUILD
     return QString::fromLocal8Bit(s.c_str());
 #else
@@ -46,16 +44,7 @@ namespace QTournament
   }
 
   template<class T>
-  int eraseAllValuesFromVector(vector<T>& vec, const T& val)
-  {
-    int oldSize = vec.size();
-    vec.erase(std::remove(vec.begin(), vec.end(), val), vec.end());
-    int newSize = vec.size();
-    return oldSize - newSize;
-  }
-
-  template<class T>
-  void lazyAndInefficientVectorSortFunc(vector<T>& vec, std::function<bool (const T&, const T&)> compFunc)
+  void lazyAndInefficientVectorSortFunc(std::vector<T>& vec, std::function<bool (const T&, const T&)> compFunc)
   {
     int i = 0;
     while (i < (vec.size() - 1))

@@ -12,9 +12,9 @@
 
 using namespace QTournament;
 
-DlgPickTeam::DlgPickTeam(QWidget *parent, QTournament::TournamentDB* _db) :
+DlgPickTeam::DlgPickTeam(QWidget *parent, const QTournament::TournamentDB& _db) :
   QDialog(parent),
-  ui(new Ui::DlgPickTeam), db{_db}, selectedTeamId{-1}, leShowsHelpText{true}
+  ui(new Ui::DlgPickTeam), db{_db}
 {
   ui->setupUi(this);
 
@@ -86,11 +86,11 @@ void DlgPickTeam::onFinishedRequested()
   tName = tName.trimmed();
 
   TeamMngr tm{db};
-  ERR e = tm.createNewTeam(tName);
+  Error e = tm.createNewTeam(tName);
   QString msg;
-  if (e != OK)
+  if (e != Error::OK)
   {
-    if (e == NAME_EXISTS)
+    if (e == Error::NameExists)
     {
       msg = tr("A team of that name already exists!");
     } else {

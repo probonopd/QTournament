@@ -24,16 +24,14 @@
 #include "AbstractCommand.h"
 #include "Player.h"
 
-using namespace QTournament;
 
 class cmdSetOrChangePassword : public QObject, AbstractCommand
 {
   Q_OBJECT
 
 public:
-  cmdSetOrChangePassword(QWidget* p, TournamentDB* _db);
-  virtual ERR exec() override;
-  virtual ~cmdSetOrChangePassword() {}
+  cmdSetOrChangePassword(QWidget* p, const QTournament::TournamentDB& _db);
+  virtual QTournament::Error exec() override;
 
 };
 

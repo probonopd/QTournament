@@ -8,8 +8,6 @@
 #include "TournamentDataDefs.h"
 #include "Player.h"
 
-using namespace std;
-
 namespace QTournament
 {
   class TournamentDB;
@@ -45,12 +43,12 @@ namespace QTournament
     static constexpr int Categories = 4;
   };
 
-  SEX strToSex(const string& s);
+  Sex strToSex(const std::string& s);
 
   class CSVImportRecord
   {
   public:
-    CSVImportRecord(TournamentDB* _db, vector<string> rawTexts);
+    CSVImportRecord(const TournamentDB& _db, std::vector<Sloppy::estring> rawTexts);
     void enforceConsistentSex();
     void insertMissingDataForExistingPlayers();
 
@@ -58,38 +56,38 @@ namespace QTournament
     bool hasLastName() const { return !(lName.isEmpty()); }
     bool hasFirstName() const { return !(fName.isEmpty()); }
     bool hasTeamName() const { return !(teamName.isEmpty()); }
-    bool hasValidSex() const { return (sex != DONT_CARE); }
+    bool hasValidSex() const { return (sex != Sex::DontCare); }
     bool hasExistingName() const;
 
     // getters
-    vector<QString> getCatNames() const { return catNames; }
+    std::vector<QString> getCatNames() const { return catNames; }
     QString getCatNames_str() const;
-    SEX getSex() const { return sex; }
+    Sex getSex() const { return sex; }
     QString getLastName() const { return lName; }
     QString getFirstName() const { return fName; }
     QString getTeamName() const { return teamName; }
 
-    unique_ptr<QTournament::Player> getExistingPlayer() const;
+    std::optional<Player> getExistingPlayer() const;
 
     // setters
     bool updateFirstName(const QString& newName);
     bool updateLastName(const QString& newName);
     bool updateTeamName(const QString& newName);
-    bool updateSex(SEX newSex);
-    bool updateCategories(const vector<QString>& catOverwrite);
+    bool updateSex(Sex newSex);
+    bool updateCategories(const std::vector<QString>& catOverwrite);
 
   private:
-    TournamentDB* db;
+    std::reference_wrapper<const QTournament::TournamentDB> db;
     QString fName;
     QString lName;
-    SEX sex;
+    Sex sex;
     QString teamName;
-    vector<QString> catNames;
+    std::vector<QString> catNames;
   };
 
-  vector<vector<string>> splitCSV(const string& rawText, const string& delim = ",", const string& optionalCatName="");
-  vector<CSVImportRecord> convertCSVfromPlainText(TournamentDB* db, const vector<vector<string>>& splitData);
-  vector<CSVError> analyseCSV(TournamentDB* db, const vector<CSVImportRecord>& data);
+  std::vector<std::vector<Sloppy::estring> > splitCSV(const Sloppy::estring& rawText, const std::string& delim = ",", const std::string& optionalCatName="");
+  std::vector<CSVImportRecord> convertCSVfromPlainText(const TournamentDB& db, const std::vector<std::vector<Sloppy::estring> >& splitData);
+  std::vector<CSVError> analyseCSV(const TournamentDB& db, const std::vector<CSVImportRecord>& data);
 
 }
 

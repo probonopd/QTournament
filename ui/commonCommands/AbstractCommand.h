@@ -24,18 +24,17 @@
 #include "TournamentErrorCodes.h"
 #include "TournamentDB.h"
 
-using namespace QTournament;
 
 class AbstractCommand
 {
 
 public:
-  AbstractCommand(TournamentDB* _db, QWidget* _parent = nullptr);
-  virtual ERR exec() = 0;
+  AbstractCommand(const QTournament::TournamentDB& _db, QWidget* _parent = nullptr);
+  virtual QTournament::Error exec() = 0;
   virtual ~AbstractCommand() {}
 
 protected:
-  TournamentDB* db;
+  const QTournament::TournamentDB& db;
   QWidget* parentWidget;
 };
 

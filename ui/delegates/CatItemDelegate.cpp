@@ -44,7 +44,7 @@ void CatItemDelegate::paintUnselectedCell(QPainter* painter, const QStyleOptionV
 
 void CatItemDelegate::commonPaint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index, int srcRowId) const
 {
-  CatMngr cm{db};
+  CatMngr cm{*db};
   Category c = cm.getCategoryBySeqNum(srcRowId);
 
   QRect r = option.rect;

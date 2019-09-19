@@ -22,12 +22,16 @@
 #include "ui_GameResultWidget.h"
 #include "Score.h"
 
+using namespace QTournament;
+
 GameResultWidget::GameResultWidget(QWidget *parent) :
   QWidget(parent),
   ui(new Ui::GameResultWidget)
 {
   ui->setupUi(this);
 }
+
+//----------------------------------------------------------------------------
 
 GameResultWidget::~GameResultWidget()
 {
@@ -46,26 +50,21 @@ void GameResultWidget::setGameNumber(int n)
 
 bool GameResultWidget::hasValidScore() const
 {
-  auto currentScore = getSelectedScore();
-
-  int sc1 = get<0>(currentScore);
-  int sc2 = get<1>(currentScore);
+  auto [sc1, sc2] = getSelectedScore();
 
   return GameScore::isValidScore(sc1, sc2);
 }
 
 //----------------------------------------------------------------------------
 
-unique_ptr<GameScore> GameResultWidget::getScore() const
+std::optional<QTournament::GameScore> GameResultWidget::getScore() const
 {
   if (!hasValidScore())
   {
-    return nullptr;
+    return {};
   }
 
-  auto selScore = getSelectedScore();
-  int sc1 = get<0>(selScore);
-  int sc2 = get<1>(selScore);
+  auto [sc1, sc2] = getSelectedScore();
 
   return QTournament::GameScore::fromScore(sc1, sc2);
 }
@@ -74,8 +73,7 @@ unique_ptr<GameScore> GameResultWidget::getScore() const
 
 void GameResultWidget::setScore(const GameScore& sc)
 {
-  int sc1 = get<0>(sc.getScore());
-  int sc2 = get<1>(sc.getScore());
+  auto [sc1, sc2] = sc.getScore();
 
   int newIndex = ui->cbPlayer1Score->findText(QString::number(sc1));
   ui->cbPlayer1Score->setCurrentIndex(newIndex);
@@ -87,7 +85,7 @@ void GameResultWidget::setScore(const GameScore& sc)
 
 void GameResultWidget::onScoreSelectionChanged()
 {
-  QComboBox* sender = (QComboBox*) QObject::sender();
+  QComboBox* sender = dynamic_cast<QComboBox*>(QObject::sender());
   assert ((sender == ui->cbPlayer1Score) || (sender == ui->cbPlayer2Score));
 
   // if the other combobox is still on "auto", we
@@ -135,7 +133,7 @@ void GameResultWidget::onScoreSelectionChanged()
 
 //----------------------------------------------------------------------------
 
-tuple<int, int> GameResultWidget::getSelectedScore() const
+std::tuple<int, int> GameResultWidget::getSelectedScore() const
 {
   // a little helper function to convert the combobox-value
   // to an integer
@@ -163,7 +161,7 @@ tuple<int, int> GameResultWidget::getSelectedScore() const
   int sc1 = valueConverter(ui->cbPlayer1Score->currentText());
   int sc2 = valueConverter(ui->cbPlayer2Score->currentText());
 
-  return make_tuple(sc1, sc2);
+  return std::tuple{sc1, sc2};
 }
 
 //----------------------------------------------------------------------------

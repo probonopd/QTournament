@@ -33,7 +33,6 @@
 #include "PlayerPair.h"
 #include "TournamentErrorCodes.h"
 #include "KO_Config.h"
-#include "ThreadSafeQueue.h"
 
 namespace QTournament
 {
@@ -53,101 +52,91 @@ namespace QTournament
 
   class Category : public TournamentDatabaseObject
   {
-    friend class CatMngr;
-    friend class RoundRobinCategory;
-    friend class EliminationCategory;
-    friend class PureRoundRobinCategory;
-    friend class SwissLadderCategory;
-    friend class TournamentDatabaseObjectManager;
-    friend class SqliteOverlay::GenericObjectManager<TournamentDB>;
-
   public:
     // getters
     QString getName() const;
-    MATCH_TYPE getMatchType() const;
-    MATCH_SYSTEM getMatchSystem() const;
-    SEX getSex() const;
-    CAT_ADD_STATE getAddState(const SEX s) const;
-    CAT_ADD_STATE getAddState(const Player& p) const;
-    QVariant getParameter(CAT_PARAMETER) const;
-    int getParameter_int(CAT_PARAMETER) const;
-    bool getParameter_bool(CAT_PARAMETER) const;
-    QString getParameter_string(CAT_PARAMETER) const;
-    PlayerPairList getPlayerPairs(int grp = GRP_NUM__NOT_ASSIGNED) const;
-    int getDatabasePlayerPairCount(int grp = GRP_NUM__NOT_ASSIGNED) const;
+    MatchType getMatchType() const;
+    MatchSystem getMatchSystem() const;
+    Sex getSex() const;
+    CatAddState getAddState(const Sex s) const;
+    CatAddState getAddState(const Player& p) const;
+    QVariant getParameter(CatParameter) const;
+    int getParameter_int(CatParameter) const;
+    bool getParameter_bool(CatParameter) const;
+    QString getParameter_string(CatParameter) const;
+    PlayerPairList getPlayerPairs(int grp = GroupNum_NotAssigned) const;
+    int getDatabasePlayerPairCount(int grp = GroupNum_NotAssigned) const;
     PlayerList getAllPlayersInCategory() const;
     Player getPartner(const Player& p) const;
-    unique_ptr<Category> convertToSpecializedObject() const;
-    int getGroupNumForPredecessorRound(const int grpNum) const;
+    std::unique_ptr<Category> convertToSpecializedObject() const;
     CatRoundStatus getRoundStatus() const;
-    PlayerPairList getEliminatedPlayersAfterRound(int round, ERR *err) const;
+    PlayerPairList getEliminatedPlayersAfterRound(int round, Error *err) const;
     int getMaxNumGamesInRound(int round) const;
-    QString getBracketVisDataString() const;
 
     // setters
-    ERR setMatchType(MATCH_TYPE t);
-    ERR setMatchSystem(MATCH_SYSTEM s);
-    ERR setSex(SEX s);
-    bool setParameter(CAT_PARAMETER p, const QVariant& v);
+    Error setMatchType(MatchType t);
+    Error setMatchSystem(MatchSystem s);
+    Error setSex(Sex s);
+    bool setParameter(CatParameter p, const QVariant& v);
 
     // modifications
-    ERR rename(const QString& newName);
-    ERR addPlayer(const Player& p);
-    ERR removePlayer(const Player& p);
+    Error rename(const QString& newName);
+    Error addPlayer(const Player& p);
+    Error removePlayer(const Player& p);
 
     // boolean and other queries
     bool canAddPlayers() const;
     bool hasPlayer(const Player& p) const;
     bool canRemovePlayer(const Player& p) const;
     bool isPaired(const Player& p) const;
-    ERR canPairPlayers(const Player& p1, const Player& p2) const;
-    ERR canSplitPlayers(const Player& p1, const Player& p2) const;
+    Error canPairPlayers(const Player& p1, const Player& p2) const;
+    Error canSplitPlayers(const Player& p1, const Player& p2) const;
     bool hasUnpairedPlayers() const;
-    ERR canApplyGroupAssignment(vector<PlayerPairList> grpCfg);
-    ERR canApplyInitialRanking(PlayerPairList seed);
-    bool hasMatchesInState(OBJ_STATE stat, int round=-1) const;
+    Error canApplyGroupAssignment(const std::vector<PlayerPairList>& grpCfg);
+    Error canApplyInitialRanking(PlayerPairList seed);
+    bool hasMatchesInState(ObjState stat, int round=-1) const;
     bool isDrawAllowedInRound(int round) const;
 
     
-    virtual ~Category() {};
+    virtual ~Category() {}
     
     //
     // The following methods MUST be overwritten by derived classes for a specific match system
     //
-    virtual ERR canFreezeConfig() { throw std::runtime_error("Unimplemented Method: canFreezeConfig"); };
-    virtual bool needsInitialRanking() { throw std::runtime_error("Unimplemented Method: needsInitialRanking"); };
-    virtual bool needsGroupInitialization() { throw std::runtime_error("Unimplemented Method: needsGroupInitialization"); };
-    virtual ERR prepareFirstRound(ProgressQueue* progressNotificationQueue=nullptr) { throw std::runtime_error("Unimplemented Method: prepareFirstRound"); };
-    virtual int calcTotalRoundsCount() const { throw std::runtime_error("Unimplemented Method: calcTotalRoundsCount"); };
-    virtual ERR onRoundCompleted(int round) { throw std::runtime_error("Unimplemented Method: onRoundCompleted"); };
-    virtual std::function<bool (RankingEntry&, RankingEntry&)> getLessThanFunction()  { throw std::runtime_error("Unimplemented Method: getLessThanFunction"); };
-    virtual PlayerPairList getRemainingPlayersAfterRound(int round, ERR *err) const { throw std::runtime_error("Unimplemented Method: getRemainingPlayersAfterRound"); };
-    virtual PlayerPairList getPlayerPairsForIntermediateSeeding() const { throw std::runtime_error("Unimplemented Method: getPlayerPairsForIntermediateSeeding"); };
-    virtual ERR resolveIntermediateSeeding(const PlayerPairList& seed, ProgressQueue* progressNotificationQueue=nullptr) const { throw std::runtime_error("Unimplemented Method: resolveIntermediateSeeding"); };
+    virtual Error canFreezeConfig();
+    virtual bool needsInitialRanking();
+    virtual bool needsGroupInitialization();
+    virtual Error prepareFirstRound();
+    virtual int calcTotalRoundsCount() const;
+    virtual Error onRoundCompleted(int round);
+    virtual std::function<bool (RankingEntry&, RankingEntry&)> getLessThanFunction();
+    virtual PlayerPairList getRemainingPlayersAfterRound(int round, Error *err) const;
+    virtual PlayerPairList getPlayerPairsForIntermediateSeeding() const;
+    virtual Error resolveIntermediateSeeding(const PlayerPairList& seed) const;
 
     //
     // The following methods CAN be overwritten to extend the
     // categories functionality
     //
-    virtual ModMatchResult canModifyMatchResult(const Match& ma) const { return ModMatchResult::NotImplemented; }
-    virtual ModMatchResult modifyMatchResult(const Match& ma, const MatchScore& newScore) const { return ModMatchResult::NotImplemented; }
+    virtual ModMatchResult canModifyMatchResult(const Match& ma) const;
+    virtual ModMatchResult modifyMatchResult(const Match& ma, const MatchScore& newScore) const;
 
-  private:
-    Category (TournamentDB* db, int rowId);
-    Category (TournamentDB* db, SqliteOverlay::TabRow row);
-    ERR applyGroupAssignment(vector<PlayerPairList> grpCfg);
-    ERR applyInitialRanking(PlayerPairList seed);
-    ERR generateGroupMatches(const PlayerPairList &grpMembers, int grpNum, int firstRoundNum=1, ProgressQueue* progressNotificationQueue=nullptr) const;
-    ERR generateBracketMatches(int bracketMode, const PlayerPairList& seeding, int firstRoundNum, ProgressQueue* progressNotificationQueue=nullptr) const;
+    Category (const TournamentDB& _db, int rowId);
+    Category (const TournamentDB& _db, const SqliteOverlay::TabRow& _row);
+
+    Error applyGroupAssignment(const std::vector<PlayerPairList>& grpCfg);
+    Error applyInitialRanking(const PlayerPairList& seed);
+    Error generateGroupMatches(const PlayerPairList &grpMembers, int grpNum, int firstRoundNum=1) const;
+
   };
 
   // we need this to have a category object in a QHash
   inline uint qHash(const Category& c)
   {
-    return c.getId(); // bad style: implicit conversion from int to uint...
+    return static_cast<uint>(c.getId()); // bad style: conversion from int to uint...
   }
 
-  typedef vector<Category> CategoryList;
+  using CategoryList = std::vector<Category>;
 
 }
 #endif	/* CATEGORY_H */

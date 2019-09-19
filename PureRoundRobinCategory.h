@@ -20,11 +20,8 @@
 #define	PUREROUNDROBINCATEGORY_H
 
 #include "Category.h"
-#include "ThreadSafeQueue.h"
 #include "RankingEntry.h"
 
-
-using namespace SqliteOverlay;
 
 namespace QTournament
 {
@@ -34,24 +31,22 @@ namespace QTournament
     friend class Category;
 
   public:
-    virtual ERR canFreezeConfig() override;
+    virtual Error canFreezeConfig() override;
     virtual bool needsInitialRanking() override;
     virtual bool needsGroupInitialization() override;
-    virtual ERR prepareFirstRound(ProgressQueue* progressNotificationQueue=nullptr) override;
+    virtual Error prepareFirstRound() override;
     virtual int calcTotalRoundsCount() const override;
     virtual std::function<bool(RankingEntry& a, RankingEntry& b)> getLessThanFunction() override;
-    virtual ERR onRoundCompleted(int round) override;
-    virtual PlayerPairList getRemainingPlayersAfterRound(int round, ERR *err) const override;
+    virtual Error onRoundCompleted(int round) override;
+    virtual PlayerPairList getRemainingPlayersAfterRound(int round, Error *err) const override;
     int getRoundCountPerIteration() const;
     int getIterationCount() const;
-    static unique_ptr<PureRoundRobinCategory> getFromGenericCat(const Category& cat);
 
     ModMatchResult canModifyMatchResult(const Match& ma) const override;
     ModMatchResult modifyMatchResult(const Match& ma, const MatchScore& newScore) const override;
 
-  private:
-    PureRoundRobinCategory (TournamentDB* db, int rowId);
-    PureRoundRobinCategory (TournamentDB* db, SqliteOverlay::TabRow row);
+    PureRoundRobinCategory (const TournamentDB& _db, int rowId);
+    PureRoundRobinCategory (const TournamentDB& _db, const SqliteOverlay::TabRow& _row);
 
   } ;
 }

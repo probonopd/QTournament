@@ -20,29 +20,30 @@
 
 #include "DelegateItemLED.h"
 
+using namespace QTournament;
 
-const QMap<OBJ_STATE, QColor> DelegateItemLED::state2color = {
-  {STAT_CAT_FROZEN, Qt::darkYellow},
-  {STAT_CAT_IDLE, Qt::darkGreen},
-  {STAT_CAT_PLAYING, Qt::green},
-  {STAT_CAT_FINALIZED, Qt::darkRed},
-  {STAT_PL_IDLE, Qt::green},
-  {STAT_PL_PLAYING, Qt::red},
-  {STAT_PL_WAIT_FOR_REGISTRATION, Qt::lightGray},
-  {STAT_PL_REFEREE, Qt::blue},
-  {STAT_MA_READY, Qt::green},
-  {STAT_MA_BUSY, Qt::red},
-  {STAT_MA_WAITING, Qt::yellow},
-  {STAT_CAT_WAIT_FOR_INTERMEDIATE_SEEDING, Qt::yellow},
-//  {STAT_, Qt::},
-//  {STAT_, Qt::},
+const QMap<ObjState, QColor> DelegateItemLED::state2color = {
+  {ObjState::CAT_Frozen, Qt::darkYellow},
+  {ObjState::CAT_Idle, Qt::darkGreen},
+  {ObjState::CAT_Playing, Qt::green},
+  {ObjState::CAT_Finalized, Qt::darkRed},
+  {ObjState::PL_Idle, Qt::green},
+  {ObjState::PL_Playing, Qt::red},
+  {ObjState::PL_WaitForRegistration, Qt::lightGray},
+  {ObjState::PL_Referee, Qt::blue},
+  {ObjState::MA_Ready, Qt::green},
+  {ObjState::MA_Busy, Qt::red},
+  {ObjState::MA_Waiting, Qt::yellow},
+  {ObjState::CAT_WaitForIntermediateSeeding, Qt::yellow},
+//  {, Qt::},
+//  {, Qt::},
 };
 
 DelegateItemLED::DelegateItemLED()
 {
 }
 
-void DelegateItemLED::operator ()(QPainter* painter, QRect itemArea, int margin, int size, OBJ_STATE state, QColor defaultColor)
+void DelegateItemLED::operator ()(QPainter* painter, QRect itemArea, int margin, int size, ObjState state, QColor defaultColor)
 {
   if (state2color.keys().contains(state))
   {

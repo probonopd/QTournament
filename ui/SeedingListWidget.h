@@ -29,16 +29,27 @@
 #include "PlayerPair.h"
 #include "delegates/PairItemDelegate.h"
 #include "TournamentDB.h"
+#include "AutoSizingTable.h"
 
-using namespace QTournament;
 
-class SeedingListWidget : public QListWidget
+class SeedingListWidget : public GuiHelpers::AutoSizingTableWidget
 {
   Q_OBJECT
 
 public:
+  static constexpr int IdxColName = 0;
+  static constexpr int IdxColGroup = 1;
+  static constexpr int RowHeight = 60;
+
+  struct AnnotatedSeedEntry
+  {
+    int playerPairId;
+    QString pairName;
+    QString teamName;
+    QString groupHint;
+  };
+
   SeedingListWidget(QWidget* parent);
-  void initSeedingList(const PlayerPairList& _seed);
   ~SeedingListWidget();
   int getSelectedItemIndex() const;
   bool canMoveSelectedPlayerUp() const;
@@ -47,16 +58,19 @@ public:
   void moveSelectedPlayerUp();
   void moveSelectedPlayerDown();
   void warpSelectedPlayerTo(int targetRow);
-  PlayerPairList getSeedList() const;
-  void clearListAndFillFromSeed(const PlayerPairList& seed);
-  void setDatabase(TournamentDB* _db);
+  std::vector<int> getSeedList() const;
+
+  /** \brief Replaces all widget contents with a new initial
+   * seeding content
+   */
+  void clearListAndFillFromSeed(const std::vector<AnnotatedSeedEntry>& seed   ///< the list of player pairs to display in the widget
+      );
 
 private:
-  TournamentDB* db;
-  unique_ptr<PairItemDelegate> pairDelegate;
-  QAbstractItemDelegate* defaultDelegate;
   QQueue<QListWidgetItem*> selectionQueue;
   void swapListItems(int row1, int row2);
+  std::unique_ptr<PairItemDelegate> pairColumnDelegate;
+  std::vector<AnnotatedSeedEntry> seedList;
 };
 
 #endif // SEEDINGLISTWIDGET_H

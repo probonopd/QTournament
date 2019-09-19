@@ -17,21 +17,37 @@
  */
 
 #include <algorithm>
+#include <iostream>
 
 #include "PlayerMngr.h"
 #include "SeedingListWidget.h"
 
+using namespace QTournament;
 
 SeedingListWidget::SeedingListWidget(QWidget* parent)
-  :QListWidget(parent), pairDelegate(nullptr), defaultDelegate(itemDelegate())
+  :GuiHelpers::AutoSizingTableWidget(
+     {
+       {tr("Player"), 3, -1, -1},
+       {tr("Rank"), 1, -1, -1}
+     },
+     parent)
 {
+  setRubberBandCol(IdxColGroup);
+
+  // create a new delegate for the pair item column only;
+  // do not use the delegate management of the parent class
+  // because that uses one common delegate for all columns
+  //
+  // we also don't need to switch the delegate when we open/close
+  // a database, because the delegate works indepedently from the database
+  pairColumnDelegate = std::make_unique<PairItemDelegate>(nullptr, true);
+  setItemDelegateForColumn(0, pairColumnDelegate.get());
 }
 
 //----------------------------------------------------------------------------
 
 SeedingListWidget::~SeedingListWidget()
 {
-  if (defaultDelegate != nullptr) delete defaultDelegate;
 }
 
 //----------------------------------------------------------------------------
@@ -52,7 +68,7 @@ bool SeedingListWidget::canMoveSelectedPlayerUp() const
 
 bool SeedingListWidget::canMoveSelectedPlayerDown() const
 {
-  return ((currentRow() >= 0) && (currentRow() < (count() - 1)));
+  return ((currentRow() >= 0) && (currentRow() < (rowCount() - 1)));
 }
 
 //----------------------------------------------------------------------------
@@ -61,14 +77,13 @@ void SeedingListWidget::shufflePlayers(int fromIndex)
 {
   // nothing to shuffle if the fromIndex doesn't point
   // at least to the second to last item
-  if (fromIndex > (count() - 2)) return;
+  if (fromIndex > (rowCount() - 2)) return;
 
   // set a lower boundary to fromIndex so that we can
   // use it as an iterator index
   if (fromIndex < 0) fromIndex = 0;
 
   // shuffle the seeding list
-  PlayerPairList seedList = getSeedList();
   std::random_shuffle(seedList.begin() + fromIndex, seedList.end());
 
   // and "re-set" the widget contents
@@ -85,7 +100,7 @@ void SeedingListWidget::moveSelectedPlayerUp()
   swapListItems(selectedListIndex, selectedListIndex-1);
 
   // move the selection up as well
-  setCurrentRow(selectedListIndex-1);
+  setCurrentCell(selectedListIndex-1, 0);
 }
 
 //----------------------------------------------------------------------------
@@ -98,7 +113,7 @@ void SeedingListWidget::moveSelectedPlayerDown()
   swapListItems(selectedListIndex, selectedListIndex+1);
 
   // move the selection down as well
-  setCurrentRow(selectedListIndex+1);
+  setCurrentCell(selectedListIndex+1, 0);
 }
 
 //----------------------------------------------------------------------------
@@ -107,29 +122,41 @@ void SeedingListWidget::warpSelectedPlayerTo(int targetRow)
 {
   int selectedRow = currentRow();
   if (selectedRow < 0) return;
-  if ((targetRow < 0) || (targetRow >= count())) return;
+  if ((targetRow < 0) || (targetRow >= rowCount())) return;
   if (targetRow == selectedRow) return;
 
-  QListWidgetItem* i = takeItem(selectedRow);
-  insertItem(targetRow, i);
+  // take the item from its current row
+  // and insert it at the target row
+  auto it = seedList.begin();
+  std::advance(it, selectedRow);
+  auto tmp = *it;
+  seedList.erase(it);
+  it = seedList.begin();
+  std::advance(it, targetRow);
+  seedList.insert(it, tmp);
+
+  clearListAndFillFromSeed(seedList);
+
+  /*
+  auto i = takeItem(selectedRow, 0);
+  setItem(targetRow, 0, i);
+  */
 
   // let the selection follow the item
-  setCurrentRow(targetRow);
+  setCurrentCell(targetRow, 0);
 }
 
 //----------------------------------------------------------------------------
 
-PlayerPairList SeedingListWidget::getSeedList() const
+std::vector<int> SeedingListWidget::getSeedList() const
 {
-  PlayerPairList result;
-  PlayerMngr pm{db};
+  std::vector<int> result;
 
-  for (int row = 0; row < count(); ++row)
+  for (int row = 0; row < rowCount(); ++row)
   {
-    QListWidgetItem* i = item(row);
+    auto i = item(row, 0);
     if (i == nullptr) continue;   // shouldn't happen
-    int pairId = i->data(Qt::UserRole).toInt();
-    result.push_back(pm.getPlayerPair(pairId));
+    result.push_back(i->data(Qt::UserRole).toInt());
   }
 
   return result;
@@ -139,8 +166,8 @@ PlayerPairList SeedingListWidget::getSeedList() const
 
 void SeedingListWidget::swapListItems(int row1, int row2)
 {
-  if ((row1 < 0) || (row1 > (count() - 1))) return;
-  if ((row2 < 0) || (row2 > (count() - 1))) return;
+  if ((row1 < 0) || (row1 > (rowCount() - 1))) return;
+  if ((row2 < 0) || (row2 > (rowCount() - 1))) return;
   if (row1 == row2) return;
 
   // make sure that row1 is always the lower row number
@@ -153,60 +180,67 @@ void SeedingListWidget::swapListItems(int row1, int row2)
 
   // take the higher indexed item first, so that
   // the index of the other (lower) item doesn't change
-  QListWidgetItem* item2 = takeItem(row2);
-  QListWidgetItem* item1 = takeItem(row1);
+  auto item2 = takeItem(row2, 0);
+  auto item1 = takeItem(row1, 0);
 
   // insert the item at the lower index first because
   // that repairs / restores the index count for the
   // second item
-  insertItem(row1, item2);
-  insertItem(row2, item1);
+  setItem(row1, 0, item2);
+  setItem(row2, 0, item1);
+
+  // update the original seed list as well
+  auto tmp = seedList[row2];
+  seedList[row2] = seedList[row1];
+  seedList[row1] = tmp;
 }
 
 //----------------------------------------------------------------------------
 
-void SeedingListWidget::clearListAndFillFromSeed(const PlayerPairList& seed)
+void SeedingListWidget::clearListAndFillFromSeed(const std::vector<AnnotatedSeedEntry>& seed)
 {
   int oldSelection = currentRow();
 
   clear();
-  for (int cnt=0; cnt < seed.size(); ++cnt)
+  setRowCount(0);
+
+  int row = 0;
+  for (const auto& sle : seed)
   {
-    QListWidgetItem* lwi = new QListWidgetItem(this);
-    lwi->setData(Qt::UserRole, seed.at(cnt).getPairId());
-    lwi->setData(Qt::DisplayRole, seed.at(cnt).getDisplayName());
+    insertRow(row);
+    setRowHeight(row, PairItemDelegate::PairItemRowHeight);
+
+    QTableWidgetItem* newItem = new QTableWidgetItem(sle.pairName);
+    newItem->setData(Qt::UserRole, sle.playerPairId);
+    newItem->setData(PairItemDelegate::PairNameRole, sle.pairName);
+    newItem->setData(PairItemDelegate::TeamNameRole, sle.teamName);
+    newItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+    setItem(row, IdxColName, newItem);
+
+    if (!sle.groupHint.isEmpty())
+    {
+      newItem = new QTableWidgetItem(sle.groupHint);
+      newItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+      setItem(row, IdxColGroup, newItem);
+    }
+
+    ++row;
   }
+  seedList = seed;
 
   // restore the old selection, if necessary and possible
-  if ((!(seed.empty())) && (oldSelection >= 0))
+  if ((!(seedList.empty())) && (oldSelection >= 0))
   {
-    if (oldSelection < seed.size())
+    if (oldSelection < seedList.size())
     {
-      setCurrentRow(oldSelection);
+      setCurrentCell(oldSelection, 0);
     } else {
-      setCurrentRow(seed.size() - 1);
+      setCurrentCell(seedList.size() - 1, 0);
     }
   }
 }
 
 //----------------------------------------------------------------------------
-
-void SeedingListWidget::setDatabase(TournamentDB* _db)
-{
-  db = _db;
-
-  // assign a delegate to the list widget for drawing the entries
-  if (db != nullptr)
-  {
-    pairDelegate = make_unique<PairItemDelegate>(db, nullptr, true);
-    setItemDelegate(pairDelegate.get());
-  } else {
-    setItemDelegate(defaultDelegate);
-    pairDelegate.reset();
-  }
-
-  setEnabled(db != nullptr);
-}
 
 //----------------------------------------------------------------------------
 

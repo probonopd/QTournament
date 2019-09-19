@@ -11,8 +11,6 @@
 #include "CSVImporter.h"
 #include "Category.h"
 
-using namespace std;
-
 namespace QTournament {
   class TournamentDB;
 }
@@ -25,9 +23,9 @@ class CSVDataTableWidget : public GuiHelpers::AutoSizingTableWidget
 
 public:
   CSVDataTableWidget(QWidget* parent = nullptr);
-  void setData(QTournament::TournamentDB* _db, const vector<QTournament::CSVImportRecord>& initialData);
+  void setData(const QTournament::TournamentDB* _db, const std::vector<QTournament::CSVImportRecord>& initialData);
   QString getErrMsg(int row, int col);
-  vector<QTournament::CSVImportRecord> getRecords() const {return records; }
+  std::vector<QTournament::CSVImportRecord> getRecords() const {return records; }
   size_t getNumRecords() const { return records.size(); }
 
 signals:
@@ -46,11 +44,11 @@ protected:
   void createOrUpdateCellItem(int row);
 
 private:
-  QTournament::TournamentDB* db;
-  vector<QTournament::CSVImportRecord> records;
-  vector<QTournament::CSVError> errList;
-  vector<QTournament::Category> availCategories;
-  vector<string> availCatNames;
+  const QTournament::TournamentDB* db{nullptr};
+  std::vector<QTournament::CSVImportRecord> records;
+  std::vector<QTournament::CSVError> errList;
+  std::vector<QTournament::Category> availCategories;
+  std::vector<std::string> availCatNames;
 };
 
 //----------------------------------------------------------------------------
@@ -64,9 +62,9 @@ class DlgImportCSV_Step2 : public QDialog
   Q_OBJECT
 
 public:
-  explicit DlgImportCSV_Step2(QWidget *parent, QTournament::TournamentDB* _db, const vector<QTournament::CSVImportRecord>& initialData);
+  explicit DlgImportCSV_Step2(QWidget *parent, const QTournament::TournamentDB& _db, const std::vector<QTournament::CSVImportRecord>& initialData);
   ~DlgImportCSV_Step2();
-  vector<QTournament::CSVImportRecord> getRecords() const;
+  std::vector<QTournament::CSVImportRecord> getRecords() const;
 
 public slots:
   void onWarnCountChanged(int errCount, int warnCount, int totalRowCount);
@@ -76,7 +74,7 @@ protected slots:
 
 private:
   Ui::DlgImportCSV_Step2 *ui;
-  QTournament::TournamentDB* db;
+  const QTournament::TournamentDB& db;
 };
 
 #endif // DLGIMPORTCSV_STEP2_H

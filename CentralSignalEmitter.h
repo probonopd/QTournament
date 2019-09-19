@@ -25,6 +25,8 @@
 #include "Player.h"
 #include "Court.h"
 
+#include "ui/CustomMetatypes.h"
+
 namespace QTournament
 {
 
@@ -43,7 +45,7 @@ namespace QTournament
     void playerRemovedFromCategory(const Player& p, const Category& c) const;
     void beginCreateCategory() const;
     void endCreateCategory(int newCatSeqNum) const;
-    void categoryStatusChanged(const Category& c, const OBJ_STATE fromState, const OBJ_STATE toState);
+    void categoryStatusChanged(const Category& c, const ObjState fromState, const ObjState toState);
     void beginDeleteCategory(int catSeqNum) const;
     void endDeleteCategory() const;
     void beginResetAllModels() const;
@@ -54,7 +56,7 @@ namespace QTournament
     void beginCreateCourt ();
     void endCreateCourt (int newCourtSeqNum);
     void courtRenamed (const Court& p);
-    void courtStatusChanged(int courtId, int courtSeqNum, OBJ_STATE fromState, OBJ_STATE toState);
+    void courtStatusChanged(int courtId, int courtSeqNum, ObjState fromState, ObjState toState);
     void beginDeleteCourt(int courtSeqNum);
     void endDeleteCourt();
 
@@ -63,8 +65,8 @@ namespace QTournament
     void endCreateMatchGroup (int newMatchGroupSeqNum);
     void beginCreateMatch();
     void endCreateMatch(int newMatchSeqNum);
-    void matchStatusChanged(int matchId, int matchSeqNum, OBJ_STATE fromState, OBJ_STATE toState) const;
-    void matchGroupStatusChanged(int matchGroupId, int matchGroupSeqNum, OBJ_STATE fromState, OBJ_STATE toState) const;
+    void matchStatusChanged(int matchId, int matchSeqNum, ObjState fromState, ObjState toState);
+    void matchGroupStatusChanged(int matchGroupId, int matchGroupSeqNum, ObjState fromState, ObjState toState);
     void matchResultUpdated(int matchId, int matchSeqNum) const;
     void roundCompleted(int catId, int round) const;
 
@@ -72,7 +74,7 @@ namespace QTournament
     void beginCreatePlayer ();
     void endCreatePlayer (int newPlayerSeqNum);
     void playerRenamed (const Player& p);
-    void playerStatusChanged(int playerId, int playerSeqNum, OBJ_STATE fromState, OBJ_STATE toState) const;
+    void playerStatusChanged(int playerId, int playerSeqNum, ObjState fromState, ObjState toState);
     void beginDeletePlayer(int playerSeqNum) const;
     void endDeletePlayer() const;
     void externalPlayerDatabaseChanged();
@@ -89,7 +91,7 @@ namespace QTournament
   public slots:
 
   private:
-    explicit CentralSignalEmitter(QObject *parent = 0);
+    explicit CentralSignalEmitter(QObject *parent = nullptr);
     static CentralSignalEmitter* inst;
   };
 

@@ -35,26 +35,26 @@ namespace QTournament
     Q_OBJECT
 
   public:
-    static constexpr int COLUMN_COUNT = 8;  // number of columns in the model
+    static constexpr int ColumnCount = 8;  // number of columns in the model
 
-    static constexpr int COL_NAME = 0;
-    static constexpr int COL_FINISHED_ROUNDS = 3;
-    static constexpr int COL_CURRENT_ROUND = 2;
-    static constexpr int COL_TOTAL_ROUNDS = 1;
-    static constexpr int COL_UNFINISHED_MATCHES = 4;
-    static constexpr int COL_RUNNING_MATCHES = 5;
-    static constexpr int COL_WAITING_MATCHES = 6;
-    static constexpr int COL_TOTAL_MATCHES = 7;
+    static constexpr int ColName = 0;
+    static constexpr int ColFinishedRounds = 3;
+    static constexpr int ColCurrentRound = 2;
+    static constexpr int ColTotalRounds = 1;
+    static constexpr int ColUnfinishedMatches = 4;
+    static constexpr int ColRunningMatches = 5;
+    static constexpr int ColWaitingMatches = 6;
+    static constexpr int ColTotalMatches = 7;
 
-    CategoryTableModel (TournamentDB* _db);
+    CategoryTableModel (const QTournament::TournamentDB& _db);
     int rowCount(const QModelIndex & parent = QModelIndex()) const;
     int columnCount(const QModelIndex & parent = QModelIndex()) const;
     QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const;
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
 
   private:
-    TournamentDB* db;
-    SqliteOverlay::DbTab* catTab;
+    std::reference_wrapper<const QTournament::TournamentDB> db;
+    SqliteOverlay::DbTab catTab;
     
   public slots:
     void onBeginCreateCategory();
