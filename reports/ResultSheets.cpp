@@ -21,8 +21,8 @@
 #include <QList>
 
 #include "ResultSheets.h"
-#include "SimpleReportGenerator.h"
-#include "TableWriter.h"
+#include <SimpleReportGeneratorLib/SimpleReportGenerator.h>
+#include <SimpleReportGeneratorLib/TableWriter.h>
 
 #include "ui/GuiHelpers.h"
 #include "Match.h"

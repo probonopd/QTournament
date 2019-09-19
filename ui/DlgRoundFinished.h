@@ -21,7 +21,7 @@
 
 #include <QDialog>
 
-#include "SimpleReportViewer.h"
+#include <SimpleReportGeneratorLib/SimpleReportViewer.h>
 
 #include "TournamentDB.h"
 #include "Category.h"

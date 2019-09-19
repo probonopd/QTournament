@@ -24,7 +24,7 @@
 
 #include <QObject>
 
-#include "SimpleReportGenerator.h"
+#include <SimpleReportGeneratorLib/SimpleReportGenerator.h>
 
 #include "reports/AbstractReport.h"
 #include "BracketVisData.h"

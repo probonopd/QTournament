@@ -26,7 +26,7 @@
 #include <SqliteOverlay/KeyValueTab.h>
 
 #include "TournamentDB.h"
-#include "SimpleReportGenerator.h"
+#include <SimpleReportGeneratorLib/SimpleReportGenerator.h>
 #include "Match.h"
 #include "MatchGroup.h"
 

@@ -56,7 +56,7 @@
   <customwidget>
    <class>SimpleReportLib::SimpleReportViewer</class>
    <extends>QWidget</extends>
-   <header>SimpleReportViewer.h</header>
+   <header location="global">SimpleReportGeneratorLib/SimpleReportViewer.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
