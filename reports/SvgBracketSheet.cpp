@@ -156,7 +156,7 @@ SvgBracket::CommonBracketTags SvgBracketSheet::commonTags() const
     QString tmp;
     if (round < special->calcTotalRoundsCount())
     {
-      tmp = tr("After round %1 and next matches");
+      tmp = tr("After round %1 / next matches");
       tmp = tmp.arg(round.get() + roundOffset);
     } else {
       tmp = tr("Final results");
