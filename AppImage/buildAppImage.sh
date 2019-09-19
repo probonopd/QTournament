@@ -6,7 +6,7 @@
 SLOPPY_VER=0.5.2
 DBLIB_VER=0.5.3
 REPORTLIB_VER=0.3.2
-QTOURNAMENT_VER=0.7.0-Beta1
+QTOURNAMENT_VER=0.7.0-RC1
 
 
 #
@@ -140,7 +140,7 @@ prep_build_container()
   fi
 
   if [ $REFRESH_BUILD_CONTAINER = "y" ]; then
-    docker build -t $BUILD_CONTAINER -f Dockerfile_BuildEnv .
+    docker build --no-cache -t $BUILD_CONTAINER -f Dockerfile_BuildEnv .
   fi
 }
 
