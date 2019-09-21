@@ -8,9 +8,9 @@ before_install:
   - sudo apt-get update -qq
 
 install:
-  - sudo apt-get -y install qt510base qt510svg libgl1-mesa-dev g++-8 make cmake libsodium23 libsodium-dev git wget libboost-all-dev sqlite3 libsqlite3-dev
+  - sudo apt-get -y install qt510base qt510svg libgl1-mesa-dev make cmake libsodium23 libsodium-dev git wget libboost-all-dev sqlite3 libsqlite3-dev
   - source /opt/qt*/bin/qt*-env.sh
-  - ln -s /usr/bin/g++-8 /usr/bin/g++
+  # ln -s /usr/bin/g++-8 /usr/bin/g++ # g++-8
 
 script:
   - qmake CONFIG+=release PREFIX=/usr
