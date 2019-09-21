@@ -14,9 +14,9 @@ install:
   # ln -s /usr/bin/g++-8 /usr/bin/g++ # g++-8
 
 script:
-  # sqliteoverlay
+  # SqliteOverlay
   - git clone https://github.com/Foorgol/SqliteOverlay
-  - cd sqliteoverlay
+  - cd SqliteOverlay
   - cmake -DCMAKE_BUILD_TYPE=Release .
   - sudo make -j$(nproc) install
   - cd -
