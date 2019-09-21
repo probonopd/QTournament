@@ -20,6 +20,7 @@ script:
   - cmake -DCMAKE_BUILD_TYPE=Release .
   - sudo make -j$(nproc) install
   - cd -
+  # Also need to build the rest from https://github.com/Foorgol/QTournament/blob/master/scripts/buildBasics.sh manually?
   # QTournament
   - qmake CONFIG+=release PREFIX=/usr
   - make -j$(nproc)
