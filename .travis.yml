@@ -14,6 +14,13 @@ install:
   # ln -s /usr/bin/g++-8 /usr/bin/g++ # g++-8
 
 script:
+  # sqliteoverlay
+  - git clone https://github.com/Foorgol/SqliteOverlay
+  - cd sqliteoverlay
+  - cmake -DCMAKE_BUILD_TYPE=Release .
+  - sudo make -j$(nproc) install
+  - cd -
+  # QTournament
   - qmake CONFIG+=release PREFIX=/usr
   - make -j$(nproc)
   - make INSTALL_ROOT=appdir -j$(nproc) install ; find appdir/
