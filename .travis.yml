@@ -5,6 +5,7 @@ dist: xenial
 
 before_install:
   - sudo add-apt-repository ppa:beineri/opt-qt-5.10.1-xenial -y
+  - sudo add-apt-repository ppa:phoerious/keepassxc -y # libsodium23
   - sudo apt-get update -qq
 
 install:
