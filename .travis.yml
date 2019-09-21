@@ -20,7 +20,18 @@ script:
   - cmake -DCMAKE_BUILD_TYPE=Release .
   - sudo make -j$(nproc) install
   - cd -
-  # Also need to build the rest from https://github.com/Foorgol/QTournament/blob/master/scripts/buildBasics.sh manually?
+  # libSloppy
+  - git clone https://github.com/Foorgol/libSloppy
+  - cd libSloppy
+  - cmake -DCMAKE_BUILD_TYPE=Release .
+  - sudo make -j$(nproc) install
+  - cd -
+  # SimpleReportGeneratorLib
+  - git clone https://github.com/Foorgol/SimpleReportGeneratorLib
+  - cd SimpleReportGeneratorLib
+  - cmake -DCMAKE_BUILD_TYPE=Release .
+  - sudo make -j$(nproc) install
+  - cd -
   # QTournament
   - qmake CONFIG+=release PREFIX=/usr
   - make -j$(nproc)
